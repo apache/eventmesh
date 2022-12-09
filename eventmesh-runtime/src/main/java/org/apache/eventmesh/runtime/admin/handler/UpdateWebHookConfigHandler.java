@@ -20,6 +20,8 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -30,17 +32,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 @SuppressWarnings("restriction")
-public class UpdateWebHookConfigHandler implements HttpHandler {
+@EventHttpHandler(path = "/webhook/updateWebHookConfig")
+public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
-    private WebHookConfigOperation operation;
+    private final WebHookConfigOperation operation;
 
-    public UpdateWebHookConfigHandler(WebHookConfigOperation operation) {
+    public UpdateWebHookConfigHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.operation = operation;
     }
 

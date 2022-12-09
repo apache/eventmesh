@@ -93,13 +93,13 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
             IPUtils.getLocalAddress());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
@@ -137,7 +137,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
         });
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
             String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
@@ -173,7 +173,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
 
         // obtain webhook delivery agreement for Abuse Protection
         boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshWebhookOrigin);
+            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
             httpLogger.error("subscriber url {} is not allowed by the target system", url);

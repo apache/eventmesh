@@ -34,10 +34,13 @@ import com.google.common.base.Preconditions;
 
 public class PropertiesUtils {
 
-    public static Properties getPropertiesByPrefix(final Properties from, final Properties to, String prefix) {
+    public static Properties getPropertiesByPrefix(final Properties from, final String prefix) {
+
+        Properties to = new Properties();
         if (StringUtils.isBlank(prefix) || from == null) {
             return to;
         }
+
         from.forEach((key, value) -> {
                 String keyStr = String.valueOf(key);
                 if (StringUtils.startsWith(keyStr, prefix)) {
@@ -81,16 +84,13 @@ public class PropertiesUtils {
      */
     public static void loadPropertiesWhenFileExist(Properties properties, String path, Charset cs) throws IOException {
         Preconditions.checkNotNull(properties, "Properties can not be null");
-
         File file = new File(path);
         if (!file.exists()) {
             return;
         }
-
-        try (FileInputStream reader = new FileInputStream(file)) {
-            properties.load(new BufferedReader(new InputStreamReader(reader, cs)));
-        } catch (IOException e) {
-            throw e;
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(new FileInputStream(file), cs))) {
+            properties.load(reader);
         }
     }
 

@@ -24,34 +24,24 @@
 
 **Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application multi-runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-### Multi-Runtime Architecture
+### EventMesh Architecture
 
-![EventMesh Architecture](docs/images/eventmesh-architecture.png)
+![EventMesh Architecture](docs/images/eventmesh-architecture-2.png)
 
-## Core Features
-### Orchestration
+## Features
 
-![EventMesh Orchestration](docs/images/eventmesh-orchestration.png)
+Apache EventMesh (Incubating) has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
 
-### Data Mesh
-
-![EventMesh Data Mesh](docs/images/eventmesh-bridge.png)
-
-## Components
-
-Apache EventMesh (Incubating) consists of multiple components that integrate different middlewares and messaging protocols to enhance the functionalities of the application runtime.
-
-- **eventmesh-runtime**: The EventMesh core server designed by Microkernel Architecture.
-- **eventmesh-sdk-java**: The Java SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-sdk-go**: The Golang SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-sdk-rust**: The Rust SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org)(incubator), [Apache Pulsar](https://pulsar.apache.org)(incubator), [RabbitMQ](https://rabbitmq.com)(incubator), [Redis](https://redis.io) (incubator), [Pravega](https://cncf.pravega.io)(incubator), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
-- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
-- **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
-- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io), [AMQP](https://www.amqp.org/)(in progress) and [MQTT](https://mqtt.org)(in progress).
-- **eventmesh-workflow-go**: The [Serverless workflow](https://serverlessworkflow.io/) engine implementation.
-- **eventmesh-catalog-go**: The catalog implementation follow [AsyncAPI](https://www.asyncapi.com/).
-- **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
+- Built around the [CloudEvents](https://cloudevents.io) specification.
+- Rapidty extendsible language sdk around [gRPC](https://grpc.io) protocols.
+- Rapidty extendsible middleware by connectors such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity).
+- Rapidty extendsible controller such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
+- Guaranteed at-least-once delivery.
+- Deliver events between multiple EventMesh deployments.
+- Event schema management by catalog service.
+- Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/) engine.
+- Powerful event filtering and transformation.
+- Rapid, seamless scalability to add new machines.
 
 ## Roadmap
 

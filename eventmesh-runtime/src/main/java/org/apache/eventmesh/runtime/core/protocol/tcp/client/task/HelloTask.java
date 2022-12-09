@@ -59,9 +59,9 @@ public class HelloTask extends AbstractTask {
         UserAgent user = (UserAgent) pkg.getBody();
         try {
             //do acl check in connect
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable) {
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.value());
+                Acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.getValue());
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
@@ -71,7 +71,8 @@ public class HelloTask extends AbstractTask {
 
             validateUserAgent(user);
             session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
-            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
+            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                    pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             messageLogger.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);

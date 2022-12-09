@@ -20,8 +20,8 @@ package org.apache.eventmesh.connector.knative.domain;
 /**
  * NonStandardKeys
  */
-public interface NonStandardKeys {
+public class NonStandardKeys {
 
-    String MESSAGE_CONSUME_STATUS = "em.message.consume.status";
+    public static final String MESSAGE_CONSUME_STATUS = "em.message.consume.status";
 
 }

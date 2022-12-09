@@ -59,7 +59,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             return;
         }
 
-        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshCluster;
+        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         //get eventmesh of local idc
         Map<String, String> localEventMeshMap = queryLocalEventMeshMap(cluster);
         if (localEventMeshMap == null || localEventMeshMap.size() == 0) {
@@ -84,7 +84,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 return null;
             }
             localEventMeshMap = new HashMap<>();
-            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC;
+            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
             for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
                 String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
                 if (StringUtils.isNotBlank(idc) && StringUtils.equals(idc, localIdc)) {
@@ -116,7 +116,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             return;
         }
 
-        doRebalanceRedirect(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName, group, purpose,
+        doRebalanceRedirect(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshName(), group, purpose,
                 eventMeshMap, clientDistributionMap);
         logger.info("doRebalanceByGroup end, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
 
@@ -236,7 +236,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             }
 
             localEventMeshDistributeData = new HashMap<>();
-            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC;
+            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
             for (Map.Entry<String, Map<String, Integer>> entry : eventMeshClientDistributionDataMap.entrySet()) {
                 String idc = entry.getKey().split("-")[0];
                 if (StringUtils.isNotBlank(idc) && StringUtils.equals(idc, localIdc)) {

@@ -69,7 +69,7 @@ public class HeartbeatProcessor {
 
         // only handle heartbeat for consumers
         ClientType clientType = heartbeat.getClientType();
-        if (!ClientType.SUB.equals(clientType)) {
+        if (ClientType.SUB != clientType) {
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
@@ -103,7 +103,7 @@ public class HeartbeatProcessor {
 
     private void doAclCheck(Heartbeat heartbeat) throws AclException {
         RequestHeader header = heartbeat.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = header.getIp();
             String user = header.getUsername();
             String pass = header.getPassword();

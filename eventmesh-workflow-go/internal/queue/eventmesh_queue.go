@@ -18,10 +18,12 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	sdk "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	sdk_conf "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	sdk_pb "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/google/uuid"
 
@@ -104,6 +106,7 @@ func (q *eventMeshQueue) Publish(tasks []*model.WorkflowTaskInstance) error {
 			log.Get(constants.LogQueue).Errorf("EventMesh task queue, fail to publish task, error=%v", err)
 			return err
 		}
+		metrics.Inc(constants.MetricsTaskQueue, fmt.Sprintf("%s_%s", q.Name(), constants.MetricsQueueSize))
 	}
 	return nil
 }
@@ -127,6 +130,7 @@ func (q *eventMeshQueue) Observe() {
 }
 
 func (q *eventMeshQueue) handler(message *sdk_pb.SimpleMessage) interface{} {
+	metrics.Dec(constants.MetricsTaskQueue, fmt.Sprintf("%s_%s", q.Name(), constants.MetricsQueueSize))
 	workflowTask, err := q.toWorkflowTask(message)
 	if err != nil {
 		return err

@@ -91,9 +91,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
                 SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         String protocolType = sendMessageBatchRequestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
@@ -230,7 +230,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             String subsystem = Objects.requireNonNull(cloudEvent.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
 
             //do acl check
-            if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+            if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 try {
                     Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
                 } catch (Exception e) {

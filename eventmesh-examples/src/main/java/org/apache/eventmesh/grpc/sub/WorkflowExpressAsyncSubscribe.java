@@ -42,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static WorkflowExpressAsyncSubscribe handler = new WorkflowExpressAsyncSubscribe();
+    public static final WorkflowExpressAsyncSubscribe handler = new WorkflowExpressAsyncSubscribe();
+    
     public static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
@@ -55,42 +56,50 @@ public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMe
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env("env").idc("default").password("password")
-            .sys("default").build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .env("env").idc("default").password("password")
+                .sys("default").build();
 
-        EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
-        eventMeshGrpcConsumer.init();
-        eventMeshGrpcConsumer.registerListener(handler);
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig)) {
+            eventMeshGrpcConsumer.init();
+            eventMeshGrpcConsumer.registerListener(handler);
 
-        NacosSelector nacosSelector = new NacosSelector();
-        nacosSelector.init();
-        SelectorFactory.register(selectorType, nacosSelector);
+            NacosSelector nacosSelector = new NacosSelector();
+            nacosSelector.init();
+            SelectorFactory.register(selectorType, nacosSelector);
 
-        EventMeshCatalogClientConfig eventMeshCatalogClientConfig = EventMeshCatalogClientConfig.builder().serverName(catalogServerName)
-            .appServerName(serverName).build();
-        EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig, eventMeshGrpcConsumer);
-        eventMeshCatalogClient.init();
+            EventMeshCatalogClientConfig eventMeshCatalogClientConfig = EventMeshCatalogClientConfig.builder()
+                    .serverName(catalogServerName)
+                    .appServerName(serverName).build();
+            EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig,
+                    eventMeshGrpcConsumer);
+            eventMeshCatalogClient.init();
 
-        EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
-        workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
+            EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder()
+                    .serverName(workflowServerName).build();
+            workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-        Thread.sleep(60000000);
-        eventMeshCatalogClient.destroy();
+            Thread.sleep(60000000);
+            eventMeshCatalogClient.destroy();
+        }
     }
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) throws Exception {
         log.info("receive async msg: {}", msg);
+        if (msg == null) {
+            log.info("async msg is null, workflow end.");
+            return Optional.empty();    
+        }
         Map<String, String> props = msg.getProp();
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");
 
         ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
-            .setTaskInstanceId(taskInstanceId)
-            .setInstanceId(workflowInstanceId).build();
+                .setTaskInstanceId(taskInstanceId)
+                .setInstanceId(workflowInstanceId).build();
         ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
         log.info("receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();

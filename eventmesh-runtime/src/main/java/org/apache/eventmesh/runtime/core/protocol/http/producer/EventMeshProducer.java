@@ -78,11 +78,11 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.eventMeshCluster));
+                eventMeshHttpConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);
-        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
+        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());

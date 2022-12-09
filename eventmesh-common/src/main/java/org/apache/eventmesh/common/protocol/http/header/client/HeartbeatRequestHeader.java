@@ -54,7 +54,7 @@ public class HeartbeatRequestHeader extends Header {
     //IP of the requester
     private String ip;
 
-    private String producerGroup;
+    //private String producerGroup;
 
     //USERNAME of the requester
     private String username = "username";
