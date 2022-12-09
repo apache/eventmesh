@@ -33,20 +33,24 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class SyncSubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SyncSubClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncSubClient.class);
 
     public static void main(String[] args) throws Exception {
-        SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
-        client.init();
-        client.heartbeat();
-        client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
-        client.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    logger.error("receive message -------------------------------" + msg);
+        try (SubClientImpl client =
+                     new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
+            client.init();
+            client.heartbeat();
+            client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            client.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                        if ((LOGGER.isInfoEnabled())) {
+                            LOGGER.info("receive message -------------------------------" + msg);
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }
