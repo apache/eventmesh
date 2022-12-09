@@ -19,12 +19,14 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,18 +38,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * query client subscription by topic
  */
-public class ShowListenClientByTopicHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/showListenClientByTopic")
+public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
 
-    private Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -77,7 +80,7 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
                     }
                 }
             }
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowListenClientByTopicHandler fail...", e);

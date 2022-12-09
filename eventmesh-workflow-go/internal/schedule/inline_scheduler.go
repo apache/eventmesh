@@ -22,6 +22,8 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/filter"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/task"
 	"github.com/avast/retry-go/v4"
 	"gorm.io/gorm"
@@ -79,6 +81,10 @@ func (s *inlineScheduler) handle() {
 		if res == nil {
 			return nil
 		}
+
+		// filter input data
+		filter.FilterWorkflowTaskInputData(res)
+
 		t := task.New(res)
 		if t == nil {
 			return nil
@@ -97,7 +103,10 @@ func (s *inlineScheduler) handle() {
 }
 
 func (s *inlineScheduler) lock(h func() error) error {
+	start := time.Now()
 	l, err := dal.GetLockClient().ObtainTimeout(schedulerLockKey, schedulerLockTimeout)
+	elapsed := time.Since(start).Milliseconds()
+	metrics.RecordLatency(constants.MetricsScheduler, constants.MetricsDbLockAcquireTime, float64(elapsed))
 	if err != nil {
 		return err
 	}

@@ -23,13 +23,24 @@ import com.google.common.base.Preconditions;
 
 public class ClientConfiguration {
 
-    public String emurl = "";
-    public String serviceAddr = "";
+
+    private transient String emurl;
+
+    private transient String serviceAddr;
+
+
+    public String getEmurl() {
+        return emurl;
+    }
+
+    public String getServiceAddr() {
+        return serviceAddr;
+    }
 
     public void init() {
         String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR);
         Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-            String.format("%s error", ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR));
+                String.format("%s error", ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR));
         serviceAddr = StringUtils.trim(serviceAddrStr);
         String[] temp = serviceAddr.split(";");
         emurl = temp[0];

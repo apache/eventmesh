@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * RegistryService
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
 
     void init() throws RegistryException;

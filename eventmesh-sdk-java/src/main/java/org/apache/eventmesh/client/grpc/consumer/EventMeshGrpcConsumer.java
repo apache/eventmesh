@@ -193,18 +193,18 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         for (SubscriptionItem subscriptionItem : subscriptionItems) {
             Subscription.SubscriptionItem.SubscriptionMode mode;
-            if (SubscriptionMode.CLUSTERING.equals(subscriptionItem.getMode())) {
+            if (SubscriptionMode.CLUSTERING == subscriptionItem.getMode()) {
                 mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
-            } else if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
+            } else if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
                 mode = Subscription.SubscriptionItem.SubscriptionMode.BROADCASTING;
             } else {
                 mode = Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED;
             }
 
             Subscription.SubscriptionItem.SubscriptionType type;
-            if (SubscriptionType.ASYNC.equals(subscriptionItem.getType())) {
+            if (SubscriptionType.ASYNC == subscriptionItem.getType()) {
                 type = Subscription.SubscriptionItem.SubscriptionType.ASYNC;
-            } else if (SubscriptionType.SYNC.equals(subscriptionItem.getType())) {
+            } else if (SubscriptionType.SYNC == subscriptionItem.getType()) {
                 type = Subscription.SubscriptionItem.SubscriptionType.SYNC;
             } else {
                 type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;

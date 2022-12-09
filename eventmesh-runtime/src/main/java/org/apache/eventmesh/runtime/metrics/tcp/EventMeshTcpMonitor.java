@@ -87,16 +87,20 @@ public class EventMeshTcpMonitor {
 
         monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((() -> {
             int msgNum = tcpSummaryMetrics.client2eventMeshMsgNum();
-            tcpSummaryMetrics.setClient2eventMeshTPS(1000 * msgNum / period);
+            tcpSummaryMetrics.resetClient2EventMeshMsgNum();
+            tcpSummaryMetrics.setClient2eventMeshTPS(1000.0d * msgNum / period);
 
             msgNum = tcpSummaryMetrics.eventMesh2clientMsgNum();
-            tcpSummaryMetrics.setEventMesh2clientTPS(1000 * msgNum / period);
+            tcpSummaryMetrics.resetEventMesh2ClientMsgNum();
+            tcpSummaryMetrics.setEventMesh2clientTPS(1000.0d * msgNum / period);
 
             msgNum = tcpSummaryMetrics.eventMesh2mqMsgNum();
-            tcpSummaryMetrics.setEventMesh2mqTPS(1000 * msgNum / period);
+            tcpSummaryMetrics.resetEventMesh2mqMsgNum();
+            tcpSummaryMetrics.setEventMesh2mqTPS(1000.0d * msgNum / period);
 
             msgNum = tcpSummaryMetrics.mq2eventMeshMsgNum();
-            tcpSummaryMetrics.setMq2eventMeshTPS(1000 * msgNum / period);
+            tcpSummaryMetrics.resetMq2eventMeshMsgNum();
+            tcpSummaryMetrics.setMq2eventMeshTPS(1000.0d * msgNum / period);
 
             //count topics subscribed by client in this eventMesh
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap =

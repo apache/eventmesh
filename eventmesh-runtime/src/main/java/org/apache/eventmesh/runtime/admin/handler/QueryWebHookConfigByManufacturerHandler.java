@@ -20,9 +20,11 @@ package org.apache.eventmesh.runtime.admin.handler;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
-import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -35,35 +37,36 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 @SuppressWarnings("restriction")
-public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
+@EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
+public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private WebHookConfigOperation operation;
+    private final WebHookConfigOperation operation;
 
-    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.operation = operation;
     }
 
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(200, 0);
+        NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
         // get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
         JsonNode node = JsonUtils.getJsonNode(requestBody);
-        WebHookConfig webHookConfig = JsonUtils.toObject(node.get("webHookConfig").toString(), WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
         Integer pageNum = Integer.parseInt(node.get("pageNum").toString());
         Integer pageSize = Integer.parseInt(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(JsonUtils.toJson(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("get WebHookConfigOperation implementation Failed.", e);
         }

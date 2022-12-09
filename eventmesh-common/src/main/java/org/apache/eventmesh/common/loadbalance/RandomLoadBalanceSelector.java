@@ -18,9 +18,9 @@
 package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
             logger.warn("No servers available");
             return null;
         }
-        return clusterGroup.get(RandomUtils.nextInt(0, clusterGroup.size()));
+        return clusterGroup.get(ThreadLocalRandom.current().nextInt(clusterGroup.size()));
     }
 
     @Override

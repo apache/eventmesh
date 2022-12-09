@@ -19,13 +19,14 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.channel.Channel;
+
 
 public class RemotingHelper {
 
@@ -35,10 +36,9 @@ public class RemotingHelper {
             sb.append(e);
 
             StackTraceElement[] stackTrace = e.getStackTrace();
-            if (stackTrace != null && stackTrace.length > 0) {
+            if (ArrayUtils.isNotEmpty(stackTrace)) {
                 StackTraceElement elment = stackTrace[0];
-                sb.append(", ");
-                sb.append(elment.toString());
+                sb.append(", ").append(elment);
             }
         }
 
@@ -72,13 +72,9 @@ public class RemotingHelper {
         return "";
     }
 
-    public static String parseSocketAddressAddr(SocketAddress socketAddress) {
+    public static String parseSocketAddressAddr(InetSocketAddress socketAddress) {
         if (socketAddress != null) {
-            final String addr = socketAddress.toString();
-
-            if (addr.length() > 0) {
-                return addr.substring(1);
-            }
+            return socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
         }
         return "";
     }
