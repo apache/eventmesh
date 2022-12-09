@@ -21,11 +21,11 @@ import org.apache.eventmesh.common.ExampleConstants;
 
 import org.apache.commons.lang3.SystemUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -33,9 +33,8 @@ public class Utils {
 
     /**
      * Get local IP address
-     *
      */
-    public static String getLocalIP() throws UnknownHostException {
+    public static String getLocalIP() throws IOException {
         if (isWindowsOS()) {
             return InetAddress.getLocalHost().getHostAddress();
         } else {
@@ -46,7 +45,7 @@ public class Utils {
     /**
      * Determine whether the operating system is Windows
      *
-     * @return
+     * @return true - Windows false - other OS
      */
     public static boolean isWindowsOS() {
         return SystemUtils.IS_OS_WINDOWS;
@@ -57,7 +56,7 @@ public class Utils {
      *
      * @return IP address
      */
-    private static String getLinuxLocalIp() {
+    private static String getLinuxLocalIp() throws SocketException {
         String ip = "";
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
@@ -79,7 +78,8 @@ public class Utils {
             }
         } catch (SocketException ex) {
             ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            throw ex;
         }
         return ip;
     }
@@ -89,12 +89,12 @@ public class Utils {
      * @return Properties
      */
     public static Properties readPropertiesFile(String fileName) {
-        try (final InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(fileName)) {
+        try (final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
             Properties properties = new Properties();
             properties.load(inputStream);
             return properties;
         } catch (Exception e) {
-            throw new IllegalArgumentException(String.format("File: %s is not exist", fileName));
+            throw new IllegalArgumentException(String.format("File: %s is not exist", fileName), e);
         }
     }
 
