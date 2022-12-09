@@ -48,15 +48,15 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class SubClientImpl extends TCPClient implements SubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SubClientImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubClientImpl.class);
 
-    private UserAgent userAgent;
+    private transient UserAgent userAgent;
 
-    private ReceiveMsgHook callback;
+    private transient ReceiveMsgHook callback;
 
-    private List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+    private transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
 
-    private ScheduledFuture<?> task;
+    private transient ScheduledFuture<?> task;
 
     public SubClientImpl(String accessIp, int port, UserAgent agent) {
         super(accessIp, port);
@@ -70,7 +70,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        logger.info("SubClientImpl|{}|started!", clientNo);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("SubClientImpl|{}|started!", clientNo);
+        }
     }
 
     public void reconnect() throws Exception {
@@ -103,7 +105,10 @@ public class SubClientImpl extends TCPClient implements SubClient {
                         SubClientImpl.this.reconnect();
                     }
                     Package msg = MessageUtils.heartBeat();
-                    logger.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                                msg.getHeader().getCommand(), msg);
+                    }
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
                 } catch (Exception e) {
                     //ignore
@@ -122,7 +127,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
         this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception {
+    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+            throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -197,7 +203,10 @@ public class SubClientImpl extends TCPClient implements SubClient {
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            logger.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}", msg.getHeader().getCommand(), msg);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
+                        msg.getHeader().getCommand(), msg);
+            }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);
@@ -209,33 +218,33 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     Package responsePKG = MessageUtils.rrResponse(msg);
                     send(responsePKG);
                 } catch (Exception e) {
-                    logger.info("send rr request to client ack failed");
+                    LOGGER.error("send rr request to client ack failed", e);
                 }
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
                 Package asyncAck = MessageUtils.asyncMessageAck(msg);
                 try {
                     send(asyncAck);
                 } catch (Exception e) {
-                    logger.info("send async request to client ack failed");
+                    LOGGER.error("send async request to client ack failed", e);
                 }
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                 Package broadcastAck = MessageUtils.broadcastMessageAck(msg);
                 try {
                     send(broadcastAck);
                 } catch (Exception e) {
-                    logger.info("send broadcast request to client ack failed");
+                    LOGGER.error("send broadcast request to client ack failed", e);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                logger.error("server goodby request: ---------------------------" + msg);
+                LOGGER.info("server goodby request: ---------------------------" + msg);
                 close();
             } else {
                 //control instruction set
-                RequestContext context = contexts.get(RequestContext.key(msg));
+                RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                 } else {
-                    logger.error("msg ignored,context not found.|{}|{}", cmd, msg);
+                    LOGGER.error("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             }
         }

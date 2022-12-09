@@ -23,7 +23,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class Server {
 
-    EventMeshServer server;
+    private transient EventMeshServer eventMeshServer;
 
     static {
         System.setProperty("proxy.home", "E:\\projects\\external-1\\proxy");
@@ -36,12 +36,12 @@ public class Server {
         ConfigurationWrapper configurationWrapper =
                 new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                         EventMeshConstants.EVENTMESH_CONF_FILE, false);
-        server = new EventMeshServer(configurationWrapper);
-        server.init();
-        server.start();
+        eventMeshServer = new EventMeshServer(configurationWrapper);
+        eventMeshServer.init();
+        eventMeshServer.start();
     }
 
     public void shutdownAccessServer() throws Exception {
-        server.shutdown();
+        eventMeshServer.shutdown();
     }
 }
