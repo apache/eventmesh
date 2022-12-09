@@ -18,32 +18,29 @@ public class QueueConsumerMapping {
 
     public void registerConsumer(String virtualHost, String queue, AmqpConsumer consumer) throws AmqpNotFoundException {
 
-        ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = queueConsumerMapping.computeIfAbsent(virtualHost, m -> new ConcurrentHashMap<>());
-        if (infoMap == null) {
-            logger.error("virtualHost not found {}", virtualHost);
-            throw new AmqpNotFoundException("vhost not found");
-        }
+        ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = getInfoMap(virtualHost);
         Set<AmqpConsumer> consumers = infoMap.computeIfAbsent(queue, m -> new HashSet<>());
         consumers.add(consumer);
     }
 
     public void removeConsumer(String virtualHost, String queue, AmqpConsumer consumer) throws AmqpNotFoundException {
 
-        ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = queueConsumerMapping.computeIfAbsent(virtualHost, m -> new ConcurrentHashMap<>());
-        if (infoMap == null) {
-            logger.error("virtualHost not found {}", virtualHost);
-            throw new AmqpNotFoundException("vhost not found");
-        }
+        ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = getInfoMap(virtualHost);
         Set<AmqpConsumer> consumers = infoMap.computeIfAbsent(queue, m -> new HashSet<>());
         consumers.remove(consumer);
     }
 
-    public Set<AmqpConsumer> getConsumers(String virtualHost, String queue) {
+    private ConcurrentHashMap<String, Set<AmqpConsumer>> getInfoMap(String virtualHost) throws AmqpNotFoundException {
         ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = queueConsumerMapping.computeIfAbsent(virtualHost, m -> new ConcurrentHashMap<>());
-        if (infoMap == null) {
-            return null;
+        if (infoMap.isEmpty()) {
+            logger.error("virtualHost not found {}", virtualHost);
+            throw new AmqpNotFoundException("vhost not found");
         }
+        return infoMap;
+    }
 
+    public Set<AmqpConsumer> getConsumers(String virtualHost, String queue) throws AmqpNotFoundException {
+        ConcurrentHashMap<String, Set<AmqpConsumer>> infoMap = getInfoMap(virtualHost);
         return infoMap.get(queue);
 
     }
