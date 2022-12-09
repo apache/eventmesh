@@ -41,6 +41,8 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpCommand implements ProtocolTransportObject {
 
+    public static final long serialVersionUID = 4825360350457735498L;
+
     private static final AtomicLong requestId = new AtomicLong(0);
 
     private long opaque;

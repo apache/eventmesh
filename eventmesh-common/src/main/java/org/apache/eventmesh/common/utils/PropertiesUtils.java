@@ -34,10 +34,13 @@ import com.google.common.base.Preconditions;
 
 public class PropertiesUtils {
 
-    public static Properties getPropertiesByPrefix(final Properties from, final Properties to, String prefix) {
+    public static Properties getPropertiesByPrefix(final Properties from, final String prefix) {
+
+        Properties to = new Properties();
         if (StringUtils.isBlank(prefix) || from == null) {
             return to;
         }
+
         from.forEach((key, value) -> {
                 String keyStr = String.valueOf(key);
                 if (StringUtils.startsWith(keyStr, prefix)) {

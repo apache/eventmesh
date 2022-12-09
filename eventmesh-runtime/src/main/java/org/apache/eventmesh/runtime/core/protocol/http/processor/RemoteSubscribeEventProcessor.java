@@ -95,10 +95,13 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap
-            .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+            .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
@@ -142,7 +145,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         });
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
             String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
@@ -179,7 +182,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
 
         // obtain webhook delivery agreement for Abuse Protection
         boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshWebhookOrigin);
+            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
             httpLogger.error("subscriber url {} is not allowed by the target system", url);
@@ -192,10 +195,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         try {
             // request to remote
 
-            String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv;
-            String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC;
-            String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster;
-            String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().sysID;
+            String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv();
+            String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC();
+            String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster();
+            String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID();
             String meshGroup = env + "-" + idc + "-" + cluster + "-" + sysId;
 
             Map<String, String> remoteHeaderMap = new HashMap<>();

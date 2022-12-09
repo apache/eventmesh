@@ -90,7 +90,7 @@ public enum Command {
         this.value = (byte) value;
     }
 
-    public byte value() {
+    public byte getValue() {
         return this.value;
     }
 
