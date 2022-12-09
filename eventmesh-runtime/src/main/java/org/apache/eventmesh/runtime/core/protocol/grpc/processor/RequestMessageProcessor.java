@@ -139,7 +139,7 @@ public class RequestMessageProcessor {
 
     private void doAclCheck(SimpleMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = requestHeader.getIp();
             String user = requestHeader.getUsername();
             String pass = requestHeader.getPassword();

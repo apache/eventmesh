@@ -130,11 +130,12 @@ public class ClientGroupWrapper {
                 Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
         this.persistentMsgConsumer = new MQConsumerWrapper(
-                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(
-                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
         this.mqProducerWrapper = new MQProducerWrapper(
-                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
+
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
@@ -212,6 +213,7 @@ public class ClientGroupWrapper {
             }
             r = topic2sessionInGroupMapping.get(topic).add(session);
             if (r) {
+
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("addSubscription success, group:{} topic:{} client:{}", group,
                             topic, session.getClient());
@@ -252,6 +254,7 @@ public class ClientGroupWrapper {
             if (topic2sessionInGroupMapping.containsKey(topic)) {
                 r = topic2sessionInGroupMapping.get(topic).remove(session);
                 if (r) {
+
                     if (LOGGER.isInfoEnabled()) {
                         LOGGER.info(
                                 "removeSubscription remove session success, group:{} topic:{} client:{}",
@@ -268,6 +271,7 @@ public class ClientGroupWrapper {
             if (CollectionUtils.size(topic2sessionInGroupMapping.get(topic)) == 0) {
                 topic2sessionInGroupMapping.remove(topic);
                 subscriptions.remove(topic);
+
                 LOGGER.info("removeSubscription remove topic success, group:{} topic:{}",
                         group, topic);
             }
@@ -288,10 +292,11 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, group);
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
-                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE, eventMeshTCPConfiguration.eventMeshCluster));
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE,
+                        eventMeshTCPConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.getEventMeshIDC());
 
         mqProducerWrapper.init(keyValue);
         mqProducerWrapper.start();
@@ -320,6 +325,7 @@ public class ClientGroupWrapper {
         if (session == null
                 || !StringUtils.equalsIgnoreCase(group,
                 EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+
             LOGGER.error("addGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -329,6 +335,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupConsumerSessions.add(session);
             if (r) {
+
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("addGroupConsumerSession success, group:{} client:{}", group,
                             session.getClient());
@@ -347,6 +354,7 @@ public class ClientGroupWrapper {
         if (session == null
                 || !StringUtils.equalsIgnoreCase(group,
                 EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+
             LOGGER.error("addGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -356,6 +364,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupProducerSessions.add(session);
             if (r) {
+
                 LOGGER.info("addGroupProducerSession success, group:{} client:{}", group,
                         session.getClient());
             }
@@ -372,6 +381,7 @@ public class ClientGroupWrapper {
         if (session == null
                 || !StringUtils.equalsIgnoreCase(group,
                 EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+
             LOGGER.error("removeGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -381,6 +391,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupConsumerSessions.remove(session);
             if (r) {
+
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("removeGroupConsumerSession success, group:{} client:{}", group,
                             session.getClient());
@@ -408,6 +419,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupProducerSessions.remove(session);
             if (r) {
+
                 LOGGER.info("removeGroupProducerSession success, group:{} client:{}", group,
                         session.getClient());
             }
@@ -429,9 +441,10 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.IS_BROADCAST, "false");
         keyValue.put(EventMeshConstants.CONSUMER_GROUP, group);
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.getEventMeshIDC());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
-                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_SUB_UPPER_CASE, eventMeshTCPConfiguration.eventMeshCluster));
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_SUB_UPPER_CASE,
+                        eventMeshTCPConfiguration.getEventMeshCluster()));
 
         persistentMsgConsumer.init(keyValue);
 
@@ -450,7 +463,7 @@ public class ClientGroupWrapper {
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                                 String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                                eventMeshTCPConfiguration.eventMeshServerIp).build();
+                                eventMeshTCPConfiguration.getEventMeshServerIp()).build();
                 String topic = event.getSubject();
 
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
@@ -493,7 +506,7 @@ public class ClientGroupWrapper {
                                     .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES,
                                             sendBackTimes.toString())
                                     .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_IP,
-                                            eventMeshTCPConfiguration.eventMeshServerIp).build();
+                                            eventMeshTCPConfiguration.getEventMeshServerIp()).build();
                             sendMsgBackToBroker(event, bizSeqNo);
                         }
                     } catch (Exception e) {
@@ -544,10 +557,10 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.IS_BROADCAST, "true");
         keyValue.put(EventMeshConstants.CONSUMER_GROUP, group);
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.getEventMeshIDC());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
                 .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_SUB_UPPER_CASE,
-                        eventMeshTCPConfiguration.eventMeshCluster));
+                        eventMeshTCPConfiguration.getEventMeshCluster()));
         broadCastMsgConsumer.init(keyValue);
 
         EventListener listener = (event, context) -> {
@@ -564,7 +577,7 @@ public class ClientGroupWrapper {
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                                 String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                                eventMeshTCPConfiguration.eventMeshServerIp).build();
+                                eventMeshTCPConfiguration.getEventMeshServerIp()).build();
                 String topic = event.getSubject();
 
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
@@ -772,6 +785,7 @@ public class ClientGroupWrapper {
                     new SendCallback() {
                         @Override
                         public void onSuccess(SendResult sendResult) {
+
                             if (LOGGER.isInfoEnabled()) {
                                 LOGGER.info(
                                         "group:{} consume fail, sendMessageBack success, bizSeqno:{}, "
