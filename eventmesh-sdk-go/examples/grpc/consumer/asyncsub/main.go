@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -71,7 +72,8 @@ func main() {
 			return
 		}
 		defer request.Body.Close()
-		fmt.Println(string(buf))
+		requestStr := strings.Replace(string(buf), "\n", "", -1)
+		fmt.Printf("onmessage request msg:%s\n", requestStr)
 	})
 	http.ListenAndServe(":8080", nil)
 }

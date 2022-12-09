@@ -22,6 +22,7 @@ import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public class RabbitmqCloudEvent implements Serializable {
             default:
                 throw new RabbitmqaConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
-        builder.withData(data.getBytes())
+        builder.withData(data.getBytes(StandardCharsets.UTF_8))
                 .withId(extensions.remove("id"))
                 .withSource(URI.create(extensions.remove("source")))
                 .withType(extensions.remove("type"))

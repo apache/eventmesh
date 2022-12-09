@@ -76,8 +76,8 @@ public class ProducerImpl extends AbstractProducer {
         try {
             this.send(cloudEvent, sendCallback);
         } catch (Exception e) {
-            logger.error(String.format("Send cloudevent message Exception, %s", e));
-            throw new ConnectorRuntimeException("Send cloudevent message Exception.");
+            //LOG.error("Send cloudevent message Exception", e);
+            throw new ConnectorRuntimeException("Send cloudevent message Exception.", e);
         }
     }
 
@@ -91,6 +91,7 @@ public class ProducerImpl extends AbstractProducer {
         this.sendAsync(cloudEvent, sendCallback);
     }
 
+    @Override
     public void sendOneway(CloudEvent cloudEvent) {
         throw new ConnectorRuntimeException("SendOneWay is not supported");
     }

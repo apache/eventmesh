@@ -206,9 +206,17 @@ func (w *workflowDALImpl) buildTask(workflow *pmodel.Workflow) []*model.Workflow
 		task.CreateTime = time.Now()
 		task.UpdateTime = time.Now()
 		task.Actions = w.buildTaskAction(task.TaskID, workflow, state)
+		w.fillTaskFilterIfExist(state, &task)
 		tasks = append(tasks, &task)
 	}
 	return tasks
+}
+
+func (w *workflowDALImpl) fillTaskFilterIfExist(workflowState pmodel.State, task *model.WorkflowTask) {
+	filter := workflowState.GetStateDataFilter()
+	if filter != nil {
+		task.TaskInputFilter = filter.Input
+	}
 }
 
 func (w *workflowDALImpl) buildTaskAction(taskID string, workflow *pmodel.Workflow,

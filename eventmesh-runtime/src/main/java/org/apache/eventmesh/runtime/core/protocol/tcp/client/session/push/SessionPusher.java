@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
@@ -77,9 +78,9 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
+        if (SubscriptionMode.BROADCASTING == downStreamMsgContext.subscriptionItem.getMode()) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())) {
+        } else if (SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
@@ -87,7 +88,7 @@ public class SessionPusher {
 
         String protocolType = Objects.requireNonNull(downStreamMsgContext.event.getExtension(Constants.PROTOCOL_TYPE)).toString();
 
-        ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
 
         Package pkg = new Package();
 
@@ -133,7 +134,7 @@ public class SessionPusher {
                             logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                             //retry
-                            long delayTime = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+                            long delayTime = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
                                 ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
                                 : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                             downStreamMsgContext.delay(delayTime);

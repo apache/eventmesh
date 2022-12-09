@@ -63,6 +63,10 @@ public class EventMeshGrpcServer {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
+    private static final int MIN_LIMIT = 5;
+
+    private static final int MAX_LIMIT = 10;
+
     private Server server;
 
     private ProducerManager producerManager;
@@ -262,7 +266,8 @@ public class EventMeshGrpcServer {
 
     private void initHttpClientPool() {
         httpClientPool = new LinkedList<>();
-        for (int i = 0; i < 8; i++) {
+        int clientPool = RandomUtils.nextInt(MIN_LIMIT, MAX_LIMIT);
+        for (int i = 0; i < clientPool; i++) {
             CloseableHttpClient client = HttpClients.createDefault();
             httpClientPool.add(client);
         }

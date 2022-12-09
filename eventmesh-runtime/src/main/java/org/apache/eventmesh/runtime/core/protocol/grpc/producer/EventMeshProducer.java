@@ -74,7 +74,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void start() throws Exception {
-        if (serviceState == null || ServiceState.RUNNING.equals(serviceState)) {
+        if (serviceState == null || ServiceState.RUNNING == serviceState) {
             return;
         }
 
@@ -84,7 +84,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void shutdown() throws Exception {
-        if (serviceState == null || ServiceState.INITED.equals(serviceState)) {
+        if (serviceState == null || ServiceState.INITED == serviceState) {
             return;
         }
 

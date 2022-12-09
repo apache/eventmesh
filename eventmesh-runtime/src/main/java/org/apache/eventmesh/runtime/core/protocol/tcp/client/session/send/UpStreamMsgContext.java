@@ -123,8 +123,8 @@ public class UpStreamMsgContext extends RetryContext {
                 session.getSender().getUpstreamBuff().release();
                 logger.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
                     System.currentTimeMillis() - createTime);
-                if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK) || replyCmd.equals(Command
-                    .ASYNC_MESSAGE_TO_SERVER_ACK)) {
+                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command
+                    .ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), seq));
                     msg.setBody(event);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);

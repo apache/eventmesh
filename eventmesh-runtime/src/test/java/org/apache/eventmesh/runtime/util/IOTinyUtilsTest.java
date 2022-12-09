@@ -30,8 +30,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -43,22 +44,24 @@ public class IOTinyUtilsTest {
 
     @Test
     public void testCopy() throws Exception {
-        BufferedReader input = mock(BufferedReader.class);
-        BufferedWriter output = mock(BufferedWriter.class);
-        int count = 10;
-        char[] buffer = new char[1 << 12];
-        doNothing().when(output).write(buffer, 0, count);
-        when(input.read(buffer)).thenReturn(10, 10, -1);
-        long result = IOTinyUtils.copy(input, output);
-        Assert.assertEquals(result, count * 2);
+        try (BufferedReader input = mock(BufferedReader.class);
+             BufferedWriter output = mock(BufferedWriter.class)) {
+            int count = 10;
+            char[] buffer = new char[1 << 12];
+            doNothing().when(output).write(buffer, 0, count);
+            when(input.read(buffer)).thenReturn(10, 10, -1);
+            long result = IOTinyUtils.copy(input, output);
+            Assert.assertEquals(result, count * 2);
+        }
     }
 
     @Test
     public void testReadLines() throws IOException {
-        BufferedReader input = mock(BufferedReader.class);
-        when(input.readLine()).thenReturn("hello", "world", null);
-        List<String> result = IOTinyUtils.readLines(input);
-        Assert.assertEquals(result.get(0), "hello");
+        try (BufferedReader input = mock(BufferedReader.class)) {
+            when(input.readLine()).thenReturn("hello", "world", null);
+            List<String> result = IOTinyUtils.readLines(input);
+            Assert.assertEquals(result.get(0), "hello");
+        }
     }
 
     @Test
@@ -66,9 +69,11 @@ public class IOTinyUtilsTest {
         File temp = null;
         try {
             temp = File.createTempFile("temp", ".txt");
-            BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-            bw.write("test toString");
-            bw.close();
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(temp), StandardCharsets.UTF_8))) {
+                bw.write("test toString");
+            }
+
             String res = IOTinyUtils.toString(Files.newInputStream(temp.toPath()), EventMeshConstants.DEFAULT_CHARSET);
             Assert.assertEquals("test toString", res);
         } finally {
@@ -77,9 +82,9 @@ public class IOTinyUtilsTest {
         }
     }
 
-    @Test
-    public void testCopyFile() {
-    }
+    //@Test
+    //public void testCopyFile() {
+    //}
 
     @Test
     public void testCleanDirectory() throws IOException {
@@ -120,11 +125,13 @@ public class IOTinyUtilsTest {
     }
 
     @Test
-    public void testWriteStringToFile() throws IOException {
+    public void testWriteStringToFile() {
         File file = mock(File.class);
         try (MockedConstruction<FileOutputStream> ignored = mockConstruction(FileOutputStream.class,
-            (mock, context) -> doNothing().when(mock).write(any()))) {
+                (mock, context) -> doNothing().when(mock).write(any()))) {
             IOTinyUtils.writeStringToFile(file, "data", "utf-8");
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
         }
     }
 }
