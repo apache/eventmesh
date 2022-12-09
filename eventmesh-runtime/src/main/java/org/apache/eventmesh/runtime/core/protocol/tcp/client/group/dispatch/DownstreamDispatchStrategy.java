@@ -31,7 +31,7 @@ public interface DownstreamDispatchStrategy {
      *
      * @param group
      * @param consumeSessions
-     * @return
+     * @return client session
      */
     Session select(String group, String topic, Set<Session> consumeSessions);
 }
