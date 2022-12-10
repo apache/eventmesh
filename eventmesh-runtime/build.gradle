@@ -30,6 +30,8 @@ dependencies {
 
     implementation 'com.github.seancfoley:ipaddress'
 
+    implementation 'commons-io:commons-io'
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
