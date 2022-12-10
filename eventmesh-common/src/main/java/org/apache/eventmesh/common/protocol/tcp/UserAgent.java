@@ -135,19 +135,17 @@ public class UserAgent {
 
     @Override
     public int hashCode() {
-        int result = subsystem != null ? subsystem.hashCode() : 0;
-        result = 31 * result + (group != null ? group.hashCode() : 0);
-        result = 31 * result + (path != null ? path.hashCode() : 0);
-        result = 31 * result + pid;
-        result = 31 * result + (host != null ? host.hashCode() : 0);
-        result = 31 * result + (purpose != null ? purpose.hashCode() : 0);
-        result = 31 * result + port;
-        result = 31 * result + (version != null ? version.hashCode() : 0);
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (idc != null ? idc.hashCode() : 0);
-        result = 31 * result + (env != null ? env.hashCode() : 0);
-        result = 31 * result + unack;
-        return result;
+        return(((((((((((result * 31 + (group != null ? group.hashCode() : 0))
+            * 31 + (path != null ? path.hashCode() : 0))
+            * 31 + pid)
+            * 31 + (host != null ? host.hashCode() : 0))
+            * 31 + (purpose != null ? purpose.hashCode() : 0))
+            * 31 + port)
+            * 31 + (version != null ? version.hashCode() : 0))
+            * 31 + (username != null ? username.hashCode() : 0))
+            * 31 + (password != null ? password.hashCode() : 0))
+            * 31 + (idc != null ? idc.hashCode() : 0))
+            * 31 + (env != null ? env.hashCode() : 0))
+            * 31 + unack;
     }
 }
