@@ -26,6 +26,11 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
+import org.apache.commons.io.file.Counters;
+import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.io.file.StandardDeleteOption;
+
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,6 +44,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 public class IOTinyUtilsTest {
 
@@ -88,9 +95,14 @@ public class IOTinyUtilsTest {
 
     @Test
     public void testCleanDirectory() throws IOException {
+        MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class);
+        filesMockedStatic.when(() -> Files.isDirectory(any(), any())).thenReturn(true);
+
+
         // file is not exist
         File dirFile1 = mock(File.class);
         when(dirFile1.exists()).thenReturn(false);
+        when(dirFile1.getName()).thenReturn("file1");
         Assert.assertThrows(IllegalArgumentException.class, () -> IOTinyUtils.cleanDirectory(dirFile1));
 
         // file is not a directory
@@ -98,6 +110,7 @@ public class IOTinyUtilsTest {
         when(dirFile2.exists()).thenReturn(true);
         when(dirFile2.isDirectory()).thenReturn(false);
         when(dirFile2.delete()).thenReturn(true);
+        when(dirFile2.getName()).thenReturn("file2");
         Assert.assertThrows(IllegalArgumentException.class, () -> IOTinyUtils.cleanDirectory(dirFile2));
 
         // directory is empty
@@ -105,6 +118,7 @@ public class IOTinyUtilsTest {
         when(dirFile3.exists()).thenReturn(true);
         when(dirFile3.isDirectory()).thenReturn(true);
         when(dirFile3.listFiles()).thenReturn(null);
+        when(dirFile3.getName()).thenReturn("files3");
         Assert.assertThrows(IOException.class, () -> IOTinyUtils.cleanDirectory(dirFile3));
 
         // clean directory failed
@@ -113,14 +127,38 @@ public class IOTinyUtilsTest {
         when(dirFile4.exists()).thenReturn(true);
         when(dirFile4.isDirectory()).thenReturn(true);
         when(dirFile4.listFiles()).thenReturn(files4);
+        when(dirFile4.getName()).thenReturn("files4");
         Assert.assertThrows(IOException.class, () -> IOTinyUtils.cleanDirectory(dirFile4));
 
         // successfully clean directory
         File dirFile5 = mock(File.class);
-        File[] files5 = {dirFile2, null};
+        File[] files5 = {dirFile2};
         when(dirFile5.exists()).thenReturn(true);
         when(dirFile5.isDirectory()).thenReturn(true);
         when(dirFile5.listFiles()).thenReturn(files5);
+        when(dirFile5.getName()).thenReturn("files5");
+
+        MockedStatic<PathUtils> pathUtilsMockedStatic = Mockito.mockStatic(PathUtils.class);
+        pathUtilsMockedStatic.when(() -> PathUtils.delete(any(), any(), any())).thenReturn(new Counters.PathCounters() {
+
+            @Override
+            public Counters.Counter getByteCounter() {
+                return null;
+            }
+
+            @Override
+            public Counters.Counter getDirectoryCounter() {
+                return null;
+            }
+
+            @Override
+            public Counters.Counter getFileCounter() {
+                Counters.Counter counter = Counters.longCounter();
+                counter.increment();
+                return counter;
+            }
+        });
+
         IOTinyUtils.cleanDirectory(dirFile5);
     }
 
