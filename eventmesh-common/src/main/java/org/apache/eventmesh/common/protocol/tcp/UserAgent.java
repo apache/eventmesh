@@ -135,6 +135,7 @@ public class UserAgent {
 
     @Override
     public int hashCode() {
+        int result = subsystem != null ? subsystem.hashCode() : 0;
         return(((((((((((result * 31 + (group != null ? group.hashCode() : 0))
             * 31 + (path != null ? path.hashCode() : 0))
             * 31 + pid)
