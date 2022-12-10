@@ -129,6 +129,7 @@ public class IOTinyUtilsTest {
         File file = mock(File.class);
         try (MockedConstruction<FileOutputStream> ignored = mockConstruction(FileOutputStream.class,
                 (mock, context) -> doNothing().when(mock).write(any()))) {
+
             IOTinyUtils.writeStringToFile(file, "data", "utf-8");
         } catch (IOException e) {
             Assert.fail(e.getMessage());
