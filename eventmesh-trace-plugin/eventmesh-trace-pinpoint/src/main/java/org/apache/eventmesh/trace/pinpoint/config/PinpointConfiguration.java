@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -86,7 +85,7 @@ public final class PinpointConfiguration {
         applicationName = properties.getProperty(APPLICATION_NAME_KEY);
         if (StringUtils.isBlank(applicationName)) {
             applicationName = Optional.ofNullable(System.getProperty(APPLICATION_NAME))
-                    .orElse(System.getenv(APPLICATION_NAME));
+                    .orElseGet(() -> System.getenv(APPLICATION_NAME));
         }
 
         requireNonNull(applicationName, String.format("%s can not be null", APPLICATION_NAME_KEY));
@@ -114,7 +113,8 @@ public final class PinpointConfiguration {
         URL resource = PinpointConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
         if (resource != null) {
             try (InputStream inputStream = resource.openStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                 BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 if (inputStream.available() > 0) {
                     properties.load(reader);
                 }
