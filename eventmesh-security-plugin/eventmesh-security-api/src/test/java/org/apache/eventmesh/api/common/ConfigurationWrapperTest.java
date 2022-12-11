@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.api.common;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 
@@ -29,7 +28,7 @@ public class ConfigurationWrapperTest {
     @Test
     public void testGetDefaultConfig() {
         try {
-            URL resource = Thread.currentThread().getContextClassLoader().getResource("1");
+            URL resource = Thread.currentThread().getContextClassLoader().getResource("testpath");
             String directoryPath = resource.getPath();
             System.setProperty("confPath", directoryPath);
             Properties p = ConfigurationWrapper.getConfig("test1.properties");
