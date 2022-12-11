@@ -41,7 +41,7 @@ import com.sun.net.httpserver.HttpExchange;
 @EventHttpHandler(path = "/clientManage/showClientBySystem")
 public class ShowClientBySystemHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -58,38 +58,33 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        StringBuffer result = new StringBuffer();
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            logger.info("showClientBySubsys,subsys:{}=================", subSystem);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("showClientBySubsys,subsys:{}", subSystem);
+            }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            if (!sessionMap.isEmpty()) {
+            if (sessionMap!=null && !sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
-                        result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
-                                .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
+                        result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
+                                        userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                                        userAgent.getPath(), userAgent.getPurpose()))
+                                .append(newLine);
                     }
                 }
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("ShowClientBySystemAndHandler fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            LOGGER.error("ShowClientBySystemAndHandler fail...", e);
         }
     }
 
