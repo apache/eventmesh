@@ -57,8 +57,8 @@ public class IPUtils {
 
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
-
-        ArrayList<String> preferList = new ArrayList<>(Arrays.asList(priority.split("<")));
+        List<String> list = Arrays.asList(priority.split("<"));
+        ArrayList<String> preferList = new ArrayList<>(list);
         NetworkInterface preferNetworkInterface = null;
 
         try {
