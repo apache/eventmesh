@@ -153,10 +153,15 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public String simpleDesc() {
-        return "httpCommand={" +
-            cmdType + "," +
-            httpMethod + "/" + httpVersion + "," +
-            "requestCode=" + requestCode + "}";
+        return "httpCommand={"
+            + cmdType
+            + ","
+            + httpMethod
+            + "/" + httpVersion
+            + ","
+            + "requestCode="
+            + requestCode
+            + "}";
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
