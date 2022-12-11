@@ -83,8 +83,6 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            LOGGER.error("ShowClientBySystemAndHandler fail...", e);
         }
     }
 
