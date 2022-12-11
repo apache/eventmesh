@@ -29,11 +29,9 @@ public class ConfigurationWrapperTest {
     @Test
     public void testGetDefaultConfig() {
         try {
-            URL resource = Thread.currentThread().getContextClassLoader().getResource("test.properties");
-            String filePath = resource.getPath();
-            File f = new File(filePath);
-            String path = f.getParent();
-            System.setProperty("confPath", path + File.separator + "1");
+            URL resource = Thread.currentThread().getContextClassLoader().getResource("1");
+            String directoryPath = resource.getPath();
+            System.setProperty("confPath", directoryPath);
             Properties p = ConfigurationWrapper.getConfig("test1.properties");
             String v = (String) p.get("a");
             Assert.assertEquals(v, "2");
