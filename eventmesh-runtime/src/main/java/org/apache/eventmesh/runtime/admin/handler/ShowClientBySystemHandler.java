@@ -70,7 +70,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            if (sessionMap!=null && !sessionMap.isEmpty()) {
+            if (sessionMap != null && !sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
