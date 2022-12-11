@@ -52,9 +52,9 @@ public class HeartbeatRequestBody extends Body {
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         body.setHeartbeatEntities(JsonUtils
-            .deserialize(MapUtils.getString(bodyParam, HEARTBEATENTITIES),
-                new TypeReference<>() {
-                }));
+                .deserialize(MapUtils.getString(bodyParam, HEARTBEATENTITIES),
+                        new TypeReference<List<HeartbeatEntity>>() {
+                        }));
         return body;
     }
 
