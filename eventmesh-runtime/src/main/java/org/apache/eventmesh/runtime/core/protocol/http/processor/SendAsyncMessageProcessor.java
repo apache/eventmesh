@@ -253,7 +253,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         try {
             event = CloudEventBuilder.from(event)
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
-                .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, asyncContext.getRequest().reqTime)
+                .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, asyncContext.getRequest().getReqTime())
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
                 .build();

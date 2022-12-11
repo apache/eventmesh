@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,21 +50,21 @@ public class HttpCommand implements ProtocolTransportObject {
 
     private String requestCode;
 
-    public String httpMethod;
+    private String httpMethod;
 
-    public String httpVersion;
+    private String httpVersion;
 
-    public Header header;
+    private Header header;
 
-    public Body body;
+    private Body body;
 
     //Command request time
-    public long reqTime;
+    private long reqTime;
 
     //Command response time
-    public long resTime;
+    private long resTime;
 
-    public CmdType cmdType = CmdType.REQ;
+    private CmdType cmdType = CmdType.REQ;
 
     public HttpCommand() {
         this(null, null, null);
@@ -92,6 +93,8 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public HttpCommand createHttpCommandResponse(EventMeshRetCode eventMeshRetCode) {
+        Objects.requireNonNull(eventMeshRetCode, "eventMeshRetCode must not be null.");
+
         if (StringUtils.isBlank(requestCode)) {
             return null;
         }
@@ -234,8 +237,11 @@ public class HttpCommand implements ProtocolTransportObject {
         if (cmdType == CmdType.REQ) {
             return null;
         }
+
+        String serializeStr = JsonUtils.serialize(this.getBody());
+        Objects.requireNonNull(serializeStr, "serialize string must not be null");
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(JsonUtils.serialize(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
+                Unpooled.wrappedBuffer(serializeStr.getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
