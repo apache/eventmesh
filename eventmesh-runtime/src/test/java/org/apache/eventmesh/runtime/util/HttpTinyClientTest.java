@@ -20,8 +20,9 @@ package org.apache.eventmesh.runtime.util;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.eventmesh.runtime.util.HttpTinyClient.HttpResult;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
