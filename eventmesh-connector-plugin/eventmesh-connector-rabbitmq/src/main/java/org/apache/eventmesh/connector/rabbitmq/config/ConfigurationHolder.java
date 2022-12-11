@@ -17,9 +17,8 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.utils.AssertUtils;
 
-import com.google.common.base.Preconditions;
 import com.rabbitmq.client.BuiltinExchangeType;
 
 import lombok.Data;
@@ -39,41 +38,28 @@ public class ConfigurationHolder {
     public boolean autoAck;
 
     public void init() {
-        String host = ConfigurationWrapper.getProperty(ConfigKey.HOST);
-        Preconditions.checkState(StringUtils.isNotEmpty(host), String.format("%s error", ConfigKey.HOST));
-        this.host = host;
-
-        String port = ConfigurationWrapper.getProperty(ConfigKey.PORT);
-        Preconditions.checkState(StringUtils.isNotEmpty(port), String.format("%s error", ConfigKey.PORT));
-        this.port = Integer.parseInt(port);
-
-        String username = ConfigurationWrapper.getProperty(ConfigKey.USER_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(username), String.format("%s error", ConfigKey.USER_NAME));
-        this.username = username;
-
-        String passwd = ConfigurationWrapper.getProperty(ConfigKey.PASSWD);
-        Preconditions.checkState(StringUtils.isNotEmpty(passwd), String.format("%s error", ConfigKey.PASSWD));
-        this.passwd = passwd;
-
+        this.host = getProperty(ConfigKey.HOST);
+        this.port = Integer.parseInt(getProperty(ConfigKey.PORT));
+        this.username = getProperty(ConfigKey.USER_NAME);
+        this.passwd = getProperty(ConfigKey.PASSWD);
         this.virtualHost = ConfigurationWrapper.getProperty(ConfigKey.VIRTUAL_HOST);
+        this.exchangeType = BuiltinExchangeType.valueOf(getProperty(ConfigKey.EXCHANGE_TYPE));
+        this.exchangeName = getProperty(ConfigKey.EXCHANGE_NAME);
+        this.routingKey = getProperty(ConfigKey.ROUTING_KEY);
+        this.queueName = getProperty(ConfigKey.QUEUE_NAME);
+        this.autoAck = Boolean.parseBoolean(getProperty(ConfigKey.AUTO_ACK));
+    }
 
-        String exchangeType = ConfigurationWrapper.getProperty(ConfigKey.EXCHANGE_TYPE);
-        Preconditions.checkState(StringUtils.isNotEmpty(exchangeType), String.format("%s error", ConfigKey.EXCHANGE_TYPE));
-        this.exchangeType = BuiltinExchangeType.valueOf(exchangeType);
+    /**
+     * get property
+     *
+     * @param configKey config key
+     * @return property
+     */
+    private String getProperty(String configKey) {
+        String property = ConfigurationWrapper.getProperty(configKey);
+        AssertUtils.notBlack(property, String.format("%s error", configKey));
+        return property;
 
-        String exchangeName = ConfigurationWrapper.getProperty(ConfigKey.EXCHANGE_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(host), String.format("%s error", ConfigKey.EXCHANGE_NAME));
-        this.exchangeName = exchangeName;
-
-        String routingKey = ConfigurationWrapper.getProperty(ConfigKey.ROUTING_KEY);
-        Preconditions.checkState(StringUtils.isNotEmpty(routingKey), String.format("%s error", ConfigKey.ROUTING_KEY));
-        this.routingKey = routingKey;
-
-        String queueName = ConfigurationWrapper.getProperty(ConfigKey.QUEUE_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(queueName), String.format("%s error", ConfigKey.QUEUE_NAME));
-        this.queueName = queueName;
-
-        String autoAck = ConfigurationWrapper.getProperty(ConfigKey.AUTO_ACK);
-        this.autoAck = StringUtils.isNotEmpty(autoAck) && Boolean.parseBoolean(autoAck);
     }
 }
