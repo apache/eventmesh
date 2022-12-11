@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WebhookUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebhookUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookUtil.class);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
@@ -49,7 +50,7 @@ public class WebhookUtil {
     private static final Map<String, AuthService> authServices = new ConcurrentHashMap<>();
 
     public static boolean obtainDeliveryAgreement(CloseableHttpClient httpClient, String targetUrl, String requestOrigin) {
-        logger.info("obtain webhook delivery agreement for url: {}", targetUrl);
+        LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
         HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
@@ -58,8 +59,8 @@ public class WebhookUtil {
             return StringUtils.isEmpty(allowedOrigin)
                     || allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
-            logger.warn("HTTP Options Method is not supported at the Delivery Target: {},"
-                    + " unable to obtain the webhook delivery agreement.", targetUrl);
+            LOGGER.error(String.format("HTTP Options Method is not supported at the Delivery Target: %s,"
+                    + " unable to obtain the webhook delivery agreement.", targetUrl), e);
         }
         return true;
     }
@@ -94,16 +95,13 @@ public class WebhookUtil {
 
         AuthService authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
 
-        if (authService == null) {
-            logger.error("can't load the authService plugin, please check.");
-            throw new RuntimeException("doesn't load the authService plugin, please check.");
-        }
+        Validate.notNull(authService, "can't load the authService plugin, please check.");
         try {
             authService.init();
             authServices.put(pluginType, authService);
             return authService;
         } catch (Exception e) {
-            logger.error("Error in initializing authService", e);
+            LOGGER.error("Error in initializing authService", e);
         }
         return null;
     }
