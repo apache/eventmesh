@@ -31,36 +31,31 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 
-import com.google.common.base.Preconditions;
-
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * RRCallbackResponseHandlerAdapter.
  */
-@Slf4j
 public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements ResponseHandler<String> {
 
-    private final long createTime;
+    private final transient long createTime;
 
-    private final ProtocolMessage protocolMessage;
+    private final transient ProtocolMessage protocolMessage;
 
-    private final RRCallback<ProtocolMessage> rrCallback;
+    private final transient RRCallback<ProtocolMessage> rrCallback;
 
-    private final long timeout;
+    private final transient long timeout;
 
     public RRCallbackResponseHandlerAdapter(ProtocolMessage protocolMessage, RRCallback<ProtocolMessage> rrCallback,
                                             long timeout) {
-        Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
-        Preconditions.checkNotNull(protocolMessage, "message invalid");
+        Objects.requireNonNull(rrCallback, "rrCallback invalid");
+        Objects.requireNonNull(protocolMessage, "message invalid");
         if (!(protocolMessage instanceof EventMeshMessage)
-            && !(protocolMessage instanceof CloudEvent)
-            && !(protocolMessage instanceof Message)) {
+                && !(protocolMessage instanceof CloudEvent)
+                && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
         this.protocolMessage = protocolMessage;
@@ -71,6 +66,8 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
 
     @Override
     public String handleResponse(HttpResponse response) throws IOException {
+        Objects.requireNonNull(response, "HttpResponse must not be null");
+
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             rrCallback.onException(new EventMeshException(response.toString()));
             return response.toString();
@@ -84,6 +81,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
 
         String res = EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
         EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
+        Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
             return res;
@@ -98,13 +96,17 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
 
     @SuppressWarnings("unchecked")
     private ProtocolMessage transformToProtocolMessage(EventMeshRetObj ret) {
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+        Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
+
+        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
+                SendMessageResponseBody.ReplyMessage.class);
+        Objects.requireNonNull(replyMessage, "ReplyMessage must not be null");
         if (protocolMessage instanceof EventMeshMessage) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .content(replyMessage.body)
-                .prop(replyMessage.properties)
-                .topic(replyMessage.topic)
-                .build();
+                    .content(replyMessage.body)
+                    .prop(replyMessage.properties)
+                    .topic(replyMessage.topic)
+                    .build();
             return (ProtocolMessage) eventMeshMessage;
         }
         // todo: constructor other protocol message
