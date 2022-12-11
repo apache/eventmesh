@@ -28,6 +28,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -56,23 +57,18 @@ public class IPUtils {
 
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
-
-        ArrayList<String> preferList = new ArrayList<String>();
-        for (String eth : priority.split("<")) {
-            preferList.add(eth);
-        }
+        List<String> list = Arrays.asList(priority.split("<"));
+        ArrayList<String> preferList = new ArrayList<>(list);
         NetworkInterface preferNetworkInterface = null;
 
         try {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
-                    continue;
-                } else if (preferNetworkInterface == null) {
+                if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
                 } else if (preferList.indexOf(networkInterface.getName()) //get the networkInterface that has higher priority
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
+                    > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -121,14 +117,14 @@ public class IPUtils {
 
         // Regex for digit from 0 to 255.
         String zeroTo255
-                = "(\\d{1,2}|(0|1)\\"
-                + "d{2}|2[0-4]\\d|25[0-5])";
+            = "(\\d{1,2}|(0|1)\\"
+            + "d{2}|2[0-4]\\d|25[0-5])";
 
         String regex
-                = zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255;
+            = zeroTo255 + "\\."
+            + zeroTo255 + "\\."
+            + zeroTo255 + "\\."
+            + zeroTo255;
 
         // Compile the ReGex
         Pattern p = Pattern.compile(regex);

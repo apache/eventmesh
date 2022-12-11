@@ -459,8 +459,7 @@ private static final long serialVersionUID = 0L;
   @Override
   protected Builder newBuilderForType(
       BuilderParent parent) {
-    Builder builder = new Builder(parent);
-    return builder;
+    return new Builder(parent);
   }
   /**
    * Protobuf type {@code eventmesh.workflow.api.protocol.ExecuteRequest}

@@ -54,13 +54,12 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(WebhookProtocolTransportObject protocol) throws ProtocolHandleException {
-        List<CloudEvent> cloudEventList = new ArrayList<CloudEvent>();
-        return cloudEventList;
+    public List<CloudEvent> toBatchCloudEvent(WebhookProtocolTransportObject protocol) {
+        return new ArrayList<>();
     }
 
     @Override
-    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) {
         final HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
         Map<String, Object> sysHeaderMap = new HashMap<>();
         // ce attributes
