@@ -127,18 +127,29 @@ public class NacosRegistryService implements RegistryService {
             }
             String eventMeshName = configuration.getEventMeshName();
             try {
+                // try to get instances from local cache
                 List<Instance> instances =
+                    namingService.selectInstances(eventMeshName + "-" + key,
+                        key + "-" + NacosConstant.GROUP,
+                        Collections.singletonList(clusterName),
+                        true);
+                // local cache is not fresh right now, try to get from server
+                if (CollectionUtils.isEmpty(instances)) {
+                    instances =
                         namingService.selectInstances(eventMeshName + "-" + key,
-                                configuration.getEventMeshCluster(), Collections.singletonList(clusterName),
-                                true);
+                            key + "-" + NacosConstant.GROUP,
+                            Collections.singletonList(clusterName),
+                            true,
+                            false);
+                }
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
                 }
                 for (Instance instance : instances) {
                     EventMeshDataInfo eventMeshDataInfo =
-                            new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
-                                    instance.getIp() + ":"
-                                            + instance.getPort(), 0L, instance.getMetadata());
+                        new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
+                            instance.getIp() + ":"
+                                + instance.getPort(), 0L, instance.getMetadata());
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
@@ -160,18 +171,29 @@ public class NacosRegistryService implements RegistryService {
             }
             String eventMeshName = configuration.getEventMeshName();
             try {
+                // try to get instances from local cache
                 List<Instance> instances =
-                        namingService.selectInstances(eventMeshName + "-"
-                                        + key, key + "-" + NacosConstant.GROUP, null,
-                                true);
+                    namingService.selectInstances(eventMeshName + "-" + key,
+                        key + "-" + NacosConstant.GROUP,
+                        null,
+                        true);
+                // local cache is not fresh right now, try to get from server
+                if (CollectionUtils.isEmpty(instances)) {
+                    instances =
+                        namingService.selectInstances(eventMeshName + "-" + key,
+                            key + "-" + NacosConstant.GROUP,
+                            null,
+                            true,
+                            false);
+                }
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
                 }
                 for (Instance instance : instances) {
                     EventMeshDataInfo eventMeshDataInfo =
-                            new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
-                                    instance.getIp() + ":"
-                                            + instance.getPort(), 0L, instance.getMetadata());
+                        new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
+                            instance.getIp() + ":"
+                                + instance.getPort(), 0L, instance.getMetadata());
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
@@ -187,7 +209,7 @@ public class NacosRegistryService implements RegistryService {
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName,
                                                                                  String group,
                                                                                  String purpose)
-            throws RegistryException {
+        throws RegistryException {
         // todo find metadata
         return null;
     }
@@ -216,7 +238,8 @@ public class NacosRegistryService implements RegistryService {
             instance.setMetadata(metadata);
 
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
-            namingService.registerInstance(eventMeshName, eventMeshRegisterInfo.getProtocolType() + "-"
+            namingService.registerInstance(eventMeshName + "-" + eventMeshRegisterInfo.getProtocolType(),
+                eventMeshRegisterInfo.getProtocolType() + "-"
                     + NacosConstant.GROUP, instance);
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (NacosException e) {
@@ -238,7 +261,7 @@ public class NacosRegistryService implements RegistryService {
             String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
             instance.setClusterName(eventMeshClusterName);
             namingService.deregisterInstance(eventMeshName, eventMeshUnRegisterInfo.getProtocolType()
-                    + "-" + NacosConstant.GROUP, instance);
+                + "-" + NacosConstant.GROUP, instance);
         } catch (NacosException e) {
             logger.error("[NacosRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());
