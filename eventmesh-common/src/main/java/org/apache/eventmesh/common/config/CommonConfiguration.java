@@ -31,12 +31,14 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Data;
+
+@Data
 public class CommonConfiguration {
     private transient String eventMeshEnv = "P";
     private transient String eventMeshIDC = "FT";
     private transient String eventMeshCluster = "LS";
-
-
+    
     private transient String eventMeshName = "";
     private transient List<String> eventMeshProvideServerProtocols;
     private transient String sysID = "5477";
@@ -53,106 +55,9 @@ public class CommonConfiguration {
     private transient Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
     private transient String eventMeshServerIp = null;
     private transient boolean eventMeshServerSecurityEnable = false;
-
-
+    
     private transient boolean eventMeshServerRegistryEnable = false;
-
-    public void setEventMeshServerRegistryEnable(boolean eventMeshServerRegistryEnable) {
-        this.eventMeshServerRegistryEnable = eventMeshServerRegistryEnable;
-    }
-
-    public void setEventMeshName(String eventMeshName) {
-        this.eventMeshName = eventMeshName;
-    }
-
-    public String getEventMeshEnv() {
-        return eventMeshEnv;
-    }
-
-    public String getEventMeshIDC() {
-        return eventMeshIDC;
-    }
-
-    public String getEventMeshCluster() {
-        return eventMeshCluster;
-    }
-
-    public String getEventMeshName() {
-        return eventMeshName;
-    }
-
-    public List<String> getEventMeshProvideServerProtocols() {
-        return eventMeshProvideServerProtocols;
-    }
-
-    public String getSysID() {
-        return sysID;
-    }
-
-    public String getEventMeshConnectorPluginType() {
-        return eventMeshConnectorPluginType;
-    }
-
-    public String getEventMeshSecurityPluginType() {
-        return eventMeshSecurityPluginType;
-    }
-
-    public String getEventMeshRegistryPluginType() {
-        return eventMeshRegistryPluginType;
-    }
-
-    public List<String> getEventMeshMetricsPluginType() {
-        return eventMeshMetricsPluginType;
-    }
-
-    public String getEventMeshTracePluginType() {
-        return eventMeshTracePluginType;
-    }
-
-    public String getNamesrvAddr() {
-        return namesrvAddr;
-    }
-
-    public String getEventMeshRegistryPluginUsername() {
-        return eventMeshRegistryPluginUsername;
-    }
-
-    public String getEventMeshRegistryPluginPassword() {
-        return eventMeshRegistryPluginPassword;
-    }
-
-    public Integer getEventMeshRegisterIntervalInMills() {
-        return eventMeshRegisterIntervalInMills;
-    }
-
-    public Integer getEventMeshFetchRegistryAddrInterval() {
-        return eventMeshFetchRegistryAddrInterval;
-    }
-
-    public String getEventMeshServerIp() {
-        return eventMeshServerIp;
-    }
-
-    public boolean isEventMeshServerSecurityEnable() {
-        return eventMeshServerSecurityEnable;
-    }
-
-    public boolean isEventMeshServerRegistryEnable() {
-        return eventMeshServerRegistryEnable;
-    }
-
-    public boolean isEventMeshServerTraceEnable() {
-        return eventMeshServerTraceEnable;
-    }
-
-    public ConfigurationWrapper getConfigurationWrapper() {
-        return configurationWrapper;
-    }
-
-    public String getEventMeshWebhookOrigin() {
-        return eventMeshWebhookOrigin;
-    }
-
+    
     private transient boolean eventMeshServerTraceEnable = false;
 
     protected transient ConfigurationWrapper configurationWrapper;
@@ -162,18 +67,7 @@ public class CommonConfiguration {
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }
-
-    public void setNamesrvAddr(String namesrvAddr) {
-        this.namesrvAddr = namesrvAddr;
-    }
-
-    public void setEventMeshRegistryPluginUsername(String eventMeshRegistryPluginUsername) {
-        this.eventMeshRegistryPluginUsername = eventMeshRegistryPluginUsername;
-    }
-
-    public void setEventMeshRegistryPluginPassword(String eventMeshRegistryPluginPassword) {
-        this.eventMeshRegistryPluginPassword = eventMeshRegistryPluginPassword;
-    }
+    
 
     public void init() {
 
