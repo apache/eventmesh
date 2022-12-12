@@ -28,6 +28,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConfigurationWrapper {
 
     private static final String CONF_FILE = "rabbitmq-client.properties";
@@ -50,12 +53,14 @@ public class ConfigurationWrapper {
                 PROPERTIES.load(resourceAsStream);
             }
         } catch (IOException e) {
+            log.error("load file from classpath exception:", e);
             throw new RuntimeException(String.format("Load %s file from classpath error", CONF_FILE));
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
             PropertiesUtils.loadPropertiesWhenFileExist(PROPERTIES, configPath, StandardCharsets.UTF_8);
         } catch (IOException e) {
+            log.error("load file from conf exception:", e);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
     }
