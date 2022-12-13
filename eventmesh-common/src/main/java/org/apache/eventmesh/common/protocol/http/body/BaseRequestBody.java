@@ -28,7 +28,6 @@ public class BaseRequestBody extends Body {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        return map;
+        return new HashMap<String, Object>();
     }
 }
