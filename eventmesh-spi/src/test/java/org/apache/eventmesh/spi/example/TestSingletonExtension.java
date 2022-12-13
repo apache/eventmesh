@@ -23,7 +23,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 /**
  * TestSingletonExtension
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.UNKNOWN)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.UNKNOWN)
 public interface TestSingletonExtension {
 
     void hello();

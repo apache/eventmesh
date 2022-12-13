@@ -41,7 +41,7 @@ public class AsyncPubClient {
         pubClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                logger.error("receive msg-----------------------------" + msg.toString());
+                logger.error("server good by request: {}", msg);
             }
         });
 

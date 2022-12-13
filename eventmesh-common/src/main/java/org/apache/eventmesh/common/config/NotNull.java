@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.rocketmq;
+package org.apache.eventmesh.common.config;
 
-public enum HttpMethod {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD})
+public @interface NotNull {
 
 }

@@ -30,6 +30,7 @@ import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -105,7 +106,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
-        Boolean result = false;
+        boolean result = false;
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) == null) {
                 logger.error("updateWebHookConfig failed, config is not existed");
@@ -121,7 +122,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
-        Boolean result = false;
+        boolean result = false;
         String manufacturerName = webHookConfig.getManufacturerName();
         try {
             result = configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
@@ -184,7 +185,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
         try {
             // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
-            return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
+            return URLEncoder.encode(webHookConfig.getCallbackPath(), StandardCharsets.UTF_8.name()) + DATA_ID_EXTENSION;
         } catch (UnsupportedEncodingException e) {
             logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
         }
