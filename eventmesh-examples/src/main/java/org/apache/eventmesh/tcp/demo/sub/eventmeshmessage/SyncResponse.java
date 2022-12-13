@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static SyncResponse handler = new SyncResponse();
+    public static final SyncResponse handler = new SyncResponse();
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 
