@@ -46,6 +46,7 @@ dependencies {
     implementation "javax.annotation:javax.annotation-api:1.3.2"
 
     implementation "com.github.stefanbirkner:system-rules"
+    implementation "org.yaml:snakeyaml"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
