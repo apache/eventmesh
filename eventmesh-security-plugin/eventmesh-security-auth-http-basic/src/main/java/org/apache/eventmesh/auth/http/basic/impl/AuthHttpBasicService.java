@@ -24,6 +24,8 @@ import org.apache.eventmesh.common.config.Config;
 
 import org.apache.commons.lang3.Validate;
 
+import org.apache.commons.lang3.Validate;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -54,10 +56,20 @@ public class AuthHttpBasicService implements AuthService {
 
     @Override
     public Map<String, String> getAuthParams() throws AuthException {
+<<<<<<< HEAD
         String password = authConfigs.getPassword();
         String username = authConfigs.getUsername();
         String token = Base64.getEncoder()
                 .encodeToString((username + password).getBytes(StandardCharsets.UTF_8));
+=======
+        if (authConfigs == null) {
+            init();
+        }
+
+        Validate.notNull(authConfigs);
+        String token = Base64.getEncoder().encodeToString((authConfigs.getUsername() + authConfigs.getPassword())
+                .getBytes(StandardCharsets.UTF_8));
+>>>>>>> fb02d481 ([ISSUE #858] Add test code for this module [eventmesh-security-plugin] (#2502))
 
         Map<String, String> authParams = new HashMap<>(2);
         authParams.put("Authorization", "Basic " + token);
