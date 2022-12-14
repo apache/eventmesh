@@ -47,7 +47,7 @@ public class GrpcMessageProtocolResolver {
         CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
 
         RequestHeader header = message.getHeader();
-        
+
         String seqNum = getMessageItemValue(message.getSeqNum(), event, ProtocolKey.SEQ_NUM);
         String uniqueId = getMessageItemValue(message.getUniqueId(), event, ProtocolKey.UNIQUE_ID);
         String ttl = getMessageItemValue(message.getTtl(), event, ProtocolKey.TTL);
@@ -181,8 +181,8 @@ public class GrpcMessageProtocolResolver {
         String username = getHeaderValue(header.getUsername(), event, ProtocolKey.USERNAME);
         String passwd = getHeaderValue(header.getPassword(), event, ProtocolKey.PASSWD);
 
-        CloudEventBuilder eventBuilder = StringUtils.equals(SpecVersion.V1.toString(), protocolVersion) ?
-            CloudEventBuilder.v1(event) : CloudEventBuilder.v03(event);
+        CloudEventBuilder eventBuilder = StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
+            ? CloudEventBuilder.v1(event) : CloudEventBuilder.v03(event);
 
         return eventBuilder
             .withExtension(ProtocolKey.ENV, env)
