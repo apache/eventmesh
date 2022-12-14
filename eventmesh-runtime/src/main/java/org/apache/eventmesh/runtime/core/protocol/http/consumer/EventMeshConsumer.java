@@ -30,7 +30,6 @@ import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -115,8 +114,8 @@ public class EventMeshConsumer {
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
                 try {
                     String topic = event.getSubject();
-                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
-                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
+                    String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO)).toString();
+                    String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID)).toString();
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
