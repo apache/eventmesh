@@ -15,10 +15,32 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    implementation "org.apache.commons:commons-lang3"
+package org.apache.eventmesh.api.exception;
 
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    testImplementation "org.apache.commons:commons-lang3"
+import org.junit.Assert;
+import org.junit.Test;
+
+public class AclExceptionTest {
+
+    @Test
+    public void testConstructWithMsg() {
+        try {
+            new AclException("test");
+
+            new AclException(null);
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testConstructWithMsgAndExption() {
+        try {
+            new AclException("test", new Exception("test1"));
+
+            new AclException(null, null);
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
 }
