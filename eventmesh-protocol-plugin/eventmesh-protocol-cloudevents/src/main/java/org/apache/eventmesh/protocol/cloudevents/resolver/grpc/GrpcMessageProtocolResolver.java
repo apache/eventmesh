@@ -152,7 +152,7 @@ public class GrpcMessageProtocolResolver {
 
             String env = StringUtils.isEmpty(header.getEnv()) ? getEventExtension(event, ProtocolKey.ENV) : header.getEnv();
             String idc = StringUtils.isEmpty(header.getIdc()) ? getEventExtension(event, ProtocolKey.IDC) : header.getIdc();
-            String ip = StringUtils.isEmpty(header.getIp()) ? getEventExtension(event, ProtocolKey.IP): header.getIp();
+            String ip = StringUtils.isEmpty(header.getIp()) ? getEventExtension(event, ProtocolKey.IP) : header.getIp();
             String pid = StringUtils.isEmpty(header.getPid()) ? getEventExtension(event, ProtocolKey.PID) : header.getPid();
             String sys = StringUtils.isEmpty(header.getSys()) ? getEventExtension(event, ProtocolKey.SYS) : header.getSys();
 
