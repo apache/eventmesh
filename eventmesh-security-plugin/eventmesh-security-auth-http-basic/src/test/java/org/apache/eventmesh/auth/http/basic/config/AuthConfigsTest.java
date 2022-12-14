@@ -15,10 +15,19 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    implementation "org.apache.commons:commons-lang3"
+package org.apache.eventmesh.auth.http.basic.config;
 
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    testImplementation "org.apache.commons:commons-lang3"
+import org.junit.Assert;
+import org.junit.Test;
+
+public class AuthConfigsTest {
+
+    @Test
+    public void testGetConfigs() {
+        AuthConfigs configs = AuthConfigs.getConfigs();
+        String password = configs.getPassword();
+        String username = configs.getUsername();
+        Assert.assertEquals(password, "password");
+        Assert.assertEquals(username, "usera");
+    }
 }
