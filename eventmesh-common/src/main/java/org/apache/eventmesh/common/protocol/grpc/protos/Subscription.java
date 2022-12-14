@@ -589,8 +589,7 @@ private static final long serialVersionUID = 0L;
           .equals(other.getTopic());
       result = result && mode_ == other.mode_;
       result = result && type_ == other.type_;
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      return result && unknownFields.equals(other.unknownFields);
     }
 
     @Override
@@ -696,8 +695,7 @@ private static final long serialVersionUID = 0L;
     @Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
+      return new Builder(parent);
     }
     /**
      * Protobuf type {@code eventmesh.common.protocol.grpc.Subscription.SubscriptionItem}
@@ -1727,8 +1725,7 @@ private static final long serialVersionUID = 0L;
           .equals(other.getTag());
       result = result && internalGetProperties().equals(
           other.internalGetProperties());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      return result && unknownFields.equals(other.unknownFields);
     }
 
     @Override
@@ -1846,8 +1843,7 @@ private static final long serialVersionUID = 0L;
     @Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
+      return new Builder(parent);
     }
     /**
      * Protobuf type {@code eventmesh.common.protocol.grpc.Subscription.Reply}
@@ -2942,8 +2938,7 @@ private static final long serialVersionUID = 0L;
       result = result && getReply()
           .equals(other.getReply());
     }
-    result = result && unknownFields.equals(other.unknownFields);
-    return result;
+    return result && unknownFields.equals(other.unknownFields);
   }
 
   @Override
@@ -3059,8 +3054,7 @@ private static final long serialVersionUID = 0L;
   @Override
   protected Builder newBuilderForType(
       BuilderParent parent) {
-    Builder builder = new Builder(parent);
-    return builder;
+    return new Builder(parent);
   }
   /**
    * Protobuf type {@code eventmesh.common.protocol.grpc.Subscription}
