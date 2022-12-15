@@ -216,6 +216,10 @@ public class GrpcMessageProtocolResolver {
             .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion);
 
     }
+    
+    private static String getEventExtension(CloudEvent event, String protocolKey) {
+        return Objects.requireNonNull(event.getExtension(protocolKey)).toString();
+    }
 
     private static String getEventExtension(CloudEvent event, String protocolKey, String defaultValue) {
         Object extension = event.getExtension(protocolKey);
