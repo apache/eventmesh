@@ -33,35 +33,39 @@ import org.slf4j.LoggerFactory;
 
 public class HTTPMetricsServer {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger("httpMonitor");
 
-    private Logger httpLogger = LoggerFactory.getLogger("httpMonitor");
+    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPMetricsServer.class);
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
-    private List<MetricsRegistry> metricsRegistries;
+    private final transient List<MetricsRegistry> metricsRegistries;
 
-    private final HttpSummaryMetrics summaryMetrics;
+    private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(EventMeshHTTPServer eventMeshHTTPServer, List<MetricsRegistry> metricsRegistries) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
         this.summaryMetrics = new HttpSummaryMetrics(
-            eventMeshHTTPServer.batchMsgExecutor,
-            eventMeshHTTPServer.sendMsgExecutor,
-            eventMeshHTTPServer.pushMsgExecutor,
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+                eventMeshHTTPServer.batchMsgExecutor,
+                eventMeshHTTPServer.sendMsgExecutor,
+                eventMeshHTTPServer.pushMsgExecutor,
+                eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
     }
 
     public void init() throws Exception {
         metricsRegistries.forEach(MetricsRegistry::start);
-        logger.info("HTTPMetricsServer initialized......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer initialized......");
+        }
     }
 
     public void start() throws Exception {
         metricsRegistries.forEach(metricsRegistry -> {
             metricsRegistry.register(summaryMetrics);
-            logger.info("Register httpMetrics to " + metricsRegistry.getClass().getName());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Register httpMetrics to " + metricsRegistry.getClass().getName());
+            }
         });
         metricsSchedule.scheduleAtFixedRate(() -> {
             try {
@@ -70,7 +74,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.snapshotSendMsgTPS();
                 summaryMetrics.snapshotPushMsgTPS();
             } catch (Exception ex) {
-                logger.warn("eventMesh snapshot tps metrics err", ex);
+                LOGGER.warn("eventMesh snapshot tps metrics err", ex);
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
@@ -78,21 +82,25 @@ public class HTTPMetricsServer {
             try {
                 logPrintServerMetrics();
             } catch (Exception ex) {
-                logger.warn("eventMesh print metrics err", ex);
+                LOGGER.warn("eventMesh print metrics err", ex);
             }
         }, 1000, 30 * 1000, TimeUnit.MILLISECONDS);
-    
-        logger.info("HTTPMetricsServer started......");
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer started......");
+        }
     }
 
     public void shutdown() throws Exception {
         metricsSchedule.shutdown();
         metricsRegistries.forEach(MetricsRegistry::showdown);
-        logger.info("HTTPMetricsServer shutdown......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer shutdown......");
+        }
     }
 
     protected static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2, new ThreadFactory() {
-        private AtomicInteger seq = new AtomicInteger(0);
+        private final transient AtomicInteger seq = new AtomicInteger(0);
 
         @Override
         public Thread newThread(Runnable r) {
@@ -105,59 +113,75 @@ public class HTTPMetricsServer {
 
     // todo: move this into standalone metrics plugin
     private void logPrintServerMetrics() {
-        httpLogger.info("===========================================SERVER METRICS==================================================");
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info("===========================================SERVER METRICS==================================================");
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_HTTP,
-            summaryMetrics.maxHTTPTPS(),
-            summaryMetrics.avgHTTPTPS(),
-            summaryMetrics.maxHTTPCost(),
-            summaryMetrics.avgHTTPCost(),
-            summaryMetrics.avgHTTPBodyDecodeCost(),
-            summaryMetrics.getHttpDiscard()));
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_HTTP,
+                    summaryMetrics.maxHTTPTPS(),
+                    summaryMetrics.avgHTTPTPS(),
+                    summaryMetrics.maxHTTPCost(),
+                    summaryMetrics.avgHTTPCost(),
+                    summaryMetrics.avgHTTPBodyDecodeCost(),
+                    summaryMetrics.getHttpDiscard()));
+        }
+
         summaryMetrics.httpStatInfoClear();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG,
-            summaryMetrics.maxSendBatchMsgTPS(),
-            summaryMetrics.avgSendBatchMsgTPS(),
-            summaryMetrics.getSendBatchMsgNumSum(),
-            summaryMetrics.getSendBatchMsgFailNumSum(),
-            summaryMetrics.getSendBatchMsgFailRate(),
-            summaryMetrics.getSendBatchMsgDiscardNumSum()
-        ));
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG,
+                    summaryMetrics.maxSendBatchMsgTPS(),
+                    summaryMetrics.avgSendBatchMsgTPS(),
+                    summaryMetrics.getSendBatchMsgNumSum(),
+                    summaryMetrics.getSendBatchMsgFailNumSum(),
+                    summaryMetrics.getSendBatchMsgFailRate(),
+                    summaryMetrics.getSendBatchMsgDiscardNumSum()
+            ));
+        }
+
         summaryMetrics.cleanSendBatchStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_SENDMSG,
-            summaryMetrics.maxSendMsgTPS(),
-            summaryMetrics.avgSendMsgTPS(),
-            summaryMetrics.getSendMsgNumSum(),
-            summaryMetrics.getSendMsgFailNumSum(),
-            summaryMetrics.getSendMsgFailRate(),
-            summaryMetrics.getReplyMsgNumSum(),
-            summaryMetrics.getReplyMsgFailNumSum()
-        ));
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_SENDMSG,
+                    summaryMetrics.maxSendMsgTPS(),
+                    summaryMetrics.avgSendMsgTPS(),
+                    summaryMetrics.getSendMsgNumSum(),
+                    summaryMetrics.getSendMsgFailNumSum(),
+                    summaryMetrics.getSendMsgFailRate(),
+                    summaryMetrics.getReplyMsgNumSum(),
+                    summaryMetrics.getReplyMsgFailNumSum()
+            ));
+        }
+
         summaryMetrics.cleanSendMsgStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_PUSHMSG,
-            summaryMetrics.maxPushMsgTPS(),
-            summaryMetrics.avgPushMsgTPS(),
-            summaryMetrics.getHttpPushMsgNumSum(),
-            summaryMetrics.getHttpPushFailNumSum(),
-            summaryMetrics.getHttpPushMsgFailRate(),
-            summaryMetrics.maxHTTPPushLatency(),
-            summaryMetrics.avgHTTPPushLatency()
-        ));
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_PUSHMSG,
+                    summaryMetrics.maxPushMsgTPS(),
+                    summaryMetrics.avgPushMsgTPS(),
+                    summaryMetrics.getHttpPushMsgNumSum(),
+                    summaryMetrics.getHttpPushFailNumSum(),
+                    summaryMetrics.getHttpPushMsgFailRate(),
+                    summaryMetrics.maxHTTPPushLatency(),
+                    summaryMetrics.avgHTTPPushLatency()
+            ));
+        }
+
         summaryMetrics.cleanHttpPushMsgStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BLOCKQ,
-            eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getHttpRetryer().size()));
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BLOCKQ,
+                    eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getHttpRetryer().size()));
+        }
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_MQ_CLIENT,
-            summaryMetrics.avgBatchSendMsgCost(),
-            summaryMetrics.avgSendMsgCost(),
-            summaryMetrics.avgReplyMsgCost()));
+        if (HTTP_LOGGER.isInfoEnabled()) {
+            HTTP_LOGGER.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_MQ_CLIENT,
+                    summaryMetrics.avgBatchSendMsgCost(),
+                    summaryMetrics.avgSendMsgCost(),
+                    summaryMetrics.avgReplyMsgCost()));
+        }
         summaryMetrics.send2MQStatInfoClear();
     }
 
