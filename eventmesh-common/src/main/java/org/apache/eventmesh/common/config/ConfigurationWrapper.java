@@ -22,13 +22,15 @@ import org.apache.eventmesh.common.file.FileChangeListener;
 import org.apache.eventmesh.common.file.WatchFileManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -51,6 +53,7 @@ public class ConfigurationWrapper {
 
     private final transient boolean reload;
 
+
     private final transient FileChangeListener fileChangeListener = new FileChangeListener() {
         @Override
         public void onChanged(FileChangeContext changeContext) {
@@ -63,8 +66,12 @@ public class ConfigurationWrapper {
         }
     };
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
-        Preconditions.checkArgument(Strings.isNotEmpty(directoryPath), "please configure environment variable 'confPath'");
+        Objects.requireNonNull(directoryPath, "please configure environment variable 'confPath'");
+        Objects.requireNonNull(fileName, "please configure environment variable 'fileName'");
+
         this.directoryPath = directoryPath
                 .replace('/', File.separator.charAt(0))
                 .replace('\\', File.separator.charAt(0));
@@ -81,15 +88,22 @@ public class ConfigurationWrapper {
         if (this.reload) {
             WatchFileManager.registerFileChangeListener(directoryPath, fileChangeListener);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                LOG.info("Configuration reload task closed");
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Configuration reload task closed");
+                }
                 WatchFileManager.deregisterFileChangeListener(directoryPath);
             }));
         }
     }
 
     private void load() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            LOG.info("loading config: {}", file);
+        Objects.requireNonNull(file, "properties can not be null");
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
+                StandardCharsets.UTF_8))) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("loading config: {}", file);
+            }
             properties.load(reader);
         } catch (IOException e) {
             LOG.error("loading properties [{}] error", file, e);
@@ -101,16 +115,21 @@ public class ConfigurationWrapper {
     }
 
     public int getIntProp(String configKey, int defaultValue) {
+        Objects.requireNonNull(configKey, "configKey can not be null");
+
         String configValue = StringUtils.deleteWhitespace(getProp(configKey));
         if (StringUtils.isEmpty(configValue)) {
             return defaultValue;
         }
+
         Preconditions.checkState(StringUtils.isNumeric(configValue),
                 String.format("key:%s, value:%s error", configKey, configValue));
         return Integer.parseInt(configValue);
     }
 
     public boolean getBoolProp(String configKey, boolean defaultValue) {
+        Objects.requireNonNull(configKey, "configKey can not be null");
+
         String configValue = StringUtils.deleteWhitespace(getProp(configKey));
         if (StringUtils.isEmpty(configValue)) {
             return defaultValue;
@@ -119,11 +138,16 @@ public class ConfigurationWrapper {
     }
 
     private String removePrefix(String key, String prefix, boolean removePrefix) {
+        Objects.requireNonNull(key, "key can not be null");
+        Objects.requireNonNull(prefix, "prefix can not be null");
+
         String newPrefix = prefix.endsWith(".") ? prefix : prefix + ".";
         return removePrefix ? key.replace(newPrefix, "") : key;
     }
 
     public Properties getPropertiesByConfig(String prefix, boolean isRemovePrefix) {
+        Objects.requireNonNull(prefix, "prefix can not be null");
+
         Properties properties = new Properties();
         for (Entry<Object, Object> entry : this.properties.entrySet()) {
             String key = (String) entry.getKey();
@@ -136,7 +160,9 @@ public class ConfigurationWrapper {
 
     @SuppressWarnings("unchecked")
     public <T> T getPropertiesByConfig(String prefix, Class<?> clazz, boolean removePrefix) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        Objects.requireNonNull(prefix, "prefix can not be null");
+        Objects.requireNonNull(clazz, "clazz can not be null");
+
         return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
     }
 
