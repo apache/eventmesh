@@ -160,8 +160,8 @@ public class GrpcMessageProtocolResolver {
 
             String producerGroup = StringUtils.isEmpty(batchMessage.getProducerGroup())
                 ? getEventExtension(event, ProtocolKey.PRODUCERGROUP) : batchMessage.getProducerGroup();
+                
             String ttl = StringUtils.isEmpty(item.getTtl()) ? getEventExtension(event, ProtocolKey.TTL) : item.getTtl();
-                ? Objects.requireNonNull(event.getExtension(ProtocolKey.PRODUCERGROUP)).toString() : batchMessage.getProducerGroup();
 
             CloudEventBuilder eventBuilder = builderCloudEventBuilder(header, event);
 
