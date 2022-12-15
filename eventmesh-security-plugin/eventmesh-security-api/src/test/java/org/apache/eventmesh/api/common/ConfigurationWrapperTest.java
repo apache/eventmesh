@@ -15,34 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.api.common;
 
-import java.io.File;
+import java.net.URL;
+import java.util.Properties;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ConfigurationWrapperTest {
 
-    private ConfigurationWrapper wraper;
+    @Test
+    public void testGetDefaultConfig() {
+        try {
+            URL resource = Thread.currentThread().getContextClassLoader().getResource("testpath");
+            String directoryPath = resource.getPath();
+            System.setProperty("confPath", directoryPath);
+            Properties p = ConfigurationWrapper.getConfig("test1.properties");
+            String v = (String) p.get("a");
+            Assert.assertEquals(v, "2");
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
 
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
     }
 
     @Test
-    public void testGetProp() {
-        Assert.assertEquals("value1", wraper.getProp("eventMesh.server.env"));
-        Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
+    public void testGetSpecifiedConfig() {
+        try {
+            Properties p = ConfigurationWrapper.getConfig("test.properties");
+            String v = (String) p.get("a");
+            Assert.assertEquals(v, "1");
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
-
-    @Test(expected = NullPointerException.class)
-    public void construct() {
-        ConfigurationWrapper newWrapper = new ConfigurationWrapper(null, "eventmesh.properties", false);
-    }
-
 }
