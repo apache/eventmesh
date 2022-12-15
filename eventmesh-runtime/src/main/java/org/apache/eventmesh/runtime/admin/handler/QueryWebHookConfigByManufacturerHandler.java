@@ -51,6 +51,9 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
                                                    HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
+        Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");
+        Objects.requireNonNull(httpHandlerManager, "HttpHandlerManager can not be null");
+
     }
 
 
@@ -63,6 +66,8 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
 
         // get requestBody and resolve to WebHookConfig
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
+        Objects.requireNonNull(node, "JsonNode can not be null");
+
         WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
         Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
         Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
