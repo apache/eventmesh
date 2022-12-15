@@ -31,6 +31,7 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +43,12 @@ import com.sun.net.httpserver.HttpExchange;
 @EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
 public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final Logger LOGGER = LoggerFactory.getLogger(QueryWebHookConfigByManufacturerHandler.class);
 
-    private final WebHookConfigOperation operation;
+    private final transient WebHookConfigOperation operation;
 
-    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
+                                                   HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
     }
@@ -54,21 +56,22 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
+        Objects.requireNonNull(httpExchange, "httpExchange can not be null");
+
         NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
         // get requestBody and resolve to WebHookConfig
-        String requestBody = NetUtils.parsePostBody(httpExchange);
-        JsonNode node = JsonUtils.getJsonNode(requestBody);
+        JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
         WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
-        Integer pageNum = Integer.parseInt(node.get("pageNum").toString());
-        Integer pageSize = Integer.parseInt(node.get("pageSize").toString());
+        Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
+        Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
             out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("get WebHookConfigOperation implementation Failed.", e);
+            LOGGER.error("get WebHookConfigOperation implementation Failed.", e);
         }
     }
 }
