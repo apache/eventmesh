@@ -104,12 +104,9 @@ public class IPUtils {
             //If failed to find,fall back to localhost
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
-        } catch (SocketException e) {
-            LOG.error("socket exception", e);
-        } catch (UnknownHostException e) {
-            LOG.error("unknown host exception", e);
+        } catch (SocketException | UnknownHostException e) {
+            LOG.error("socket or unknown host exception:", e);
         }
-
         return null;
     }
 
