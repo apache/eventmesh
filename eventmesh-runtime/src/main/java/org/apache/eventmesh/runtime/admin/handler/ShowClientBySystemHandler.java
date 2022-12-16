@@ -58,7 +58,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
