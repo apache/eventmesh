@@ -62,7 +62,8 @@ import io.opentelemetry.context.Context;
 
 public class MessageTransferTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageTransferTask.class);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
@@ -78,7 +79,7 @@ public class MessageTransferTask extends AbstractTask {
 
         try {
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
-                    && !RESPONSE_TO_SERVER.equals(cmd)) {
+                    && RESPONSE_TO_SERVER != cmd) {
                 //attach the span to the server context
                 Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
@@ -88,7 +89,7 @@ public class MessageTransferTask extends AbstractTask {
                 ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
         } catch (Throwable ex) {
-            logger.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
+            LOGGER.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
         }
 
 
@@ -144,7 +145,7 @@ public class MessageTransferTask extends AbstractTask {
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control",
                         null);
 
-                logger.warn(
+                LOGGER.warn(
                         "======Tps overload, global flow control, rate:{}! PLEASE CHECK!========",
                         eventMeshTCPServer.getRateLimiter().getRate());
                 return;
@@ -161,7 +162,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(),
                         sendStatus.getSendStatus().name())) {
-                    messageLogger.info("pkg|eventMesh2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms",
+                    MESSAGE_LOGGER.info("pkg|eventMesh2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms",
                             cmd, event,
                             session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
@@ -169,7 +170,7 @@ public class MessageTransferTask extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            logger.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
+            LOGGER.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
                     session.getClient(),
                     e);
 
@@ -232,11 +233,11 @@ public class MessageTransferTask extends AbstractTask {
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
-                messageLogger.info("upstreamMsg message success|user={}|callback cost={}",
-                    session.getClient(),
-                    System.currentTimeMillis() - createTime);
+                MESSAGE_LOGGER.info("upstreamMsg message success|user={}|callback cost={}",
+                        session.getClient(),
+                        System.currentTimeMillis() - createTime);
                 if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK
-                    || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
+                        || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(
                             new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                                     pkg.getHeader().getSeq()));
@@ -262,7 +263,7 @@ public class MessageTransferTask extends AbstractTask {
                         .pushRetry(upStreamMsgContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
-                messageLogger
+                MESSAGE_LOGGER
                         .error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}",
                                 session.getClient(),
                                 (System.currentTimeMillis() - createTime),

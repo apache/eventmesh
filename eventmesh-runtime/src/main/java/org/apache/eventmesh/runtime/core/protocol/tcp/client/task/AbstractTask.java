@@ -28,8 +28,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 public abstract class AbstractTask implements Runnable {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     protected Package pkg;
     protected ChannelHandlerContext ctx;
     protected Session session;

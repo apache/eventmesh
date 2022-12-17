@@ -31,8 +31,12 @@ import org.apache.eventmesh.runtime.util.Utils;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HeartBeatTask extends AbstractTask {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatTask.class);
 
     public HeartBeatTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -55,7 +59,7 @@ public class HeartBeatTask extends AbstractTask {
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                     pkg.getHeader().getSeq()));
         } catch (Exception e) {
-            logger.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
+            LOGGER.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
                     + "heartbeating", pkg.getHeader().getSeq()));
         } finally {
