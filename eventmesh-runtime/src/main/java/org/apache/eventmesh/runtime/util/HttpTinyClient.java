@@ -112,13 +112,9 @@ public class HttpTinyClient {
             conn.getOutputStream().write(Objects.requireNonNull(encodedContent).getBytes(StandardCharsets.UTF_8));
 
             int respCode = conn.getResponseCode();
-            String resp = null;
+            String resp = HttpURLConnection.HTTP_OK == respCode ? IOUtils.toString(conn.getInputStream(), encoding)
+                    : IOUtils.toString(conn.getErrorStream(), encoding);
 
-            if (HttpURLConnection.HTTP_OK == respCode) {
-                resp = IOUtils.toString(conn.getInputStream(), encoding);
-            } else {
-                resp = IOUtils.toString(conn.getErrorStream(), encoding);
-            }
             return new HttpResult(respCode, resp);
         } finally {
             if (null != conn) {
