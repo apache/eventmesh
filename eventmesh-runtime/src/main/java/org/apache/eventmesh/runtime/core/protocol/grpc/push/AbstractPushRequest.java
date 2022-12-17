@@ -42,10 +42,12 @@ import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Sets;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public abstract class AbstractPushRequest extends RetryContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPushRequest.class);
 
     protected EventMeshGrpcServer eventMeshGrpcServer;
     protected long createTime = System.currentTimeMillis();
@@ -84,7 +86,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
             return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
-            log.error("Error in getting EventMeshMessage from CloudEvent", e);
+            LOGGER.error("Error in getting EventMeshMessage from CloudEvent", e);
             return null;
         }
     }
@@ -95,7 +97,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
             return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(simpleMessage));
         } catch (Exception e) {
-            log.error("Error in getting CloudEvent from EventMeshMessage", e);
+            LOGGER.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
         }
     }
@@ -128,7 +130,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             try {
                 eventMeshConsumer.updateOffset(subscriptionMode, Collections.singletonList(event), context);
             } catch (Exception e) {
-                log.error("Error in updating offset in EventMeshConsumer", e);
+                LOGGER.error("Error in updating offset in EventMeshConsumer", e);
             }
         }
     }
