@@ -28,6 +28,7 @@ import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.trace.Trace;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -64,34 +65,31 @@ public class EventMeshServer {
         for (String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
                 BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this,
-                        configurationWrapper, registry));
+                    configurationWrapper, registry));
             }
             if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
                 BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this,
-                        configurationWrapper, registry));
+                    configurationWrapper, registry));
             }
             if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
                 BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(configurationWrapper,
-                        registry));
+                    registry));
             }
         }
     }
 
     public void init() throws Exception {
-        if (configuration != null && configuration.isEventMeshServerSecurityEnable()) {
-            acl.init(configuration.getEventMeshSecurityPluginType());
-        }
-        // registry init
-        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
-            registry.init(configuration.getEventMeshRegistryPluginType());
-        }
-
-        if (configuration != null && configuration.isEventMeshServerTraceEnable()) {
-            trace.init(configuration.getEventMeshTracePluginType());
-        }
-
-        if (configuration != null) {
+        if (Objects.nonNull(configuration)) {
             connectorResource.init(configuration.getEventMeshConnectorPluginType());
+            if (configuration.isEventMeshServerSecurityEnable()) {
+                acl.init(configuration.getEventMeshSecurityPluginType());
+            }
+            if (configuration.isEventMeshServerRegistryEnable()) {
+                registry.init(configuration.getEventMeshRegistryPluginType());
+            }
+            if (configuration.isEventMeshServerTraceEnable()) {
+                trace.init(configuration.getEventMeshTracePluginType());
+            }
         }
 
         // server init
@@ -108,14 +106,15 @@ public class EventMeshServer {
     }
 
     public void start() throws Exception {
-        if (configuration != null && configuration.isEventMeshServerSecurityEnable()) {
-            acl.start();
+        if (Objects.nonNull(configuration)) {
+            if (configuration.isEventMeshServerSecurityEnable()) {
+                acl.start();
+            }
+            // registry start
+            if (configuration.isEventMeshServerRegistryEnable()) {
+                registry.start();
+            }
         }
-        // registry start
-        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
-            registry.start();
-        }
-
         // server start
         for (EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.start();
@@ -134,7 +133,7 @@ public class EventMeshServer {
         }
 
         if (configuration != null
-                && configuration.isEventMeshServerRegistryEnable()) {
+            && configuration.isEventMeshServerRegistryEnable()) {
             registry.shutdown();
         }
 
