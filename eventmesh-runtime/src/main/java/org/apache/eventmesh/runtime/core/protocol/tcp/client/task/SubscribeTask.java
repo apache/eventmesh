@@ -38,7 +38,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class SubscribeTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeTask.class);
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public SubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -69,12 +71,12 @@ public class SubscribeTask extends AbstractTask {
             }
             synchronized (session) {
                 session.subscribe(subscriptionItems);
-                messageLogger.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
+                MESSAGE_LOGGER.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
             }
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                     pkg.getHeader().getSeq()));
         } catch (Exception e) {
-            messageLogger.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
+            MESSAGE_LOGGER.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()
                     .getSeq()));
         } finally {

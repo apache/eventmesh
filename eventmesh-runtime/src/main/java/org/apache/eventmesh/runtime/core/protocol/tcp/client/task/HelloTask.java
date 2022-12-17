@@ -45,7 +45,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class HelloTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelloTask.class);
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public HelloTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -65,7 +67,7 @@ public class HelloTask extends AbstractTask {
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
-                logger.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
+                LOGGER.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
                 throw new Exception("server state is not running, maybe deploying...");
             }
 
@@ -75,7 +77,7 @@ public class HelloTask extends AbstractTask {
                     pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
-            messageLogger.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
+            MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                     .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
@@ -87,7 +89,7 @@ public class HelloTask extends AbstractTask {
                             } else {
                                 Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                             }
-                            logger.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
+                            LOGGER.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
                             eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                         }
                     }

@@ -25,8 +25,12 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ListenTask extends AbstractTask {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ListenTask.class);
 
     public ListenTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -42,7 +46,7 @@ public class ListenTask extends AbstractTask {
                 eventMeshTCPServer.getClientSessionGroupMapping().readySession(session);
             }
         } catch (Exception e) {
-            logger.error("ListenTask failed|user={}|errMsg={}", session.getClient(), e);
+            LOGGER.error("ListenTask failed|user={}|errMsg={}", session.getClient(), e);
             Integer status = OPStatus.FAIL.getCode();
             header = new Header(LISTEN_RESPONSE, status, e.toString(), pkg.getHeader().getSeq());
         } finally {
