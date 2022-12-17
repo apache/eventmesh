@@ -537,7 +537,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             if (null != cause) {
-                logger.error("", cause);
+                log.error("", cause);
             }
             if (null != ctx) {
                 ctx.close();

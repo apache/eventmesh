@@ -225,7 +225,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     }
 
     public void init() throws Exception {
-        logger.info("==================EventMeshHTTPServer Initialing==================");
+        log.info("==================EventMeshHTTPServer Initialing==================");
         super.init("eventMesh-http");
 
         initThreadPool();
@@ -267,7 +267,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
         this.initWebhook();
-        logger.info("--------------------------EventMeshHTTPServer inited");
+        log.info("--------------------------EventMeshHTTPServer inited");
     }
 
     @Override
@@ -280,7 +280,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
         }
-        logger.info("--------------------------EventMeshHTTPServer started");
+        log.info("--------------------------EventMeshHTTPServer started");
     }
 
     @Override
@@ -303,7 +303,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.unRegister();
         }
-        logger.info("--------------------------EventMeshHTTPServer shutdown");
+        log.info("--------------------------EventMeshHTTPServer shutdown");
     }
 
     public boolean register() {
@@ -318,7 +318,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
             registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
-            logger.warn("eventMesh register to registry failed", e);
+            log.warn("eventMesh register to registry failed", e);
         }
 
         return registerResult;
