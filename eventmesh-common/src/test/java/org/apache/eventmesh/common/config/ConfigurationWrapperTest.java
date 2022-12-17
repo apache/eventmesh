@@ -40,7 +40,7 @@ public class ConfigurationWrapperTest {
         Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void construct() {
         ConfigurationWrapper newWrapper = new ConfigurationWrapper(null, "eventmesh.properties", false);
     }
