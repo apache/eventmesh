@@ -41,11 +41,6 @@ public class HttpSummaryMetrics implements Metric {
         this.httpFailedQueue = httpFailedQueue;
     }
 
-    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\","
-            //EVENTMESH tps related to accepting external http requests
-            + "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", "
-            + "\"httpDiscard\":\"%s\"}";
-
     private float wholeCost = 0f;
 
     private AtomicLong wholeRequestNum = new AtomicLong(0);
