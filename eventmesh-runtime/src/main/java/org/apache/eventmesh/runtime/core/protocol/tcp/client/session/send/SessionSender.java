@@ -51,16 +51,16 @@ import io.opentelemetry.api.trace.Span;
 
 public class SessionSender {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
-    private final Logger logger = LoggerFactory.getLogger(SessionSender.class);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionSender.class);
 
-    private final Session session;
+    private final transient Session session;
 
-    public long createTime = System.currentTimeMillis();
+    public transient long createTime = System.currentTimeMillis();
 
-    public AtomicLong upMsgs = new AtomicLong(0);
+    public transient AtomicLong upMsgs = new AtomicLong(0);
 
-    public AtomicLong failMsgCount = new AtomicLong(0);
+    public transient AtomicLong failMsgCount = new AtomicLong(0);
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
@@ -146,12 +146,12 @@ public class SessionSender {
                         .getEventMesh2mqMsgNum()
                         .incrementAndGet();
             } else {
-                logger.warn("send too fast,session flow control,session:{}", session.getClient());
+                LOGGER.warn("send too fast,session flow control,session:{}", session.getClient());
                 return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST,
                         EventMeshTcpSendStatus.SEND_TOO_FAST.name());
             }
         } catch (Exception e) {
-            logger.warn("SessionSender send failed", e);
+            LOGGER.warn("SessionSender send failed", e);
             if (!(e instanceof InterruptedException)) {
                 upstreamBuff.release();
             }
@@ -180,10 +180,10 @@ public class SessionSender {
                         .incrementAndGet();
 
                 Command cmd;
-                if (header.getCmd().equals(Command.REQUEST_TO_SERVER)) {
+                if (Command.REQUEST_TO_SERVER == header.getCmd()) {
                     cmd = Command.RESPONSE_TO_CLIENT;
                 } else {
-                    messageLogger.error("invalid message|messageHeader={}|event={}", header, event);
+                    MESSAGE_LOGGER.error("invalid message|messageHeader={}|event={}", header, event);
                     return;
                 }
                 event = CloudEventBuilder.from(event)
@@ -210,7 +210,7 @@ public class SessionSender {
 
             @Override
             public void onException(Throwable e) {
-                messageLogger.error("exception occur while sending RR message|user={}", session.getClient(),
+                MESSAGE_LOGGER.error("exception occur while sending RR message|user={}", session.getClient(),
                         new Exception(e));
 
                 TraceUtils.finishSpanWithException(session.getContext(), cloudEvent,
