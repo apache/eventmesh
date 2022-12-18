@@ -63,7 +63,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public BatchSendMessageV2Processor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -175,12 +175,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+            String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
+            String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
+            String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
@@ -226,7 +223,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         String defaultTTL = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
         // todo: use hashmap to avoid copy
-        String ttlValue = event.getExtension(SendMessageRequestBody.TTL) == null ? "" : event.getExtension(SendMessageRequestBody.TTL).toString();
+        String ttlValue = getExtension(event, SendMessageRequestBody.TTL);
         if (StringUtils.isBlank(ttlValue) && !StringUtils.isNumeric(ttlValue)) {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, defaultTTL)
                 .build();
@@ -307,6 +304,11 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 EventMeshRetCode.SUCCESS.getErrMsg()));
         asyncContext.onComplete(responseEventMeshCommand);
 
+    }
+
+    private String getExtension(CloudEvent event, String protocolKey) {
+        Object extension = event.getExtension(protocolKey);
+        return Objects.isNull(extension) ? "" : extension.toString();
     }
 
     @Override
