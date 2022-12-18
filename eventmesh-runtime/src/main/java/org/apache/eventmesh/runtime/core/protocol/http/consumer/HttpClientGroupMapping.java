@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
@@ -29,6 +27,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
