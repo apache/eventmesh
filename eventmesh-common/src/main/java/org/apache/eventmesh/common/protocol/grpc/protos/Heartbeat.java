@@ -20,9 +20,11 @@
 
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
+import java.util.Objects;
+
 import com.google.protobuf.ByteString;
 
-import java.util.Objects;
+
 
 /**
  * Protobuf type {@code eventmesh.common.protocol.grpc.Heartbeat}
