@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Config {
 
-    String field();
+    String field() default "";
 
     String path() default "";
 

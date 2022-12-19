@@ -17,10 +17,14 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 
 public class ConfigService {
@@ -29,12 +33,12 @@ public class ConfigService {
 
     private Properties properties = new Properties();
 
-    private ConfigMonitorService configMonitorService = new ConfigMonitorService();
+    private final ConfigMonitorService configMonitorService = new ConfigMonitorService();
 
     private String configPath;
 
 
-    public static final ConfigService getInstance() {
+    public static ConfigService getInstance() {
         return INSTANCE;
     }
 
@@ -46,32 +50,63 @@ public class ConfigService {
         return this;
     }
 
-    public ConfigService setRootConfig(String path) throws Exception {
+    public void setRootConfig(String path) throws Exception {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setPath(path);
         properties = this.getConfig(configInfo);
-        return this;
+    }
+
+    public <T> T getConfig(Class<?> clazz) {
+        Config[] configArray = clazz.getAnnotationsByType(Config.class);
+        if (configArray.length == 0) {
+            try {
+                return this.getConfig(ConfigInfo.builder()
+                        .clazz(clazz)
+                        .hump(ConfigInfo.HUMP_SPOT)
+                        .build());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Config config = configArray[0];
+        try {
+            ConfigInfo configInfo = new ConfigInfo();
+            configInfo.setClazz(clazz);
+            configInfo.setHump(config.hump());
+            configInfo.setPrefix(config.prefix());
+            configInfo.setMonitor(config.monitor());
+
+            return this.getConfig(configInfo);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void getConfig(Object object) throws Exception {
+        this.getConfig(object, object.getClass());
     }
 
     public void getConfig(Object object, Class<?> clazz) throws Exception {
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
-        if (configArray == null || configArray.length == 0) {
-            //TODO
+        if (configArray.length == 0) {
             return;
         }
+
         for (Config config : configArray) {
             ConfigInfo configInfo = new ConfigInfo();
             configInfo.setField(config.field());
             configInfo.setPath(config.path());
             configInfo.setPrefix(config.prefix());
             configInfo.setHump(config.hump());
-            configInfo.setObject(object);
             configInfo.setMonitor(config.monitor());
+
             Field field = clazz.getDeclaredField(configInfo.getField());
             configInfo.setClazz(field.getType());
             Object configObject = this.getConfig(configInfo);
             field.setAccessible(true);
             field.set(object, configObject);
+
             if (configInfo.isMonitor()) {
                 configInfo.setObjectField(field);
                 configInfo.setInstance(object);
@@ -79,45 +114,35 @@ public class ConfigService {
                 configMonitorService.monitor(configInfo);
             }
         }
-
     }
 
-    public void getConfig(Object object) throws Exception {
-        this.getConfig(object, object.getClass());
-    }
-
-    public <T> T getConfig(Class<?> clazz) {
-        try {
-            return this.getConfig(ConfigInfo.builder().clazz(clazz).hump(ConfigInfo.HUPM_SPOT).build());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @SuppressWarnings("unchecked")
     public <T> T getConfig(ConfigInfo configInfo) throws Exception {
         Object object;
-        if (Objects.isNull(configInfo.getPath())) {
+
+        if (Objects.isNull(configInfo.getPath()) || StringUtils.isEmpty(configInfo.getPath().trim())) {
             object = FileLoad.getPropertiesFileLoad().getConfig(properties, configInfo);
         } else {
             String path = configInfo.getPath();
             String filePath;
             if (path.startsWith("classPath://")) {
-                filePath = ConfigService.class.getResource("/" + path.substring(12)).getPath();
+                filePath = Objects.requireNonNull(ConfigService.class.getResource("/" + path.substring(12))).getPath();
             } else if (path.startsWith("file://")) {
                 filePath = path.substring(7);
             } else {
                 filePath = this.configPath + path;
             }
+
             File file = new File(filePath);
             if (!file.exists()) {
-                throw new RuntimeException("fie is not existis");
+                throw new RuntimeException("fie is not exists");
             }
+
             String suffix = path.substring(path.lastIndexOf('.') + 1);
             configInfo.setFilePath(filePath);
             object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
         }
         return (T) object;
     }
-
 }

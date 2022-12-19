@@ -20,8 +20,8 @@ package org.apache.eventmesh.connector.rocketmq.consumer;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -37,7 +37,7 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Config(field = "clientConfiguration" , prefix = "")
+@Config(field = "clientConfiguration", prefix = "")
 public class RocketMQConsumerImpl implements Consumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
@@ -45,7 +45,7 @@ public class RocketMQConsumerImpl implements Consumer {
     private PushConsumerImpl pushConsumer;
 
     private ClientConfiguration clientConfiguration;
-    
+
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
         clientConfiguration.init();
