@@ -48,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -182,8 +183,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         String origTopic = event.getSubject();
 
-        final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER) == null ? "" :
-            event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
+        final String replyMQCluster = Optional.ofNullable(event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER))
+            .map(Objects::toString)
+            .orElse("");
         if (!org.apache.commons.lang3.StringUtils.isEmpty(replyMQCluster)) {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
