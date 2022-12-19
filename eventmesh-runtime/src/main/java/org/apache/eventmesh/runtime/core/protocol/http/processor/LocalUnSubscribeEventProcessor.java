@@ -37,12 +37,14 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -52,6 +54,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
 public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
@@ -112,9 +115,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {
-            });
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestBody, Constants.DEFAULT_CHARSET),
+            new TypeReference<HashMap<String, Object>>() {}
+        )).orElse(Maps.newHashMap());
 
         if (requestBodyMap.get(EventMeshConstants.URL) == null
             || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
@@ -129,8 +133,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
         String topic = JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // unSubscriptionItem
-        List<String> unSubTopicList = JsonUtils.deserialize(topic, new TypeReference<List<String>>() {
-        });
+        List<String> unSubTopicList = Optional.ofNullable(JsonUtils.deserialize(
+            topic,
+            new TypeReference<List<String>>() {}
+        )).orElse(Collections.emptyList());
 
         String env = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV).toString();
         String idc = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString();

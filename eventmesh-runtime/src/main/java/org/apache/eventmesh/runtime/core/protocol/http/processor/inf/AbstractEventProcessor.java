@@ -35,9 +35,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 /**
  * EventProcessor
@@ -121,7 +124,9 @@ public class AbstractEventProcessor {
             ConsumerGroupMetadata consumerGroupMetadata =
                     JsonUtils.deserialize(topicMetadataJson, ConsumerGroupMetadata.class);
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                    consumerGroupMetadata.getConsumerGroupTopicMetadataMap();
+                    Optional.ofNullable(consumerGroupMetadata)
+                        .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
+                        .orElse(Maps.newConcurrentMap());
 
             for (SubscriptionItem subscriptionItem : subscriptionList) {
                 if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {

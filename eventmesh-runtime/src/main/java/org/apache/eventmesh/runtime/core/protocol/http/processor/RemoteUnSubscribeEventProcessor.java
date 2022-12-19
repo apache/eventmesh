@@ -44,10 +44,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -58,6 +60,7 @@ import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
 public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
@@ -119,9 +122,10 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {
-            });
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestBody, Constants.DEFAULT_CHARSET),
+            new TypeReference<HashMap<String, Object>>() {}
+        )).orElse(Maps.newHashMap());
 
         if (requestBodyMap.get(EventMeshConstants.URL) == null
             || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
@@ -165,9 +169,10 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
             remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-            List<String> unSubTopicList =
-                JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)), new TypeReference<List<String>>() {
-                });
+            List<String> unSubTopicList = Optional.ofNullable(JsonUtils.deserialize(
+                JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
+                new TypeReference<List<String>>() {}
+            )).orElse(Collections.emptyList());
 
             String targetMesh = "";
             if (!Objects.isNull(requestBodyMap.get("remoteMesh"))) {
@@ -190,8 +195,10 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             String remoteResult = post(closeableHttpClient, targetMesh, remoteHeaderMap, remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
-            });
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
+                remoteResult,
+                new TypeReference<Map<String, String>>() {}
+            )).orElse(Maps.newHashMap());
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
@@ -238,7 +245,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
 
         //body
         if (MapUtils.isNotEmpty(requestBody)) {
-            String jsonStr = JsonUtils.serialize(requestBody);
+            String jsonStr = Optional.ofNullable(JsonUtils.serialize(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 

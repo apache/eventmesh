@@ -48,6 +48,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -60,6 +62,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = true)
 public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
@@ -70,7 +73,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public SendAsyncRemoteEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -114,9 +117,10 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         requestWrapper.buildSysHeaderForCE();
 
         // process remote event body
-        Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
-                new TypeReference<Map<String, Object>>() {
-                });
+        Map<String, Object> bodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
+            new TypeReference<Map<String, Object>>() {}
+        )).orElse(Maps.newHashMap());
 
         byte[] convertedBody = bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8);
         requestWrapper.setBody(convertedBody);
@@ -174,12 +178,9 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        idc = event.getExtension(ProtocolKey.ClientInstanceKey.IDC) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.IDC).toString();
-        String pid = event.getExtension(ProtocolKey.ClientInstanceKey.PID) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.PID).toString();
-        String sys = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+        idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
+        String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
+        String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
 
         //validate event-extension
         if (StringUtils.isBlank(idc)
@@ -191,8 +192,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        String producerGroup = event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP) == null ? "" :
-                event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP).toString();
+        String producerGroup = getExtension(event, ProtocolKey.ClientInstanceKey.PRODUCERGROUP);
         String topic = event.getSubject();
 
         //validate body
@@ -209,13 +209,9 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" :
-                    event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD) == null ? "" :
-                    event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem =
-                    event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" :
-                            event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+            String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
+            String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
+            String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
             String requestURI = requestWrapper.getRequestURI();
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);
@@ -317,6 +313,12 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, bizNo, uniqueId, ex);
         }
+    }
+
+    private String getExtension(CloudEvent event, String protocolKey) {
+        return Optional.ofNullable(event.getExtension(protocolKey))
+            .map(Objects::toString)
+            .orElse("");
     }
 
     @Override
