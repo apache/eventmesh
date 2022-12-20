@@ -18,69 +18,96 @@
 package org.apache.eventmesh.runtime.configuration;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.NotNull;
 
 public class EventMeshTCPConfiguration extends CommonConfiguration {
+    @ConfigFiled(field = "eventMesh.server.tcp.port")
     public int eventMeshTcpServerPort = 10000;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.allIdleSeconds")
     public int eventMeshTcpIdleAllSeconds = 60;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.writerIdleSeconds")
     public int eventMeshTcpIdleWriteSeconds = 60;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.readerIdleSeconds")
     public int eventMeshTcpIdleReadSeconds = 60;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.msgReqnumPerSecond")
     public Integer eventMeshTcpMsgReqnumPerSecond = 15000;
 
     /**
      * TCP Server allows max client num
      */
+    @ConfigFiled(field = "eventMesh.server.tcp.clientMaxNum")
     public int eventMeshTcpClientMaxNum = 10000;
 
     //======================================= New add config =================================
 
+    @ConfigFiled(field = "eventMesh.server.global.scheduler")
     public int eventMeshTcpGlobalScheduler = 5;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.taskHandleExecutorPoolSize")
     public int eventMeshTcpTaskHandleExecutorPoolSize = Runtime.getRuntime().availableProcessors();
 
+    @ConfigFiled(field = "eventMesh.server.tcp.msgDownStreamExecutorPoolSize")
     public int eventMeshTcpMsgDownStreamExecutorPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 8);
 
+    @ConfigFiled(field = "eventMesh.server.session.expiredInMills")
     public int eventMeshTcpSessionExpiredInMills = 60000;
 
+    @ConfigFiled(field = "eventMesh.server.session.upstreamBufferSize")
     public int eventMeshTcpSessionUpstreamBufferSize = 100;
 
+    @ConfigFiled(field = "eventMesh.server.retry.async.pushRetryTimes")
     public int eventMeshTcpMsgAsyncRetryTimes = 3;
 
+    @ConfigFiled(field = "eventMesh.server.retry.sync.pushRetryTimes")
     public int eventMeshTcpMsgSyncRetryTimes = 1;
 
+    @ConfigFiled(field = "eventMesh.server.retry.sync.pushRetryDelayInMills")
     public int eventMeshTcpMsgRetrySyncDelayInMills = 500;
 
+    @ConfigFiled(field = "eventMesh.server.retry.async.pushRetryDelayInMills")
     public int eventMeshTcpMsgRetryAsyncDelayInMills = 500;
 
+    @ConfigFiled(field = "eventMesh.server.retry.pushRetryQueueSize")
     public int eventMeshTcpMsgRetryQueueSize = 10000;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.RebalanceIntervalInMills")
     public Integer eventMeshTcpRebalanceIntervalInMills = 30 * 1000;
 
+    @ConfigFiled(field = "eventMesh.server.admin.http.port")
     public int eventMeshServerAdminPort = 10106;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.sendBack.enabled")
     public boolean eventMeshTcpSendBackEnabled = Boolean.TRUE;
 
+    @ConfigFiled(field = "")
     public int eventMeshTcpSendBackMaxTimes = 3;
 
+    @ConfigFiled(field = "eventMesh.server.tcp.pushFailIsolateTimeInMills")
     public int eventMeshTcpPushFailIsolateTimeInMills = 30 * 1000;
 
+    @ConfigFiled(field = "eventMesh.server.gracefulShutdown.sleepIntervalInMills")
     public int gracefulShutdownSleepIntervalInMills = 1000;
 
+    @ConfigFiled(field = "eventMesh.server.rebalanceRedirect.sleepIntervalInM")
     public int sleepIntervalInRebalanceRedirectMills = 200;
 
+    @ConfigFiled(field = "eventMesh.server.maxEventSize")
     public int eventMeshEventSize = 1000;
 
+    @ConfigFiled(field = "eventMesh.server.maxEventBatchSize")
     public int eventMeshEventBatchSize = 10;
 
-    private TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
-    private TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
+    private final TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
+    private final TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
-    public EventMeshTCPConfiguration(ConfigurationWrapper configurationWrapper) {
-        super(configurationWrapper);
+    public EventMeshTCPConfiguration() {
+
     }
 
     @Override
