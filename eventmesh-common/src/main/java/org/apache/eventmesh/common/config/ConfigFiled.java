@@ -17,33 +17,24 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.lang.reflect.Field;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.FIELD})
+public @interface ConfigFiled {
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class ConfigInfo {
+    /**
+     * @return The key name of the configuration file
+     */
+    String field() default "";
 
-    public static final String HUMP_SPOT = "spot";
-    public static final String HUMP_ROD = "rod";
-
-    private String path;
-    private String field;
-    private String prefix;
-    private String hump;
-    private boolean monitor;
-    private boolean removePrefix;
-
-    private Class<?> clazz;
-    private Object object;
-    private String filePath;
-
-    Field objectField;
-    Object instance;
+    /**
+     * Note : When reload is true, the class must have a reload method
+     *
+     * @return Whether to reload. This parameter is used when other fields are associated
+     */
+    boolean reload() default false;
 }

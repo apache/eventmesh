@@ -33,33 +33,86 @@ import com.google.common.base.Preconditions;
 
 import lombok.Getter;
 
+@Config(prefix = "eventMesh")
 public class CommonConfiguration {
-    public String eventMeshEnv = "P";
-    public String eventMeshIDC = "FT";
-    public String eventMeshCluster = "LS";
-    public String eventMeshName = "";
-    public List<String> eventMeshProvideServerProtocols;
+    @ConfigFiled(field = "sysid")
     public String sysID = "5477";
-    public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshSecurityPluginType = "security";
-    public String eventMeshRegistryPluginType = "namesrv";
-    public List<String> eventMeshMetricsPluginType;
-    public String eventMeshTracePluginType;
-    public String namesrvAddr = "";
-    public String eventMeshRegistryPluginUsername = "";
-    public String eventMeshRegistryPluginPassword = "";
-    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+
+    @ConfigFiled(field = "server.env")
+    public String eventMeshEnv = "P";
+
+    @ConfigFiled(field = "server.idc")
+    public String eventMeshIDC = "FT";
+
+    @ConfigFiled(field = "server.name")
+    public String eventMeshName = "";
+
+    @ConfigFiled(field = "server.cluster")
+    public String eventMeshCluster = "LS";
+
+    @ConfigFiled(field = "server.hostIp")
     public String eventMeshServerIp = null;
-    public boolean eventMeshServerSecurityEnable = false;
-    public boolean eventMeshServerRegistryEnable = false;
+
+    @ConfigFiled(field = "registry.plugin.server-addr")
+    public String namesrvAddr = "";
+
+
+    @ConfigFiled(field = "trace.plugin")
+    public String eventMeshTracePluginType;
+
+    @ConfigFiled(field = "metrics.plugin")
+    public List<String> eventMeshMetricsPluginType;
+
+    @ConfigFiled(field = "registry.plugin.type")
+    public String eventMeshRegistryPluginType = "namesrv";
+
+    @ConfigFiled(field = "security.plugin.type")
+    public String eventMeshSecurityPluginType = "security";
+
+    @ConfigFiled(field = "connector.plugin.type")
+    public String eventMeshConnectorPluginType = "rocketmq";
+
+
+    @ConfigFiled(field = "registry.plugin.username")
+    public String eventMeshRegistryPluginUsername = "";
+
+    @ConfigFiled(field = "registry.plugin.password")
+    public String eventMeshRegistryPluginPassword = "";
+
+    @ConfigFiled(field = "server.registry.registerIntervalInMills")
+    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
+
+    @ConfigFiled(field = "server.registry.fetchRegistryAddrIntervalInMills")
+    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+
+
+    @ConfigFiled(field = "server.trace.enabled")
     public boolean eventMeshServerTraceEnable = false;
-    
+
+    @ConfigFiled(field = "server.security.enabled")
+    public boolean eventMeshServerSecurityEnable = false;
+
+    @ConfigFiled(field = "server.registry.enabled")
+    public boolean eventMeshServerRegistryEnable = false;
+
+
+    @ConfigFiled(field = "server.provide.protocols")
+    public List<String> eventMeshProvideServerProtocols;
+
+
+    @ConfigFiled(reload = true)
+    public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
+
+    public CommonConfiguration() {
+    }
+
+    public void reload() {
+        this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
+    }
+
     @Getter
     protected ConfigurationWrapper configurationWrapper;
     
-    public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
-
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }

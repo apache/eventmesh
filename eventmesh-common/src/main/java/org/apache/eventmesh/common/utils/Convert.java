@@ -17,10 +17,12 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigInfo;
 import org.apache.eventmesh.common.config.NotNull;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -35,6 +37,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -43,14 +46,19 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 
 import lombok.Data;
 
+import inet.ipaddr.AddressStringException;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
+
 public class Convert {
 
-    private Map<Class<?>, ConvertValue<?>> classToConvert = new HashMap<Class<?>, ConvertValue<?>>();
+    private final Map<Class<?>, ConvertValue<?>> classToConvert = new HashMap<>();
 
-    private ConvertValue<?> convertEnum = new ConvertEnum();
+    private final ConvertValue<?> convertEnum = new ConvertEnum();
 
     {
         this.register(new ConvertCharacter(), Character.class, char.class);
@@ -67,8 +75,9 @@ public class Convert {
         this.register(new ConvertLocalDateTime(), LocalDateTime.class);
         this.register(new ConvertList(), List.class, ArrayList.class, LinkedList.class, Vector.class);
         this.register(new ConvertMap(), Map.class, HashMap.class, TreeMap.class, LinkedHashMap.class);
-
+        this.register(new ConvertIPAddress(), IPAddress.class);
     }
+
 
     public Object createObject(ConfigInfo configInfo, Properties properties) {
         ConvertInfo convertInfo = new ConvertInfo();
@@ -92,13 +101,18 @@ public class Convert {
         }
     }
 
+    /**
+     * convert convertInfo to obj
+     *
+     * @param <T> obj type
+     */
     public interface ConvertValue<T> {
 
-        public default boolean isNotHandleNullValue() {
+        default boolean isNotHandleNullValue() {
             return true;
         }
 
-        public T convert(ConvertInfo convertInfo);
+        T convert(ConvertInfo convertInfo);
     }
 
     private class ConvertObject implements ConvertValue<Object> {
@@ -118,7 +132,7 @@ public class Convert {
             if (Objects.nonNull(prefix)) {
                 this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
             }
-            this.hump = Objects.equals(configInfo.getHump(), ConfigInfo.HUPM_ROD) ? '_' : '.';
+            this.hump = Objects.equals(configInfo.getHump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
             this.clazz = convertInfo.getClazz();
             this.convertInfo.setHump(this.hump);
         }
@@ -130,13 +144,14 @@ public class Convert {
                 this.object = convertInfo.getClazz().newInstance();
                 this.init(convertInfo.getConfigInfo());
                 this.setValue();
-                Class<?> sperclass = convertInfo.getClazz();
+
+                Class<?> superclass = convertInfo.getClazz();
                 for (; ; ) {
-                    sperclass = sperclass.getSuperclass();
-                    if (Objects.equals(sperclass, Object.class) || Objects.isNull(sperclass)) {
+                    superclass = superclass.getSuperclass();
+                    if (Objects.equals(superclass, Object.class) || Objects.isNull(superclass)) {
                         break;
                     }
-                    this.clazz = sperclass;
+                    this.clazz = superclass;
                     this.setValue();
                 }
 
@@ -147,14 +162,27 @@ public class Convert {
         }
 
         private void setValue() throws Exception {
-            for (Field field : this.clazz.getDeclaredFields()) {
+            boolean needReload = Boolean.FALSE;
 
+            for (Field field : this.clazz.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
                 field.setAccessible(true);
+
                 ConvertInfo convertInfo = this.convertInfo;
-                String key = this.getKey(field.getName(), hump);
+                String key;
+                ConfigFiled configFiled = field.getAnnotation(ConfigFiled.class);
+                StringBuilder keyPrefix = new StringBuilder(Objects.isNull(prefix) ? "" : prefix);
+                if (configFiled == null || configFiled.field().equals("")) {
+                    key = this.getKey(field.getName(), hump, keyPrefix);
+                } else {
+                    key = keyPrefix.append(configFiled.field()).toString();
+                }
+                if (!needReload && configFiled != null && configFiled.reload()) {
+                    needReload = Boolean.TRUE;
+                }
+
                 Class<?> clazz = field.getType();
                 ConvertValue<?> convertValue = classToConvert.get(clazz);
                 if (clazz.isEnum()) {
@@ -198,45 +226,50 @@ public class Convert {
                 }
                 field.set(object, value);
             }
+
+            if (!needReload) {
+                return;
+            }
+            Method method = this.clazz.getDeclaredMethod("reload", null);
+            method.setAccessible(true);
+            method.invoke(this.object, null);
         }
 
-        public String getKey(String fieldName, char spot) {
-            StringBuffer key = new StringBuffer(Objects.isNull(prefix) ? "" : prefix);
-
+        public String getKey(String fieldName, char spot, StringBuilder key) {
             boolean currency = false;
-            for (int i = 0; i < fieldName.length(); i++) {
+            int length = fieldName.length();
+            for (int i = 0; i < length; i++) {
                 char c = fieldName.charAt(i);
+                boolean b = i < length - 1 && fieldName.charAt(i + 1) > 96;
+
                 if (currency) {
-                    if (fieldName.length() > (i + 1) && fieldName.charAt(i + 1) > 96) {
+                    if (b) {
                         key.append(spot);
                         key.append((char) (c + 32));
                         currency = false;
                     } else {
                         key.append(c);
                     }
-                    key.append(c);
                 } else {
                     if (c > 96) {
                         key.append(c);
                     } else {
                         key.append(spot);
-                        if (fieldName.length() > (i + 1) && fieldName.charAt(i + 1) > 96) {
+                        if (b) {
                             key.append((char) (c + 32));
                         } else {
                             key.append(c);
                             currency = true;
                         }
-
                     }
                 }
             }
-            return key.toString();
+
+            return key.toString().toLowerCase(Locale.ROOT);
         }
-
-
     }
 
-    private class ConvertCharacter implements ConvertValue<Character> {
+    private static class ConvertCharacter implements ConvertValue<Character> {
 
         @Override
         public Character convert(ConvertInfo convertInfo) {
@@ -244,18 +277,18 @@ public class Convert {
         }
     }
 
-    private class ConvertBoolean implements ConvertValue<Boolean> {
+    private static class ConvertBoolean implements ConvertValue<Boolean> {
 
         @Override
         public Boolean convert(ConvertInfo convertInfo) {
-            if (Objects.equals(convertInfo.getKey().length(), 1)) {
-                return Objects.equals(convertInfo.getKey(), "1") ? true : false;
+            if (Objects.equals(convertInfo.getValue().length(), 1)) {
+                return Objects.equals(convertInfo.getValue(), "1") ? Boolean.TRUE : Boolean.FALSE;
             }
-            return Boolean.valueOf(convertInfo.getKey());
+            return Boolean.valueOf(convertInfo.getValue());
         }
     }
 
-    private class ConvertByte implements ConvertValue<Byte> {
+    private static class ConvertByte implements ConvertValue<Byte> {
 
         @Override
         public Byte convert(ConvertInfo convertInfo) {
@@ -263,7 +296,7 @@ public class Convert {
         }
     }
 
-    private class ConvertShort implements ConvertValue<Short> {
+    private static class ConvertShort implements ConvertValue<Short> {
 
         @Override
         public Short convert(ConvertInfo convertInfo) {
@@ -271,7 +304,7 @@ public class Convert {
         }
     }
 
-    private class ConvertInteger implements ConvertValue<Integer> {
+    private static class ConvertInteger implements ConvertValue<Integer> {
 
         @Override
         public Integer convert(ConvertInfo convertInfo) {
@@ -279,7 +312,7 @@ public class Convert {
         }
     }
 
-    private class ConvertLong implements ConvertValue<Long> {
+    private static class ConvertLong implements ConvertValue<Long> {
 
         @Override
         public Long convert(ConvertInfo convertInfo) {
@@ -287,7 +320,7 @@ public class Convert {
         }
     }
 
-    private class ConvertFloat implements ConvertValue<Float> {
+    private static class ConvertFloat implements ConvertValue<Float> {
 
         @Override
         public Float convert(ConvertInfo convertInfo) {
@@ -295,7 +328,7 @@ public class Convert {
         }
     }
 
-    private class ConvertDouble implements ConvertValue<Double> {
+    private static class ConvertDouble implements ConvertValue<Double> {
 
         @Override
         public Double convert(ConvertInfo convertInfo) {
@@ -303,7 +336,7 @@ public class Convert {
         }
     }
 
-    private class ConvertString implements ConvertValue<String> {
+    private static class ConvertString implements ConvertValue<String> {
 
         @Override
         public String convert(ConvertInfo convertInfo) {
@@ -311,7 +344,7 @@ public class Convert {
         }
     }
 
-    private class ConvertDate implements ConvertValue<Date> {
+    private static class ConvertDate implements ConvertValue<Date> {
 
         @Override
         public Date convert(ConvertInfo convertInfo) {
@@ -324,7 +357,7 @@ public class Convert {
         }
     }
 
-    private class ConvertLocalDate implements ConvertValue<LocalDate> {
+    private static class ConvertLocalDate implements ConvertValue<LocalDate> {
 
         @Override
         public LocalDate convert(ConvertInfo convertInfo) {
@@ -333,7 +366,7 @@ public class Convert {
 
     }
 
-    private class ConvertLocalDateTime implements ConvertValue<LocalDateTime> {
+    private static class ConvertLocalDateTime implements ConvertValue<LocalDateTime> {
 
         @Override
         public LocalDateTime convert(ConvertInfo convertInfo) {
@@ -342,7 +375,7 @@ public class Convert {
 
     }
 
-    private class ConvertEnum implements ConvertValue<Enum<?>> {
+    private static class ConvertEnum implements ConvertValue<Enum<?>> {
 
         @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
@@ -362,26 +395,28 @@ public class Convert {
         @Override
         public List<Object> convert(ConvertInfo convertInfo) {
             try {
-                String key = convertInfo.getKey() + "[";
+                if (convertInfo.getValue() == null) {
+                    return new ArrayList<>();
+                }
+                List<String> values = Splitter.on(",").omitEmptyStrings().trimResults().splitToList(convertInfo.getValue());
                 List<Object> list;
                 if (Objects.equals(convertInfo.getField().getType(), List.class)) {
                     list = new ArrayList<>();
                 } else {
                     list = (List<Object>) convertInfo.getField().getType().newInstance();
                 }
+
                 Type parameterizedType = ((ParameterizedType) convertInfo.getField().getGenericType()).getActualTypeArguments()[0];
                 ConvertValue<?> convert = classToConvert.get(parameterizedType);
                 if (Objects.isNull(convert)) {
                     throw new RuntimeException("convert is null");
                 }
-                for (Entry<Object, Object> entry : convertInfo.getProperties().entrySet()) {
-                    String propertiesKey = entry.getKey().toString();
-                    if (propertiesKey.startsWith(key)) {
-                        String value = entry.getValue().toString();
-                        convertInfo.setValue(value);
-                        list.add(convert.convert(convertInfo));
-                    }
+
+                for (String value : values) {
+                    convertInfo.setValue(value);
+                    list.add(convert.convert(convertInfo));
                 }
+
                 return list;
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -426,15 +461,26 @@ public class Convert {
         }
     }
 
+    private static class ConvertIPAddress implements ConvertValue<IPAddress> {
+
+        @Override
+        public IPAddress convert(ConvertInfo convertInfo) {
+            try {
+                return new IPAddressString(convertInfo.getValue()).toAddress();
+            } catch (AddressStringException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     @Data
-    class ConvertInfo {
-        Class<?> clazz;
-        String value;
-        String key;
-        Properties properties;
-        Field field;
-        ConfigInfo configInfo;
+    static class ConvertInfo {
         char hump;
+        String key;
+        Field field;
+        String value;
+        Class<?> clazz;
+        Properties properties;
+        ConfigInfo configInfo;
     }
 }
