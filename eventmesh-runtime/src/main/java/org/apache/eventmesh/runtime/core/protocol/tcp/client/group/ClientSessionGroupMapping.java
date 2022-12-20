@@ -193,6 +193,7 @@ public class ClientSessionGroupMapping {
                 LOGGER.info("add lock to map for group:{}", user.getGroup());
             }
         }
+
         synchronized (lockMap.get(user.getGroup())) {
             if (!clientGroupMap.containsKey(user.getGroup())) {
                 ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getGroup(),
@@ -245,6 +246,7 @@ public class ClientSessionGroupMapping {
         if (!lockMap.containsKey(session.getClient().getSubsystem())) {
             lockMap.putIfAbsent(session.getClient().getSubsystem(), new Object());
         }
+
         synchronized (lockMap.get(session.getClient().getSubsystem())) {
             LOGGER.info("readySession session[{}]", session);
             ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
@@ -365,9 +367,7 @@ public class ClientSessionGroupMapping {
                 new Runnable() {
                     @Override
                     public void run() {
-                        Iterator<Session> sessionIterator = sessionTable.values().iterator();
-                        while (sessionIterator.hasNext()) {
-                            Session tmp = sessionIterator.next();
+                        for (Session tmp : sessionTable.values()) {
                             if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
                                     > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
                                 try {
@@ -388,11 +388,8 @@ public class ClientSessionGroupMapping {
                 new Runnable() {
                     @Override
                     public void run() {
-
                         //scan non-broadcast msg
-                        Iterator<Session> sessionIterator = sessionTable.values().iterator();
-                        while (sessionIterator.hasNext()) {
-                            Session tmp = sessionIterator.next();
+                        for (Session tmp : sessionTable.values()) {
                             for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
                                 String seqKey = entry.getKey();
                                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
@@ -438,6 +435,7 @@ public class ClientSessionGroupMapping {
                     LOGGER.error("say goodbye to pubSession error! {}", pubSession, e);
                 }
             }
+
             try {
                 Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().gracefulShutdownSleepIntervalInMills);
             } catch (InterruptedException e) {
