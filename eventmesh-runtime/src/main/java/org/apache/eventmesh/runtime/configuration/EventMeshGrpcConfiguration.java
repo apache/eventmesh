@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.configuration;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -26,75 +27,76 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
 
+@Config(prefix = "eventMesh.server")
 public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
-    @ConfigFiled(field = "eventMesh.server.grpc.port")
+    @ConfigFiled(field = "grpc.port")
     public int grpcServerPort = 10205;
 
-    @ConfigFiled(field = "eventMesh.server.session.expiredInMills")
+    @ConfigFiled(field = "session.expiredInMills")
     public int eventMeshSessionExpiredInMills = 60000;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.batch.enabled")
+    @ConfigFiled(field = "batchmsg.batch.enabled")
     public boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.threads.num")
+    @ConfigFiled(field = "batchmsg.threads.num")
     public int eventMeshServerBatchMsgThreadNum = 10;
 
-    @ConfigFiled(field = "eventMesh.server.sendmsg.threads.num")
+    @ConfigFiled(field = "sendmsg.threads.num")
     public int eventMeshServerSendMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.pushmsg.threads.num")
+    @ConfigFiled(field = "pushmsg.threads.num")
     public int eventMeshServerPushMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.replymsg.threads.num")
+    @ConfigFiled(field = "replymsg.threads.num")
     public int eventMeshServerReplyMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.clientmanage.threads.num")
+    @ConfigFiled(field = "clientmanage.threads.num")
     public int eventMeshServerSubscribeMsgThreadNum = 4;
 
-    @ConfigFiled(field = "eventMesh.server.registry.threads.num")
+    @ConfigFiled(field = "registry.threads.num")
     public int eventMeshServerRegistryThreadNum = 10;
 
-    @ConfigFiled(field = "eventMesh.server.admin.threads.num")
+    @ConfigFiled(field = "admin.threads.num")
     public int eventMeshServerAdminThreadNum = 2;
 
-    @ConfigFiled(field = "eventMesh.server.retry.threads.num")
+    @ConfigFiled(field = "retry.threads.num")
     public int eventMeshServerRetryThreadNum = 2;
 
-    @ConfigFiled(field = "eventMesh.server.pull.registry.interval")
+    @ConfigFiled(field = "pull.registry.interval")
     public int eventMeshServerPullRegistryInterval = 30000;
 
-    @ConfigFiled(field = "eventMesh.server.async.accumulation.threshold")
+    @ConfigFiled(field = "async.accumulation.threshold")
     public int eventMeshServerAsyncAccumulationThreshold = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.retry.blockQ.size")
+    @ConfigFiled(field = "retry.blockQ.size")
     public int eventMeshServerRetryBlockQueueSize = 10000;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.blockQ.size")
+    @ConfigFiled(field = "batchmsg.blockQ.size")
     public int eventMeshServerBatchBlockQueueSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.sendmsg.blockQ.size")
+    @ConfigFiled(field = "sendmsg.blockQ.size")
     public int eventMeshServerSendMsgBlockQueueSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.pushmsg.blockQ.size")
+    @ConfigFiled(field = "pushmsg.blockQ.size")
     public int eventMeshServerPushMsgBlockQueueSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.clientM.blockQ.size")
+    @ConfigFiled(field = "clientM.blockQ.size")
     public int eventMeshServerSubscribeMsgBlockQueueSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.busy.check.interval")
+    @ConfigFiled(field = "busy.check.interval")
     public int eventMeshServerBusyCheckInterval = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.consumer.enabled")
+    @ConfigFiled(field = "consumer.enabled")
     public boolean eventMeshServerConsumerEnabled = false;
 
-    @ConfigFiled(field = "eventMesh.server.useTls.enabled")
+    @ConfigFiled(field = "useTls.enabled")
     public boolean eventMeshServerUseTls = false;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.reqNumPerSecond")
+    @ConfigFiled(field = "batchmsg.reqNumPerSecond")
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
-    @ConfigFiled(field = "eventMesh.server.http.msgReqnumPerSecond")
+    @ConfigFiled(field = "http.msgReqnumPerSecond")
     public int eventMeshMsgReqNumPerSecond = 15000;
 
     public String eventMeshIp = IPUtils.getLocalAddress();

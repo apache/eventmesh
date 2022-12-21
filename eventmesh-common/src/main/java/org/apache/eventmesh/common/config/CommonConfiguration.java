@@ -33,69 +33,70 @@ import com.google.common.base.Preconditions;
 
 import lombok.Getter;
 
+@Config(prefix = "eventMesh")
 public class CommonConfiguration {
-    @ConfigFiled(field = "eventMesh.sysid")
+    @ConfigFiled(field = "sysid")
     public String sysID = "5477";
 
-    @ConfigFiled(field = "eventMesh.server.env")
+    @ConfigFiled(field = "server.env")
     public String eventMeshEnv = "P";
 
-    @ConfigFiled(field = "eventMesh.server.idc")
+    @ConfigFiled(field = "server.idc")
     public String eventMeshIDC = "FT";
 
-    @ConfigFiled(field = "eventMesh.server.name")
+    @ConfigFiled(field = "server.name")
     public String eventMeshName = "";
 
-    @ConfigFiled(field = "eventMesh.server.cluster")
+    @ConfigFiled(field = "server.cluster")
     public String eventMeshCluster = "LS";
 
-    @ConfigFiled(field = "eventMesh.server.hostIp")
+    @ConfigFiled(field = "server.hostIp")
     public String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "eventMesh.registry.plugin.server-addr")
+    @ConfigFiled(field = "registry.plugin.server-addr")
     public String namesrvAddr = "";
 
 
-    @ConfigFiled(field = "eventMesh.trace.plugin")
+    @ConfigFiled(field = "trace.plugin")
     public String eventMeshTracePluginType;
 
-    @ConfigFiled(field = "eventMesh.metrics.plugin")
+    @ConfigFiled(field = "metrics.plugin")
     public List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "eventMesh.registry.plugin.type")
+    @ConfigFiled(field = "registry.plugin.type")
     public String eventMeshRegistryPluginType = "namesrv";
 
-    @ConfigFiled(field = "eventMesh.security.plugin.type")
+    @ConfigFiled(field = "security.plugin.type")
     public String eventMeshSecurityPluginType = "security";
 
-    @ConfigFiled(field = "eventMesh.connector.plugin.type")
+    @ConfigFiled(field = "connector.plugin.type")
     public String eventMeshConnectorPluginType = "rocketmq";
 
 
-    @ConfigFiled(field = "eventMesh.registry.plugin.username")
+    @ConfigFiled(field = "registry.plugin.username")
     public String eventMeshRegistryPluginUsername = "";
 
-    @ConfigFiled(field = "eventMesh.registry.plugin.password")
+    @ConfigFiled(field = "registry.plugin.password")
     public String eventMeshRegistryPluginPassword = "";
 
-    @ConfigFiled(field = "eventMesh.server.registry.registerIntervalInMills")
+    @ConfigFiled(field = "server.registry.registerIntervalInMills")
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
 
-    @ConfigFiled(field = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills")
+    @ConfigFiled(field = "server.registry.fetchRegistryAddrIntervalInMills")
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
 
 
-    @ConfigFiled(field = "eventMesh.server.trace.enabled")
+    @ConfigFiled(field = "server.trace.enabled")
     public boolean eventMeshServerTraceEnable = false;
 
-    @ConfigFiled(field = "eventMesh.server.security.enabled")
+    @ConfigFiled(field = "server.security.enabled")
     public boolean eventMeshServerSecurityEnable = false;
 
-    @ConfigFiled(field = "eventMesh.server.registry.enabled")
+    @ConfigFiled(field = "server.registry.enabled")
     public boolean eventMeshServerRegistryEnable = false;
 
 
-    @ConfigFiled(field = "eventMesh.server.provide.protocols")
+    @ConfigFiled(field = "server.provide.protocols")
     public List<String> eventMeshProvideServerProtocols;
 
 
