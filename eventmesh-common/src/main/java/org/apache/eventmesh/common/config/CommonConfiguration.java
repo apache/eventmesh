@@ -33,70 +33,69 @@ import com.google.common.base.Preconditions;
 
 import lombok.Getter;
 
-@Config(prefix = "eventMesh")
 public class CommonConfiguration {
-    @ConfigFiled(field = "sysid")
+    @ConfigFiled(field = "eventMesh.sysid")
     public String sysID = "5477";
 
-    @ConfigFiled(field = "server.env")
+    @ConfigFiled(field = "eventMesh.server.env")
     public String eventMeshEnv = "P";
 
-    @ConfigFiled(field = "server.idc")
+    @ConfigFiled(field = "eventMesh.server.idc")
     public String eventMeshIDC = "FT";
 
-    @ConfigFiled(field = "server.name")
+    @ConfigFiled(field = "eventMesh.server.name")
     public String eventMeshName = "";
 
-    @ConfigFiled(field = "server.cluster")
+    @ConfigFiled(field = "eventMesh.server.cluster")
     public String eventMeshCluster = "LS";
 
-    @ConfigFiled(field = "server.hostIp")
+    @ConfigFiled(field = "eventMesh.server.hostIp")
     public String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "registry.plugin.server-addr")
+    @ConfigFiled(field = "eventMesh.registry.plugin.server-addr")
     public String namesrvAddr = "";
 
 
-    @ConfigFiled(field = "trace.plugin")
+    @ConfigFiled(field = "eventMesh.trace.plugin")
     public String eventMeshTracePluginType;
 
-    @ConfigFiled(field = "metrics.plugin")
+    @ConfigFiled(field = "eventMesh.metrics.plugin")
     public List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "registry.plugin.type")
+    @ConfigFiled(field = "eventMesh.registry.plugin.type")
     public String eventMeshRegistryPluginType = "namesrv";
 
-    @ConfigFiled(field = "security.plugin.type")
+    @ConfigFiled(field = "eventMesh.security.plugin.type")
     public String eventMeshSecurityPluginType = "security";
 
-    @ConfigFiled(field = "connector.plugin.type")
+    @ConfigFiled(field = "eventMesh.connector.plugin.type")
     public String eventMeshConnectorPluginType = "rocketmq";
 
 
-    @ConfigFiled(field = "registry.plugin.username")
+    @ConfigFiled(field = "eventMesh.registry.plugin.username")
     public String eventMeshRegistryPluginUsername = "";
 
-    @ConfigFiled(field = "registry.plugin.password")
+    @ConfigFiled(field = "eventMesh.registry.plugin.password")
     public String eventMeshRegistryPluginPassword = "";
 
-    @ConfigFiled(field = "server.registry.registerIntervalInMills")
+    @ConfigFiled(field = "eventMesh.server.registry.registerIntervalInMills")
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
 
-    @ConfigFiled(field = "server.registry.fetchRegistryAddrIntervalInMills")
+    @ConfigFiled(field = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills")
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
 
 
-    @ConfigFiled(field = "server.trace.enabled")
+    @ConfigFiled(field = "eventMesh.server.trace.enabled")
     public boolean eventMeshServerTraceEnable = false;
 
-    @ConfigFiled(field = "server.security.enabled")
+    @ConfigFiled(field = "eventMesh.server.security.enabled")
     public boolean eventMeshServerSecurityEnable = false;
 
-    @ConfigFiled(field = "server.registry.enabled")
+    @ConfigFiled(field = "eventMesh.server.registry.enabled")
     public boolean eventMeshServerRegistryEnable = false;
 
 
-    @ConfigFiled(field = "server.provide.protocols")
+    @ConfigFiled(field = "eventMesh.server.provide.protocols")
     public List<String> eventMeshProvideServerProtocols;
 
 
@@ -112,7 +111,7 @@ public class CommonConfiguration {
 
     @Getter
     protected ConfigurationWrapper configurationWrapper;
-    
+
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }
@@ -197,9 +196,9 @@ public class CommonConfiguration {
         String provideProtocols = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PROVIDE_PROTOCOLS);
         if (StringUtils.isNotEmpty(provideProtocols)) {
             return Arrays.stream(provideProtocols.split(","))
-                    .filter(StringUtils::isNotBlank)
-                    .map(String::trim)
-                    .collect(Collectors.toList());
+                .filter(StringUtils::isNotBlank)
+                .map(String::trim)
+                .collect(Collectors.toList());
         } else {
             return Collections.singletonList(ConfigurationContextUtil.HTTP);
         }

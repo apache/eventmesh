@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -32,15 +33,14 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
     private final Registry registry;
 
-    public EventMeshHttpBootstrap(EventMeshServer eventMeshServer,
-                                  ConfigurationWrapper configurationWrapper,
-                                  Registry registry) {
+    public EventMeshHttpBootstrap(EventMeshServer eventMeshServer, Registry registry) {
         this.eventMeshServer = eventMeshServer;
         this.registry = registry;
-        this.eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
-        eventMeshHttpConfiguration.init();
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
 
+        ConfigService configService = ConfigService.getInstance();
+        this.eventMeshHttpConfiguration = configService.getConfig(EventMeshHTTPConfiguration.class);
+
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
     }
 
     @Override

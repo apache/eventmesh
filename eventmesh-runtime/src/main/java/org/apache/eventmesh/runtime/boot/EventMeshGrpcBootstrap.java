@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -30,10 +31,12 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     private final Registry registry;
 
-    public EventMeshGrpcBootstrap(ConfigurationWrapper configurationWrapper, Registry registry) {
+    public EventMeshGrpcBootstrap(Registry registry) {
         this.registry = registry;
-        this.eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
-        eventMeshGrpcConfiguration.init();
+
+        ConfigService configService = ConfigService.getInstance();
+        this.eventMeshGrpcConfiguration = configService.getConfig(EventMeshGrpcConfiguration.class);
+
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
     }
 
