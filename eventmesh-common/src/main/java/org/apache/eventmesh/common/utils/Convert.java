@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigInfo;
 import org.apache.eventmesh.common.config.NotNull;
@@ -44,6 +45,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
+
+import org.assertj.core.util.Strings;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -151,7 +154,17 @@ public class Convert {
                     if (Objects.equals(superclass, Object.class) || Objects.isNull(superclass)) {
                         break;
                     }
+
                     this.clazz = superclass;
+                    this.prefix = null;
+                    Config[] configArray = clazz.getAnnotationsByType(Config.class);
+                    if (configArray.length != 0 && !Strings.isNullOrEmpty(configArray[0].prefix())) {
+                        String prefix = configArray[0].prefix();
+                        this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
+                        this.hump = Objects.equals(configArray[0].hump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
+                        this.convertInfo.setHump(this.hump);
+                    }
+
                     this.setValue();
                 }
 

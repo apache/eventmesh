@@ -37,104 +37,105 @@ import com.google.common.collect.Lists;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 
+@Config(prefix = "eventMesh.server")
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public static final Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
 
-    @ConfigFiled(field = "eventMesh.server.http.port")
+    @ConfigFiled(field = "http.port")
     public int httpServerPort = 10105;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.batch.enabled")
+    @ConfigFiled(field = "batchmsg.batch.enabled")
     public boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.threads.num")
+    @ConfigFiled(field = "batchmsg.threads.num")
     public int eventMeshServerBatchMsgThreadNum = 10;
 
-    @ConfigFiled(field = "eventMesh.server.sendmsg.threads.num")
+    @ConfigFiled(field = "sendmsg.threads.num")
     public int eventMeshServerSendMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.remotemsg.threads.num")
+    @ConfigFiled(field = "remotemsg.threads.num")
     public int eventMeshServerRemoteMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.pushmsg.threads.num")
+    @ConfigFiled(field = "pushmsg.threads.num")
     public int eventMeshServerPushMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.replymsg.threads.num")
+    @ConfigFiled(field = "replymsg.threads.num")
     public int eventMeshServerReplyMsgThreadNum = 8;
 
-    @ConfigFiled(field = "eventMesh.server.clientmanage.threads.num")
+    @ConfigFiled(field = "clientmanage.threads.num")
     public int eventMeshServerClientManageThreadNum = 4;
 
-    @ConfigFiled(field = "eventMesh.server.registry.threads.num")
+    @ConfigFiled(field = "registry.threads.num")
     public int eventMeshServerRegistryThreadNum = 10;
 
-    @ConfigFiled(field = "eventMesh.server.admin.threads.num")
+    @ConfigFiled(field = "admin.threads.num")
     public int eventMeshServerAdminThreadNum = 2;
 
-    @ConfigFiled(field = "eventMesh.server.retry.threads.num")
+    @ConfigFiled(field = "retry.threads.num")
     public int eventMeshServerRetryThreadNum = 2;
 
     @ConfigFiled(field = "")
     public int eventMeshServerWebhookThreadNum = 4;
 
-    @ConfigFiled(field = "eventMesh.server.pull.registry.interval")
+    @ConfigFiled(field = "pull.registry.interval")
     public int eventMeshServerPullRegistryInterval = 30000;
 
-    @ConfigFiled(field = "eventMesh.server.async.accumulation.threshold")
+    @ConfigFiled(field = "async.accumulation.threshold")
     public int eventMeshServerAsyncAccumulationThreshold = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.retry.blockQ.size")
+    @ConfigFiled(field = "retry.blockQ.size")
     public int eventMeshServerRetryBlockQSize = 10000;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.blockQ.size")
+    @ConfigFiled(field = "batchmsg.blockQ.size")
     public int eventMeshServerBatchBlockQSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.sendmsg.blockQ.size")
+    @ConfigFiled(field = "sendmsg.blockQ.size")
     public int eventMeshServerSendMsgBlockQSize = 1000;
 
     @ConfigFiled(field = "")
     public int eventMeshServerRemoteMsgBlockQSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.pushmsg.blockQ.size")
+    @ConfigFiled(field = "pushmsg.blockQ.size")
     public int eventMeshServerPushMsgBlockQSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.clientM.blockQ.size")
+    @ConfigFiled(field = "clientM.blockQ.size")
     public int eventMeshServerClientManageBlockQSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.busy.check.interval")
+    @ConfigFiled(field = "busy.check.interval")
     public int eventMeshServerBusyCheckInterval = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.consumer.enabled")
+    @ConfigFiled(field = "consumer.enabled")
     public boolean eventMeshServerConsumerEnabled = false;
 
-    @ConfigFiled(field = "eventMesh.server.useTls.enabled")
+    @ConfigFiled(field = "useTls.enabled")
     public boolean eventMeshServerUseTls = false;
 
-    @ConfigFiled(field = "eventMesh.server.ssl.protocol")
+    @ConfigFiled(field = "ssl.protocol")
     public String eventMeshServerSSLProtocol = "TLSv1.1";
 
-    @ConfigFiled(field = "eventMesh.server.ssl.cer")
+    @ConfigFiled(field = "ssl.cer")
     public String eventMeshServerSSLCer = "sChat2.jks";
 
-    @ConfigFiled(field = "eventMesh.server.ssl.pass")
+    @ConfigFiled(field = "ssl.pass")
     public String eventMeshServerSSLPass = "sNetty";
 
-    @ConfigFiled(field = "eventMesh.server.http.msgReqnumPerSecond")
+    @ConfigFiled(field = "http.msgReqnumPerSecond")
     public int eventMeshHttpMsgReqNumPerSecond = 15000;
 
-    @ConfigFiled(field = "eventMesh.server.batchmsg.reqNumPerSecond")
+    @ConfigFiled(field = "batchmsg.reqNumPerSecond")
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
-    @ConfigFiled(field = "eventMesh.server.maxEventSize")
+    @ConfigFiled(field = "maxEventSize")
     public int eventMeshEventSize = 1000;
 
-    @ConfigFiled(field = "eventMesh.server.maxEventBatchSize")
+    @ConfigFiled(field = "maxEventBatchSize")
     public int eventMeshEventBatchSize = 10;
 
-    @ConfigFiled(field = "eventMesh.server.blacklist.ipv4")
+    @ConfigFiled(field = "blacklist.ipv4")
     public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
 
-    @ConfigFiled(field = "eventMesh.server.blacklist.ipv6")
+    @ConfigFiled(field = "blacklist.ipv6")
     public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
 
     public EventMeshHTTPConfiguration() {

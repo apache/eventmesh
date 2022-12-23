@@ -30,7 +30,7 @@ public @interface Config {
 
     String path() default "";
 
-    String prefix();
+    String prefix() default "";
 
     String hump() default ".";
 

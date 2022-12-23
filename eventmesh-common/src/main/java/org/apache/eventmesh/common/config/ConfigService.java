@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.assertj.core.util.Strings;
+
 
 public class ConfigService {
 
@@ -93,26 +95,33 @@ public class ConfigService {
             return;
         }
 
-        for (Config config : configArray) {
-            ConfigInfo configInfo = new ConfigInfo();
-            configInfo.setField(config.field());
+        Config config = configArray[0];
+        ConfigInfo configInfo = new ConfigInfo();
+        configInfo.setField(config.field());
+        configInfo.setMonitor(config.monitor());
+
+        Field field = clazz.getDeclaredField(configInfo.getField());
+        Class<?> fieldClazz = field.getType();
+        configInfo.setClazz(fieldClazz);
+
+        configArray = fieldClazz.getAnnotationsByType(Config.class);
+        if (configArray.length != 0 && !Strings.isNullOrEmpty(configArray[0].prefix())) {
+            config = configArray[0];
+            configInfo.setPrefix(config.prefix());
             configInfo.setPath(config.path());
             configInfo.setPrefix(config.prefix());
             configInfo.setHump(config.hump());
-            configInfo.setMonitor(config.monitor());
+        }
 
-            Field field = clazz.getDeclaredField(configInfo.getField());
-            configInfo.setClazz(field.getType());
-            Object configObject = this.getConfig(configInfo);
-            field.setAccessible(true);
-            field.set(object, configObject);
+        Object configObject = this.getConfig(configInfo);
+        field.setAccessible(true);
+        field.set(object, configObject);
 
-            if (configInfo.isMonitor()) {
-                configInfo.setObjectField(field);
-                configInfo.setInstance(object);
-                configInfo.setObject(configObject);
-                configMonitorService.monitor(configInfo);
-            }
+        if (configInfo.isMonitor()) {
+            configInfo.setObjectField(field);
+            configInfo.setInstance(object);
+            configInfo.setObject(configObject);
+            configMonitorService.monitor(configInfo);
         }
     }
 

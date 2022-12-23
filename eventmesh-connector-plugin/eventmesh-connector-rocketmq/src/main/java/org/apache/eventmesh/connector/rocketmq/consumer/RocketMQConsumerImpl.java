@@ -37,7 +37,7 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Config(field = "clientConfiguration", prefix = "")
+@Config(field = "clientConfiguration")
 public class RocketMQConsumerImpl implements Consumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
@@ -116,4 +116,7 @@ public class RocketMQConsumerImpl implements Consumer {
         return pushConsumer.attributes();
     }
 
+    public ClientConfiguration getClientConfiguration() {
+        return clientConfiguration;
+    }
 }
