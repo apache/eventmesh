@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.config;
 
-import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.connector.rocketmq.consumer.RocketMQConsumerImpl;
 import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
 
@@ -27,26 +27,20 @@ import org.junit.Test;
 public class ClientConfigurationTest {
 
     @Test
-    public void getConfigWhenRocketMQConsumerInit() throws Exception {
-        RocketMQConsumerImpl extensionInstance = RocketMQConsumerImpl.class.newInstance();
+    public void getConfigWhenRocketMQConsumerInit() {
+        RocketMQConsumerImpl consumer =
+                (RocketMQConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("rocketmq");
 
-        ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://rocketmq-client.properties");
-        ConfigService.getInstance().getConfig(extensionInstance);
-
-        ClientConfiguration config = extensionInstance.getClientConfiguration();
+        ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
     }
 
     @Test
-    public void getConfigWhenRocketMQProducerInit() throws Exception {
-        RocketMQProducerImpl extensionInstance = RocketMQProducerImpl.class.newInstance();
+    public void getConfigWhenRocketMQProducerInit() {
+        RocketMQProducerImpl producer =
+                (RocketMQProducerImpl) ConnectorPluginFactory.getMeshMQProducer("rocketmq");
 
-        ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://rocketmq-client.properties");
-        ConfigService.getInstance().getConfig(extensionInstance);
-
-        ClientConfiguration config = extensionInstance.getClientConfiguration();
+        ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
     }
 
