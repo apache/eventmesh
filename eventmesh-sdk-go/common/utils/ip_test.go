@@ -20,34 +20,15 @@ package utils
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"net"
 )
 
-var _ = Describe("random utils test", func() {
-	Context("RandomStr()  test ", func() {
-		It("should be different string", func() {
-			randomMap := make(map[string]struct{})
-			for i := 0; i < 16; i++ {
-				str := RandomStr(10)
-				if _, ok := randomMap[str]; ok {
-					Ω(ok).To(Equal(false))
-				}
-				Ω(len(str)).To(Equal(10))
-				randomMap[str] = struct{}{}
-			}
-		})
-	})
-
-	Context("RandomNumberStr()  test ", func() {
-		It("should be different number string", func() {
-			randomMap := make(map[string]struct{})
-			for i := 0; i < 16; i++ {
-				str := RandomNumberStr(10)
-				if _, ok := randomMap[str]; ok {
-					Ω(ok).To(Equal(false))
-				}
-				Ω(len(str)).To(Equal(10))
-				randomMap[str] = struct{}{}
-			}
+var _ = Describe("ip test", func() {
+	Context("HostIPV4()  test ", func() {
+		It("should be ipv4", func() {
+			ipv4 := HostIPV4()
+			address := net.ParseIP(ipv4)
+			Ω(address).To(Not(BeNil()))
 		})
 	})
 

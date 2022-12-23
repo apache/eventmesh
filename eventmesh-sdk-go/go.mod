@@ -23,6 +23,8 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.6.0
 	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.10
+	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega v1.24.2
 	github.com/panjf2000/ants v1.3.0
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/sony/sonyflake v1.0.0

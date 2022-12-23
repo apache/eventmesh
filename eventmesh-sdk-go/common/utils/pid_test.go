@@ -22,32 +22,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("random utils test", func() {
-	Context("RandomStr()  test ", func() {
-		It("should be different string", func() {
-			randomMap := make(map[string]struct{})
-			for i := 0; i < 16; i++ {
-				str := RandomStr(10)
-				if _, ok := randomMap[str]; ok {
-					Ω(ok).To(Equal(false))
-				}
-				Ω(len(str)).To(Equal(10))
-				randomMap[str] = struct{}{}
-			}
-		})
-	})
-
-	Context("RandomNumberStr()  test ", func() {
-		It("should be different number string", func() {
-			randomMap := make(map[string]struct{})
-			for i := 0; i < 16; i++ {
-				str := RandomNumberStr(10)
-				if _, ok := randomMap[str]; ok {
-					Ω(ok).To(Equal(false))
-				}
-				Ω(len(str)).To(Equal(10))
-				randomMap[str] = struct{}{}
-			}
+var _ = Describe("pid test", func() {
+	Context("CurrentPID()  test ", func() {
+		It("should not be null", func() {
+			pid := CurrentPID()
+			Ω(pid).To(Not(BeNil()))
 		})
 	})
 
