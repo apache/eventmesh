@@ -18,7 +18,7 @@
 package org.apache.eventmesh.common.exception;
 
 public class EventMeshException extends RuntimeException {
-    public static final long serialVersionUID = 5774485660304045938L;
+    public static final long serialVersionUID = 5648256502005456586L;
 
     public EventMeshException(String message) {
         super(message);
