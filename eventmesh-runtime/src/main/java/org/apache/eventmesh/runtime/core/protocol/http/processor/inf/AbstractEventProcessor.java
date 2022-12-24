@@ -49,7 +49,7 @@ public class AbstractEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("AbstractEventProcessor");
 
-    protected EventMeshHTTPServer eventMeshHTTPServer;
+    protected transient EventMeshHTTPServer eventMeshHTTPServer;
 
     public AbstractEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -62,18 +62,23 @@ public class AbstractEventProcessor {
         if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
             return;
         }
+
         try {
+
             Map<String, String> metadata = new HashMap<>(1 << 4);
-            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap : eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
+                    eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+
                 String consumerGroupKey = consumerGroupMap.getKey();
                 ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
 
                 ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
                 consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
 
-                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
-                        .entrySet()) {
+                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                        new HashMap<>(1 << 4);
+                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
+                        consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
@@ -83,11 +88,13 @@ public class AbstractEventProcessor {
 
                     consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
                 }
+
                 consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
                 metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
             }
-            Registry registry = eventMeshHTTPServer.getRegistry();
-            registry.registerMetadata(metadata);
+
+            eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
+
         } catch (Exception e) {
             LOGGER.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
         }
@@ -112,9 +119,11 @@ public class AbstractEventProcessor {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
             }
+
             if (httpConfiguration.getEventMeshCluster().equals(eventMeshDataInfo.getEventMeshClusterName())) {
                 continue;
             }
+
             Map<String, String> metadata = eventMeshDataInfo.getMetadata();
             String topicMetadataJson = metadata.get(consumerGroup);
             if (StringUtils.isBlank(topicMetadataJson)) {
@@ -125,8 +134,10 @@ public class AbstractEventProcessor {
                     JsonUtils.deserialize(topicMetadataJson, ConsumerGroupMetadata.class);
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     Optional.ofNullable(consumerGroupMetadata)
-                        .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
-                        .orElse(Maps.newConcurrentMap());
+                            .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
+                            .orElseGet(() -> {
+                                return Maps.newConcurrentMap();
+                            });
 
             for (SubscriptionItem subscriptionItem : subscriptionList) {
                 if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
