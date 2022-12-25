@@ -13,12 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package heartbeat
 
 import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/validator"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/panjf2000/ants/v2"
 	"time"
@@ -26,19 +28,19 @@ import (
 
 type HeartbeatService struct {
 	pb.UnimplementedHeartbeatServiceServer
-	gctx *GRPCContext
-	pool *ants.Pool
+	consumerMgr consumer.ConsumerManager
+	pool        *ants.Pool
 }
 
-func NewHeartbeatServiceServer(gctx *GRPCContext) (*HeartbeatService, error) {
+func NewHeartbeatServiceServer(consumerMgr consumer.ConsumerManager) (*HeartbeatService, error) {
 	sp := config.GlobalConfig().Server.GRPCOption.SubscribePoolSize
 	pl, err := ants.NewPool(sp)
 	if err != nil {
 		return nil, err
 	}
 	return &HeartbeatService{
-		gctx: gctx,
-		pool: pl,
+		consumerMgr: consumerMgr,
+		pool:        pl,
 	}, nil
 }
 
@@ -51,7 +53,7 @@ func (h *HeartbeatService) Heartbeat(ctx context.Context, hb *pb.Heartbeat) (*pb
 		err     error
 	)
 	h.pool.Submit(func() {
-		resp, err = NewProcessor().Heartbeat(h.gctx, hb)
+		resp, err = validator.NewProcessor().Heartbeat(h.consumerMgr, hb)
 		errChan <- err
 	})
 	select {

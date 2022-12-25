@@ -18,7 +18,9 @@ package emserver
 import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-	grpc2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/heartbeat"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -45,20 +47,30 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 		err error
 	)
 
-	grpcCtx, err := grpc2.New()
+	//msgReqPerSeconds := config.GlobalConfig().Server.GRPCOption.MsgReqNumPerSecond
+	//limiter := rate.NewLimiter(rate.Limit(msgReqPerSeconds), 10)
+
+	consumerMgr, err := consumer.NewConsumerManager()
+	if err != nil {
+		return nil, err
+	}
+	producerMgr, err := producer.NewProducerManager()
 	if err != nil {
 		return nil, err
 	}
 
-	consumerSVC, err := grpc2.NewConsumerServiceServer(grpcCtx)
+	//registryName := config.GlobalConfig().Server.GRPCOption.RegistryName
+	//regis := registry.Get(registryName)
+
+	consumerSVC, err := consumer.NewConsumerServiceServer(consumerMgr)
 	if err != nil {
 		return nil, err
 	}
-	producerSVC, err := grpc2.NewProducerServiceServer(grpcCtx)
+	producerSVC, err := producer.NewProducerServiceServer(producerMgr)
 	if err != nil {
 		return nil, err
 	}
-	hbSVC, err := grpc2.NewHeartbeatServiceServer(grpcCtx)
+	hbSVC, err := heartbeat.NewHeartbeatServiceServer(consumerMgr)
 	if err != nil {
 		return nil, err
 	}

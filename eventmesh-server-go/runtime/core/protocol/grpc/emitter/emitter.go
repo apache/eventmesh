@@ -13,27 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package emitter
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"time"
 )
 
-// GroupClient consumer group client details
-type GroupClient struct {
-	ENV              string
-	IDC              string
-	ConsumerGroup    string
-	Topic            string
-	GRPCType         GRPCType
-	URL              string
-	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	SYS              string
-	IP               string
-	PID              string
-	Hostname         string
-	APIVersion       string
-	LastUPTime       time.Time
-	Emiter           EventEmitter
+type EventEmitter interface {
+	SendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error
+}
+
+type eventEmitter struct {
+	emitter pb.ConsumerService_SubscribeStreamServer
+}
+
+func NewEventEmitter(stream pb.ConsumerService_SubscribeStreamServer) EventEmitter {
+	return &eventEmitter{
+		emitter: stream,
+	}
+}
+
+func (e *eventEmitter) SendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error {
+	return e.emitter.Send(&pb.SimpleMessage{
+		Header:  hdr,
+		Content: code.ToJSONString(),
+	})
 }

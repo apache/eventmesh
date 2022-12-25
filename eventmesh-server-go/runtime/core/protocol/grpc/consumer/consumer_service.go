@@ -13,28 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/panjf2000/ants/v2"
 	"io"
+	"time"
 )
+
+var defaultAsyncTimeout = time.Second * 5
 
 // ConsumerService grpc service
 type ConsumerService struct {
 	pb.UnimplementedConsumerServiceServer
-	gctx          *GRPCContext
-	subscribePool *ants.Pool
-	replyPool     *ants.Pool
-	msgToClient   chan *pb.SimpleMessage
-	subFromClient chan *pb.Subscription
+	consumerManager ConsumerManager
+	producerManager producer.ProducerManager
+	subscribePool   *ants.Pool
+	replyPool       *ants.Pool
+	msgToClient     chan *pb.SimpleMessage
+	subFromClient   chan *pb.Subscription
 }
 
-func NewConsumerServiceServer(gctx *GRPCContext) (*ConsumerService, error) {
+func NewConsumerServiceServer(consumerManager ConsumerManager, producerManager producer.ProducerManager) (*ConsumerService, error) {
 	ss := config.GlobalConfig().Server.GRPCOption.SubscribePoolSize
 	subPool, err := ants.NewPool(ss)
 	if err != nil {
@@ -46,9 +52,10 @@ func NewConsumerServiceServer(gctx *GRPCContext) (*ConsumerService, error) {
 		return nil, err
 	}
 	return &ConsumerService{
-		gctx:          gctx,
-		subscribePool: subPool,
-		replyPool:     replyPool,
+		consumerManager: consumerManager,
+		producerManager: producerManager,
+		subscribePool:   subPool,
+		replyPool:       replyPool,
 	}, nil
 }
 
@@ -62,7 +69,7 @@ func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = NewProcessor().Subscribe(c.gctx, sub)
+		resp, err = NewProcessor().Subscribe(c.consumerManager, sub)
 		errChan <- err
 	})
 	select {
@@ -82,7 +89,6 @@ func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (
 // for Recv() goroutine if got err==io.EOF as the client close the stream(即客户端关闭stream)
 // for Send() refers to https://github.com/grpc/grpc-go/issues/444
 func (c *ConsumerService) SubscribeStream(stream pb.ConsumerService_SubscribeStreamServer) error {
-	//go func() {
 	for {
 		req, err := stream.Recv()
 		if err == io.EOF {
@@ -101,8 +107,6 @@ func (c *ConsumerService) SubscribeStream(stream pb.ConsumerService_SubscribeStr
 			c.handleSubscriptionStream(req, stream)
 		}
 	}
-	//}()
-
 	return nil
 }
 
@@ -116,7 +120,7 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = NewProcessor().UnSubscribe(c.gctx, sub)
+		resp, err = NewProcessor().UnSubscribe(c.consumerManager, sub)
 		errChan <- err
 	})
 	select {
@@ -133,17 +137,17 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 
 func (c *ConsumerService) handleSubscriptionStream(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.subscribePool.Submit(func() {
-		emiter := NewEventEmitter(stream)
-		NewProcessor().SubscribeStream(context.TODO(), c.gctx, emiter, sub)
+		emiter := emitter.NewEventEmitter(stream)
+		NewProcessor().SubscribeStream(c.consumerManager, emiter, sub)
 	})
 	return nil
 }
 
 func (c *ConsumerService) handleSubscribeReply(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.replyPool.Submit(func() {
-		emiter := NewEventEmitter(stream)
+		emiter := emitter.NewEventEmitter(stream)
 		reply := sub.Reply
-		NewProcessor().ReplyMessage(context.TODO(), c.gctx, emiter, &pb.SimpleMessage{
+		NewProcessor().ReplyMessage(context.TODO(), c.producerManager, emiter, &pb.SimpleMessage{
 			Header:        sub.Header,
 			ProducerGroup: reply.ProducerGroup,
 			Content:       reply.Content,

@@ -13,10 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
-import "testing"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"time"
+)
 
-func Test_NewConsumerGroupTopicOption(t *testing.T) {
-
+// GroupClient consumer group client details
+type GroupClient struct {
+	ENV              string
+	IDC              string
+	ConsumerGroup    string
+	Topic            string
+	GRPCType         consts.GRPCType
+	URL              string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	SYS              string
+	IP               string
+	PID              string
+	Hostname         string
+	APIVersion       string
+	LastUPTime       time.Time
+	Emiter           emitter.EventEmitter
 }

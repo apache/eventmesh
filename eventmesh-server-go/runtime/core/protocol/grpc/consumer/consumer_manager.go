@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	config2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
@@ -82,13 +82,13 @@ func (c *consumerManager) RegisterClient(cli *GroupClient) error {
 	found := false
 	for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
 		lc := iter.Value().(*GroupClient)
-		if lc.GRPCType == WEBHOOK {
+		if lc.GRPCType == consts.WEBHOOK {
 			lc.URL = cli.URL
 			lc.LastUPTime = cli.LastUPTime
 			found = true
 			break
 		}
-		if lc.GRPCType == STREAM {
+		if lc.GRPCType == consts.STREAM {
 			lc.Emiter = cli.Emiter
 			lc.LastUPTime = cli.LastUPTime
 			found = true
@@ -111,7 +111,7 @@ func (c *consumerManager) DeRegisterClient(cli *GroupClient) error {
 	for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
 		lc := iter.Value().(*GroupClient)
 		if lc.Topic == cli.Topic {
-			if lc.GRPCType == STREAM {
+			if lc.GRPCType == consts.STREAM {
 				// TODO
 				// close the GRPC client stream before removing it
 			}

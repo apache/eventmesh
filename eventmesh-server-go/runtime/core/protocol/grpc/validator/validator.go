@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package validator
 
 import (
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
@@ -101,8 +102,8 @@ func ValidateMessage(msg *pb.SimpleMessage) error {
 	return nil
 }
 
-func ValidateSubscription(stype GRPCType, msg *pb.Subscription) error {
-	if stype == WEBHOOK && msg.Url == "" {
+func ValidateSubscription(stype consts.GRPCType, msg *pb.Subscription) error {
+	if stype == consts.WEBHOOK && msg.Url == "" {
 		return ErrSubscriptionNoURL
 	}
 

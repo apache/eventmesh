@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/pkg/errors"
 	"sync"
 	"time"
@@ -57,7 +58,7 @@ func (m *messageHandler) checkTimeout() {
 		m.waitingRequests.Range(func(key, value interface{}) bool {
 			reqs := value.([]*Request)
 			for _, req := range reqs {
-				if req.timeout() {
+				if req.Timeout() {
 
 				}
 			}
@@ -76,7 +77,7 @@ func (m *messageHandler) Handler(mctx *MessageContext) error {
 	var (
 		try func() error
 	)
-	if mctx.GrpcType == WEBHOOK {
+	if mctx.GrpcType == consts.WEBHOOK {
 		req, err := NewWebhookRequest(mctx)
 		if err != nil {
 			return err

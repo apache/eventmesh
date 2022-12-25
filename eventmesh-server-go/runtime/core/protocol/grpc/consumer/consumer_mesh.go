@@ -13,11 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	"sync"
 	"time"
+
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	"github.com/pkg/errors"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
@@ -26,8 +29,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	cloudv2 "github.com/cloudevents/sdk-go/v2"
-	"github.com/pkg/errors"
 )
 
 var (

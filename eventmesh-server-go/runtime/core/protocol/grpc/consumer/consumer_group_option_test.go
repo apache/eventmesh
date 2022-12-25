@@ -13,8 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
-type ProducerGroupConfig struct {
-	GroupName string `json:"groupName"`
+import "testing"
+
+func Test_NewConsumerGroupTopicOption(t *testing.T) {
+
 }

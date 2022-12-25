@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package producer
 
 import (
 	"context"
@@ -28,19 +28,19 @@ var defaultAsyncTimeout = time.Second * 5
 
 type ProducerService struct {
 	pb.UnimplementedPublisherServiceServer
-	gctx     *GRPCContext
-	sendPool *ants.Pool
+	producerMgr ProducerManager
+	sendPool    *ants.Pool
 }
 
-func NewProducerServiceServer(gctx *GRPCContext) (*ProducerService, error) {
+func NewProducerServiceServer(producerMgr ProducerManager) (*ProducerService, error) {
 	ps := config.GlobalConfig().Server.GRPCOption.SendPoolSize
 	pl, err := ants.NewPool(ps)
 	if err != nil {
 		return nil, err
 	}
 	return &ProducerService{
-		gctx:     gctx,
-		sendPool: pl,
+		producerMgr: producerMgr,
+		sendPool:    pl,
 	}, nil
 }
 
@@ -55,7 +55,7 @@ func (p *ProducerService) Publish(ctx context.Context, msg *pb.SimpleMessage) (*
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().AsyncMessage(ctx, p.gctx, msg)
+		resp, err = NewProcessor().AsyncMessage(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
@@ -80,7 +80,7 @@ func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessag
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().RequestReplyMessage(ctx, p.gctx, msg)
+		resp, err = NewProcessor().RequestReplyMessage(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
@@ -106,7 +106,7 @@ func (p *ProducerService) BatchPublish(ctx context.Context, msg *pb.BatchMessage
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().BatchPublish(ctx, p.gctx, msg)
+		resp, err = NewProcessor().BatchPublish(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
