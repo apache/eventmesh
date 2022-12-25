@@ -41,12 +41,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -119,8 +120,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {});
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestBody, Constants.DEFAULT_CHARSET),
+            new TypeReference<HashMap<String, Object>>() {}
+        )).orElse(new HashMap<>());
 
         if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -133,8 +136,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
         String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = JsonUtils.deserialize(topic, new TypeReference<List<SubscriptionItem>>() {
-        });
+        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+            topic,
+            new TypeReference<List<SubscriptionItem>>() {}
+        )).orElse(Collections.emptyList());
 
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
@@ -213,7 +218,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
                     consumeTopicConfig.setConsumerGroup(consumerGroup);
                     consumeTopicConfig.setTopic(subTopic.getTopic());
                     consumeTopicConfig.setSubscriptionItem(subTopic);
-                    consumeTopicConfig.setUrls(new HashSet<>(Arrays.asList(url)));
+                    consumeTopicConfig.setUrls(new HashSet<>(Collections.singletonList(url)));
 
                     consumeTopicConfig.setIdcUrls(idcUrls);
 
@@ -230,7 +235,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
                         newTopicConf.setConsumerGroup(consumerGroup);
                         newTopicConf.setTopic(subTopic.getTopic());
                         newTopicConf.setSubscriptionItem(subTopic);
-                        newTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
+                        newTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
                         newTopicConf.setIdcUrls(idcUrls);
                         map.put(subTopic.getTopic(), newTopicConf);
                     }
@@ -244,7 +249,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
                         latestTopicConf.setConsumerGroup(consumerGroup);
                         latestTopicConf.setTopic(subTopic.getTopic());
                         latestTopicConf.setSubscriptionItem(subTopic);
-                        latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
+                        latestTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
 
                         ConsumerGroupTopicConf currentTopicConf = set.getValue();
                         latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());

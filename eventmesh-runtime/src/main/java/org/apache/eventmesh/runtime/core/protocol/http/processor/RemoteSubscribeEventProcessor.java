@@ -46,9 +46,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +60,7 @@ import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
 public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
@@ -122,9 +125,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {
-            });
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestBody, Constants.DEFAULT_CHARSET),
+            new TypeReference<HashMap<String, Object>>() {}
+        )).orElse(Maps.newHashMap());
 
 
         if (requestBodyMap.get(EventMeshConstants.URL) == null
@@ -141,8 +145,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
 
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = JsonUtils.deserialize(topic, new TypeReference<List<SubscriptionItem>>() {
-        });
+        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+            topic,
+            new TypeReference<List<SubscriptionItem>>() {}
+        )).orElse(Collections.emptyList());
 
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
@@ -236,8 +242,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
             String remoteResult = post(closeableHttpClient, targetMesh, remoteHeaderMap, remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
-            });
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
+                remoteResult,
+                new TypeReference<Map<String, String>>() {}
+            )).orElse(Maps.newHashMap());
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
@@ -286,7 +294,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
 
         //body
         if (MapUtils.isNotEmpty(requestBody)) {
-            String jsonStr = JsonUtils.serialize(requestBody);
+            String jsonStr = Optional.ofNullable(JsonUtils.serialize(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 
