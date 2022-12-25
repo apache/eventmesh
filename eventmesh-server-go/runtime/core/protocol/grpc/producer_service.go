@@ -55,7 +55,7 @@ func (p *ProducerService) Publish(ctx context.Context, msg *pb.SimpleMessage) (*
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = ProcessAsyncMessage(ctx, p.gctx, msg)
+		resp, err = NewProcessor().AsyncMessage(ctx, p.gctx, msg)
 		errChan <- err
 	})
 	select {
@@ -80,7 +80,7 @@ func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessag
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = ProcessRequestReplyMessage(ctx, p.gctx, msg)
+		resp, err = NewProcessor().RequestReplyMessage(ctx, p.gctx, msg)
 		errChan <- err
 	})
 	select {
@@ -106,7 +106,7 @@ func (p *ProducerService) BatchPublish(ctx context.Context, msg *pb.BatchMessage
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = ProcessBatchPublish(ctx, p.gctx, msg)
+		resp, err = NewProcessor().BatchPublish(ctx, p.gctx, msg)
 		errChan <- err
 	})
 	select {

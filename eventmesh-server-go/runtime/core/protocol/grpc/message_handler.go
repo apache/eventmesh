@@ -28,18 +28,22 @@ var (
 	ErrRequestReachMaxThreshold = errors.New("request reach the max threshold")
 )
 
-type MessageHandler struct {
+type MessageHandler interface {
+	Handler(mctx *MessageContext) error
+}
+
+type messageHandler struct {
 	//pool *ants.Pool
 	// waitingRequests waiting to request
 	// key to consumerGroup value to []*PushRequest
 	waitingRequests *sync.Map
 }
 
-func NewMessageHandler(consumerGroup string) (*MessageHandler, error) {
+func NewMessageHandler(consumerGroup string) (MessageHandler, error) {
 	wr := new(sync.Map)
 	// TODO need goroutine safe in []*Request{}
 	wr.Store(consumerGroup, []*Request{})
-	hdl := &MessageHandler{
+	hdl := &messageHandler{
 		//pool:            p,
 		waitingRequests: wr,
 	}
@@ -47,7 +51,7 @@ func NewMessageHandler(consumerGroup string) (*MessageHandler, error) {
 	return hdl, nil
 }
 
-func (m *MessageHandler) checkTimeout() {
+func (m *messageHandler) checkTimeout() {
 	tk := time.NewTicker(time.Second)
 	for range tk.C {
 		m.waitingRequests.Range(func(key, value interface{}) bool {
@@ -62,7 +66,7 @@ func (m *MessageHandler) checkTimeout() {
 	}
 }
 
-func (m *MessageHandler) Handler(mctx *MessageContext) error {
+func (m *messageHandler) Handler(mctx *MessageContext) error {
 	if m.Size() > ConsumerGroupWaitingRequestThreshold {
 		log.Warnf("too many request, reject and send back to MQ, group:%v, threshold:%v",
 			mctx.ConsumerGroup, ConsumerGroupWaitingRequestThreshold)
@@ -93,7 +97,7 @@ func (m *MessageHandler) Handler(mctx *MessageContext) error {
 	return nil
 }
 
-func (m *MessageHandler) Size() int {
+func (m *messageHandler) Size() int {
 	count := 0
 	m.waitingRequests.Range(func(key, value any) bool {
 		count++

@@ -29,7 +29,17 @@ var (
 	ErrNoConsumerClient = errors.New("no consumer group client")
 )
 
-type ConsumerManager struct {
+type ConsumerManager interface {
+	GetConsumer(consumerGroup string) (EventMeshConsumer, error)
+	RegisterClient(cli *GroupClient) error
+	DeRegisterClient(cli *GroupClient) error
+	UpdateClientTime(cli *GroupClient)
+	RestartConsumer(consumerGroup string) error
+	Start() error
+	Stop() error
+}
+
+type consumerManager struct {
 	// consumerClients store all consumer clients
 	// key is consumer group, value is set *GroupClient
 	consumerGroupClients *sync.Map
@@ -40,17 +50,17 @@ type ConsumerManager struct {
 }
 
 // NewConsumerManager create new consumer manager
-func NewConsumerManager() (*ConsumerManager, error) {
-	return &ConsumerManager{
+func NewConsumerManager() (ConsumerManager, error) {
+	return &consumerManager{
 		consumers:            new(sync.Map),
 		consumerGroupClients: new(sync.Map),
 	}, nil
 }
 
-func (c *ConsumerManager) GetConsumer(consumerGroup string) (*EventMeshConsumer, error) {
+func (c *consumerManager) GetConsumer(consumerGroup string) (EventMeshConsumer, error) {
 	val, ok := c.consumers.Load(consumerGroup)
 	if ok {
-		return val.(*EventMeshConsumer), nil
+		return val.(EventMeshConsumer), nil
 	}
 	cu, err := NewEventMeshConsumer(consumerGroup)
 	if err != nil {
@@ -60,7 +70,7 @@ func (c *ConsumerManager) GetConsumer(consumerGroup string) (*EventMeshConsumer,
 	return cu, nil
 }
 
-func (c *ConsumerManager) RegisterClient(cli *GroupClient) error {
+func (c *consumerManager) RegisterClient(cli *GroupClient) error {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		cliset := set.New(set.WithGoroutineSafe())
@@ -91,7 +101,7 @@ func (c *ConsumerManager) RegisterClient(cli *GroupClient) error {
 	return nil
 }
 
-func (c *ConsumerManager) DeRegisterClient(cli *GroupClient) error {
+func (c *consumerManager) DeRegisterClient(cli *GroupClient) error {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		log.Debugf("no consumer group client found, name:%v", cli.ConsumerGroup)
@@ -114,13 +124,13 @@ func (c *ConsumerManager) DeRegisterClient(cli *GroupClient) error {
 	return nil
 }
 
-func (c *ConsumerManager) restartConsumer(consumerGroup string) error {
+func (c *consumerManager) RestartConsumer(consumerGroup string) error {
 	val, ok := c.consumers.Load(consumerGroup)
 	if !ok {
 		return nil
 	}
-	emconsumer := val.(*EventMeshConsumer)
-	if emconsumer.ServiceState == consts.RUNNING {
+	emconsumer := val.(EventMeshConsumer)
+	if emconsumer.ServiceState() == consts.RUNNING {
 		if err := emconsumer.Shutdown(); err != nil {
 			return err
 		}
@@ -131,14 +141,14 @@ func (c *ConsumerManager) restartConsumer(consumerGroup string) error {
 	if err := emconsumer.Start(); err != nil {
 		return err
 	}
-	if emconsumer.ServiceState != consts.RUNNING {
+	if emconsumer.ServiceState() != consts.RUNNING {
 		log.Warnf("restart eventmesh consumer failed, status:%v", emconsumer.ServiceState)
 		c.consumers.Delete(consumerGroup)
 	}
 	return nil
 }
 
-func (c *ConsumerManager) UpdateClientTime(cli *GroupClient) {
+func (c *consumerManager) UpdateClientTime(cli *GroupClient) {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		log.Debugf("no consumer group client found, name:%v", cli.ConsumerGroup)
@@ -150,7 +160,7 @@ func (c *ConsumerManager) UpdateClientTime(cli *GroupClient) {
 	}
 }
 
-func (c *ConsumerManager) clientCheck() {
+func (c *consumerManager) clientCheck() {
 	sessionExpiredInMills := config2.GlobalConfig().Server.GRPCOption.SessionExpiredInMills
 	tk := time.NewTicker(sessionExpiredInMills)
 	go func() {
@@ -180,7 +190,7 @@ func (c *ConsumerManager) clientCheck() {
 					}
 				}
 				for _, rs := range consumerGroupRestart {
-					if err := c.restartConsumer(rs); err != nil {
+					if err := c.RestartConsumer(rs); err != nil {
 						log.Warnf("deregistry consumer:%v  err:%v", rs, err)
 						return true
 					}
@@ -191,11 +201,11 @@ func (c *ConsumerManager) clientCheck() {
 	}()
 }
 
-func (c *ConsumerManager) Start() error {
+func (c *consumerManager) Start() error {
 	log.Infof("start consumer manager")
 	return nil
 }
 
-func (c *ConsumerManager) Stop() error {
+func (c *consumerManager) Stop() error {
 	return nil
 }

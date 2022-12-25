@@ -30,7 +30,7 @@ import (
 	"github.com/liyue201/gostl/ds/set"
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -182,7 +182,7 @@ func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 					resp.StatusCode, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
 				continue
 			}
-			buf, err := ioutil.ReadAll(resp.Body)
+			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Warnf("err:%v in read response url:%v|topic={}|bizSeqNo={}|uniqueId={}",
 					err, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)

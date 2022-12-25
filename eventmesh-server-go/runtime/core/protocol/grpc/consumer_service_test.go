@@ -17,6 +17,8 @@ package grpc
 
 import (
 	"context"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/mocks"
+	"github.com/golang/mock/gomock"
 	"testing"
 	"time"
 
@@ -26,35 +28,10 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
-//	{
-//	   "header": {
-//	       "env": "11",
-//	       "region": "sh",
-//	       "idc": "test-idc",
-//	       "ip": "169.254.45.15",
-//	       "pid": "12345",
-//	       "sys": "test",
-//	       "username": "username",
-//	       "password": "password",
-//	       "language": "go",
-//	       "protocolType": "cloudevents",
-//	       "protocolVersion": "1.0",
-//	       "protocolDesc": "nil"
-//	   },
-//	   "subscriptionItems": [
-//	       {
-//	           "topic":"grpc-topic",
-//	           "mode":"CLUSTERING",
-//	           "type":"SYNC"
-//	       }
-//	   ],
-//	   "consumerGroup": "test-grpc-group",
-//	   "url": "http://127.0.0.1:18080"
-//	}
 func Test_Subscribe(t *testing.T) {
-	cli := newTestClient(t)
-	assert.NotNil(t, cli)
-	resp, err := cli.consumerClient.Subscribe(context.TODO(), &pb.Subscription{
+	mockctl := gomock.NewController(t)
+	mockConsumer := mocks.NewMockConsumerServiceServer(mockctl)
+	mockConsumer.EXPECT().Subscribe(context.TODO(), &pb.Subscription{
 		Header: &pb.RequestHeader{
 			Env:             "grpc-env",
 			Region:          "sh",
@@ -78,11 +55,8 @@ func Test_Subscribe(t *testing.T) {
 			},
 		},
 		Url: "http://127.0.0.1:18080/onmessage",
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, cli)
-	t.Log(resp.String())
-	assert.Equal(t, resp.RespCode, 0)
+	}).Return()
+	//45
 }
 
 func Test_unsubscribe(t *testing.T) {

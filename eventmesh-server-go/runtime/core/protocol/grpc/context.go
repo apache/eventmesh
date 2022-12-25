@@ -28,8 +28,8 @@ import (
 
 // GRPCContext grpc server api, used to handle the client
 type GRPCContext struct {
-	ConsumerMgr *ConsumerManager
-	ProducerMgr *ProducerManager
+	ConsumerMgr ConsumerManager
+	ProducerMgr ProducerManager
 	RateLimiter *rate.Limiter
 	Registry    registry.Registry
 }
@@ -71,15 +71,6 @@ func (g *GRPCContext) Start() error {
 	return nil
 }
 
-//
-//func (g *GRPCContext) SendResp(code *grpc.StatusCode) {
-//	resp := &pb.Response{
-//		RespCode: code.RetCode,
-//		RespMsg:  code.ErrMsg,
-//		RespTime: fmt.Sprintf("%v", time.Now().UnixMilli()),
-//	}
-//}
-
 type MessageContext struct {
 	MsgRandomNo      string
 	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
@@ -88,7 +79,7 @@ type MessageContext struct {
 	Event            *cloudv2.Event
 	TopicConfig      ConsumerGroupTopicOption
 	// channel for server
-	Consumer *EventMeshConsumer
+	Consumer EventMeshConsumer
 }
 
 // SendMessageContext context in produce message
@@ -96,6 +87,6 @@ type SendMessageContext struct {
 	Ctx         context.Context
 	Event       *cloudv2.Event
 	BizSeqNO    string
-	ProducerAPI *EventMeshProducer
+	ProducerAPI EventMeshProducer
 	CreateTime  time.Time
 }

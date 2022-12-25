@@ -42,8 +42,25 @@ var (
 	}}
 )
 
-// SubscribeProcessor Subscribe process subscribe message
-func ProcessSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
+type Processor interface {
+	Subscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error)
+	UnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error)
+	SubscribeStream(ctx context.Context, gctx *GRPCContext, emiter EventEmitter, msg *pb.Subscription) error
+	AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.Response, error)
+	ReplyMessage(ctx context.Context, gctx *GRPCContext, emiter EventEmitter, msg *pb.SimpleMessage) error
+	Heartbeat(gctx *GRPCContext, msg *pb.Heartbeat) (*pb.Response, error)
+	RequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.SimpleMessage, error)
+	BatchPublish(ctx context.Context, gctx *GRPCContext, msg *pb.BatchMessage) (*pb.Response, error)
+}
+
+type processor struct {
+}
+
+func NewProcessor() Processor {
+	return &processor{}
+}
+
+func (p *processor) Subscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
@@ -90,7 +107,7 @@ func ProcessSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, er
 	}
 	if requireRestart {
 		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		if err := cmgr.restartConsumer(consumerGroup); err != nil {
+		if err := cmgr.RestartConsumer(consumerGroup); err != nil {
 			return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
 		}
 	} else {
@@ -99,7 +116,7 @@ func ProcessSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, er
 	return buildPBResponse(grpc.SUCCESS), nil
 }
 
-func ProcessUnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
+func (p *processor) UnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
@@ -146,7 +163,7 @@ func ProcessUnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, 
 	}
 	if requireRestart {
 		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		if err := cmgr.restartConsumer(consumerGroup); err != nil {
+		if err := cmgr.RestartConsumer(consumerGroup); err != nil {
 			return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
 		}
 	} else {
@@ -155,16 +172,16 @@ func ProcessUnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, 
 	return buildPBResponse(grpc.SUCCESS), nil
 }
 
-func ProcessSubscribeStream(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.Subscription) error {
+func (p *processor) SubscribeStream(ctx context.Context, gctx *GRPCContext, emiter EventEmitter, msg *pb.Subscription) error {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
 	if err := ValidateSubscription(STREAM, msg); err != nil {
 		log.Warnf("invalid body:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err
 	}
 	cmgr := gctx.ConsumerMgr
@@ -202,7 +219,7 @@ func ProcessSubscribeStream(ctx context.Context, gctx *GRPCContext, emiter *Even
 	}
 	if requireRestart {
 		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		return cmgr.restartConsumer(consumerGroup)
+		return cmgr.RestartConsumer(consumerGroup)
 	} else {
 		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
 	}
@@ -210,8 +227,7 @@ func ProcessSubscribeStream(ctx context.Context, gctx *GRPCContext, emiter *Even
 	return nil
 }
 
-// ProcessAsyncMessage process async message
-func ProcessAsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.Response, error) {
+func (p *processor) AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
@@ -269,16 +285,16 @@ func ProcessAsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleM
 	return buildPBResponse(code), nil
 }
 
-func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.SimpleMessage) error {
+func (p *processor) ReplyMessage(ctx context.Context, gctx *GRPCContext, emiter EventEmitter, msg *pb.SimpleMessage) error {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
 	if err := ValidateMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err
 	}
 	seqNum := msg.SeqNum
@@ -291,19 +307,19 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 	adp := plugin.Get(plugin.Protocol, protocolType).(protocol.Adapter)
 	if adp == nil {
 		log.Warnf("protocol plugin not found:%v", protocolType)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
 		return ErrProtocolPluginNotFound
 	}
 	cevt, err := adp.ToCloudEvent(&grpc.SimpleMessageWrapper{SimpleMessage: msg})
 	if err != nil {
 		log.Warnf("transfer to cloud event msg err:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
 		return err
 	}
 	emProducer, err := gctx.ProducerMgr.GetProducer(producerGroup)
 	if err != nil {
 		log.Warnf("no eventmesh producer found, err:%v, group:%v", err, producerGroup)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Producer_Group_NotFound_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Producer_Group_NotFound_ERR)
 		return err
 	}
 	start := time.Now()
@@ -321,7 +337,7 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID)
 			},
 			OnError: func(result *connector.ErrorResult) {
-				emiter.sendStreamResp(hdr, grpc.EVENTMESH_REPLY_MSG_ERR)
+				emiter.SendStreamResp(hdr, grpc.EVENTMESH_REPLY_MSG_ERR)
 				log.Errorf("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
 					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID, result.Err)
 			},
@@ -329,7 +345,7 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 	)
 }
 
-func ProcessHeartbeat(gctx *GRPCContext, msg *pb.Heartbeat) (*pb.Response, error) {
+func (p *processor) Heartbeat(gctx *GRPCContext, msg *pb.Heartbeat) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
@@ -361,7 +377,7 @@ func ProcessHeartbeat(gctx *GRPCContext, msg *pb.Heartbeat) (*pb.Response, error
 	return buildPBResponse(grpc.SUCCESS), nil
 }
 
-func ProcessRequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
+func (p *processor) RequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
 	var (
 		err  error
 		resp *pb.SimpleMessage
@@ -431,7 +447,7 @@ func ProcessRequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.
 	return resp, err
 }
 
-func ProcessBatchPublish(ctx context.Context, gctx *GRPCContext, msg *pb.BatchMessage) (*pb.Response, error) {
+func (p *processor) BatchPublish(ctx context.Context, gctx *GRPCContext, msg *pb.BatchMessage) (*pb.Response, error) {
 	var (
 		err error
 		hdr = msg.Header

@@ -51,7 +51,7 @@ func (h *HeartbeatService) Heartbeat(ctx context.Context, hb *pb.Heartbeat) (*pb
 		err     error
 	)
 	h.pool.Submit(func() {
-		resp, err = ProcessHeartbeat(h.gctx, hb)
+		resp, err = NewProcessor().Heartbeat(h.gctx, hb)
 		errChan <- err
 	})
 	select {

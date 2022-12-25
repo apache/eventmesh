@@ -195,7 +195,7 @@ func (b *StreamGroupTopicOption) buildIdcEmitter() {
 		e1 := value.(*sync.Map)
 		elist := set.New(set.WithGoroutineSafe())
 		e1.Range(func(k1, v1 interface{}) bool {
-			elist.Insert(v1.(*EventEmitter))
+			elist.Insert(v1.(EventEmitter))
 			return true
 		})
 		newIDCEmiters.Store(key, elist)

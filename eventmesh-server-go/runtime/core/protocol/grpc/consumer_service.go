@@ -62,7 +62,7 @@ func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = ProcessSubscribe(c.gctx, sub)
+		resp, err = NewProcessor().Subscribe(c.gctx, sub)
 		errChan <- err
 	})
 	select {
@@ -116,7 +116,7 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = ProcessUnSubscribe(c.gctx, sub)
+		resp, err = NewProcessor().UnSubscribe(c.gctx, sub)
 		errChan <- err
 	})
 	select {
@@ -133,17 +133,17 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 
 func (c *ConsumerService) handleSubscriptionStream(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.subscribePool.Submit(func() {
-		emiter := &EventEmitter{emitter: stream}
-		ProcessSubscribeStream(context.TODO(), c.gctx, emiter, sub)
+		emiter := NewEventEmitter(stream)
+		NewProcessor().SubscribeStream(context.TODO(), c.gctx, emiter, sub)
 	})
 	return nil
 }
 
 func (c *ConsumerService) handleSubscribeReply(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.replyPool.Submit(func() {
-		emiter := &EventEmitter{emitter: stream}
+		emiter := NewEventEmitter(stream)
 		reply := sub.Reply
-		ProcessReplyMessage(context.TODO(), c.gctx, emiter, &pb.SimpleMessage{
+		NewProcessor().ReplyMessage(context.TODO(), c.gctx, emiter, &pb.SimpleMessage{
 			Header:        sub.Header,
 			ProducerGroup: reply.ProducerGroup,
 			Content:       reply.Content,

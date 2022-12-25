@@ -20,11 +20,21 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
-type EventEmitter struct {
+type EventEmitter interface {
+	SendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error
+}
+
+type eventEmitter struct {
 	emitter pb.ConsumerService_SubscribeStreamServer
 }
 
-func (e *EventEmitter) sendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error {
+func NewEventEmitter(stream pb.ConsumerService_SubscribeStreamServer) EventEmitter {
+	return &eventEmitter{
+		emitter: stream,
+	}
+}
+
+func (e *eventEmitter) SendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error {
 	return e.emitter.Send(&pb.SimpleMessage{
 		Header:  hdr,
 		Content: code.ToJSONString(),
