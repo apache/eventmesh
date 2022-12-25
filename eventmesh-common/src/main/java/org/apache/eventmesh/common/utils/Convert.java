@@ -22,6 +22,8 @@ import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigInfo;
 import org.apache.eventmesh.common.config.NotNull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -79,6 +81,7 @@ public class Convert {
         this.register(new ConvertList(), List.class, ArrayList.class, LinkedList.class, Vector.class);
         this.register(new ConvertMap(), Map.class, HashMap.class, TreeMap.class, LinkedHashMap.class);
         this.register(new ConvertIPAddress(), IPAddress.class);
+        this.register(new ConvertProperties(), Properties.class);
     }
 
 
@@ -192,16 +195,21 @@ public class Convert {
                 } else {
                     key = keyPrefix.append(configFiled.field()).toString();
                 }
+                // todo configFiled.reload() verify
                 if (!needReload && configFiled != null && configFiled.reload()) {
                     needReload = Boolean.TRUE;
                 }
 
                 Class<?> clazz = field.getType();
                 ConvertValue<?> convertValue = classToConvert.get(clazz);
+                Properties properties = convertInfo.getProperties();
                 if (clazz.isEnum()) {
-                    String value = convertInfo.getProperties().getProperty(key);
+                    String value = properties.getProperty(key);
                     convertInfo.setValue(value);
                     convertValue = convertEnum;
+                } else if (convertValue instanceof ConvertProperties) {
+                    Properties value = getPropertiesByPrefix(properties, key);
+                    convertInfo.setValue(value);
                 } else if (Objects.isNull(convertValue)) {
                     if (Objects.equals("ConfigurationWrapper", clazz.getSimpleName())) {
                         continue;
@@ -213,10 +221,10 @@ public class Convert {
                     } else {
                         convertInfo.setClazz(field.getType());
                     }
-                    convertInfo.setProperties(this.convertInfo.getProperties());
+                    convertInfo.setProperties(properties);
                     convertInfo.setConfigInfo(this.convertInfo.getConfigInfo());
                 } else {
-                    String value = convertInfo.getProperties().getProperty(key);
+                    String value = properties.getProperty(key);
                     if (Objects.isNull(value) && convertValue.isNotHandleNullValue()) {
                         NotNull notNull = field.getAnnotation(NotNull.class);
                         if (Objects.nonNull(notNull)) {
@@ -226,6 +234,11 @@ public class Convert {
                     }
                     convertInfo.setValue(value);
                 }
+
+                if (Objects.isNull(convertInfo.getValue())) {
+                    continue;
+                }
+
                 convertInfo.setField(field);
                 convertInfo.setKey(key);
                 Object value = convertValue.convert(convertInfo);
@@ -286,7 +299,8 @@ public class Convert {
 
         @Override
         public Character convert(ConvertInfo convertInfo) {
-            return convertInfo.getValue().charAt(0);
+            String value = (String) convertInfo.getValue();
+            return value.charAt(0);
         }
     }
 
@@ -294,10 +308,11 @@ public class Convert {
 
         @Override
         public Boolean convert(ConvertInfo convertInfo) {
-            if (Objects.equals(convertInfo.getValue().length(), 1)) {
+            String value = (String) convertInfo.getValue();
+            if (Objects.equals(value.length(), 1)) {
                 return Objects.equals(convertInfo.getValue(), "1") ? Boolean.TRUE : Boolean.FALSE;
             }
-            return Boolean.valueOf(convertInfo.getValue());
+            return Boolean.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -305,7 +320,7 @@ public class Convert {
 
         @Override
         public Byte convert(ConvertInfo convertInfo) {
-            return Byte.valueOf(convertInfo.getValue());
+            return Byte.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -313,7 +328,7 @@ public class Convert {
 
         @Override
         public Short convert(ConvertInfo convertInfo) {
-            return Short.valueOf(convertInfo.getValue());
+            return Short.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -321,7 +336,7 @@ public class Convert {
 
         @Override
         public Integer convert(ConvertInfo convertInfo) {
-            return Integer.valueOf(convertInfo.getValue());
+            return Integer.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -329,7 +344,7 @@ public class Convert {
 
         @Override
         public Long convert(ConvertInfo convertInfo) {
-            return Long.valueOf(convertInfo.getValue());
+            return Long.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -337,7 +352,7 @@ public class Convert {
 
         @Override
         public Float convert(ConvertInfo convertInfo) {
-            return Float.valueOf(convertInfo.getValue());
+            return Float.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -345,7 +360,7 @@ public class Convert {
 
         @Override
         public Double convert(ConvertInfo convertInfo) {
-            return Double.valueOf(convertInfo.getValue());
+            return Double.valueOf((String) convertInfo.getValue());
         }
     }
 
@@ -353,7 +368,7 @@ public class Convert {
 
         @Override
         public String convert(ConvertInfo convertInfo) {
-            return convertInfo.getValue();
+            return (String) convertInfo.getValue();
         }
     }
 
@@ -363,7 +378,7 @@ public class Convert {
         public Date convert(ConvertInfo convertInfo) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
-                return sdf.parse(convertInfo.getValue());
+                return sdf.parse((String) convertInfo.getValue());
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
@@ -374,7 +389,7 @@ public class Convert {
 
         @Override
         public LocalDate convert(ConvertInfo convertInfo) {
-            return LocalDate.parse(convertInfo.getValue(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            return LocalDate.parse((String) convertInfo.getValue(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
 
     }
@@ -383,7 +398,7 @@ public class Convert {
 
         @Override
         public LocalDateTime convert(ConvertInfo convertInfo) {
-            return LocalDateTime.parse(convertInfo.getValue(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            return LocalDateTime.parse((String) convertInfo.getValue(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         }
 
     }
@@ -393,7 +408,7 @@ public class Convert {
         @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
         public Enum<?> convert(ConvertInfo convertInfo) {
-            return Enum.valueOf((Class<Enum>) convertInfo.getField().getType(), convertInfo.getValue());
+            return Enum.valueOf((Class<Enum>) convertInfo.getField().getType(), (String) convertInfo.getValue());
         }
 
     }
@@ -411,7 +426,7 @@ public class Convert {
                 if (convertInfo.getValue() == null) {
                     return new ArrayList<>();
                 }
-                List<String> values = Splitter.on(",").omitEmptyStrings().trimResults().splitToList(convertInfo.getValue());
+                List<String> values = Splitter.on(",").omitEmptyStrings().trimResults().splitToList((String) convertInfo.getValue());
                 List<Object> list;
                 if (Objects.equals(convertInfo.getField().getType(), List.class)) {
                     list = new ArrayList<>();
@@ -479,11 +494,32 @@ public class Convert {
         @Override
         public IPAddress convert(ConvertInfo convertInfo) {
             try {
-                return new IPAddressString(convertInfo.getValue()).toAddress();
+                return new IPAddressString((String) convertInfo.getValue()).toAddress();
             } catch (AddressStringException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private static class ConvertProperties implements ConvertValue<Properties> {
+
+        @Override
+        public Properties convert(ConvertInfo convertInfo) {
+
+            try {
+                return (Properties) convertInfo.getValue();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static Properties getPropertiesByPrefix(Properties properties, String prefix) {
+        if (StringUtils.isBlank(prefix)) {
+            return null;
+        }
+        Properties to = new Properties();
+        return PropertiesUtils.getPropertiesByPrefix(properties, to, prefix);
     }
 
     @Data
@@ -491,7 +527,7 @@ public class Convert {
         char hump;
         String key;
         Field field;
-        String value;
+        Object value;
         Class<?> clazz;
         Properties properties;
         ConfigInfo configInfo;

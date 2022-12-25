@@ -74,8 +74,10 @@ public class ConfigService {
 
         Config config = configArray[0];
         try {
+            // todo Complete all attributes
             ConfigInfo configInfo = new ConfigInfo();
             configInfo.setClazz(clazz);
+            configInfo.setPath(config.path());
             configInfo.setHump(config.hump());
             configInfo.setPrefix(config.prefix());
             configInfo.setMonitor(config.monitor());

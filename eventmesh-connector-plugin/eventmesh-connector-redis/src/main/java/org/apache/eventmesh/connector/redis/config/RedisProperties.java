@@ -50,7 +50,8 @@ public class RedisProperties {
     private String serverPassword;
 
     /**
-     * The redisson options, redisson properties, please refer to the redisson manual.
+     * The redisson options, redisson properties
+     * prefix is `eventMesh.server.redis.redisson`
      */
     @ConfigFiled(field = "redisson")
     private Properties redissonProperties;
