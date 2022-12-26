@@ -20,7 +20,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/validator"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/panjf2000/ants/v2"
 	"time"
@@ -53,7 +52,7 @@ func (h *HeartbeatService) Heartbeat(ctx context.Context, hb *pb.Heartbeat) (*pb
 		err     error
 	)
 	h.pool.Submit(func() {
-		resp, err = validator.NewProcessor().Heartbeat(h.consumerMgr, hb)
+		resp, err = NewProcessor().Heartbeat(h.consumerMgr, hb)
 		errChan <- err
 	})
 	select {

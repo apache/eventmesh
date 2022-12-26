@@ -84,13 +84,13 @@ func TestConfig_Load(t *testing.T) {
 	}
 	config.Plugins = plugin.Config{}
 
-	schedulerConfigYAML := &Config{}
+	configYAML := &Config{}
 	contentYAML, err := os.ReadFile("./testdata/test_config.yaml")
 	assert.NoError(err)
-	if err := yaml.Unmarshal(contentYAML, &schedulerConfigYAML); err != nil {
+	if err := yaml.Unmarshal(contentYAML, &configYAML); err != nil {
 		t.Fatal(err)
 	}
-	schedulerConfigYAML.Plugins = plugin.Config{}
+	configYAML.Plugins = plugin.Config{}
 
-	assert.EqualValues(schedulerConfigYAML, config)
+	assert.EqualValues(configYAML, config)
 }

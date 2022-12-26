@@ -20,6 +20,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
+//go:generate mockgen -destination ./mocks/emitter.go -package mocks github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter EventEmitter
 type EventEmitter interface {
 	SendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error
 }

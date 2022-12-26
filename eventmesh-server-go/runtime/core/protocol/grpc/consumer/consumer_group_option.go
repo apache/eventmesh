@@ -28,6 +28,8 @@ import (
 type RegisterClient func(*GroupClient)
 type DeregisterClient func(*GroupClient)
 
+//go:generate mockgen -destination ./mocks/consumer_group_option.go -package mocks github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer ConsumerGroupTopicOption
+
 type ConsumerGroupTopicOption interface {
 	ConsumerGroup() string
 	Topic() string

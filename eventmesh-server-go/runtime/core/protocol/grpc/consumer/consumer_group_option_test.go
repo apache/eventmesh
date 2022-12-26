@@ -15,8 +15,102 @@
 
 package consumer
 
-import "testing"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
-func Test_NewConsumerGroupTopicOption(t *testing.T) {
+func Test_ConsumerGroupTopicOption(t *testing.T) {
+	tests := []struct {
+		name          string
+		consumerGroup string
+		topic         string
+		mode          pb.Subscription_SubscriptionItem_SubscriptionMode
+		grpcType      consts.GRPCType
+		expect        func(t *testing.T, option ConsumerGroupTopicOption)
+	}{
+		{
+			name:          "create grpc stream broadcasting option",
+			consumerGroup: "consumergroup",
+			topic:         "topic",
+			mode:          pb.Subscription_SubscriptionItem_BROADCASTING,
+			grpcType:      consts.STREAM,
+			expect: func(t *testing.T, option ConsumerGroupTopicOption) {
+				assert.NotNil(t, option)
+				assert.Equal(t, option.Topic(), "topic")
+				assert.Equal(t, option.GRPCType(), consts.STREAM)
+				assert.Equal(t, option.ConsumerGroup(), "consumergroup")
+				assert.Equal(t, option.SubscriptionMode(), pb.Subscription_SubscriptionItem_BROADCASTING)
+				assert.NotNil(t, option.RegisterClient())
+				assert.NotNil(t, option.DeregisterClient())
+				assert.NotNil(t, option.IDCEmiters())
+				assert.NotNil(t, option.AllEmiters())
+			},
+		},
+		{
+			name:          "create grpc stream clustering option",
+			consumerGroup: "consumergroup",
+			topic:         "topic",
+			mode:          pb.Subscription_SubscriptionItem_CLUSTERING,
+			grpcType:      consts.STREAM,
+			expect: func(t *testing.T, option ConsumerGroupTopicOption) {
+				assert.NotNil(t, option)
+				assert.Equal(t, option.Topic(), "topic")
+				assert.Equal(t, option.GRPCType(), consts.STREAM)
+				assert.Equal(t, option.ConsumerGroup(), "consumergroup")
+				assert.Equal(t, option.SubscriptionMode(), pb.Subscription_SubscriptionItem_CLUSTERING)
+				assert.NotNil(t, option.RegisterClient())
+				assert.NotNil(t, option.DeregisterClient())
+				assert.NotNil(t, option.IDCEmiters())
+				assert.NotNil(t, option.AllEmiters())
+			},
+		},
+		{
+			name:          "create webhook clustering option",
+			consumerGroup: "consumergroup",
+			topic:         "topic",
+			mode:          pb.Subscription_SubscriptionItem_CLUSTERING,
+			grpcType:      consts.WEBHOOK,
+			expect: func(t *testing.T, option ConsumerGroupTopicOption) {
+				assert.NotNil(t, option)
+				assert.Equal(t, option.Topic(), "topic")
+				assert.Equal(t, option.GRPCType(), consts.WEBHOOK)
+				assert.Equal(t, option.ConsumerGroup(), "consumergroup")
+				assert.Equal(t, option.SubscriptionMode(), pb.Subscription_SubscriptionItem_CLUSTERING)
+				assert.NotNil(t, option.RegisterClient())
+				assert.NotNil(t, option.DeregisterClient())
+				assert.NotNil(t, option.IDCURLs())
+				assert.NotNil(t, option.AllURLs())
+				assert.Equal(t, option.Size(), 0)
+			},
+		},
+		{
+			name:          "create webhook broadcasting option",
+			consumerGroup: "consumergroup",
+			topic:         "topic",
+			mode:          pb.Subscription_SubscriptionItem_BROADCASTING,
+			grpcType:      consts.WEBHOOK,
+			expect: func(t *testing.T, option ConsumerGroupTopicOption) {
+				assert.NotNil(t, option)
+				assert.Equal(t, option.Topic(), "topic")
+				assert.Equal(t, option.GRPCType(), consts.WEBHOOK)
+				assert.Equal(t, option.ConsumerGroup(), "consumergroup")
+				assert.Equal(t, option.SubscriptionMode(), pb.Subscription_SubscriptionItem_BROADCASTING)
+				assert.NotNil(t, option.RegisterClient())
+				assert.NotNil(t, option.DeregisterClient())
+				assert.NotNil(t, option.IDCURLs())
+				assert.NotNil(t, option.AllURLs())
+				assert.Equal(t, option.Size(), 0)
+			},
+		},
+	}
 
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			option := NewConsumerGroupTopicOption(tc.consumerGroup, tc.topic, tc.mode, tc.grpcType)
+			tc.expect(t, option)
+		})
+	}
 }

@@ -29,6 +29,7 @@ var (
 	ErrNoConsumerClient = errors.New("no consumer group client")
 )
 
+//go:generate mockgen -destination ./mocks/consumer_manager.go -package mocks github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer ConsumerManager
 type ConsumerManager interface {
 	GetConsumer(consumerGroup string) (EventMeshConsumer, error)
 	RegisterClient(cli *GroupClient) error
