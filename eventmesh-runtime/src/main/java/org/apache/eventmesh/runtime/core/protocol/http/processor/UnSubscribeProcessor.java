@@ -68,10 +68,11 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext)
             throws Exception {
         HttpCommand responseEventMeshCommand;
+        String localAddress = IPUtils.getLocalAddress();
         httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                 RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         UnSubscribeRequestHeader unSubscribeRequestHeader =
                 (UnSubscribeRequestHeader) asyncContext.getRequest().getHeader();
         UnSubscribeRequestBody unSubscribeRequestBody =
@@ -81,8 +82,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 UnSubscribeResponseHeader
                         .buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
                                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                                IPUtils.getLocalAddress(),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                                localAddress, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate header
