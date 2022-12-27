@@ -90,7 +90,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
     @Override
     public void tryHTTPRequest() {
-
+       String localAddress= IPUtils.getLocalAddress();
         currPushUrl = getUrl();
 
         if (StringUtils.isBlank(currPushUrl)) {
@@ -113,7 +113,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
                 handleMsgContext.getEventMeshHTTPServer()
                         .getEventMeshHttpConfiguration().getEventMeshCluster());
-        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, localAddress);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
                 handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().getEventMeshEnv());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
@@ -199,7 +199,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         if (CMD_LOGGER.isInfoEnabled()) {
             CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                    IPUtils.getLocalAddress(), currPushUrl);
+                    localAddress, currPushUrl);
         }
 
         try {
