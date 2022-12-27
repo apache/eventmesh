@@ -18,27 +18,31 @@
 package seq
 
 import (
-	"fmt"
-	"go.uber.org/atomic"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-// Interface to generate sequence number
-type Interface interface {
-	Next() string
-}
+var _ = Describe("id_snake test", func() {
 
-// AtomicSeq use atomic.Int64 to create seq number
-type AtomicSeq struct {
-	*atomic.Uint64
-}
+	var z Interface
+	BeforeEach(func() {
+		z = NewAtomicSeq()
+	})
 
-// NewAtomicSeq new atomic sequence instance
-func NewAtomicSeq() Interface {
-	return &AtomicSeq{
-		Uint64: atomic.NewUint64(0),
-	}
-}
+	Context("NewAtomicSeq()() test ", func() {
+		It("should not be null", func() {
+			Ω(z).To(Not(BeNil()))
+		})
+	})
 
-func (a *AtomicSeq) Next() string {
-	return fmt.Sprintf("%v", a.Inc())
-}
+	Context("Next() test ", func() {
+
+		It("should no error and increase", func() {
+			s := z.Next()
+			Ω(s).To(Equal("1"))
+			s = z.Next()
+			Ω(s).To(Equal("2"))
+		})
+	})
+
+})
