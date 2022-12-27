@@ -135,9 +135,7 @@ public class AbstractEventProcessor {
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     Optional.ofNullable(consumerGroupMetadata)
                             .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
-                            .orElseGet(() -> {
-                                return Maps.newConcurrentMap();
-                            });
+                            .orElseGet(Maps::newConcurrentMap);
 
             for (SubscriptionItem subscriptionItem : subscriptionList) {
                 if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
