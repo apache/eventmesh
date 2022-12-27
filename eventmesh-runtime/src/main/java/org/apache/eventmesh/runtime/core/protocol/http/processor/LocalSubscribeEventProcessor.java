@@ -60,7 +60,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 
 @EventMeshTrace(isEnable = false)
-public class LocalSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
+public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 

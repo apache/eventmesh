@@ -57,7 +57,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
-public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
+public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 

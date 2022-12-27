@@ -28,6 +28,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.AsyncHttpProcessor;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +46,7 @@ import com.google.common.collect.Maps;
 /**
  * EventProcessor
  */
-public class AbstractEventProcessor {
+public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("AbstractEventProcessor");
 

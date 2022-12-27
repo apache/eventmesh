@@ -63,7 +63,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
-public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
+public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
