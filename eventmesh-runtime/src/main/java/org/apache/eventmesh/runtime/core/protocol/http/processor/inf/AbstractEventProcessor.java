@@ -42,9 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 
 import lombok.extern.slf4j.Slf4j;
@@ -180,9 +177,9 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * @return Returns true if any is empty
      */
     protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
-        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString()
-            , sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString()) ||
-            !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())
+            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
     }
 }
