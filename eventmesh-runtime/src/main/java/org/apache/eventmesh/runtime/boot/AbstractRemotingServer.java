@@ -22,16 +22,14 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public abstract class AbstractRemotingServer {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    
     public EventLoopGroup bossGroup;
 
     public EventLoopGroup ioGroup;
@@ -42,7 +40,7 @@ public abstract class AbstractRemotingServer {
 
     private EventLoopGroup initBossGroup(String threadPrefix) {
         bossGroup = new NioEventLoopGroup(1, new ThreadFactory() {
-            AtomicInteger count = new AtomicInteger(0);
+            final AtomicInteger count = new AtomicInteger(0);
 
             @Override
             public Thread newThread(Runnable r) {
@@ -89,19 +87,19 @@ public abstract class AbstractRemotingServer {
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            logger.info("shutdown bossGroup");
+            log.info("shutdown bossGroup");
         }
 
         ThreadUtils.randomSleep(30);
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            logger.info("shutdown ioGroup");
+            log.info("shutdown ioGroup");
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
-            logger.info("shutdown workerGroup");
+            log.info("shutdown workerGroup");
         }
     }
 
