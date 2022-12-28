@@ -13,10 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	"fmt"
+	"io"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
+
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/liyue201/gostl/ds/set"
+	"github.com/pkg/errors"
+	"go.uber.org/atomic"
+
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
@@ -24,24 +37,20 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/retry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	cloudv2 "github.com/cloudevents/sdk-go/v2"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/liyue201/gostl/ds/set"
-	"github.com/pkg/errors"
-	"go.uber.org/atomic"
-	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"net/url"
-	"sync"
-	"time"
 )
 
 var (
 	ErrNoProtocolFound = errors.New("no protocol type found in event message")
 
 	defaultWebhookTimeout = time.Second * 5
+
+	jsonPool = sync.Pool{New: func() interface{} {
+		return jsoniter.Config{
+			EscapeHTML: true,
+		}.Froze()
+	}}
 )
 
 type Response struct {
@@ -50,7 +59,7 @@ type Response struct {
 }
 
 type Request struct {
-	*Context
+	*retry.Retry
 
 	MessageContext *MessageContext
 	CreateTime     time.Time
@@ -86,7 +95,7 @@ func eventToSimpleMessage(ev *cloudv2.Event) (*pb.SimpleMessage, error) {
 	return msg.(*grpc.SimpleMessageWrapper).SimpleMessage, nil
 }
 
-func (r *Request) timeout() bool {
+func (r *Request) Timeout() bool {
 	return true
 }
 
@@ -182,7 +191,7 @@ func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 					resp.StatusCode, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
 				continue
 			}
-			buf, err := ioutil.ReadAll(resp.Body)
+			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Warnf("err:%v in read response url:%v|topic={}|bizSeqNo={}|uniqueId={}",
 					err, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)

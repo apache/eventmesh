@@ -13,27 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package producer
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/emserver/mocks"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"testing"
-)
-
-func Test_Serve(t *testing.T) {
-	mockCtl := gomock.NewController(t)
-	mockSvr := mocks.NewMockGracefulServer(mockCtl)
-	mockSvr.EXPECT().Serve().Return(nil).Times(1)
-	err := mockSvr.Serve()
-	assert.NoError(t, err)
-}
-
-func Test_Stop(t *testing.T) {
-	mockCtl := gomock.NewController(t)
-	mockSvr := mocks.NewMockGracefulServer(mockCtl)
-	mockSvr.EXPECT().Stop().Return(nil).Times(1)
-	err := mockSvr.Stop()
-	assert.NoError(t, err)
+type ProducerGroupConfig struct {
+	GroupName string `json:"groupName"`
 }

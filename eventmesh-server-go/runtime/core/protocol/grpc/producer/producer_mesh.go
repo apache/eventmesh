@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package producer
 
 import (
 	"fmt"
@@ -26,13 +26,23 @@ import (
 	"time"
 )
 
-type EventMeshProducer struct {
+type EventMeshProducer interface {
+	Send(sctx SendMessageContext, callback *connector.SendCallback) error
+	Request(sctx SendMessageContext, callback *connector.RequestReplyCallback, timeout time.Duration) error
+	Reply(sctx SendMessageContext, callback *connector.SendCallback) error
+	Start() error
+	Shutdown() error
+	Status() consts.ServiceState
+	String() string
+}
+
+type eventMeshProducer struct {
 	cfg          *ProducerGroupConfig
 	producer     *wrapper.Producer
 	ServiceState consts.ServiceState
 }
 
-func NewEventMeshProducer(cfg *ProducerGroupConfig) (*EventMeshProducer, error) {
+func NewEventMeshProducer(cfg *ProducerGroupConfig) (EventMeshProducer, error) {
 	pm, err := wrapper.NewProducer()
 	if err != nil {
 		return nil, err
@@ -48,7 +58,7 @@ func NewEventMeshProducer(cfg *ProducerGroupConfig) (*EventMeshProducer, error) 
 		return nil, err
 	}
 
-	p := &EventMeshProducer{
+	p := &eventMeshProducer{
 		cfg:          cfg,
 		producer:     pm,
 		ServiceState: consts.INITED,
@@ -56,19 +66,19 @@ func NewEventMeshProducer(cfg *ProducerGroupConfig) (*EventMeshProducer, error) 
 	return p, nil
 }
 
-func (e *EventMeshProducer) Send(sctx SendMessageContext, callback *connector.SendCallback) error {
+func (e *eventMeshProducer) Send(sctx SendMessageContext, callback *connector.SendCallback) error {
 	return e.producer.Send(sctx.Ctx, sctx.Event, callback)
 }
 
-func (e *EventMeshProducer) Request(sctx SendMessageContext, callback *connector.RequestReplyCallback, timeout time.Duration) error {
+func (e *eventMeshProducer) Request(sctx SendMessageContext, callback *connector.RequestReplyCallback, timeout time.Duration) error {
 	return e.producer.Request(sctx.Ctx, sctx.Event, callback, timeout)
 }
 
-func (e *EventMeshProducer) Reply(sctx SendMessageContext, callback *connector.SendCallback) error {
+func (e *eventMeshProducer) Reply(sctx SendMessageContext, callback *connector.SendCallback) error {
 	return e.producer.Reply(sctx.Ctx, sctx.Event, callback)
 }
 
-func (e *EventMeshProducer) Start() error {
+func (e *eventMeshProducer) Start() error {
 	if e.ServiceState == "" || e.ServiceState == consts.RUNNING {
 		return nil
 	}
@@ -80,7 +90,7 @@ func (e *EventMeshProducer) Start() error {
 	return nil
 }
 
-func (e *EventMeshProducer) Shutdown() error {
+func (e *eventMeshProducer) Shutdown() error {
 	if e.ServiceState == "" || e.ServiceState == consts.INITED {
 		return nil
 	}
@@ -91,10 +101,10 @@ func (e *EventMeshProducer) Shutdown() error {
 	return nil
 }
 
-func (e *EventMeshProducer) Status() consts.ServiceState {
+func (e *eventMeshProducer) Status() consts.ServiceState {
 	return e.ServiceState
 }
 
-func (e *EventMeshProducer) String() string {
+func (e *eventMeshProducer) String() string {
 	return fmt.Sprintf("eventMeshProducer, status:%s,  groupName:%s", e.ServiceState, e.cfg.GroupName)
 }

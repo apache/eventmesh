@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"time"
 )
@@ -26,7 +28,7 @@ type GroupClient struct {
 	IDC              string
 	ConsumerGroup    string
 	Topic            string
-	GRPCType         GRPCType
+	GRPCType         consts.GRPCType
 	URL              string
 	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
 	SYS              string
@@ -35,5 +37,5 @@ type GroupClient struct {
 	Hostname         string
 	APIVersion       string
 	LastUPTime       time.Time
-	Emiter           *EventEmitter
+	Emiter           emitter.EventEmitter
 }

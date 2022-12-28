@@ -13,27 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package producer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/emserver/mocks"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"testing"
+	"context"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	"time"
 )
 
-func Test_Serve(t *testing.T) {
-	mockCtl := gomock.NewController(t)
-	mockSvr := mocks.NewMockGracefulServer(mockCtl)
-	mockSvr.EXPECT().Serve().Return(nil).Times(1)
-	err := mockSvr.Serve()
-	assert.NoError(t, err)
-}
-
-func Test_Stop(t *testing.T) {
-	mockCtl := gomock.NewController(t)
-	mockSvr := mocks.NewMockGracefulServer(mockCtl)
-	mockSvr.EXPECT().Stop().Return(nil).Times(1)
-	err := mockSvr.Stop()
-	assert.NoError(t, err)
+// SendMessageContext context in produce message
+type SendMessageContext struct {
+	Ctx         context.Context
+	Event       *cloudv2.Event
+	BizSeqNO    string
+	ProducerAPI EventMeshProducer
+	CreateTime  time.Time
 }

@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package producer
 
 import (
 	"context"
 	"fmt"
+
 	ce "github.com/cloudevents/sdk-go/v2"
 	jsoniter "github.com/json-iterator/go"
 	"sync"
@@ -29,6 +30,8 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/validator"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
@@ -42,182 +45,27 @@ var (
 	}}
 )
 
-// SubscribeProcessor Subscribe process subscribe message
-func ProcessSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
+type Processor interface {
+	AsyncMessage(ctx context.Context, producerMgr ProducerManager, msg *pb.SimpleMessage) (*pb.Response, error)
+	ReplyMessage(ctx context.Context, producerMgr ProducerManager, emiter emitter.EventEmitter, msg *pb.SimpleMessage) error
+	RequestReplyMessage(ctx context.Context, producerMgr ProducerManager, msg *pb.SimpleMessage) (*pb.SimpleMessage, error)
+	BatchPublish(ctx context.Context, producerMgr ProducerManager, msg *pb.BatchMessage) (*pb.Response, error)
+}
+
+type processor struct {
+}
+
+func NewProcessor() Processor {
+	return &processor{}
+}
+
+func (p *processor) AsyncMessage(ctx context.Context, producerMgr ProducerManager, msg *pb.SimpleMessage) (*pb.Response, error) {
 	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
+	if err := validator.ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
 	}
-	if err := ValidateSubscription(WEBHOOK, msg); err != nil {
-		log.Warnf("invalid body:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
-	}
-	cmgr := gctx.ConsumerMgr
-	consumerGroup := msg.ConsumerGroup
-	url := msg.Url
-	items := msg.SubscriptionItems
-	var newClients []*GroupClient
-	for _, item := range items {
-		newClients = append(newClients, &GroupClient{
-			ENV:              hdr.Env,
-			IDC:              hdr.Idc,
-			SYS:              hdr.Sys,
-			IP:               hdr.Ip,
-			PID:              hdr.Pid,
-			ConsumerGroup:    consumerGroup,
-			Topic:            item.Topic,
-			SubscriptionMode: item.Mode,
-			GRPCType:         WEBHOOK,
-			URL:              url,
-			LastUPTime:       time.Now(),
-		})
-	}
-	for _, cli := range newClients {
-		if err := cmgr.RegisterClient(cli); err != nil {
-			return buildPBResponse(grpc.EVENTMESH_Subscribe_Register_ERR), err
-		}
-	}
-	meshConsumer, err := cmgr.GetConsumer(consumerGroup)
-	if err != nil {
-		return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
-	}
-	requireRestart := false
-	for _, cli := range newClients {
-		if meshConsumer.RegisterClient(cli) {
-			requireRestart = true
-		}
-	}
-	if requireRestart {
-		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		if err := cmgr.restartConsumer(consumerGroup); err != nil {
-			return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
-		}
-	} else {
-		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
-	}
-	return buildPBResponse(grpc.SUCCESS), nil
-}
-
-func ProcessUnSubscribe(gctx *GRPCContext, msg *pb.Subscription) (*pb.Response, error) {
-	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
-		log.Warnf("invalid header:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
-	}
-	if err := ValidateSubscription(WEBHOOK, msg); err != nil {
-		log.Warnf("invalid body:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
-	}
-	cmgr := gctx.ConsumerMgr
-	consumerGroup := msg.ConsumerGroup
-	url := msg.Url
-	items := msg.SubscriptionItems
-	var removeClients []*GroupClient
-	for _, item := range items {
-		removeClients = append(removeClients, &GroupClient{
-			ENV:              hdr.Env,
-			IDC:              hdr.Idc,
-			SYS:              hdr.Sys,
-			IP:               hdr.Ip,
-			PID:              hdr.Pid,
-			ConsumerGroup:    consumerGroup,
-			Topic:            item.Topic,
-			SubscriptionMode: item.Mode,
-			GRPCType:         WEBHOOK,
-			URL:              url,
-			LastUPTime:       time.Now(),
-		})
-	}
-	for _, cli := range removeClients {
-		if err := cmgr.DeRegisterClient(cli); err != nil {
-			return buildPBResponse(grpc.EVENTMESH_Subscribe_Register_ERR), err
-		}
-	}
-	meshConsumer, err := cmgr.GetConsumer(consumerGroup)
-	if err != nil {
-		return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
-	}
-	requireRestart := false
-	for _, cli := range removeClients {
-		if meshConsumer.DeRegisterClient(cli) {
-			requireRestart = true
-		}
-	}
-	if requireRestart {
-		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		if err := cmgr.restartConsumer(consumerGroup); err != nil {
-			return buildPBResponse(grpc.EVENTMESH_Consumer_NotFound_ERR), err
-		}
-	} else {
-		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
-	}
-	return buildPBResponse(grpc.SUCCESS), nil
-}
-
-func ProcessSubscribeStream(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.Subscription) error {
-	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
-		log.Warnf("invalid header:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
-		return err
-	}
-	if err := ValidateSubscription(STREAM, msg); err != nil {
-		log.Warnf("invalid body:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
-		return err
-	}
-	cmgr := gctx.ConsumerMgr
-	consumerGroup := msg.ConsumerGroup
-	var clients []*GroupClient
-	for _, item := range msg.SubscriptionItems {
-		clients = append(clients, &GroupClient{
-			ENV:              hdr.Env,
-			IDC:              hdr.Idc,
-			SYS:              hdr.Sys,
-			IP:               hdr.Ip,
-			PID:              hdr.Pid,
-			ConsumerGroup:    consumerGroup,
-			Topic:            item.Topic,
-			SubscriptionMode: item.Mode,
-			GRPCType:         STREAM,
-			LastUPTime:       time.Now(),
-			Emiter:           emiter,
-		})
-	}
-	for _, cli := range clients {
-		if err := cmgr.RegisterClient(cli); err != nil {
-			return err
-		}
-	}
-	meshConsumer, err := cmgr.GetConsumer(consumerGroup)
-	if err != nil {
-		return err
-	}
-	requireRestart := false
-	for _, cli := range clients {
-		if meshConsumer.RegisterClient(cli) {
-			requireRestart = true
-		}
-	}
-	if requireRestart {
-		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		return cmgr.restartConsumer(consumerGroup)
-	} else {
-		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
-	}
-
-	return nil
-}
-
-// ProcessAsyncMessage process async message
-func ProcessAsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.Response, error) {
-	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
-		log.Warnf("invalid header:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
-	}
-	if err := ValidateMessage(msg); err != nil {
+	if err := validator.ValidateMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
@@ -238,7 +86,7 @@ func ProcessAsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleM
 	if err != nil {
 		return buildPBResponse(grpc.EVENTMESH_Transfer_Protocol_ERR), err
 	}
-	ep, err := gctx.ProducerMgr.GetProducer(pg)
+	ep, err := producerMgr.GetProducer(pg)
 	if err != nil {
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
@@ -269,16 +117,16 @@ func ProcessAsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleM
 	return buildPBResponse(code), nil
 }
 
-func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.SimpleMessage) error {
+func (p *processor) ReplyMessage(ctx context.Context, producerMgr ProducerManager, emiter emitter.EventEmitter, msg *pb.SimpleMessage) error {
 	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
+	if err := validator.ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
-	if err := ValidateMessage(msg); err != nil {
+	if err := validator.ValidateMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err
 	}
 	seqNum := msg.SeqNum
@@ -291,19 +139,19 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 	adp := plugin.Get(plugin.Protocol, protocolType).(protocol.Adapter)
 	if adp == nil {
 		log.Warnf("protocol plugin not found:%v", protocolType)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
 		return ErrProtocolPluginNotFound
 	}
 	cevt, err := adp.ToCloudEvent(&grpc.SimpleMessageWrapper{SimpleMessage: msg})
 	if err != nil {
 		log.Warnf("transfer to cloud event msg err:%v", err)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
 		return err
 	}
-	emProducer, err := gctx.ProducerMgr.GetProducer(producerGroup)
+	emProducer, err := producerMgr.GetProducer(producerGroup)
 	if err != nil {
 		log.Warnf("no eventmesh producer found, err:%v, group:%v", err, producerGroup)
-		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Producer_Group_NotFound_ERR)
+		emiter.SendStreamResp(hdr, grpc.EVENTMESH_Producer_Group_NotFound_ERR)
 		return err
 	}
 	start := time.Now()
@@ -321,7 +169,7 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID)
 			},
 			OnError: func(result *connector.ErrorResult) {
-				emiter.sendStreamResp(hdr, grpc.EVENTMESH_REPLY_MSG_ERR)
+				emiter.SendStreamResp(hdr, grpc.EVENTMESH_REPLY_MSG_ERR)
 				log.Errorf("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
 					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID, result.Err)
 			},
@@ -329,49 +177,17 @@ func ProcessReplyMessage(ctx context.Context, gctx *GRPCContext, emiter *EventEm
 	)
 }
 
-func ProcessHeartbeat(gctx *GRPCContext, msg *pb.Heartbeat) (*pb.Response, error) {
-	hdr := msg.Header
-	if err := ValidateHeader(hdr); err != nil {
-		log.Warnf("invalid header:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
-	}
-	if err := ValidateHeartBeat(msg); err != nil {
-		log.Warnf("invalid body:%v", err)
-		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
-	}
-	if msg.ClientType != pb.Heartbeat_SUB {
-		log.Warnf("client type err, not sub")
-		return buildPBResponse(grpc.EVENTMESH_Heartbeat_Protocol_ERR), fmt.Errorf("protocol not sub")
-	}
-	cmgr := gctx.ConsumerMgr
-	consumerGroup := msg.ConsumerGroup
-	for _, item := range msg.HeartbeatItems {
-		cli := &GroupClient{
-			ENV:           hdr.Env,
-			IDC:           hdr.Idc,
-			SYS:           hdr.Sys,
-			IP:            hdr.Ip,
-			PID:           hdr.Pid,
-			ConsumerGroup: consumerGroup,
-			Topic:         item.Topic,
-			LastUPTime:    time.Now(),
-		}
-		cmgr.UpdateClientTime(cli)
-	}
-	return buildPBResponse(grpc.SUCCESS), nil
-}
-
-func ProcessRequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
+func (p *processor) RequestReplyMessage(ctx context.Context, producerMgr ProducerManager, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
 	var (
 		err  error
 		resp *pb.SimpleMessage
 		hdr  = msg.Header
 	)
-	if err = ValidateHeader(hdr); err != nil {
+	if err = validator.ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
 		return buildPBSimpleMessage(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
 	}
-	if err = ValidateMessage(msg); err != nil {
+	if err = validator.ValidateMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
 		return buildPBSimpleMessage(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
@@ -392,7 +208,7 @@ func ProcessRequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.
 	producerGroup := msg.ProducerGroup
 	ttl, _ := StringToDuration(msg.Ttl)
 	start := time.Now()
-	ep, err := gctx.ProducerMgr.GetProducer(producerGroup)
+	ep, err := producerMgr.GetProducer(producerGroup)
 	if err != nil {
 		return buildPBSimpleMessage(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
@@ -431,16 +247,16 @@ func ProcessRequestReplyMessage(ctx context.Context, gctx *GRPCContext, msg *pb.
 	return resp, err
 }
 
-func ProcessBatchPublish(ctx context.Context, gctx *GRPCContext, msg *pb.BatchMessage) (*pb.Response, error) {
+func (p *processor) BatchPublish(ctx context.Context, producerMgr ProducerManager, msg *pb.BatchMessage) (*pb.Response, error) {
 	var (
 		err error
 		hdr = msg.Header
 	)
-	if err = ValidateHeader(hdr); err != nil {
+	if err = validator.ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_HEADER_ERR), err
 	}
-	if err = ValidateBatchMessage(msg); err != nil {
+	if err = validator.ValidateBatchMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
@@ -457,7 +273,7 @@ func ProcessBatchPublish(ctx context.Context, gctx *GRPCContext, msg *pb.BatchMe
 	}
 	topic := msg.Topic
 	producerGroup := msg.ProducerGroup
-	ep, err := gctx.ProducerMgr.GetProducer(producerGroup)
+	ep, err := producerMgr.GetProducer(producerGroup)
 	if err != nil {
 		return buildPBResponse(grpc.EVENTMESH_PROTOCOL_BODY_ERR), err
 	}
