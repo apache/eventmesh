@@ -13,29 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package producer
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"sync"
 )
 
-// ProducerManager manger for all producer
-type ProducerManager struct {
+type ProducerManager interface {
+	GetProducer(groupName string) (EventMeshProducer, error)
+	CreateProducer(producerGroupConfig *ProducerGroupConfig) (EventMeshProducer, error)
+	Start() error
+	Shutdown() error
+}
+
+// producerManager manger for all producer
+type producerManager struct {
 	// EventMeshProducers {groupName, *EventMeshProducer}
 	EventMeshProducers *sync.Map
 }
 
-func NewProducerManager() (*ProducerManager, error) {
-	return &ProducerManager{
+func NewProducerManager() (ProducerManager, error) {
+	return &producerManager{
 		EventMeshProducers: new(sync.Map),
 	}, nil
 }
 
-func (m *ProducerManager) GetProducer(groupName string) (*EventMeshProducer, error) {
+func (m *producerManager) GetProducer(groupName string) (EventMeshProducer, error) {
 	p, ok := m.EventMeshProducers.Load(groupName)
 	if ok {
-		return p.(*EventMeshProducer), nil
+		return p.(EventMeshProducer), nil
 	}
 	pgc := &ProducerGroupConfig{GroupName: groupName}
 	pg, err := m.CreateProducer(pgc)
@@ -45,10 +52,10 @@ func (m *ProducerManager) GetProducer(groupName string) (*EventMeshProducer, err
 	return pg, nil
 }
 
-func (m *ProducerManager) CreateProducer(producerGroupConfig *ProducerGroupConfig) (*EventMeshProducer, error) {
+func (m *producerManager) CreateProducer(producerGroupConfig *ProducerGroupConfig) (EventMeshProducer, error) {
 	val, ok := m.EventMeshProducers.Load(producerGroupConfig.GroupName)
 	if ok {
-		return val.(*EventMeshProducer), nil
+		return val.(EventMeshProducer), nil
 	}
 	pg, err := NewEventMeshProducer(producerGroupConfig)
 	if err != nil {
@@ -58,16 +65,16 @@ func (m *ProducerManager) CreateProducer(producerGroupConfig *ProducerGroupConfi
 	return pg, nil
 }
 
-func (m *ProducerManager) Start() error {
+func (m *producerManager) Start() error {
 	log.Infof("start producer manager")
 	return nil
 }
 
-func (m *ProducerManager) Shutdown() error {
+func (m *producerManager) Shutdown() error {
 	log.Infof("shutdown producer manager")
 
 	m.EventMeshProducers.Range(func(key, value any) bool {
-		pg := value.(*EventMeshProducer)
+		pg := value.(EventMeshProducer)
 		if err := pg.Shutdown(); err != nil {
 			log.Infof("shutdown eventmesh producer:%v, err:%v", key, err)
 		}

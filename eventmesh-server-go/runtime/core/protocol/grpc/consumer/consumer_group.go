@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/liyue201/gostl/ds/set"
 	"sync"
@@ -27,13 +28,6 @@ type ConsumerGroupConfig struct {
 	// key is topic, value is  ConsumerGroupTopicConfig
 	ConsumerGroupTopicConfigs *sync.Map
 }
-
-type GRPCType string
-
-const (
-	WEBHOOK GRPCType = "WEBHOOK"
-	STREAM  GRPCType = "STREAM"
-)
 
 type StateAction string
 
@@ -47,7 +41,7 @@ type ConsumerGroupTopicConfig struct {
 	ConsumerGroup    string
 	Topic            string
 	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	GRPCType         GRPCType
+	GRPCType         consts.GRPCType
 	// IDCWebhookURLs webhook urls seperated by IDC
 	// key is IDC, value is vector.Vector
 	IDCWebhookURLs *sync.Map

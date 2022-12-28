@@ -13,11 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/liyue201/gostl/ds/set"
 	"sync"
@@ -26,11 +28,13 @@ import (
 type RegisterClient func(*GroupClient)
 type DeregisterClient func(*GroupClient)
 
+//go:generate mockgen -destination ./mocks/consumer_group_option.go -package mocks github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer ConsumerGroupTopicOption
+
 type ConsumerGroupTopicOption interface {
 	ConsumerGroup() string
 	Topic() string
 	SubscriptionMode() pb.Subscription_SubscriptionItem_SubscriptionMode
-	GRPCType() GRPCType
+	GRPCType() consts.GRPCType
 	RegisterClient() RegisterClient
 	DeregisterClient() DeregisterClient
 	IDCURLs() *sync.Map
@@ -45,13 +49,16 @@ type BaseConsumerGroupTopicOption struct {
 	consumerGroup    string
 	topic            string
 	subscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	gRPCType         GRPCType
+	gRPCType         consts.GRPCType
 	registerClient   RegisterClient
 	deregisterClient DeregisterClient
 }
 
-func NewConsumerGroupTopicOption(cg string, topic string, mode pb.Subscription_SubscriptionItem_SubscriptionMode, gtype GRPCType) ConsumerGroupTopicOption {
-	if gtype == WEBHOOK {
+func NewConsumerGroupTopicOption(
+	cg string, topic string,
+	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
+	gtype consts.GRPCType) ConsumerGroupTopicOption {
+	if gtype == consts.WEBHOOK {
 		return NewWebhookGroupTopicOption(cg, topic, mode, gtype)
 	}
 	return NewWStreamGroupTopicOption(cg, topic, mode, gtype)
@@ -78,7 +85,7 @@ func (b *BaseConsumerGroupTopicOption) Topic() string {
 func (b *BaseConsumerGroupTopicOption) SubscriptionMode() pb.Subscription_SubscriptionItem_SubscriptionMode {
 	return b.subscriptionMode
 }
-func (b *BaseConsumerGroupTopicOption) GRPCType() GRPCType {
+func (b *BaseConsumerGroupTopicOption) GRPCType() consts.GRPCType {
 	return b.gRPCType
 }
 func (b *BaseConsumerGroupTopicOption) RegisterClient() RegisterClient {
@@ -111,7 +118,7 @@ func (b *WebhookGroupTopicOption) Size() int {
 func NewWebhookGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) ConsumerGroupTopicOption {
+	gtype consts.GRPCType) ConsumerGroupTopicOption {
 	opt := &WebhookGroupTopicOption{
 		BaseConsumerGroupTopicOption: &BaseConsumerGroupTopicOption{
 			consumerGroup:    cg,
@@ -123,7 +130,7 @@ func NewWebhookGroupTopicOption(cg string,
 		allURLs:        set.New(set.WithGoroutineSafe()),
 	}
 	opt.BaseConsumerGroupTopicOption.registerClient = func(cli *GroupClient) {
-		if cli.GRPCType != WEBHOOK {
+		if cli.GRPCType != consts.WEBHOOK {
 			log.Warnf("invalid grpc type:%v, with provide WEBHOOK", cli.GRPCType)
 			return
 		}
@@ -195,7 +202,7 @@ func (b *StreamGroupTopicOption) buildIdcEmitter() {
 		e1 := value.(*sync.Map)
 		elist := set.New(set.WithGoroutineSafe())
 		e1.Range(func(k1, v1 interface{}) bool {
-			elist.Insert(v1.(*EventEmitter))
+			elist.Insert(v1.(emitter.EventEmitter))
 			return true
 		})
 		newIDCEmiters.Store(key, elist)
@@ -223,7 +230,7 @@ func uniqClient(ip, pid string) string {
 func NewWStreamGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) ConsumerGroupTopicOption {
+	gtype consts.GRPCType) ConsumerGroupTopicOption {
 	opt := &StreamGroupTopicOption{
 		BaseConsumerGroupTopicOption: &BaseConsumerGroupTopicOption{
 			consumerGroup:    cg,

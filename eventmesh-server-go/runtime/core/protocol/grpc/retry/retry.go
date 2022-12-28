@@ -13,8 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package retry
 
-type ProducerGroupConfig struct {
-	GroupName string `json:"groupName"`
+import "time"
+
+type Retry struct {
+	RetryTimes  int
+	ExecuteTime time.Time
+	Do          func() error
+}
+
+func (c *Retry) SetDelay(delay time.Duration) *Retry {
+	c.ExecuteTime = time.Now().Add(delay)
+	return c
+}
+
+func (c *Retry) GetDelay() time.Duration {
+	return c.ExecuteTime.Sub(time.Now())
 }

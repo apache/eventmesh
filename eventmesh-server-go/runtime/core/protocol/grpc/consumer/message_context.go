@@ -13,20 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package consumer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
 )
 
-type EventEmitter struct {
-	emitter pb.ConsumerService_SubscribeStreamServer
-}
-
-func (e *EventEmitter) sendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error {
-	return e.emitter.Send(&pb.SimpleMessage{
-		Header:  hdr,
-		Content: code.ToJSONString(),
-	})
+type MessageContext struct {
+	MsgRandomNo      string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	GrpcType         consts.GRPCType
+	ConsumerGroup    string
+	Event            *cloudv2.Event
+	TopicConfig      ConsumerGroupTopicOption
 }
