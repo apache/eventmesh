@@ -90,7 +90,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
     @Override
     public void tryHTTPRequest() {
-       String localAddress= IPUtils.getLocalAddress();
+        String localAddress = IPUtils.getLocalAddress();
         currPushUrl = getUrl();
 
         if (StringUtils.isBlank(currPushUrl)) {
@@ -188,7 +188,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
                 eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
-            urlAuthType);
+                urlAuthType);
 
 
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
