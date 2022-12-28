@@ -101,6 +101,9 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
@@ -537,7 +540,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             if (null != cause) {
-                logger.error("", cause);
+                log.error("", cause);
             }
             if (null != ctx) {
                 ctx.close();
