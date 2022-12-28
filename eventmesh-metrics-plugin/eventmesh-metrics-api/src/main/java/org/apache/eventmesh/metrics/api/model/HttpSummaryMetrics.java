@@ -41,11 +41,6 @@ public class HttpSummaryMetrics implements Metric {
         this.httpFailedQueue = httpFailedQueue;
     }
 
-    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\","
-            //EVENTMESH tps related to accepting external http requests
-            + "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", "
-            + "\"httpDiscard\":\"%s\"}";
-
     private float wholeCost = 0f;
 
     private AtomicLong wholeRequestNum = new AtomicLong(0);
@@ -124,12 +119,7 @@ public class HttpSummaryMetrics implements Metric {
     public float avgHTTPBodyDecodeCost() {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
-
-
-    //////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
-
+    
     private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
 
     private AtomicLong sendBatchMsgNumSum = new AtomicLong(0);
@@ -191,11 +181,7 @@ public class HttpSummaryMetrics implements Metric {
     public long getSendBatchMsgDiscardNumSum() {
         return sendBatchMsgDiscardNumSum.longValue();
     }
-
-    //////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
-
+    
     private AtomicLong sendMsgNumSum = new AtomicLong(0);
 
     private AtomicLong sendMsgFailNumSum = new AtomicLong(0);
@@ -268,11 +254,7 @@ public class HttpSummaryMetrics implements Metric {
         sendMsgFailNumSum.set(0L);
         replyMsgFailNumSum.set(0L);
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
-
+    
     private float wholePushCost = 0f;
 
     private AtomicLong wholePushRequestNum = new AtomicLong(0);
@@ -348,15 +330,7 @@ public class HttpSummaryMetrics implements Metric {
         wholeCost = 0f;
         maxCost.set(0L);
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\","
-            + "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
-
-    ///////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", "
-            + "\"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
-
+    
     private float batchSend2MQWholeCost = 0f;
 
     private AtomicLong batchSend2MQNum = new AtomicLong(0);
