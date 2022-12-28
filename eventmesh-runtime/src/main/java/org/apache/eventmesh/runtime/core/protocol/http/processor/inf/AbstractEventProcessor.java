@@ -20,10 +20,14 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
@@ -147,5 +151,37 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
             break;
         }
         return targetMesh;
+    }
+
+    /**
+     * builder response header map
+     * @param requestWrapper requestWrapper
+     * @return Map
+     */
+    protected Map<String, Object> builderResponseHeaderMap(HttpEventWrapper requestWrapper) {
+        Map<String, Object> responseHeaderMap = new HashMap<>();
+        EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
+        responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+            eventMeshHttpConfiguration.getEventMeshCluster());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
+            IPUtils.getLocalAddress());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+            eventMeshHttpConfiguration.getEventMeshEnv());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+            eventMeshHttpConfiguration.getEventMeshIDC());
+        return responseHeaderMap;
+    }
+
+    /**
+     * validation sysHeaderMap is null
+     * @param sysHeaderMap sysHeaderMap
+     * @return Returns true if any is empty
+     */
+    protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
+        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString()
+            , sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString()) ||
+            !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
     }
 }

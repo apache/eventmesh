@@ -94,26 +94,15 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
-        Map<String, Object> responseHeaderMap = new HashMap<>();
-        responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap
-            .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
+
+        Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
         //validate header
-        if (StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())) {
+        if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
