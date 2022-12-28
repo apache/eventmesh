@@ -28,6 +28,7 @@ import (
 type HeartbeatService struct {
 	pb.UnimplementedHeartbeatServiceServer
 	consumerMgr consumer.ConsumerManager
+	process     Processor
 	pool        *ants.Pool
 }
 
@@ -40,6 +41,7 @@ func NewHeartbeatServiceServer(consumerMgr consumer.ConsumerManager) (*Heartbeat
 	return &HeartbeatService{
 		consumerMgr: consumerMgr,
 		pool:        pl,
+		process:     &processor{},
 	}, nil
 }
 
@@ -52,7 +54,7 @@ func (h *HeartbeatService) Heartbeat(ctx context.Context, hb *pb.Heartbeat) (*pb
 		err     error
 	)
 	h.pool.Submit(func() {
-		resp, err = NewProcessor().Heartbeat(h.consumerMgr, hb)
+		resp, err = h.process.Heartbeat(h.consumerMgr, hb)
 		errChan <- err
 	})
 	select {

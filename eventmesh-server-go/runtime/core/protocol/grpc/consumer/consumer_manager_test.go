@@ -17,7 +17,6 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/golang/mock/gomock"
 	"testing"
 	"time"
@@ -25,6 +24,7 @@ import (
 	"github.com/liyue201/gostl/ds/set"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
