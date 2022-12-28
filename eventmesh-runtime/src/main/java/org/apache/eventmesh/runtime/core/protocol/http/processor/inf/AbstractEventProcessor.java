@@ -47,12 +47,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * EventProcessor
  */
+@Slf4j
 public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger("AbstractEventProcessor");
 
     protected transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -101,7 +102,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
             eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
 
         } catch (Exception e) {
-            LOGGER.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
+            log.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
         }
     }
 
