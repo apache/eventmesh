@@ -75,12 +75,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         HttpCommand responseEventMeshCommand;
         final HttpCommand request = asyncContext.getRequest();
         final Integer requestCode = Integer.valueOf(asyncContext.getRequest().getRequestCode());
+        final String localAddress = IPUtils.getLocalAddress();
 
         httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(requestCode),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
         SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
 
@@ -88,7 +88,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             SubscribeResponseHeader
                 .buildHeader(requestCode,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                    IPUtils.getLocalAddress(),
+                        localAddress,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
