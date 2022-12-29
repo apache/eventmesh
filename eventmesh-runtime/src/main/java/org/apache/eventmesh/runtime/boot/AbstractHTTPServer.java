@@ -205,20 +205,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         started.compareAndSet(true, false);
     }
 
-    public void registerProcessor(Integer requestCode, HttpRequestProcessor processor, ThreadPoolExecutor executor) {
-        AssertUtils.notNull(requestCode, "requestCode can't be null");
+    public void registerProcessor(RequestCode requestCode, HttpRequestProcessor processor, ThreadPoolExecutor executor) {
         AssertUtils.notNull(processor, "processor can't be null");
         AssertUtils.notNull(executor, "executor can't be null");
         Pair<HttpRequestProcessor, ThreadPoolExecutor> pair = new Pair<>(processor, executor);
-        this.processorTable.put(requestCode.toString(), pair);
-    }
-
-    public void registerProcessor(String requestURI, EventProcessor processor, ThreadPoolExecutor executor) {
-        AssertUtils.notNull(requestURI, "requestURI can't be null");
-        AssertUtils.notNull(processor, "processor can't be null");
-        AssertUtils.notNull(executor, "executor can't be null");
-        Pair<EventProcessor, ThreadPoolExecutor> pair = new Pair<>(processor, executor);
-        this.eventProcessorTable.put(requestURI, pair);
+        this.processorTable.put(requestCode.getRequestCode().toString(), pair);
     }
 
     /**
