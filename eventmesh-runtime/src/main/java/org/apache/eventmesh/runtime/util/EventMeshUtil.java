@@ -36,12 +36,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -64,22 +59,23 @@ public class EventMeshUtil {
     private static final Logger TCPLOGGER = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
-        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
+        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6)
+                + RandomStringUtils.generateNum(4);
     }
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {
         return StringUtils.trim(clientGroup)
-            + "(" + StringUtils.trim(meshCluster) + ")"
-            + "-" + EventMeshVersion.getCurrentVersionDesc()
-            + "-" + ThreadUtils.getPID();
+                + "(" + StringUtils.trim(meshCluster) + ")"
+                + "-" + EventMeshVersion.getCurrentVersionDesc()
+                + "-" + ThreadUtils.getPID();
     }
 
     public static String buildMeshTcpClientID(String clientSysId, String purpose, String meshCluster) {
         return StringUtils.trim(clientSysId)
-            + "-" + StringUtils.trim(purpose)
-            + "-" + StringUtils.trim(meshCluster)
-            + "-" + EventMeshVersion.getCurrentVersionDesc()
-            + "-" + ThreadUtils.getPID();
+                + "-" + StringUtils.trim(purpose)
+                + "-" + StringUtils.trim(meshCluster)
+                + "-" + EventMeshVersion.getCurrentVersionDesc()
+                + "-" + ThreadUtils.getPID();
     }
 
     public static String buildClientGroup(String systemId) {
@@ -102,14 +98,14 @@ public class EventMeshUtil {
         }
 
         StackTraceElement[] eles = e.getStackTrace();
-        level = (level == 0) ? eles.length : level;
+        int localLevel = (level == 0) ? eles.length : level;
         StringBuilder sb = new StringBuilder();
         sb.append(e.getMessage()).append(System.lineSeparator());
-        
+
         int innerLevel = 0;
         for (StackTraceElement ele : eles) {
             sb.append(ele).append(System.lineSeparator());
-            if (++innerLevel >= level) {
+            if (++innerLevel >= localLevel) {
                 break;
             }
         }
@@ -136,36 +132,41 @@ public class EventMeshUtil {
         Map<String, String> properties = eventMeshMessage.getProperties();
 
         String keys = properties.get(EventMeshConstants.KEYS_UPPERCASE);
-        if (!StringUtils.isNotBlank(keys)) {
+        if (StringUtils.isBlank(keys)) {
             keys = properties.get(EventMeshConstants.KEYS_LOWERCASE);
         }
 
         return String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
-            properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
+                properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
     }
 
     public static String getMessageBizSeq(CloudEvent event) {
 
         String keys = (String) event.getExtension(EventMeshConstants.KEYS_UPPERCASE);
-        if (!StringUtils.isNotBlank(keys)) {
+        if (StringUtils.isBlank(keys)) {
             keys = (String) event.getExtension(EventMeshConstants.KEYS_LOWERCASE);
         }
+
         return keys;
     }
 
     public static Map<String, String> getEventProp(CloudEvent event) {
         Set<String> extensionSet = event.getExtensionNames();
-        Map<String, String> prop = new HashMap<>();
+        Map<String, String> propMap = new HashMap<>();
         for (String extensionKey : extensionSet) {
-            prop.put(extensionKey, event.getExtension(extensionKey) == null ? "" : event.getExtension(extensionKey).toString());
+            propMap.put(extensionKey, event.getExtension(extensionKey) == null ? ""
+                    : event.getExtension(extensionKey).toString());
         }
-        return prop;
+        return propMap;
     }
 
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        LOGGER.debug("networkInterface.priority: {}", priority);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("networkInterface.priority: {}", priority);
+        }
+
         ArrayList<String> preferList = new ArrayList<String>();
         for (String eth : priority.split("<")) {
             preferList.add(eth);
@@ -181,7 +182,7 @@ public class EventMeshUtil {
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
                 } else if (preferList.indexOf(networkInterface.getName())
-                    > preferList.indexOf(preferNetworkInterface.getName())) {
+                        > preferList.indexOf(preferNetworkInterface.getName())) {
                     //get the networkInterface that has higher priority
                     preferNetworkInterface = networkInterface;
                 }
@@ -192,11 +193,15 @@ public class EventMeshUtil {
             ArrayList<String> ipv6Result = new ArrayList<String>();
 
             if (preferNetworkInterface != null) {
-                LOGGER.debug("use preferNetworkInterface:{}", preferNetworkInterface);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("use preferNetworkInterface:{}", preferNetworkInterface);
+                }
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
-                LOGGER.debug("no preferNetworkInterface");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("no preferNetworkInterface");
+                }
                 Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
                 while (enumeration.hasMoreElements()) {
                     final NetworkInterface networkInterface = enumeration.nextElement();
@@ -220,12 +225,9 @@ public class EventMeshUtil {
                 return ipv6Result.get(0);
             }
             //If failed to find,fall back to localhost
-            final InetAddress localHost = InetAddress.getLocalHost();
-            return normalizeHostAddress(localHost);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+            return normalizeHostAddress(InetAddress.getLocalHost());
+        } catch (SocketException | UnknownHostException e) {
+            LOGGER.error("failed to get local address", e);
         }
 
         return null;
@@ -239,17 +241,20 @@ public class EventMeshUtil {
         }
     }
 
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
-        Enumeration<InetAddress> en) {
+    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result,
+                                    Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
-            if (!address.isLoopbackAddress()) {
-                if (address instanceof Inet6Address) {
-                    ipv6Result.add(normalizeHostAddress(address));
-                } else {
-                    ipv4Result.add(normalizeHostAddress(address));
-                }
+            if (address.isLoopbackAddress()) {
+                continue;
             }
+
+            if (address instanceof Inet6Address) {
+                ipv6Result.add(normalizeHostAddress(address));
+            } else {
+                ipv4Result.add(normalizeHostAddress(address));
+            }
+
         }
     }
 
@@ -257,19 +262,26 @@ public class EventMeshUtil {
         if (client == null) {
             return null;
         }
+
         StringBuilder sb = new StringBuilder();
-        sb.append(client.getSubsystem()).append("-")
-            .append("-")
-            .append(client.getPid()).append("-")
-            .append(client.getHost()).append(":").append(client.getPort());
+        sb.append(client.getSubsystem())
+                .append("-")
+                .append("-")
+                .append(client.getPid())
+                .append("-")
+                .append(client.getHost())
+                .append(":")
+                .append(client.getPort());
         return sb.toString();
     }
 
     public static void printState(ThreadPoolExecutor scheduledExecutorService) {
-        TCPLOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
-            .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
-            .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
-            .getCompletedTaskCount());
+        if (TCPLOGGER.isInfoEnabled()) {
+            TCPLOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
+                    .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
+                    .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
+                    .getCompletedTaskCount());
+        }
     }
 
     /**
@@ -282,28 +294,29 @@ public class EventMeshUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> T cloneObject(T object) throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream byOut = new ByteArrayOutputStream();
-        ObjectOutputStream outputStream = new ObjectOutputStream(byOut);
-        outputStream.writeObject(object);
+        try (ByteArrayOutputStream byOut = new ByteArrayOutputStream();
+             ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
 
-        ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
-        ObjectInputStream inputStream = new ObjectInputStream(byIn);
-        return (T) inputStream.readObject();
+            outputStream.writeObject(object);
+
+            try (ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
+                 ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
+                return (T) inputStream.readObject();
+            }
+        }
+
+
     }
 
     public static Map<String, Object> getCloudEventExtensionMap(String protocolVersion,
-        CloudEvent cloudEvent) {
-        try {
-            EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
-            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
-            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-                ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
-            }
-            return eventMeshCloudEventWriter.getExtensionMap();
-        } catch (Throwable e) {
-            LOGGER.warn("getCloudEventExtensionMap fail", e);
-            return null;
+                                                                CloudEvent cloudEvent) {
+        EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
+        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+            ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
+        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+            ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
         }
+
+        return eventMeshCloudEventWriter.getExtensionMap();
     }
 }
