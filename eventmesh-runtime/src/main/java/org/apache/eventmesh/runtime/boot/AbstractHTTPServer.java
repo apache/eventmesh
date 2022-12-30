@@ -32,6 +32,8 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.EventMeshNetworkProtocolService;
+import org.apache.eventmesh.runtime.core.protocol.context.HttpRpcContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
@@ -294,6 +296,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object message) {
 
+        	if(EventMeshNetworkProtocolService.service.isUser()) {
+        		HttpRpcContext httpRpcContext = new HttpRpcContext();
+        		httpRpcContext.setHttpRequest((HttpRequest) message);
+        		httpRpcContext.setChannle(ctx.channel());
+        		EventMeshNetworkProtocolService.service.handler(httpRpcContext);
+        		return;
+        	}
+        	
             HttpRequest httpRequest = (HttpRequest) message;
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
                 handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);

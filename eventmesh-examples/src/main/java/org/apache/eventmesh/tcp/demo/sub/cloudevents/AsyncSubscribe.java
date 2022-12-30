@@ -59,7 +59,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
-
+            
             client.listen();
         } catch (Exception e) {
             log.warn("AsyncSubscribe failed", e);

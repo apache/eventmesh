@@ -24,6 +24,9 @@ node_modules
 .run
 *.log
 
+/bin
+/**/bin
+
 h2/db.mv.db
 
 # license check tmp file

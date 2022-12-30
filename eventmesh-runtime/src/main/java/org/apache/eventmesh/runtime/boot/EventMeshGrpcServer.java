@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
@@ -35,14 +36,16 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ProducerService;
 import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
-
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,10 +55,16 @@ import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.RateLimiter;
+
+import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-
-import com.google.common.util.concurrent.RateLimiter;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
+import io.netty.channel.Channel;
+import lombok.Data;
 
 public class EventMeshGrpcServer {
 
@@ -119,7 +128,7 @@ public class EventMeshGrpcServer {
         server = ServerBuilder.forPort(serverPort)
             .addService(new ProducerService(this, sendMsgExecutor))
             .addService(new ConsumerService(this, clientMgmtExecutor, replyMsgExecutor))
-            .addService(new HeartbeatService(this, clientMgmtExecutor))
+            .addService(new HeartbeatService(this, clientMgmtExecutor)).intercept(new EventMeshServerInterceptor())
             .build();
 
         initMetricsMonitor();
@@ -303,4 +312,75 @@ public class EventMeshGrpcServer {
             itr.remove();
         }
     }
+    
+    @Data
+	public static class GprcInfo {
+		private Map<String, String> headler = new HashMap<>();
+
+		private Channel channel;
+		
+		private String id;
+
+		private String address;
+	}
+
+	public static class EventMeshServerInterceptor implements ServerInterceptor {
+
+		public static final ThreadLocal<GprcInfo> THREAD_LOCAL = new ThreadLocal<>();
+
+		private static Field STREAM_FIELD;
+
+		private static Field STREAM_CHANNEL;
+		
+		private static Field SHADED_STREAM_CHANNEL;
+		
+		private static Class<?> NETTY_SERVER_STREAM_CLASS;
+		
+		private static Class<?> SHADED_NETTY_SERVER_STREAM_CLASS;
+
+		static {
+			try {
+				
+				Class<?> serverCallClass = Class.forName("io.grpc.internal.ServerCallImpl");
+				STREAM_FIELD = serverCallClass.getDeclaredField("stream");
+				STREAM_FIELD.setAccessible(true);
+				
+				NETTY_SERVER_STREAM_CLASS = Class.forName("io.grpc.netty.NettyServerStream");
+				STREAM_CHANNEL = NETTY_SERVER_STREAM_CLASS.getDeclaredField("channel");
+				STREAM_CHANNEL.setAccessible(true);
+				
+				//SHADED_NETTY_SERVER_STREAM_CLASS = Class.forName("io.grpc.netty.shaded.io.grpc.netty.NettyServerStream");
+				
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+
+		}
+
+		@Override
+		public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers,
+				ServerCallHandler<ReqT, RespT> next) {
+			GprcInfo grpcInfo = new GprcInfo();
+			try {
+				Object stream = STREAM_FIELD.get(call);
+				Channel channel = null;
+				if(Objects.equals(stream.getClass(), NETTY_SERVER_STREAM_CLASS)) {
+					channel = (Channel) STREAM_CHANNEL.get(stream);
+				}
+				grpcInfo.setChannel(channel);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+			
+			for (String key : headers.keys()) {
+				grpcInfo.headler.put(key, "");
+			}
+			THREAD_LOCAL.set(grpcInfo);
+			
+			
+			
+			return new ServerCall.Listener<ReqT>() {};
+		}
+	}
+
 }
