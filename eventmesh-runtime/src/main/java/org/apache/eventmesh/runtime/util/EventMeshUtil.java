@@ -318,9 +318,11 @@ public class EventMeshUtil {
     public static Map<String, Object> getCloudEventExtensionMap(String protocolVersion,
                                                                 CloudEvent cloudEvent) {
         EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
-        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
+                && (cloudEvent instanceof CloudEventV1)) {
             ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
-        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)
+                && (cloudEvent instanceof CloudEventV03)) {
             ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
         }
 
