@@ -36,7 +36,13 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -51,6 +57,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
 
 public class EventMeshUtil {
 
@@ -167,7 +174,7 @@ public class EventMeshUtil {
             LOGGER.debug("networkInterface.priority: {}", priority);
         }
 
-        ArrayList<String> preferList = new ArrayList<String>();
+        List<String> preferList = new ArrayList<String>();
         for (String eth : priority.split("<")) {
             preferList.add(eth);
         }
