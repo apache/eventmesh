@@ -33,17 +33,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
  *
  * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md">CloudEvents Http Webhook</a>
  */
+@Slf4j
 public class WebhookUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookUtil.class);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
@@ -102,6 +100,5 @@ public class WebhookUtil {
         authService.init();
         AUTH_SERVICES_MAP.put(pluginType, authService);
         return authService;
-
     }
 }
