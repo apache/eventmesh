@@ -24,6 +24,8 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.EventMeshNetworkProtocolService;
+import org.apache.eventmesh.runtime.core.protocol.context.TcpRpcContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
@@ -83,6 +85,14 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
             }
 
+            if(EventMeshNetworkProtocolService.service.isUser()) {
+            	TcpRpcContext rpcContext = new TcpRpcContext();
+            	rpcContext.setPkg(pkg);
+            	rpcContext.setChannle(ctx.channel());
+            	EventMeshNetworkProtocolService.service.handler(rpcContext);
+            	return;
+            }
+            
             if (Command.RECOMMEND_REQUEST == cmd) {
                 if (MESSAGE_LOGGER.isInfoEnabled()) {
                     MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);

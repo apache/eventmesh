@@ -17,17 +17,22 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.EventMeshNetworkProtocolService;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.trace.Trace;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -51,6 +56,8 @@ public class EventMeshServer {
     private final CommonConfiguration configuration;
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
+    
+    private EventMeshNetworkProtocolService eventMeshNetworkProtocolService;
 
     public EventMeshServer(ConfigurationWrapper configurationWrapper) {
         CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
@@ -61,6 +68,15 @@ public class EventMeshServer {
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
 
+        eventMeshNetworkProtocolService = new EventMeshNetworkProtocolService();
+        Map<String,String> serviceContextData = new HashedMap<>();
+        serviceContextData.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
+        serviceContextData.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, configurationWrapper.getProp("eventMesh.server.cluster"));
+        serviceContextData.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, configurationWrapper.getProp("eventMesh.server.env"));
+        serviceContextData.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, configurationWrapper.getProp("eventMesh.server.idc"));
+        eventMeshNetworkProtocolService.setServiceContextData(serviceContextData);
+        
+        EventMeshNetworkProtocolService.service = eventMeshNetworkProtocolService;
         List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {

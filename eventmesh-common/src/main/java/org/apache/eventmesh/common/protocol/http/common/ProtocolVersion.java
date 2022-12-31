@@ -34,7 +34,7 @@ public enum ProtocolVersion {
         } else if (V2.version.equals(version)) {
             return V2;
         } else {
-            return null;
+            return V1;
         }
     }
 

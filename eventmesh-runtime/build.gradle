@@ -20,6 +20,11 @@ def grpcVersion = '1.43.2'
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
 
+    implementation 'com.alibaba.csp:sentinel-core:1.8.6'
+    implementation 'org.hibernate.validator:hibernate-validator:6.0.17.Final'
+    implementation 'javax.el:javax.el-api:3.0.0'
+    implementation 'org.glassfish:javax.el:3.0.0'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'

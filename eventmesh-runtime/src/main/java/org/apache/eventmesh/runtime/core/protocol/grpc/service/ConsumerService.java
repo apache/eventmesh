@@ -17,18 +17,27 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer.EventMeshServerInterceptor;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.EventMeshNetworkProtocolService;
+import org.apache.eventmesh.runtime.core.protocol.context.GrpcRpcContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.ReplyMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeStreamProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProcessor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -55,7 +64,25 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void subscribe(Subscription request, StreamObserver<Response> responseObserver) {
-        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+        if(EventMeshNetworkProtocolService.service.isUser()) {
+        	List<org.apache.eventmesh.common.protocol.SubscriptionItem> itemList = new ArrayList<>();
+        	for(SubscriptionItem subscriptionItem :  request.getSubscriptionItemsList()) {
+        		org.apache.eventmesh.common.protocol.SubscriptionItem item = new org.apache.eventmesh.common.protocol.SubscriptionItem();
+        		item.setTopic(subscriptionItem.getTopic());
+        		item.setMode(SubscriptionMode.valueOf(subscriptionItem.getMode().name()));
+        		item.setType(SubscriptionType.valueOf(subscriptionItem.getType().name()));
+        		itemList.add(item);
+        	}
+        	SubscribeRequestBody requestBody = new SubscribeRequestBody();
+        	requestBody.setConsumerGroup(request.getConsumerGroup());
+        	requestBody.setUrl(request.getUrl());
+        	requestBody.setTopics(itemList);
+        	GrpcRpcContext rpcContext = GrpcRpcContext.createGrpcRpcContext("subscribeHandler", responseObserver,requestBody,request.getHeader());
+        	EventMeshNetworkProtocolService.service.handler(rpcContext);
+        	return;
+        }
+    	
+    	logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribe", EventMeshConstants.PROTOCOL_GRPC,
             request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();

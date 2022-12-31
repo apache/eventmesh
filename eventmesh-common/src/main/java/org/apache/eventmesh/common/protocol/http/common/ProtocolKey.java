@@ -23,6 +23,8 @@ public class ProtocolKey {
     public static final String REQUEST_URI = "uri";
     public static final String LANGUAGE = "language";
     public static final String VERSION = "version";
+    
+    public static final String PROTOCOL_NEW_VERSION = "newProtocol";
 
     public static final String PROTOCOL_TYPE = "protocoltype";
 
