@@ -29,19 +29,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
  *
  * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md">CloudEvents Http Webhook</a>
  */
+@Slf4j
 public class WebhookUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookUtil.class);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
@@ -50,7 +49,7 @@ public class WebhookUtil {
     private static final Map<String, AuthService> authServices = new ConcurrentHashMap<>();
 
     public static boolean obtainDeliveryAgreement(CloseableHttpClient httpClient, String targetUrl, String requestOrigin) {
-        LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
+        log.info("obtain webhook delivery agreement for url: {}", targetUrl);
         HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
@@ -59,8 +58,8 @@ public class WebhookUtil {
             return StringUtils.isEmpty(allowedOrigin)
                     || allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
-            LOGGER.error(String.format("HTTP Options Method is not supported at the Delivery Target: %s,"
-                    + " unable to obtain the webhook delivery agreement.", targetUrl), e);
+            log.error("HTTP Options Method is not supported at the Delivery Target: {}, unable to obtain the webhook delivery agreement.", targetUrl,
+                e);
         }
         return true;
     }
@@ -89,11 +88,11 @@ public class WebhookUtil {
     }
 
     private static AuthService getHttpAuthPlugin(String pluginType) {
-        if (authServices.containsKey(pluginType)) {
-            return authServices.get(pluginType);
+        AuthService authService = authServices.get(pluginType);
+        if (Objects.nonNull(authService)) {
+            return authService;
         }
-
-        AuthService authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
+        authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
 
         Validate.notNull(authService, "can't load the authService plugin, please check.");
         try {
@@ -101,7 +100,7 @@ public class WebhookUtil {
             authServices.put(pluginType, authService);
             return authService;
         } catch (Exception e) {
-            LOGGER.error("Error in initializing authService", e);
+            log.error("Error in initializing authService", e);
         }
         return null;
     }
