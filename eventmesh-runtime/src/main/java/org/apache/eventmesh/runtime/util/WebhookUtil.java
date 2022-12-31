@@ -54,6 +54,7 @@ public class WebhookUtil {
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
                                                   final String targetUrl,
                                                   final String requestOrigin) throws IOException {
+        
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
         }
