@@ -41,7 +41,7 @@ public abstract class ConsumerGroupTopicConfig {
 
     public static ConsumerGroupTopicConfig buildTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode,
                                                             GrpcType grpcType) {
-        if (GrpcType.STREAM.equals(grpcType)) {
+        if (GrpcType.STREAM == grpcType) {
             return new StreamTopicConfig(consumerGroup, topic, subscriptionMode);
         } else {
             return new WebhookTopicConfig(consumerGroup, topic, subscriptionMode);
