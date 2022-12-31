@@ -247,7 +247,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer.init();
 
         metrics = new HTTPMetricsServer(this, metricsRegistries);
-        metrics.init();
 
         consumerManager = new ConsumerManager(this);
         consumerManager.init();
