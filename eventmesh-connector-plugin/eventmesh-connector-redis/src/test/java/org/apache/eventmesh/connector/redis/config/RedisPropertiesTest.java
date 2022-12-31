@@ -35,13 +35,13 @@ public class RedisPropertiesTest {
 
     private void assertConfig(RedisProperties config) {
         Assert.assertEquals(config.getServerAddress(), "redis://127.0.0.1:6379");
-        Assert.assertEquals(config.getServerType(), RedisProperties.ServerType.CLUSTER);
+        Assert.assertEquals(config.getServerType(), RedisProperties.ServerType.SINGLE);
         Assert.assertEquals(config.getServerMasterName(), "serverMasterName-success!!!");
-        Assert.assertEquals(config.getServerPassword(), "serverPassword-success!!!");
 
         Properties properties = new Properties();
-        properties.put("A", "A-success!!!");
-        properties.put("B", "B-success!!!");
-        Assert.assertEquals(config.getRedissonProperties(), properties);
+        properties.put("threads", "816");
+        properties.put("nettyThreads", "1816");
+        Properties redissonProperties = config.getRedissonProperties();
+        Assert.assertEquals(redissonProperties, properties);
     }
 }
