@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
@@ -189,6 +190,7 @@ public class EventMeshUtilTest {
         Assert.assertEquals("V1", extMapV1.get("id"));
         Assert.assertEquals("V1", extMapV1.get(TYPE));
 
-        Assert.assertNull(EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V03.toString(), cloudEventV1));
+        Map<String, Object> map = EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V03.toString(), cloudEventV1);
+        Assert.assertTrue(map.isEmpty());
     }
 }
