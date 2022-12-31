@@ -392,7 +392,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         final ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
 
-
     }
 
     private void initWebhook() throws Exception {
