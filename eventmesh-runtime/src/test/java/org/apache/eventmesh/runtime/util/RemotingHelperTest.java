@@ -37,8 +37,9 @@ public class RemotingHelperTest {
     @Test
     public void testString2SocketAddress() {
         String addr = "127.0.0.1:11002";
-        SocketAddress address = RemotingHelper.string2SocketAddress(addr);
+        InetSocketAddress address = (InetSocketAddress) RemotingHelper.string2SocketAddress(addr);
         Assert.assertNotNull(address);
+        Assert.assertEquals("127.0.0.1:11002", address.getHostString() + ":" + address.getPort());
     }
 
     @Test
