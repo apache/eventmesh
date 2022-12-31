@@ -99,7 +99,6 @@ public class WebhookUtil {
 
         final AuthService authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
         Objects.requireNonNull(authService, "authService can not be null");
-
         authService.init();
         AUTH_SERVICES_MAP.put(pluginType, authService);
         return authService;
