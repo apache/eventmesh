@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.config;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Objects;
@@ -73,8 +74,10 @@ public class ConfigService {
 
         Config config = configArray[0];
         try {
+            // todo Complete all attributes
             ConfigInfo configInfo = new ConfigInfo();
             configInfo.setClazz(clazz);
+            configInfo.setPath(config.path());
             configInfo.setHump(config.hump());
             configInfo.setPrefix(config.prefix());
             configInfo.setMonitor(config.monitor());
@@ -85,11 +88,11 @@ public class ConfigService {
         }
     }
 
-    public void getConfig(Object object) throws Exception {
+    public void getConfig(Object object) throws IllegalAccessException, NoSuchFieldException, IOException {
         this.getConfig(object, object.getClass());
     }
 
-    public void getConfig(Object object, Class<?> clazz) throws Exception {
+    public void getConfig(Object object, Class<?> clazz) throws NoSuchFieldException, IOException, IllegalAccessException {
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
         if (configArray.length == 0) {
             return;
@@ -127,7 +130,7 @@ public class ConfigService {
 
 
     @SuppressWarnings("unchecked")
-    public <T> T getConfig(ConfigInfo configInfo) throws Exception {
+    public <T> T getConfig(ConfigInfo configInfo) throws IOException {
         Object object;
 
         if (Objects.isNull(configInfo.getPath()) || StringUtils.isEmpty(configInfo.getPath().trim())) {

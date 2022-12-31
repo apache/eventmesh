@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
 
-@Config(prefix = "eventMesh.server.rocketmq")
+@Config(prefix = "eventMesh.server.rocketmq", path = "classPath://rocketmq-client.properties")
 public class ClientConfiguration {
 
     @ConfigFiled(field = "namesrvAddr")

@@ -15,37 +15,46 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.config;
+package org.apache.eventmesh.connector.kafka.config;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.connector.rocketmq.consumer.RocketMQConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
+import org.apache.eventmesh.connector.kafka.consumer.KafkaConsumerImpl;
+import org.apache.eventmesh.connector.kafka.producer.KafkaProducerImpl;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * test config of Kafka SPI Impl
+ */
 public class ClientConfigurationTest {
 
+    /**
+     * test KafkaConsumerImpl config init when ConnectorPluginFactory get it
+     */
     @Test
-    public void getConfigWhenRocketMQConsumerInit() {
-        RocketMQConsumerImpl consumer =
-                (RocketMQConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("rocketmq");
+    public void getConfigWhenKafkaConsumerImplInit() {
+        KafkaConsumerImpl consumer =
+                (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
     }
 
+    /**
+     * test KafkaProducerImpl config init when ConnectorPluginFactory get it
+     */
     @Test
-    public void getConfigWhenRocketMQProducerInit() {
-        RocketMQProducerImpl producer =
-                (RocketMQProducerImpl) ConnectorPluginFactory.getMeshMQProducer("rocketmq");
+    public void getConfigWhenKafkaProducerImplInit() {
+        KafkaProducerImpl producer =
+                (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.namesrvAddr, "127.0.0.1:9876;127.0.0.1:9876");
+        Assert.assertEquals(config.namesrvAddr, "127.0.0.1:9092;127.0.0.1:9092");
         Assert.assertEquals(config.clientUserName, "username-succeed!!!");
         Assert.assertEquals(config.clientPass, "password-succeed!!!");
         Assert.assertEquals(config.consumeThreadMin, Integer.valueOf(1816));

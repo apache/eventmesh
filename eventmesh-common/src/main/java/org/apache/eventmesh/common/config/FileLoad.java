@@ -22,7 +22,9 @@ import org.apache.eventmesh.common.utils.Convert;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -54,14 +56,14 @@ public interface FileLoad {
         return YAML_FILE_LOAD;
     }
 
-    public <T> T getConfig(ConfigInfo configInfo) throws Exception;
+    public <T> T getConfig(ConfigInfo configInfo) throws IOException;
 
     class PropertiesFileLoad implements FileLoad {
 
         private final Convert convert = new Convert();
 
         @SuppressWarnings("unchecked")
-        public <T> T getConfig(ConfigInfo configInfo) throws Exception {
+        public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             Properties properties = new Properties();
             properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
             if (Objects.isNull(configInfo.getClazz())) {
@@ -72,7 +74,7 @@ public interface FileLoad {
         }
 
         @SuppressWarnings("unchecked")
-        public <T> T getConfig(Properties properties, ConfigInfo configInfo) throws Exception {
+        public <T> T getConfig(Properties properties, ConfigInfo configInfo) {
             return (T) convert.createObject(configInfo, properties);
         }
     }
@@ -81,7 +83,7 @@ public interface FileLoad {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T getConfig(ConfigInfo configInfo) throws Exception {
+        public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             Yaml yaml = new Yaml();
             return (T) yaml.loadAs(new BufferedInputStream(new FileInputStream(configInfo.getFilePath())), configInfo.getClazz());
         }

@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.spi;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.spi.loader.ExtensionClassLoader;
 import org.apache.eventmesh.spi.loader.JarExtensionClassLoader;
 import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,11 +87,17 @@ public class EventMeshExtensionFactory {
                 if (extensionInstanceClass == null) {
                     return null;
                 }
-                T extensionInstance =  extensionInstanceClass.getDeclaredConstructor().newInstance();
+                T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
+                ConfigService.getInstance().getConfig(extensionInstance);
+
                 logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
-                    extensionType, extensionInstanceName);
+                        extensionType, extensionInstanceName);
                 return extensionInstance;
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new ExtensionException("Extension initialize error", e);
+            } catch (NoSuchFieldException | IOException e) {
+                logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+                        extensionType, extensionInstanceName, e);
                 throw new ExtensionException("Extension initialize error", e);
             }
         });
@@ -102,10 +110,16 @@ public class EventMeshExtensionFactory {
                 return null;
             }
             T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
+            ConfigService.getInstance().getConfig(extensionInstance);
+
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
-                extensionType, extensionInstanceName);
+                    extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new ExtensionException("Extension initialize error", e);
+        } catch (NoSuchFieldException | IOException e) {
+            logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+                    extensionType, extensionInstanceName, e);
             throw new ExtensionException("Extension initialize error", e);
         }
     }
