@@ -33,7 +33,6 @@ public class EventMeshStartup {
                     new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                             EventMeshConstants.EVENTMESH_CONF_FILE, false);
             EventMeshServer server = new EventMeshServer(configurationWrapper);
-            server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {

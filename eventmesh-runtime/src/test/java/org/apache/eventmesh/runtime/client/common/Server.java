@@ -37,7 +37,6 @@ public class Server {
                 new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                         EventMeshConstants.EVENTMESH_CONF_FILE, false);
         eventMeshServer = new EventMeshServer(configurationWrapper);
-        eventMeshServer.init();
         eventMeshServer.start();
     }
 

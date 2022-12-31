@@ -74,43 +74,43 @@ import com.google.common.util.concurrent.RateLimiter;
 public class EventMeshHTTPServer extends AbstractHTTPServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshHTTPServer.class);
 
-    private EventMeshServer eventMeshServer;
+    private final transient EventMeshServer eventMeshServer;
 
-    public ServiceState serviceState;
+    public transient ServiceState serviceState;
 
-    private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private Registry registry;
+    private final transient Registry registry;
 
-    public EventBus eventBus = new EventBus();
+    public final transient EventBus eventBus = new EventBus();
 
-    private ConsumerManager consumerManager;
+    private transient ConsumerManager consumerManager;
 
-    private ProducerManager producerManager;
+    private transient ProducerManager producerManager;
 
-    private HttpRetryer httpRetryer;
+    private transient HttpRetryer httpRetryer;
 
-    public ThreadPoolExecutor batchMsgExecutor;
+    public transient ThreadPoolExecutor batchMsgExecutor;
 
-    public ThreadPoolExecutor sendMsgExecutor;
+    public transient ThreadPoolExecutor sendMsgExecutor;
 
-    public ThreadPoolExecutor remoteMsgExecutor;
+    public transient ThreadPoolExecutor remoteMsgExecutor;
 
-    public ThreadPoolExecutor replyMsgExecutor;
+    public transient ThreadPoolExecutor replyMsgExecutor;
 
-    public ThreadPoolExecutor pushMsgExecutor;
+    public transient ThreadPoolExecutor pushMsgExecutor;
 
-    public ThreadPoolExecutor clientManageExecutor;
+    public transient ThreadPoolExecutor clientManageExecutor;
 
-    public ThreadPoolExecutor adminExecutor;
+    public transient ThreadPoolExecutor adminExecutor;
 
     public ThreadPoolExecutor webhookExecutor;
 
-    private RateLimiter msgRateLimiter;
+    private transient RateLimiter msgRateLimiter;
 
-    private RateLimiter batchRateLimiter;
+    private transient RateLimiter batchRateLimiter;
 
-    public HTTPClientPool httpClientPool = new HTTPClientPool(10);
+    public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
@@ -124,6 +124,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
+
     }
 
     public EventMeshServer getEventMeshServer() {
@@ -141,7 +142,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         replyMsgExecutor.shutdown();
     }
 
-    public void initThreadPool() {
+    private void initThreadPool() {
 
         batchMsgExecutor =
                 ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerBatchMsgThreadNum,
@@ -222,7 +223,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return registry;
     }
 
-    public void init() throws Exception {
+    private void init() throws Exception {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("==================EventMeshHTTPServer Initialing==================");
         }
@@ -273,6 +274,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     @Override
     public void start() throws Exception {
+        init();
         super.start();
         this.getMetrics().start();
         consumerManager.start();
@@ -314,9 +316,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public boolean register() {
         boolean registerResult = false;
         try {
-            String endPoints = IPUtils.getLocalAddress()
+            final String endPoints = IPUtils.getLocalAddress()
                     + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
-            EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
+            final EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName() + "-" + ConfigurationContextUtil.HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
@@ -330,64 +332,64 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     }
 
     private void unRegister() throws Exception {
-        String endPoints = IPUtils.getLocalAddress()
+        final String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
-        EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
+        final EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
-        boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
+        final boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
         }
     }
 
     public void registerHTTPRequestProcessor() {
-        BatchSendMessageProcessor batchSendMessageProcessor = new BatchSendMessageProcessor(this);
+        final BatchSendMessageProcessor batchSendMessageProcessor = new BatchSendMessageProcessor(this);
         registerProcessor(RequestCode.MSG_BATCH_SEND.getRequestCode(), batchSendMessageProcessor, batchMsgExecutor);
 
-        BatchSendMessageV2Processor batchSendMessageV2Processor = new BatchSendMessageV2Processor(this);
+        final BatchSendMessageV2Processor batchSendMessageV2Processor = new BatchSendMessageV2Processor(this);
         registerProcessor(RequestCode.MSG_BATCH_SEND_V2.getRequestCode(), batchSendMessageV2Processor,
                 batchMsgExecutor);
 
-        SendSyncMessageProcessor sendSyncMessageProcessor = new SendSyncMessageProcessor(this);
+        final SendSyncMessageProcessor sendSyncMessageProcessor = new SendSyncMessageProcessor(this);
         registerProcessor(RequestCode.MSG_SEND_SYNC.getRequestCode(), sendSyncMessageProcessor, sendMsgExecutor);
 
-        SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(this);
+        final SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(this);
         registerProcessor(RequestCode.MSG_SEND_ASYNC.getRequestCode(), sendAsyncMessageProcessor, sendMsgExecutor);
 
-        SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
+        final SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
         this.getHandlerService().register(sendAsyncEventProcessor, sendMsgExecutor);
 
-        SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
+        final SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
         this.getHandlerService().register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
-        AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
+        final AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
 
-        HeartBeatProcessor heartProcessor = new HeartBeatProcessor(this);
+        final HeartBeatProcessor heartProcessor = new HeartBeatProcessor(this);
         registerProcessor(RequestCode.HEARTBEAT.getRequestCode(), heartProcessor, clientManageExecutor);
 
-        SubscribeProcessor subscribeProcessor = new SubscribeProcessor(this);
+        final SubscribeProcessor subscribeProcessor = new SubscribeProcessor(this);
         registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), subscribeProcessor, clientManageExecutor);
 
-        LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
+        final LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
         this.getHandlerService().register(localSubscribeEventProcessor, clientManageExecutor);
 
-        RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
+        final RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
         this.getHandlerService().register(remoteSubscribeEventProcessor, clientManageExecutor);
 
-        UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
+        final UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
 
-        LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
+        final LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
         this.getHandlerService().register(localUnSubscribeEventProcessor, clientManageExecutor);
 
-        RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
+        final RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
         this.getHandlerService().register(remoteUnSubscribeEventProcessor, clientManageExecutor);
 
-        ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
+        final ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
 
 
@@ -399,9 +401,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                 ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum,
                         eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum, new LinkedBlockingQueue<Runnable>(100),
                         "eventMesh-webhook-", true);
-        WebHookProcessor webHookProcessor = new WebHookProcessor();
+        final WebHookProcessor webHookProcessor = new WebHookProcessor();
 
-        WebHookController webHookController = new WebHookController();
+        final WebHookController webHookController = new WebHookController();
         webHookController.setConfigurationWrapper(eventMeshHttpConfiguration.getConfigurationWrapper());
         webHookController.init();
         webHookProcessor.setWebHookController(webHookController);
