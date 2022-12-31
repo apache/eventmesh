@@ -129,7 +129,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         httpLogger.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                             System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                     // ignore
@@ -226,8 +226,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                     + "|topic={}|bizSeqNo={}|uniqueId={}", endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics()
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics()
                             .recordSendMsgCost(endTime - startTime);
                 }
             } else {
@@ -258,8 +258,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                     + "|topic={}|bizSeqNo={}|uniqueId={}", endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                 }
             }
         }
