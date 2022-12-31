@@ -71,7 +71,6 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                     || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
                     || !StringUtils.isNumeric(destEventMeshPort)) {
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
-                //result = "params illegal!";
                 out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
