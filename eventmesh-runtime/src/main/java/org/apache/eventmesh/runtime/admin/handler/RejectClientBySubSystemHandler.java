@@ -35,19 +35,16 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 @EventHttpHandler(path = "/clientManage/rejectClientBySubSystem")
+@Slf4j
 public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RejectClientBySubSystemHandler.class);
-
+    
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
     public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
@@ -74,9 +71,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        String result;
+        try(OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
@@ -88,10 +84,10 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                 return;
             }
 
-            LOGGER.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
+            log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
+            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
@@ -105,7 +101,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
+                log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
                                 +
                                 "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
@@ -120,15 +116,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            LOGGER.error("rejectClientBySubSystem fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOGGER.warn("out close failed...", e);
-                }
-            }
+            log.error("rejectClientBySubSystem fail...", e);
         }
 
     }
