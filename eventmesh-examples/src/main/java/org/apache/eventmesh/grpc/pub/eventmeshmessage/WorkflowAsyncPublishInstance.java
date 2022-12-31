@@ -60,7 +60,6 @@ public class WorkflowAsyncPublishInstance {
                 .sys("DEFAULT").build();
 
         try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig)) {
-            eventMeshGrpcProducer.init();
 
             NacosSelector nacosSelector = new NacosSelector();
             nacosSelector.init();
