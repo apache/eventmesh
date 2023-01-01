@@ -45,6 +45,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -83,10 +84,10 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         }
 
         SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
-        final SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
-        final
+        SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
+
         SubscribeResponseHeader subscribeResponseHeader =
-        final         SubscribeResponseHeader
+                SubscribeResponseHeader
                         .buildHeader(requestCode,
                                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
                                 localAddress,
@@ -121,15 +122,15 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             return;
         }
         List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
-        final
+
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            final String user = subscribeRequestHeader.getUsername();
-            final String pass = subscribeRequestHeader.getPasswd();
-            final String subsystem = subscribeRequestHeader.getSys();
-            final for (SubscriptionItem item : subTopicList) {
-                tfinal ry {
+            String user = subscribeRequestHeader.getUsername();
+            String pass = subscribeRequestHeader.getPasswd();
+            String subsystem = subscribeRequestHeader.getSys();
+            for (SubscriptionItem item : subTopicList) {
+                try {
                     Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
                             requestCode);
                 } catch (Exception e) {
@@ -149,8 +150,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         }
 
         String url = subscribeRequestBody.getUrl();
-        final String consumerGroup = subscribeRequestBody.getConsumerGroup();
-        final
+        String consumerGroup = subscribeRequestBody.getConsumerGroup();
+
         // validate URL
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
@@ -178,7 +179,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         // obtain webhook delivery agreement for Abuse Protection
         boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-        final         url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
+                url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
             LOGGER.error("subscriber url {} is not allowed by the target system", url);
@@ -196,21 +197,21 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             registerClient(subscribeRequestHeader, consumerGroup, subTopicList, url);
 
             for (SubscriptionItem subTopic : subTopicList) {
-                Lfinal ist<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
-                final         .get(consumerGroup + "@" + subTopic.getTopic());
+                List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
+                        .get(consumerGroup + "@" + subTopic.getTopic());
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
                     LOGGER.error("group {} topic {} clients is empty", consumerGroup, subTopic);
                 }
 
                 Map<String, List<String>> idcUrls = new HashMap<>();
-                final for (Client client : groupTopicClients) {
-                    ifinal f (idcUrls.containsKey(client.idc)) {
-                        idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
+                for (Client client : groupTopicClients) {
+                    if (idcUrls.containsKey(client.getIdc())) {
+                        idcUrls.get(client.getIdc()).add(StringUtils.deleteWhitespace(client.getUrl()));
                     } else {
                         List<String> urls = new ArrayList<>();
-                        final urls.add(client.url);
-                        idcUrls.put(client.idc, urls);
+                        urls.add(client.getUrl());
+                        idcUrls.put(client.getIdc(), urls);
                     }
                 }
                 ConsumerGroupConf consumerGroupConf =
@@ -219,7 +220,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     // new subscription
                     consumerGroupConf = new ConsumerGroupConf(consumerGroup);
                     ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
-                    final consumeTopicConfig.setConsumerGroup(consumerGroup);
+                    consumeTopicConfig.setConsumerGroup(consumerGroup);
                     consumeTopicConfig.setTopic(subTopic.getTopic());
                     consumeTopicConfig.setSubscriptionItem(subTopic);
                     consumeTopicConfig.setUrls(new HashSet<>(Collections.singletonList(url)));
@@ -227,16 +228,16 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     consumeTopicConfig.setIdcUrls(idcUrls);
 
                     Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
-                    final map.put(subTopic.getTopic(), consumeTopicConfig);
+                    map.put(subTopic.getTopic(), consumeTopicConfig);
                     consumerGroupConf.setConsumerGroupTopicConf(map);
                 } else {
                     // already subscribed
                     Map<String, ConsumerGroupTopicConf> map =
-                    final         consumerGroupConf.getConsumerGroupTopicConf();
+                            consumerGroupConf.getConsumerGroupTopicConf();
                     if (!map.containsKey(subTopic.getTopic())) {
                         //If there are multiple topics, append it
                         ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
-                        final newTopicConf.setConsumerGroup(consumerGroup);
+                        newTopicConf.setConsumerGroup(consumerGroup);
                         newTopicConf.setTopic(subTopic.getTopic());
                         newTopicConf.setSubscriptionItem(subTopic);
                         newTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
@@ -244,15 +245,15 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         map.put(subTopic.getTopic(), newTopicConf);
                     }
                     for (Map.Entry<String, ConsumerGroupTopicConf> set : map.entrySet()) {
-                        ifinal f (StringUtils.equals(subTopic.getTopic(), set.getKey())) {
+                        if (StringUtils.equals(subTopic.getTopic(), set.getKey())) {
                             ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
-                            final latestTopicConf.setConsumerGroup(consumerGroup);
+                            latestTopicConf.setConsumerGroup(consumerGroup);
                             latestTopicConf.setTopic(subTopic.getTopic());
                             latestTopicConf.setSubscriptionItem(subTopic);
                             latestTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
 
                             ConsumerGroupTopicConf currentTopicConf = set.getValue();
-                            final latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
+                            latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
                             latestTopicConf.setIdcUrls(idcUrls);
 
                             map.put(set.getKey(), latestTopicConf);
@@ -263,7 +264,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             }
 
             long startTime = System.currentTimeMillis();
-            final try {
+            try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                         eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
@@ -288,7 +289,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
                 HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-                final         subscribeResponseHeader,
+                        subscribeResponseHeader,
                         SubscribeResponseBody
                                 .buildBody(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
                                         EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg()
@@ -314,7 +315,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
     private void registerClient(SubscribeRequestHeader subscribeRequestHeader, String consumerGroup,
                                 List<SubscriptionItem> subscriptionItems, String url) {
         for (SubscriptionItem item : subscriptionItems) {
-            final Client client = new Client();
+            Client client = new Client();
             client.env = subscribeRequestHeader.getEnv();
             client.idc = subscribeRequestHeader.getIdc();
             client.sys = subscribeRequestHeader.getSys();
