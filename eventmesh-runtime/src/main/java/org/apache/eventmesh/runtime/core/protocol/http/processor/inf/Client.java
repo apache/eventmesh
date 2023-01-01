@@ -23,27 +23,116 @@ import java.util.Date;
 
 public class Client {
 
-    public String env;
+    private String env;
 
-    public String idc;
+    private String idc;
 
-    public String consumerGroup;
+    private String consumerGroup;
 
-    public String topic;
+    private String topic;
 
-    public String url;
+    private String url;
 
-    public String sys;
+    private String sys;
 
-    public String ip;
+    private String ip;
 
-    public String pid;
+    private String pid;
 
-    public String hostname;
+    private String hostname;
 
-    public String apiVersion;
+    private Date lastUpTime;
 
-    public Date lastUpTime;
+    public void setEnv(String env) {
+        this.env = env;
+    }
+
+    public void setIdc(String idc) {
+        this.idc = idc;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setSys(String sys) {
+        this.sys = sys;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
+
+    public void setLastUpTime(Date lastUpTime) {
+        this.lastUpTime = lastUpTime;
+    }
+
+    private String apiVersion;
+
+    public String getEnv() {
+        return env;
+    }
+
+    public String getIdc() {
+        return idc;
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getSys() {
+        return sys;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public Date getLastUpTime() {
+        return lastUpTime;
+    }
+
 
     @Override
     public String toString() {
