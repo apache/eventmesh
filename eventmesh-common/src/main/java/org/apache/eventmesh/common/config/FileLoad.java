@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.common.config;
 
-import org.apache.eventmesh.common.utils.Convert;
+import org.apache.eventmesh.common.config.convert.Convert;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Objects;
@@ -35,9 +34,9 @@ import org.yaml.snakeyaml.Yaml;
  */
 public interface FileLoad {
 
-    static final PropertiesFileLoad PROPERTIES_FILE_LOAD = new PropertiesFileLoad();
+    PropertiesFileLoad PROPERTIES_FILE_LOAD = new PropertiesFileLoad();
 
-    static final YamlFileLoad YAML_FILE_LOAD = new YamlFileLoad();
+    YamlFileLoad YAML_FILE_LOAD = new YamlFileLoad();
 
     public static FileLoad getFileLoad(String fileType) {
         if (Objects.equals("properties", fileType)) {
@@ -48,15 +47,15 @@ public interface FileLoad {
         return PROPERTIES_FILE_LOAD;
     }
 
-    public static PropertiesFileLoad getPropertiesFileLoad() {
+    static PropertiesFileLoad getPropertiesFileLoad() {
         return PROPERTIES_FILE_LOAD;
     }
 
-    public static YamlFileLoad getYamlFileLoad() {
+    static YamlFileLoad getYamlFileLoad() {
         return YAML_FILE_LOAD;
     }
 
-    public <T> T getConfig(ConfigInfo configInfo) throws IOException;
+    <T> T getConfig(ConfigInfo configInfo) throws IOException;
 
     class PropertiesFileLoad implements FileLoad {
 
@@ -70,12 +69,12 @@ public interface FileLoad {
                 return (T) properties;
             }
 
-            return (T) convert.createObject(configInfo, properties);
+            return (T) convert.doConvert(configInfo, properties);
         }
 
         @SuppressWarnings("unchecked")
         public <T> T getConfig(Properties properties, ConfigInfo configInfo) {
-            return (T) convert.createObject(configInfo, properties);
+            return (T) convert.doConvert(configInfo, properties);
         }
     }
 

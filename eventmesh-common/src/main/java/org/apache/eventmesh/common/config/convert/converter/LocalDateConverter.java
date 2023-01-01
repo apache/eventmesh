@@ -15,32 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert.converter;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.common.config.convert.ConvertInfo;
+import org.apache.eventmesh.common.config.convert.ConvertValue;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
- * Record information about the configuration class to be converted
+ * Config field conversion class for LocalDate
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
+public class LocalDateConverter implements ConvertValue<LocalDate> {
 
-    String field() default "";
+    @Override
+    public LocalDate convert(ConvertInfo convertInfo) {
+        String value = (String) convertInfo.getValue();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    String path() default "";
-
-    String prefix() default "";
-
-    String hump() default ".";
-
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+        return LocalDate.parse(value, timeFormatter);
+    }
 }
-
-
-
