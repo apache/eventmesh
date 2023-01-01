@@ -350,23 +350,23 @@ public class HttpClientGroupMapping {
                                       final List<SubscriptionItem> subscriptionItems, final String url) {
         for (SubscriptionItem item : subscriptionItems) {
             Client client = new Client();
-            client.env = subscribeRequestHeader.getEnv();
-            client.idc = subscribeRequestHeader.getIdc();
-            client.sys = subscribeRequestHeader.getSys();
-            client.ip = subscribeRequestHeader.getIp();
-            client.pid = subscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = item.getTopic();
-            client.url = url;
-            client.lastUpTime = new Date();
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            client.setEnv(subscribeRequestHeader.getEnv());
+            client.setIdc(subscribeRequestHeader.getIdc());
+            client.setSys(subscribeRequestHeader.getSys());
+            client.setIp(subscribeRequestHeader.getIp());
+            client.setPid(subscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(item.getTopic());
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
             if (localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
@@ -409,25 +409,25 @@ public class HttpClientGroupMapping {
                                         final List<String> topicList, String url) {
         for (String topic : topicList) {
             Client client = new Client();
-            client.env = unSubscribeRequestHeader.getEnv();
-            client.idc = unSubscribeRequestHeader.getIdc();
-            client.sys = unSubscribeRequestHeader.getSys();
-            client.ip = unSubscribeRequestHeader.getIp();
-            client.pid = unSubscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = topic;
-            client.url = url;
-            client.lastUpTime = new Date();
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            client.setEnv(unSubscribeRequestHeader.getEnv());
+            client.setIdc(unSubscribeRequestHeader.getIdc());
+            client.setSys(unSubscribeRequestHeader.getSys());
+            client.setIp(unSubscribeRequestHeader.getIp());
+            client.setPid(unSubscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(topic);
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients =
                         localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
