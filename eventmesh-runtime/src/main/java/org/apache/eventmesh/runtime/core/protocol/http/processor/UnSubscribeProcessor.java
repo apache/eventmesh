@@ -148,8 +148,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();
-                    if (StringUtils.equals(client.pid, pid)
-                            && StringUtils.equals(client.url, unSubscribeUrl)) {
+                    if (StringUtils.equals(client.getPid(), pid)
+                            && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
                         httpLogger.warn("client {} start unsubscribe", JsonUtils.serialize(client));
                         clientIterator.remove();
                     }
@@ -160,15 +160,15 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     Set<String> clientUrls = new HashSet<>();
                     for (Client client : groupTopicClients) {
                         // remove subscribed url
-                        if (!StringUtils.equals(unSubscribeUrl, client.url)) {
-                            clientUrls.add(client.url);
-                            if (idcUrls.containsKey(client.idc)) {
-                                idcUrls.get(client.idc)
-                                        .add(StringUtils.deleteWhitespace(client.url));
+                        if (!StringUtils.equals(unSubscribeUrl, client.getUrl())) {
+                            clientUrls.add(client.getUrl());
+                            if (idcUrls.containsKey(client.getIdc())) {
+                                idcUrls.get(client.getIdc())
+                                        .add(StringUtils.deleteWhitespace(client.getUrl()));
                             } else {
                                 List<String> urls = new ArrayList<>();
-                                urls.add(client.url);
-                                idcUrls.put(client.idc, urls);
+                                urls.add(client.getUrl());
+                                idcUrls.put(client.getIdc(), urls);
                             }
                         }
 
@@ -275,25 +275,25 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                 List<String> topicList, String url) {
         for (String topic : topicList) {
             Client client = new Client();
-            client.env = unSubscribeRequestHeader.getEnv();
-            client.idc = unSubscribeRequestHeader.getIdc();
-            client.sys = unSubscribeRequestHeader.getSys();
-            client.ip = unSubscribeRequestHeader.getIp();
-            client.pid = unSubscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = topic;
-            client.url = url;
-            client.lastUpTime = new Date();
+            client.setEnv(unSubscribeRequestHeader.getEnv());
+            client.setIdc(unSubscribeRequestHeader.getIdc());
+            client.setSys(unSubscribeRequestHeader.getSys());
+            client.setIp(unSubscribeRequestHeader.getIp());
+            client.setPid(unSubscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(topic);
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
 
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
             if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients =
                         eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
