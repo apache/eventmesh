@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.AbstractEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -48,12 +47,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -62,86 +60,85 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @EventMeshTrace(isEnable = false)
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalSubscribeEventProcessor.class);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
-
-    public LocalSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+    public LocalSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
 
     @Override
-    public void handler(HandlerService.HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception {
+    public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest)
+            throws Exception {
 
-        AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
+        final Channel channel = handlerSpecific.getCtx().channel();
+        final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
 
-        ChannelHandlerContext ctx = handlerSpecific.getCtx();
-
-        HttpEventWrapper requestWrapper = asyncContext.getRequest();
-
-        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+                    EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(channel),
+                    IPUtils.getLocalAddress());
+        }
 
         // user request header
-        Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
-        String requestIp = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, requestIp);
-
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP,
+                RemotingHelper.parseChannelRemoteAddr(channel));
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
-        Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
-
-        Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
-
-        Map<String, Object> responseBodyMap = new HashMap<>();
+        final Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
+        final Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
+        final Map<String, Object> responseBodyMap = new HashMap<>();
 
         //validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
         //validate body
-        byte[] requestBody = requestWrapper.getBody();
+        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+                new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
+                new TypeReference<HashMap<String, Object>>() {
+                }
+        )).orElseGet(HashMap::new);
 
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
-            new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {}
-        )).orElse(new HashMap<>());
-
-        if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
+        if (requestBodyMap.get("url") == null
+                || requestBodyMap.get("topic") == null
+                || requestBodyMap.get("consumerGroup") == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
-        String url = requestBodyMap.get("url").toString();
-        String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
+        final String url = requestBodyMap.get("url").toString();
+        final String consumerGroup = requestBodyMap.get("consumerGroup").toString();
+        final String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
-            topic,
-            new TypeReference<List<SubscriptionItem>>() {}
-        )).orElse(Collections.emptyList());
+        final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+                topic,
+                new TypeReference<List<SubscriptionItem>>() {
+                }
+        )).orElseGet(Collections::emptyList);
 
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
-            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
-            for (SubscriptionItem item : subscriptionList) {
+            for (final SubscriptionItem item : subscriptionList) {
                 try {
-                    Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
-                        requestWrapper.getRequestURI());
+                    Acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
+                            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString(),
+                            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString(),
+                            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString(),
+                            item.getTopic(),
+                            requestWrapper.getRequestURI());
                 } catch (Exception e) {
-                    aclLogger.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
+                    if (LOGGER.isWarnEnabled()) {
+                        LOGGER.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
+                    }
+
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
-                        responseBodyMap, null);
+                            responseBodyMap, null);
                     return;
                 }
             }
@@ -150,27 +147,25 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         // validate URL
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
-                httpLogger.error("subscriber url {} is not valid", url);
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
+                LOGGER.error("subscriber url {} is not valid", url);
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                        responseBodyMap, null);
                 return;
             }
         } catch (Exception e) {
-            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
+            LOGGER.error("subscriber url is invalid, url:" + url, e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
         // obtain webhook delivery agreement for Abuse Protection
-        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
-
-        if (!isWebhookAllowed) {
-            httpLogger.error("subscriber url {} is not allowed by the target system", url);
+        if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
+                url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
+            LOGGER.error("subscriber url {} is not allowed by the target system", url);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
@@ -178,47 +173,47 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
             registerClient(requestWrapper, consumerGroup, subscriptionList, url);
 
-            for (SubscriptionItem subTopic : subscriptionList) {
-                List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
-                    .get(consumerGroup + "@" + subTopic.getTopic());
+            for (final SubscriptionItem subTopic : subscriptionList) {
+                final List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
+                        .get(consumerGroup + "@" + subTopic.getTopic());
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
-                    httpLogger.error("group {} topic {} clients is empty", consumerGroup, subTopic);
+                    LOGGER.error("group {} topic {} clients is empty", consumerGroup, subTopic);
                 }
 
-                Map<String, List<String>> idcUrls = new HashMap<>();
-                for (Client client : groupTopicClients) {
-                    if (idcUrls.containsKey(client.idc)) {
-                        idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
+                final Map<String, List<String>> idcUrls = new HashMap<>();
+                for (final Client client : groupTopicClients) {
+                    if (idcUrls.containsKey(client.getIdc())) {
+                        idcUrls.get(client.getIdc()).add(StringUtils.deleteWhitespace(client.getUrl()));
                     } else {
-                        List<String> urls = new ArrayList<>();
-                        urls.add(client.url);
-                        idcUrls.put(client.idc, urls);
+                        final List<String> urls = new ArrayList<>();
+                        urls.add(client.getUrl());
+                        idcUrls.put(client.getIdc(), urls);
                     }
                 }
+
                 ConsumerGroupConf consumerGroupConf =
-                    eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                        eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                 if (consumerGroupConf == null) {
                     // new subscription
                     consumerGroupConf = new ConsumerGroupConf(consumerGroup);
-                    ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
+                    final ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
                     consumeTopicConfig.setConsumerGroup(consumerGroup);
                     consumeTopicConfig.setTopic(subTopic.getTopic());
                     consumeTopicConfig.setSubscriptionItem(subTopic);
                     consumeTopicConfig.setUrls(new HashSet<>(Collections.singletonList(url)));
-
                     consumeTopicConfig.setIdcUrls(idcUrls);
 
-                    Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
+                    final Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
                     map.put(subTopic.getTopic(), consumeTopicConfig);
                     consumerGroupConf.setConsumerGroupTopicConf(map);
                 } else {
                     // already subscribed
-                    Map<String, ConsumerGroupTopicConf> map =
-                        consumerGroupConf.getConsumerGroupTopicConf();
+                    final Map<String, ConsumerGroupTopicConf> map =
+                            consumerGroupConf.getConsumerGroupTopicConf();
                     if (!map.containsKey(subTopic.getTopic())) {
                         //If there are multiple topics, append it
-                        ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
+                        final ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
                         newTopicConf.setConsumerGroup(consumerGroup);
                         newTopicConf.setTopic(subTopic.getTopic());
                         newTopicConf.setSubscriptionItem(subTopic);
@@ -226,19 +221,19 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                         newTopicConf.setIdcUrls(idcUrls);
                         map.put(subTopic.getTopic(), newTopicConf);
                     }
-                    Set<Map.Entry<String, ConsumerGroupTopicConf>> entrySet = map.entrySet();
-                    for (Map.Entry<String, ConsumerGroupTopicConf> set : entrySet) {
+
+                    for (final Map.Entry<String, ConsumerGroupTopicConf> set : map.entrySet()) {
                         if (!StringUtils.equals(subTopic.getTopic(), set.getKey())) {
                             continue;
                         }
 
-                        ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
+                        final ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                         latestTopicConf.setConsumerGroup(consumerGroup);
                         latestTopicConf.setTopic(subTopic.getTopic());
                         latestTopicConf.setSubscriptionItem(subTopic);
                         latestTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
 
-                        ConsumerGroupTopicConf currentTopicConf = set.getValue();
+                        final ConsumerGroupTopicConf currentTopicConf = set.getValue();
                         latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
                         latestTopicConf.setIdcUrls(idcUrls);
 
@@ -248,24 +243,22 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
             }
 
-            long startTime = System.currentTimeMillis();
+            final long startTime = System.currentTimeMillis();
             try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                    eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
-
+                        eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
                 responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
                 responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
 
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
             } catch (Exception e) {
-                long endTime = System.currentTimeMillis();
-                httpLogger.error(
-                    "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                        + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                    JsonUtils.serialize(subscriptionList), url, e);
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap, responseBodyMap, null);
+                LOGGER.error(String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms|topic=%s"
+                                + "|uniqueId=%s", System.currentTimeMillis() - startTime,
+                        JsonUtils.serialize(subscriptionList), url), e);
+                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
+                        responseBodyMap, null);
             }
 
             // Update service metadata
@@ -276,42 +269,43 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
+        return new String[]{RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
     }
 
-    private void registerClient(HttpEventWrapper requestWrapper, String consumerGroup,
-                                List<SubscriptionItem> subscriptionItems, String url) {
-        Map<String, Object> requestHeaderMap = requestWrapper.getSysHeaderMap();
-        for (SubscriptionItem item : subscriptionItems) {
-            Client client = new Client();
-            client.env = requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV).toString();
-            client.idc = requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString();
-            client.sys = requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
-            client.ip = requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP).toString();
-            client.pid = requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString();
-            client.consumerGroup = consumerGroup;
-            client.topic = item.getTopic();
-            client.url = url;
-            client.lastUpTime = new Date();
+    private void registerClient(final HttpEventWrapper requestWrapper, final String consumerGroup,
+                                final List<SubscriptionItem> subscriptionItems, final String url) {
+        final Map<String, Object> requestHeaderMap = requestWrapper.getSysHeaderMap();
+        for (final SubscriptionItem item : subscriptionItems) {
+            final Client client = new Client();
+            client.setEnv(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV).toString());
+            client.setIdc(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString());
+            client.setSys(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString());
+            client.setIp(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP).toString());
+            client.setPid(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(item.getTopic());
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
 
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
-                List<Client> localClients =
-                    eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+                final List<Client> localClients =
+                        eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
-                for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                for (final Client localClient : localClients) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
+
                 if (!isContains) {
                     localClients.add(client);
                 }
             } else {
-                List<Client> clients = new ArrayList<>();
+                final List<Client> clients = new ArrayList<>();
                 clients.add(client);
                 eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
             }
