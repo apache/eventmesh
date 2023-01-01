@@ -87,7 +87,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
@@ -144,7 +143,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public AbstractHTTPServer(final int port, final boolean useTLS,
                               final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         super();
-        this.port = port;
+        this.setPort(port);
         this.useTLS = useTLS;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
     }
@@ -198,32 +197,30 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     @Override
     public void start() throws Exception {
-        super.start();
         final Runnable r = () -> {
             final ServerBootstrap b = new ServerBootstrap();
             final SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null;
-            b.group(this.bossGroup, this.workerGroup)
+            b.group(this.getBossGroup(), this.getWorkerGroup())
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpsServerInitializer(sslContext))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             try {
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("HTTPServer[port={}] started......", this.port);
+                    LOGGER.info("HTTPServer[port={}] started.", this.getPort());
                 }
-                final ChannelFuture future = b.bind(this.port).sync();
+                final ChannelFuture future = b.bind(this.getPort()).sync();
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
-                LOGGER.error("HTTPServer start Err!", e);
+                LOGGER.error("HTTPServer start error!", e);
                 try {
                     shutdown();
-                } catch (Exception e1) {
-                    LOGGER.error("HTTPServer shutdown Err!", e);
+                } catch (Exception ex) {
+                    LOGGER.error("HTTPServer shutdown error!", ex);
                 }
             }
         };
 
-        final Thread t = new Thread(r, "EventMesh-http-server");
-        t.start();
+        new Thread(r, "EventMesh-http-server").start();
         started.compareAndSet(false, true);
     }
 
