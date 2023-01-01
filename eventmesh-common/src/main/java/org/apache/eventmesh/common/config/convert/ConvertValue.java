@@ -15,32 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Properties;
 
 /**
- * Record information about the configuration class to be converted
+ * convert convertInfo to obj
+ *
+ * @param <T> obj type
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
+public interface ConvertValue<T> {
 
-    String field() default "";
+    T convert(ConvertInfo convertInfo);
 
-    String path() default "";
+    /**
+     * @return Whether can to process null values
+     */
+    default boolean canHandleNullValue() {
+        return false;
+    }
 
-    String prefix() default "";
+    /**
+     * @return The value converter needs
+     */
+    default Object processFieldValue(Properties config, String key) {
+        return config.getProperty(key);
+    }
 
-    String hump() default ".";
+    class DefaultConverter implements ConvertValue<Object> {
 
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+        @Override
+        public Object convert(ConvertInfo convertInfo) {
+            return null;
+        }
+    }
 }
-
-
-

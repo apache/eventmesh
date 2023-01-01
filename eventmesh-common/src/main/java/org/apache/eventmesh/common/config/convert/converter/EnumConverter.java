@@ -15,32 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert.converter;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.common.config.convert.ConvertInfo;
+import org.apache.eventmesh.common.config.convert.ConvertValue;
 
 /**
- * Record information about the configuration class to be converted
+ * Config field conversion class for Enum
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
+public class EnumConverter implements ConvertValue<Enum<?>> {
 
-    String field() default "";
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public Enum<?> convert(ConvertInfo convertInfo) {
+        Class<Enum> enumType = (Class<Enum>) convertInfo.getField().getType();
+        String name = (String) convertInfo.getValue();
 
-    String path() default "";
-
-    String prefix() default "";
-
-    String hump() default ".";
-
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+        return Enum.valueOf(enumType, name);
+    }
 }
-
-
-

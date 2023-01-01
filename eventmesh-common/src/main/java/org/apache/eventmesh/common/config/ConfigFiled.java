@@ -17,11 +17,16 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.eventmesh.common.config.convert.ConvertValue.DefaultConverter;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Record information about the field in the configuration class to be converted
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface ConfigFiled {
@@ -37,4 +42,11 @@ public @interface ConfigFiled {
      * @return Whether to reload. This parameter is used when other fields are associated
      */
     boolean reload() default false;
+
+    /**
+     * In some special cases, used to specify the converter class of the field
+     *
+     * @return field converter
+     */
+    Class<?> converter() default DefaultConverter.class;
 }

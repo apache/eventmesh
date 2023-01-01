@@ -15,32 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.common.config.ConfigInfo;
+
+import java.lang.reflect.Field;
+import java.util.Properties;
+
+import lombok.Data;
 
 /**
- * Record information about the configuration class to be converted
+ * Records the information about the field to be converted
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
-
-    String field() default "";
-
-    String path() default "";
-
-    String prefix() default "";
-
-    String hump() default ".";
-
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+@Data
+public class ConvertInfo {
+    char hump;
+    String key;
+    Field field;
+    Object value;
+    Class<?> clazz;
+    Properties properties;
+    ConfigInfo configInfo;
 }
-
-
-

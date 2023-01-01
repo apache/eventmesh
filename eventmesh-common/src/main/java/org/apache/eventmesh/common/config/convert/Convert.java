@@ -15,32 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.common.config.ConfigInfo;
+
+import java.util.Properties;
 
 /**
- * Record information about the configuration class to be converted
+ * Used to convert Config properties
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
+public class Convert {
 
-    String field() default "";
+    public Object doConvert(ConfigInfo configInfo, Properties properties) {
+        Class<?> clazz = configInfo.getClazz();
+        ConvertInfo convertInfo = new ConvertInfo();
+        convertInfo.setConfigInfo(configInfo);
+        convertInfo.setProperties(properties);
+        convertInfo.setClazz(clazz);
 
-    String path() default "";
-
-    String prefix() default "";
-
-    String hump() default ".";
-
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+        ConvertValue<?> clazzConverter = ConverterMap.getClazzConverter(clazz);
+        return clazzConverter.convert(convertInfo);
+    }
 }
-
-
-

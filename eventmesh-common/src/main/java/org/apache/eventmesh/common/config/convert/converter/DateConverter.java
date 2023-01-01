@@ -15,32 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.config.convert.converter;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.common.config.convert.ConvertInfo;
+import org.apache.eventmesh.common.config.convert.ConvertValue;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
- * Record information about the configuration class to be converted
+ * Config field conversion class for Date
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Config {
+public class DateConverter implements ConvertValue<Date> {
 
-    String field() default "";
+    @Override
+    public Date convert(ConvertInfo convertInfo) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    String path() default "";
-
-    String prefix() default "";
-
-    String hump() default ".";
-
-    boolean removePrefix() default true;
-
-    boolean monitor() default false;
+        try {
+            return sdf.parse((String) convertInfo.getValue());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
-
-
-
