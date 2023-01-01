@@ -52,11 +52,8 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class HeartBeatProcessor implements HttpRequestProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
-
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatProcessor.class);
+    private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
     public HeartBeatProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -65,17 +62,19 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseEventMeshCommand;
-        httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
-        HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) asyncContext.getRequest().getHeader();
-        HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) asyncContext.getRequest().getBody();
-
-        HeartbeatResponseHeader heartbeatResponseHeader =
+        final String localAddress = IPUtils.getLocalAddress();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+                    RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                    EventMeshConstants.PROTOCOL_HTTP,
+                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+        }
+        final HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) asyncContext.getRequest().getHeader();
+        final HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) asyncContext.getRequest().getBody();
+        final HeartbeatResponseHeader heartbeatResponseHeader =
                 HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                        localAddress, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
 
