@@ -182,8 +182,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                                 map.put(unSubTopic, latestTopicConf);
                             }
                         }
-                        eventMeshHTTPServer.localConsumerGroupMapping
-                                .put(consumerGroup, consumerGroupConf);
+                        eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
                     }
                 } else {
                     isChange = false;
@@ -202,10 +201,11 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
                 } catch (Exception e) {
-                    final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms"
-                                    + "|topic=%s|url=%s", System.currentTimeMillis() - startTime,
-                            JsonUtils.serialize(unSubTopicList), unSubscribeUrl);
-                    LOGGER.error(logMsg, e);
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                                        + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
+                    }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
                 }
@@ -225,10 +225,11 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     eventMeshHTTPServer.localConsumerGroupMapping.keySet()
                             .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
-                    final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms"
-                                    + "|topic=%s|url=%s", System.currentTimeMillis() - startTime,
-                            JsonUtils.serialize(unSubTopicList), unSubscribeUrl);
-                    LOGGER.error(logMsg, e);
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                                        + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
+                    }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
                 }
