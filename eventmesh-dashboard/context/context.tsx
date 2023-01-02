@@ -20,6 +20,7 @@
 import {
   useMemo,
   useEffect,
+  useState,
   createContext,
   Dispatch,
 } from 'react';
@@ -48,6 +49,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     reducer,
     initialState,
   );
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const localState = localStorage.getItem('state');
@@ -64,7 +66,8 @@ const AppProvider = ({ children }: AppProviderProps) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('state', JSON.stringify(state));
+    if (!isLoading) localStorage.setItem('state', JSON.stringify(state));
+    setIsLoading(false);
   }, [state]);
 
   const context = useMemo(() => ({

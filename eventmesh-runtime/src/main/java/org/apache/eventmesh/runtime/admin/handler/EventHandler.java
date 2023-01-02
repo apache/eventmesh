@@ -17,13 +17,10 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import io.cloudevents.jackson.JsonFormat;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,9 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -51,7 +51,7 @@ public class EventHandler implements HttpHandler {
     private final MQAdminWrapper admin;
 
     public EventHandler(
-            String connectorPluginType
+        String connectorPluginType
     ) {
         admin = new MQAdminWrapper(connectorPluginType);
         try {
@@ -115,10 +115,10 @@ public class EventHandler implements HttpHandler {
 
             List<String> eventJsonList = new ArrayList<>();
             for (CloudEvent event : eventList) {
-                byte[]serializedEvent = EventFormatProvider
-                        .getInstance()
-                        .resolveFormat(JsonFormat.CONTENT_TYPE)
-                        .serialize(event);
+                byte[] serializedEvent = EventFormatProvider
+                    .getInstance()
+                    .resolveFormat(JsonFormat.CONTENT_TYPE)
+                    .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
             String result = JsonUtils.toJson(eventJsonList);
@@ -159,8 +159,8 @@ public class EventHandler implements HttpHandler {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
             CloudEvent event = EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(rawRequest);
+                .getInstance()
+                .resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(rawRequest);
             admin.publish(event);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {

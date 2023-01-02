@@ -24,7 +24,7 @@ import MetricsTable from '../components/metrics/MetricsTable';
 const Metrics: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>Metrics | Apache EventMesh Dashboard</title>
     </Head>
     <MetricsTable />
   </>
