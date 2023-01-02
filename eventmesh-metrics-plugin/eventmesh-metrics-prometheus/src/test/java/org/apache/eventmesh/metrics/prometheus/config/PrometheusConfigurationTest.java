@@ -17,14 +17,24 @@
 
 package org.apache.eventmesh.metrics.prometheus.config;
 
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.prometheus.PrometheusMetricsRegistry;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 public class PrometheusConfigurationTest {
 
     @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19090, eventMeshPrometheusPort);
+    public void getConfigWhenPrometheusMetricsRegistryInit() {
+        PrometheusMetricsRegistry registry =
+                (PrometheusMetricsRegistry) MetricsPluginFactory.getMetricsRegistry("prometheus");
+
+        PrometheusConfiguration config = registry.getClientConfiguration();
+        assertConfig(config);
+    }
+
+    private void assertConfig(PrometheusConfiguration config) {
+        Assert.assertEquals(config.getEventMeshPrometheusPort(), 19091);
     }
 }
