@@ -260,7 +260,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             }
         } catch (Exception e) {
             if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("msg2MQMsg err, bizSeqNo=%s, topic=%s", bizNo, topic), e);
+                LOGGER.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             }
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR, responseHeaderMap,
                     responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
@@ -307,8 +307,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
                     if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%sms|topic=%s|bizSeqNo=%s|uniqueId=%s",
-                                System.currentTimeMillis() - startTime, topic, bizNo, uniqueId), context.getException());
+                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                                System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, context.getException());
                     }
                 }
             });
@@ -317,8 +317,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR, responseHeaderMap, responseBodyMap, null);
 
             if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%sms|topic=%s|bizSeqNo=%s|uniqueId=%s",
-                        System.currentTimeMillis() - startTime, topic, bizNo, uniqueId), ex);
+                LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, ex);
             }
         }
     }
