@@ -31,15 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshRecommendImpl.class);
 
     private static final int DEFAULT_PROXY_NUM = 1;
-    
+
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshRecommendImpl(final EventMeshTCPServer eventMeshTCPServer) {
@@ -197,9 +197,9 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             final String idc = entry.getKey().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
                 if (StringUtils.equals(idc, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC())) {
-                    localClientDistributionMap.put(k, v.get(purpose));
+                    localClientDistributionMap.put(entry.getKey(), entry.getValue().get(purpose));
                 } else {
-                    remoteClientDistributionMap.put(k, v.get(purpose));
+                    remoteClientDistributionMap.put(entry.getKey(), entry.getValue().get(purpose));
                 }
             } else {
                 if (LOGGER.isErrorEnabled()) {
