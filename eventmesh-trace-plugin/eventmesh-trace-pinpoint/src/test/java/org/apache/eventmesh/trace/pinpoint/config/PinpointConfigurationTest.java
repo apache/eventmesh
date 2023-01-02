@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getAgentId;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getAgentName;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getApplicationName;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getGrpcTransportConfig;
+
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,11 +29,20 @@ import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
 public class PinpointConfigurationTest {
 
     @Test
-    public void testCase() {
-        Assert.assertEquals("eventmesh", getApplicationName());
-        Assert.assertEquals("eventmesh", getAgentName());
-        Assert.assertEquals("eventmesh-01", getAgentId());
-        GrpcTransportConfig grpcTransportConfig = getGrpcTransportConfig();
+    public void getConfigWhenPinpointTraceInit() {
+        PinpointTraceService pinpointTrace =
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+
+        PinpointConfiguration config = pinpointTrace.getClientConfiguration();
+        assertConfig(config);
+    }
+
+    private void assertConfig(PinpointConfiguration config) {
+        Assert.assertEquals("eventmesh", config.getApplicationName());
+        Assert.assertEquals("eventmesh",  config.getAgentName());
+        Assert.assertEquals("eventmesh-01",  config.getAgentId());
+
+        GrpcTransportConfig grpcTransportConfig =  config.getGrpcTransportConfig();
         Assert.assertNotNull(grpcTransportConfig);
         Assert.assertEquals("127.0.0.1", grpcTransportConfig.getAgentCollectorIp());
         Assert.assertEquals(9991, grpcTransportConfig.getAgentCollectorPort());

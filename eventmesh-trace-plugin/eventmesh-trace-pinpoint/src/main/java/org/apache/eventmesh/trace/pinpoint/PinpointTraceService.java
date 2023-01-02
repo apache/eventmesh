@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.trace.pinpoint;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
@@ -48,6 +49,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 /**
  * https://github.com/pinpoint-apm/pinpoint
  */
+@Config(field = "pinpointConfiguration")
 public class PinpointTraceService implements EventMeshTraceService {
 
     private SdkTracerProvider sdkTracerProvider;
@@ -58,6 +60,10 @@ public class PinpointTraceService implements EventMeshTraceService {
 
     protected Thread shutdownHook;
 
+    /**
+     * Unified configuration class corresponding to pinpoint.properties
+     */
+    private PinpointConfiguration pinpointConfiguration;
 
     @Override
     public void init() throws TraceException {
@@ -68,10 +74,10 @@ public class PinpointTraceService implements EventMeshTraceService {
 
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(
                 new PinpointSpanExporter(
-                    PinpointConfiguration.getAgentId(),
-                    PinpointConfiguration.getAgentName(),
-                    PinpointConfiguration.getApplicationName(),
-                    PinpointConfiguration.getGrpcTransportConfig()))
+                    pinpointConfiguration.getAgentId(),
+                    pinpointConfiguration.getAgentName(),
+                    pinpointConfiguration.getApplicationName(),
+                    pinpointConfiguration.getGrpcTransportConfig()))
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
             .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
@@ -147,5 +153,9 @@ public class PinpointTraceService implements EventMeshTraceService {
     @Override
     public void shutdown() throws TraceException {
         sdkTracerProvider.close();
+    }
+
+    public PinpointConfiguration getClientConfiguration() {
+        return this.pinpointConfiguration;
     }
 }
