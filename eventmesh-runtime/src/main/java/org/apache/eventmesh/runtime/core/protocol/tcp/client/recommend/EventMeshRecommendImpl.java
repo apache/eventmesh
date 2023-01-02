@@ -246,7 +246,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             list.add(entry);
         }
 
-        if (CollectionUtils.isEmpty(list)0) {
+        if (CollectionUtils.isEmpty(list)) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("no legal distribute data,check eventMeshMap and distributeData, group:{}", group);
             }
