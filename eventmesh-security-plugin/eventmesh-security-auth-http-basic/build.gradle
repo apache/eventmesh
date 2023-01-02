@@ -17,6 +17,7 @@
 
 dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    implementation project(":eventmesh-common")
 
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 }
