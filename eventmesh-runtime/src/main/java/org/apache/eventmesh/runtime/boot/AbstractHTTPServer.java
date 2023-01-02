@@ -217,7 +217,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         .channel()
                         .closeFuture()
                         .sync();
-
             } catch (Exception e) {
                 LOGGER.error("HTTPServer start error!", e);
                 try {

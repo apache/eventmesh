@@ -52,8 +52,10 @@ public class EventMeshServer {
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
+    private static final String SERVER_STATE_MSG = "server state:{}";
+
     public EventMeshServer(final ConfigurationWrapper configurationWrapper) throws Exception {
-        final CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
+        CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
         configuration.init();
         this.configuration = configuration;
         this.acl = new Acl();
@@ -109,7 +111,7 @@ public class EventMeshServer {
         serviceState = ServiceState.INITED;
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("server state:{}", serviceState);
+            LOGGER.info(SERVER_STATE_MSG, serviceState);
         }
     }
 
@@ -130,14 +132,15 @@ public class EventMeshServer {
 
         serviceState = ServiceState.RUNNING;
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("server state:{}", serviceState);
+            LOGGER.info(SERVER_STATE_MSG, serviceState);
         }
+
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("server state:{}", serviceState);
+            LOGGER.info(SERVER_STATE_MSG, serviceState);
         }
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
@@ -163,7 +166,7 @@ public class EventMeshServer {
         serviceState = ServiceState.STOPED;
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("server state:{}", serviceState);
+            LOGGER.info(SERVER_STATE_MSG, serviceState);
         }
     }
 

@@ -36,8 +36,7 @@ public class Server {
         ConfigurationWrapper configurationWrapper =
                 new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                         EventMeshConstants.EVENTMESH_CONF_FILE, false);
-        eventMeshServer = new EventMeshServer(configurationWrapper);
-        eventMeshServer.start();
+        new EventMeshServer(configurationWrapper).start();
     }
 
     public void shutdownAccessServer() throws Exception {
