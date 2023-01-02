@@ -116,7 +116,6 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
 
         // SubscriptionItem
-
         final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
                 topic,
                 new TypeReference<List<SubscriptionItem>>() {
@@ -152,6 +151,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 if (LOGGER.isErrorEnabled()) {
                     LOGGER.error("subscriber url {} is not valid", url);
                 }
+                
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 return;
@@ -172,7 +172,6 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("subscriber url {} is not allowed by the target system", url);
             }
-
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
             return;
@@ -259,7 +258,6 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                         eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
-
                 responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
                 responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
 

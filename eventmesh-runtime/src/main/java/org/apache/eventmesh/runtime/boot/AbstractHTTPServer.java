@@ -169,12 +169,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void start() throws Exception {
         Runnable r = () -> {
             ServerBootstrap b = new ServerBootstrap();
-            SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null;
-            b.group(this.getBossGroup(), this.getWorkerGroup())
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpsServerInitializer(sslContext))
-                    .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             try {
+                SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null;
+                b.group(this.getBossGroup(), this.getWorkerGroup())
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new HttpsServerInitializer(sslContext))
+                        .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+
                 httpServerLogger.info("HTTPServer[port={}] started......", this.getPort());
                 ChannelFuture future = b.bind(this.getPort()).sync();
                 future.channel().closeFuture().sync();
