@@ -35,26 +35,27 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SubscribeProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeProcessor.class);
+    private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private final transient GrpcType grpcType = GrpcType.WEBHOOK;
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
-
-    private final GrpcType grpcType = GrpcType.WEBHOOK;
-
-    public SubscribeProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    public SubscribeProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Subscription subscription, EventEmitter<Response> emitter) throws Exception {
-        RequestHeader header = subscription.getHeader();
+    public void process(final Subscription subscription, final EventEmitter<Response> emitter) throws Exception {
+        Objects.requireNonNull(subscription, "subscription can not be null");
+        Objects.requireNonNull(emitter, "emitter can not be null");
+
+        final RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
@@ -69,46 +70,43 @@ public class SubscribeProcessor {
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            }
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
-        ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
+        final ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
 
-        String consumerGroup = subscription.getConsumerGroup();
-        String url = subscription.getUrl();
-        List<Subscription.SubscriptionItem> subscriptionItems = subscription.getSubscriptionItemsList();
-
+        final String consumerGroup = subscription.getConsumerGroup();
         // Collect new clients in the subscription
-        List<ConsumerGroupClient> newClients = new LinkedList<>();
-        for (Subscription.SubscriptionItem item : subscriptionItems) {
-            ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(header.getEnv())
-                .idc(header.getIdc())
-                .sys(header.getSys())
-                .ip(header.getIp())
-                .pid(header.getPid())
-                .consumerGroup(consumerGroup)
-                .topic(item.getTopic())
-                .grpcType(grpcType)
-                .subscriptionMode(item.getMode())
-                .url(url)
-                .lastUpTime(new Date())
-                .build();
+        final List<ConsumerGroupClient> newClients = new LinkedList<>();
+        for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
+            final ConsumerGroupClient newClient = ConsumerGroupClient.builder()
+                    .env(header.getEnv())
+                    .idc(header.getIdc())
+                    .sys(header.getSys())
+                    .ip(header.getIp())
+                    .pid(header.getPid())
+                    .consumerGroup(consumerGroup)
+                    .topic(item.getTopic())
+                    .grpcType(grpcType)
+                    .subscriptionMode(item.getMode())
+                    .url(subscription.getUrl())
+                    .lastUpTime(new Date())
+                    .build();
             newClients.add(newClient);
         }
 
         // register new clients into ConsumerManager
-        for (ConsumerGroupClient newClient : newClients) {
-            consumerManager.registerClient(newClient);
-        }
+        newClients.forEach(consumerManager::registerClient);
 
         // register new clients into EventMeshConsumer
-        EventMeshConsumer eventMeshConsumer = consumerManager.getEventMeshConsumer(consumerGroup);
+        final EventMeshConsumer eventMeshConsumer = consumerManager.getEventMeshConsumer(consumerGroup);
 
         boolean requireRestart = false;
-        for (ConsumerGroupClient newClient : newClients) {
+        for (final ConsumerGroupClient newClient : newClients) {
             if (eventMeshConsumer.registerClient(newClient)) {
                 requireRestart = true;
             }
@@ -116,25 +114,25 @@ public class SubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            logger.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            }
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+            }
         }
 
         ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
-    private void doAclCheck(Subscription subscription) throws AclException {
-        RequestHeader header = subscription.getHeader();
+    private void doAclCheck(final Subscription subscription) throws AclException {
+        final RequestHeader header = subscription.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
-            String remoteAdd = header.getIp();
-            String user = header.getUsername();
-            String pass = header.getPassword();
-            String subsystem = header.getSys();
-            for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
-                    RequestCode.SUBSCRIBE.getRequestCode());
+            for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
+                Acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
+                        header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }
