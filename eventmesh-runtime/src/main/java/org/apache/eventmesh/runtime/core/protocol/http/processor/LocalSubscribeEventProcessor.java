@@ -158,7 +158,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             }
         } catch (Exception e) {
             if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("subscriber url {} is not valid", url), e);
+                LOGGER.error("subscriber url {} is not valid", url, e);
             }
 
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -265,10 +265,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
             } catch (Exception e) {
                 if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%sms|topic=%s|url=%s",
+                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             System.currentTimeMillis() - startTime,
                             JsonUtils.serialize(subscriptionList),
-                            url), e);
+                            url, e);
                 }
 
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
