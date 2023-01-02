@@ -25,29 +25,31 @@ import org.slf4j.LoggerFactory;
 
 public class EventMeshStartup {
 
-    public static final Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(EventMeshStartup.class);
 
     public static void main(String[] args) throws Exception {
         try {
-            ConfigurationWrapper configurationWrapper =
+            final EventMeshServer server = new EventMeshServer(
                     new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
-                            EventMeshConstants.EVENTMESH_CONF_FILE, false);
-            EventMeshServer server = new EventMeshServer(configurationWrapper);
+                    EventMeshConstants.EVENTMESH_CONF_FILE, false));
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    logger.info("eventMesh shutting down hook begin...");
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("eventMesh shutting down hook begin.");
+                    }
                     long start = System.currentTimeMillis();
                     server.shutdown();
                     long end = System.currentTimeMillis();
-                    logger.info("eventMesh shutdown cost {}ms", end - start);
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("eventMesh shutdown cost {}ms", end - start);
+                    }
                 } catch (Exception e) {
-                    logger.error("exception when shutdown...", e);
+                    LOGGER.error("exception when shutdown.", e);
                 }
             }));
         } catch (Throwable e) {
-            logger.error("EventMesh start fail.", e);
-            e.printStackTrace();
+            LOGGER.error("EventMesh start fail.", e);
             System.exit(-1);
         }
 

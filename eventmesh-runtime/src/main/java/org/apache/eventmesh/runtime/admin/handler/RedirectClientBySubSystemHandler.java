@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -46,79 +47,73 @@ import com.sun.net.httpserver.HttpExchange;
 @EventHttpHandler(path = "/clientManage/redirectClientBySubSystem")
 public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedirectClientBySubSystemHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedirectClientBySubSystemHandler.class);
 
-    private final EventMeshTCPServer eventMeshTCPServer;
+    private final transient EventMeshTCPServer eventMeshTCPServer;
 
-    public RedirectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+    public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer,
+                                            final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
-            String queryString = httpExchange.getRequestURI().getQuery();
-            Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
-            String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
-            String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
+    public void handle(final HttpExchange httpExchange) throws IOException {
+        Objects.requireNonNull(httpExchange, "httpExchange can not be null");
+
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            final Map<String, String> queryStringInfo = NetUtils.formData2Dic(httpExchange.getRequestURI().getQuery());
+            final String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
+            final String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
+            final String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
             if (!StringUtils.isNumeric(subSystem)
                     || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
                     || !StringUtils.isNumeric(destEventMeshPort)) {
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
-                result = "params illegal!";
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            logger.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
-                    subSystem, destEventMeshIp, destEventMeshPort);
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            StringBuilder redirectResult = new StringBuilder();
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
+                        subSystem, destEventMeshIp, destEventMeshPort);
+            }
+
+            final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            final StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
-                    for (Session session : sessionMap.values()) {
+                    for (final Session session : sessionMap.values()) {
                         if (session.getClient().getSubsystem().equals(subSystem)) {
-                            redirectResult.append("|");
-                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
-                                    destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, clientSessionGroupMapping));
+                            redirectResult.append('|')
+                                    .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                                            destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                            session, clientSessionGroupMapping));
                         }
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
+                LOGGER.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
                         +
                         "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
-                result = String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
+
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
+                out.write(String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
                                 +
                                 "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                         sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
-                                .getMessage());
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                                .getMessage()).getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            result = String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
-                            +
-                            "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
+                                    +
+                                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                            sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
+                    .getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("redirectClientBySubSystem fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            LOGGER.error("redirectClientBySubSystem fail...", e);
         }
     }
 }

@@ -115,18 +115,18 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
 
             Client client = new Client();
-            client.env = env;
-            client.idc = idc;
-            client.sys = sys;
-            client.ip = ip;
-            client.pid = pid;
-            client.consumerGroup = consumerGroup;
-            client.topic = heartbeatEntity.topic;
-            client.url = heartbeatEntity.url;
+            client.setEnv(env);
+            client.setIdc(idc);
+            client.setSys(sys);
+            client.setIp(ip);
+            client.setPid(pid);
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(heartbeatEntity.topic);
+            client.setUrl(heartbeatEntity.url);
 
-            client.lastUpTime = new Date();
+            client.setLastUpTime(new Date());
 
-            if (StringUtils.isBlank(client.topic)) {
+            if (StringUtils.isBlank(client.getTopic())) {
                 continue;
             }
 
@@ -137,7 +137,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 String pass = heartbeatRequestHeader.getPasswd();
                 int requestCode = Integer.parseInt(heartbeatRequestHeader.getCode());
                 try {
-                    Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.topic, requestCode);
+                    Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.getTopic(), requestCode);
                 } catch (Exception e) {
                     responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                             heartbeatResponseHeader,
@@ -149,11 +149,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 }
             }
 
-            if (StringUtils.isBlank(client.url)) {
+            if (StringUtils.isBlank(client.getUrl())) {
                 continue;
             }
 
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (tmp.containsKey(groupTopicKey)) {
                 tmp.get(groupTopicKey).add(client);
@@ -219,9 +219,9 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         for (Client tmpClient : tmpClientList) {
             boolean isContains = false;
             for (Client localClient : localClientList) {
-                if (StringUtils.equals(localClient.url, tmpClient.url)) {
+                if (StringUtils.equals(localClient.getUrl(), tmpClient.getUrl())) {
                     isContains = true;
-                    localClient.lastUpTime = tmpClient.lastUpTime;
+                    localClient.setLastUpTime(tmpClient.getLastUpTime());
                     break;
                 }
             }
