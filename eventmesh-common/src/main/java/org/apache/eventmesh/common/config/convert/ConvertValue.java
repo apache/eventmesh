@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.common.config.convert;
 
+import org.apache.eventmesh.common.config.ConfigFiled;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -38,8 +43,17 @@ public interface ConvertValue<T> {
     /**
      * @return The value converter needs
      */
-    default Object processFieldValue(Properties config, String key) {
-        return config.getProperty(key);
+    default Object processFieldValue(ConvertInfo convertInfo, String key, ConfigFiled configFiled) {
+        Properties properties = convertInfo.getProperties();
+        String value = properties.getProperty(key);
+
+        boolean findEnv = configFiled.findEnv();
+        String fieldName = configFiled.field();
+
+        if (StringUtils.isBlank(value) && !StringUtils.isBlank(fieldName) && findEnv) {
+            value = Optional.ofNullable(System.getProperty(fieldName)).orElse(System.getenv(fieldName));
+        }
+        return value;
     }
 
     class DefaultConverter implements ConvertValue<Object> {
