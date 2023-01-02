@@ -340,18 +340,18 @@ public class ClientSessionGroupMapping {
     }
 
     private void shutdownClientGroupConsumer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.started4Broadcast.get() == Boolean.TRUE) {
+        if (clientGroupWrapper.started4Broadcast.get()) {
             clientGroupWrapper.shutdownBroadCastConsumer();
         }
 
-        if (clientGroupWrapper.started4Persistent.get() == Boolean.TRUE) {
+        if (clientGroupWrapper.started4Persistent.get()) {
             clientGroupWrapper.shutdownPersistentConsumer();
         }
     }
 
 
     private void shutdownClientGroupProducer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.producerStarted.get() == Boolean.TRUE) {
+        if (clientGroupWrapper.producerStarted.get()) {
             clientGroupWrapper.shutdownProducer();
         }
     }
@@ -363,7 +363,9 @@ public class ClientSessionGroupMapping {
                     if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
                         > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
                         try {
-                            log.warn("clean expired session,client:{}", tmp.getClient());
+                            if (log.isWarnEnabled()) {
+                                log.warn("clean expired session,client:{}", tmp.getClient());
+                            }
                             closeSession(tmp.getContext());
                         } catch (Exception e) {
                             log.error("say goodbye to session error! {}", tmp, e);
