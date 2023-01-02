@@ -19,6 +19,7 @@ package org.apache.eventmesh.trace.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
@@ -51,8 +52,9 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 
 /**
- *
+ * ZipkinTraceService
  */
+@Config(field = "zipkinConfiguration")
 public class ZipkinTraceService implements EventMeshTraceService {
     private String eventMeshZipkinIP;
     private int eventMeshZipkinPort;
@@ -69,11 +71,17 @@ public class ZipkinTraceService implements EventMeshTraceService {
     private Tracer tracer;
     private TextMapPropagator textMapPropagator;
 
+    /**
+     * Unified configuration class corresponding to zipkin.properties
+     */
+    private ZipkinConfiguration zipkinConfiguration;
+
     @Override
     public void init() {
         //zipkin's config
-        eventMeshZipkinIP = ZipkinConfiguration.getEventMeshZipkinIP();
-        eventMeshZipkinPort = ZipkinConfiguration.getEventMeshZipkinPort();
+        eventMeshZipkinIP = zipkinConfiguration.getEventMeshZipkinIP();
+        eventMeshZipkinPort = zipkinConfiguration.getEventMeshZipkinPort();
+
         //exporter's config
         eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
         eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
@@ -167,5 +175,9 @@ public class ZipkinTraceService implements EventMeshTraceService {
         sdkTracerProvider.close();
 
         //todo: turn the value of useTrace in AbstractHTTPServer into false
+    }
+
+    public ZipkinConfiguration getClientConfiguration() {
+        return this.zipkinConfiguration;
     }
 }

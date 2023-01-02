@@ -15,12 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.zipkin.common;
+package org.apache.eventmesh.trace.zipkin.config;
 
-public class ZipkinConstants {
-    // Name of the service(using the instrumentationName)
-    public static final String SERVICE_NAME = "eventmesh_trace";
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
-    // Zipkin API Endpoints for uploading spans
-    public static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ZipkinConfigurationTest {
+
+    @Test
+    public void getConfigWhenZipkinTraceInit() {
+        ZipkinTraceService zipkinTraceService =
+                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+
+        ZipkinConfiguration config = zipkinTraceService.getClientConfiguration();
+        assertConfig(config);
+    }
+
+    private void assertConfig(ZipkinConfiguration config) {
+        Assert.assertEquals("127.0.0.1", config.getEventMeshZipkinIP());
+        Assert.assertEquals(816, config.getEventMeshZipkinPort());
+    }
 }
