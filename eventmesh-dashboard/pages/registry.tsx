@@ -17,22 +17,17 @@
  * under the License.
  */
 
-package org.apache.eventmesh.api.admin;
+import Head from 'next/head';
+import type { NextPage } from 'next';
+import RegistryTable from '../components/registry/RegistryTable';
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+const Registry: NextPage = () => (
+  <>
+    <Head>
+      <title>Registry | Apache EventMesh Dashboard</title>
+    </Head>
+    <RegistryTable />
+  </>
+);
 
-public class TopicProperties {
-    public String name;
-    public long messageCount;
-
-    @JsonCreator
-    public TopicProperties(
-        @JsonProperty("name") String name,
-        @JsonProperty("messageCount") long messageCount
-    ) {
-        super();
-        this.name = name;
-        this.messageCount = messageCount;
-    }
-}
+export default Registry;

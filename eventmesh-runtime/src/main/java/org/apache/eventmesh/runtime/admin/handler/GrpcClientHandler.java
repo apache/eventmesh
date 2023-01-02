@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
@@ -27,8 +25,6 @@ import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,6 +36,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
 /**
  * The client handler
  */
@@ -49,7 +51,7 @@ public class GrpcClientHandler implements HttpHandler {
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
     public GrpcClientHandler(
-            EventMeshGrpcServer eventMeshGrpcServer
+        EventMeshGrpcServer eventMeshGrpcServer
     ) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
@@ -129,17 +131,17 @@ public class GrpcClientHandler implements HttpHandler {
             for (List<ConsumerGroupClient> clientList : clientTable.values()) {
                 for (ConsumerGroupClient client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.env).orElse(""),
-                            Optional.ofNullable(client.sys).orElse(""),
-                            Optional.ofNullable(client.url).orElse(""),
-                            "0",
-                            Optional.ofNullable(client.hostname).orElse(""),
-                            0,
-                            Optional.ofNullable(client.apiVersion).orElse(""),
-                            Optional.ofNullable(client.idc).orElse(""),
-                            Optional.ofNullable(client.consumerGroup).orElse(""),
-                            "",
-                            "gRPC"
+                        Optional.ofNullable(client.env).orElse(""),
+                        Optional.ofNullable(client.sys).orElse(""),
+                        Optional.ofNullable(client.url).orElse(""),
+                        "0",
+                        Optional.ofNullable(client.hostname).orElse(""),
+                        0,
+                        Optional.ofNullable(client.apiVersion).orElse(""),
+                        Optional.ofNullable(client.idc).orElse(""),
+                        Optional.ofNullable(client.consumerGroup).orElse(""),
+                        "",
+                        "gRPC"
                     );
                     getClientResponseList.add(getClientResponse);
                 }

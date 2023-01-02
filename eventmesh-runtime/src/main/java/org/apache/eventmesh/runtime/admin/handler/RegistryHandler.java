@@ -17,17 +17,19 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.runtime.admin.response.Error;
-import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
+import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.registry.Registry;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,33 +37,21 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-/**
- * The config handler
- */
-public class ConfigurationHandler implements HttpHandler {
+public class RegistryHandler implements HttpHandler {
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
+    private final Registry eventMeshRegistry;
 
-    private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-
-    public ConfigurationHandler(
-        EventMeshTCPConfiguration eventMeshTCPConfiguration,
-        EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-        EventMeshGrpcConfiguration eventMeshGrpcConfiguration
-    ) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
-        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
+    public RegistryHandler(Registry eventMeshRegistry) {
+        this.eventMeshRegistry = eventMeshRegistry;
     }
 
     /**
-     * OPTIONS /configuration
+     * OPTION /registry
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Method", "*");
         httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
@@ -69,8 +59,8 @@ public class ConfigurationHandler implements HttpHandler {
     }
 
     /**
-     * GET /config
-     * Return a response that contains the EventMesh configuration
+     * GET /registry
+     * Return a response that contains the list of EventMesh clusters
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -78,32 +68,26 @@ public class ConfigurationHandler implements HttpHandler {
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
         try {
-            GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                eventMeshTCPConfiguration.sysID,
-                eventMeshTCPConfiguration.namesrvAddr,
-                eventMeshTCPConfiguration.eventMeshEnv,
-                eventMeshTCPConfiguration.eventMeshIDC,
-                eventMeshTCPConfiguration.eventMeshCluster,
-                eventMeshTCPConfiguration.eventMeshServerIp,
-                eventMeshTCPConfiguration.eventMeshName,
-                eventMeshTCPConfiguration.eventMeshWebhookOrigin,
-                eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
-                eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
+            List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
+            List<EventMeshDataInfo> eventMeshDataInfos = eventMeshRegistry.findAllEventMeshInfo();
+            for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
+                GetRegistryResponse getRegistryResponse = new GetRegistryResponse(
+                    eventMeshDataInfo.getEventMeshClusterName(),
+                    eventMeshDataInfo.getEventMeshName(),
+                    eventMeshDataInfo.getEndpoint(),
+                    eventMeshDataInfo.getLastUpdateTimestamp(),
+                    eventMeshDataInfo.getMetadata().toString()
+                );
+                getRegistryResponseList.add(getRegistryResponse);
+            }
+            getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.eventMeshClusterName));
 
-                // TCP Configuration
-                eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
-
-                // HTTP Configuration
-                eventMeshHTTPConfiguration.httpServerPort,
-                eventMeshHTTPConfiguration.eventMeshServerUseTls,
-
-                // gRPC Configuration
-                eventMeshGrpcConfiguration.grpcServerPort,
-                eventMeshGrpcConfiguration.eventMeshServerUseTls
-            );
-
-            String result = JsonUtils.toJson(getConfigurationResponse);
+            String result = JsonUtils.toJson(getRegistryResponseList);
+            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            out.write(result.getBytes());
+        } catch (NullPointerException e) {
+            //registry not initialized, return empty list
+            String result = JsonUtils.toJson(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -130,7 +114,7 @@ public class ConfigurationHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if (httpExchange.getRequestMethod().equals("OPTION")) {
             preflight(httpExchange);
         }
         if (httpExchange.getRequestMethod().equals("GET")) {

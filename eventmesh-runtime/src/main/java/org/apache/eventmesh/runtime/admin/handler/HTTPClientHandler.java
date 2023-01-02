@@ -29,13 +29,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +49,7 @@ public class HTTPClientHandler implements HttpHandler {
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-            EventMeshHTTPServer eventMeshHTTPServer
+        EventMeshHTTPServer eventMeshHTTPServer
     ) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
@@ -124,17 +121,17 @@ public class HTTPClientHandler implements HttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.env).orElse(""),
-                            Optional.ofNullable(client.sys).orElse(""),
-                            Optional.ofNullable(client.url).orElse(""),
-                            "0",
-                            Optional.ofNullable(client.hostname).orElse(""),
-                            0,
-                            Optional.ofNullable(client.apiVersion).orElse(""),
-                            Optional.ofNullable(client.idc).orElse(""),
-                            Optional.ofNullable(client.consumerGroup).orElse(""),
-                            "",
-                            "HTTP"
+                        Optional.ofNullable(client.env).orElse(""),
+                        Optional.ofNullable(client.sys).orElse(""),
+                        Optional.ofNullable(client.url).orElse(""),
+                        "0",
+                        Optional.ofNullable(client.hostname).orElse(""),
+                        0,
+                        Optional.ofNullable(client.apiVersion).orElse(""),
+                        Optional.ofNullable(client.idc).orElse(""),
+                        Optional.ofNullable(client.consumerGroup).orElse(""),
+                        "",
+                        "HTTP"
                     );
                     getClientResponseList.add(getClientResponse);
                 }

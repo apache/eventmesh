@@ -23,6 +23,7 @@ import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +31,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,7 @@ public class TopicHandler implements HttpHandler {
     private final MQAdminWrapper admin;
 
     public TopicHandler(
-            String connectorPluginType
+        String connectorPluginType
     ) {
         admin = new MQAdminWrapper(connectorPluginType);
         try {
