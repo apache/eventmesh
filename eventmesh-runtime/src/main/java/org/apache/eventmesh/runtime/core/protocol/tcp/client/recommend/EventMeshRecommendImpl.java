@@ -69,14 +69,14 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
         for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
             String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
-            if (StringUtils.isNotBlank(idc)) {
-                if (StringUtils.equals(idc, localIdc)) {
-                    localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
-                } else {
-                    remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
-                }
-            } else {
+            if (!StringUtils.isNotBlank(idc)) {
                 log.error("EventMeshName may be illegal,idc is null,eventMeshName:{}", eventMeshDataInfo.getEventMeshName());
+                continue;
+            }
+            if (StringUtils.equals(idc, localIdc)) {
+                localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
+            } else {
+                remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
             }
         }
 
@@ -175,7 +175,6 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     private String recommendProxy(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributionMap, String group) {
         log.info("eventMeshMap:{},clientDistributionMap:{},group:{}", eventMeshMap, clientDistributionMap, group);
-        String recommendProxy = null;
 
         for (String proxyName : clientDistributionMap.keySet()) {
             if (!eventMeshMap.containsKey(proxyName)) {
@@ -184,9 +183,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             }
         }
         for (String proxy : eventMeshMap.keySet()) {
-            if (!clientDistributionMap.containsKey(proxy)) {
-                clientDistributionMap.put(proxy, 0);
-            }
+            clientDistributionMap.putIfAbsent(proxy,0);
         }
 
         //select the eventmesh with least instances
