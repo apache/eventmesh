@@ -378,26 +378,23 @@ public class ClientSessionGroupMapping {
 
     private void initDownStreamMsgContextCleaner() {
         eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
-                new Runnable() {
-                    @Override
-                    public void run() {
+            () -> {
 
-                        //scan non-broadcast msg
-                        for (Session tmp : sessionTable.values()) {
-                            for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
-                                String seqKey = entry.getKey();
-                                DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                                if (!downStreamMsgContext.isExpire()) {
-                                    continue;
-                                }
-                                downStreamMsgContext.ackMsg();
-                                tmp.getPusher().getUnAckMsg().remove(seqKey);
-                                log.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
-                                    downStreamMsgContext.event.getSubject(), seqKey);
-                            }
+                //scan non-broadcast msg
+                for (Session tmp : sessionTable.values()) {
+                    for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
+                        String seqKey = entry.getKey();
+                        DownStreamMsgContext downStreamMsgContext = entry.getValue();
+                        if (!downStreamMsgContext.isExpire()) {
+                            continue;
                         }
+                        downStreamMsgContext.ackMsg();
+                        tmp.getPusher().getUnAckMsg().remove(seqKey);
+                        log.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
+                            downStreamMsgContext.event.getSubject(), seqKey);
                     }
-                }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);
+                }
+            }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);
     }
 
 
