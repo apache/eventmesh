@@ -57,7 +57,7 @@ public class CloudEventProducer {
     public Response publish(List<CloudEvent> events) {
         logger.info("BatchPublish message, batch size=" + events.size());
 
-        if (events.size() == 0) {
+        if (events.isEmpty()) {
             return null;
         }
         List<CloudEvent> enhancedEvents = events.stream()
