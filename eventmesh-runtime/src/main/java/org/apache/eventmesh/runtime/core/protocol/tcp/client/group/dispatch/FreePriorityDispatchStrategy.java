@@ -35,7 +35,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
     private static final Logger LOGGER = LoggerFactory.getLogger(FreePriorityDispatchStrategy.class);
 
     @Override
-    public Session select(final String group,final  String topic,final  Set<Session> groupConsumerSessions) {
+    public Session select(final String group, final String topic, final Set<Session> groupConsumerSessions) {
         if (CollectionUtils.isEmpty(groupConsumerSessions)
                 || StringUtils.isBlank(topic)
                 || StringUtils.isBlank(group)) {
