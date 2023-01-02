@@ -15,34 +15,37 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.knative.consumer;
+package org.apache.eventmesh.connector.knative.config;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-
-import java.util.Properties;
+import org.apache.eventmesh.connector.knative.consumer.KnativeConsumerImpl;
+import org.apache.eventmesh.connector.knative.producer.KnativeProducerImpl;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KnativeConsumerImplTest {
+public class ClientConfigurationTest {
 
     @Test
-    public void testSubscribe() throws Exception {
-        Properties properties = new Properties();
-        final String topic = "messages";
-        properties.put("topic", topic);
-
-        // Create a Knative consumer:
-        KnativeConsumerImpl knativeConsumer =
+    public void getConfigWhenRocketMQConsumerInit() {
+        KnativeConsumerImpl consumer =
                 (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
 
-        try {
-            knativeConsumer.init(properties);
+        ClientConfiguration config = consumer.getClientConfiguration();
+        assertConfig(config);
+    }
 
-            // Subscribe:
-            knativeConsumer.subscribe(properties.getProperty("topic"));
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
+    @Test
+    public void getConfigWhenRocketMQProducerInit() {
+        KnativeProducerImpl producer =
+                (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
+
+        ClientConfiguration config = producer.getClientConfiguration();
+        assertConfig(config);
+    }
+
+    private void assertConfig(ClientConfiguration config) {
+        Assert.assertEquals(config.getEmurl(), "127.0.0.1");
+        Assert.assertEquals(config.getServiceAddr(), "cloudevents-player.default.127.0.0.1.sslip.io");
     }
 }
