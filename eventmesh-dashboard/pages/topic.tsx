@@ -24,7 +24,7 @@ import TopicTable from '../components/topic/TopicTable';
 const Topic: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>Topic | Apache EventMesh Dashboard</title>
     </Head>
     <TopicTable />
   </>

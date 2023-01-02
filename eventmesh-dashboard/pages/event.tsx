@@ -24,7 +24,7 @@ import EventTable from '../components/event/EventTable';
 const Event: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>Event | Apache EventMesh Dashboard</title>
     </Head>
     <EventTable />
   </>

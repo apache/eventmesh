@@ -84,7 +84,7 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
     }
 
@@ -97,7 +97,7 @@ public class RocketMQProducerImpl implements Producer {
     @Override
     public void checkTopicExist(String topic) throws Exception {
         this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl()
-                .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
