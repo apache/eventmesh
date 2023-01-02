@@ -253,7 +253,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             logger.info("before revert clientDistributionMap:{}, group:{}, purpose:{}", localEventMeshDistributeData,
                     group, purpose);
             for (String eventMeshName : localEventMeshDistributeData.keySet()) {
-                if (!eventMeshMap.keySet().contains(eventMeshName)) {
+                if (!eventMeshMap.containsKey(eventMeshName)) {
                     logger.warn(
                             "doRebalance failed,exist eventMesh not register but exist in "
                                     + "distributionMap,cluster:{},grpup:{},purpose:{},eventMeshName:{}",
@@ -262,7 +262,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 }
             }
             for (String eventMesh : eventMeshMap.keySet()) {
-                if (!localEventMeshDistributeData.keySet().contains(eventMesh)) {
+                if (!localEventMeshDistributeData.containsKey(eventMesh)) {
                     localEventMeshDistributeData.put(eventMesh, 0);
                 }
             }
