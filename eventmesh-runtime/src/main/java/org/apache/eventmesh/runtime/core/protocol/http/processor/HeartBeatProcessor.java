@@ -206,8 +206,9 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                             EventMeshRetCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
             asyncContext.onComplete(err);
             final long elapsedTime = System.currentTimeMillis() - startTime;
-            final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost=%s ms", elapsedTime);
-            LOGGER.error(logMsg, e);
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms", elapsedTime, e);
+            }
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(elapsedTime);
         }
