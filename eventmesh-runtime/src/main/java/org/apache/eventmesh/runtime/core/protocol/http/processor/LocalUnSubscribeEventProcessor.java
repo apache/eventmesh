@@ -208,10 +208,9 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
                 } catch (Exception e) {
                     if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(
-                                String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%sms"
-                                                + "|topic=%s|url=%s", System.currentTimeMillis() - startTime,
-                                        JsonUtils.serialize(unSubTopicList), unSubscribeUrl), e);
+                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                                        + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
@@ -233,10 +232,9 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                             .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
                     if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(
-                                String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%sms"
-                                                + "|topic=%s|url=%s", System.currentTimeMillis() - startTime,
-                                        JsonUtils.serialize(unSubTopicList), unSubscribeUrl), e);
+                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                                                + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                                        JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
