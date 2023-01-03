@@ -141,7 +141,7 @@ const TCPClientTable = () => {
         if (axios.isAxiosError(error)) {
           toast({
             title: 'Failed to fetch the list of TCP Clients',
-            description: 'unable to connect to the EventMesh daemon',
+            description: 'Unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -152,7 +152,7 @@ const TCPClientTable = () => {
     };
 
     fetch();
-  }, [TCPClientList]);
+  }, []);
 
   return (
     <Box
@@ -186,6 +186,7 @@ const TCPClientTable = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
+              <Th>Host</Th>
               <Th>Host</Th>
               <Th>Group</Th>
               <Th>Action</Th>
