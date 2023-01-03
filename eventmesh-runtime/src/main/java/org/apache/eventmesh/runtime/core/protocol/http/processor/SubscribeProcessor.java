@@ -277,8 +277,9 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                 LOGGER.debug("{}", httpCommand);
                             }
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                            eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
-                                    System.currentTimeMillis() - request.getReqTime());
+
+                            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                                System.currentTimeMillis() - request.getReqTime());
                         } catch (Exception ex) {
                             // ignore
                         }
@@ -295,14 +296,15 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                         EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg()
                                                 + EventMeshUtil.stackTrace(e, 2)));
                 asyncContext.onComplete(err);
-                final long endTime = System.currentTimeMillis();
-                final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms|topic=%s"
-                                + "|url=%s", endTime - startTime,
-                        JsonUtils.serialize(subscribeRequestBody.getTopics()),
-                        subscribeRequestBody.getUrl());
-                LOGGER.error(logMsg, e);
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+
+                long endTime = System.currentTimeMillis();
+                httpLogger.error(
+                    "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
+                        + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                    JsonUtils.serialize(subscribeRequestBody.getTopics()),
+                    subscribeRequestBody.getUrl(), e);
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
             }
         }
     }
