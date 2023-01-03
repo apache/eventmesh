@@ -202,8 +202,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     @Override
-    public void start() throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
-            UnrecoverableKeyException, KeyManagementException {
+    public void start() throws Exception {
         final Runnable r = () -> {
             final ServerBootstrap b = new ServerBootstrap();
             try {
