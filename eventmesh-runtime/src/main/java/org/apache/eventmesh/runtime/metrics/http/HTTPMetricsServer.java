@@ -118,6 +118,7 @@ public class HTTPMetricsServer {
     });
 
     // todo: move this into standalone metrics plugin
+
     private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
                                        final EventMeshHTTPServer eventMeshHTTPServer) {
         if (LOGGER.isInfoEnabled()) {
@@ -134,6 +135,7 @@ public class HTTPMetricsServer {
 
         summaryMetrics.httpStatInfoClear();
 
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
                     summaryMetrics.maxSendBatchMsgTPS(),
@@ -146,6 +148,7 @@ public class HTTPMetricsServer {
         }
 
         summaryMetrics.cleanSendBatchStat();
+
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
@@ -160,6 +163,7 @@ public class HTTPMetricsServer {
         }
 
         summaryMetrics.cleanSendMsgStat();
+
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(
@@ -176,6 +180,7 @@ public class HTTPMetricsServer {
 
         summaryMetrics.cleanHttpPushMsgStat();
 
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
                     eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
@@ -183,6 +188,7 @@ public class HTTPMetricsServer {
                     eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
                     eventMeshHTTPServer.getHttpRetryer().size());
         }
+
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",

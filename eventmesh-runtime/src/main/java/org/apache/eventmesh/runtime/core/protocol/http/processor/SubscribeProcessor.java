@@ -202,13 +202,14 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
                 Map<String, List<String>> idcUrls = new HashMap<>();
                 for (Client client : groupTopicClients) {
-                    if (idcUrls.containsKey(client.getIdc())) {
-                        idcUrls.get(client.getIdc()).add(StringUtils.deleteWhitespace(client.getUrl()));
-                    } else {
-                        List<String> urls = new ArrayList<>();
-                        urls.add(client.getUrl());
-                        idcUrls.put(client.getIdc(), urls);
+                    String idc = client.getIdc();
+                    String urlVal = StringUtils.deleteWhitespace(client.getUrl());
+                    List<String> urls = idcUrls.get(idc);
+                    if (urls == null) {
+                        urls = new ArrayList<>();
+                        idcUrls.put(idc, urls);
                     }
+                    urls.add(urlVal);
                 }
                 ConsumerGroupConf consumerGroupConf =
                     eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
@@ -273,7 +274,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                 httpLogger.debug("{}", httpCommand);
                             }
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                            eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                                 System.currentTimeMillis() - request.getReqTime());
                         } catch (Exception ex) {
                             // ignore
@@ -297,8 +298,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
                     JsonUtils.serialize(subscribeRequestBody.getTopics()),
                     subscribeRequestBody.getUrl(), e);
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
             }
         }
     }
