@@ -268,7 +268,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerHTTPRequestProcessor();
         this.initWebhook();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshHTTPServer inited");
+            LOGGER.info("--------EventMeshHTTPServer inited------------------");
         }
     }
 
@@ -284,7 +284,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.register();
         }
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshHTTPServer started");
+            LOGGER.info("--------EventMeshHTTPServer started------------------");
         }
     }
 
@@ -309,7 +309,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.unRegister();
         }
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshHTTPServer shutdown");
+            LOGGER.info("-------------EventMeshHTTPServer shutdown-------------");
         }
     }
 
