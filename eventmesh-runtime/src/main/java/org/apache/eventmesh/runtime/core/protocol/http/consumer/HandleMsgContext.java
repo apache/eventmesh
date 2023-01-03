@@ -28,7 +28,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +40,7 @@ import io.cloudevents.CloudEvent;
 
 public class HandleMsgContext {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandleMsgContext.class);
 
     private String msgRandomNo;
 
@@ -66,16 +66,24 @@ public class HandleMsgContext {
 
     private ConsumerGroupConf consumerGroupConfig;
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
     private ConsumerGroupTopicConf consumeTopicConfig;
 
     private Map<String, String> props;
 
-    public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
-                            String topic, CloudEvent event, SubscriptionItem subscriptionItem,
-                            AbstractContext context, ConsumerGroupConf consumerGroupConfig,
-                            EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
+    public HandleMsgContext(final String msgRandomNo,
+                            final String consumerGroup,
+                            final EventMeshConsumer eventMeshConsumer,
+                            final String topic,
+                            final CloudEvent event,
+                            final SubscriptionItem subscriptionItem,
+                            final AbstractContext context,
+                            final ConsumerGroupConf consumerGroupConfig,
+                            final EventMeshHTTPServer eventMeshHTTPServer,
+                            final String bizSeqNo,
+                            final String uniqueId,
+                            final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
@@ -89,18 +97,18 @@ public class HandleMsgContext {
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
 
-        String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
+        final String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
         this.ttl = StringUtils.isNumeric(ttlStr) ? Integer.parseInt(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
-    public void addProp(String key, String val) {
+    public void addProp(final String key, final String val) {
         if (props == null) {
             props = new HashMap<>();
         }
         props.put(key, val);
     }
 
-    public String getProp(String key) {
+    public String getProp(final String key) {
         return props.get(key);
     }
 
@@ -108,7 +116,7 @@ public class HandleMsgContext {
         return msgRandomNo;
     }
 
-    public void setMsgRandomNo(String msgRandomNo) {
+    public void setMsgRandomNo(final String msgRandomNo) {
         this.msgRandomNo = msgRandomNo;
     }
 
@@ -116,7 +124,7 @@ public class HandleMsgContext {
         return consumeTopicConfig;
     }
 
-    public void setConsumeTopicConfig(ConsumerGroupTopicConf consumeTopicConfig) {
+    public void setConsumeTopicConfig(final ConsumerGroupTopicConf consumeTopicConfig) {
         this.consumeTopicConfig = consumeTopicConfig;
     }
 
@@ -124,7 +132,7 @@ public class HandleMsgContext {
         return bizSeqNo;
     }
 
-    public void setBizSeqNo(String bizSeqNo) {
+    public void setBizSeqNo(final String bizSeqNo) {
         this.bizSeqNo = bizSeqNo;
     }
 
@@ -132,7 +140,7 @@ public class HandleMsgContext {
         return consumerGroup;
     }
 
-    public void setConsumerGroup(String consumerGroup) {
+    public void setConsumerGroup(final String consumerGroup) {
         this.consumerGroup = consumerGroup;
     }
 
@@ -148,7 +156,7 @@ public class HandleMsgContext {
         return topic;
     }
 
-    public void setTopic(String topic) {
+    public void setTopic(final String topic) {
         this.topic = topic;
     }
 
@@ -156,7 +164,7 @@ public class HandleMsgContext {
         return event;
     }
 
-    public void setEvent(CloudEvent event) {
+    public void setEvent(final CloudEvent event) {
         this.event = event;
     }
 
@@ -164,7 +172,7 @@ public class HandleMsgContext {
         return subscriptionItem;
     }
 
-    public void setSubscriptionItem(SubscriptionItem subscriptionItem) {
+    public void setSubscriptionItem(final SubscriptionItem subscriptionItem) {
         this.subscriptionItem = subscriptionItem;
     }
 
@@ -172,7 +180,7 @@ public class HandleMsgContext {
         return createTime;
     }
 
-    public void setCreateTime(long createTime) {
+    public void setCreateTime(final long createTime) {
         this.createTime = createTime;
     }
 
@@ -180,7 +188,7 @@ public class HandleMsgContext {
         return context;
     }
 
-    public void setContext(AbstractContext context) {
+    public void setContext(final AbstractContext context) {
         this.context = context;
     }
 
@@ -188,7 +196,7 @@ public class HandleMsgContext {
         return consumerGroupConfig;
     }
 
-    public void setConsumerGroupConfig(ConsumerGroupConf consumerGroupConfig) {
+    public void setConsumerGroupConfig(final ConsumerGroupConf consumerGroupConfig) {
         this.consumerGroupConfig = consumerGroupConfig;
     }
 
@@ -198,10 +206,10 @@ public class HandleMsgContext {
 
     public void finish() {
         if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
-            if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("messageAcked|topic={}|event={}", topic, event);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("messageAcked|topic={}|event={}", topic, event);
             }
-            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(event), context);
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
         }
     }
 
@@ -209,7 +217,7 @@ public class HandleMsgContext {
         return uniqueId;
     }
 
-    public void setUniqueId(String uniqueId) {
+    public void setUniqueId(final String uniqueId) {
         this.uniqueId = uniqueId;
     }
 
@@ -217,23 +225,32 @@ public class HandleMsgContext {
         return ttl;
     }
 
-    public void setTtl(int ttl) {
+    public void setTtl(final int ttl) {
         this.ttl = ttl;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("handleMsgContext={")
-                .append("consumerGroup=").append(consumerGroup)
-                .append(",topic=").append(topic)
-                .append(",subscriptionItem=").append(subscriptionItem)
-                .append(",consumeTopicConfig=").append(consumeTopicConfig)
-                .append(",bizSeqNo=").append(bizSeqNo)
-                .append(",uniqueId=").append(uniqueId)
-                .append(",ttl=").append(ttl)
-                .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
-        return sb.toString();
+        return new StringBuilder()
+                .append("handleMsgContext={")
+                .append("consumerGroup=")
+                .append(consumerGroup)
+                .append(",topic=")
+                .append(topic)
+                .append(",subscriptionItem=")
+                .append(subscriptionItem)
+                .append(",consumeTopicConfig=")
+                .append(consumeTopicConfig)
+                .append(",bizSeqNo=")
+                .append(bizSeqNo)
+                .append(",uniqueId=")
+                .append(uniqueId)
+                .append(",ttl=")
+                .append(ttl)
+                .append(",createTime=")
+                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
+                .append('}')
+                .toString();
     }
 
 }
