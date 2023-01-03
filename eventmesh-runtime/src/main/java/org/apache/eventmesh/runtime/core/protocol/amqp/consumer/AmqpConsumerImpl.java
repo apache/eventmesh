@@ -8,6 +8,7 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.amqp.processor.AmqpChannel;
+import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,7 @@ public class AmqpConsumerImpl implements AmqpConsumer {
     /**
      * amqpChannel that current consumer used
      */
-    private AmqpChannel amqpChannel;
+    private AmqpChannel channel;
 
     /**
      * a map that store all un ack message which has been pushed to client
@@ -65,18 +65,20 @@ public class AmqpConsumerImpl implements AmqpConsumer {
             // TODO: 2022/10/20 exception handle
             throw new RuntimeException(e);
         }
-        long deliveryTag = this.amqpChannel.getNextDeliveryTag();
+        long deliveryTag = this.channel.getNextDeliveryTag();
         if (!autoAck) {
             addUnAckMsg(deliveryTag, pushMessageContext);
         }
 
         try {
-            amqpChannel.getConnection().getAmqpOutputConverter().writeDeliver(amqpMessage, this.amqpChannel.getChannelId(),
+            channel.getConnection().getAmqpOutputConverter().writeDeliver(amqpMessage, channel.getChannelId(),
                     false, deliveryTag, consumerTag);
         } catch (IOException e) {
             logger.error("sendMessages IOException", e);
-            amqpChannel.closeChannel(ErrorCodes.INTERNAL_ERROR, "system error");
+            channel.closeChannel(ErrorCodes.INTERNAL_ERROR, "system error");
         }
+
+
     }
 
     @Override
@@ -126,10 +128,10 @@ public class AmqpConsumerImpl implements AmqpConsumer {
     }
 
     /**
-     * 添加unAck msg
+     * add unacked msg
      */
     private void addUnAckMsg(Long deliveryTag, PushMessageContext pushMessageContext) {
-        this.amqpChannel.getUnackMessageMap().put(deliveryTag, pushMessageContext);
+        this.channel.getUnacknowledgedMessageMap().add(deliveryTag, pushMessageContext.getMessageId(), this, 1);
         this.unAckMap.put(pushMessageContext.getMessageId(), pushMessageContext);
     }
 }

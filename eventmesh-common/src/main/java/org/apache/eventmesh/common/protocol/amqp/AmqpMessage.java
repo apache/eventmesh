@@ -19,15 +19,12 @@
 
 package org.apache.eventmesh.common.protocol.amqp;
 
-import com.rabbitmq.client.impl.AMQContentHeader;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.amqp.common.ProtocolKey;
 
 import java.util.Map;
 
-import com.rabbitmq.client.ContentHeader;
-
-import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.impl.AMQContentHeader;
 
 import lombok.Data;
 
