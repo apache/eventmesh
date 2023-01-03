@@ -55,6 +55,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
  * ZipkinTraceService
  */
 @Config(field = "zipkinConfiguration")
+@Config(field = "exporterConfiguration")
 public class ZipkinTraceService implements EventMeshTraceService {
     private String eventMeshZipkinIP;
     private int eventMeshZipkinPort;
@@ -76,6 +77,11 @@ public class ZipkinTraceService implements EventMeshTraceService {
      */
     private ZipkinConfiguration zipkinConfiguration;
 
+    /**
+     * Unified configuration class corresponding to exporter.properties
+     */
+    private ExporterConfiguration exporterConfiguration;
+
     @Override
     public void init() {
         //zipkin's config
@@ -83,10 +89,10 @@ public class ZipkinTraceService implements EventMeshTraceService {
         eventMeshZipkinPort = zipkinConfiguration.getEventMeshZipkinPort();
 
         //exporter's config
-        eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
         ZipkinSpanExporter zipkinExporter =
@@ -179,5 +185,9 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
     public ZipkinConfiguration getClientConfiguration() {
         return this.zipkinConfiguration;
+    }
+
+    public ExporterConfiguration getExporterConfiguration() {
+        return this.exporterConfiguration;
     }
 }

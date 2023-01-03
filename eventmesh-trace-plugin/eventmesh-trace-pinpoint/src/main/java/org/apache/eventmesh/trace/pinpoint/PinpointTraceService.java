@@ -50,6 +50,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
  * https://github.com/pinpoint-apm/pinpoint
  */
 @Config(field = "pinpointConfiguration")
+@Config(field = "exporterConfiguration")
 public class PinpointTraceService implements EventMeshTraceService {
 
     private SdkTracerProvider sdkTracerProvider;
@@ -65,12 +66,17 @@ public class PinpointTraceService implements EventMeshTraceService {
      */
     private PinpointConfiguration pinpointConfiguration;
 
+    /**
+     * Unified configuration class corresponding to exporter.properties
+     */
+    private ExporterConfiguration exporterConfiguration;
+
     @Override
     public void init() throws TraceException {
-        long eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        long eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        int eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        int eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        long eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        long eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(
                 new PinpointSpanExporter(
@@ -157,5 +163,9 @@ public class PinpointTraceService implements EventMeshTraceService {
 
     public PinpointConfiguration getClientConfiguration() {
         return this.pinpointConfiguration;
+    }
+
+    public ExporterConfiguration getExporterConfiguration() {
+        return this.exporterConfiguration;
     }
 }
