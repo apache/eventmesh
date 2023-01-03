@@ -63,12 +63,16 @@ public class ConsumerManager {
     }
 
     public void init() throws Exception {
-        LOGGER.info("Grpc ConsumerManager initialized.");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager initialized.");
+        }
     }
 
     public void start() throws Exception {
         startClientCheck();
-        LOGGER.info("Grpc ConsumerManager started.");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager started.");
+        }
     }
 
     public void shutdown() throws Exception {
@@ -76,7 +80,9 @@ public class ConsumerManager {
             consumer.shutdown();
         }
         scheduledExecutorService.shutdown();
-        LOGGER.info("Grpc ConsumerManager shutdown.");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager shutdown.");
+        }
     }
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
@@ -238,8 +244,9 @@ public class ConsumerManager {
                     try {
                         restartEventMeshConsumer(consumerGroup);
                     } catch (Exception e) {
-                        final String logMsg = String.format("Error in restarting EventMeshConsumer [%s]", consumerGroup);
-                        LOGGER.error(logMsg, e);
+                        if (LOGGER.isErrorEnabled()) {
+                            LOGGER.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                        }
                     }
                 });
             }, 10_000, 10_000, TimeUnit.MILLISECONDS);
