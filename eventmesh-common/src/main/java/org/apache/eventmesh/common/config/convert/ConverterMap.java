@@ -29,8 +29,10 @@ import org.apache.eventmesh.common.config.convert.converter.MapConverter;
 import org.apache.eventmesh.common.config.convert.converter.ObjectConverter;
 import org.apache.eventmesh.common.config.convert.converter.PropertiesConverter;
 import org.apache.eventmesh.common.config.convert.converter.StringConverter;
+import org.apache.eventmesh.common.config.convert.converter.URIConverter;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ public class ConverterMap {
     private static final Map<Class<?>, ConvertValue<?>> classToConverter = new HashMap<>();
 
     static {
+        register(new URIConverter(), URI.class);
         register(new EnumConverter(), Enum.class);
         register(new DateConverter(), Date.class);
         register(new StringConverter(), String.class);

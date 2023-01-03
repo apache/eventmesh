@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.config.ConfigurationHolder;
@@ -37,6 +38,7 @@ import io.cloudevents.CloudEvent;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
+@Config(field = "configurationHolder")
 public class RabbitmqConsumer implements Consumer {
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitmqConsumer.class);
@@ -51,7 +53,10 @@ public class RabbitmqConsumer implements Consumer {
 
     private volatile boolean started = false;
 
-    private final ConfigurationHolder configurationHolder = new ConfigurationHolder();
+    /**
+     * Unified configuration class corresponding to rabbitmq-client.properties
+     */
+    private ConfigurationHolder configurationHolder;
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors() * 2,
@@ -92,7 +97,6 @@ public class RabbitmqConsumer implements Consumer {
 
     @Override
     public void init(Properties keyValue) throws Exception {
-        this.configurationHolder.init();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(configurationHolder.getHost(), configurationHolder.getUsername(),
                 configurationHolder.getPasswd(), configurationHolder.getPort(), configurationHolder.getVirtualHost());
@@ -130,5 +134,9 @@ public class RabbitmqConsumer implements Consumer {
 
     public void setRabbitmqConnectionFactory(RabbitmqConnectionFactory rabbitmqConnectionFactory) {
         this.rabbitmqConnectionFactory = rabbitmqConnectionFactory;
+    }
+
+    public ConfigurationHolder getClientConfiguration() {
+        return this.configurationHolder;
     }
 }

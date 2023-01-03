@@ -17,63 +17,44 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-import com.google.common.base.Preconditions;
 import com.rabbitmq.client.BuiltinExchangeType;
 
 import lombok.Data;
 
 @Data
+@Config(prefix = "eventMesh.server.rabbitmq", path = "classPath://rabbitmq-client.properties")
 public class ConfigurationHolder {
+
+    @ConfigFiled(field = "host")
     public String host;
+
+    @ConfigFiled(field = "port")
     public int port;
+
+    @ConfigFiled(field = "username")
     public String username;
+
+    @ConfigFiled(field = "passwd")
     public String passwd;
+
+    @ConfigFiled(field = "virtualHost")
     public String virtualHost;
 
+    @ConfigFiled(field = "exchangeType")
     public BuiltinExchangeType exchangeType;
+
+    @ConfigFiled(field = "exchangeName")
     public String exchangeName;
+
+    @ConfigFiled(field = "routingKey")
     public String routingKey;
+
+    @ConfigFiled(field = "queueName")
     public String queueName;
+
+    @ConfigFiled(field = "autoAck")
     public boolean autoAck;
-
-    public void init() {
-        String host = ConfigurationWrapper.getProperty(ConfigKey.HOST);
-        Preconditions.checkState(StringUtils.isNotEmpty(host), String.format("%s error", ConfigKey.HOST));
-        this.host = host;
-
-        String port = ConfigurationWrapper.getProperty(ConfigKey.PORT);
-        Preconditions.checkState(StringUtils.isNotEmpty(port), String.format("%s error", ConfigKey.PORT));
-        this.port = Integer.parseInt(port);
-
-        String username = ConfigurationWrapper.getProperty(ConfigKey.USER_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(username), String.format("%s error", ConfigKey.USER_NAME));
-        this.username = username;
-
-        String passwd = ConfigurationWrapper.getProperty(ConfigKey.PASSWD);
-        Preconditions.checkState(StringUtils.isNotEmpty(passwd), String.format("%s error", ConfigKey.PASSWD));
-        this.passwd = passwd;
-
-        this.virtualHost = ConfigurationWrapper.getProperty(ConfigKey.VIRTUAL_HOST);
-
-        String exchangeType = ConfigurationWrapper.getProperty(ConfigKey.EXCHANGE_TYPE);
-        Preconditions.checkState(StringUtils.isNotEmpty(exchangeType), String.format("%s error", ConfigKey.EXCHANGE_TYPE));
-        this.exchangeType = BuiltinExchangeType.valueOf(exchangeType);
-
-        String exchangeName = ConfigurationWrapper.getProperty(ConfigKey.EXCHANGE_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(host), String.format("%s error", ConfigKey.EXCHANGE_NAME));
-        this.exchangeName = exchangeName;
-
-        String routingKey = ConfigurationWrapper.getProperty(ConfigKey.ROUTING_KEY);
-        Preconditions.checkState(StringUtils.isNotEmpty(routingKey), String.format("%s error", ConfigKey.ROUTING_KEY));
-        this.routingKey = routingKey;
-
-        String queueName = ConfigurationWrapper.getProperty(ConfigKey.QUEUE_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(queueName), String.format("%s error", ConfigKey.QUEUE_NAME));
-        this.queueName = queueName;
-
-        String autoAck = ConfigurationWrapper.getProperty(ConfigKey.AUTO_ACK);
-        this.autoAck = StringUtils.isNotEmpty(autoAck) && Boolean.parseBoolean(autoAck);
-    }
 }

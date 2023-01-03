@@ -20,7 +20,6 @@ package org.apache.eventmesh.common.config.convert.converter;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.config.ConfigInfo;
-import org.apache.eventmesh.common.config.NotNull;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
 import org.apache.eventmesh.common.config.convert.ConverterMap;
@@ -29,13 +28,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.Properties;
 
 import org.assertj.core.util.Strings;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Config field conversion class for Configuration class
@@ -115,11 +110,9 @@ public class ObjectConverter implements ConvertValue<Object> {
             needReload = this.checkNeedReload(needReload, configFiled);
 
             ConvertValue<?> convertValue = ConverterMap.getFieldConverter(field);
+            Object fieldValue = convertValue.processFieldValue(convertInfo, key, configFiled);
 
-            Properties properties = convertInfo.getProperties();
-            Object fieldValue = convertValue.processFieldValue(properties, key);
-
-            if (!checkFieldValueBefore(field, key, convertValue, fieldValue)) {
+            if (!checkFieldValueBefore(configFiled, key, convertValue, fieldValue)) {
                 continue;
             }
             convertInfo.setValue(fieldValue);
@@ -127,7 +120,7 @@ public class ObjectConverter implements ConvertValue<Object> {
             convertInfo.setKey(key);
             Object convertedValue = convertValue.convert(convertInfo);
 
-            if (!checkFieldValueAfter(field, key, convertedValue)) {
+            if (!checkFieldValueAfter(configFiled, key, convertedValue)) {
                 continue;
             }
             field.set(object, convertedValue);
@@ -144,11 +137,10 @@ public class ObjectConverter implements ConvertValue<Object> {
         }
     }
 
-    private boolean checkFieldValueAfter(Field field, String key, Object convertedValue) {
+    private boolean checkFieldValueAfter(ConfigFiled configFiled, String key, Object convertedValue) {
         if (Objects.isNull(convertedValue)) {
-            NotNull notNull = field.getAnnotation(NotNull.class);
-            if (Objects.nonNull(notNull)) {
-                Preconditions.checkState(true, key + " is invalidated");
+            if (configFiled.notNull()) {
+                throw new RuntimeException(key + " can not be null!");
             }
 
             return false;
@@ -157,11 +149,10 @@ public class ObjectConverter implements ConvertValue<Object> {
         return true;
     }
 
-    private boolean checkFieldValueBefore(Field field, String key, ConvertValue<?> convertValue, Object fieldValue) {
+    private boolean checkFieldValueBefore(ConfigFiled configFiled, String key, ConvertValue<?> convertValue, Object fieldValue) {
         if (Objects.isNull(fieldValue) && !convertValue.canHandleNullValue()) {
-            NotNull notNull = field.getAnnotation(NotNull.class);
-            if (Objects.nonNull(notNull)) {
-                Preconditions.checkState(true, key + " is invalidated.");
+            if (configFiled.notNull()) {
+                throw new RuntimeException(key + " can not be null!");
             }
 
             return false;
@@ -191,44 +182,11 @@ public class ObjectConverter implements ConvertValue<Object> {
         StringBuilder keyPrefix = new StringBuilder(Objects.isNull(prefix) ? "" : prefix);
 
         if (configFiled == null || configFiled.field().isEmpty()) {
-            key = this.getKey(field.getName(), hump, keyPrefix);
+            key = keyPrefix.deleteCharAt(keyPrefix.length() - 1).toString();
         } else {
             key = keyPrefix.append(configFiled.field()).toString();
         }
 
         return key;
-    }
-
-    private String getKey(String fieldName, char spot, StringBuilder key) {
-        boolean currency = false;
-        int length = fieldName.length();
-        for (int i = 0; i < length; i++) {
-            char c = fieldName.charAt(i);
-            boolean b = i < length - 1 && fieldName.charAt(i + 1) > 96;
-
-            if (currency) {
-                if (b) {
-                    key.append(spot);
-                    key.append((char) (c + 32));
-                    currency = false;
-                } else {
-                    key.append(c);
-                }
-            } else {
-                if (c > 96) {
-                    key.append(c);
-                } else {
-                    key.append(spot);
-                    if (b) {
-                        key.append((char) (c + 32));
-                    } else {
-                        key.append(c);
-                        currency = true;
-                    }
-                }
-            }
-        }
-
-        return key.toString().toLowerCase(Locale.ROOT);
     }
 }

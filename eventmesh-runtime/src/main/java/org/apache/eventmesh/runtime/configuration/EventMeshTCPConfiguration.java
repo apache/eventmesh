@@ -20,8 +20,6 @@ package org.apache.eventmesh.runtime.configuration;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
-import org.apache.eventmesh.common.config.NotNull;
 
 @Config(prefix = "eventMesh.server")
 public class EventMeshTCPConfiguration extends CommonConfiguration {

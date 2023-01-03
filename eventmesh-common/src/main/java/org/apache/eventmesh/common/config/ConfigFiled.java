@@ -49,4 +49,18 @@ public @interface ConfigFiled {
      * @return field converter
      */
     Class<?> converter() default DefaultConverter.class;
+
+    /**
+     * if the configuration filed is empty, try to read from env, by field
+     *
+     * @return Whether to try to read from env if the configuration filed is empty
+     */
+    boolean findEnv() default false;
+
+    /**
+     * If it cannot be null but is null, an exception is thrown
+     *
+     * @return Whether the field can be null
+     */
+    boolean notNull() default false;
 }

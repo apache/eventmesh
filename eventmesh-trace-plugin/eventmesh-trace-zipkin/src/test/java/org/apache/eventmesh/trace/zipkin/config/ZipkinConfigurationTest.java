@@ -15,15 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.trace.zipkin.config;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface NotNull {
+import org.junit.Assert;
+import org.junit.Test;
 
+public class ZipkinConfigurationTest {
+
+    @Test
+    public void getConfigWhenZipkinTraceInit() {
+        ZipkinTraceService zipkinTraceService =
+                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+
+        ZipkinConfiguration config = zipkinTraceService.getClientConfiguration();
+        assertConfig(config);
+    }
+
+    private void assertConfig(ZipkinConfiguration config) {
+        Assert.assertEquals("127.0.0.1", config.getEventMeshZipkinIP());
+        Assert.assertEquals(816, config.getEventMeshZipkinPort());
+    }
 }

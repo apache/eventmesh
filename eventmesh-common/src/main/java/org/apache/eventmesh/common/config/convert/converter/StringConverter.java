@@ -20,6 +20,8 @@ package org.apache.eventmesh.common.config.convert.converter;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Config field conversion class for String
  */
@@ -27,6 +29,8 @@ public class StringConverter  implements ConvertValue<String> {
 
     @Override
     public String convert(ConvertInfo convertInfo) {
-        return (String) convertInfo.getValue();
+        String value = (String) convertInfo.getValue();
+
+        return StringUtils.trim(value);
     }
 }
