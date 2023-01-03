@@ -227,8 +227,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                             endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                 }
             } else {
                 //remove
@@ -257,8 +257,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                     + "|topic={}|url={}", endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                 }
             }
         }
