@@ -63,8 +63,8 @@ public class EventMeshServer {
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
 
-        List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
-        for (String provideServerProtocol : provideServerProtocols) {
+        final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
+        for (final String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
                 BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this,
                         configurationWrapper, registry));
@@ -97,11 +97,11 @@ public class EventMeshServer {
         }
 
         // server init
-        for (EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
+        for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.init();
         }
 
-        String eventStore = System
+        final String eventStore = System
                 .getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
         if (LOGGER.isInfoEnabled()) {
@@ -109,6 +109,7 @@ public class EventMeshServer {
         }
 
         serviceState = ServiceState.INITED;
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(SERVER_STATE_MSG, serviceState);
         }
@@ -125,7 +126,7 @@ public class EventMeshServer {
             }
         }
         // server start
-        for (EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
+        for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.start();
         }
 
@@ -138,9 +139,11 @@ public class EventMeshServer {
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
-        LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        }
 
-        for (EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
+        for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
         }
 
