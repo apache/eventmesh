@@ -49,10 +49,14 @@ import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -67,7 +71,6 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -199,16 +202,17 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
+            UnrecoverableKeyException, KeyManagementException {
         final Runnable r = () -> {
             final ServerBootstrap b = new ServerBootstrap();
-            b.group(this.getBossGroup(), this.getWorkerGroup())
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpsServerInitializer(
-                            useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
-                    .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
-
             try {
+                b.group(this.getBossGroup(), this.getWorkerGroup())
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new HttpsServerInitializer(
+                                useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
+                        .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("HTTPServer[port={}] started.", this.getPort());
                 }
