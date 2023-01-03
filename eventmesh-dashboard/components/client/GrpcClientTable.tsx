@@ -138,7 +138,7 @@ const GrpcClientTable = () => {
         if (axios.isAxiosError(error)) {
           toast({
             title: 'Failed to fetch the list of gRPC Clients',
-            description: 'unable to connect to the EventMesh daemon',
+            description: 'Unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -149,7 +149,7 @@ const GrpcClientTable = () => {
     };
 
     fetch();
-  }, [GrpcClientList]);
+  }, []);
 
   return (
     <Box
