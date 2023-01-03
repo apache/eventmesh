@@ -33,9 +33,10 @@ public class Server {
     }
 
     public void startAccessServer() throws Exception {
-        eventMeshServer = new EventMeshServer(new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
-                EventMeshConstants.EVENTMESH_CONF_FILE, false));
-        eventMeshServer.start();
+        ConfigurationWrapper configurationWrapper =
+                new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
+                        EventMeshConstants.EVENTMESH_CONF_FILE, false);
+        new EventMeshServer(configurationWrapper).start();
     }
 
     public void shutdownAccessServer() throws Exception {
