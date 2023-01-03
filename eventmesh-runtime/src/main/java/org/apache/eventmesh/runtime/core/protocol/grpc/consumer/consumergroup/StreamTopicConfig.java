@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class StreamTopicConfig extends ConsumerGroupTopicConfig {
-    private final Logger logger = LoggerFactory.getLogger(StreamTopicConfig.class);
 
     /**
      * Key: IDC
@@ -54,8 +53,8 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     @Override
     public synchronized void registerClient(ConsumerGroupClient client) {
         if (!client.getGrpcType().equals(grpcType)) {
-            logger.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
-                client.getGrpcType(), grpcType, client.toString());
+            log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
+                client.getGrpcType(), grpcType, client);
             return;
         }
         String idc = client.getIdc();
@@ -80,7 +79,7 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
             return;
         }
         emitters.remove(clientIp + ":" + clientPid);
-        if (emitters.size() == 0) {
+        if (emitters.isEmpty()) {
             idcEmitterMap.remove(idc);
         }
         idcEmitters = buildIdcEmitter();
@@ -125,10 +124,11 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
     private Map<String, List<EventEmitter<SimpleMessage>>> buildIdcEmitter() {
         Map<String, List<EventEmitter<SimpleMessage>>> result = new HashMap<>();
-        for (Map.Entry<String, Map<String, EventEmitter<SimpleMessage>>> entry : idcEmitterMap.entrySet()) {
-            List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>(entry.getValue().values());
-            result.put(entry.getKey(), emitterList);
-        }
+        idcEmitterMap.forEach((k, v) -> {
+            List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>(v.values());
+            result.put(k, emitterList);
+
+        });
         return result;
     }
 

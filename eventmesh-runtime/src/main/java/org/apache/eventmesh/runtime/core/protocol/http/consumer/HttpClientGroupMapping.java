@@ -31,12 +31,13 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -45,25 +46,25 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpClientGroupMapping {
-    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger("http");
+public final class HttpClientGroupMapping {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientGroupMapping.class);
 
-    private final transient ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
+    private final transient Map<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
 
-    private final transient ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
+    private final transient Map<String /**group@topic*/, List<Client>> localClientInfoMapping =
             new ConcurrentHashMap<>();
 
     private final transient Set<String> localTopicSet = new HashSet<String>(16);
 
-    private transient ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final transient ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
 
     private HttpClientGroupMapping() {
 
     }
 
     private static class Singleton {
-        private static HttpClientGroupMapping INSTANCE = new HttpClientGroupMapping();
+        private static final HttpClientGroupMapping INSTANCE = new HttpClientGroupMapping();
     }
 
     public static HttpClientGroupMapping getInstance() {
@@ -74,40 +75,45 @@ public class HttpClientGroupMapping {
         return localTopicSet;
     }
 
-    public ConcurrentHashMap<String, List<Client>> getLocalClientInfoMapping() {
+    public Map<String, List<Client>> getLocalClientInfoMapping() {
         return localClientInfoMapping;
     }
 
-    public ConsumerGroupConf getConsumerGroupConfByGroup(String consumerGroup) {
+    public ConsumerGroupConf getConsumerGroupConfByGroup(final String consumerGroup) {
         return localConsumerGroupMapping.get(consumerGroup);
     }
 
-    public boolean addSubscription(String consumerGroup, String url, String clientIdc,
+    public boolean addSubscription(final String consumerGroup, final String url, final String clientIdc,
                                    final List<SubscriptionItem> subscriptionList) {
+        Objects.requireNonNull(url, "url can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(clientIdc, "clientIdc can not be null");
+        Objects.requireNonNull(subscriptionList, "subscriptionList can not be null");
+
         boolean isChange = false;
         try {
-            lock.writeLock().lock();
-            for (SubscriptionItem subTopic : subscriptionList) {
-                boolean flag = addSubscriptionByTopic(consumerGroup, url, clientIdc, subTopic);
-                isChange = isChange || flag;
+            READ_WRITE_LOCK.writeLock().lock();
+            for (final SubscriptionItem subTopic : subscriptionList) {
+                isChange = isChange || addSubscriptionByTopic(consumerGroup, url, clientIdc, subTopic);
             }
         } finally {
-            lock.writeLock().unlock();
+            READ_WRITE_LOCK.writeLock().unlock();
         }
         return isChange;
     }
 
-    public boolean removeSubscription(String consumerGroup, String unSubscribeUrl, String clientIdc,
+    public boolean removeSubscription(final String consumerGroup, final String unSubscribeUrl, final String clientIdc,
                                       final List<String> unSubTopicList) {
+        Objects.requireNonNull(unSubTopicList, "unSubTopicList can not be null");
+
         boolean isChange = false;
         try {
-            lock.writeLock().lock();
-            for (String unSubTopic : unSubTopicList) {
-                boolean flag = removeSubscriptionByTopic(consumerGroup, unSubscribeUrl, clientIdc, unSubTopic);
-                isChange = isChange || flag;
+            READ_WRITE_LOCK.writeLock().lock();
+            for (final String unSubTopic : unSubTopicList) {
+                isChange = isChange || removeSubscriptionByTopic(consumerGroup, unSubscribeUrl, clientIdc, unSubTopic);
             }
         } finally {
-            lock.writeLock().unlock();
+            READ_WRITE_LOCK.writeLock().unlock();
         }
         return isChange;
     }
@@ -115,20 +121,20 @@ public class HttpClientGroupMapping {
     public List<ConsumerGroupTopicConf> querySubscription() {
 
         try {
-            lock.readLock().lock();
+            READ_WRITE_LOCK.readLock().lock();
 
-            if (localConsumerGroupMapping == null || localConsumerGroupMapping.size() <= 0) {
-                return null;
+            if (MapUtils.isEmpty(localConsumerGroupMapping)) {
+                return new ArrayList<>();
             }
 
-            List<ConsumerGroupTopicConf> consumerGroupTopicConfList = new ArrayList<ConsumerGroupTopicConf>();
+            final List<ConsumerGroupTopicConf> consumerGroupTopicConfList = new ArrayList<>();
 
-            for (ConsumerGroupConf consumerGroupConf : localConsumerGroupMapping.values()) {
+            for (final ConsumerGroupConf consumerGroupConf : localConsumerGroupMapping.values()) {
                 if (MapUtils.isEmpty(consumerGroupConf.getConsumerGroupTopicConf())) {
                     continue;
                 }
 
-                for (ConsumerGroupTopicConf consumerGroupTopicConf : consumerGroupConf.getConsumerGroupTopicConf().values()) {
+                for (final ConsumerGroupTopicConf consumerGroupTopicConf : consumerGroupConf.getConsumerGroupTopicConf().values()) {
                     consumerGroupTopicConfList.add(consumerGroupTopicConf);
                 }
             }
@@ -136,127 +142,154 @@ public class HttpClientGroupMapping {
             return consumerGroupTopicConfList;
 
         } finally {
-            lock.readLock().unlock();
+            READ_WRITE_LOCK.readLock().unlock();
         }
 
     }
 
     public Map<String, String> prepareMetaData() {
-        Map<String, String> metadata = new HashMap<>(1 << 4);
-        try {
-            lock.readLock().lock();
+        final Map<String, String> metadata = new HashMap<>(1 << 4);
 
-            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap : localConsumerGroupMapping.entrySet()) {
-                String consumerGroupKey = consumerGroupMap.getKey();
-                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
-                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+        try {
+            READ_WRITE_LOCK.readLock().lock();
+
+            for (final Map.Entry<String, ConsumerGroupConf> consumerGroupMap : localConsumerGroupMapping.entrySet()) {
+                final String consumerGroupKey = consumerGroupMap.getKey();
+                final ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
+                final ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+
                 consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
-                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
-                        .entrySet()) {
-                    final String topic = consumerGroupTopicConfEntry.getKey();
-                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
-                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+
+                final Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                        new HashMap<>(1 << 4);
+                for (final Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry
+                        : consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                    final ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
+                    final ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
                     consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
                     consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
                     consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
-                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
+                    consumerGroupTopicMetadataMap.put(consumerGroupTopicConfEntry.getKey(), consumerGroupTopicMetadata);
                 }
                 consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
                 metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
             }
         } finally {
-            lock.readLock().unlock();
+            READ_WRITE_LOCK.readLock().unlock();
         }
+
         metadata.put("topicSet", JsonUtils.serialize(localTopicSet));
         return metadata;
     }
 
-    public boolean addSubscriptionForRequestCode(SubscribeRequestHeader subscribeRequestHeader,
-                                                 String consumerGroup,
-                                                 String url,
+    public boolean addSubscriptionForRequestCode(final SubscribeRequestHeader subscribeRequestHeader,
+                                                 final String consumerGroup,
+                                                 final String url,
                                                  final List<SubscriptionItem> subscriptionList) {
+        Objects.requireNonNull(url, "url can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(subscribeRequestHeader, "subscribeRequestHeader can not be null");
+        Objects.requireNonNull(subscriptionList, "subscriptionList can not be null");
+
         boolean isChange = false;
         try {
-            lock.writeLock().lock();
+            READ_WRITE_LOCK.writeLock().lock();
+
             registerClientForSub(subscribeRequestHeader, consumerGroup, subscriptionList, url);
-            for (SubscriptionItem subTopic : subscriptionList) {
+            for (final SubscriptionItem subTopic : subscriptionList) {
                 isChange = isChange
                         || addSubscriptionByTopic(consumerGroup, url, subscribeRequestHeader.getIdc(), subTopic);
             }
         } finally {
-            lock.writeLock().unlock();
+            READ_WRITE_LOCK.writeLock().unlock();
         }
         return isChange;
     }
 
-    private boolean addSubscriptionByTopic(String consumerGroup, String url, String clientIdc, SubscriptionItem subTopic) {
+    private boolean addSubscriptionByTopic(final String consumerGroup, final String url, final String clientIdc,
+                                           final SubscriptionItem subTopic) {
+        Objects.requireNonNull(url, "url can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(clientIdc, "clientIdc can not be null");
+        Objects.requireNonNull(subTopic, "subTopic can not be null");
+
         boolean isChange = false;
+
         ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
         if (consumerGroupConf == null) {
             // new subscription
             consumerGroupConf = new ConsumerGroupConf(consumerGroup);
-            ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
+            final ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
             consumeTopicConfig.setConsumerGroup(consumerGroup);
             consumeTopicConfig.setTopic(subTopic.getTopic());
             consumeTopicConfig.setSubscriptionItem(subTopic);
-            consumeTopicConfig.setUrls(new HashSet<>(Arrays.asList(url)));
-            Map<String, List<String>> idcUrls = new HashMap<>();
-            List<String> urls = new ArrayList<String>();
+            consumeTopicConfig.setUrls(new HashSet<>(Collections.singletonList(url)));
+            final Map<String, List<String>> idcUrls = new HashMap<>();
+            final List<String> urls = new ArrayList<String>();
             urls.add(url);
             idcUrls.put(clientIdc, urls);
             consumeTopicConfig.setIdcUrls(idcUrls);
-            Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
+            final Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
             map.put(subTopic.getTopic(), consumeTopicConfig);
             consumerGroupConf.setConsumerGroupTopicConf(map);
             localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
             isChange = true;
         } else {
             // already subscribed
-            Map<String, ConsumerGroupTopicConf> map =
+            final Map<String, ConsumerGroupTopicConf> map =
                     consumerGroupConf.getConsumerGroupTopicConf();
             if (!map.containsKey(subTopic.getTopic())) {
                 //If there are multiple topics, append it
-                ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
+                final ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
                 newTopicConf.setConsumerGroup(consumerGroup);
                 newTopicConf.setTopic(subTopic.getTopic());
                 newTopicConf.setSubscriptionItem(subTopic);
-                newTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
-                Map<String, List<String>> idcUrls = new HashMap<>();
-                List<String> urls = new ArrayList<String>();
+                newTopicConf.setUrls(new HashSet<>(Collections.singletonList(url)));
+                final Map<String, List<String>> idcUrls = new HashMap<>();
+                final List<String> urls = new ArrayList<String>();
                 urls.add(url);
                 idcUrls.put(clientIdc, urls);
                 newTopicConf.setIdcUrls(idcUrls);
                 map.put(subTopic.getTopic(), newTopicConf);
                 isChange = true;
             } else {
-                ConsumerGroupTopicConf currentTopicConf = map.get(subTopic.getTopic());
+                final ConsumerGroupTopicConf currentTopicConf = map.get(subTopic.getTopic());
                 if (!currentTopicConf.getUrls().add(url)) {
                     isChange = true;
-                    HTTP_LOGGER.info("add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url,
-                            subTopic.getTopic());
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url,
+                                subTopic.getTopic());
+                    }
                 } else {
-                    HTTP_LOGGER.warn("The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url,
-                            subTopic.getTopic());
+                    if (LOGGER.isWarnEnabled()) {
+                        LOGGER.warn("The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url,
+                                subTopic.getTopic());
+                    }
                 }
 
                 if (!currentTopicConf.getIdcUrls().containsKey(clientIdc)) {
-                    List<String> urls = new ArrayList<String>();
+                    final List<String> urls = new ArrayList<String>();
                     urls.add(url);
                     currentTopicConf.getIdcUrls().put(clientIdc, urls);
                     isChange = true;
-                    HTTP_LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
-                            consumerGroup, url, subTopic.getTopic(), clientIdc);
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                                consumerGroup, url, subTopic.getTopic(), clientIdc);
+                    }
                 } else {
-                    Set<String> tmpSet = new HashSet<>(currentTopicConf.getIdcUrls().get(clientIdc));
+                    final Set<String> tmpSet = new HashSet<>(currentTopicConf.getIdcUrls().get(clientIdc));
                     if (!tmpSet.contains(url)) {
                         currentTopicConf.getIdcUrls().get(clientIdc).add(url);
                         isChange = true;
-                        HTTP_LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
-                                consumerGroup, url, subTopic.getTopic(), clientIdc);
+                        if (LOGGER.isInfoEnabled()) {
+                            LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                                    consumerGroup, url, subTopic.getTopic(), clientIdc);
+                        }
                     } else {
-                        HTTP_LOGGER.warn("The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}",
-                                consumerGroup, url, subTopic.getTopic(), clientIdc);
+                        if (LOGGER.isWarnEnabled()) {
+                            LOGGER.warn("The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}",
+                                    consumerGroup, url, subTopic.getTopic(), clientIdc);
+                        }
                     }
                 }
             }
@@ -264,81 +297,111 @@ public class HttpClientGroupMapping {
         return isChange;
     }
 
-    private boolean removeSubscriptionByTopic(String consumerGroup, String unSubscribeUrl, String clientIdc,
-                                              String unSubTopic) {
+    private boolean removeSubscriptionByTopic(final String consumerGroup, final String unSubscribeUrl,
+                                              final String clientIdc, final String unSubTopic) {
+        Objects.requireNonNull(unSubscribeUrl, "unSubscribeUrl can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(clientIdc, "clientIdc can not be null");
+        Objects.requireNonNull(unSubTopic, "unSubTopic can not be null");
+
         boolean isChange = false;
-        ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
+
+        final ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
         if (consumerGroupConf == null) {
-            HTTP_LOGGER.warn("unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}",
-                    consumerGroup, unSubscribeUrl);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}",
+                        consumerGroup, unSubscribeUrl);
+            }
             return false;
         }
 
-        ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(unSubTopic);
+        final ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(unSubTopic);
         if (consumerGroupTopicConf == null) {
-            HTTP_LOGGER.warn(
-                    "unsubscribe fail, the current mesh does not have group-topic subscriptionInfo, group:{}, topic:{}, url:{}",
-                    consumerGroup, unSubTopic, unSubscribeUrl);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn(
+                        "unsubscribe fail, the current mesh does not have group-topic subscriptionInfo, group:{}, topic:{}, url:{}",
+                        consumerGroup, unSubTopic, unSubscribeUrl);
+            }
             return false;
         }
 
         if (consumerGroupTopicConf.getUrls().remove(unSubscribeUrl)) {
             isChange = true;
-            HTTP_LOGGER.info("remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
+            }
         } else {
-            HTTP_LOGGER.warn("remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}",
-                    consumerGroup, unSubTopic, unSubscribeUrl);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}",
+                        consumerGroup, unSubTopic, unSubscribeUrl);
+            }
         }
 
         if (consumerGroupTopicConf.getIdcUrls().containsKey(clientIdc)) {
             if (consumerGroupTopicConf.getIdcUrls().get(clientIdc).remove(unSubscribeUrl)) {
                 isChange = true;
-                HTTP_LOGGER.info("remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}",
-                        consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}",
+                            consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+                }
             } else {
-                HTTP_LOGGER.warn(
-                        "remove url from idcUrlMap fail,not exist subscrition of this url, group:{}, topic:{}, url:{}, clientIdc:{}",
-                        consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn(
+                            "remove url from idcUrlMap fail,not exist subscrition of this url, group:{}, topic:{}, url:{}, clientIdc:{}",
+                            consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+                }
             }
         } else {
-            HTTP_LOGGER.warn(
-                    "remove url from idcUrlMap fail,not exist subscrition of this idc , group:{}, topic:{}, url:{}, clientIdc:{}",
-                    consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn(
+                        "remove url from idcUrlMap fail,not exist subscrition of this idc , group:{}, topic:{}, url:{}, clientIdc:{}",
+                        consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
+            }
         }
 
         if (isChange && consumerGroupTopicConf.getUrls().size() == 0) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
-            HTTP_LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
+            }
         }
-        
+
         if (isChange && consumerGroupConf.getConsumerGroupTopicConf().size() == 0) {
             localConsumerGroupMapping.remove(consumerGroup);
-            HTTP_LOGGER.info("group unsubscribe success,group:{}", consumerGroup);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("group unsubscribe success,group:{}", consumerGroup);
+            }
         }
         return isChange;
     }
 
-    private void registerClientForSub(SubscribeRequestHeader subscribeRequestHeader, String consumerGroup,
-                                      final List<SubscriptionItem> subscriptionItems, String url) {
-        for (SubscriptionItem item : subscriptionItems) {
-            Client client = new Client();
-            client.env = subscribeRequestHeader.getEnv();
-            client.idc = subscribeRequestHeader.getIdc();
-            client.sys = subscribeRequestHeader.getSys();
-            client.ip = subscribeRequestHeader.getIp();
-            client.pid = subscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = item.getTopic();
-            client.url = url;
-            client.lastUpTime = new Date();
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+    private void registerClientForSub(final SubscribeRequestHeader subscribeRequestHeader, final String consumerGroup,
+                                      final List<SubscriptionItem> subscriptionItems, final String url) {
+        Objects.requireNonNull(subscribeRequestHeader, "subscribeRequestHeader can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
+        Objects.requireNonNull(url, "url can not be null");
+
+        for (final SubscriptionItem item : subscriptionItems) {
+            final Client client = new Client();
+            client.setEnv(subscribeRequestHeader.getEnv());
+            client.setIdc(subscribeRequestHeader.getIdc());
+            client.setSys(subscribeRequestHeader.getSys());
+            client.setIp(subscribeRequestHeader.getIp());
+            client.setPid(subscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(item.getTopic());
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
+            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
+
             if (localClientInfoMapping.containsKey(groupTopicKey)) {
-                List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
+                final List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
-                for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                for (final Client localClient : localClients) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
@@ -347,59 +410,70 @@ public class HttpClientGroupMapping {
                     localClients.add(client);
                 }
             } else {
-                List<Client> clients = new ArrayList<>();
+                final List<Client> clients = new ArrayList<>();
                 clients.add(client);
                 localClientInfoMapping.put(groupTopicKey, clients);
             }
         }
     }
 
-    public boolean removeSubscriptionForRequestCode(UnSubscribeRequestHeader unSubscribeRequestHeader,
-                                                    String consumerGroup,
-                                                    String unSubscribeUrl,
+    public boolean removeSubscriptionForRequestCode(final UnSubscribeRequestHeader unSubscribeRequestHeader,
+                                                    final String consumerGroup,
+                                                    final String unSubscribeUrl,
                                                     final List<String> unSubTopicList) {
+        Objects.requireNonNull(unSubTopicList, "unSubTopicList can not be null");
+        Objects.requireNonNull(unSubscribeRequestHeader, "unSubscribeRequestHeader can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(unSubscribeUrl, "unSubscribeUrl can not be null");
+
         boolean isChange = false;
         try {
-            lock.writeLock().lock();
+            READ_WRITE_LOCK.writeLock().lock();
+
             registerClientForUnsub(unSubscribeRequestHeader, consumerGroup, unSubTopicList, unSubscribeUrl);
-            for (String unSubTopic : unSubTopicList) {
+            for (final String unSubTopic : unSubTopicList) {
                 isChange = isChange
                         || removeSubscriptionByTopic(consumerGroup,
                         unSubscribeUrl,
                         unSubscribeRequestHeader.getIdc(),
                         unSubTopic);
-                ;
             }
         } finally {
-            lock.writeLock().unlock();
+            READ_WRITE_LOCK.writeLock().unlock();
         }
         return isChange;
     }
 
-    private void registerClientForUnsub(UnSubscribeRequestHeader unSubscribeRequestHeader,
-                                        String consumerGroup,
-                                        final List<String> topicList, String url) {
-        for (String topic : topicList) {
-            Client client = new Client();
-            client.env = unSubscribeRequestHeader.getEnv();
-            client.idc = unSubscribeRequestHeader.getIdc();
-            client.sys = unSubscribeRequestHeader.getSys();
-            client.ip = unSubscribeRequestHeader.getIp();
-            client.pid = unSubscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = topic;
-            client.url = url;
-            client.lastUpTime = new Date();
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+    private void registerClientForUnsub(final UnSubscribeRequestHeader unSubscribeRequestHeader,
+                                        final String consumerGroup,
+                                        final List<String> topicList,
+                                        final String url) {
+        Objects.requireNonNull(topicList, "topicList can not be null");
+        Objects.requireNonNull(unSubscribeRequestHeader, "unSubscribeRequestHeader can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(url, "url can not be null");
+
+        for (final String topic : topicList) {
+            final Client client = new Client();
+            client.setEnv(unSubscribeRequestHeader.getEnv());
+            client.setIdc(unSubscribeRequestHeader.getIdc());
+            client.setSys(unSubscribeRequestHeader.getSys());
+            client.setIp(unSubscribeRequestHeader.getIp());
+            client.setPid(unSubscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(topic);
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
+            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (localClientInfoMapping.containsKey(groupTopicKey)) {
-                List<Client> localClients =
+                final List<Client> localClients =
                         localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
-                for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                for (final Client localClient : localClients) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
@@ -408,7 +482,7 @@ public class HttpClientGroupMapping {
                     localClients.add(client);
                 }
             } else {
-                List<Client> clients = new ArrayList<>();
+                final List<Client> clients = new ArrayList<>();
                 clients.add(client);
                 localClientInfoMapping.put(groupTopicKey, clients);
             }
