@@ -128,7 +128,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         LOGGER.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                             System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                     // ignore
@@ -223,13 +223,12 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                                     + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err);
                     final long endTime = System.currentTimeMillis();
-                    final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms|topic=%s|url=%s",
+                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
-                            unSubscribeRequestBody.getUrl());
-                    LOGGER.error(logMsg, e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                            unSubscribeRequestBody.getUrl(), e);
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                 }
             } else {
                 //remove
@@ -254,13 +253,12 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                                     + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err);
                     final long endTime = System.currentTimeMillis();
-                    final String logMsg = String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms"
-                                    + "|topic=%s|url=%s", endTime - startTime,
+                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                                    + "|topic={}|url={}", endTime - startTime,
                             JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
-                            unSubscribeRequestBody.getUrl());
-                    LOGGER.error(logMsg, e);
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+                            unSubscribeRequestBody.getUrl(), e);
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                 }
             }
         }

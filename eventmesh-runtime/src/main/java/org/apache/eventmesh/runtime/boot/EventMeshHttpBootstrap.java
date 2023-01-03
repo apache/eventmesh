@@ -48,7 +48,6 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
         // server init
         if (eventMeshHttpConfiguration != null) {
             eventMeshHttpServer = new EventMeshHTTPServer(eventMeshServer, eventMeshHttpConfiguration);
-            eventMeshHttpServer.init();
         }
     }
 
