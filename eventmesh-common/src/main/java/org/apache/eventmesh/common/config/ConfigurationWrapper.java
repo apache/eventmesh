@@ -111,7 +111,17 @@ public class ConfigurationWrapper {
     }
 
     public String getProp(String key) {
-        return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
+        return getProp(key, null);
+    }
+
+    /**
+     * get key value if value is null then return defaultValue
+     * @param key key
+     * @param defaultValue defaultValue
+     * @return string
+     */
+    public String getProp(String key, String defaultValue) {
+        return StringUtils.isEmpty(key) ? defaultValue : properties.getProperty(key, defaultValue);
     }
 
     public int getIntProp(String configKey, int defaultValue) {

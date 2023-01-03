@@ -75,12 +75,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         HttpCommand responseEventMeshCommand;
         final HttpCommand request = asyncContext.getRequest();
         final Integer requestCode = Integer.valueOf(asyncContext.getRequest().getRequestCode());
+        final String localAddress = IPUtils.getLocalAddress();
 
         httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(requestCode),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
         SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
 
@@ -88,7 +88,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             SubscribeResponseHeader
                 .buildHeader(requestCode,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                    IPUtils.getLocalAddress(),
+                        localAddress,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
@@ -202,12 +202,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
                 Map<String, List<String>> idcUrls = new HashMap<>();
                 for (Client client : groupTopicClients) {
-                    if (idcUrls.containsKey(client.idc)) {
-                        idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
+                    if (idcUrls.containsKey(client.getIdc())) {
+                        idcUrls.get(client.getIdc()).add(StringUtils.deleteWhitespace(client.getUrl()));
                     } else {
                         List<String> urls = new ArrayList<>();
-                        urls.add(client.url);
-                        idcUrls.put(client.idc, urls);
+                        urls.add(client.getUrl());
+                        idcUrls.put(client.getIdc(), urls);
                     }
                 }
                 ConsumerGroupConf consumerGroupConf =
@@ -312,26 +312,26 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                 List<SubscriptionItem> subscriptionItems, String url) {
         for (SubscriptionItem item : subscriptionItems) {
             Client client = new Client();
-            client.env = subscribeRequestHeader.getEnv();
-            client.idc = subscribeRequestHeader.getIdc();
-            client.sys = subscribeRequestHeader.getSys();
-            client.ip = subscribeRequestHeader.getIp();
-            client.pid = subscribeRequestHeader.getPid();
-            client.consumerGroup = consumerGroup;
-            client.topic = item.getTopic();
-            client.url = url;
-            client.lastUpTime = new Date();
+            client.setEnv(subscribeRequestHeader.getEnv());
+            client.setIdc(subscribeRequestHeader.getIdc());
+            client.setSys(subscribeRequestHeader.getSys());
+            client.setIp(subscribeRequestHeader.getIp());
+            client.setPid(subscribeRequestHeader.getPid());
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(item.getTopic());
+            client.setUrl(url);
+            client.setLastUpTime(new Date());
 
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients =
                     eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.url, client.url)) {
+                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
                         isContains = true;
-                        localClient.lastUpTime = client.lastUpTime;
+                        localClient.setLastUpTime(client.getLastUpTime());
                         break;
                     }
                 }
