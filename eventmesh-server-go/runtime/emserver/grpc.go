@@ -62,7 +62,7 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 	//registryName := config.GlobalConfig().Server.GRPCOption.RegistryName
 	//regis := registry.Get(registryName)
 
-	consumerSVC, err := consumer.NewConsumerServiceServer(consumerMgr)
+	consumerSVC, err := consumer.NewConsumerServiceServer(consumerMgr, producerMgr)
 	if err != nil {
 		return nil, err
 	}
