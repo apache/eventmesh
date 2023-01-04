@@ -19,14 +19,14 @@ package org.apache.eventmesh.client.http.model;
 
 import org.apache.eventmesh.common.Constants;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
 
 import io.netty.handler.codec.http.HttpMethod;
 
