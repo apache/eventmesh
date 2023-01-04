@@ -74,7 +74,7 @@ public class RequestParam {
     }
 
     public String getQueryParams() {
-        if (queryParams == null || queryParams.size() == 0) {
+        if (queryParams == null || queryParams.isEmpty()) {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
