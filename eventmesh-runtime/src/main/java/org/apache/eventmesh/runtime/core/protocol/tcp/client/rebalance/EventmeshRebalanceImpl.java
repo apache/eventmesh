@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
