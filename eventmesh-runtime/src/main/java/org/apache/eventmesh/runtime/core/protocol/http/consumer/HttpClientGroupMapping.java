@@ -394,7 +394,6 @@ public final class HttpClientGroupMapping {
             client.setUrl(url);
             client.setLastUpTime(new Date());
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-
             if (localClientInfoMapping.containsKey(groupTopicKey)) {
                 final List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;

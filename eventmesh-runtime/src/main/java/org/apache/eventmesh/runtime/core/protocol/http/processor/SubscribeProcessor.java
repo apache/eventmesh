@@ -210,6 +210,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         urls.add(client.getUrl());
                         idcUrls.put(client.getIdc(), urls);
                     }
+                    urls.add(urlVal);
                 }
                 ConsumerGroupConf consumerGroupConf =
                         eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
