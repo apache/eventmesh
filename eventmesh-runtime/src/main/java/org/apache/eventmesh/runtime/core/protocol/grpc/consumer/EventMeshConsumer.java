@@ -23,7 +23,6 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
 
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -46,6 +45,8 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageConte
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.MessageHandler;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.List;
 import java.util.Map;
