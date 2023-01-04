@@ -127,3 +127,6 @@ yarn-error.log*
 
 # VS code settings
 .vscode
+
+# Yarn lock
+yarn.lock
