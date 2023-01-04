@@ -62,7 +62,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         //get eventmesh of local idc
         Map<String, String> localEventMeshMap = queryLocalEventMeshMap(cluster);
-        if (localEventMeshMap == null || localEventMeshMap.size() == 0) {
+        if (localEventMeshMap == null || localEventMeshMap.isEmpty()) {
             return;
         }
 
@@ -112,7 +112,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         //query distribute data of loacl idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose,
                 eventMeshMap);
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (clientDistributionMap == null || clientDistributionMap.isEmpty()) {
             return;
         }
 
@@ -124,7 +124,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private void doRebalanceRedirect(String currEventMeshName, String group, String purpose, Map<String, String> eventMeshMap,
                                      Map<String, Integer> clientDistributionMap) throws Exception {
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (clientDistributionMap == null || clientDistributionMap.isEmpty()) {
             return;
         }
 
@@ -229,7 +229,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
                     cluster, group, purpose);
 
-            if (eventMeshClientDistributionDataMap == null || eventMeshClientDistributionDataMap.size() == 0) {
+            if (eventMeshClientDistributionDataMap == null || eventMeshClientDistributionDataMap.isEmpty()) {
                 logger.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}, purpose:{}",
                         cluster, group, purpose);
                 return null;
