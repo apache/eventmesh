@@ -9,10 +9,12 @@
     "lint": "eslint . --cache --fix --ext .ts,.tsx"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.15",
     "@chakra-ui/react": "^2.1.2",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@fontsource/inter": "^4.5.10",
+    "@monaco-editor/react": "^4.4.6",
     "axios": "^0.27.2",
     "cloudevents": "^6.0.2",
     "framer-motion": "^6.3.6",
