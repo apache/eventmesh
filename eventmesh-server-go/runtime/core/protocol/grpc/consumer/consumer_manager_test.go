@@ -17,6 +17,7 @@ package consumer
 
 import (
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/golang/mock/gomock"
 	"testing"
 	"time"
@@ -309,9 +310,8 @@ func Test_UpdateClientTime(t *testing.T) {
 }
 
 func Test_RestartConsumer(t *testing.T) {
-	plugin.SetActivePlugin(map[string]string{
-		"connector": "standalone",
-	})
+	err := config.GlobalConfig().Plugins.Setup()
+	assert.NoError(t, err)
 	cli := &GroupClient{
 		ENV:              "env",
 		IDC:              "IDC",

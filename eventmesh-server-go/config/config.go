@@ -18,6 +18,7 @@ package config
 import (
 	"io/ioutil"
 	"sync/atomic"
+	"time"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"gopkg.in/yaml.v3"
@@ -49,7 +50,58 @@ func init() {
 }
 
 func defaultConfig() *Config {
-	cfg := &Config{}
+	cfg := &Config{
+		Name: "eventmesh-server",
+	}
+	cfg.Server.GRPCOption = &GRPCOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+		SendPoolSize:          10,
+		SubscribePoolSize:     10,
+		RetryPoolSize:         10,
+		PushMessagePoolSize:   10,
+		ReplyPoolSize:         10,
+		MsgReqNumPerSecond:    5,
+		RegistryName:          "eventmesh-go",
+		Cluster:               "1",
+		Env:                   "{}",
+		IDC:                   "idc1",
+		SessionExpiredInMills: 5 * time.Second,
+		SendMessageTimeout:    5 * time.Second,
+	}
+	cfg.Server.HTTPOption = &HTTPOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+	}
+	cfg.Server.TCPOption = &TCPOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+		Multicore: false,
+	}
+	cfg.ActivePlugins = map[string]string{
+		"registry":  "nacos",
+		"connector": "standalone",
+		"log":       "default",
+	}
+	cfg.PProf = &PProfOption{
+		Enable: true,
+		Port:   "10011",
+	}
 	return cfg
 }
 
