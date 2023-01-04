@@ -148,13 +148,19 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
-                LOGGER.error("subscriber url {} is not valid", url);
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("subscriber url {} is not valid", url);
+                }
+                
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 return;
             }
         } catch (Exception e) {
-            LOGGER.error("subscriber url is invalid, url:" + url, e);
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("subscriber url {} is not valid", url, e);
+            }
+
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
             return;
@@ -163,7 +169,9 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         // obtain webhook delivery agreement for Abuse Protection
         if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
                 url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
-            LOGGER.error("subscriber url {} is not allowed by the target system", url);
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("subscriber url {} is not allowed by the target system", url);
+            }
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
             return;
@@ -178,7 +186,9 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                         .get(consumerGroup + "@" + subTopic.getTopic());
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
-                    LOGGER.error("group {} topic {} clients is empty", consumerGroup, subTopic);
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("group {} topic {} clients is empty", consumerGroup, subTopic);
+                    }
                 }
 
                 final Map<String, List<String>> idcUrls = new HashMap<>();
@@ -254,9 +264,13 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
             } catch (Exception e) {
-                LOGGER.error(String.format("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%s ms|topic=%s"
-                                + "|uniqueId=%s", System.currentTimeMillis() - startTime,
-                        JsonUtils.serialize(subscriptionList), url), e);
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
+                            System.currentTimeMillis() - startTime,
+                            JsonUtils.serialize(subscriptionList),
+                            url, e);
+                }
+
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
                         responseBodyMap, null);
             }
@@ -289,26 +303,26 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
-            if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
-                final List<Client> localClients =
-                        eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
-                boolean isContains = false;
-                for (final Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
-                        isContains = true;
-                        localClient.setLastUpTime(client.getLastUpTime());
-                        break;
-                    }
-                }
-
-                if (!isContains) {
-                    localClients.add(client);
-                }
-            } else {
-                final List<Client> clients = new ArrayList<>();
-                clients.add(client);
-                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
+            List<Client> localClients =
+                    eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+            if (localClients == null) {
+                localClients = new ArrayList<>();
+                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, localClients);
             }
+
+            boolean isContains = false;
+            for (final Client localClient : localClients) {
+                if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
+                    isContains = true;
+                    localClient.setLastUpTime(client.getLastUpTime());
+                    break;
+                }
+            }
+
+            if (!isContains) {
+                localClients.add(client);
+            }
+
         }
     }
 
