@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         //get eventmesh of local idc
         Map<String, String> localEventMeshMap = queryLocalEventMeshMap(cluster);
-        if (localEventMeshMap == null || localEventMeshMap.size() == 0) {
+        if (MapUtils.isEmpty(localEventMeshMap)) {
             return;
         }
 
@@ -112,7 +113,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         //query distribute data of loacl idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose,
                 eventMeshMap);
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (MapUtils.isEmpty(clientDistributionMap)) {
             return;
         }
 
@@ -124,7 +125,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private void doRebalanceRedirect(String currEventMeshName, String group, String purpose, Map<String, String> eventMeshMap,
                                      Map<String, Integer> clientDistributionMap) throws Exception {
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (MapUtils.isEmpty(clientDistributionMap)) {
             return;
         }
 
@@ -229,7 +230,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
                     cluster, group, purpose);
 
-            if (eventMeshClientDistributionDataMap == null || eventMeshClientDistributionDataMap.size() == 0) {
+            if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {
                 logger.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}, purpose:{}",
                         cluster, group, purpose);
                 return null;
