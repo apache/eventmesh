@@ -79,8 +79,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         final ChannelHandlerContext ctx = handlerSpecific.getCtx();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        if (log.isInfoEnabled()) {
+            log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                     EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                     IPUtils.getLocalAddress());
         }
