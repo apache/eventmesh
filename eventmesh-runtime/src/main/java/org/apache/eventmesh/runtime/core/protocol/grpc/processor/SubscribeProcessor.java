@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
@@ -37,12 +38,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SubscribeProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeProcessor.class);
     private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
     private final transient GrpcType grpcType = GrpcType.WEBHOOK;
@@ -70,8 +70,8 @@ public class SubscribeProcessor {
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            if (log.isWarnEnabled()) {
+                log.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             }
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
@@ -114,13 +114,13 @@ public class SubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            if (log.isInfoEnabled()) {
+                log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             }
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+            if (log.isWarnEnabled()) {
+                log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
             }
         }
 
