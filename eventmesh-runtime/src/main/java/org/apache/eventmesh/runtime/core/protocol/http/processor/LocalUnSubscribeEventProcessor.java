@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -49,19 +50,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventMeshTrace(isEnable = false)
 public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalUnSubscribeEventProcessor.class);
 
     public LocalUnSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
@@ -77,8 +76,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
         final HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        if (log.isInfoEnabled()) {
+            log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                     EventMeshConstants.PROTOCOL_HTTP,
                     RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
         }
@@ -142,8 +141,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     final Client client = clientIterator.next();
                     if (StringUtils.equals(client.getPid(), pid)
                             && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
-                        if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("client {} start unsubscribe", JsonUtils.serialize(client));
+                        if (log.isWarnEnabled()) {
+                            log.warn("client {} start unsubscribe", JsonUtils.serialize(client));
                         }
                         clientIterator.remove();
                     }
@@ -205,8 +204,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
                 } catch (Exception e) {
-                    if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                    if (log.isErrorEnabled()) {
+                        log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                         + "|topic={}|url={}", System.currentTimeMillis() - startTime,
                                 JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
                     }
@@ -229,8 +228,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     eventMeshHTTPServer.localConsumerGroupMapping.keySet()
                             .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
-                    if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                    if (log.isErrorEnabled()) {
+                        log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                         + "|topic={}|url={}", System.currentTimeMillis() - startTime,
                                 JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
                     }
