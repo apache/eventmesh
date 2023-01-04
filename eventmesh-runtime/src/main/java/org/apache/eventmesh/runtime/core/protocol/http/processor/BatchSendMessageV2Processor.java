@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2ResponseHeader;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
@@ -82,7 +81,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(requestCode),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
         SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader =
             (SendMessageBatchV2RequestHeader) asyncContext.getRequest().getHeader();
@@ -96,7 +96,6 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             SendMessageBatchV2ResponseHeader.buildHeader(
                 requestCode,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                IPUtils.getLocalAddress(),
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
             );
