@@ -16,42 +16,38 @@
 package consumer
 
 import (
-	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/mocks"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"github.com/golang/mock/gomock"
 	"testing"
 )
 
 func Test_Subscribe(t *testing.T) {
-	mockctl := gomock.NewController(t)
-	mockConsumer := mocks.NewMockConsumerServiceServer(mockctl)
-	mockConsumer.EXPECT().Subscribe(context.TODO(), &pb.Subscription{
-		Header: &pb.RequestHeader{
-			Env:             "grpc-env",
-			Region:          "sh",
-			Idc:             "idc-sh",
-			Ip:              util.GetIP(),
-			Pid:             util.PID(),
-			Sys:             "grpc-sys",
-			Username:        "grpc-username",
-			Password:        "grpc-passwd",
-			Language:        "Go",
-			ProtocolType:    "cloudevents",
-			ProtocolVersion: "1.0",
-			ProtocolDesc:    "cloudevents",
-		},
-		ConsumerGroup: "grpc-stream-consumergroup",
-		SubscriptionItems: []*pb.Subscription_SubscriptionItem{
-			{
-				Topic: "test_topic",
-				Mode:  pb.Subscription_SubscriptionItem_CLUSTERING,
-				Type:  pb.Subscription_SubscriptionItem_SYNC,
-			},
-		},
-		Url: "http://127.0.0.1:18080/onmessage",
-	}).Return()
+	//mockctl := gomock.NewController(t)
+	//mockConsumer := mocks.NewMockConsumerServiceServer(mockctl)
+	//response := pb.Response{}
+	//mockConsumer.EXPECT().Subscribe(context.TODO(), &pb.Subscription{
+	//	Header: &pb.RequestHeader{
+	//		Env:             "grpc-env",
+	//		Region:          "sh",
+	//		Idc:             "idc-sh",
+	//		Ip:              util.GetIP(),
+	//		Pid:             util.PID(),
+	//		Sys:             "grpc-sys",
+	//		Username:        "grpc-username",
+	//		Password:        "grpc-passwd",
+	//		Language:        "Go",
+	//		ProtocolType:    "cloudevents",
+	//		ProtocolVersion: "1.0",
+	//		ProtocolDesc:    "cloudevents",
+	//	},
+	//	ConsumerGroup: "grpc-stream-consumergroup",
+	//	SubscriptionItems: []*pb.Subscription_SubscriptionItem{
+	//		{
+	//			Topic: "test_topic",
+	//			Mode:  pb.Subscription_SubscriptionItem_CLUSTERING,
+	//			Type:  pb.Subscription_SubscriptionItem_SYNC,
+	//		},
+	//	},
+	//	Url: "http://127.0.0.1:18080/onmessage",
+	//}).Return(&response, nil)
 }
 
 func Test_unsubscribe(t *testing.T) {

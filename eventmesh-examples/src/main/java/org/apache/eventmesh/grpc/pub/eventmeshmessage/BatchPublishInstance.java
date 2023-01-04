@@ -51,9 +51,7 @@ public class BatchPublishInstance {
                 .sys("1234").build();
 
         try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig)) {
-
-            eventMeshGrpcProducer.init();
-
+            
             Map<String, String> content = new HashMap<>();
             content.put("content", "testRequestReplyMessage");
 
