@@ -164,7 +164,9 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 return;
             }
         } catch (Exception e) {
-            LOGGER.error(String.format("subscriber url:%s is invalid.", url), e);
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("subscriber url:{} is invalid.", url, e);
+            }
             responseEventMeshCommand = request.createHttpCommandResponse(
                     subscribeResponseHeader,
                     SubscribeResponseBody
@@ -175,10 +177,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         }
 
         // obtain webhook delivery agreement for Abuse Protection
-        final boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-                url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
-
-        if (!isWebhookAllowed) {
+        if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
+                url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
             LOGGER.error("subscriber url {} is not allowed by the target system", url);
             responseEventMeshCommand = request.createHttpCommandResponse(
                     subscribeResponseHeader,
@@ -203,15 +203,14 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
                 final Map<String, List<String>> idcUrls = new HashMap<>();
                 for (final Client client : groupTopicClients) {
-                    if (idcUrls.containsKey(client.getIdc())) {
-                        idcUrls.get(client.getIdc()).add(StringUtils.deleteWhitespace(client.getUrl()));
-                    } else {
-                        final List<String> urls = new ArrayList<>();
-                        urls.add(client.getUrl());
+                    List<String> urls = idcUrls.get(client.getIdc());
+                    if (urls == null) {
+                        urls = new ArrayList<>();
                         idcUrls.put(client.getIdc(), urls);
                     }
-                    urls.add(urlVal);
+                    urls.add(StringUtils.deleteWhitespace(client.getUrl()));
                 }
+
                 ConsumerGroupConf consumerGroupConf =
                         eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
 
@@ -280,9 +279,9 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
                             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
-                                System.currentTimeMillis() - request.getReqTime());
+                                    System.currentTimeMillis() - request.getReqTime());
                         } catch (Exception ex) {
-                            // ignore
+                            LOGGER.error("onResponse error", ex);
                         }
                     }
                 };
@@ -298,12 +297,14 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                                 + EventMeshUtil.stackTrace(e, 2)));
                 asyncContext.onComplete(err);
 
-                long endTime = System.currentTimeMillis();
-                httpLogger.error(
-                    "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                        + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                    JsonUtils.serialize(subscribeRequestBody.getTopics()),
-                    subscribeRequestBody.getUrl(), e);
+                final long endTime = System.currentTimeMillis();
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error(
+                            "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
+                                    + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                            JsonUtils.serialize(subscribeRequestBody.getTopics()),
+                            subscribeRequestBody.getUrl(), e);
+                }
                 eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
                 eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
             }
