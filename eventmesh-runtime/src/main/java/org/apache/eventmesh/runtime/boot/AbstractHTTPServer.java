@@ -336,6 +336,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelRead(final ChannelHandlerContext ctx, final Object message) {
             final HttpRequest httpRequest = (HttpRequest) message;
+            if (httpRequest == null) {
+                return;
+            }
+
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
                 handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);
                 return;
@@ -368,11 +372,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 if (useRequestURI) {
                     if (useTrace) {
                         span.setAttribute(SemanticAttributes.HTTP_METHOD,
-                                Objects.requireNonNull(Objects.requireNonNull(httpRequest).method()).name());
+                                httpRequest.method() == null ? "" : httpRequest.method().name());
                         span.setAttribute(SemanticAttributes.HTTP_FLAVOR,
-                                Objects.requireNonNull(Objects.requireNonNull(httpRequest).protocolVersion()).protocolName());
+                                httpRequest.protocolVersion() == null ? "" : httpRequest.protocolVersion().protocolName());
                         span.setAttribute(SemanticAttributes.HTTP_URL,
-                                Objects.requireNonNull(httpRequest).uri());
+                                httpRequest.uri());
                     }
                     final HttpEventWrapper httpEventWrapper = parseHttpRequest(httpRequest);
 
@@ -389,7 +393,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             : MapUtils.getString(bodyMap, StringUtils.lowerCase(ProtocolKey.REQUEST_CODE), "");
 
                     requestCommand.setHttpMethod(httpRequest.method().name());
-                    requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
+                    requestCommand.setHttpVersion(httpRequest.protocolVersion() == null ? ""
+                            : httpRequest.protocolVersion().protocolName());
                     requestCommand.setRequestCode(requestCode);
 
                     HttpCommand responseCommand = null;
