@@ -124,3 +124,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# VS code settings
+.vscode
+
+# Yarn lock
+yarn.lock
