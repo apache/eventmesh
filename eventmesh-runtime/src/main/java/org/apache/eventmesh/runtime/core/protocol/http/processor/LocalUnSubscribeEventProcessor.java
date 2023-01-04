@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -69,8 +70,12 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
     @Override
     public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
 
+
+        final AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
+
         final ChannelHandlerContext ctx = handlerSpecific.getCtx();
-        final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
+
+        final HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
@@ -160,7 +165,6 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
                             }
                             urls.add(StringUtils.deleteWhitespace(client.getUrl()));
-
                         }
 
                     }
@@ -288,6 +292,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
             if (!isContains) {
                 localClients.add(client);
             }
+
         }
     }
 }
