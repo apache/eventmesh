@@ -49,11 +49,6 @@ import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -65,9 +60,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
@@ -107,10 +99,11 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractHTTPServer.class);
-
 
     private HandlerService handlerService;
 
@@ -191,8 +184,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void sendResponse(final ChannelHandlerContext ctx, final DefaultFullHttpResponse response) {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("send response to [{}] fail, will close this channel",
+                if (log.isWarnEnabled()) {
+                    log.warn("send response to [{}] fail, will close this channel",
                             RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 }
                 f.channel().close();
@@ -211,8 +204,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                 useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
                         .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("HTTPServer[port={}] started.", this.getPort());
+                if (log.isInfoEnabled()) {
+                    log.info("HTTPServer[port={}] started.", this.getPort());
                 }
 
                 b.bind(this.getPort())
@@ -220,11 +213,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         .closeFuture()
                         .sync();
             } catch (Exception e) {
-                LOGGER.error("HTTPServer start error!", e);
+                log.error("HTTPServer start error!", e);
                 try {
                     shutdown();
                 } catch (Exception ex) {
-                    LOGGER.error("HTTPServer shutdown error!", ex);
+                    log.error("HTTPServer shutdown error!", ex);
                 }
             }
         };
@@ -428,8 +421,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         return;
                     }
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("{}", requestCommand);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{}", requestCommand);
                     }
 
                     final AsyncContext<HttpCommand> asyncContext =
@@ -438,7 +431,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
             } catch (Exception ex) {
-                LOGGER.error("AbrstractHTTPServer.HTTPHandler.channelRead error", ex);
+                log.error("AbrstractHTTPServer.HTTPHandler.channelRead error", ex);
             } finally {
                 ReferenceCountUtil.release(message);
             }
@@ -469,8 +462,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
 
                             if (asyncContext.isComplete()) {
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug("{}", asyncContext.getResponse());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("{}", asyncContext.getResponse());
                                 }
                                 sendResponse(ctx, asyncContext.getResponse().httpResponse());
                             }
@@ -485,13 +478,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         metrics.getSummaryMetrics()
                                 .recordHTTPReqResTimeCost(System.currentTimeMillis() - requestWrapper.getReqTime());
 
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("{}", asyncContext.getResponse());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{}", asyncContext.getResponse());
                         }
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
                     } catch (Exception e) {
-                        LOGGER.error("process error", e);
+                        log.error("process error", e);
                     }
                 });
             } catch (RejectedExecutionException re) {
@@ -503,7 +496,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
                 } catch (Exception e) {
-                    LOGGER.error("sendResponse error", e);
+                    log.error("sendResponse error", e);
                 }
             }
 
@@ -525,8 +518,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                             if (asyncContext.isComplete()) {
                                 sendResponse(ctx, responseCommand.httpResponse());
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug("{}", asyncContext.getResponse());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("{}", asyncContext.getResponse());
                                 }
                                 final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
                                 TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
@@ -547,14 +540,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         metrics.getSummaryMetrics()
                                 .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("{}", asyncContext.getResponse());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{}", asyncContext.getResponse());
                         }
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
                     } catch (Exception e) {
-                        LOGGER.error("process error", e);
+                        log.error("process error", e);
                     }
                 });
             } catch (RejectedExecutionException re) {
@@ -574,7 +567,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getErrMsg(),
                             re);
                 } catch (Exception e) {
-                    LOGGER.error("processEventMeshRequest fail", re);
+                    log.error("processEventMeshRequest fail", re);
                 }
             }
         }
@@ -588,7 +581,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
             if (null != cause) {
-                LOGGER.error("", cause);
+                log.error("", cause);
             }
 
             if (null != ctx) {
@@ -660,8 +653,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelActive(final ChannelHandlerContext ctx) throws Exception {
             if (connections.incrementAndGet() > MAX_CONNECTIONS) {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
+                if (log.isWarnEnabled()) {
+                    log.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
                             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
                 }
                 ctx.close();
@@ -683,8 +676,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 final IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("client|http|userEventTriggered|remoteAddress={}|msg={}",
+                    if (log.isInfoEnabled()) {
+                        log.info("client|http|userEventTriggered|remoteAddress={}|msg={}",
                                 remoteAddress, evt.getClass().getName());
                     }
                     ctx.close();
