@@ -36,9 +36,6 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 		SendPoolSize:          10,
 		SubscribePoolSize:     10,
 		RetryPoolSize:         10,
@@ -60,9 +57,6 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 	}
 	config.Server.TCPOption = &TCPOption{
 		Port: "10010",
@@ -72,15 +66,16 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 		Multicore: false,
 	}
 	config.ActivePlugins = map[string]string{
 		"registry":  "nacos",
 		"connector": "rocketmq",
 		"log":       "default",
+	}
+	config.PProf = &PProfOption{
+		Enable: true,
+		Port:   "10011",
 	}
 	config.Plugins = plugin.Config{}
 

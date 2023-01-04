@@ -6,8 +6,6 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
     send-pool-size: 10
     subscribe-pool-size: 10
     retry-pool-size: 10
@@ -27,8 +25,6 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
   tcp:
     port: 10010
     tls:
@@ -36,8 +32,9 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
+pprof:
+  enable: true
+  port: 10011
 active-plugins:
   registry: nacos
   connector: rocketmq

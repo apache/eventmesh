@@ -37,6 +37,7 @@ type Config struct {
 		*GRPCOption `yaml:"grpc" toml:"grpc"`
 		*TCPOption  `yaml:"tcp" toml:"tcp"`
 	}
+	PProf         *PProfOption      `yaml:"pprof" toml:"pprof"`
 	ActivePlugins map[string]string `yaml:"active-plugins" toml:"active-plugins"`
 	Plugins       plugin.Config     `yaml:"plugins,omitempty"`
 }

@@ -343,15 +343,13 @@ func Test_RestartConsumer(t *testing.T) {
 			expect: func(t *testing.T, mgr ConsumerManager) {
 				err := mgr.RegisterClient(cli)
 				assert.NoError(t, err)
-				err = mgr.RestartConsumer(cli.ConsumerGroup)
+				mesh, err := mgr.GetConsumer(cli.ConsumerGroup)
 				assert.NoError(t, err)
-				mmgr := mgr.(*consumerManager)
-				val, ok := mmgr.consumers.Load(cli.ConsumerGroup)
+				assert.NotNil(t, mesh)
+				ok := mesh.RegisterClient(cli)
 				assert.True(t, ok)
-				emconsumer := val.(EventMeshConsumer)
-				assert.NotNil(t, emconsumer)
-				assert.Equal(t, emconsumer.ServiceState(), consts.RUNNING)
 				err = mgr.RestartConsumer(cli.ConsumerGroup)
+				assert.Equal(t, mesh.ServiceState(), consts.RUNNING)
 				assert.NoError(t, err)
 
 			},
