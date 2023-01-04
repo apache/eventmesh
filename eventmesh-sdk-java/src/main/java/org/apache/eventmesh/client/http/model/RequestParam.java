@@ -74,7 +74,7 @@ public class RequestParam {
     }
 
     public String getQueryParams() {
-        if (queryParams == null || queryParams.isEmpty()) {
+        if (MapUtils.isEmpty(queryParams)) {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
