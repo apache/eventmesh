@@ -336,6 +336,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelRead(final ChannelHandlerContext ctx, final Object message) {
             final HttpRequest httpRequest = (HttpRequest) message;
+
             if (httpRequest == null) {
                 return;
             }
