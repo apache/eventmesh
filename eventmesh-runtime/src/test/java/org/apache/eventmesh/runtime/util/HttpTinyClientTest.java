@@ -22,7 +22,10 @@ import static org.mockito.ArgumentMatchers.anyList;
 
 import org.apache.eventmesh.runtime.util.HttpTinyClient.HttpResult;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +40,8 @@ public class HttpTinyClientTest {
     @Test
     public void testHttpGet() throws IOException {
         String content = "http mock response";
-        try (MockedStatic<IOTinyUtils> dummyStatic = Mockito.mockStatic(IOTinyUtils.class)) {
-            dummyStatic.when(() -> IOTinyUtils.toString(any(), any())).thenReturn(content);
+        try (MockedStatic<IOUtils> dummyStatic = Mockito.mockStatic(IOUtils.class)) {
+            dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, null, null, "utf-8", 0);
             Assert.assertEquals(result.getContent(), content);
@@ -53,8 +56,8 @@ public class HttpTinyClientTest {
         List<String> headers = new ArrayList<>();
         headers.add("mock-key");
         headers.add("mock-value");
-        try (MockedStatic<IOTinyUtils> dummyStatic = Mockito.mockStatic(IOTinyUtils.class)) {
-            dummyStatic.when(() -> IOTinyUtils.toString(any(), any())).thenReturn(content);
+        try (MockedStatic<IOUtils> dummyStatic = Mockito.mockStatic(IOUtils.class)) {
+            dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, headers, paramValues, "utf-8", 0);
             Assert.assertEquals(result.getContent(), content);
@@ -65,8 +68,8 @@ public class HttpTinyClientTest {
     @Test
     public void testHttpPost() throws IOException {
         String content = "http mock response";
-        try (MockedStatic<IOTinyUtils> dummyStatic = Mockito.mockStatic(IOTinyUtils.class)) {
-            dummyStatic.when(() -> IOTinyUtils.toString(any(), any())).thenReturn(content);
+        try (MockedStatic<IOUtils> dummyStatic = Mockito.mockStatic(IOUtils.class)) {
+            dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpPost(requestUrl, anyList(), anyList(), "utf-8", 0);
             Assert.assertEquals(result.getContent(), content);

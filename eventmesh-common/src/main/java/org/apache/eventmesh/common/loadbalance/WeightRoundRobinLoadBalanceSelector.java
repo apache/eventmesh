@@ -32,16 +32,16 @@ import org.slf4j.LoggerFactory;
  */
 public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
-    private final Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalanceSelector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WeightRoundRobinLoadBalanceSelector.class);
 
-    private final List<Weight<T>> clusterGroup;
+    private final transient List<Weight<T>> clusterGroup;
 
-    private final int totalWeight;
+    private final transient int totalWeight;
 
     public WeightRoundRobinLoadBalanceSelector(List<Weight<T>> clusterGroup) {
         int totalWeight = 0;
         for (Weight<T> weight : clusterGroup) {
-            totalWeight += weight.getWeight();
+            totalWeight += weight.getValue();
         }
         this.clusterGroup = clusterGroup;
         this.totalWeight = totalWeight;
@@ -52,7 +52,7 @@ public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelect
     @SuppressWarnings("ConstantConditions")
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
-            logger.warn("No servers available");
+            LOG.warn("No servers available");
             return null;
         }
         Weight<T> targetWeight = null;

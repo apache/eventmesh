@@ -33,7 +33,6 @@ public class ConfigurationContextUtil {
     private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
     public static final String HTTP = "HTTP";
-
     public static final String TCP = "TCP";
     public static final String GRPC = "GRPC";
 
@@ -57,7 +56,7 @@ public class ConfigurationContextUtil {
      * Get the configuration of the specified key mapping.
      *
      * @param key
-     * @return
+     * @return configuration of the specified key mapping
      */
     public static CommonConfiguration get(String key) {
         return CONFIGURATION_MAP.get(key);

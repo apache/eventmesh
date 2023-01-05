@@ -22,7 +22,7 @@ import (
 )
 
 type CatalogDAL interface {
-	Select(ctx context.Context, operationID string) (*model.EventCatalog, error)
+	SelectOperations(ctx context.Context, serviceName string, operationID string) ([]*model.EventCatalog, error)
 	Insert(ctx context.Context, tx *gorm.DB, record *model.EventCatalog) error
 	InsertEvent(ctx context.Context, tx *gorm.DB, record *model.Event) error
 }
@@ -35,15 +35,14 @@ func NewCatalogDAL() CatalogDAL {
 type catalogDALImpl struct {
 }
 
-func (c *catalogDALImpl) Select(ctx context.Context, operationID string) (*model.EventCatalog, error) {
-	var res model.EventCatalog
-	if err := GetDalClient().Where("operation_id = ? AND status = 1", operationID).First(&res).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
+func (c *catalogDALImpl) SelectOperations(ctx context.Context, serviceName string,
+	operationID string) ([]*model.EventCatalog, error) {
+	var res []*model.EventCatalog
+	var condition = model.EventCatalog{ServiceName: serviceName, OperationID: operationID}
+	if err := GetDalClient().WithContext(ctx).Where(&condition).Find(&res).Error; err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 func (c *catalogDALImpl) Insert(ctx context.Context, tx *gorm.DB, record *model.EventCatalog) error {

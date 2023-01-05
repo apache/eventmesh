@@ -36,11 +36,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @RestController
@@ -48,19 +49,24 @@ import lombok.extern.slf4j.Slf4j;
 public class SubController {
 
     @Autowired
-    private SubService subService;
+    private transient SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(HttpServletRequest request) {
         String content = request.getParameter("content");
         log.info("receive message: {}", content);
+        @SuppressWarnings("unchecked")
         Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
-            CloudEvent event = EventFormatProvider.getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
-            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("receive data: {}", data);
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            if (eventFormat != null) {
+                CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                CloudEventData eventData = event.getData();
+                if (eventData != null) {
+                    String data = new String(eventData.toBytes(), StandardCharsets.UTF_8);
+                    log.info("receive data: {}", data);
+                }
+            }
         }
 
         subService.consumeMessage(content);

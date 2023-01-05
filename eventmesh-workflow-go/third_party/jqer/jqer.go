@@ -19,18 +19,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/third_party/lexer"
 	"reflect"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/bbuck/go-lexer"
 	"github.com/itchyny/gojq"
 )
 
 const (
-	wrapBeginCharacter                 = "$"
-	jqStartToken       lexer.TokenType = iota
+	defaultWrapBeginCharacter                 = "$"
+	defaultWrapLeftCharacter                  = "{"
+	defaultWrapRightCharacter                 = "}"
+	jqStartToken              lexer.TokenType = iota
 	stringToken
 	errorToken
 	noToken
@@ -71,7 +73,17 @@ type jqer struct {
 
 // NewJQ constructor jq instance
 func NewJQ(options ...Option) JQ {
-	return &jqer{options: loadOptions(options...)}
+	jq := &jqer{options: loadOptions(options...)}
+	if len(jq.options.WrapLeftSeparator) == 0 {
+		jq.options.WrapBegin = defaultWrapBeginCharacter
+	}
+	if len(jq.options.WrapLeftSeparator) == 0 {
+		jq.options.WrapLeftSeparator = defaultWrapLeftCharacter
+	}
+	if len(jq.options.WrapRightSeparator) == 0 {
+		jq.options.WrapRightSeparator = defaultWrapRightCharacter
+	}
+	return jq
 }
 
 // One single jq
@@ -82,7 +94,7 @@ func (j *jqer) One(input interface{}, command interface{}) (interface{}, error) 
 	}
 
 	if len(output) != 1 {
-		return nil, NewError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
+		return nil, NewError(ErrCodeJQNotObject, "command produced multiple outputs")
 	}
 
 	return output[0], nil
@@ -176,7 +188,7 @@ func (j *jqer) jqState(l *lexer.L) lexer.StateFunc {
 		}
 		src[i] = string(r)
 
-		if src[i] == wrapBeginCharacter && i > 0 {
+		if src[i] == "$" && i > 0 {
 			jdxJ = i
 		}
 	}
@@ -220,7 +232,7 @@ func (j *jqer) jqState(l *lexer.L) lexer.StateFunc {
 		l.Emit(token)
 
 		// remove closing '}'
-		mover(len(j.options.WrapLeftSeparator), true)
+		mover(len(j.options.WrapRightSeparator), true)
 		l.Ignore()
 
 		return j.jqState
@@ -235,6 +247,7 @@ func (j *jqer) jqState(l *lexer.L) lexer.StateFunc {
 
 func (j *jqer) recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	out := make([]interface{}, 0)
+	s = strings.TrimSpace(s)
 	l := lexer.New(s, j.jqState)
 	l.Start()
 

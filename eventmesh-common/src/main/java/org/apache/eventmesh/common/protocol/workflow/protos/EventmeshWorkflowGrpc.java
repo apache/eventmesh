@@ -52,16 +52,17 @@ public final class EventmeshWorkflowGrpc {
   static {
     String[] descriptorData = {
       "\n\016workflow.proto\022\037eventmesh.workflow.api" +
-      ".protocol\"@\n\016ExecuteRequest\022\n\n\002id\030\001 \001(\t\022" +
-      "\023\n\013instance_id\030\002 \001(\t\022\r\n\005input\030\003 \001(\t\"&\n\017E" +
-      "xecuteResponse\022\023\n\013instance_id\030\001 \001(\t2z\n\010W" +
-      "orkflow\022n\n\007Execute\022/.eventmesh.workflow." +
-      "api.protocol.ExecuteRequest\0320.eventmesh." +
-      "workflow.api.protocol.ExecuteResponse\"\000B" +
-      "\226\001\n4org.apache.eventmesh.common.protocol" +
-      ".workflow.protosB\025EventmeshWorkflowGrpcP" +
-      "\001ZEgithub.com/apache/incubator-eventmesh" +
-      "/eventmesh-workflow-go/api/protob\006proto3"
+      ".protocol\"Z\n\016ExecuteRequest\022\n\n\002id\030\001 \001(\t\022" +
+      "\023\n\013instance_id\030\002 \001(\t\022\030\n\020task_instance_id" +
+      "\030\003 \001(\t\022\r\n\005input\030\004 \001(\t\"&\n\017ExecuteResponse" +
+      "\022\023\n\013instance_id\030\001 \001(\t2z\n\010Workflow\022n\n\007Exe" +
+      "cute\022/.eventmesh.workflow.api.protocol.E" +
+      "xecuteRequest\0320.eventmesh.workflow.api.p" +
+      "rotocol.ExecuteResponse\"\000B\226\001\n4org.apache" +
+      ".eventmesh.common.protocol.workflow.prot" +
+      "osB\025EventmeshWorkflowGrpcP\001ZEgithub.com/" +
+      "apache/incubator-eventmesh/eventmesh-wor" +
+      "kflow-go/api/protob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -72,7 +73,7 @@ public final class EventmeshWorkflowGrpc {
     internal_static_eventmesh_workflow_api_protocol_ExecuteRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_eventmesh_workflow_api_protocol_ExecuteRequest_descriptor,
-        new String[] { "Id", "InstanceId", "Input", });
+        new String[] { "Id", "InstanceId", "TaskInstanceId", "Input", });
     internal_static_eventmesh_workflow_api_protocol_ExecuteResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_eventmesh_workflow_api_protocol_ExecuteResponse_fieldAccessorTable = new

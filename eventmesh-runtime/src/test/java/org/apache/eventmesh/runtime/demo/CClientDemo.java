@@ -35,14 +35,13 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class CClientDemo {
 
-    public static Logger logger = LoggerFactory.getLogger(CClientDemo.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(CClientDemo.class);
 
-    private static final String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
     private static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
     private static final String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 
     public static void main(String[] args) throws Exception {
-        EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
+        EventMeshClientImpl client = new EventMeshClientImpl("localhost", 10000);
         client.init();
         client.heartbeat();
         client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
@@ -51,22 +50,20 @@ public class CClientDemo {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    logger.error("receive message-------------------------------------" + msg);
+                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT
+                        || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
+
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("receive message-------------------------------------" + msg);
+                    }
                 }
             }
         });
         for (int i = 0; i < 10000; i++) {
-            //ThreadUtil.randomSleep(0,200);
             //broadcast message
             client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
             //asynchronous message
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }
-        //
-        //Thread.sleep(10000);
-        //client.close();
-
-
     }
 }

@@ -15,8 +15,16 @@
 
 package flow
 
+// WorkflowParam workflow runtime param
 type WorkflowParam struct {
-	ID         string `json:"id"`
-	InstanceID string `json:"instance_id"`
-	Input      string `json:"input"`
+	ID             string `json:"id"`
+	InstanceID     string `json:"instance_id"`
+	TaskInstanceID string `json:"task_instance_id"`
+	Input          string `json:"input"`
+}
+
+type WorkflowEventCatalog struct {
+	OperationID string `json:"operation_id"`
+	Topic       string `json:"topic"`
+	Schema      string `json:"schema"`
 }

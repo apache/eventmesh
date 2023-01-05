@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.config.ConfigurationWrapperTest;
+
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -34,10 +37,22 @@ public class PropertiesUtilsTest {
         from.put(PREFIX + "b", 1.0);
         from.put(PREFIX + "c.d", "inner d");
         from.put(PREFIX + "c.f", "inner f");
-        Properties to = new Properties();
-        PropertiesUtils.getPropertiesByPrefix(from, to, PREFIX);
+        Properties to = PropertiesUtils.getPropertiesByPrefix(from, PREFIX);
 
         Assert.assertEquals(3, to.size());
         Assert.assertEquals(2, ((Properties) to.get("c")).size());
+    }
+
+    @Test
+    public void testLoadPropertiesWhenFileExist() {
+        Properties properties = new Properties();
+        String path = ConfigurationWrapperTest.class.getResource("/configuration.properties").getPath();
+        try {
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, path);
+            Assert.assertEquals(properties.get("eventMesh.server.env").toString(), "value1");
+            Assert.assertEquals(properties.get("eventMesh.server.idc").toString(), "value2");
+        } catch (Exception e) {
+            Assert.fail();
+        }
     }
 }

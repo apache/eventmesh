@@ -33,21 +33,25 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class AsyncSubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(AsyncSubClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncSubClient.class);
 
     public static void main(String[] args) throws Exception {
-        SubClientImpl client = new SubClientImpl("127.0.0.1", 10002, MessageUtils.generateSubServer());
-        client.init();
-        client.heartbeat();
-        client.justSubscribe(ClientConstants.ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
-        client.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof EventMeshMessage) {
-                    String body = ((EventMeshMessage) msg.getBody()).getBody();
-                    logger.error("receive message -------------------------------" + body);
+        try (SubClientImpl client =
+                     new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
+            client.init();
+            client.heartbeat();
+            client.justSubscribe(ClientConstants.ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
+            client.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (msg.getBody() instanceof EventMeshMessage) {
+                        String body = ((EventMeshMessage) msg.getBody()).getBody();
+                        if (LOGGER.isInfoEnabled()) {
+                            LOGGER.info("receive message -------------------------------" + body);
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

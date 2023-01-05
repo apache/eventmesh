@@ -28,6 +28,7 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -62,7 +63,7 @@ public class SendMessageRequestProtocolResolver {
 
             CloudEvent event = null;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
                         .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.v1(event)
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
@@ -81,7 +82,7 @@ public class SendMessageRequestProtocolResolver {
                         .withExtension(SendMessageRequestBody.PRODUCERGROUP, producerGroup)
                         .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-                event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
                         .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.v03(event)
                         .withExtension(ProtocolKey.REQUEST_CODE, code)

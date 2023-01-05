@@ -17,7 +17,6 @@ package api
 
 import (
 	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/flow"
 	"github.com/gogf/gf/util/gconv"
 
@@ -38,7 +37,6 @@ func NewWorkflowService() proto.WorkflowServer {
 func (s *workflowImpl) Execute(ctx context.Context, req *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
 	var rsp proto.ExecuteResponse
 	var param flow.WorkflowParam
-	log.Info(gconv.String(req))
 	if err := gconv.Struct(req, &param); err != nil {
 		return nil, err
 	}

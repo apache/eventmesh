@@ -25,11 +25,13 @@ import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 public class CCPubClient {
 
     public static void main(String[] args) throws Exception {
-        PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        pubClient.init();
-        pubClient.heartbeat();
+        try (PubClientImpl pubClient =
+                     new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            pubClient.init();
+            pubClient.heartbeat();
 
-        pubClient.broadcast(MessageUtils.rrMesssage(ClientConstants.ASYNC_TOPIC, 0), 5000);
+            pubClient.broadcast(MessageUtils.rrMesssage(ClientConstants.ASYNC_TOPIC, 0), 5000);
 
+        }
     }
 }

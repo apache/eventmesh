@@ -19,12 +19,14 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,26 +38,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * query client subscription by topic
  */
-public class ShowListenClientByTopicHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/showListenClientByTopic")
+public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
 
-    private Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        StringBuilder result = new StringBuilder();
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
@@ -68,28 +70,20 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
                 for (ClientGroupWrapper cgw : clientGroupMap.values()) {
                     Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
                     if (listenSessionSet != null && listenSessionSet.size() > 0) {
-                        result += String.format("group:%s", cgw.getGroup()) + newLine;
+                        result.append(String.format("group:%s", cgw.getGroup())).append(newLine);
                         for (Session session : listenSessionSet) {
                             UserAgent userAgent = session.getClient();
-                            result += String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
-                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()) + newLine;
+                            result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
+                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))
+                                    .append(newLine);
                         }
                     }
                 }
             }
-            httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
+            out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowListenClientByTopicHandler fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
         }
-
     }
 }

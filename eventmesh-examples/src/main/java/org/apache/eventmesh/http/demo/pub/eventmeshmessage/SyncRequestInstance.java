@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class SyncRequestInstance {
 
-    public static Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
+    public static final Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -73,18 +73,18 @@ public class SyncRequestInstance {
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
-                logger.debug("sendmsg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
+                logger.debug("send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
                         System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
-            logger.warn("send msg failed", e);
+            logger.warn("send msg failed, ", e);
         }
 
         Thread.sleep(30000);
         try (final EventMeshHttpProducer close = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
-            logger.warn("producer shutdown exception", e1);
+            logger.warn("producer shutdown exception, ", e1);
         }
     }
 }

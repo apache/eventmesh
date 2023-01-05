@@ -18,54 +18,32 @@
 package org.apache.eventmesh.connector.pulsar.producer;
 
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
-
-import org.apache.pulsar.client.api.Producer;
-import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.eventmesh.connector.pulsar.client.PulsarClientWrapper;
+import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.protobuf.ProtobufFormat;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ProducerImpl extends AbstractProducer {
+
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private PulsarClient pulsarClient;
+
+    private ClientConfiguration config;
+    private PulsarClientWrapper pulsarClient;
 
     public ProducerImpl(final Properties properties) {
         super(properties);
+        this.config = new ClientConfiguration();
+        this.config.init();
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
-
-        try {
-            Producer<byte[]> producer = this.pulsarClient.newProducer()
-                    .topic(cloudEvent.getSubject())
-                    .batchingMaxPublishDelay(10, TimeUnit.MILLISECONDS)
-                    .sendTimeout(10, TimeUnit.SECONDS)
-                    .blockIfQueueFull(true)
-                    .create();
-
-            byte[] serializedCloudEvent = EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE)
-                    .serialize(cloudEvent);
-
-            producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
-                sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));
-            });
-        } catch (Exception e) {
-            ConnectorRuntimeException onsEx = this.checkProducerException(cloudEvent, e);
-            OnExceptionContext context = new OnExceptionContext();
-            context.setTopic(cloudEvent.getSubject());
-            context.setException(onsEx);
-            sendCallback.onException(context);
-        }
+        this.pulsarClient.publish(cloudEvent, sendCallback);
     }
 
     public void init(Properties properties) {
@@ -73,29 +51,25 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void start() {
-        try {
-            this.started.compareAndSet(false, true);
-            this.pulsarClient = PulsarClient.builder()
-                    .serviceUrl(this.properties().get("url").toString())
-                    .build();
-        } catch (Exception ignored) {
-            // ignored
-        }
+        this.started.compareAndSet(false, true);
+        this.pulsarClient = new PulsarClientWrapper(config);
     }
 
     public void shutdown() {
         try {
             this.started.compareAndSet(true, false);
-            this.pulsarClient.close();
+            this.pulsarClient.shutdown();
         } catch (Exception ignored) {
             // ignored
         }
     }
 
+    @Override
     public boolean isStarted() {
         return this.started.get();
     }
 
+    @Override
     public boolean isClosed() {
         return !this.isStarted();
     }

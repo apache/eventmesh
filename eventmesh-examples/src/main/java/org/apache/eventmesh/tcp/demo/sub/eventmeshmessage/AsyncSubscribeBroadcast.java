@@ -37,7 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
+    private static EventMeshTCPClient<EventMeshMessage> client;
+
+    public static final AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
@@ -45,12 +47,13 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         UserAgent userAgent = EventMeshTestUtils.generateClient2();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
-        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, EventMeshMessage.class)) {
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
+        client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+            eventMeshTcpClientConfig, EventMeshMessage.class);
+        try {
             client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);

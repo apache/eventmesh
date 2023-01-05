@@ -27,15 +27,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PravegaConnectorConfig {
-    public static String EVENTMESH_PRAVEGA_CONTROLLER_URI = "eventMesh.server.pravega.controller.uri";
-    public static String EVENTMESH_PRAVEGA_SCOPE = "eventMesh.server.pravega.scope";
-    public static String EVENTMESH_PRAVEGA_AUTH_ENABLED = "eventMesh.server.pravega.authEnabled";
-    public static String EVENTMESH_PRAVEGA_USERNAME = "eventMesh.server.pravega.username";
-    public static String EVENTMESH_PRAVEGA_PASSWORD = "eventMesh.server.pravega.password";
-    public static String EVENTMESH_PRAVEGA_TLS_ENABLED = "eventMesh.server.pravega.tlsEnabled";
-    public static String EVENTMESH_PRAVEGA_TRUSTSTORE = "eventMesh.server.pravega.truststore";
-    public static String EVENTMESH_PRAVEGA_CLIENTPOOL_SIZE = "eventMesh.server.pravega.clientPool.size";
-    public static String EVENTMESH_PRAVEGA_QUEUE_SIZE = "eventMesh.server.pravega.queue.size";
+    public static final String EVENTMESH_PRAVEGA_CONTROLLER_URI = "eventMesh.server.pravega.controller.uri";
+    public static final String EVENTMESH_PRAVEGA_SCOPE = "eventMesh.server.pravega.scope";
+    public static final String EVENTMESH_PRAVEGA_AUTH_ENABLED = "eventMesh.server.pravega.authEnabled";
+    public static final String EVENTMESH_PRAVEGA_USERNAME = "eventMesh.server.pravega.username";
+    public static final String EVENTMESH_PRAVEGA_PASSWORD = "eventMesh.server.pravega.password";
+    public static final String EVENTMESH_PRAVEGA_TLS_ENABLED = "eventMesh.server.pravega.tlsEnabled";
+    public static final String EVENTMESH_PRAVEGA_TRUSTSTORE = "eventMesh.server.pravega.truststore";
+    public static final String EVENTMESH_PRAVEGA_CLIENTPOOL_SIZE = "eventMesh.server.pravega.clientPool.size";
+    public static final String EVENTMESH_PRAVEGA_QUEUE_SIZE = "eventMesh.server.pravega.queue.size";
 
     private URI controllerURI = URI.create("tcp://127.0.0.1:9090");
     private String scope = "eventmesh-pravega";

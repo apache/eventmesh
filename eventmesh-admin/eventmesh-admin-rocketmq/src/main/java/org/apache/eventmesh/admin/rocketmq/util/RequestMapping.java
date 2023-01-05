@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-import org.apache.eventmesh.admin.rocketmq.HttpMethod;
+import org.apache.eventmesh.common.enums.HttpMethod;
 
 import com.sun.net.httpserver.HttpExchange;
 

@@ -55,7 +55,7 @@ public class RegResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static RegResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static RegResponseBody buildBody(Integer retCode, String retMsg) {
         RegResponseBody regResponseBody = new RegResponseBody();
         regResponseBody.setRetMsg(retMsg);
         regResponseBody.setResTime(System.currentTimeMillis());

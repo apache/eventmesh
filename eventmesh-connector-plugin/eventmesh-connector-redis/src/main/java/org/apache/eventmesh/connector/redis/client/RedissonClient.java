@@ -45,7 +45,7 @@ public final class RedissonClient {
     public static final Redisson INSTANCE;
 
     static {
-        OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, Boolean.FALSE);
+        OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
         INSTANCE = create();
 

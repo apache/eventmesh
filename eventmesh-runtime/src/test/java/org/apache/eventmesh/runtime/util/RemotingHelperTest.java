@@ -37,13 +37,14 @@ public class RemotingHelperTest {
     @Test
     public void testString2SocketAddress() {
         String addr = "10.1.1.1:11002";
-        SocketAddress address = RemotingHelper.string2SocketAddress(addr);
+        InetSocketAddress address = (InetSocketAddress) RemotingHelper.string2SocketAddress(addr);
         Assert.assertNotNull(address);
+        Assert.assertEquals("10.1.1.1:11002", address.getHostString() + ":" + address.getPort());
     }
 
     @Test
     public void testParseChannelRemoteAddr() {
-        SocketAddress address = new InetSocketAddress("127.0.0.1", 80);
+        SocketAddress address = new InetSocketAddress("localhost", 80);
         Channel channel = Mockito.mock(Channel.class);
         Mockito.when(channel.remoteAddress()).thenReturn(address);
         String addr = RemotingHelper.parseChannelRemoteAddr(channel);
@@ -52,8 +53,8 @@ public class RemotingHelperTest {
 
     @Test
     public void testParseSocketAddressAddr() {
-        SocketAddress address = new InetSocketAddress("127.0.0.1", 80);
+        InetSocketAddress address = new InetSocketAddress("localhost", 80);
         String addr = RemotingHelper.parseSocketAddressAddr(address);
-        Assert.assertEquals(addr, "127.0.0.1:80");
+        Assert.assertEquals("127.0.0.1:80", addr);
     }
 }

@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -59,10 +60,10 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             return;
         }
 
-        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshCluster;
+        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         //get eventmesh of local idc
         Map<String, String> localEventMeshMap = queryLocalEventMeshMap(cluster);
-        if (localEventMeshMap == null || localEventMeshMap.size() == 0) {
+        if (MapUtils.isEmpty(localEventMeshMap)) {
             return;
         }
 
@@ -84,7 +85,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 return null;
             }
             localEventMeshMap = new HashMap<>();
-            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC;
+            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
             for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
                 String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
                 if (StringUtils.isNotBlank(idc) && StringUtils.equals(idc, localIdc)) {
@@ -112,11 +113,11 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         //query distribute data of loacl idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose,
                 eventMeshMap);
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (MapUtils.isEmpty(clientDistributionMap)) {
             return;
         }
 
-        doRebalanceRedirect(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName, group, purpose,
+        doRebalanceRedirect(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshName(), group, purpose,
                 eventMeshMap, clientDistributionMap);
         logger.info("doRebalanceByGroup end, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
 
@@ -124,7 +125,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private void doRebalanceRedirect(String currEventMeshName, String group, String purpose, Map<String, String> eventMeshMap,
                                      Map<String, Integer> clientDistributionMap) throws Exception {
-        if (clientDistributionMap == null || clientDistributionMap.size() == 0) {
+        if (MapUtils.isEmpty(clientDistributionMap)) {
             return;
         }
 
@@ -180,10 +181,10 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private List<String> selectRedirectEventMesh(String group, Map<String, String> eventMeshMap,
                                                  Map<String, Integer> clientDistributionMap, int judge,
-                                                 String evenMeshName) throws Exception {
+                                                 String eventMeshName) throws Exception {
         EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
         return eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap,
-                group, judge, evenMeshName);
+                group, judge, eventMeshName);
     }
 
     public int caculateRedirectNum(String eventMeshName, String group, String purpose,
@@ -229,14 +230,14 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
                     cluster, group, purpose);
 
-            if (eventMeshClientDistributionDataMap == null || eventMeshClientDistributionDataMap.size() == 0) {
+            if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {
                 logger.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}, purpose:{}",
                         cluster, group, purpose);
                 return null;
             }
 
             localEventMeshDistributeData = new HashMap<>();
-            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC;
+            String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
             for (Map.Entry<String, Map<String, Integer>> entry : eventMeshClientDistributionDataMap.entrySet()) {
                 String idc = entry.getKey().split("-")[0];
                 if (StringUtils.isNotBlank(idc) && StringUtils.equals(idc, localIdc)) {

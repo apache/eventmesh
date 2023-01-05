@@ -18,15 +18,15 @@
 package org.apache.eventmesh.connector.knative.config;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 import org.apache.eventmesh.connector.knative.common.EventMeshConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -52,20 +52,21 @@ public class ConfigurationWrapper {
      */
     private void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-            "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+                "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Load %s.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE));
+            throw new RuntimeException(String.format("Load %s.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE), e);
         }
+
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
             if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
+                PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));
+            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE), e);
         }
     }
 }

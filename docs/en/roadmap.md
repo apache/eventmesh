@@ -29,18 +29,19 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **Implemented in 1.6.0**                  | Integrate with Consul           | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.6.0**                  | Support Webhook                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.6.0**                  | Support etcd                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
-| **In Progress**                           | Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
-| **In Progress**                           | Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465) |
-| **In Progress**                           | Support Kafka as EventStore     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
-| **In Progress**                           | Support Pulsar as EventStore    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
-| **In Progress**                           | Workflow                        | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
-| **In Progress**                           | Support Redis                   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
-| **In Progress**                           | Rust SDK                        | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/815) |
-| **In Progress**                           | Filter Chain                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
+| **Implemented in 1.7.0**                           | Support Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
+| **Implemented in 1.7.0**                           | Support Pravega as EventStore   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/270)  |
+| **Implemented in 1.7.0**                           | Support Kafka as EventStore     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
+| **Implemented in 1.7.0**                           | Support Pulsar as EventStore    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
+| **Implemented in 1.7.0**                           | Support CNCF Serverless Workflow| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| **Implemented in 1.7.0**                           | Support Redis                   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| **Implemented in 1.7.0**                           | Provide Rust SDK                        | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/815) |
+| **Implemented in 1.7.0**                           | Support Zookeeper               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| **Implemented in 1.7.0**                           | Support RabbitMQ as EventStore               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/1553) |
+| **In Progress**                           | Provide Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465)
+| **In Progress**                           | Support Filter Chain                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
 | **In Progress**                           | Metadata consistency persistent | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/817)  |
-| **In Progress**                           | Support Pravega as EventStore   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/270)  |
 | Planned                                   | Support Dledger                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
-| Planned                                   | Support Zookeeper               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | Planned                                   | Provide NodeJS SDK              | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | Planned                                   | Provide PHP    SDK              | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/1193) |
 | Planned                                   | Transaction Event               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/697) |

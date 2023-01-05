@@ -39,46 +39,57 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConsumerManager {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerManager.class);
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-
-    // key: ConsumerGroup
-    private final Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
+    private final transient ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     // key: ConsumerGroup
-    private final Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
+    private final transient Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
 
-    public ConsumerManager(EventMeshGrpcServer eventMeshGrpcServer) {
+    // key: ConsumerGroup
+    private final transient Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
+
+    public ConsumerManager(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
+    public Map<String, List<ConsumerGroupClient>> getClientTable() {
+        return clientTable;
+    }
+
     public void init() throws Exception {
-        logger.info("Grpc ConsumerManager initialized......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager initialized.");
+        }
     }
 
     public void start() throws Exception {
         startClientCheck();
-        logger.info("Grpc ConsumerManager started......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager started.");
+        }
     }
 
     public void shutdown() throws Exception {
-        for (EventMeshConsumer consumer : consumerTable.values()) {
+        for (final EventMeshConsumer consumer : consumerTable.values()) {
             consumer.shutdown();
         }
         scheduledExecutorService.shutdown();
-        logger.info("Grpc ConsumerManager shutdown......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Grpc ConsumerManager shutdown.");
+        }
     }
 
-    public EventMeshConsumer getEventMeshConsumer(String consumerGroup) {
+    public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
         EventMeshConsumer consumer = consumerTable.get(consumerGroup);
         if (consumer == null) {
             consumer = new EventMeshConsumer(eventMeshGrpcServer, consumerGroup);
@@ -87,33 +98,33 @@ public class ConsumerManager {
         return consumer;
     }
 
-    public synchronized void registerClient(ConsumerGroupClient newClient) {
-        String consumerGroup = newClient.getConsumerGroup();
-        String topic = newClient.getTopic();
-        GrpcType grpcType = newClient.getGrpcType();
-        String url = newClient.getUrl();
-        String ip = newClient.getIp();
-        String pid = newClient.getPid();
-        SubscriptionMode subscriptionMode = newClient.getSubscriptionMode();
-        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
+    public synchronized void registerClient(final ConsumerGroupClient newClient) {
+        final String consumerGroup = newClient.getConsumerGroup();
+        final String topic = newClient.getTopic();
+        final GrpcType grpcType = newClient.getGrpcType();
+        final String url = newClient.getUrl();
+        final String ip = newClient.getIp();
+        final String pid = newClient.getPid();
+        final SubscriptionMode subscriptionMode = newClient.getSubscriptionMode();
 
+        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
         if (localClients == null) {
             localClients = new ArrayList<>();
             localClients.add(newClient);
-            clientTable.put(consumerGroup, localClients);
+            clientTable.putIfAbsent(consumerGroup, localClients);
         } else {
             boolean isContains = false;
-            for (ConsumerGroupClient localClient : localClients) {
-                if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.equals(localClient.getTopic(), topic)
-                    && StringUtils.equals(localClient.getUrl(), url)
-                    && localClient.getSubscriptionMode().equals(subscriptionMode)) {
+            for (final ConsumerGroupClient localClient : localClients) {
+                if (GrpcType.WEBHOOK == grpcType && StringUtils.equals(localClient.getTopic(), topic)
+                        && StringUtils.equals(localClient.getUrl(), url)
+                        && localClient.getSubscriptionMode() == subscriptionMode) {
                     isContains = true;
                     localClient.setUrl(newClient.getUrl());
                     localClient.setLastUpTime(newClient.getLastUpTime());
                     break;
-                } else if (GrpcType.STREAM.equals(grpcType) && StringUtils.equals(localClient.getTopic(), topic)
-                    && StringUtils.equals(localClient.getIp(), ip) && StringUtils.equals(localClient.getPid(), pid)
-                    && localClient.getSubscriptionMode().equals(subscriptionMode)) {
+                } else if (GrpcType.STREAM == grpcType && StringUtils.equals(localClient.getTopic(), topic)
+                        && StringUtils.equals(localClient.getIp(), ip) && StringUtils.equals(localClient.getPid(), pid)
+                        && localClient.getSubscriptionMode() == subscriptionMode) {
                     isContains = true;
                     localClient.setEventEmitter(newClient.getEventEmitter());
                     localClient.setLastUpTime(newClient.getLastUpTime());
@@ -126,112 +137,132 @@ public class ConsumerManager {
         }
     }
 
-    public void updateClientTime(ConsumerGroupClient client) {
-        String consumerGroup = client.getConsumerGroup();
-        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
+    public boolean updateClientTime(final ConsumerGroupClient client) {
+        final List<ConsumerGroupClient> localClients = clientTable.get(client.getConsumerGroup());
         if (CollectionUtils.isEmpty(localClients)) {
-            return;
+            return false;
         }
-        for (ConsumerGroupClient localClient : localClients) {
+
+        for (final ConsumerGroupClient localClient : localClients) {
             if (StringUtils.equals(localClient.getIp(), client.getIp())
-                && StringUtils.equals(localClient.getPid(), client.getPid())
-                && StringUtils.equals(localClient.getSys(), client.getSys())
-                && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
+                    && StringUtils.equals(localClient.getPid(), client.getPid())
+                    && StringUtils.equals(localClient.getSys(), client.getSys())
+                    && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
                 localClient.setLastUpTime(new Date());
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
-    public synchronized void deregisterClient(ConsumerGroupClient client) {
-        String consumerGroup = client.getConsumerGroup();
-        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
+    public synchronized void deregisterClient(final ConsumerGroupClient client) {
+        final String consumerGroup = client.getConsumerGroup();
+        final List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
         if (CollectionUtils.isEmpty(localClients)) {
             return;
         }
 
-        Iterator<ConsumerGroupClient> iterator = localClients.iterator();
-        while (iterator.hasNext()) {
-            ConsumerGroupClient localClient = iterator.next();
-            if (StringUtils.equals(localClient.getTopic(), client.getTopic())
-                && localClient.getSubscriptionMode().equals(client.getSubscriptionMode())) {
-
-                // close the GRPC client stream before removing it
-                closeEventStream(localClient);
-                iterator.remove();
+        final Iterator<ConsumerGroupClient> iterator = localClients.iterator();
+        synchronized (clientTable) {
+            while (iterator.hasNext()) {
+                final ConsumerGroupClient localClient = iterator.next();
+                if (StringUtils.equals(localClient.getTopic(), client.getTopic())
+                        && localClient.getSubscriptionMode() == client.getSubscriptionMode()) {
+                    // close the GRPC client stream before removing it
+                    closeEventStream(localClient);
+                    iterator.remove();
+                }
             }
         }
 
-        if (localClients.size() == 0) {
+        if (CollectionUtils.isEmpty(localClients)) {
             clientTable.remove(consumerGroup);
         }
+
     }
 
-    private void closeEventStream(ConsumerGroupClient client) {
+    private void closeEventStream(final ConsumerGroupClient client) {
         if (client.getEventEmitter() != null) {
             client.getEventEmitter().onCompleted();
         }
     }
 
-    public synchronized void restartEventMeshConsumer(String consumerGroup) throws Exception {
-        EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
+    public synchronized void restartEventMeshConsumer(final String consumerGroup) throws Exception {
+        final EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
 
         if (eventMeshConsumer == null) {
             return;
         }
 
-        if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
+        if (ServiceState.RUNNING == eventMeshConsumer.getStatus()) {
             eventMeshConsumer.shutdown();
         }
 
         eventMeshConsumer.init();
         eventMeshConsumer.start();
 
-        if (!ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
+        if (ServiceState.RUNNING != eventMeshConsumer.getStatus()) {
             consumerTable.remove(consumerGroup);
         }
     }
 
     private void startClientCheck() {
-        int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshSessionExpiredInMills;
+        final int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshSessionExpiredInMills;
         if (clientTimeout > 0) {
             scheduledExecutorService.scheduleAtFixedRate(() -> {
-                logger.info("grpc client info check");
-                List<ConsumerGroupClient> clientList = new LinkedList<>();
-                for (List<ConsumerGroupClient> clients : clientTable.values()) {
-                    clientList.addAll(clients);
-                }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("total number of ConsumerGroupClients: {}", clientList.size());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("grpc client info check");
                 }
 
-                if (clientList.isEmpty()) {
+                final List<ConsumerGroupClient> clientList = new LinkedList<>();
+                clientTable.values().forEach(clients -> {
+                    clientList.addAll(clients);
+                });
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("total number of ConsumerGroupClients: {}", clientList.size());
+                }
+
+                if (CollectionUtils.isEmpty(clientList)) {
                     return;
                 }
-                Set<String> consumerGroupRestart = new HashSet<>();
-                for (ConsumerGroupClient client : clientList) {
+
+                final Set<String> consumerGroupRestart = new HashSet<>();
+                clientList.forEach(client -> {
                     if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
-                        logger.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
-                            JsonUtils.serialize(client), client.getLastUpTime());
-                        String consumerGroup = client.getConsumerGroup();
-                        EventMeshConsumer consumer = getEventMeshConsumer(consumerGroup);
+                        if (LOGGER.isWarnEnabled()) {
+                            LOGGER.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
+                                    JsonUtils.serialize(client), client.getLastUpTime());
+                        }
 
                         deregisterClient(client);
-                        if (consumer.deregisterClient(client)) {
-                            consumerGroupRestart.add(consumerGroup);
+                        if (getEventMeshConsumer(client.getConsumerGroup()).deregisterClient(client)) {
+                            consumerGroupRestart.add(client.getConsumerGroup());
                         }
                     }
-                }
+                });
 
                 // restart EventMeshConsumer for the group
-                for (String consumerGroup : consumerGroupRestart) {
+                consumerGroupRestart.forEach(consumerGroup -> {
                     try {
                         restartEventMeshConsumer(consumerGroup);
                     } catch (Exception e) {
-                        logger.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                        if (LOGGER.isErrorEnabled()) {
+                            LOGGER.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                        }
                     }
-                }
-            }, 10000, 10000, TimeUnit.MILLISECONDS);
+                });
+            }, 10_000, 10_000, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public List<String> getAllConsumerTopic() {
+        return clientTable.values()
+                .stream()
+                .flatMap(List::stream)
+                .map(ConsumerGroupClient::getTopic)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

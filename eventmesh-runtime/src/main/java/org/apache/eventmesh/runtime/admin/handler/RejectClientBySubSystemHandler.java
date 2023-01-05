@@ -18,12 +18,14 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,24 +37,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class RejectClientBySubSystemHandler implements HttpHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(RejectClientBySubSystemHandler.class);
+@EventHttpHandler(path = "/clientManage/rejectClientBySubSystem")
+@Slf4j
+public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
+    
+    private final transient EventMeshTCPServer eventMeshTCPServer;
 
-    private EventMeshTCPServer eventMeshTCPServer;
-
-    public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     private String printClients(List<InetSocketAddress> clients) {
-        if (clients.isEmpty()) {
+        if (clients == null || clients.isEmpty()) {
             return "no session had been closed";
         }
         StringBuilder sb = new StringBuilder();
@@ -70,29 +71,29 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        String result;
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             if (StringUtils.isBlank(subSystem)) {
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
-            logger.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
+            log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
+            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getSubsystem().equals(subSystem)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session, clientSessionGroupMapping);
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session,
+                                    clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -100,29 +101,22 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
-                result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {"
-                        +
-                        "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
-                httpExchange.sendResponseHeaders(200, 0);
+                log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
+                result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
+                                +
+                                "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
+                        subSystem, e.getMessage());
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
                     +
                     "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("rejectClientBySubSystem fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            log.error("rejectClientBySubSystem fail...", e);
         }
 
     }

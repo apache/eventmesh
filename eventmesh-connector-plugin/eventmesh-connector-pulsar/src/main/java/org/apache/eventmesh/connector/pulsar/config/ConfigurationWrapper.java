@@ -52,11 +52,12 @@ public class ConfigurationWrapper {
      */
     private void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-                "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+            "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
+            log.error("Load {}.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE, e);
             throw new RuntimeException(String.format("Load %s.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE));
         }
 
@@ -66,6 +67,7 @@ public class ConfigurationWrapper {
                 properties.load(new BufferedReader(new FileReader(configPath)));
             }
         } catch (IOException e) {
+            log.error("Cannot load {} file from conf.", EventMeshConstants.EVENTMESH_CONF_FILE, e);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));
         }
     }

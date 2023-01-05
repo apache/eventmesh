@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
+def grpcVersion = '1.43.2'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
 
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -28,7 +29,11 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
-    implementation 'com.github.seancfoley:ipaddress:5.3.3'
+    implementation "com.alibaba:fastjson"
+
+    implementation 'com.github.seancfoley:ipaddress'
+
+    implementation "commons-io:commons-io"
 
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
@@ -42,7 +47,7 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
+
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
@@ -52,8 +57,8 @@ dependencies {
     implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
@@ -67,7 +72,7 @@ dependencies {
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-    
+
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
@@ -77,4 +82,5 @@ dependencies {
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "commons-io:commons-io"
 }

@@ -38,7 +38,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class RecommendTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecommendTask.class);
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public RecommendTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -49,7 +51,7 @@ public class RecommendTask extends AbstractTask {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
             UserAgent user = (UserAgent) pkg.getBody();
@@ -57,10 +59,11 @@ public class RecommendTask extends AbstractTask {
             String group = getGroupOfClient(user);
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
-            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
+            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                    pkg.getHeader().getSeq()));
             res.setBody(eventMeshRecommendResult);
         } catch (Exception e) {
-            messageLogger.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);
+            MESSAGE_LOGGER.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg
                     .getHeader().getSeq()));
 

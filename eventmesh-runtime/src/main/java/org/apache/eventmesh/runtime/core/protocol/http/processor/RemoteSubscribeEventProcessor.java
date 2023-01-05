@@ -46,10 +46,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,13 +60,14 @@ import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 @EventMeshTrace(isEnable = false)
-public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
+public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
 
     public RemoteSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
@@ -93,24 +95,15 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
-        Map<String, Object> responseHeaderMap = new HashMap<>();
-        responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap
-            .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+
+        Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
         //validate header
-        if (StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())) {
-
+        if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
@@ -120,27 +113,33 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {});
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+            new String(requestBody, Constants.DEFAULT_CHARSET),
+            new TypeReference<HashMap<String, Object>>() {}
+        )).orElse(Maps.newHashMap());
 
 
-        if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null
+            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
+            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        String url = requestBodyMap.get("url").toString();
-        String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
+        String url = requestBodyMap.get(EventMeshConstants.URL).toString();
+        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
+        String topic = JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = JsonUtils.deserialize(topic, new TypeReference<List<SubscriptionItem>>() {
-        });
+        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+            topic,
+            new TypeReference<List<SubscriptionItem>>() {}
+        )).orElse(Collections.emptyList());
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
             String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
@@ -177,7 +176,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
 
         // obtain webhook delivery agreement for Abuse Protection
         boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshWebhookOrigin);
+            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
             httpLogger.error("subscriber url {} is not allowed by the target system", url);
@@ -190,10 +189,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         try {
             // request to remote
 
-            String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv;
-            String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC;
-            String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster;
-            String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().sysID;
+            String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv();
+            String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC();
+            String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster();
+            String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID();
             String meshGroup = env + "-" + idc + "-" + cluster + "-" + sysId;
 
             Map<String, String> remoteHeaderMap = new HashMap<>();
@@ -202,8 +201,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress());
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, sysId);
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh");
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, "pass");
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
 
@@ -213,9 +212,9 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
                 + RequestURI.PUBLISH_BRIDGE.getRequestURI();
 
             Map<String, Object> remoteBodyMap = new HashMap<>();
-            remoteBodyMap.put("url", localUrl);
-            remoteBodyMap.put("consumerGroup", meshGroup);
-            remoteBodyMap.put("topic", requestBodyMap.get("topic"));
+            remoteBodyMap.put(EventMeshConstants.URL, localUrl);
+            remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
+            remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
             String targetMesh = requestBodyMap.get("remoteMesh") == null ? "" : requestBodyMap.get("remoteMesh").toString();
 
@@ -231,12 +230,14 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
             String remoteResult = post(closeableHttpClient, targetMesh, remoteHeaderMap, remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
-            });
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
+                remoteResult,
+                new TypeReference<Map<String, String>>() {}
+            )).orElse(Maps.newHashMap());
 
-            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get("retCode"))) {
-                responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
+                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
             } else {
@@ -281,7 +282,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
 
         //body
         if (MapUtils.isNotEmpty(requestBody)) {
-            String jsonStr = JsonUtils.serialize(requestBody);
+            String jsonStr = Optional.ofNullable(JsonUtils.serialize(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 

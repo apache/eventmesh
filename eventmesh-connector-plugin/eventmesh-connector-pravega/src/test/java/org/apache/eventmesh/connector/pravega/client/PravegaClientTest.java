@@ -27,6 +27,7 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -100,7 +101,7 @@ public class PravegaClientTest {
     public void subscribeTest() {
         PravegaClient pravegaClient = getNewPravegaClient();
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", new EventListener() {
+        pravegaClient.subscribe("test1", false, "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing
@@ -113,16 +114,16 @@ public class PravegaClientTest {
     @Test
     public void unsubscribeTest() {
         PravegaClient pravegaClient = getNewPravegaClient();
-        pravegaClient.unsubscribe("test1", "consumerGroup");
+        pravegaClient.unsubscribe("test1", false, "consumerGroup");
 
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", new EventListener() {
+        pravegaClient.subscribe("test1", false, "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing
             }
         });
-        pravegaClient.unsubscribe("test1", "consumerGroup");
+        pravegaClient.unsubscribe("test1", false, "consumerGroup");
 
         assertFalse(pravegaClient.getSubscribeTaskMap().containsKey("test1"));
         try {
@@ -160,7 +161,7 @@ public class PravegaClientTest {
             .withType("http_request")
             .withDataContentType("application/json")
             .withSubject("TEST-TOPIC-HTTP-ASYNC")
-            .withData(data.getBytes())
+            .withData(data.getBytes(StandardCharsets.UTF_8))
             .withExtension("reqeventmesh2mqtimestamp", "1659342713460")
             .withExtension("ip", "127.0.0.1:51226")
             .withExtension("idc", "idc")
