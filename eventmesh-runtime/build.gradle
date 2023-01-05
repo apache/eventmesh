@@ -71,6 +71,7 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-storage-jdbc")
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"

@@ -48,10 +48,9 @@ public class SQLServiceInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String argsKey;
-        if (args.length == 0) {
+        if (Objects.isNull(args)||args.length == 0) {
             argsKey = "";
-        }
-        if (args.length == 1) {
+        }else if (args.length == 1) {
             argsKey = (String) args[0];
         } else {
             StringBuffer stringBuffer = new StringBuffer();

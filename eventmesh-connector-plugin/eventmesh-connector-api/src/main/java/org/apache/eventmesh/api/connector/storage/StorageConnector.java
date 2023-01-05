@@ -61,6 +61,10 @@ public interface StorageConnector extends LifeCycle {
     public List<CloudEvent> pull(PullRequest pullRequest) throws Exception;
 
     void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
+    
+    public default String getTopic(String topic) {
+    	return topic;
+    }
 
     public default int deleteCloudEvent(CloudEvent cloudEvent) {
         return 0;

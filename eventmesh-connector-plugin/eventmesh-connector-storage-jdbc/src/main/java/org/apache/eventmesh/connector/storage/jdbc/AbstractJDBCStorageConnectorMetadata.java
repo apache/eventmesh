@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.storage.jdbc;
 
+import org.apache.eventmesh.api.connector.storage.CloudEventUtils;
 import org.apache.eventmesh.api.connector.storage.StorageConnectorMetedata;
 import org.apache.eventmesh.api.connector.storage.data.ConsumerGroupInfo;
 import org.apache.eventmesh.api.connector.storage.data.PullRequest;
 import org.apache.eventmesh.api.connector.storage.data.TopicInfo;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,17 +45,32 @@ public class AbstractJDBCStorageConnectorMetadata extends AbstractJDBCStorageCon
     @Override
     public List<TopicInfo> geTopicInfos(List<PullRequest> pullRequests) throws Exception {
         StringBuffer sqlsb = new StringBuffer();
-        int index = 0;
-        List<String> tableNames = new ArrayList<>();
+        int index = 1;
         for (PullRequest pullRequest : pullRequests) {
-            String sql = this.cloudEventSQLOperation.selectLastMessageSQL(pullRequest.getTopicName());
+            String sql = this.cloudEventSQLOperation.selectNoConsumptionMessageSQL(pullRequest.getTopicName(),pullRequest.getConsumerGroupName());
             sqlsb.append(sql);
-            if (index < pullRequests.size()) {
+            if (index++ < pullRequests.size()) {
                 sqlsb.append(" union all ");
             }
-            tableNames.add(pullRequest.getTopicName());
         }
-        return this.query(sqlsb.toString(), tableNames, ResultSetTransformUtils::transformTopicInfo);
+        return this.query(sqlsb.toString(), null, ResultSetTransformUtils::transformTopicInfo);
+    }
+    
+    public List<TopicInfo> geTopicInfos(Set<String> topics,String key) throws Exception {
+    	key = CloudEventUtils.checkConsumerGroupName(key);
+        StringBuffer sqlsb = new StringBuffer();
+        int index = 1;
+        for (String topic : topics) {
+        	if(topic.startsWith("cloud_event_")) {
+        		topic = topic.substring(12);
+        	}
+            String sql = this.cloudEventSQLOperation.selectNoConsumptionMessageSQL(topic,key);
+            sqlsb.append(sql);
+            if (index++ < topics.size()) {
+                sqlsb.append(" union all ");
+            }
+        }
+        return this.query(sqlsb.toString(), null, ResultSetTransformUtils::transformTopicInfo);
     }
 
     @Override

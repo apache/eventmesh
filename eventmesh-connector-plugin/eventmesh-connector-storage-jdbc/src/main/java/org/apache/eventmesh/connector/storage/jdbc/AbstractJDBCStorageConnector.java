@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.storage.jdbc;
 
+import org.apache.eventmesh.api.connector.storage.Constant;
 import org.apache.eventmesh.connector.storage.jdbc.SQL.BaseSQLOperation;
 import org.apache.eventmesh.connector.storage.jdbc.SQL.CloudEventSQLOperation;
 import org.apache.eventmesh.connector.storage.jdbc.SQL.ConsumerGroupSQLOperation;
@@ -38,105 +39,103 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 
 public abstract class AbstractJDBCStorageConnector {
 
-    protected static final Logger messageLogger = LoggerFactory.getLogger("message");
+	protected static final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    protected DruidDataSource druidDataSource;
+	protected DruidDataSource druidDataSource;
 
-    protected CloudEventSQLOperation cloudEventSQLOperation;
+	protected CloudEventSQLOperation cloudEventSQLOperation;
 
-    protected BaseSQLOperation baseSQLOperation;
+	protected BaseSQLOperation baseSQLOperation;
 
-    protected ConsumerGroupSQLOperation consumerGroupSQLOperation;
+	protected ConsumerGroupSQLOperation consumerGroupSQLOperation;
 
+	public void init(Properties properties) throws Exception {
+		StorageSQLService storageSQLService = new StorageSQLService(properties.getProperty(Constant.STORAGE_CONFIG_JDBC_TYPE));
+		this.cloudEventSQLOperation = storageSQLService.getObject();
+		this.baseSQLOperation = storageSQLService.getObject();
+		this.consumerGroupSQLOperation = storageSQLService.getObject();
+		this.initdatabases(properties, "information_schema");
+		this.createDataSource(properties, "event_mesh_storage");
+	}
 
-    public void init(Properties properties) throws Exception {
-        StorageSQLService storageSQLService = new StorageSQLService("");
-        this.cloudEventSQLOperation = storageSQLService.getObject();
-        this.baseSQLOperation = storageSQLService.getObject();
-        this.consumerGroupSQLOperation = storageSQLService.getObject();
-        this.initdatabases(properties);
-        this.createDataSource(properties);
-    }
+	protected void createDataSource(Properties properties, String databases) throws Exception {
+		druidDataSource = new DruidDataSource();
+		druidDataSource.setUrl(this.createUrl(properties, databases));
+		druidDataSource.setUsername(properties.getProperty(Constant.STORAGE_CONFIG_USER_NAME));
+		druidDataSource.setPassword(properties.getProperty(Constant.STORAGE_CONFIG_PASSWORD));
+		druidDataSource.setValidationQuery("select 1");
+		druidDataSource.setMaxActive(Integer.parseInt(properties.getProperty(Constant.STORAGE_CONFIG_JDBC_MAXACTIVE)));
+		druidDataSource.setMaxWait(Integer.parseInt(properties.getProperty(Constant.STORAGE_CONFIG_JDBC_MAXWAIT)));
+		druidDataSource.init();
+	}
 
-    protected void createDataSource(Properties properties) throws Exception {
+	private String createUrl(Properties properties, String databases) {
+		StringBuffer stringBuffer = new StringBuffer("jdbc:");
+		stringBuffer.append(properties.getProperty(Constant.STORAGE_CONFIG_JDBC_TYPE)).append("://")
+				.append(properties.get(Constant.STORAGE_NODE_ADDRESS)).append("/").append(databases).append("?")
+				.append(properties.get(Constant.STORAGE_CONFIG_JDBC_PARAMETER));
+		return stringBuffer.toString();
+	}
 
-        druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(properties.getProperty("url"));
-        druidDataSource.setUsername(properties.getProperty("username"));
-        druidDataSource.setPassword(properties.getProperty("password"));
-        druidDataSource.setValidationQuery("select 1");
-        druidDataSource.setMaxActive(Integer.parseInt(properties.getProperty("maxActive")));
-        druidDataSource.setMaxWait(Integer.parseInt(properties.getProperty("maxWait")));
-        druidDataSource.init();
-    }
+	protected void initdatabases(Properties properties, String databases) throws Exception {
+		this.createDataSource(properties, databases);
+		List<String> tableName = this.query(this.baseSQLOperation.queryDataBases(),
+				ResultSetTransformUtils::transformTableName);
+		if (Objects.isNull(tableName) || tableName.isEmpty()) {
+			this.execute(this.baseSQLOperation.createDatabases(), null);
+		}
+		// create tables;
+		// this.execute(this.consumerGroupSQLOperation.createConsumerGroupSQL(), null);
+	}
 
-    protected void initdatabases(Properties properties) throws SQLException {
-        //TODO
-        druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(properties.getProperty("url"));
-        druidDataSource.setUsername(properties.getProperty("username"));
-        druidDataSource.setPassword(properties.getProperty("password"));
-        druidDataSource.setValidationQuery("select 1");
-        druidDataSource.setMaxActive(Integer.parseInt(properties.getProperty("maxActive")));
-        druidDataSource.setMaxWait(Integer.parseInt(properties.getProperty("maxWait")));
-        druidDataSource.init();
+	protected long execute(String sql, List<Object> parameter) throws SQLException {
+		return this.execute(sql, parameter, false);
+	}
 
-        List<String> tableName = this.query(this.baseSQLOperation.queryConsumerGroupTableSQL(), ResultSetTransformUtils::transformTableName);
-        if (Objects.isNull(tableName) || tableName.isEmpty()) {
-            // create databases
-            this.execute(this.baseSQLOperation.createDatabases(), null);
-            // create tables;
-            this.execute(this.consumerGroupSQLOperation.createConsumerGroupSQL(), null);
-        }
-    }
+	protected long execute(String sql, List<Object> parameter, boolean generatedKeys) throws SQLException {
+		try (DruidPooledConnection pooledConnection = druidDataSource.getConnection();
+				PreparedStatement preparedStatement = pooledConnection.prepareStatement(sql,
+						PreparedStatement.RETURN_GENERATED_KEYS)) {
+			this.setObject(preparedStatement, parameter);
+			long value = preparedStatement.executeUpdate();
+			if (generatedKeys) {
+				try (ResultSet resulSet = preparedStatement.getGeneratedKeys()) {
+					resulSet.next();
+					value = resulSet.getLong(1);
+				}
+			}
+			return value;
+		}
+	}
 
-    protected long execute(String sql, List<Object> parameter) throws SQLException {
-        return this.execute(sql, parameter, false);
-    }
+	protected <T> List<T> query(String sql, ResultSetTransform<T> resultSetTransform) throws SQLException {
+		return this.query(sql, null, resultSetTransform);
+	}
 
-    protected long execute(String sql, List<Object> parameter, boolean generatedKeys) throws SQLException {
-        try (DruidPooledConnection pooledConnection = druidDataSource.getConnection();
-             PreparedStatement preparedStatement = pooledConnection.prepareStatement(sql)) {
-            this.setObject(preparedStatement, parameter);
-            long value = preparedStatement.executeUpdate();
-            if (generatedKeys) {
-                try (ResultSet resulSet = preparedStatement.getGeneratedKeys()) {
-                    resulSet.next();
-                    value = resulSet.getLong(1);
-                }
-            }
-            return value;
-        }
-    }
+	@SuppressWarnings("unchecked")
+	protected <T> List<T> query(String sql, List<?> parameter, ResultSetTransform<T> resultSetTransform)
+			throws SQLException {
+		try (DruidPooledConnection pooledConnection = druidDataSource.getConnection();
+				PreparedStatement preparedStatement = pooledConnection.prepareStatement(sql)) {
+			this.setObject(preparedStatement, parameter);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				List<Object> resultList = new ArrayList<>();
+				while (resultSet.next()) {
+					Object object = resultSetTransform.transform(resultSet);
+					resultList.add(object);
+				}
+				return (List<T>) resultList;
+			}
+		}
+	}
 
-    protected <T> List<T> query(String sql, ResultSetTransform<T> resultSetTransform) throws SQLException {
-        return this.query(sql, null, resultSetTransform);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <T> List<T> query(String sql, List<?> parameter, ResultSetTransform<T> resultSetTransform)
-        throws SQLException {
-        try (DruidPooledConnection pooledConnection = druidDataSource.getConnection();
-             PreparedStatement preparedStatement = pooledConnection.prepareStatement(sql)) {
-            this.setObject(preparedStatement, parameter);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                List<Object> resultList = new ArrayList<>();
-                while (resultSet.next()) {
-                    Object object = resultSetTransform.transform(resultSet);
-                    resultList.add(object);
-                }
-                return (List<T>) resultList;
-            }
-        }
-    }
-
-    protected void setObject(PreparedStatement preparedStatement, List<?> parameter) throws SQLException {
-        if (Objects.isNull(parameter) || parameter.isEmpty()) {
-            return;
-        }
-        int index = 1;
-        for (Object object : parameter) {
-            preparedStatement.setObject(index++, object);
-        }
-    }
+	protected void setObject(PreparedStatement preparedStatement, List<?> parameter) throws SQLException {
+		if (Objects.isNull(parameter) || parameter.isEmpty()) {
+			return;
+		}
+		int index = 1;
+		for (Object object : parameter) {
+			preparedStatement.setObject(index++, object);
+		}
+	}
 }

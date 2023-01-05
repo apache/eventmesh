@@ -23,6 +23,8 @@ import lombok.Data;
 public class BaseSQL {
 
     private String createDatabases;
+    
+    private String queryDataBases;
 
     private String queryConsumerGroupTableSQL;
 

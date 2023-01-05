@@ -35,5 +35,7 @@ public interface StorageConnectorMetedata {
     public int createTopic(TopicInfo topicInfo) throws Exception;
 
     public int createConsumerGroupInfo(ConsumerGroupInfo consumerGroupInfo) throws Exception;
+    
+    public List<TopicInfo> geTopicInfos(Set<String> topics,String key) throws Exception;
 
 }

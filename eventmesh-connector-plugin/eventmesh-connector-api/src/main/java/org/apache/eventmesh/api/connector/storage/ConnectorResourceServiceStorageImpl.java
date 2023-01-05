@@ -14,13 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.eventmesh.api.connector.storage;
 
-import lombok.Data;
+import org.apache.eventmesh.api.connector.ConnectorResourceService;
 
-@Data
-public class StorageConnectorInfo {
+public class ConnectorResourceServiceStorageImpl implements ConnectorResourceService{
 
-	private boolean distinguishTopic;
+	@Override
+	public void init() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void release() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

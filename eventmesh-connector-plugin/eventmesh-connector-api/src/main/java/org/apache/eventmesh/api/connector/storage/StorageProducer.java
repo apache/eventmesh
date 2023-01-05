@@ -27,6 +27,8 @@ import io.cloudevents.CloudEvent;
 public class StorageProducer implements Producer {
 
     private StorageConnector storageOperation;
+    
+    private Properties keyValue;
 
     @Override
     public boolean isStarted() {
@@ -40,7 +42,8 @@ public class StorageProducer implements Producer {
 
     @Override
     public void start() {
-        storageOperation.start();
+    	StorageConnectorService storageConnectorService = StorageConnectorService.getInstance();
+    	storageOperation = storageConnectorService.createProducerByStorageConnector(this.keyValue);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class StorageProducer implements Producer {
 
     @Override
     public void init(Properties keyValue) throws Exception {
-        storageOperation.init(keyValue);
+        this.keyValue = keyValue;
 
     }
 
@@ -76,7 +79,7 @@ public class StorageProducer implements Producer {
 
     @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        return false;
+        return storageOperation.reply(cloudEvent, sendCallback);
     }
 
     @Override

@@ -1,3 +1,4 @@
+queryDataBases: "select SCHEMA_NAME from information_schema.SCHEMATA where SCHEMA_NAME = 'event_mesh_storage'"
 createDatabases: "create database if not exists event_mesh_storage"
-queryConsumerGroupTableSQL: "select table_name from information_schema.tables where TABLE_SCHEMA = ? and table_name = ?"
-queryCloudEventTablesSQL: "select table_name from information_schema.tables where TABLE_SCHEMA = ? and table_name like 'cloud_event_%'"
+queryConsumerGroupTableSQL: ""
+queryCloudEventTablesSQL: "select table_name from information_schema.tables where TABLE_SCHEMA = 'event_mesh_storage' and table_name like 'cloud_event_%'"

@@ -18,60 +18,94 @@ package org.apache.eventmesh.api.connector.storage;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.connector.storage.data.PullRequest;
+import org.apache.eventmesh.api.connector.storage.pull.PullCallbackImpl;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.Constants;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import io.cloudevents.CloudEvent;
 
 public class StorageConsumer implements Consumer {
 
-    private StorageConnector storageOperation;
+	private StorageConnector storageOperation;
 
-    @Override
-    public boolean isStarted() {
-        return storageOperation.isStarted();
-    }
+	private EventListener listener;
 
-    @Override
-    public boolean isClosed() {
-        return storageOperation.isClosed();
-    }
+	private Properties keyValue;
 
-    @Override
-    public void start() {
-        storageOperation.start();
-    }
+	private Set<String> topicSet = new HashSet<>();
 
-    @Override
-    public void shutdown() {
-        storageOperation.shutdown();
-    }
+	@Override
+	public boolean isStarted() {
+		return storageOperation.isStarted();
+	}
 
-    @Override
-    public void init(Properties keyValue) throws Exception {
-        storageOperation.init(keyValue);
-    }
+	@Override
+	public boolean isClosed() {
+		return storageOperation.isClosed();
+	}
 
-    @Override
-    public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-        storageOperation.updateOffset(cloudEvents, context);
-    }
+	@Override
+	public void start() {
+		if (Objects.isNull(listener)) {
 
-    @Override
-    public void subscribe(String topic) throws Exception {
+		}
 
-    }
+		if (topicSet.isEmpty()) {
 
-    @Override
-    public void unsubscribe(String topic) {
+		}
 
-    }
+		StorageConnectorService storageConnectorService = StorageConnectorService.getInstance();
+		List<PullRequest> pullRequestList = new ArrayList<PullRequest>(topicSet.size());
+		for (String topic : topicSet) {
+			PullRequest pullRequest = new PullRequest();
+			pullRequest.setTopicName(topic);
+			pullRequest.setConsumerGroupName(keyValue.getProperty(Constants.CONSUMER_GROUP));
+			PullCallbackImpl pullCallback = new PullCallbackImpl();
+			pullCallback.setEventListener(listener);
+			pullCallback.setExecutor(storageConnectorService.getExecutor());
+			pullRequest.setPullCallback(pullCallback);
+			pullRequestList.add(pullRequest);
+		}
+		storageOperation = storageConnectorService.createConsumerByStorageConnector(this.keyValue, pullRequestList);
 
-    @Override
-    public void registerEventListener(EventListener listener) {
+	}
 
-    }
+	@Override
+	public void shutdown() {
+		storageOperation.shutdown();
+	}
+
+	@Override
+	public void init(Properties keyValue) throws Exception {
+		this.keyValue = keyValue;
+	}
+
+	@Override
+	public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
+		storageOperation.updateOffset(cloudEvents, context);
+	}
+
+	@Override
+	public void subscribe(String topic) throws Exception {
+		topicSet.add(topic);
+	}
+
+	@Override
+	public void unsubscribe(String topic) {
+		topicSet.remove(topic);
+	}
+
+	@Override
+	public void registerEventListener(EventListener listener) {
+		this.listener = listener;
+	}
 
 }

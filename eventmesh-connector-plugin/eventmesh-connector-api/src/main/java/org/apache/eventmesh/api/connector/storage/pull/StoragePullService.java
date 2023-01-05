@@ -45,6 +45,7 @@ public class StoragePullService implements Runnable {
 
     private final LinkedBlockingQueue<PullRequest> pullRequestQueue = new LinkedBlockingQueue<PullRequest>();
 
+    @Setter
     private ScheduledExecutorService scheduledExecutor;
 
     @Setter
@@ -54,7 +55,7 @@ public class StoragePullService implements Runnable {
     private Executor executor;
 
     private boolean isStopped() {
-        return true;
+        return false;
     }
 
     public void executePullRequestLater(final PullRequest pullRequest, final long timeDelay) {
@@ -86,7 +87,7 @@ public class StoragePullService implements Runnable {
         while (!this.isStopped()) {
             try {
                 final PullRequest pullRequest = this.pullRequestQueue.take();
-                if (pullRequest.getStock().get() < this.storageConfig.getPullThresholdForQueue()) {
+                if (pullRequest.getStock().get() > this.storageConfig.getPullThresholdForQueue()) {
                     this.executePullRequestLater(pullRequest, storageConfig.getPullInterval());
                     continue;
                 }
@@ -109,10 +110,10 @@ public class StoragePullService implements Runnable {
         try {
             List<CloudEvent> cloudEventList = pullRequest.getStorageConnector().pull(pullRequest);
             if (Objects.isNull(cloudEventList) || cloudEventList.isEmpty()) {
-                logger.info("");
+                logger.info("pull resquest get data is null , consumerGroupName is {} , topicName is {}",pullRequest.getConsumerGroupName(),pullRequest.getTopicName());
                 return;
             }
-            if (Objects.nonNull(pullRequest.getPullRequests())) {
+            if (Objects.isNull(pullRequest.getPullRequests())) {
                 this.setNextId(pullRequest, cloudEventList);
                 pullRequest.getPullCallback().onSuccess(pullRequest, cloudEventList);
 
@@ -135,7 +136,7 @@ public class StoragePullService implements Runnable {
                 }
             }
         } catch (Exception e) {
-            logger.error("pull", e);
+            logger.error(e.getMessage(), e);
         } finally {
             this.executePullRequestLater(pullRequest, storageConfig.getPullInterval());
         }

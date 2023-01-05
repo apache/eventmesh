@@ -19,20 +19,37 @@ package org.apache.eventmesh.api.connector.storage.metadata;
 
 import org.apache.eventmesh.api.connector.storage.StorageConnector;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Setter;
 
 public class RouteHandler {
 
     @Setter
-    List<StorageConnector> storageConnector;
+    List<StorageConnector> storageConnector = new ArrayList<>();
 
+    private RouteSelect souteSelect = new PollRouteSelect();
 
-    private RouteSelect souteSelect;
-
+    public void addStorageConnector(StorageConnector storageConnector) {
+    	this.storageConnector.add(storageConnector);
+    }
 
     public StorageConnector select() {
         return souteSelect.select(storageConnector);
+    }
+    
+    
+    public class PollRouteSelect implements RouteSelect{
+
+    	private AtomicLong index = new AtomicLong();
+    	
+		@Override
+		public StorageConnector select(List<StorageConnector> storageConnector) {
+			int value = (int)(index.getAndIncrement()%storageConnector.size());
+			return storageConnector.get(value);
+		}
+    	
     }
 }

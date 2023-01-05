@@ -28,7 +28,9 @@ import java.util.concurrent.Executor;
 import io.cloudevents.CloudEvent;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = "message")
 public class PullCallbackImpl implements PullCallback {
 
     @Setter
@@ -55,7 +57,7 @@ public class PullCallbackImpl implements PullCallback {
                             eventListener.consume(cloudEvent, context);
                             pullRequest.getStock().decrementAndGet();
                         } catch (Exception e) {
-							e.printStackTrace();
+							log.error(e.getMessage(),e);
                         }
                     }
                 });
@@ -63,7 +65,7 @@ public class PullCallbackImpl implements PullCallback {
             }
 
         } catch (Exception e) {
-			e.printStackTrace();
+        	log.error(e.getMessage(),e);
         }
     }
 }

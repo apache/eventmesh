@@ -19,5 +19,24 @@ package org.apache.eventmesh.api.connector.storage;
 
 public class Constant {
 
-	public static final String NODE_ADDRESS = "nodeAddress";
+	public static final String STORAGE_CONFIG_ADDRESS = "eventMesh.connector.plugin.storage.nodeaddress";
+	
+	public static final String STORAGE_CONFIG_TYPE = "eventMesh.connector.plugin.storage.type";
+
+	public static final String STORAGE_CONFIG_JDBC_PARAMETER = "eventMesh.connector.plugin.storage.jdbc.parameter";
+
+	public static final String STORAGE_CONFIG_USER_NAME = "eventMesh.connector.plugin.storage.username";
+
+	public static final String STORAGE_CONFIG_PASSWORD = "eventMesh.connector.plugin.storage.password";
+	
+	public static final String STORAGE_CONFIG_JDBC_TYPE = "eventMesh.connector.plugin.storage.jdbc.dbType";
+	
+	public static final String STORAGE_CONFIG_JDBC_MAXACTIVE = "eventMesh.connector.plugin.storage.jdbc.maxActive";
+	
+	public static final String STORAGE_CONFIG_JDBC_MAXWAIT = "eventMesh.connector.plugin.storage.jdbc.maxWait";
+	
+	public static final String STORAGE_ID = "storageid";
+	
+	public static final String STORAGE_NODE_ADDRESS = "address";
+
 }

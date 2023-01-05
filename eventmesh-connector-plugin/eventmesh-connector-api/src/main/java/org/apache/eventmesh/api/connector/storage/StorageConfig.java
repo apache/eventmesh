@@ -22,7 +22,7 @@ import lombok.Data;
 @Data
 public class StorageConfig {
 
-    private long pullInterval;
+    private long pullInterval = 200;
 
-    private long pullThresholdForQueue;
+    private long pullThresholdForQueue = 5;
 }

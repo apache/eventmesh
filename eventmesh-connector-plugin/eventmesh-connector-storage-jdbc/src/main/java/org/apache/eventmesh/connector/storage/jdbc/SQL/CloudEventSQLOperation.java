@@ -29,15 +29,15 @@ public interface CloudEventSQLOperation {
 
     public String selectCloudEventByReplySQL(String table, String idNum);
 
-    public String locationEventSQL(String table);
+    public String locationEventSQL(String table,String consumerGroupName,String processSign,String consumerGroup);
 
-    public String queryLocationEventSQL(String table);
+    public String queryLocationEventSQL(String table,String consumerGroupName,String processSign);
 
     public String selectFastMessageSQL(String table);
 
     public String selectLastMessageSQL(String table);
 
-    public String selectNoConsumptionMessageSQL(String table);
+    public String selectNoConsumptionMessageSQL(String table,String key);
 
     public String selectAppointTimeMessageSQL(String table);
 }

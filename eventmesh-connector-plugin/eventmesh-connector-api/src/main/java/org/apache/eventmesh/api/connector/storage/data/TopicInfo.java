@@ -28,6 +28,8 @@ import lombok.Data;
 public class TopicInfo {
 
     private String topicName;
+    
+    private String dbTablesName;
 
     private int writeQueueNums;
 

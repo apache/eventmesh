@@ -24,11 +24,13 @@ import org.apache.eventmesh.api.connector.storage.data.PullRequest;
 import org.apache.eventmesh.api.connector.storage.data.TopicInfo;
 import org.apache.eventmesh.api.connector.storage.metadata.RouteHandler;
 import org.apache.eventmesh.api.connector.storage.metadata.StorageMetaServcie;
+import org.apache.eventmesh.api.connector.storage.reply.ReplyOperation;
 import org.apache.eventmesh.api.connector.storage.reply.ReplyOperationService;
 import org.apache.eventmesh.api.connector.storage.reply.RequestReplyInfo;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import io.cloudevents.CloudEvent;
+import lombok.Setter;
 
 public class StorageConnectorProxy implements StorageConnector {
 
@@ -45,10 +48,13 @@ public class StorageConnectorProxy implements StorageConnector {
 
     private RouteHandler routeHandler = new RouteHandler();
 
+    @Setter
     private ReplyOperationService replyService;
 
+    @Setter
     private StorageMetaServcie storageMetaServcie;
 
+    @Setter
     private Executor executor;
 
     @Override
@@ -63,7 +69,12 @@ public class StorageConnectorProxy implements StorageConnector {
     public void init(Properties properties) throws Exception {
     }
 
+    public  Collection<StorageConnector> getStorageConnectorList(){
+    	return this.storageConnectorByKeyMap.values();
+    }
+    
     public void setConnector(StorageConnector storageConnector, String key) {
+    	routeHandler.addStorageConnector(storageConnector);
         storageConnectorMap.put(storageConnector, key);
         storageConnectorByKeyMap.put(key, storageConnector);
     }
@@ -84,6 +95,7 @@ public class StorageConnectorProxy implements StorageConnector {
             if (storageConnector instanceof StorageConnectorMetedata
                 && !storageMetaServcie.isTopic(storageConnector, CloudEventUtils.getTopic(cloudEvent))) {
                 TopicInfo topicInfo = new TopicInfo();
+                topicInfo.setTopicName(CloudEventUtils.getTopic(cloudEvent));
                 StorageConnectorMetedata storageConnectorMetedata = (StorageConnectorMetedata) storageConnector;
                 storageConnectorMetedata.createTopic(topicInfo);
             }
@@ -114,15 +126,18 @@ public class StorageConnectorProxy implements StorageConnector {
     public void doRequest(CloudEvent cloudEvent, RequestReplyCallback requestReplyCallback, long timeout) {
         try {
             StorageConnector storageConnector = routeHandler.select();
+            if(!(storageConnector instanceof ReplyOperation)) {
+            	return;
+            }
             String key = storageConnectorMap.get(storageConnector);
-            CloudEventUtils.setValue(cloudEvent, "nodeAddress", key);
+            CloudEventUtils.setValue(cloudEvent, Constant.STORAGE_CONFIG_ADDRESS, key);
             storageConnector.request(cloudEvent, requestReplyCallback, timeout);
-            Long storageId = (Long) cloudEvent.getExtension("storageId");
+            Long storageId = Long.valueOf( cloudEvent.getExtension(Constant.STORAGE_ID).toString());
             RequestReplyInfo requestReplyInfo = new RequestReplyInfo();
             requestReplyInfo.setStorageId(storageId);
             requestReplyInfo.setTimeOut(System.currentTimeMillis() + timeout);
             requestReplyInfo.setRequestReplyCallback(requestReplyCallback);
-            replyService.setRequestReplyInfo(null, cloudEvent.getType(), storageId, requestReplyInfo);
+            replyService.setRequestReplyInfo((ReplyOperation)storageConnector, cloudEvent.getType(), storageId, requestReplyInfo);
         } catch (Exception e) {
             requestReplyCallback.onException(e);
         }
