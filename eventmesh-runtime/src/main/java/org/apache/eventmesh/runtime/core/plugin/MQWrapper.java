@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class MQWrapper {
 
-    public static final String EVENT_STORE_ROCKETMQ = "rocketmq";
-
     public static final String EVENT_STORE_DEFIBUS = "defibus";
 
     public static String CURRENT_EVENT_STORE = EVENT_STORE_DEFIBUS;

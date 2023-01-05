@@ -22,6 +22,7 @@ import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
 import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
@@ -94,14 +95,14 @@ public class ProducerImplTest {
 
 
         CloudEvent cloudEvent = CloudEventBuilder.v1()
-            .withId("id1")
-            .withSource(URI.create("https://github.com/cloudevents/*****"))
-            .withType("producer.example")
-            .withSubject("HELLO_TOPIC")
-            .withData("hello world".getBytes())
-            .build();
+                .withId("id1")
+                .withSource(URI.create("https://github.com/cloudevents/*****"))
+                .withType("producer.example")
+                .withSubject("HELLO_TOPIC")
+                .withData("hello world".getBytes(Constants.DEFAULT_CHARSET))
+                .build();
         org.apache.eventmesh.api.SendResult result =
-            producer.send(cloudEvent);
+                producer.send(cloudEvent);
 
         assertThat(result.getMessageId()).isEqualTo("TestMsgID");
         Mockito.verify(rocketmqProducer).getDefaultMQProducerImpl();
@@ -120,12 +121,12 @@ public class ProducerImplTest {
 
         try {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("id1")
-                .withSource(URI.create("https://github.com/cloudevents/*****"))
-                .withType("producer.example")
-                .withSubject("HELLO_TOPIC")
-                .withData(new byte[] {'a'})
-                .build();
+                    .withId("id1")
+                    .withSource(URI.create("https://github.com/cloudevents/*****"))
+                    .withType("producer.example")
+                    .withSubject("HELLO_TOPIC")
+                    .withData(new byte[]{'a'})
+                    .build();
             producer.send(cloudEvent);
             failBecauseExceptionWasNotThrown(ConnectorRuntimeException.class);
         } catch (Exception e) {

@@ -18,10 +18,12 @@
 package org.apache.eventmesh.metrics.prometheus;
 
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.metrics.prometheus.config.PrometheusConfiguration;
+import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusGrpcExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusHttpExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
 
@@ -77,6 +79,10 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
 
         if (metric instanceof TcpSummaryMetrics) {
             PrometheusTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
+        }
+
+        if (metric instanceof GrpcSummaryMetrics) {
+            PrometheusGrpcExporter.export("apache-eventmesh", (GrpcSummaryMetrics) metric);
         }
     }
 

@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -59,21 +60,21 @@ public class EventMeshProducer {
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();
-        keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(
-            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.eventMeshCluster));
+        keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
+            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-            eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
+                eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         logger.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void start() throws Exception {
-        if (serviceState == null || ServiceState.RUNNING.equals(serviceState)) {
+        if (serviceState == null || ServiceState.RUNNING == serviceState) {
             return;
         }
 
@@ -83,7 +84,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void shutdown() throws Exception {
-        if (serviceState == null || ServiceState.INITED.equals(serviceState)) {
+        if (serviceState == null || ServiceState.INITED == serviceState) {
             return;
         }
 

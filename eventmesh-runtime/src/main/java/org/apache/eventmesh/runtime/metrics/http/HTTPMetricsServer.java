@@ -22,6 +22,7 @@ import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -33,36 +34,45 @@ import org.slf4j.LoggerFactory;
 
 public class HTTPMetricsServer {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPMetricsServer.class);
 
-    private Logger httpLogger = LoggerFactory.getLogger("httpMonitor");
+    private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final transient List<MetricsRegistry> metricsRegistries;
 
-    private List<MetricsRegistry> metricsRegistries;
+    private final transient HttpSummaryMetrics summaryMetrics;
 
-    private final HttpSummaryMetrics summaryMetrics;
+    public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
+                             final List<MetricsRegistry> metricsRegistries) {
+        Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
+        Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
-    public HTTPMetricsServer(EventMeshHTTPServer eventMeshHTTPServer, List<MetricsRegistry> metricsRegistries) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
         this.summaryMetrics = new HttpSummaryMetrics(
-            eventMeshHTTPServer.batchMsgExecutor,
-            eventMeshHTTPServer.sendMsgExecutor,
-            eventMeshHTTPServer.pushMsgExecutor,
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+                eventMeshHTTPServer.batchMsgExecutor,
+                eventMeshHTTPServer.sendMsgExecutor,
+                eventMeshHTTPServer.pushMsgExecutor,
+                eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+
+        init();
     }
 
-    public void init() throws Exception {
+    private void init() {
         metricsRegistries.forEach(MetricsRegistry::start);
-        logger.info("HTTPMetricsServer initialized......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer initialized.");
+        }
     }
 
-    public void start() throws Exception {
+    public void start() {
         metricsRegistries.forEach(metricsRegistry -> {
             metricsRegistry.register(summaryMetrics);
-            logger.info("Register httpMetrics to " + metricsRegistry.getClass().getName());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Register httpMetrics to {}", metricsRegistry.getClass().getName());
+            }
         });
+
         metricsSchedule.scheduleAtFixedRate(() -> {
             try {
                 summaryMetrics.snapshotHTTPTPS();
@@ -70,94 +80,122 @@ public class HTTPMetricsServer {
                 summaryMetrics.snapshotSendMsgTPS();
                 summaryMetrics.snapshotPushMsgTPS();
             } catch (Exception ex) {
-                logger.warn("eventMesh snapshot tps metrics err", ex);
+                LOGGER.error("eventMesh snapshot tps metrics err", ex);
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
         metricsSchedule.scheduleAtFixedRate(() -> {
             try {
-                logPrintServerMetrics();
+                logPrintServerMetrics(summaryMetrics, eventMeshHTTPServer);
             } catch (Exception ex) {
-                logger.warn("eventMesh print metrics err", ex);
+                LOGGER.error("eventMesh print metrics err", ex);
             }
         }, 1000, 30 * 1000, TimeUnit.MILLISECONDS);
-    
-        logger.info("HTTPMetricsServer started......");
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer started.");
+        }
     }
 
-    public void shutdown() throws Exception {
+    public void shutdown() {
         metricsSchedule.shutdown();
         metricsRegistries.forEach(MetricsRegistry::showdown);
-        logger.info("HTTPMetricsServer shutdown......");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("HTTPMetricsServer shutdown.");
+        }
     }
 
-    protected static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2, new ThreadFactory() {
-        private AtomicInteger seq = new AtomicInteger(0);
+    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2, new ThreadFactory() {
+        private final transient AtomicInteger seq = new AtomicInteger(0);
 
         @Override
-        public Thread newThread(Runnable r) {
+        public Thread newThread(final Runnable r) {
             seq.incrementAndGet();
-            Thread t = new Thread(r, "eventMesh-metrics-" + seq.get());
+            final Thread t = new Thread(r, "eventMesh-metrics-" + seq.get());
             t.setDaemon(true);
             return t;
         }
     });
 
     // todo: move this into standalone metrics plugin
-    private void logPrintServerMetrics() {
-        httpLogger.info("===========================================SERVER METRICS==================================================");
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_HTTP,
-            summaryMetrics.maxHTTPTPS(),
-            summaryMetrics.avgHTTPTPS(),
-            summaryMetrics.maxHTTPCost(),
-            summaryMetrics.avgHTTPCost(),
-            summaryMetrics.avgHTTPBodyDecodeCost(),
-            summaryMetrics.getHttpDiscard()));
+    private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
+                                       final EventMeshHTTPServer eventMeshHTTPServer) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("===========================================SERVER METRICS==================================================");
+
+            LOGGER.info("maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
+                    summaryMetrics.maxHTTPTPS(),
+                    summaryMetrics.avgHTTPTPS(),
+                    summaryMetrics.maxHTTPCost(),
+                    summaryMetrics.avgHTTPCost(),
+                    summaryMetrics.avgHTTPBodyDecodeCost(),
+                    summaryMetrics.getHttpDiscard());
+        }
+
         summaryMetrics.httpStatInfoClear();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG,
-            summaryMetrics.maxSendBatchMsgTPS(),
-            summaryMetrics.avgSendBatchMsgTPS(),
-            summaryMetrics.getSendBatchMsgNumSum(),
-            summaryMetrics.getSendBatchMsgFailNumSum(),
-            summaryMetrics.getSendBatchMsgFailRate(),
-            summaryMetrics.getSendBatchMsgDiscardNumSum()
-        ));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
+                    summaryMetrics.maxSendBatchMsgTPS(),
+                    summaryMetrics.avgSendBatchMsgTPS(),
+                    summaryMetrics.getSendBatchMsgNumSum(),
+                    summaryMetrics.getSendBatchMsgFailNumSum(),
+                    summaryMetrics.getSendBatchMsgFailRate(),
+                    summaryMetrics.getSendBatchMsgDiscardNumSum()
+            );
+        }
+
         summaryMetrics.cleanSendBatchStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_SENDMSG,
-            summaryMetrics.maxSendMsgTPS(),
-            summaryMetrics.avgSendMsgTPS(),
-            summaryMetrics.getSendMsgNumSum(),
-            summaryMetrics.getSendMsgFailNumSum(),
-            summaryMetrics.getSendMsgFailRate(),
-            summaryMetrics.getReplyMsgNumSum(),
-            summaryMetrics.getReplyMsgFailNumSum()
-        ));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
+                    summaryMetrics.maxSendMsgTPS(),
+                    summaryMetrics.avgSendMsgTPS(),
+                    summaryMetrics.getSendMsgNumSum(),
+                    summaryMetrics.getSendMsgFailNumSum(),
+                    summaryMetrics.getSendMsgFailRate(),
+                    summaryMetrics.getReplyMsgNumSum(),
+                    summaryMetrics.getReplyMsgFailNumSum()
+            );
+        }
+
         summaryMetrics.cleanSendMsgStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_PUSHMSG,
-            summaryMetrics.maxPushMsgTPS(),
-            summaryMetrics.avgPushMsgTPS(),
-            summaryMetrics.getHttpPushMsgNumSum(),
-            summaryMetrics.getHttpPushFailNumSum(),
-            summaryMetrics.getHttpPushMsgFailRate(),
-            summaryMetrics.maxHTTPPushLatency(),
-            summaryMetrics.avgHTTPPushLatency()
-        ));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(
+                    "maxPushMsgTPS: {}, avgPushMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, maxClientLatency: {}, avgClientLatency: {}",
+                    summaryMetrics.maxPushMsgTPS(),
+                    summaryMetrics.avgPushMsgTPS(),
+                    summaryMetrics.getHttpPushMsgNumSum(),
+                    summaryMetrics.getHttpPushFailNumSum(),
+                    summaryMetrics.getHttpPushMsgFailRate(),
+                    summaryMetrics.maxHTTPPushLatency(),
+                    summaryMetrics.avgHTTPPushLatency()
+            );
+        }
+
         summaryMetrics.cleanHttpPushMsgStat();
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_BLOCKQ,
-            eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getHttpRetryer().size()));
 
-        httpLogger.info(String.format(HttpSummaryMetrics.EVENTMESH_MONITOR_FORMAT_MQ_CLIENT,
-            summaryMetrics.avgBatchSendMsgCost(),
-            summaryMetrics.avgSendMsgCost(),
-            summaryMetrics.avgReplyMsgCost()));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
+                    eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
+                    eventMeshHTTPServer.getHttpRetryer().size());
+        }
+
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
+                    summaryMetrics.avgBatchSendMsgCost(),
+                    summaryMetrics.avgSendMsgCost(),
+                    summaryMetrics.avgReplyMsgCost());
+        }
         summaryMetrics.send2MQStatInfoClear();
     }
 

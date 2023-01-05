@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 
 public class AsyncPublishBroadcast {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
+    public static final Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
+
+    private static EventMeshTCPClient<EventMeshMessage> client;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
@@ -42,12 +44,12 @@ public class AsyncPublishBroadcast {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
-        try (final EventMeshTCPClient<EventMeshMessage> client =
-                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class)) {
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
+        client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+        try {
             client.init();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();

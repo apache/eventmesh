@@ -144,7 +144,7 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
+        user.setHost("localhost");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
         user.setPath("/data/app/umg_proxy");
@@ -158,7 +158,7 @@ public class MessageUtils {
 
     public static UserAgent generateSubServer() {
         UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
+        user.setHost("localhost");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
         user.setPath("/data/app/umg_proxy");

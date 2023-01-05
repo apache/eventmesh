@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.15.0'
+def grpcVersion = '1.43.2'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
@@ -29,7 +29,11 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
-    implementation 'com.github.seancfoley:ipaddress:5.3.3'
+    implementation "com.alibaba:fastjson"
+
+    implementation 'com.github.seancfoley:ipaddress'
+
+    implementation "commons-io:commons-io"
 
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
@@ -47,19 +51,21 @@ dependencies {
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
+    implementation "io.grpc:grpc-core:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-webhook")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
@@ -67,8 +73,13 @@ dependencies {
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
 
+    implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
+
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "commons-io:commons-io"
 }

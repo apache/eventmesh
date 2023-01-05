@@ -41,7 +41,8 @@ public enum StatusCode {
     EVENTMESH_HEARTBEAT_ERR("19", "eventMesh heartbeat err"),
     EVENTMESH_ACL_ERR("20", "eventMesh acl err"),
     EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR("21", "eventMesh send message speed over the limit err."),
-    EVENTMESH_REQUEST_REPLY_MSG_ERR("22", "eventMesh request reply msg err, ");
+    EVENTMESH_REQUEST_REPLY_MSG_ERR("22", "eventMesh request reply msg err, "),
+    CLIENT_RESUBSCRIBE("30", "client needs to resubscribe.");
 
     private String retCode;
 

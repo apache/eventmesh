@@ -21,6 +21,8 @@ import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.api.exception.AuthException;
 import org.apache.eventmesh.auth.http.basic.config.AuthConfigs;
 
+import org.apache.commons.lang3.Validate;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -46,15 +48,16 @@ public class AuthHttpBasicService implements AuthService {
     }
 
     @Override
-    public Map getAuthParams() throws AuthException {
+    public Map<String, String> getAuthParams() throws AuthException {
         if (authConfigs == null) {
             init();
         }
 
-        String token = Base64.getEncoder().encodeToString((authConfigs.username + authConfigs.password)
-            .getBytes(StandardCharsets.UTF_8));
+        Validate.notNull(authConfigs);
+        String token = Base64.getEncoder().encodeToString((authConfigs.getUsername() + authConfigs.getPassword())
+                .getBytes(StandardCharsets.UTF_8));
 
-        Map authParams = new HashMap();
+        Map<String, String> authParams = new HashMap<>(2);
         authParams.put("Authorization", "Basic " + token);
         return authParams;
     }

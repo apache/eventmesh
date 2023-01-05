@@ -33,23 +33,27 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class CCSubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(CCSubClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CCSubClient.class);
 
     public static void main(String[] args) throws Exception {
-        SubClientImpl subClient = new SubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        subClient.init();
-        subClient.heartbeat();
-        subClient.listen();
-        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
-        subClient.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                logger.error("Received message: -----------------------------------------" + msg.toString());
-                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    Package rrResponse = MessageUtils.rrResponse(msg);
-                    ctx.writeAndFlush(rrResponse);
+        try (SubClientImpl subClient =
+                     new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            subClient.init();
+            subClient.heartbeat();
+            subClient.listen();
+            subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            subClient.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("Received message: {}", msg);
+                    }
+                    if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                        Package rrResponse = MessageUtils.rrResponse(msg);
+                        ctx.writeAndFlush(rrResponse);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

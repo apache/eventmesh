@@ -40,7 +40,8 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class CloudEventProducer {
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcProducer.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(CloudEventProducer.class);
 
     private static final String PROTOCOL_TYPE = EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
 
@@ -118,9 +119,9 @@ public class CloudEventProducer {
             .withExtension(ProtocolKey.IP, IPUtils.getLocalAddress())
             .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
             .withExtension(ProtocolKey.SYS, clientConfig.getSys())
-            .withExtension(ProtocolKey.LANGUAGE, "JAVA")
+            .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-            .withExtension(ProtocolKey.PROTOCOL_DESC, "grpc")
+            .withExtension(ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_GRPC)
             .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
             .withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30))
             .withExtension(ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30))

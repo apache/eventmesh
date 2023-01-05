@@ -56,7 +56,7 @@ public class RocketMQBinaryMessageReader
 
     @Override
     protected void forEachHeader(BiConsumer<String, String> fn) {
-        this.headers.forEach((k, v) -> fn.accept(k, v));
+        this.headers.forEach(fn);
     }
 
     @Override

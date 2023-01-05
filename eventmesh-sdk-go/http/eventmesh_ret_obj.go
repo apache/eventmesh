@@ -20,3 +20,9 @@ type EventMeshRetObj struct {
 	RetCode int    `json:"retCode"`
 	RetMsg  string `json:"retMsg"`
 }
+
+type ReplyMessage struct {
+	Topic      string            `json:"topic"`
+	Body       string            `json:"body"`
+	Properties map[string]string `json:"properties"`
+}

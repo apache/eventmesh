@@ -26,10 +26,16 @@ import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CloudEventUtils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudEventUtils.class);
 
     public static SendResult convertSendResult(
         org.apache.rocketmq.client.producer.SendResult rmqResult) {
@@ -42,27 +48,13 @@ public class CloudEventUtils {
 
     public static Message msgConvert(MessageExt rmqMsg) {
         Message message = new Message();
-        if (rmqMsg.getTopic() != null) {
-            message.setTopic(rmqMsg.getTopic());
-        }
-
-        if (rmqMsg.getKeys() != null) {
-            message.setKeys(rmqMsg.getKeys());
-        }
-
-        if (rmqMsg.getTags() != null) {
-            message.setTags(rmqMsg.getTags());
-        }
-
+        initProperty(rmqMsg, message, MessageExt::getTopic, Message::setTopic);
+        initProperty(rmqMsg, message, MessageExt::getKeys, Message::setKeys);
+        initProperty(rmqMsg, message, MessageExt::getTags, Message::setTags);
         if (rmqMsg.getBody() != null) {
             message.setBody(rmqMsg.getBody());
         }
-
-        final Set<Map.Entry<String, String>> entries = rmqMsg.getProperties().entrySet();
-
-        for (final Map.Entry<String, String> entry : entries) {
-            MessageAccessor.putProperty(message, entry.getKey(), entry.getValue());
-        }
+        rmqMsg.getProperties().forEach((k, v) -> MessageAccessor.putProperty(message, k, v));
 
         if (rmqMsg.getMsgId() != null) {
             MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_MESSAGE_ID),
@@ -112,13 +104,8 @@ public class CloudEventUtils {
         org.apache.rocketmq.common.message.MessageExt rmqMessageExt =
             new org.apache.rocketmq.common.message.MessageExt();
         try {
-            if (message.getKeys() != null) {
-                rmqMessageExt.setKeys(message.getKeys());
-            }
-            if (message.getTags() != null) {
-                rmqMessageExt.setTags(message.getTags());
-            }
-
+            initProperty(message, rmqMessageExt, Message::getKeys, Message::setKeys);
+            initProperty(message, rmqMessageExt, Message::getTags, Message::setTags);
 
             if (message.getBody() != null) {
                 rmqMessageExt.setBody(message.getBody());
@@ -135,14 +122,31 @@ public class CloudEventUtils {
             //use in manual ack
             rmqMessageExt.setQueueId(queueId);
             rmqMessageExt.setQueueOffset(queueOffset);
-            Map<String, String> properties = message.getProperties();
-            for (final Map.Entry<String, String> entry : properties.entrySet()) {
-                MessageAccessor.putProperty(rmqMessageExt, entry.getKey(), entry.getValue());
-            }
+
+            message.getProperties().forEach((k, v) -> MessageAccessor.putProperty(rmqMessageExt, k, v));
         } catch (Exception e) {
+            LOGGER.error("Error with msgConvertExt", e);
             e.printStackTrace();
         }
         return rmqMessageExt;
+
+    }
+
+    /**
+     * Populate the target with properties whose source is not empty
+     *
+     * @param source     source
+     * @param target     target
+     * @param function   function
+     * @param biConsumer biConsumer
+     * @param <T>        t
+     * @param <V>        v
+     */
+    private static <T, V> void initProperty(T source, V target, Function<T, String> function, BiConsumer<V, String> biConsumer) {
+        String apply = function.apply(source);
+        if (Objects.nonNull(apply)) {
+            biConsumer.accept(target, apply);
+        }
 
     }
 

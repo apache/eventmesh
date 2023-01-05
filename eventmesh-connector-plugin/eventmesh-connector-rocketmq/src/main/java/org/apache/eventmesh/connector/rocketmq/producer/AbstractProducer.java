@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rocketmq.producer;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
 import org.apache.eventmesh.connector.rocketmq.exception.RMQMessageFormatException;
 import org.apache.eventmesh.connector.rocketmq.exception.RMQTimeoutException;
@@ -46,7 +47,6 @@ public abstract class AbstractProducer {
     protected final AtomicBoolean started = new AtomicBoolean(false);
     //    private boolean started = false;
     private final ClientConfig clientConfig;
-    private static final String PRODUCER_ID = "PRODUCER_ID";
 
     AbstractProducer(final Properties properties) {
         this.properties = properties;
@@ -67,7 +67,7 @@ public abstract class AbstractProducer {
         this.rocketmqProducer.setInstanceName(producerId);
         this.rocketmqProducer.setMaxMessageSize(1024 * 1024 * 4);
         this.rocketmqProducer.setLanguage(LanguageCode.OMS);
-        properties.put(PRODUCER_ID, producerId);
+        properties.put(Constants.PRODUCER_ID, producerId);
     }
 
     public synchronized void start() {

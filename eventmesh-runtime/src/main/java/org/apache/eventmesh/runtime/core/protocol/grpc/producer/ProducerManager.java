@@ -60,7 +60,7 @@ public class ProducerManager {
 
         eventMeshProducer = producerTable.get(producerGroup);
 
-        if (!ServiceState.RUNNING.equals(eventMeshProducer.getStatus())) {
+        if (ServiceState.RUNNING != eventMeshProducer.getStatus()) {
             eventMeshProducer.start();
         }
 

@@ -50,36 +50,35 @@ public class CloudEventsRequestInstance {
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
+                .env("env").idc("idc")
+                .sys("1234").build();
 
-        EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig)) {
+            
+            Map<String, String> content = new HashMap<>();
+            content.put("content", "testRequestReplyMessage");
 
-        eventMeshGrpcProducer.init();
+            for (int i = 0; i < messageSize; i++) {
+                CloudEvent event = CloudEventBuilder.v1()
+                        .withId(UUID.randomUUID().toString())
+                        .withSubject(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC)
+                        .withSource(URI.create("/"))
+                        .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+                        .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                        .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                        .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+                        .build();
 
-        Map<String, String> content = new HashMap<>();
-        content.put("content", "testRequestReplyMessage");
-
-        for (int i = 0; i < messageSize; i++) {
-            CloudEvent event = CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-                .build();
-
-            eventMeshGrpcProducer.requestReply(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            Thread.sleep(1000);
-        }
-        Thread.sleep(30000);
-        try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
-            // ignore
+                eventMeshGrpcProducer.requestReply(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                Thread.sleep(1000);
+            }
+            Thread.sleep(30000);
+            try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
+                // ignore
+            }
         }
     }
 }

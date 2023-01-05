@@ -29,7 +29,6 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.RetryContext;
 
@@ -48,7 +47,7 @@ import com.google.common.collect.Sets;
 
 public abstract class AbstractPushRequest extends RetryContext {
 
-    private final Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPushRequest.class);
 
     protected EventMeshGrpcServer eventMeshGrpcServer;
     protected long createTime = System.currentTimeMillis();
@@ -87,7 +86,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
             return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
-            logger.error("Error in getting EventMeshMessage from CloudEvent", e);
+            LOGGER.error("Error in getting EventMeshMessage from CloudEvent", e);
             return null;
         }
     }
@@ -98,7 +97,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
             return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(simpleMessage));
         } catch (Exception e) {
-            logger.error("Error in getting CloudEvent from EventMeshMessage", e);
+            LOGGER.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
         }
     }
@@ -131,7 +130,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             try {
                 eventMeshConsumer.updateOffset(subscriptionMode, Collections.singletonList(event), context);
             } catch (Exception e) {
-                logger.error("Error in updating offset in EventMeshConsumer", e);
+                LOGGER.error("Error in updating offset in EventMeshConsumer", e);
             }
         }
     }

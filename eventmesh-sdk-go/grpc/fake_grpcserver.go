@@ -114,7 +114,12 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 		}
 	}()
 	go func() {
-		defer wg.Done()
+		defer func() {
+			wg.Done()
+			if err := recover(); err != nil {
+				log.Warnf("send as rece err:%v", err)
+			}
+		}()
 		var index int = 0
 		for {
 			msg := &proto.SimpleMessage{
@@ -181,6 +186,14 @@ func (f *fakeServer) Publish(ctx context.Context, msg *proto.SimpleMessage) (*pr
 // RequestReply Sync event publish
 func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage) (*proto.SimpleMessage, error) {
 	log.Infof("receive request reply topic:%s, content:%s", rece.Topic, rece.Content)
+
+	var err error = nil
+	defer func() {
+		if rerr := recover(); rerr != nil {
+			err = rerr.(error)
+		}
+	}()
+
 	return &proto.SimpleMessage{
 		Header:        rece.Header,
 		ProducerGroup: "fake-mock-group",
@@ -194,7 +207,7 @@ func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage
 			"from":    "fake",
 			"service": "RequestReply",
 		},
-	}, nil
+	}, err
 }
 
 // BatchPublish Async batch event publish

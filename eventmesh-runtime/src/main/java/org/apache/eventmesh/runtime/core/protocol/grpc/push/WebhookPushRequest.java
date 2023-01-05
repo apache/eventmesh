@@ -60,9 +60,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class WebhookPushRequest extends AbstractPushRequest {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
-    private final Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    private static final Logger CMD_LOGGER = LoggerFactory.getLogger("cmd");
 
     /**
      * Key: idc
@@ -106,17 +106,18 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.REQUEST_CODE, requestCode);
             builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
             builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshGrpcConfiguration.eventMeshCluster);
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+                    eventMeshGrpcConfiguration.getEventMeshCluster());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIp);
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.eventMeshEnv);
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.eventMeshIDC);
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.getEventMeshEnv());
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.getEventMeshIDC());
 
             RequestHeader requestHeader = simpleMessage.getHeader();
             builder.addHeader(ProtocolKey.PROTOCOL_TYPE, requestHeader.getProtocolType());
             builder.addHeader(ProtocolKey.PROTOCOL_DESC, requestHeader.getProtocolDesc());
             builder.addHeader(ProtocolKey.PROTOCOL_VERSION, requestHeader.getProtocolVersion());
             builder.addHeader(ProtocolKey.CONTENT_TYPE, simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE,
-                "application/cloudevents+json"));
+                    Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
 
             List<NameValuePair> body = new ArrayList<>();
             body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, simpleMessage.getContent()));
@@ -125,11 +126,11 @@ public class WebhookPushRequest extends AbstractPushRequest {
             body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
             body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, simpleMessage.getTopic()));
             body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-                JsonUtils.serialize(simpleMessage.getPropertiesMap())));
+                    JsonUtils.serialize(simpleMessage.getPropertiesMap())));
 
             simpleMessage = SimpleMessage.newBuilder(simpleMessage)
-                .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
-                .build();
+                    .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
+                    .build();
 
             builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
@@ -137,21 +138,21 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
             addToWaitingMap(this);
 
-            cmdLogger.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                IPUtils.getLocalAddress(), selectedPushUrl);
+            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
+                    IPUtils.getLocalAddress(), selectedPushUrl);
 
             try {
                 eventMeshGrpcServer.getHttpClient().execute(builder, handleResponse(selectedPushUrl));
-                messageLogger
-                    .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                        selectedPushUrl, simpleMessage.getTopic(), simpleMessage.getSeqNum(),
-                        simpleMessage.getUniqueId());
+                MESSAGE_LOGGER
+                        .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                                selectedPushUrl, simpleMessage.getTopic(), simpleMessage.getSeqNum(),
+                                simpleMessage.getUniqueId());
             } catch (IOException e) {
                 long cost = System.currentTimeMillis() - lastPushTime;
-                messageLogger.error(
-                    "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", e.getMessage(), simpleMessage.getTopic(),
-                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost, e);
+                MESSAGE_LOGGER.error(
+                        "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", e.getMessage(), simpleMessage.getTopic(),
+                        simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost, e);
                 removeWaitingMap(this);
                 delayRetry();
             }
@@ -161,16 +162,16 @@ public class WebhookPushRequest extends AbstractPushRequest {
     @Override
     public String toString() {
         return "asyncPushRequest={"
-            + "bizSeqNo=" + simpleMessage.getSeqNum()
-            + ",startIdx=" + startIdx
-            + ",retryTimes=" + retryTimes
-            + ",uniqueId=" + simpleMessage.getUniqueId()
-            + ",executeTime="
-            + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT)
-            + ",lastPushTime="
-            + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT)
-            + ",createTime="
-            + DateFormatUtils.format(createTime, Constants.DATE_FORMAT) + "}";
+                + "bizSeqNo=" + simpleMessage.getSeqNum()
+                + ",startIdx=" + startIdx
+                + ",retryTimes=" + retryTimes
+                + ",uniqueId=" + simpleMessage.getUniqueId()
+                + ",executeTime="
+                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT)
+                + ",lastPushTime="
+                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT)
+                + ",createTime="
+                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT) + "}";
     }
 
     private ResponseHandler<Object> handleResponse(String selectedPushUrl) {
@@ -180,26 +181,26 @@ public class WebhookPushRequest extends AbstractPushRequest {
             //eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 //eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
-                messageLogger.info(
-                    "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", selectedPushUrl, simpleMessage.getTopic(),
-                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
+                MESSAGE_LOGGER.info(
+                        "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", selectedPushUrl, simpleMessage.getTopic(),
+                        simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
 
                 delayRetry();
             } else {
                 String res = "";
                 try {
                     res = EntityUtils.toString(response.getEntity(),
-                        Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
+                            Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                 } catch (IOException e) {
                     complete();
                     return new Object();
                 }
                 ClientRetCode result = processResponseContent(res, selectedPushUrl);
-                messageLogger.info(
-                    "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", result, selectedPushUrl, simpleMessage.getTopic(),
-                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
+                MESSAGE_LOGGER.info(
+                        "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", result, selectedPushUrl, simpleMessage.getTopic(),
+                        simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
                 if (result == ClientRetCode.OK || result == ClientRetCode.FAIL) {
                     complete();
                 } else if (result == ClientRetCode.RETRY || result == ClientRetCode.NOLISTEN) {
@@ -217,45 +218,46 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
         try {
             Map<String, Object> ret =
-                JsonUtils.deserialize(content, new TypeReference<Map<String, Object>>() {
-                });
+                    JsonUtils.deserialize(content, new TypeReference<Map<String, Object>>() {
+                    });
             Integer retCode = (Integer) ret.get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
             return ClientRetCode.FAIL;
         } catch (Exception e) {
-            messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", selectedPushUrl,
-                simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), content);
+            MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", selectedPushUrl,
+                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), content);
             return ClientRetCode.FAIL;
         }
     }
 
+    @SuppressWarnings("unchecked")
     private List<String> getUrl() {
         List<String> localIdcUrl = MapUtils.getObject(urls,
-            eventMeshGrpcConfiguration.eventMeshIDC, null);
+                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIdcUrl)) {
-            if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
+            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
                 return Collections.singletonList(localIdcUrl.get((startIdx + retryTimes) % localIdcUrl.size()));
-            } else if (subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
+            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return localIdcUrl;
             } else {
-                messageLogger.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                MESSAGE_LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
                 return Collections.emptyList();
             }
         }
 
         if (CollectionUtils.isNotEmpty(totalUrls)) {
-            if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
+            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
                 return Collections.singletonList(totalUrls.get((startIdx + retryTimes) % totalUrls.size()));
-            } else if (subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
+            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return totalUrls;
             } else {
-                messageLogger.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                MESSAGE_LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
                 return Collections.emptyList();
             }
         }
-        messageLogger.error("No event emitters from subscriber, no message returning.");
+        MESSAGE_LOGGER.error("No event emitters from subscriber, no message returning.");
         return Collections.EMPTY_LIST;
     }
 }

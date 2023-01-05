@@ -54,39 +54,30 @@ func (e *eventMeshProducer) Close() error {
 
 // Publish Async event publish
 func (e *eventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
-	log.Infof("publish event:%v", msg.String())
 	resp, err := e.client.Publish(ctx, msg, opts...)
 	if err != nil {
 		log.Warnf("failed to publish msg, err:%v", err)
 		return nil, err
 	}
-
-	log.Infof("success publish msg:%s", msg.String())
 	return resp, nil
 }
 
 // RequestReply Sync event publish
 func (e *eventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
-	log.Infof("request reply event:%v", msg.String())
 	resp, err := e.client.RequestReply(ctx, msg, opts...)
 	if err != nil {
 		log.Warnf("failed to request reply msg, err:%v", err)
 		return nil, err
 	}
-
-	log.Infof("success request reply event")
 	return resp, nil
 }
 
 // BatchPublish Async batch event publish
 func (e *eventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
-	log.Infof("request batch publish event:%v", msg.String())
 	resp, err := e.client.BatchPublish(ctx, msg, opts...)
 	if err != nil {
 		log.Warnf("failed to batch publish msg, err:%v", err)
 		return nil, err
 	}
-
-	log.Infof("success batch publish event")
 	return resp, nil
 }

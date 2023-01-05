@@ -26,6 +26,7 @@ import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.connector.standalone.broker.task.SubScribeTask;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -35,24 +36,24 @@ import io.cloudevents.CloudEvent;
 
 public class StandaloneConsumer implements Consumer {
 
-    private StandaloneBroker standaloneBroker;
+    private final StandaloneBroker standaloneBroker;
 
     private EventListener listener;
 
-    private AtomicBoolean isStarted;
+    private final AtomicBoolean isStarted;
 
     private final ConcurrentHashMap<String, SubScribeTask> subscribeTaskTable;
 
-    private ExecutorService consumeExecutorService;
+    private final ExecutorService consumeExecutorService;
 
     public StandaloneConsumer(Properties properties) {
         this.standaloneBroker = StandaloneBroker.getInstance();
         this.subscribeTaskTable = new ConcurrentHashMap<>(16);
         this.isStarted = new AtomicBoolean(false);
         this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "StandaloneConsumerThread"
+                Runtime.getRuntime().availableProcessors() * 2,
+                Runtime.getRuntime().availableProcessors() * 2,
+                "StandaloneConsumerThread"
         );
     }
 
@@ -86,7 +87,7 @@ public class StandaloneConsumer implements Consumer {
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         cloudEvents.forEach(cloudEvent -> standaloneBroker.updateOffset(
-            new TopicMetadata(cloudEvent.getSubject()), (Long) cloudEvent.getExtension("offset"))
+                new TopicMetadata(cloudEvent.getSubject()), Objects.requireNonNull((Long) cloudEvent.getExtension("offset")))
         );
 
     }

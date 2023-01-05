@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // runWebhookServer start a webhook server for fake server on
@@ -35,7 +36,8 @@ func runWebhookServer(ctx context.Context) {
 			writer.Write([]byte("read body err"))
 			return
 		}
-		fmt.Printf("got webhook msg:%s\n", string(buf))
+		requestStr := strings.Replace(string(buf), "\n", "", -1)
+		fmt.Printf("got webhook msg:%s\n", requestStr)
 		writer.WriteHeader(http.StatusOK)
 		writer.Write([]byte("OK"))
 	})

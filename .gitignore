@@ -9,18 +9,20 @@ logs
 *.iws
 *.class
 *.log
+*.log.*
 .idea
 build
 .classpath
 .project
 test-output
 dist
+out
 .pmd
 classes
 package-lock.json
 node_modules
-.DS_Store
 .run
+*.log
 
 h2/db.mv.db
 

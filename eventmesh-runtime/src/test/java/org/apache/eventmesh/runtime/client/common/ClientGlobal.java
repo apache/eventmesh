@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class ClientGlobal {
 
-    private static Logger logger = LoggerFactory.getLogger(ClientGlobal.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientGlobal.class);
 
     public static ClientGlobal INSTANCE = new ClientGlobal();
 

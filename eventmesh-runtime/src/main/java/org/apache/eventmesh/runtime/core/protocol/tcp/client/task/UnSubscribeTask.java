@@ -38,7 +38,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class UnSubscribeTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnSubscribeTask.class);
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public UnSubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -56,13 +58,13 @@ public class UnSubscribeTask extends AbstractTask {
                         topics.add(entry.getValue());
                     }
                     session.unsubscribe(topics);
-                    messageLogger.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
+                    MESSAGE_LOGGER.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
                 }
             }
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
                     .getSeq()));
         } catch (Exception e) {
-            messageLogger.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
+            MESSAGE_LOGGER.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
                     +
                     "unSubscribing", pkg.getHeader().getSeq()));
