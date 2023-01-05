@@ -62,6 +62,11 @@ allprojects {
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
+    java {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+
     clean.doFirst {
         delete 'build'
         delete 'dist'
@@ -430,7 +435,7 @@ subprojects {
             dependency "commons-io:commons-io:2.11.0"
 
             dependency "com.google.guava:guava:31.0.1-jre"
-            
+
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.17.1"
             dependency "org.apache.logging.log4j:log4j-core:2.17.1"

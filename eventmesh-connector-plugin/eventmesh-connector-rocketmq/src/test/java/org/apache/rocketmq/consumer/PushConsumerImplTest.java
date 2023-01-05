@@ -82,7 +82,7 @@ public class PushConsumerImplTest {
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[]{'a', 'b'};
+        final byte[] testBody = new byte[] {'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");
@@ -91,7 +91,7 @@ public class PushConsumerImplTest {
         consumedMsg.setTopic("HELLO_QUEUE");
         consumer.subscribe("HELLO_QUEUE", "*");
         ((MessageListenerConcurrently) rocketmqPushConsumer
-                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
 
     }
