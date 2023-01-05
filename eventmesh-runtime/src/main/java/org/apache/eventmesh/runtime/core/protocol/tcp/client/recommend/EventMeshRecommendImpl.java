@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
     public String calculateRecommendEventMesh(final String group, final String purpose) throws Exception {
         List<EventMeshDataInfo> eventMeshDataInfoList;
 
-        if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
+        if (StringUtils.isAnyBlank(group, purpose)) {
             if (log.isWarnEnabled()) {
                 log.warn("EventMeshRecommend failed,params illegal,group:{},purpose:{}", group, purpose);
             }
@@ -69,7 +70,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             return null;
         }
 
-        if (eventMeshDataInfoList == null || CollectionUtils.isEmpty(eventMeshDataInfoList)) {
+        if (CollectionUtils.isEmpty(eventMeshDataInfoList)) {
             if (log.isWarnEnabled()) {
                 log.warn("EventMeshRecommend failed,not find eventMesh instances from registry,cluster:{},group:{},purpose:{}",
                         cluster, group, purpose);
@@ -81,26 +82,16 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         final Map<String, String> remoteEventMeshMap = new HashMap<>();
         final String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
         for (final EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
-            final String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
+            String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
-                if (StringUtils.equals(idc, localIdc)) {
-                    localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
-                } else {
-                    remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
-                }
+                final String dummy = StringUtils.equals(idc, localIdc) ?
+                        localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint())
+                        : remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
             } else {
                 if (log.isErrorEnabled()) {
                     log.error("EventMeshName may be illegal,idc is null,eventMeshName:{}", eventMeshDataInfo.getEventMeshName());
                 }
             }
-        }
-
-        if (MapUtils.isEmpty(localEventMeshMap)) {
-            if (log.isWarnEnabled()) {
-                log.warn("EventMeshRecommend failed,find no legal eventMesh instances from registry,localIDC:{}", localIdc);
-            }
-
-            return null;
         }
 
         if (MapUtils.isNotEmpty(localEventMeshMap)) {
@@ -117,41 +108,42 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     @Override
     public List<String> calculateRedirectRecommendEventMesh(final Map<String, String> eventMeshMap,
-                                                            final Map<String, Integer> clientDistributeMap,
+                                                            final Map<String, Integer> clientDistributedMap,
                                                             final String group,
                                                             final int recommendProxyNum,
                                                             final String eventMeshName) throws Exception {
-        if (recommendProxyNum < DEFAULT_PROXY_NUM) {
+        Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
+        Objects.requireNonNull(clientDistributedMap, "clientDistributedMap can not be null");
+
+        if (recommendProxyNum < DEFAULT_PROXY_NUM || MapUtils.isEmpty(clientDistributedMap)) {
             return new ArrayList<String>();
         }
 
         if (log.isInfoEnabled()) {
             log.info("eventMeshMap:{},clientDistributionMap:{},group:{},recommendNum:{},currEventMeshName:{}",
-                    eventMeshMap, clientDistributeMap, group, recommendProxyNum, eventMeshName);
+                    eventMeshMap, clientDistributedMap, group, recommendProxyNum, eventMeshName);
         }
+
         //find eventmesh with least client
-        final List<Map.Entry<String, Integer>> list = new ArrayList<>();
+        final List<Map.Entry<String, Integer>> clientDistributedList = new ArrayList<>();
         final ValueComparator vc = new ValueComparator();
-        for (final Map.Entry<String, Integer> entry : clientDistributeMap.entrySet()) {
-            list.add(entry);
-        }
-        Collections.sort(list, vc);
+        clientDistributedMap.entrySet().forEach(clientDistributedList::add);
+        Collections.sort(clientDistributedList, vc);
 
         if (log.isInfoEnabled()) {
-            log.info("clientDistributionMap after sort:{}", list);
+            log.info("clientDistributedLists after sort:{}", clientDistributedList);
         }
 
         final List<String> recommendProxyList = new ArrayList<>(recommendProxyNum);
         while (recommendProxyList.size() < recommendProxyNum) {
-            final Map.Entry<String, Integer> minProxyItem = list.get(0);
-            final int currProxyNum = clientDistributeMap.get(eventMeshName);
+            final Map.Entry<String, Integer> minProxyItem = clientDistributedList.get(0);
+            final int currProxyNum = clientDistributedMap.get(eventMeshName);
             recommendProxyList.add(eventMeshMap.get(minProxyItem.getKey()));
-            clientDistributeMap.put(minProxyItem.getKey(), minProxyItem.getValue() + 1);
-            clientDistributeMap.put(eventMeshName, currProxyNum - 1);
-            Collections.sort(list, vc);
-
+            clientDistributedMap.put(minProxyItem.getKey(), minProxyItem.getValue() + 1);
+            clientDistributedMap.put(eventMeshName, currProxyNum - 1);
+            Collections.sort(clientDistributedList, vc);
             if (log.isInfoEnabled()) {
-                log.info("clientDistributionMap after sort:{}", list);
+                log.info("clientDistributedList after sort:{}", clientDistributedList);
             }
         }
 
@@ -164,6 +156,8 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     private String recommendProxyByDistributeData(final String cluster, final String group, final String purpose,
                                                   final Map<String, String> eventMeshMap, final boolean caculateLocal) {
+        Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
+
         if (log.isInfoEnabled()) {
             log.info("eventMeshMap:{},cluster:{},group:{},purpose:{},caculateLocal:{}", eventMeshMap, cluster,
                     group, purpose, caculateLocal);
@@ -183,9 +177,13 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         String recommendProxyAddr;
         if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {
             final List<String> tmpProxyAddrList = new ArrayList<>(eventMeshMap.values());
+            if (CollectionUtils.isEmpty(tmpProxyAddrList)) {
+                return null;
+            }
+
             Collections.shuffle(tmpProxyAddrList);
             recommendProxyAddr = tmpProxyAddrList.get(0);
-            if (log.isWarnEnabled()) {
+            if (log.isInfoEnabled()) {
                 log.info("No distribute data in registry,cluster:{}, group:{},purpose:{}, recommendProxyAddr:{}",
                         cluster, group, purpose, recommendProxyAddr);
             }
@@ -194,7 +192,8 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
         final Map<String, Integer> localClientDistributionMap = new HashMap<>();
         final Map<String, Integer> remoteClientDistributionMap = new HashMap<>();
-        for (final Map.Entry<String, Map<String, Integer>> entry : eventMeshClientDistributionDataMap.entrySet()) {
+
+        eventMeshClientDistributionDataMap.entrySet().forEach(entry -> {
             final String idc = entry.getKey().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
                 if (StringUtils.equals(idc, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC())) {
@@ -207,7 +206,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
                     log.error("eventMeshName may be illegal,idc is null,eventMeshName:{}", entry.getKey());
                 }
             }
-        }
+        });
 
         recommendProxyAddr = recommendProxy(eventMeshMap, (caculateLocal == true) ? localClientDistributionMap
                 : remoteClientDistributionMap, group);
@@ -216,44 +215,40 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             log.info("eventMeshMap:{},group:{},purpose:{},caculateLocal:{},recommendProxyAddr:{}", eventMeshMap,
                     group, purpose, caculateLocal, recommendProxyAddr);
         }
+
         return recommendProxyAddr;
     }
 
     private String recommendProxy(final Map<String, String> eventMeshMap,
-                                  final Map<String, Integer> clientDistributionMap, final String group) {
+                                  final Map<String, Integer> clientDistributionMap,
+                                  final String group) {
+        Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
+        Objects.requireNonNull(clientDistributionMap, "clientDistributionMap can not be null");
+
         if (log.isInfoEnabled()) {
             log.info("eventMeshMap:{},clientDistributionMap:{},group:{}", eventMeshMap, clientDistributionMap, group);
         }
 
-        for (final String proxyName : clientDistributionMap.keySet()) {
-            if (!eventMeshMap.containsKey(proxyName)) {
-                if (log.isWarnEnabled()) {
-                    log.warn("exist proxy not register but exist in distributionMap,proxy:{}", proxyName);
-                }
-                return null;
+        if (!eventMeshMap.keySet().containsAll(clientDistributionMap.keySet())) {
+            if (log.isWarnEnabled()) {
+                log.warn("exist proxy not register but exist in distributionMap");
             }
+            return null;
         }
 
-        for (final String proxy : eventMeshMap.keySet()) {
-            if (!clientDistributionMap.containsKey(proxy)) {
-                clientDistributionMap.put(proxy, 0);
-            }
-        }
+
+        eventMeshMap.keySet().forEach(proxy -> clientDistributionMap.putIfAbsent(proxy, 0));
 
         //select the eventmesh with least instances
-        final List<Map.Entry<String, Integer>> list = new ArrayList<>();
-        final ValueComparator vc = new ValueComparator();
-        for (final Map.Entry<String, Integer> entry : clientDistributionMap.entrySet()) {
-            list.add(entry);
-        }
-
-        if (CollectionUtils.isEmpty(list)) {
+        if (MapUtils.isEmpty(clientDistributionMap)) {
             if (log.isErrorEnabled()) {
                 log.error("no legal distribute data,check eventMeshMap and distributeData, group:{}", group);
             }
             return null;
         } else {
-            Collections.sort(list, vc);
+            final List<Map.Entry<String, Integer>> list = new ArrayList<>();
+            clientDistributionMap.entrySet().forEach(list::add);
+            Collections.sort(list, new ValueComparator());
             if (log.isInfoEnabled()) {
                 log.info("clientDistributionMap after sort:{}", list);
             }
