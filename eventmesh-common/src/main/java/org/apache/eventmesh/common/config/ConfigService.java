@@ -89,45 +89,16 @@ public class ConfigService {
     }
 
     public void getConfig(Object object) throws IllegalAccessException, NoSuchFieldException, IOException {
-        this.getConfig(object, object.getClass());
-    }
-
-    public void getConfig(Object object, Class<?> clazz) throws NoSuchFieldException, IOException, IllegalAccessException {
+        Class<?> clazz = object.getClass();
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
         if (configArray.length == 0) {
             return;
         }
 
-        Config config = configArray[0];
-        ConfigInfo configInfo = new ConfigInfo();
-        configInfo.setField(config.field());
-        configInfo.setMonitor(config.monitor());
-
-        Field field = clazz.getDeclaredField(configInfo.getField());
-        Class<?> fieldClazz = field.getType();
-        configInfo.setClazz(fieldClazz);
-
-        configArray = fieldClazz.getAnnotationsByType(Config.class);
-        if (configArray.length != 0 && !Strings.isNullOrEmpty(configArray[0].prefix())) {
-            config = configArray[0];
-            configInfo.setPrefix(config.prefix());
-            configInfo.setPath(config.path());
-            configInfo.setPrefix(config.prefix());
-            configInfo.setHump(config.hump());
-        }
-
-        Object configObject = this.getConfig(configInfo);
-        field.setAccessible(true);
-        field.set(object, configObject);
-
-        if (configInfo.isMonitor()) {
-            configInfo.setObjectField(field);
-            configInfo.setInstance(object);
-            configInfo.setObject(configObject);
-            configMonitorService.monitor(configInfo);
+        for (Config config : configArray) {
+            populateConfig(object, clazz, config);
         }
     }
-
 
     @SuppressWarnings("unchecked")
     public <T> T getConfig(ConfigInfo configInfo) throws IOException {
@@ -156,5 +127,36 @@ public class ConfigService {
             object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
         }
         return (T) object;
+    }
+
+    private void populateConfig(Object object, Class<?> clazz, Config config)
+            throws NoSuchFieldException, IOException, IllegalAccessException {
+        ConfigInfo configInfo = new ConfigInfo();
+        configInfo.setField(config.field());
+        configInfo.setMonitor(config.monitor());
+
+        Field field = clazz.getDeclaredField(configInfo.getField());
+        Class<?> fieldClazz = field.getType();
+        configInfo.setClazz(fieldClazz);
+
+        Config[] configArray = fieldClazz.getAnnotationsByType(Config.class);
+        if (configArray.length != 0 && !Strings.isNullOrEmpty(configArray[0].prefix())) {
+            config = configArray[0];
+            configInfo.setPrefix(config.prefix());
+            configInfo.setPath(config.path());
+            configInfo.setPrefix(config.prefix());
+            configInfo.setHump(config.hump());
+        }
+
+        Object configObject = this.getConfig(configInfo);
+        field.setAccessible(true);
+        field.set(object, configObject);
+
+        if (configInfo.isMonitor()) {
+            configInfo.setObjectField(field);
+            configInfo.setInstance(object);
+            configInfo.setObject(configObject);
+            configMonitorService.monitor(configInfo);
+        }
     }
 }

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.config;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -27,6 +28,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
+@Repeatable(Config.Configs.class)
 public @interface Config {
 
     String field() default "";
@@ -40,6 +42,12 @@ public @interface Config {
     boolean removePrefix() default true;
 
     boolean monitor() default false;
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface Configs {
+        Config[] value();
+    }
 }
 
 
