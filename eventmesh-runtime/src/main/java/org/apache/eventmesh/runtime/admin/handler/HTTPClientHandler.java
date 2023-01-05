@@ -78,7 +78,7 @@ public class HTTPClientHandler implements HttpHandler {
             String url = deleteHTTPClientRequest.url;
 
             for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
-                clientList.removeIf(client -> Objects.equals(client.url, url));
+                clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
@@ -121,15 +121,15 @@ public class HTTPClientHandler implements HttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.env).orElse(""),
-                        Optional.ofNullable(client.sys).orElse(""),
-                        Optional.ofNullable(client.url).orElse(""),
+                        Optional.ofNullable(client.getEnv()).orElse(""),
+                        Optional.ofNullable(client.getSys()).orElse(""),
+                        Optional.ofNullable(client.getUrl()).orElse(""),
                         "0",
-                        Optional.ofNullable(client.hostname).orElse(""),
+                        Optional.ofNullable(client.getHostname()).orElse(""),
                         0,
-                        Optional.ofNullable(client.apiVersion).orElse(""),
-                        Optional.ofNullable(client.idc).orElse(""),
-                        Optional.ofNullable(client.consumerGroup).orElse(""),
+                        Optional.ofNullable(client.getApiVersion()).orElse(""),
+                        Optional.ofNullable(client.getIdc()).orElse(""),
+                        Optional.ofNullable(client.getConsumerGroup()).orElse(""),
                         "",
                         "HTTP"
                     );

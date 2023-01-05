@@ -43,7 +43,7 @@ public class MetricsHandler implements HttpHandler {
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer, EventMeshTCPServer eventMeshTcpServer) {
-        this.httpSummaryMetrics = eventMeshHTTPServer.metrics.getSummaryMetrics();
+        this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
     }
 

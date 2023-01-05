@@ -36,8 +36,7 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import com.sun.net.httpserver.HttpServer;
 
 public class EventMeshAdminController {
 
@@ -72,8 +71,8 @@ public class EventMeshAdminController {
             eventMeshGrpcServer.getEventMeshGrpcConfiguration()
         ));
         server.createContext("/metrics", new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
-        server.createContext("/topic", new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
-        server.createContext("/event", new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
+        server.createContext("/topic", new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType()));
+        server.createContext("/event", new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType()));
         server.createContext("/registry", new RegistryHandler(eventMeshRegistry));
         server.start();
         logger.info("ClientManageController start success, port:{}", port);

@@ -59,11 +59,11 @@ public class GetMetricsResponse {
 
     // TCP Metrics
     public int retryTCPQueueSize;
-    public int client2eventMeshTCPTPS;
-    public int eventMesh2mqTCPTPS;
-    public int mq2eventMeshTCPTPS;
-    public int eventMesh2clientTCPTPS;
-    public int allTCPTPS;
+    public double client2eventMeshTCPTPS;
+    public double eventMesh2mqTCPTPS;
+    public double mq2eventMeshTCPTPS;
+    public double eventMesh2clientTCPTPS;
+    public double allTCPTPS;
     public int allTCPConnections;
     public int subTopicTCPNum;
 
@@ -106,11 +106,11 @@ public class GetMetricsResponse {
             @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
             // TCP Metrics
             @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
-            @JsonProperty("client2eventMeshTCPTPS") int client2eventMeshTCPTPS,
-            @JsonProperty("eventMesh2mqTCPTPS") int eventMesh2mqTCPTPS,
-            @JsonProperty("mq2eventMeshTCPTPS") int mq2eventMeshTCPTPS,
-            @JsonProperty("eventMesh2clientTCPTPS") int eventMesh2clientTCPTPS,
-            @JsonProperty("allTCPTPS") int allTCPTPS,
+            @JsonProperty("client2eventMeshTCPTPS") double client2eventMeshTCPTPS,
+            @JsonProperty("eventMesh2mqTCPTPS") double eventMesh2mqTCPTPS,
+            @JsonProperty("mq2eventMeshTCPTPS") double mq2eventMeshTCPTPS,
+            @JsonProperty("eventMesh2clientTCPTPS") double eventMesh2clientTCPTPS,
+            @JsonProperty("allTCPTPS") double allTCPTPS,
             @JsonProperty("allTCPConnections") int allTCPConnections,
             @JsonProperty("subTopicTCPNum") int subTopicTCPNum
     ) {
