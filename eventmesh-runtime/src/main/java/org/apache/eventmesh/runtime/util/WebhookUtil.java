@@ -52,7 +52,7 @@ public class WebhookUtil {
 
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
                                                   final String targetUrl,
-                                                  final String requestOrigin) throws IOException {
+                                                  final String requestOrigin) {
         
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
@@ -65,8 +65,10 @@ public class WebhookUtil {
             final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             return StringUtils.isEmpty(allowedOrigin)
                     || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
+        } catch (IOException e) {
+            LOGGER.error("HTTP Options Method is not supported at the Delivery Target: {}, unable to obtain the webhook delivery agreement.", targetUrl, e);
         }
-
+        return true;
     }
 
     public static void setWebhookHeaders(final HttpPost builder,
