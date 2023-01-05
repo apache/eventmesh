@@ -48,20 +48,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.extern.slf4j.Slf4j;
 
-@EventMeshTrace(isEnable = false)
+
+@EventMeshTrace
+@Slf4j
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalSubscribeEventProcessor.class);
-
+    
     public LocalSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
@@ -73,8 +71,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final Channel channel = handlerSpecific.getCtx().channel();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        if (log.isInfoEnabled()) {
+            log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                     EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(channel),
                     IPUtils.getLocalAddress());
         }
@@ -103,9 +101,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 }
         )).orElseGet(HashMap::new);
 
-        if (requestBodyMap.get("url") == null
-                || requestBodyMap.get("topic") == null
-                || requestBodyMap.get("consumerGroup") == null) {
+        if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
             return;
@@ -133,8 +129,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                             item.getTopic(),
                             requestWrapper.getRequestURI());
                 } catch (Exception e) {
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
+                    if (log.isWarnEnabled()) {
+                        log.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
                     }
 
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
@@ -148,8 +144,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("subscriber url {} is not valid", url);
+                if (log.isErrorEnabled()) {
+                    log.error("subscriber url {} is not valid", url);
                 }
                 
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -157,8 +153,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 return;
             }
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("subscriber url {} is not valid", url, e);
+            if (log.isErrorEnabled()) {
+                log.error("subscriber url {} is not valid", url, e);
             }
 
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -169,8 +165,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         // obtain webhook delivery agreement for Abuse Protection
         if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
                 url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("subscriber url {} is not allowed by the target system", url);
+            if (log.isErrorEnabled()) {
+                log.error("subscriber url {} is not allowed by the target system", url);
             }
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
@@ -186,8 +182,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                         .get(consumerGroup + "@" + subTopic.getTopic());
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
-                    if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error("group {} topic {} clients is empty", consumerGroup, subTopic);
+                    if (log.isErrorEnabled()) {
+                        log.error("group {} topic {} clients is empty", consumerGroup, subTopic);
                     }
                 }
 
@@ -264,8 +260,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
             } catch (Exception e) {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
+                if (log.isErrorEnabled()) {
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             System.currentTimeMillis() - startTime,
                             JsonUtils.serialize(subscriptionList),
                             url, e);
