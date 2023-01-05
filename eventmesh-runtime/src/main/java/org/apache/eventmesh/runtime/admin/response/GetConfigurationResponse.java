@@ -35,7 +35,6 @@ public class GetConfigurationResponse {
     public String namesrvAddr;
 
     public int eventMeshTcpServerPort;
-    public boolean eventMeshTcpServerEnabled;
 
     public int eventMeshHttpServerPort;
     public boolean eventMeshHttpServerUseTls;
@@ -70,7 +69,6 @@ public class GetConfigurationResponse {
 
             // TCP Configuration
             @JsonProperty("eventMeshTcpServerPort") int eventMeshTcpServerPort,
-            @JsonProperty("eventMeshTcpServerEnabled") boolean eventMeshTcpServerEnabled,
 
             // HTTP Configuration
             @JsonProperty("eventMeshHttpServerPort") int eventMeshHttpServerPort,
@@ -93,7 +91,6 @@ public class GetConfigurationResponse {
         this.eventMeshServerRegistryEnable = eventMeshServerRegistryEnable;
 
         this.eventMeshTcpServerPort = eventMeshTcpServerPort;
-        this.eventMeshTcpServerEnabled = eventMeshTcpServerEnabled;
 
         this.eventMeshHttpServerPort = eventMeshHttpServerPort;
         this.eventMeshHttpServerUseTls = eventMeshHttpServerUseTls;

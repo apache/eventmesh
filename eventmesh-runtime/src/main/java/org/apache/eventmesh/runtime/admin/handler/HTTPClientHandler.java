@@ -132,6 +132,7 @@ public class HTTPClientHandler implements HttpHandler {
                             Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
                             "",
                             "HTTP"
+
                     );
                     getClientResponseList.add(getClientResponse);
                 }
