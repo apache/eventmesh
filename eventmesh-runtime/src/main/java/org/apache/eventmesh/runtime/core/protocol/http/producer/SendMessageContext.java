@@ -37,7 +37,7 @@ import io.cloudevents.CloudEvent;
 
 public class SendMessageContext extends RetryContext {
 
-    public static Logger logger = LoggerFactory.getLogger("retry");
+    public static final Logger logger = LoggerFactory.getLogger("retry");
 
     private CloudEvent event;
 
@@ -143,7 +143,7 @@ public class SendMessageContext extends RetryContext {
             @Override
             public void onException(OnExceptionContext context) {
                 logger.warn("", context.getException());
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendBatchMsgFailed(1);
             }
 
         });

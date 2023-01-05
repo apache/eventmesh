@@ -38,8 +38,6 @@ public interface Consumer extends LifeCycle {
 
     void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
 
-    //void subscribe(String topic, final EventListener listener) throws Exception;
-
     void subscribe(String topic) throws Exception;
 
     void unsubscribe(String topic);

@@ -189,7 +189,7 @@ public class MessageQueue {
             if (takeIndex == items.length) {
                 takeIndex = 0;
             }
-            notFull.signal();
+            notFull.signalAll();
         } finally {
             lock.unlock();
         }
@@ -210,7 +210,7 @@ public class MessageQueue {
             putIndex = 0;
         }
         count++;
-        notEmpty.signal();
+        notEmpty.signalAll();
     }
 
     private MessageEntity dequeue() {
@@ -218,7 +218,7 @@ public class MessageQueue {
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
-        notFull.signal();
+        notFull.signalAll();
         return item;
     }
 

@@ -23,6 +23,7 @@ import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,11 +85,11 @@ public class EventMeshExtensionFactory {
                 if (extensionInstanceClass == null) {
                     return null;
                 }
-                T extensionInstance = extensionInstanceClass.newInstance();
+                T extensionInstance =  extensionInstanceClass.getDeclaredConstructor().newInstance();
                 logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
                     extensionType, extensionInstanceName);
                 return extensionInstance;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ExtensionException("Extension initialize error", e);
             }
         });
@@ -100,11 +101,11 @@ public class EventMeshExtensionFactory {
             if (extensionInstanceClass == null) {
                 return null;
             }
-            T extensionInstance = extensionInstanceClass.newInstance();
+            T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
                 extensionType, extensionInstanceName);
             return extensionInstance;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ExtensionException("Extension initialize error", e);
         }
     }

@@ -105,6 +105,7 @@ public class ReplyMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.reply(sendMessageContext, new SendCallback() {
             @Override
@@ -127,7 +128,7 @@ public class ReplyMessageProcessor {
 
     private void doAclCheck(SimpleMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = requestHeader.getIp();
             String user = requestHeader.getUsername();
             String pass = requestHeader.getPassword();

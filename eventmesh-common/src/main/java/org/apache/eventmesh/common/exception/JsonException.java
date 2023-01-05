@@ -22,6 +22,8 @@ package org.apache.eventmesh.common.exception;
  */
 public class JsonException extends RuntimeException {
 
+    public static final long serialVersionUID = 8611247331715266362L;
+
     public JsonException(String message) {
         super(message);
     }

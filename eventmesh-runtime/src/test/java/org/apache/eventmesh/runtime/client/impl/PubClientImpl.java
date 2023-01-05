@@ -41,9 +41,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class PubClientImpl extends TCPClient implements PubClient {
 
-    private Logger publogger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(PubClientImpl.class);
 
-    private UserAgent userAgent;
+    private final UserAgent userAgent;
 
     private ReceiveMsgHook callback;
 
@@ -61,7 +61,9 @@ public class PubClientImpl extends TCPClient implements PubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        publogger.info("PubClientImpl|{}|started!", clientNo);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("PubClientImpl|{}|started!", clientNo);
+        }
     }
 
     public void reconnect() throws Exception {
@@ -79,19 +81,19 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     public void heartbeat() throws Exception {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!isActive()) {
-                        PubClientImpl.this.reconnect();
-                    }
-                    Package msg = MessageUtils.heartBeat();
-                    publogger.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-                    PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-                } catch (Exception e) {
-                    //ignore
+        task = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!isActive()) {
+                    PubClientImpl.this.reconnect();
                 }
+                Package msg = MessageUtils.heartBeat();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
+                            clientNo, msg.getHeader().getCommand(), msg);
+                }
+                PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            } catch (Exception e) {
+                //ignore
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
@@ -116,7 +118,9 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, msg.getHeader().getCommand().REQUEST_TO_SERVER, msg);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
+        }
         return dispatcher(msg, timeout);
     }
 
@@ -161,7 +165,9 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        }
         return dispatcher(msg, timeout);
     }
 
@@ -169,7 +175,9 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        }
         return dispatcher(msg, timeout);
     }
 
@@ -182,7 +190,9 @@ public class PubClientImpl extends TCPClient implements PubClient {
     private class Handler extends SimpleChannelInboundHandler<Package> {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            publogger.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);
@@ -193,26 +203,26 @@ public class PubClientImpl extends TCPClient implements PubClient {
             if (cmd == Command.RESPONSE_TO_CLIENT) {
                 Package responseToClientAck = MessageUtils.responseToClientAck(msg);
                 send(responseToClientAck);
-                RequestContext context = contexts.get(RequestContext.key(msg));
+                RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                     return;
                 } else {
-                    publogger.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    LOGGER.error("msg ignored,context not found .|{}|{}", cmd, msg);
                     return;
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                publogger.error("server goodby request: ---------------------------" + msg);
+                LOGGER.error("server goodby request: ---------------------------" + msg);
                 close();
             } else {
-                RequestContext context = contexts.get(RequestContext.key(msg));
+                RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                     return;
                 } else {
-                    publogger.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    LOGGER.error("msg ignored,context not found .|{}|{}", cmd, msg);
                     return;
                 }
             }

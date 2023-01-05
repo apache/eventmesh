@@ -18,24 +18,44 @@
 package org.apache.eventmesh.auth.http.basic.config;
 
 import org.apache.eventmesh.api.common.ConfigurationWrapper;
+import org.apache.eventmesh.api.exception.AuthException;
 
+import java.io.IOException;
 import java.util.Properties;
 
 public class AuthConfigs {
 
-    public String username;
+    private static final String AUTH_CONFIG_FILE_NAME = "auth-http-basic.properties";
 
-    public String password;
+    private static final String AUTH_CONFIG_KEY_USERNAME = "auth.username";
+
+    private static final String AUTH_CONFIG_KEY_PASSWORD = "auth.password";
+
+    private String username;
+
+    private String password;
 
     private static AuthConfigs instance;
 
-    public static synchronized AuthConfigs getConfigs() {
-        if (instance == null) {
-            Properties props = ConfigurationWrapper.getConfig("auth-http-basic.properties");
-            instance = new AuthConfigs();
-            instance.username = props.getProperty("auth.username");
-            instance.password = props.getProperty("auth.password");
+    public static synchronized AuthConfigs getConfigs() throws AuthException {
+        try {
+            if (instance == null) {
+                Properties props = ConfigurationWrapper.getConfig(AUTH_CONFIG_FILE_NAME);
+                instance = new AuthConfigs();
+                instance.username = props.getProperty(AUTH_CONFIG_KEY_USERNAME);
+                instance.password = props.getProperty(AUTH_CONFIG_KEY_PASSWORD);
+            }
+            return instance;
+        } catch (IOException e) {
+            throw new AuthException("getConfigs error", e);
         }
-        return instance;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

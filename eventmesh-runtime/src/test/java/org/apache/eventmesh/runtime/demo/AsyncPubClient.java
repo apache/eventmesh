@@ -32,22 +32,26 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class AsyncPubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(AsyncPubClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncPubClient.class);
 
     public static void main(String[] args) throws Exception {
-        PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        pubClient.init();
-        pubClient.heartbeat();
-        pubClient.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                logger.error("receive msg-----------------------------" + msg.toString());
-            }
-        });
+        try (PubClientImpl pubClient =
+                     new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            pubClient.init();
+            pubClient.heartbeat();
+            pubClient.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("server good by request: {}", msg);
+                    }
+                }
+            });
 
-        for (int i = 0; i < 1; i++) {
-            ThreadUtils.randomSleep(0, 500);
-            pubClient.broadcast(MessageUtils.asyncMessage(ClientConstants.ASYNC_TOPIC, i), 5000);
+            for (int i = 0; i < 1; i++) {
+                ThreadUtils.randomSleep(0, 500);
+                pubClient.broadcast(MessageUtils.asyncMessage(ClientConstants.ASYNC_TOPIC, i), 5000);
+            }
         }
     }
 }

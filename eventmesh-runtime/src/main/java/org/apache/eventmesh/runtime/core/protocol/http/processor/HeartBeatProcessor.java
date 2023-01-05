@@ -74,9 +74,9 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         HeartbeatResponseHeader heartbeatResponseHeader =
                 HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
 
         //validate header
@@ -115,29 +115,29 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
 
             Client client = new Client();
-            client.env = env;
-            client.idc = idc;
-            client.sys = sys;
-            client.ip = ip;
-            client.pid = pid;
-            client.consumerGroup = consumerGroup;
-            client.topic = heartbeatEntity.topic;
-            client.url = heartbeatEntity.url;
+            client.setEnv(env);
+            client.setIdc(idc);
+            client.setSys(sys);
+            client.setIp(ip);
+            client.setPid(pid);
+            client.setConsumerGroup(consumerGroup);
+            client.setTopic(heartbeatEntity.topic);
+            client.setUrl(heartbeatEntity.url);
 
-            client.lastUpTime = new Date();
+            client.setLastUpTime(new Date());
 
-            if (StringUtils.isBlank(client.topic)) {
+            if (StringUtils.isBlank(client.getTopic())) {
                 continue;
             }
 
             //do acl check
-            if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+            if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 String user = heartbeatRequestHeader.getUsername();
                 String pass = heartbeatRequestHeader.getPasswd();
                 int requestCode = Integer.parseInt(heartbeatRequestHeader.getCode());
                 try {
-                    Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.topic, requestCode);
+                    Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.getTopic(), requestCode);
                 } catch (Exception e) {
                     responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                             heartbeatResponseHeader,
@@ -149,11 +149,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 }
             }
 
-            if (StringUtils.isBlank(client.url)) {
+            if (StringUtils.isBlank(client.getUrl())) {
                 continue;
             }
 
-            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             if (tmp.containsKey(groupTopicKey)) {
                 tmp.get(groupTopicKey).add(client);
@@ -190,7 +190,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                             httpLogger.debug("{}", httpCommand);
                         }
                         eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                                 System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                     } catch (Exception ex) {
                         //ignore
@@ -209,8 +209,8 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             long endTime = System.currentTimeMillis();
             httpLogger.error("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms",
                     endTime - startTime, e);
-            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
+            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
 
     }
@@ -219,9 +219,9 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         for (Client tmpClient : tmpClientList) {
             boolean isContains = false;
             for (Client localClient : localClientList) {
-                if (StringUtils.equals(localClient.url, tmpClient.url)) {
+                if (StringUtils.equals(localClient.getUrl(), tmpClient.getUrl())) {
                     isContains = true;
-                    localClient.lastUpTime = tmpClient.lastUpTime;
+                    localClient.setLastUpTime(tmpClient.getLastUpTime());
                     break;
                 }
             }

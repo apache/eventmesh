@@ -49,7 +49,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
 
     @Override
     public synchronized void registerClient(ConsumerGroupClient client) {
-        if (!client.getGrpcType().equals(grpcType)) {
+        if (client.getGrpcType() != grpcType) {
             logger.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
                 client.getGrpcType(), grpcType, client.toString());
             return;
@@ -73,7 +73,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
             return;
         }
         urls.remove(url);
-        if (urls.size() == 0) {
+        if (urls.isEmpty()) {
             idcUrls.remove(idc);
         }
         totalUrls = buildTotalUrls();

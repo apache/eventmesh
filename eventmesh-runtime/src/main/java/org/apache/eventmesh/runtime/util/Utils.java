@@ -20,13 +20,14 @@ package org.apache.eventmesh.runtime.util;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,12 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
 
 public class Utils {
-    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
-    private static final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     /**
      * used to send messages to the client
@@ -48,34 +51,30 @@ public class Utils {
      * @param session
      */
     public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
-                                     Session
-                                             session) {
+                                     Session session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
-            if (session != null && session.getSessionState().equals(SessionState.CLOSED)) {
+            if (session != null && session.getSessionState() == SessionState.CLOSED) {
                 logFailedMessageFlow(pkg, user, startTime, taskExecuteTime,
-                        new Exception("the session has been closed"));
+                    new Exception("the session has been closed"));
                 return;
             }
             ctx.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
-                            } else {
-                                logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
+                (ChannelFutureListener) future -> {
+                    if (!future.isSuccess()) {
+                        logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
+                    } else {
+                        logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
-                                if (session != null) {
-                                    session.getClientGroupWrapper().get()
-                                        .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
-                                }
-                            }
+                        if (session != null) {
+                            Objects.requireNonNull(session.getClientGroupWrapper().get())
+                                .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
-            logger.error("exception while sending message to client", e);
+            LOGGER.error("exception while sending message to client", e);
         }
     }
 
@@ -95,12 +94,12 @@ public class Utils {
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
                                              Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
-            messageLogger.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
+            MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
                     pkg.getHeader().getCmd(),
-                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                    EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
                     System.currentTimeMillis() - startTime, e);
         } else {
-            messageLogger.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
+            MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
                     pkg.getHeader().getCmd(),
                     pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         }
@@ -115,34 +114,15 @@ public class Utils {
      */
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
-            messageLogger.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+            MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
+                    EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
                     System.currentTimeMillis() - startTime);
         } else {
-            messageLogger
+            MESSAGE_LOGGER
                     .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
                             user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+
         }
-    }
-
-    /**
-     * print part of the mq message
-     *
-     * @param eventMeshMessage
-     * @return
-     */
-    public static String printMqMessage(EventMeshMessage eventMeshMessage) {
-        Map<String, String> properties = eventMeshMessage.getProperties();
-
-        String bizSeqNo = properties.get(EventMeshConstants.KEYS_UPPERCASE);
-        if (!StringUtils.isNotBlank(bizSeqNo)) {
-            bizSeqNo = properties.get(EventMeshConstants.KEYS_LOWERCASE);
-        }
-
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage
-                        .getTopic(), properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
-                bizSeqNo);
-        return result;
     }
 
     /**
@@ -155,5 +135,24 @@ public class Utils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * parse http header
+     *
+     * @param fullReq request parameter
+     * @return http header
+     */
+    public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+        Map<String, Object> headerParam = new HashMap<>();
+        for (String key : fullReq.headers().names()) {
+            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                continue;
+            }
+            headerParam.put(key, fullReq.headers().get(key));
+        }
+        return headerParam;
     }
 }

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.trace.api.config;
 
+import org.apache.eventmesh.common.utils.PropertiesUtils;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -68,24 +71,24 @@ public class ExporterConfiguration {
     }
 
     private void initializeConfig() {
-        String eventMeshTraceMaxExportSizeStr = properties.getProperty("eventmesh.trace.max.export.size");
+        String eventMeshTraceMaxExportSizeStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_MAX_EXPORT_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTraceMaxExportSizeStr)) {
             eventMeshTraceMaxExportSize =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceMaxExportSizeStr));
         }
 
-        String eventMeshTraceMaxQueueSizeStr = properties.getProperty("eventmesh.trace.max.queue.size");
+        String eventMeshTraceMaxQueueSizeStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_MAX_QUEUE_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTraceMaxQueueSizeStr)) {
             eventMeshTraceMaxQueueSize = Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceMaxQueueSizeStr));
         }
 
-        String eventMeshTraceExportTimeoutStr = properties.getProperty("eventmesh.trace.export.timeout");
+        String eventMeshTraceExportTimeoutStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_EXPORT_TIMEOUT);
         if (StringUtils.isNotEmpty(eventMeshTraceExportTimeoutStr)) {
             eventMeshTraceExportTimeout =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExportTimeoutStr));
         }
 
-        String eventMeshTraceExportIntervalStr = properties.getProperty("eventmesh.trace.export.interval");
+        String eventMeshTraceExportIntervalStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_EXPORT_INTERVAL);
         if (StringUtils.isNotEmpty(eventMeshTraceExportIntervalStr)) {
             eventMeshTraceExportInterval =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExportIntervalStr));
@@ -105,11 +108,8 @@ public class ExporterConfiguration {
         }
         // get from config home
         try {
-            String configPath =
-                System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            String configPath = System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot load exporter.properties file from conf");
         }

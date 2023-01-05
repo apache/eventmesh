@@ -43,7 +43,7 @@ OpenSchema[[5]](#References) proposes a specification for data schema when excha
 
 ### Process of Transferring Messages under Schema Registry
 
-![Process](.././images/design-document/schema-registry-process.jpg)
+![Process](../../images/design-document/schema-registry-process.jpg)
 
 The highlevel process of messages transmission contains 10 steps as follows:
 

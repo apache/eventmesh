@@ -17,29 +17,41 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.client.utils.URIBuilder;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.v03.CloudEventV03;
+import io.cloudevents.core.v1.CloudEventV1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EventMeshUtilTest {
+    private static final String TYPE = "type";
+    private static final String V03 = "V03";
 
     @Test
     public void testBuildPushMsgSeqNo() {
@@ -74,6 +86,9 @@ public class EventMeshUtilTest {
         Throwable e = new EventMeshException("error");
         String exception = EventMeshUtil.stackTrace(e);
         Assert.assertTrue(exception.contains(e.getMessage()));
+
+        exception = EventMeshUtil.stackTrace(null);
+        Assert.assertNull(exception);
     }
 
     @Test
@@ -93,10 +108,10 @@ public class EventMeshUtilTest {
     public void testGetMessageBizSeq() throws URISyntaxException {
         String value = "keys";
         CloudEvent cloudEvent = CloudEventBuilder.v03().withExtension(EventMeshConstants.KEYS_LOWERCASE, value)
-            .withId(UUID.randomUUID().toString())
-            .withSource(new URIBuilder().build())
-            .withType("type")
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSource(new URIBuilder().build())
+                .withType(TYPE)
+                .build();
         String result = EventMeshUtil.getMessageBizSeq(cloudEvent);
         Assert.assertEquals(result, value);
     }
@@ -105,10 +120,10 @@ public class EventMeshUtilTest {
     public void testGetEventProp() throws URISyntaxException {
         String value = "keys";
         CloudEvent cloudEvent = CloudEventBuilder.v03().withExtension(EventMeshConstants.KEYS_LOWERCASE, value)
-            .withId(UUID.randomUUID().toString())
-            .withSource(new URIBuilder().build())
-            .withType("type")
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSource(new URIBuilder().build())
+                .withType(TYPE)
+                .build();
         Map<String, String> result = EventMeshUtil.getEventProp(cloudEvent);
         Assert.assertEquals(result.get(EventMeshConstants.KEYS_LOWERCASE), value);
     }
@@ -129,12 +144,53 @@ public class EventMeshUtilTest {
     @Test
     public void testBuildUserAgentClientId() {
         String subSystem = "subsystem";
-        String host = "127.0.0.1";
+        String host = "localhost";
         int pid = 1;
         int port = 8080;
         UserAgent agent = UserAgent.builder().subsystem(subSystem).host(host)
-            .pid(pid).port(port).build();
+                .pid(pid).port(port).build();
         String result = EventMeshUtil.buildUserAgentClientId(agent);
         Assert.assertEquals(result, String.format("%s--%d-%s:%d", subSystem, pid, host, port));
+
+        result = EventMeshUtil.buildUserAgentClientId(null);
+        Assert.assertNull(result);
+    }
+
+    @Test
+    public void testCloneObject() throws IOException, ClassNotFoundException {
+        TopicMetadata topicMetadata = new TopicMetadata("topicName");
+        TopicMetadata topicMetadata2 = EventMeshUtil.cloneObject(topicMetadata);
+        Assert.assertNotEquals(System.identityHashCode(topicMetadata), System.identityHashCode(topicMetadata2));
+        Assert.assertEquals(topicMetadata, topicMetadata2);
+    }
+
+    @Test
+    public void testPrintState() {
+        try {
+            ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
+                    .createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
+            EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetCloudEventExtensionMap() {
+        URI source = URI.create("uri");
+        CloudEventV03 cloudEventV03 = CloudEventBuilder.v03().withId(V03).withSource(source).withType(V03).build();
+        Map<String, Object> extMapV03 = EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V03.toString(), cloudEventV03);
+        Assert.assertNotNull(extMapV03);
+        Assert.assertEquals(V03, extMapV03.get("id"));
+        Assert.assertEquals(V03, extMapV03.get(TYPE));
+
+        CloudEventV1 cloudEventV1 = (CloudEventV1) CloudEventBuilder.v1().withId("V1").withSource(source).withType("V1").build();
+        Map<String, Object> extMapV1 = EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), cloudEventV1);
+        Assert.assertNotNull(extMapV1);
+        Assert.assertEquals("V1", extMapV1.get("id"));
+        Assert.assertEquals("V1", extMapV1.get(TYPE));
+
+        Map<String, Object> map = EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V03.toString(), cloudEventV1);
+        Assert.assertTrue(map.isEmpty());
     }
 }

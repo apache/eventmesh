@@ -31,12 +31,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class AsyncSyncRequestInstance {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncSyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -74,26 +76,30 @@ public class AsyncSyncRequestInstance {
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
-                            System.currentTimeMillis() - startTime);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
+                                System.currentTimeMillis() - startTime);
+                    }
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    log.debug("send msg failed", e);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("send msg failed", e);
+                    }
                 }
             }, 3000);
 
             Thread.sleep(2000);
         } catch (Exception e) {
-            log.warn("async send msg failed", e);
+            LOGGER.warn("async send msg failed", e);
         }
 
         Thread.sleep(30000);
         try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
-            log.warn("producer shutdown exception", e1);
+            LOGGER.warn("producer shutdown exception", e1);
         }
     }
 }

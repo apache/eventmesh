@@ -47,17 +47,19 @@ public class AsyncPublishInstance {
     public static final int MESSAGE_SIZE = 1;
 
     public static void main(String[] args) throws Exception {
-    
+
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-    
+
         // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
         String eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
         if (StringUtils.isNotBlank(eventMeshIp) || StringUtils.isNotBlank(eventMeshHttpPort)) {
             eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
 
+        // Both the producer and consumer require an instance of EventMeshHttpClientConfig class
+        // that specifies the configuration of EventMesh HTTP client.
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
                 .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)

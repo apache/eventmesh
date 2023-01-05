@@ -41,11 +41,11 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcProducer.class);
 
-    private static final  String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
+    private static final String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
 
     private final EventMeshGrpcClientConfig clientConfig;
 
-    private ManagedChannel channel;
+    private final ManagedChannel channel;
 
     PublisherServiceBlockingStub publisherClient;
 
@@ -53,9 +53,6 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
-    }
-
-    public void init() {
         channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
             .usePlaintext().build();
         publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
@@ -81,7 +78,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     public <T> Response publish(List<T> messageList) {
         logger.info("BatchPublish message " + messageList.toString());
 
-        if (messageList.size() == 0) {
+        if (messageList.isEmpty()) {
             return null;
         }
         if (messageList.get(0) instanceof CloudEvent) {

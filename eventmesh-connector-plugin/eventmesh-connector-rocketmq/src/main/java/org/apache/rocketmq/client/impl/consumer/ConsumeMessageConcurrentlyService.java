@@ -41,9 +41,7 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -250,13 +248,9 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     }
 
     private void cleanExpireMsg() {
-        Iterator<Map.Entry<MessageQueue, ProcessQueue>> it =
-            this.defaultMQPushConsumerImpl.getRebalanceImpl().getProcessQueueTable().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<MessageQueue, ProcessQueue> next = it.next();
-            ProcessQueue pq = next.getValue();
+        this.defaultMQPushConsumerImpl.getRebalanceImpl().getProcessQueueTable().forEach((k, pq) -> {
             pq.cleanExpiredMsg(this.defaultMQPushConsumer);
-        }
+        });
     }
 
     public void processConsumeResult(
@@ -345,7 +339,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             this.defaultMQPushConsumerImpl.sendMessageBack(msg, delayLevel, context.getMessageQueue().getBrokerName());
             return true;
         } catch (Exception e) {
-            log.error("sendMessageBack exception, group: " + this.consumerGroup + " msg: " + msg.toString(), e);
+            log.error("sendMessageBack exception, group: {}" + " msg: {}", this.consumerGroup, msg, e);
         }
 
         return false;
@@ -446,7 +440,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             ConsumeReturnType returnType = ConsumeReturnType.SUCCESS;
             try {
                 ConsumeMessageConcurrentlyService.this.resetRetryTopic(msgs);
-                if (msgs != null && !msgs.isEmpty()) {
+                if (!msgs.isEmpty()) {
                     for (MessageExt msg : msgs) {
                         MessageAccessor.setConsumeStartTimeStamp(msg, String.valueOf(System.currentTimeMillis()));
                     }

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
@@ -47,9 +46,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
@@ -142,7 +139,6 @@ public class PushConsumerImpl {
         }
     }
 
-
     public void unsubscribe(String topic) {
         try {
             this.rocketmqPushConsumer.unsubscribe(topic);
@@ -156,8 +152,10 @@ public class PushConsumerImpl {
             .getDefaultMQPushConsumerImpl().getConsumeMessageService();
         List<MessageExt> msgExtList = new ArrayList<>(cloudEvents.size());
         for (CloudEvent msg : cloudEvents) {
-            msgExtList.add(CloudEventUtils.msgConvertExt(
-                RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+            if (msg != null) {
+                msgExtList.add(CloudEventUtils.msgConvertExt(
+                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+            }
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
             .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);

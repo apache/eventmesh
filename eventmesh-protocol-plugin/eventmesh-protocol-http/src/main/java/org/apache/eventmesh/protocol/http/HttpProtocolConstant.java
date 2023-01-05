@@ -20,4 +20,19 @@ package org.apache.eventmesh.protocol.http;
 public enum HttpProtocolConstant {
     ;
     public static final String PROTOCOL_NAME = "http";
+
+    public static final String DATA_CONTENT_TYPE = "application/json";
+
+    public static final String CONSTANTS_DEFAULT_SOURCE = "/";
+    public static final String CONSTANTS_DEFAULT_TYPE = "http_request";
+    public static final String CONSTANTS_DEFAULT_SUBJECT = "TOPIC-HTTP-REQUEST";
+
+    public static final String CONSTANTS_KEY_ID = "id";
+    public static final String CONSTANTS_KEY_SOURCE = "source";
+    public static final String CONSTANTS_KEY_TYPE = "type";
+    public static final String CONSTANTS_KEY_SUBJECT = "subject";
+    public static final String CONSTANTS_KEY_HEADERS = "headers";
+    public static final String CONSTANTS_KEY_BODY = "body";
+    public static final String CONSTANTS_KEY_PATH = "path";
+    public static final String CONSTANTS_KEY_METHOD = "method";
 }

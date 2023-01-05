@@ -19,13 +19,17 @@ package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class HttpTinyClient {
 
@@ -47,9 +51,9 @@ public class HttpTinyClient {
             String resp = null;
 
             if (HttpURLConnection.HTTP_OK == respCode) {
-                resp = IOTinyUtils.toString(conn.getInputStream(), encoding);
+                resp = IOUtils.toString(conn.getInputStream(), encoding);
             } else {
-                resp = IOTinyUtils.toString(conn.getErrorStream(), encoding);
+                resp = IOUtils.toString(conn.getErrorStream(), encoding);
             }
             return new HttpResult(respCode, resp);
         } finally {
@@ -105,16 +109,12 @@ public class HttpTinyClient {
             conn.setDoInput(true);
             setHeaders(conn, headers, encoding);
 
-            conn.getOutputStream().write(encodedContent.getBytes(EventMeshConstants.DEFAULT_CHARSET));
+            conn.getOutputStream().write(Objects.requireNonNull(encodedContent).getBytes(StandardCharsets.UTF_8));
 
             int respCode = conn.getResponseCode();
-            String resp = null;
+            String resp = HttpURLConnection.HTTP_OK == respCode ? IOUtils.toString(conn.getInputStream(), encoding)
+                    : IOUtils.toString(conn.getErrorStream(), encoding);
 
-            if (HttpURLConnection.HTTP_OK == respCode) {
-                resp = IOTinyUtils.toString(conn.getInputStream(), encoding);
-            } else {
-                resp = IOTinyUtils.toString(conn.getErrorStream(), encoding);
-            }
             return new HttpResult(respCode, resp);
         } finally {
             if (null != conn) {
@@ -124,8 +124,8 @@ public class HttpTinyClient {
     }
 
     public static class HttpResult {
-        private final int code;
-        private final String content;
+        private final transient int code;
+        private final transient String content;
 
         public HttpResult(int code, String content) {
             this.code = code;

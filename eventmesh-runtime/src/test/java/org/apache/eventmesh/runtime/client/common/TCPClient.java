@@ -120,7 +120,7 @@ public abstract class TCPClient implements Closeable {
             send(msg);
             return null;
         } else {
-            Object key = RequestContext.key(msg);
+            Object key = RequestContext.getHeaderSeq(msg);
             CountDownLatch latch = new CountDownLatch(1);
             RequestContext c = RequestContext.context(key, msg, latch);
             if (!contexts.contains(c)) {

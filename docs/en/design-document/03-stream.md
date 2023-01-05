@@ -83,7 +83,7 @@ The main advantage of the pipeline is that you can create complex event processi
 
 Component interface is the primary entry point, you can use Component object as a factory to create EndPoint objects.
 
-![Stream Component Interface](/images/design-document/stream-component-interface.png)
+![Stream Component Interface](../../images/design-document/stream-component-interface.png)
 
 ### EndPoint
 

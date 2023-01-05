@@ -36,6 +36,8 @@ github:
     - multi-runtime
     - microservice
     - state-management
+    - hacktoberfest
+    - hacktoberfest2022
   enabled_merge_buttons:
     squash:  true
     merge:   true

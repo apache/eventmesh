@@ -17,15 +17,19 @@
 
 package org.apache.eventmesh.trace.zipkin.config;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
+import org.apache.eventmesh.trace.zipkin.common.ZipkinConstants;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import com.google.common.base.Preconditions;
@@ -60,12 +64,12 @@ public class ZipkinConfiguration {
     }
 
     private void initializeConfig() {
-        String eventMeshZipkinIPStr = properties.getProperty("eventmesh.trace.zipkin.ip");
+        String eventMeshZipkinIPStr = properties.getProperty(ZipkinConstants.KEY_ZIPKIN_IP);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshZipkinIPStr),
-            String.format("%s error", "eventmesh.trace.zipkin.ip"));
+            String.format("%s error", ZipkinConstants.KEY_ZIPKIN_IP));
         eventMeshZipkinIP = StringUtils.deleteWhitespace(eventMeshZipkinIPStr);
 
-        String eventMeshZipkinPortStr = properties.getProperty("eventmesh.trace.zipkin.port");
+        String eventMeshZipkinPortStr = properties.getProperty(ZipkinConstants.KEY_ZIPKIN_PORT);
         if (StringUtils.isNotEmpty(eventMeshZipkinPortStr)) {
             eventMeshZipkinPort = Integer.parseInt(StringUtils.deleteWhitespace(eventMeshZipkinPortStr));
         }
@@ -74,23 +78,21 @@ public class ZipkinConfiguration {
     private void loadProperties() {
         URL resource = ZipkinConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
         if (resource != null) {
-            try (InputStream inputStream = resource.openStream()) {
+            try (InputStream inputStream = resource.openStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 if (inputStream.available() > 0) {
-                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
+                    properties.load(reader);
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Load zipkin.properties file from classpath error");
+                throw new RuntimeException("Load zipkin.properties file from classpath error", e);
             }
         }
         // get from config home
         try {
-            String configPath =
-                System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot load zipkin.properties file from conf");
+            throw new IllegalArgumentException("Cannot load zipkin.properties file from conf", e);
         }
     }
 }

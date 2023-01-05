@@ -37,10 +37,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     public int eventMeshTcpClientMaxNum = 10000;
 
     //======================================= New add config =================================
-    /**
-     * whether enable TCP Serer
-     */
-    public boolean eventMeshTcpServerEnabled = Boolean.FALSE;
 
     public int eventMeshTcpGlobalScheduler = 5;
 
@@ -106,9 +102,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
         eventMeshTcpClientMaxNum = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM,
                 eventMeshTcpClientMaxNum);
-
-        eventMeshTcpServerEnabled = configurationWrapper.getBoolProp(ConfKeys.KEYS_EVENTMESH_TCP_SERVER_ENABLED,
-                eventMeshTcpServerEnabled);
 
         eventMeshTcpGlobalScheduler = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER,
                 eventMeshTcpGlobalScheduler);
@@ -194,7 +187,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         public static final String KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_DELAY = "eventMesh.server.retry.sync.pushRetryDelayInMills";
         public static final String KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE = "eventMesh.server.retry.pushRetryQueueSize";
         public static final String KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT = "eventMesh.server.admin.http.port";
-        public static final String KEYS_EVENTMESH_TCP_SERVER_ENABLED = "eventMesh.server.tcp.enabled";
         public static final String KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED = "eventMesh.server.tcp.sendBack.enabled";
         public static final String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
         public static final String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";

@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * AuthService
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.SECURITY)
 public interface AuthService {
 
     void init() throws AuthException;
@@ -35,5 +35,5 @@ public interface AuthService {
 
     void shutdown() throws AuthException;
 
-    Map getAuthParams() throws AuthException;
+    Map<String, String> getAuthParams() throws AuthException;
 }

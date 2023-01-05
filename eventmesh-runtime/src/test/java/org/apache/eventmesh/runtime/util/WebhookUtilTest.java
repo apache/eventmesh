@@ -25,11 +25,13 @@ import static org.mockito.Mockito.mock;
 import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,12 +43,28 @@ import org.mockito.Mockito;
 public class WebhookUtilTest {
 
     @Test
-    public void testObtainDeliveryAgreement() throws Exception {
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
-        Mockito.when(response.getLastHeader("WebHook-Allowed-Origin")).thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
-        Mockito.when(httpClient.execute(any())).thenReturn(response);
-        Assert.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+    public void testObtainDeliveryAgreement() {
+        // normal case
+        try (CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
+             CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
+             CloseableHttpClient httpClient2 = Mockito.mock(CloseableHttpClient.class)) {
+
+            Mockito.when(response.getLastHeader("WebHook-Allowed-Origin")).thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
+            Mockito.when(httpClient.execute(any())).thenReturn(response);
+            Assert.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+
+            // abnormal case
+            Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
+            try {
+                WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*");
+                Assert.fail("invalid url should throw RuntimeException!");
+            } catch (RuntimeException e) {
+                Assert.assertNotNull(e);
+            }
+
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
