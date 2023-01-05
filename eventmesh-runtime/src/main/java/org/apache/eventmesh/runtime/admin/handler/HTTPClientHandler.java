@@ -49,7 +49,7 @@ public class HTTPClientHandler implements HttpHandler {
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-        EventMeshHTTPServer eventMeshHTTPServer
+            EventMeshHTTPServer eventMeshHTTPServer
     ) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
@@ -78,7 +78,7 @@ public class HTTPClientHandler implements HttpHandler {
             String url = deleteHTTPClientRequest.url;
 
             for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
-                clientList.removeIf(client -> Objects.equals(client.url, url));
+                clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
@@ -121,17 +121,17 @@ public class HTTPClientHandler implements HttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.env).orElse(""),
-                        Optional.ofNullable(client.sys).orElse(""),
-                        Optional.ofNullable(client.url).orElse(""),
-                        "0",
-                        Optional.ofNullable(client.hostname).orElse(""),
-                        0,
-                        Optional.ofNullable(client.apiVersion).orElse(""),
-                        Optional.ofNullable(client.idc).orElse(""),
-                        Optional.ofNullable(client.consumerGroup).orElse(""),
-                        "",
-                        "HTTP"
+                            Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
+                            "0",
+                            Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
+                            0,
+                            Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
+                            "",
+                            "HTTP"
                     );
                     getClientResponseList.add(getClientResponse);
                 }

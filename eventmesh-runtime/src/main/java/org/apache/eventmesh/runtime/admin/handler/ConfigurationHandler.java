@@ -79,20 +79,20 @@ public class ConfigurationHandler implements HttpHandler {
 
         try {
             GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                eventMeshTCPConfiguration.sysID,
-                eventMeshTCPConfiguration.namesrvAddr,
-                eventMeshTCPConfiguration.eventMeshEnv,
-                eventMeshTCPConfiguration.eventMeshIDC,
-                eventMeshTCPConfiguration.eventMeshCluster,
-                eventMeshTCPConfiguration.eventMeshServerIp,
-                eventMeshTCPConfiguration.eventMeshName,
-                eventMeshTCPConfiguration.eventMeshWebhookOrigin,
-                eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
-                eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
+                    eventMeshTCPConfiguration.getSysID(),
+                    eventMeshTCPConfiguration.getNamesrvAddr(),
+                    eventMeshTCPConfiguration.getEventMeshEnv(),
+                    eventMeshTCPConfiguration.getEventMeshIDC(),
+                    eventMeshTCPConfiguration.getEventMeshCluster(),
+                    eventMeshTCPConfiguration.getEventMeshServerIp(),
+                    eventMeshTCPConfiguration.getEventMeshName(),
+                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+                    eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
 
                 // TCP Configuration
                 eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
+                eventMeshTCPConfiguration.eventMeshTcpSendBackEnabled,
 
                 // HTTP Configuration
                 eventMeshHTTPConfiguration.httpServerPort,
