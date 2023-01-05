@@ -108,9 +108,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 }
         )).orElseGet(Maps::newHashMap);
 
-        if (requestBodyMap.get(EventMeshConstants.URL) == null
-                || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
-                || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
+        if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
             return;
