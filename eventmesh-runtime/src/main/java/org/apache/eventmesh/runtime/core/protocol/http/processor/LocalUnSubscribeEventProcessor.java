@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,16 +58,17 @@ import com.google.common.collect.Maps;
 
 import lombok.extern.slf4j.Slf4j;
 
-@EventMeshTrace
 @Slf4j
+@EventMeshTrace(isEnable = false)
 public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
-    
+
     public LocalUnSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
 
     @Override
     public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
+
 
         final AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
 
@@ -81,9 +83,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // user request header
-        final Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
-        final String requestIp = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, requestIp);
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
         // build sys header
         requestWrapper.buildSysHeaderForClient();
@@ -100,8 +100,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         //validate body
+        final byte[] requestBody = requestWrapper.getBody();
+
         final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
-                new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
+                new String(requestBody, Constants.DEFAULT_CHARSET),
                 new TypeReference<HashMap<String, Object>>() {
                 }
         )).orElseGet(Maps::newHashMap);
@@ -114,11 +116,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
         final String unSubscribeUrl = requestBodyMap.get(EventMeshConstants.URL).toString();
         final String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
-        final String topic = JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // unSubscriptionItem
         final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.deserialize(
-                topic,
+                JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
                 new TypeReference<List<String>>() {
                 }
         )).orElseGet(Collections::emptyList);
@@ -141,10 +142,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                         if (log.isWarnEnabled()) {
                             log.warn("client {} start unsubscribe", JsonUtils.serialize(client));
                         }
-
                         clientIterator.remove();
                     }
                 }
+
                 if (CollectionUtils.isNotEmpty(groupTopicClients)) {
                     //change url
                     final Map<String, List<String>> idcUrls = new HashMap<>();
@@ -158,6 +159,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                             if (urls == null) {
                                 urls = new ArrayList<>();
                                 idcUrls.put(client.getIdc(), urls);
+
                             }
                             urls.add(StringUtils.deleteWhitespace(client.getUrl()));
                         }
@@ -172,12 +174,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                         for (final Map.Entry<String, ConsumerGroupTopicConf> entry : map.entrySet()) {
                             // only modify the topic to subscribe
                             if (StringUtils.equals(unSubTopic, entry.getKey())) {
-                                final ConsumerGroupTopicConf latestTopicConf =
-                                        new ConsumerGroupTopicConf();
+                                final ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                 latestTopicConf.setTopic(unSubTopic);
-                                latestTopicConf
-                                        .setSubscriptionItem(entry.getValue().getSubscriptionItem());
+                                latestTopicConf.setSubscriptionItem(entry.getValue().getSubscriptionItem());
                                 latestTopicConf.setUrls(clientUrls);
                                 latestTopicConf.setIdcUrls(idcUrls);
                                 map.put(unSubTopic, latestTopicConf);
@@ -190,7 +190,6 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     break;
                 }
             }
-
             final long startTime = System.currentTimeMillis();
             if (isChange) {
                 try {
@@ -229,8 +228,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 } catch (Exception e) {
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
-                                                + "|topic={}|url={}", System.currentTimeMillis() - startTime,
-                                        JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
+                                        + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
@@ -251,6 +250,11 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
     private void registerClient(final HttpEventWrapper requestWrapper,
                                 final String consumerGroup,
                                 final List<String> topicList, final String url) {
+        Objects.requireNonNull(requestWrapper, "requestWrapper can not be null");
+        Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
+        Objects.requireNonNull(topicList, "topicList can not be null");
+        Objects.requireNonNull(url, "url can not be null");
+
         final Map<String, Object> requestHeaderMap = requestWrapper.getSysHeaderMap();
         for (final String topic : topicList) {
             final Client client = new Client();

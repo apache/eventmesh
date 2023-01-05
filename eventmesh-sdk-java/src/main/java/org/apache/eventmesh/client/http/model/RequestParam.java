@@ -19,6 +19,8 @@ package org.apache.eventmesh.client.http.model;
 
 import org.apache.eventmesh.common.Constants;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -74,7 +76,7 @@ public class RequestParam {
     }
 
     public String getQueryParams() {
-        if (queryParams == null || queryParams.size() == 0) {
+        if (MapUtils.isEmpty(queryParams)) {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
