@@ -25,12 +25,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -226,15 +221,16 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             log.info("eventMeshMap:{},clientDistributionMap:{},group:{}", eventMeshMap, clientDistributionMap, group);
         }
 
-        if (!eventMeshMap.keySet().containsAll(clientDistributionMap.keySet())) {
+        Set<String> clientdDistributionSet=new HashSet<>(clientDistributionMap.keySet());
+        clientdDistributionSet.retainAll(eventMeshMap.keySet());
+        if(!clientdDistributionSet.isEmpty()){
             if (log.isWarnEnabled()) {
                 log.warn("exist proxy not register but exist in distributionMap");
             }
             return null;
         }
 
-
-        eventMeshMap.keySet().forEach(proxy -> clientDistributionMap.putIfAbsent(proxy, 0));
+        eventMeshMap.keySet().parallelStream().forEach(proxy -> clientDistributionMap.putIfAbsent(proxy, 0));
 
         //select the eventmesh with least instances
         if (MapUtils.isEmpty(clientDistributionMap)) {
