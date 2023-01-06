@@ -81,8 +81,8 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         for (final EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
             String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
-                final String dummy = StringUtils.equals(idc, localIdc) ?
-                        localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint())
+                final String dummy = StringUtils.equals(idc, localIdc)
+                        ? localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint())
                         : remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
             } else {
                 if (log.isErrorEnabled()) {
