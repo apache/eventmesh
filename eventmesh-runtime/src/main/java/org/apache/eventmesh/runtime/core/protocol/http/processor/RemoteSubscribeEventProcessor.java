@@ -39,11 +39,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,11 +103,15 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         //validate body
         byte[] requestBody = requestWrapper.getBody();
-
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
-            new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {}
-        )).orElseGet(Maps::newHashMap);
+        Map<String, Object> requestBodyMap;
+        if(requestBody != null){
+            requestBodyMap = JsonUtils.deserialize(
+                    new String(requestBody, Constants.DEFAULT_CHARSET),
+                    new TypeReference<HashMap<String, Object>>() {}
+            );
+        }else{
+            requestBodyMap = new HashMap<>();
+        }
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -122,10 +125,15 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
-            topic,
-            new TypeReference<List<SubscriptionItem>>() {}
-        )).orElseGet(Collections::emptyList);
+        List<SubscriptionItem> subscriptionList;
+        if(topic != null){
+            subscriptionList = JsonUtils.deserialize(
+                    topic,
+                    new TypeReference<List<SubscriptionItem>>() {}
+            );
+        }else{
+            subscriptionList = new ArrayList<>();
+        }
 
         //do acl check
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
@@ -200,10 +208,15 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
-                remoteResult,
-                new TypeReference<Map<String, String>>() {}
-            )).orElseGet(Maps::newHashMap);
+            Map<String, String> remoteResultMap;
+            if(remoteResult != null){
+                remoteResultMap = JsonUtils.deserialize(
+                        remoteResult,
+                        new TypeReference<Map<String, String>>() {}
+                );
+            }else {
+                remoteResultMap = new HashMap<>();
+            }
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
