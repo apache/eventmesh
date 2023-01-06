@@ -74,7 +74,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                 pkg.getHeader().getProperties()
                         .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                        eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
+                        eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp());
                 Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
 
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SYS, session.getClient().getSubsystem());
@@ -133,10 +133,10 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     }
 
     private boolean isNeedTrace(Command cmd) {
-        if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable
-                && cmd != null && (Command.REQUEST_TO_SERVER == cmd
-                || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
+        if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
+            && cmd != null && (Command.REQUEST_TO_SERVER == cmd
+            || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
             return true;
         }
         return false;

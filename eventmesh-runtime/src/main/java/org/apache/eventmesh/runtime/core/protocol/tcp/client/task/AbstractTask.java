@@ -28,15 +28,13 @@ import io.netty.channel.ChannelHandlerContext;
 
 public abstract class AbstractTask implements Runnable {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     protected Package pkg;
     protected ChannelHandlerContext ctx;
     protected Session session;
     protected long startTime;
     protected EventMeshTCPServer eventMeshTCPServer;
 
-    public AbstractTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+    public AbstractTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.pkg = pkg;
         this.ctx = ctx;

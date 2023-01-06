@@ -43,7 +43,7 @@ public class WebHookOperationConstant {
 
     public static final String EVENTMESH_HOME = "#{eventMeshHome}";
 
-    public static final String getFilePath(String filePath) {
+    public static String getFilePath(String filePath) {
         if (filePath.startsWith(EVENTMESH_HOME)) {
             String configPath = Constants.EVENTMESH_CONF_HOME;
 

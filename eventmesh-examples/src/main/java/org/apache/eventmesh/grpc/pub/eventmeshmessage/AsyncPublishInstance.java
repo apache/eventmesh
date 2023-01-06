@@ -45,33 +45,32 @@ public class AsyncPublishInstance {
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
+                .env("env").idc("idc")
+                .sys("1234").build();
 
-        EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig)) {
+            
+            Map<String, String> content = new HashMap<>();
+            content.put("content", "testAsyncMessage");
 
-        eventMeshGrpcProducer.init();
-
-        Map<String, String> content = new HashMap<>();
-        content.put("content", "testAsyncMessage");
-
-        for (int i = 0; i < messageSize; i++) {
-            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .content(JsonUtils.serialize(content))
-                .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
-                .uniqueId(RandomStringUtils.generateNum(30))
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .build()
-                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
-            eventMeshGrpcProducer.publish(eventMeshMessage);
-            Thread.sleep(1000);
-        }
-        Thread.sleep(30000);
-        try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
-            // ignore
+            for (int i = 0; i < messageSize; i++) {
+                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                        .content(JsonUtils.serialize(content))
+                        .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+                        .uniqueId(RandomStringUtils.generateNum(30))
+                        .bizSeqNo(RandomStringUtils.generateNum(30))
+                        .build()
+                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+                eventMeshGrpcProducer.publish(eventMeshMessage);
+                Thread.sleep(1000);
+            }
+            Thread.sleep(30000);
+            try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
+                // ignore
+            }
         }
     }
 }

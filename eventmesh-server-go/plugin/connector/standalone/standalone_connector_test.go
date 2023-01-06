@@ -17,6 +17,7 @@ package standalone
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -35,18 +36,29 @@ const (
 	pluginName = "standalone"
 )
 
+// MockDecoder standalone connector properties mock decoder
+type MockDecoder struct {
+}
+
+// Decode mock decoder, no-op
+func (m *MockDecoder) Decode(cfg interface{}) error {
+	return nil
+}
+
 func TestProducer_Publish(t *testing.T) {
 	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	factory.Setup(pluginName, &MockDecoder{})
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 
 	var publishSuccess bool
 	var callBackErr error
+	topic := fmt.Sprintf("%s_publish", topicName)
 	callback := connector.SendCallback{
 		OnSuccess: func(result *connector.SendResult) {
 			publishSuccess = true
-			assert.Equal(t, topicName, result.Topic)
+			assert.Equal(t, topic, result.Topic)
 			assert.Equal(t, "1", result.MessageId)
 			assert.Nil(t, result.Err)
 		},
@@ -55,18 +67,20 @@ func TestProducer_Publish(t *testing.T) {
 		},
 	}
 
-	err := producer.Publish(context.Background(), getTestEvent(), &callback)
+	err := producer.Publish(context.Background(), getTestEvent(topic), &callback)
 	assert.Nil(t, err)
 	assert.True(t, publishSuccess)
 	assert.Nil(t, callBackErr)
 
-	exist, err := producer.CheckTopicExist(topicName)
+	exist, err := producer.CheckTopicExist(topic)
 	assert.True(t, exist)
 	assert.Nil(t, err)
 
 }
 func TestConsumer_Subscribe(t *testing.T) {
 	sum := atomic.NewInt64(0)
+	topic := fmt.Sprintf("%s_subscribe", topicName)
+
 	var wg sync.WaitGroup
 	wg.Add(50)
 
@@ -83,17 +97,18 @@ func TestConsumer_Subscribe(t *testing.T) {
 	}
 
 	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	factory.Setup(pluginName, &MockDecoder{})
 	consumer, _ := factory.GetConsumer()
 	consumer.Start()
 	consumer.RegisterEventListener(&listener)
-	consumer.Subscribe(topicName)
+	consumer.Subscribe(topic)
 	defer consumer.Shutdown()
 
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 	for i := 1; i <= 50; i++ {
-		err := producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+		err := producer.Publish(context.Background(), getTestEventOfData(topic, map[string]interface{}{
 			"val": i,
 		}), getEmptyPublishCallback())
 
@@ -109,6 +124,8 @@ func TestConsumer_Subscribe(t *testing.T) {
 
 func TestConsumer_ManualAck(t *testing.T) {
 	sum := atomic.NewInt64(0)
+	topic := fmt.Sprintf("%s_ack", topicName)
+
 	var wg sync.WaitGroup
 	wg.Add(50)
 
@@ -126,17 +143,18 @@ func TestConsumer_ManualAck(t *testing.T) {
 	}
 
 	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	factory.Setup(pluginName, &MockDecoder{})
 	consumer, _ := factory.GetConsumer()
 	consumer.Start()
 	consumer.RegisterEventListener(&listener)
-	consumer.Subscribe(topicName)
+	consumer.Subscribe(topic)
 	defer consumer.Shutdown()
 
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 	for i := 1; i <= 50; i++ {
-		err := producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+		err := producer.Publish(context.Background(), getTestEventOfData(topic, map[string]interface{}{
 			"val": i,
 		}), getEmptyPublishCallback())
 
@@ -151,6 +169,7 @@ func TestConsumer_ManualAck(t *testing.T) {
 
 func TestConsumer_UpdateOffset(t *testing.T) {
 	sum := atomic.NewInt64(0)
+	topic := fmt.Sprintf("%s_offset", topicName)
 	ch := make(chan struct{})
 	listener := connector.EventListener{
 		Consume: func(event *ce.Event, commitFunc connector.CommitFunc) error {
@@ -164,20 +183,21 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 	}
 
 	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	factory.Setup(pluginName, &MockDecoder{})
 	consumer, _ := factory.GetConsumer()
 	consumer.Start()
 	defer consumer.Shutdown()
 	consumer.RegisterEventListener(&listener)
-	event := getTestEvent()
+	event := getTestEvent(topic)
 	event.SetExtension("offset", "49")
-	consumer.Subscribe(topicName)
+	consumer.Subscribe(topic)
 	consumer.UpdateOffset(context.Background(), []*ce.Event{event})
 
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 	for i := 1; i <= 50; i++ {
-		err := producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+		err := producer.Publish(context.Background(), getTestEventOfData(topic, map[string]interface{}{
 			"val": i,
 		}), getEmptyPublishCallback())
 
@@ -196,14 +216,14 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 	}
 }
 
-func getTestEvent() *ce.Event {
+func getTestEvent(topicName string) *ce.Event {
 	event := ce.NewEvent()
 	event.SetID(uuid.New().String())
 	event.SetSubject(topicName)
 	return &event
 }
 
-func getTestEventOfData(data map[string]interface{}) *ce.Event {
+func getTestEventOfData(topicName string, data map[string]interface{}) *ce.Event {
 	event := ce.NewEvent()
 	event.SetID(uuid.New().String())
 	event.SetSubject(topicName)

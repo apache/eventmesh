@@ -38,8 +38,8 @@ public class CommonConfigurationTest {
     @Test
     public void testInit() {
         configuration.init();
-        Assert.assertEquals("value1", configuration.eventMeshEnv);
-        Assert.assertEquals("value2", configuration.eventMeshIDC);
-        Assert.assertEquals("3", configuration.sysID);
+        Assert.assertEquals("value1", configuration.getEventMeshEnv());
+        Assert.assertEquals("value2", configuration.getEventMeshIDC());
+        Assert.assertEquals("3", configuration.getSysID());
     }
 }

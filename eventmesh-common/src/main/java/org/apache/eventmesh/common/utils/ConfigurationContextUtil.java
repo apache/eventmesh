@@ -56,7 +56,7 @@ public class ConfigurationContextUtil {
      * Get the configuration of the specified key mapping.
      *
      * @param key
-     * @return
+     * @return configuration of the specified key mapping
      */
     public static CommonConfiguration get(String key) {
         return CONFIGURATION_MAP.get(key);
