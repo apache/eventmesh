@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
 
 /**
@@ -45,5 +47,15 @@ public final class AssertUtils {
             throw new IllegalArgumentException(message);
         }
     }
+
+    /**
+     * assert str is not black
+     * @param str str
+     * @param message message
+     */
+    public static void notBlack(final String str, final String message) {
+        isTrue(StringUtils.isNoneBlank(str), message);
+    }
+
 
 }

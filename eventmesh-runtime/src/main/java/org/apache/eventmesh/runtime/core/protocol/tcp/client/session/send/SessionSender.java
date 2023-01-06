@@ -51,28 +51,28 @@ import io.opentelemetry.api.trace.Span;
 
 public class SessionSender {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
-    private final Logger logger = LoggerFactory.getLogger(SessionSender.class);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionSender.class);
 
-    private final Session session;
+    private final transient Session session;
 
-    public long createTime = System.currentTimeMillis();
+    public transient long createTime = System.currentTimeMillis();
 
-    public AtomicLong upMsgs = new AtomicLong(0);
+    public transient AtomicLong upMsgs = new AtomicLong(0);
 
-    public AtomicLong failMsgCount = new AtomicLong(0);
+    public transient AtomicLong failMsgCount = new AtomicLong(0);
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
     @Override
     public String toString() {
         return "SessionSender{upstreamBuff=" + upstreamBuff.availablePermits()
-            +
-            ",upMsgs=" + upMsgs.longValue()
-            +
-            ",failMsgCount=" + failMsgCount.longValue()
-            +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
+                +
+                ",upMsgs=" + upMsgs.longValue()
+                +
+                ",failMsgCount=" + failMsgCount.longValue()
+                +
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     public Semaphore getUpstreamBuff() {
@@ -86,7 +86,8 @@ public class SessionSender {
         this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().eventMeshTcpSessionUpstreamBufferSize);
     }
 
-    public EventMeshTcpSendResult send(Header header, CloudEvent event, SendCallback sendCallback, long startTime, long taskExecuteTime) {
+    public EventMeshTcpSendResult send(Header header, CloudEvent event, SendCallback sendCallback, long startTime,
+                                       long taskExecuteTime) {
         try {
             if (upstreamBuff.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 upMsgs.incrementAndGet();
@@ -99,16 +100,17 @@ public class SessionSender {
                 if (Command.REQUEST_TO_SERVER == cmd) {
                     if (event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null) {
                         ttl = Long.parseLong((String) Objects.requireNonNull(
-                            event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)));
+                                event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)));
                     }
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
-                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
-                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
+                                    event),
+                            EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
-                            .request(upStreamMsgContext, initSyncRRCallback(header,
-                                startTime, taskExecuteTime, event), ttl);
+                                .request(upStreamMsgContext, initSyncRRCallback(header,
+                                        startTime, taskExecuteTime, event), ttl);
                         upstreamBuff.release();
                     } finally {
                         TraceUtils.finishSpan(span, event);
@@ -127,59 +129,66 @@ public class SessionSender {
                 } else {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
-                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
-                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
+                                    event),
+                            EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
-                            .send(upStreamMsgContext, sendCallback);
+                                .send(upStreamMsgContext, sendCallback);
                     } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 }
 
                 Objects.requireNonNull(session.getClientGroupWrapper().get())
-                    .getEventMeshTcpMonitor()
-                    .getTcpSummaryMetrics()
-                    .getEventMesh2mqMsgNum()
-                    .incrementAndGet();
+                        .getEventMeshTcpMonitor()
+                        .getTcpSummaryMetrics()
+                        .getEventMesh2mqMsgNum()
+                        .incrementAndGet();
             } else {
-                logger.warn("send too fast,session flow control,session:{}", session.getClient());
-                return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST, EventMeshTcpSendStatus.SEND_TOO_FAST.name());
+                LOGGER.warn("send too fast,session flow control,session:{}", session.getClient());
+                return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST,
+                        EventMeshTcpSendStatus.SEND_TOO_FAST.name());
             }
         } catch (Exception e) {
-            logger.warn("SessionSender send failed", e);
+            LOGGER.warn("SessionSender send failed", e);
             if (!(e instanceof InterruptedException)) {
                 upstreamBuff.release();
             }
             failMsgCount.incrementAndGet();
-            return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.OTHER_EXCEPTION, e.getCause().toString());
+            return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.OTHER_EXCEPTION,
+                    e.getCause().toString());
         }
-        return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SUCCESS, EventMeshTcpSendStatus.SUCCESS.name());
+        return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SUCCESS,
+                EventMeshTcpSendStatus.SUCCESS.name());
     }
 
-    private RequestReplyCallback initSyncRRCallback(Header header, long startTime, long taskExecuteTime, CloudEvent cloudEvent) {
+    private RequestReplyCallback initSyncRRCallback(Header header, long startTime, long taskExecuteTime,
+                                                    CloudEvent cloudEvent) {
         return new RequestReplyCallback() {
             @Override
             public void onSuccess(CloudEvent event) {
                 String seq = header.getSeq();
                 // TODO: How to assign values here
                 event = CloudEventBuilder.from(event)
-                    .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
-                    .build();
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
-                    .incrementAndGet();
+                        .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                        .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP,
+                                session.getEventMeshTCPConfiguration().getEventMeshServerIp())
+                        .build();
+                Objects.requireNonNull(session.getClientGroupWrapper().get())
+                        .getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
+                        .incrementAndGet();
 
                 Command cmd;
-                if (header.getCmd().equals(Command.REQUEST_TO_SERVER)) {
+                if (Command.REQUEST_TO_SERVER == header.getCmd()) {
                     cmd = Command.RESPONSE_TO_CLIENT;
                 } else {
-                    messageLogger.error("invalid message|messageHeader={}|event={}", header, event);
+                    MESSAGE_LOGGER.error("invalid message|messageHeader={}|event={}", header, event);
                     return;
                 }
                 event = CloudEventBuilder.from(event)
-                    .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .build();
+                        .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                        .build();
                 String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
 
                 ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
@@ -201,9 +210,11 @@ public class SessionSender {
 
             @Override
             public void onException(Throwable e) {
-                messageLogger.error("exception occur while sending RR message|user={}", session.getClient(), new Exception(e));
+                MESSAGE_LOGGER.error("exception occur while sending RR message|user={}", session.getClient(),
+                        new Exception(e));
 
-                TraceUtils.finishSpanWithException(session.getContext(), cloudEvent, "exception occur while sending RR message", e);
+                TraceUtils.finishSpanWithException(session.getContext(), cloudEvent,
+                        "exception occur while sending RR message", e);
             }
         };
     }

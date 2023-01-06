@@ -19,6 +19,7 @@ def grpcVersion = '1.43.2'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
 
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -28,7 +29,11 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
+    implementation "com.alibaba:fastjson"
+
     implementation 'com.github.seancfoley:ipaddress'
+
+    implementation "commons-io:commons-io"
 
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
@@ -76,4 +81,5 @@ dependencies {
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "commons-io:commons-io"
 }

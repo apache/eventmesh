@@ -28,6 +28,13 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@ToString
 public class HeartbeatRequestBody extends Body {
 
     public static final String CLIENTTYPE = "clientType";
@@ -39,30 +46,6 @@ public class HeartbeatRequestBody extends Body {
     private String clientType;
 
     private List<HeartbeatEntity> heartbeatEntities;
-
-    public String getClientType() {
-        return clientType;
-    }
-
-    public void setClientType(String clientType) {
-        this.clientType = clientType;
-    }
-
-    public List<HeartbeatEntity> getHeartbeatEntities() {
-        return heartbeatEntities;
-    }
-
-    public void setHeartbeatEntities(List<HeartbeatEntity> heartbeatEntities) {
-        this.heartbeatEntities = heartbeatEntities;
-    }
-
-    public String getConsumerGroup() {
-        return consumerGroup;
-    }
-
-    public void setConsumerGroup(String consumerGroup) {
-        this.consumerGroup = consumerGroup;
-    }
 
     public static HeartbeatRequestBody buildBody(Map<String, Object> bodyParam) {
         HeartbeatRequestBody body = new HeartbeatRequestBody();
@@ -83,31 +66,12 @@ public class HeartbeatRequestBody extends Body {
         map.put(HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
         return map;
     }
-
+    
+    @ToString
     public static class HeartbeatEntity {
         public String topic;
         public String serviceId;
         public String url;
         public String instanceId;
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("heartbeatEntity={")
-                    .append("topic=").append(topic).append(",")
-                    .append("serviceId=").append(serviceId).append(",")
-                    .append("instanceId=").append(instanceId).append(",")
-                    .append("url=").append(url).append("}");
-            return sb.toString();
-        }
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("heartbeatRequestBody={")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("clientType=").append(clientType).append("}");
-        return sb.toString();
     }
 }

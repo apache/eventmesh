@@ -61,7 +61,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             open(new EventMeshMessageTCPSubHandler(contexts));
             hello();
             heartbeat();
-            log.info("SimpleSubClientImpl|{}|started!", clientNo);
+            log.info("SimpleSubClientImpl|{}|started!", CLIENTNO);
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTcpSubClient error", ex);
         }

@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class RequestContext {
 
-    private static Logger logger = LoggerFactory.getLogger(RequestContext.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestContext.class);
 
     private Object key;
     private Package request;
@@ -78,11 +78,13 @@ public class RequestContext {
 
     public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
-        logger.info("_RequestContext|create|key=" + key);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("_RequestContext|create|key=" + key);
+        }
         return c;
     }
 
-    public static Object key(Package request) {
+    public static Object getHeaderSeq(Package request) {
         return request.getHeader().getSeq();
     }
 }
