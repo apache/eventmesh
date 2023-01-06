@@ -66,7 +66,7 @@ public class WebhookUtil {
                     || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
             LOGGER.error("HTTP Options Method is not supported at the Delivery Target: {}, "
-                + "unable to obtain the webhook delivery agreement.", targetUrl, e);
+                + "unable to obtain the webhook delivery agreement.", targetUrl);
         }
         return true;
     }
