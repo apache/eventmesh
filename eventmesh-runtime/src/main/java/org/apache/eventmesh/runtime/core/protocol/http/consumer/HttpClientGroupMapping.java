@@ -359,14 +359,14 @@ public final class HttpClientGroupMapping {
             }
         }
 
-        if (isChange && consumerGroupTopicConf.getUrls().size() == 0) {
+        if (isChange &&  MapUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
             }
         }
 
-        if (isChange && consumerGroupConf.getConsumerGroupTopicConf().size() == 0) {
+        if (isChange && MapUtils.isEmpty(consumerGroupConf.getConsumerGroupTopicConf())) {
             localConsumerGroupMapping.remove(consumerGroup);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("group unsubscribe success,group:{}", consumerGroup);
