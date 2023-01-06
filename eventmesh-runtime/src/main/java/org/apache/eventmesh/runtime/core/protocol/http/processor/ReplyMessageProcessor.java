@@ -75,10 +75,10 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseEventMeshCommand;
-
+        String localAddress = IPUtils.getLocalAddress();
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) asyncContext.getRequest().getHeader();
 
@@ -89,7 +89,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         ReplyMessageResponseHeader replyMessageResponseHeader =
                 ReplyMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                        localAddress, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate event
