@@ -104,11 +104,14 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
         //validate body
         byte[] requestBody = requestWrapper.getBody();
-
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
-            new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {}
-        )).orElseGet(Maps::newHashMap);
+        Map<String, Object> requestBodyMap;
+        if(requestBody != null){
+             requestBodyMap = JsonUtils.deserialize(
+                    new String(requestBody, Constants.DEFAULT_CHARSET),
+                    new TypeReference<HashMap<String, Object>>(){});
+        }else{
+            requestBodyMap = new HashMap<String, Object>();
+        }
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
