@@ -228,9 +228,9 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             log.info("eventMeshMap:{},clientDistributionMap:{},group:{}", eventMeshMap, clientDistributionMap, group);
         }
 
-        Set<String> clientdDistributionSet=new HashSet<>(clientDistributionMap.keySet());
+        Set<String> clientdDistributionSet = new HashSet<>(clientDistributionMap.keySet());
         clientdDistributionSet.removeAll(eventMeshMap.keySet());
-        if(!clientdDistributionSet.isEmpty()){
+        if (!clientdDistributionSet.isEmpty()) {
             if (log.isWarnEnabled()) {
                 log.warn("exist proxy not register but exist in distributionMap");
             }
