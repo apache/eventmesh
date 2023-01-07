@@ -27,7 +27,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -52,7 +51,7 @@ public class WebhookUtil {
 
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
                                                   final String targetUrl,
-                                                  final String requestOrigin) throws IOException {
+                                                  final String requestOrigin) {
         
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
@@ -65,8 +64,11 @@ public class WebhookUtil {
             final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             return StringUtils.isEmpty(allowedOrigin)
                     || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
+        } catch (Exception e) {
+            LOGGER.error("HTTP Options Method is not supported at the Delivery Target: {}, "
+                + "unable to obtain the webhook delivery agreement.", targetUrl);
         }
-
+        return true;
     }
 
     public static void setWebhookHeaders(final HttpPost builder,

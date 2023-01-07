@@ -69,6 +69,25 @@ public abstract class RemotingHelper {
         return "";
     }
 
+    public static String parseChannelLocalAddr(final Channel channel) {
+        if (null == channel) {
+            return "";
+        }
+
+        final String addr = channel.localAddress() != null ? channel.localAddress().toString() : "";
+
+        if (addr.length() > 0) {
+            final int index = addr.lastIndexOf('/');
+            if (index >= 0) {
+                return addr.substring(index + 1);
+            }
+
+            return addr;
+        }
+
+        return "";
+    }
+
     public static String parseSocketAddressAddr(final InetSocketAddress socketAddress) {
         return socketAddress != null ? socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort() : "";
     }
