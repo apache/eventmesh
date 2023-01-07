@@ -162,17 +162,17 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         }
 
-        synchronized (eventMeshHTTPServer.localClientInfoMapping) {
+        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
             for (final Map.Entry<String, List<Client>> groupTopicClientMapping : tmpMap.entrySet()) {
                 final List<Client> localClientList =
-                        eventMeshHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().get(groupTopicClientMapping.getKey());
                 if (CollectionUtils.isEmpty(localClientList)) {
-                    eventMeshHTTPServer.localClientInfoMapping
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()
                             .put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
                 } else {
                     final List<Client> tmpClientList = groupTopicClientMapping.getValue();
                     supplyClientInfoList(tmpClientList, localClientList);
-                    eventMeshHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().put(groupTopicClientMapping.getKey(), localClientList);
                 }
 
             }

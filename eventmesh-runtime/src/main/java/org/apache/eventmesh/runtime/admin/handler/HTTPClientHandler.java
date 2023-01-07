@@ -77,7 +77,7 @@ public class HTTPClientHandler implements HttpHandler {
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.toObject(request, DeleteHTTPClientRequest.class);
             String url = deleteHTTPClientRequest.url;
 
-            for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
+            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
@@ -118,7 +118,7 @@ public class HTTPClientHandler implements HttpHandler {
             // Get the list of HTTP clients
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
 
-            for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
+            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
                         Optional.ofNullable(client.getEnv()).orElse(""),

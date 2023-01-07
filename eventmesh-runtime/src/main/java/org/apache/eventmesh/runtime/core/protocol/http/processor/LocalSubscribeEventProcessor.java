@@ -173,12 +173,12 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-        synchronized (eventMeshHTTPServer.localClientInfoMapping) {
+        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
 
             registerClient(requestWrapper, consumerGroup, subscriptionList, url);
 
             for (final SubscriptionItem subTopic : subscriptionList) {
-                final List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
+                final List<Client> groupTopicClients = eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()
                         .get(consumerGroup + "@" + subTopic.getTopic());
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
@@ -199,7 +199,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 }
 
                 ConsumerGroupConf consumerGroupConf =
-                        eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup);
                 if (consumerGroupConf == null) {
                     // new subscription
                     consumerGroupConf = new ConsumerGroupConf(consumerGroup);
@@ -209,10 +209,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                     consumeTopicConfig.setSubscriptionItem(subTopic);
                     consumeTopicConfig.setUrls(new HashSet<>(Collections.singletonList(url)));
                     consumeTopicConfig.setIdcUrls(idcUrls);
-
-                    final Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
-                    map.put(subTopic.getTopic(), consumeTopicConfig);
-                    consumerGroupConf.setConsumerGroupTopicConf(map);
+                    consumerGroupConf.getConsumerGroupTopicConf().put(subTopic.getTopic(), consumeTopicConfig);
                 } else {
                     // already subscribed
                     final Map<String, ConsumerGroupTopicConf> map =
@@ -246,14 +243,14 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                         map.put(set.getKey(), latestTopicConf);
                     }
                 }
-                eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
+                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().put(consumerGroup, consumerGroupConf);
             }
 
             final long startTime = System.currentTimeMillis();
             try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                        eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
                 responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
                 responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
 
@@ -300,10 +297,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             List<Client> localClients =
-                    eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().get(groupTopicKey);
             if (localClients == null) {
                 localClients = new ArrayList<>();
-                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, localClients);
+                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().put(groupTopicKey, localClients);
             }
 
             boolean isContains = false;
