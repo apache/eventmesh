@@ -25,6 +25,12 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-exporter-jaeger'
     implementation 'io.opentelemetry:opentelemetry-semconv'
 
+    // grpc
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
+
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
