@@ -49,19 +49,8 @@ public class SubscriptionManager {
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
                                 final List<SubscriptionItem> subscriptionItems, final String url) {
-        for (final SubscriptionItem item : subscriptionItems) {
-            final Client client = new Client();
-            client.setEnv(clientInfo.getEnv());
-            client.setIdc(clientInfo.getIdc());
-            client.setSys(clientInfo.getSys());
-            client.setIp(clientInfo.getIp());
-            client.setPid(clientInfo.getPid());
-            client.setConsumerGroup(consumerGroup);
-            client.setTopic(item.getTopic());
-            client.setUrl(url);
-            client.setLastUpTime(new Date());
-
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
+        for (final SubscriptionItem subscription : subscriptionItems) {
+            final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 
             List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
 
@@ -72,17 +61,27 @@ public class SubscriptionManager {
 
             boolean isContains = false;
             for (final Client localClient : localClients) {
-                if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
+                //TODO: compare the whole Client would be better?
+                if (StringUtils.equals(localClient.getUrl(), url)) {
                     isContains = true;
-                    localClient.setLastUpTime(client.getLastUpTime());
+                    localClient.setLastUpTime(new Date());
                     break;
                 }
             }
 
             if (!isContains) {
+                Client client = new Client();
+                client.setEnv(clientInfo.getEnv());
+                client.setIdc(clientInfo.getIdc());
+                client.setSys(clientInfo.getSys());
+                client.setIp(clientInfo.getIp());
+                client.setPid(clientInfo.getPid());
+                client.setConsumerGroup(consumerGroup);
+                client.setTopic(subscription.getTopic());
+                client.setUrl(url);
+                client.setLastUpTime(new Date());
                 localClients.add(client);
             }
-
         }
     }
 
