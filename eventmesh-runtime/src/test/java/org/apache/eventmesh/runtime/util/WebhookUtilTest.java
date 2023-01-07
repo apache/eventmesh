@@ -47,8 +47,8 @@ public class WebhookUtilTest {
              CloseableHttpResponse response = mock(CloseableHttpResponse.class);
              CloseableHttpClient httpClient2 = mock(CloseableHttpClient.class)) {
 
-            Mockito.when(response.getLastHeader("WebHook-Allowed-Origin")).
-                    thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
+            Mockito.when(response.getLastHeader("WebHook-Allowed-Origin"))
+                    .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
             Mockito.when(httpClient.execute(any())).thenReturn(response);
             Assert.assertTrue("match logic must return true",
                     WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
