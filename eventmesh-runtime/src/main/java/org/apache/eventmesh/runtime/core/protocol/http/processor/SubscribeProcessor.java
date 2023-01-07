@@ -31,6 +31,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -315,42 +316,13 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
     private void registerClient(final SubscribeRequestHeader subscribeRequestHeader, final String consumerGroup,
                                 final List<SubscriptionItem> subscriptionItems, final String url) {
-        for (final SubscriptionItem item : subscriptionItems) {
-            final Client client = new Client();
-            client.setEnv(subscribeRequestHeader.getEnv());
-            client.setIdc(subscribeRequestHeader.getIdc());
-            client.setSys(subscribeRequestHeader.getSys());
-            client.setIp(subscribeRequestHeader.getIp());
-            client.setPid(subscribeRequestHeader.getPid());
-            client.setConsumerGroup(consumerGroup);
-            client.setTopic(item.getTopic());
-            client.setUrl(url);
-            client.setLastUpTime(new Date());
-
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-
-            List<Client> localClients =
-                    eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().get(groupTopicKey);
-
-            if (localClients == null) {
-                localClients = new ArrayList<>();
-                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().put(groupTopicKey, localClients);
-            }
-
-            boolean isContains = false;
-            for (final Client localClient : localClients) {
-                if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
-                    isContains = true;
-                    localClient.setLastUpTime(client.getLastUpTime());
-                    break;
-                }
-            }
-
-            if (!isContains) {
-                localClients.add(client);
-            }
-
-        }
+        ClientInfo clientInfo = new ClientInfo();
+        clientInfo.setEnv(subscribeRequestHeader.getEnv());
+        clientInfo.setIdc(subscribeRequestHeader.getIdc());
+        clientInfo.setSys(subscribeRequestHeader.getSys());
+        clientInfo.setIp(subscribeRequestHeader.getIp());
+        clientInfo.setPid(subscribeRequestHeader.getPid());
+        eventMeshHTTPServer.getSubscriptionManager().registerClient(clientInfo, consumerGroup, subscriptionItems, url);
     }
 
 }
