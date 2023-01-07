@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.consumer;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +83,49 @@ public class SubscriptionManager {
                 localClients.add(client);
             }
 
+        }
+    }
+
+    public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
+                                   String url, List<SubscriptionItem> subscriptionList) {
+        for (final SubscriptionItem subscription : subscriptionList) {
+            final List<Client> groupTopicClients = localClientInfoMapping
+                    .get(consumerGroup + "@" + subscription.getTopic());
+
+            if (CollectionUtils.isEmpty(groupTopicClients)) {
+                logger.error("group {} topic {} clients is empty", consumerGroup, subscription);
+            }
+
+            ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
+            if (consumerGroupConf == null) {
+                // new subscription
+                ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup, new ConsumerGroupConf(consumerGroup));
+                if (prev == null) {
+                    logger.info("add new subscription, consumer group: {}", consumerGroup);
+                }
+                consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
+            }
+
+            ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf()
+                    .get(subscription.getTopic());
+            if (consumerGroupTopicConf == null) {
+                consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topic)-> {
+                    ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
+                    newTopicConf.setConsumerGroup(consumerGroup);
+                    newTopicConf.setTopic(topic);
+                    newTopicConf.setSubscriptionItem(subscription);
+                    logger.info("add new {}", newTopicConf);
+                    return newTopicConf;
+                });
+                consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(subscription.getTopic());
+            }
+
+            consumerGroupTopicConf.getUrls().add(url);
+            if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
+                consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
+            }
+            //TODO: idcUrl list is not thread-safe
+            consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
         }
     }
 }
