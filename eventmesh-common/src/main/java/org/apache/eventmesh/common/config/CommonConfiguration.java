@@ -67,6 +67,10 @@ public class CommonConfiguration {
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }
+
+    public String getMeshGroup() {
+        return String.join("-", this.eventMeshEnv, this.eventMeshCluster, this.sysID);
+    }
     
 
     public void init() {

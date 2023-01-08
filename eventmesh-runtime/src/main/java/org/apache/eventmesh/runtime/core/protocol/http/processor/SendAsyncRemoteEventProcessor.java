@@ -36,7 +36,6 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -65,7 +64,6 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-
 @EventMeshTrace(isEnable = true)
 public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
@@ -95,10 +93,15 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         final String source = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
 
         final String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv();
-        String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC();
-        final String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster();
-        final String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID();
-        final String meshGroup = env + "-" + idc + "-" + cluster + "-" + sysId;
+        final String meshGroup = new StringBuilder()
+                .append(env)
+                .append('-')
+                .append(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC())
+                .append('-')
+                .append(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster())
+                .append('-')
+                .append(eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID())
+                .toString();
         requestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, source);
         requestHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
@@ -120,10 +123,11 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
                 new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 }
-        )).orElse(Maps.newHashMap());
 
-        final byte[] convertedBody = bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8);
-        requestWrapper.setBody(convertedBody);
+        )).orElseGet(Maps::newHashMap);
+
+        requestWrapper.setBody(bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8));
+
         final String bizNo = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.BIZSEQNO,
                 RandomStringUtils.generateNum(30)).toString();
         final String uniqueId = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.UNIQUEID,
@@ -176,12 +180,11 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
         final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
         final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
 
         //validate event-extension
-        if (StringUtils.isBlank(idc)
+        if (StringUtils.isBlank(getExtension(event, ProtocolKey.ClientInstanceKey.IDC))
                 || StringUtils.isBlank(pid)
                 || !StringUtils.isNumeric(pid)
                 || StringUtils.isBlank(sys)) {
@@ -216,9 +219,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             } catch (Exception e) {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
                         responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
-                if (log.isWarnEnabled()) {
-                    log.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
-                }
+
+                log.error("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
                 return;
             }
         }
@@ -307,6 +309,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
                             EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), sendMessageContext.getEvent()));
 
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                                 System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, context.getException());
