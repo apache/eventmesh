@@ -30,6 +30,7 @@ import org.apache.eventmesh.runtime.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,43 +41,42 @@ public class SubscribeTask extends AbstractTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeTask.class);
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
-
-    public SubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+    public SubscribeTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
     public void run() {
-        long taskExecuteTime = System.currentTimeMillis();
-        Package msg = new Package();
+        final long taskExecuteTime = System.currentTimeMillis();
+
+        final Package msg = new Package();
         try {
-            Subscription subscriptionInfo = (Subscription) pkg.getBody();
-            if (subscriptionInfo == null) {
-                throw new Exception("subscriptionInfo is null");
-            }
+            final Subscription subscriptionInfo = (Subscription) pkg.getBody();
+            Objects.requireNonNull(subscriptionInfo, "subscriptionInfo can not be null");
 
-            List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-            for (int i = 0; i < subscriptionInfo.getTopicList().size(); i++) {
-                SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
-
+            final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+            final boolean eventMeshServerSecurityEnable = eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable();
+            final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            subscriptionInfo.getTopicList().forEach(item -> {
                 //do acl check for receive msg
-                if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                    String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+                if (eventMeshServerSecurityEnable) {
                     Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(),
                             Command.SUBSCRIBE_REQUEST.getValue());
                 }
 
                 subscriptionItems.add(item);
-            }
+            });
+
             synchronized (session) {
                 session.subscribe(subscriptionItems);
-                MESSAGE_LOGGER.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
+                }
             }
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                     pkg.getHeader().getSeq()));
         } catch (Exception e) {
-            MESSAGE_LOGGER.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
+            LOGGER.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()
                     .getSeq()));
         } finally {

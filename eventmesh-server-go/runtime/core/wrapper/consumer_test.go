@@ -25,11 +25,21 @@ import (
 	"testing"
 )
 
+// MockDecoder standalone connector properties mock decoder
+type MockDecoder struct {
+}
+
+// Decode mock decoder, no-op
+func (m *MockDecoder) Decode(cfg interface{}) error {
+	return nil
+}
+
 func TestConsumer_Subscribe(t *testing.T) {
 	type fields struct {
 		Base              *Base
 		consumerConnector connector.Consumer
 	}
+
 	type args struct {
 		topicName string
 	}
@@ -37,6 +47,7 @@ func TestConsumer_Subscribe(t *testing.T) {
 	assert.NoError(t, err)
 	plugin.SetActivePlugin(config.GlobalConfig().ActivePlugins)
 	factory := plugin.Get(plugin.Connector, "standalone").(connector.Factory)
+	factory.Setup(plugin.Name, &MockDecoder{})
 	consu, err := factory.GetConsumer()
 	assert.NoError(t, err)
 	tests := []struct {
@@ -56,12 +67,14 @@ func TestConsumer_Subscribe(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &consumer{
 				Base:              tt.fields.Base,
 				consumerConnector: tt.fields.consumerConnector,
 			}
+
 			if err := c.Subscribe(tt.args.topicName); (err != nil) != tt.wantErr {
 				t.Errorf("Subscribe() error = %v, wantErr %v", err, tt.wantErr)
 			}

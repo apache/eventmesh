@@ -58,7 +58,10 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
+import lombok.RequiredArgsConstructor;
+
 @EventMeshTrace(isEnable = true)
+@RequiredArgsConstructor
 public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
@@ -67,11 +70,8 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
-    public SendAsyncEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-    }
 
     @Override
     public void handler(HandlerService.HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception {
@@ -127,11 +127,9 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
         //validate event
         if (event == null
-            || StringUtils.isBlank(event.getId())
             || event.getSource() == null
             || event.getSpecVersion() == null
-            || StringUtils.isBlank(event.getType())
-            || StringUtils.isBlank(event.getSubject())) {
+            || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
 
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
@@ -144,10 +142,9 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         String sys = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
 
         //validate event-extension
-        if (StringUtils.isBlank(idc)
-            || StringUtils.isBlank(pid)
-            || !StringUtils.isNumeric(pid)
-            || StringUtils.isBlank(sys)) {
+        
+        if (StringUtils.isAnyBlank(idc, pid, sys)
+            || !StringUtils.isNumeric(pid)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
             return;
@@ -158,10 +155,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         String topic = event.getSubject();
 
         //validate body
-        if (StringUtils.isBlank(bizNo)
-            || StringUtils.isBlank(uniqueId)
-            || StringUtils.isBlank(producerGroup)
-            || StringUtils.isBlank(topic)
+        if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic)
             || event.getData() == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
@@ -229,7 +223,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
         final SendMessageContext sendMessageContext = new SendMessageContext(bizNo, event, eventMeshProducer,
             eventMeshHTTPServer);
-        eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsg();
+        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsg();
 
         long startTime = System.currentTimeMillis();
 

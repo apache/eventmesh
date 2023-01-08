@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 
@@ -25,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -67,6 +67,10 @@ public class CommonConfiguration {
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }
+
+    public String getMeshGroup() {
+        return String.join("-", this.eventMeshEnv, this.eventMeshCluster, this.sysID);
+    }
     
 
     public void init() {
@@ -96,11 +100,11 @@ public class CommonConfiguration {
 
             namesrvAddr = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR);
 
-            eventMeshRegistryPluginUsername = Optional.ofNullable(
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME)).orElse("");
+            eventMeshRegistryPluginUsername = 
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME, "");
 
-            eventMeshRegistryPluginPassword = Optional.ofNullable(
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD)).orElse("");
+            eventMeshRegistryPluginPassword = 
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD, "");
 
             String metricsPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_METRICS_PLUGIN_TYPE);
             if (StringUtils.isNotEmpty(metricsPluginType)) {
@@ -125,7 +129,7 @@ public class CommonConfiguration {
         if (value != null) {
             value = StringUtils.deleteWhitespace(value);
         }
-        Preconditions.checkState(StringUtils.isNotEmpty(value), key + " is invalidated");
+        AssertUtils.notBlack(value, key + " is invalidated");
         return value;
     }
 
