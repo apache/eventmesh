@@ -17,6 +17,7 @@ package standalone
 
 import (
 	"context"
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	ce "github.com/cloudevents/sdk-go/v2"
@@ -65,7 +66,7 @@ func TestProducer_Publish(t *testing.T) {
 		},
 	}
 
-	err = producer.Publish(context.Background(), getTestEvent(), &callback)
+	err = producer.Publish(context.Background(), getTestEvent(topic), &callback)
 	assert.Nil(t, err)
 	assert.True(t, publishSuccess)
 	assert.Nil(t, callBackErr)
@@ -77,6 +78,7 @@ func TestProducer_Publish(t *testing.T) {
 }
 func TestConsumer_Subscribe(t *testing.T) {
 	done := make(chan struct{})
+	topic := fmt.Sprintf("%s_subscribe", topicName)
 	listener := connector.EventListener{
 		Consume: func(event *ce.Event, commitFunc connector.CommitFunc) error {
 			var data map[string]interface{}
@@ -102,7 +104,7 @@ func TestConsumer_Subscribe(t *testing.T) {
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
-	err = producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+	err = producer.Publish(context.Background(), getTestEventOfData(topic, map[string]interface{}{
 		"val": "value",
 	}), getEmptyPublishCallback())
 	assert.NoError(t, err)
@@ -111,7 +113,7 @@ func TestConsumer_Subscribe(t *testing.T) {
 
 func TestConsumer_ManualAck(t *testing.T) {
 	done := make(chan struct{})
-
+	topic := fmt.Sprintf("%s_ack", topicName)
 	listener := connector.EventListener{
 		Consume: func(event *ce.Event, commitFunc connector.CommitFunc) error {
 			var data map[string]interface{}
@@ -136,13 +138,14 @@ func TestConsumer_ManualAck(t *testing.T) {
 	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
-	err = producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+	err = producer.Publish(context.Background(), getTestEventOfData(topic, map[string]interface{}{
 		"val": "test",
 	}), getEmptyPublishCallback())
 	assert.NoError(t, err)
 	<-done
 }
 
+// TODO update later
 func TestConsumer_UpdateOffset(t *testing.T) {
 	//sum := atomic.NewInt64(0)
 	//ch := make(chan struct{})
