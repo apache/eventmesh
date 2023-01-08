@@ -84,7 +84,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
             Map<String, String> metadata = new HashMap<>(1 << 4);
             for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
-                    eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
 
                 String consumerGroupKey = consumerGroupMap.getKey();
                 ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();

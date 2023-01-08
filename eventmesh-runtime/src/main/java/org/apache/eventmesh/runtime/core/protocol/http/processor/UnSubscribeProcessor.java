@@ -136,13 +136,13 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             }
         };
 
-        synchronized (eventMeshHTTPServer.localClientInfoMapping) {
+        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
             boolean isChange = true;
 
             registerClient(unSubscribeRequestHeader, consumerGroup, unSubTopicList, unSubscribeUrl);
 
             for (final String unSubTopic : unSubTopicList) {
-                final List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping
+                final List<Client> groupTopicClients = eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()
                         .get(consumerGroup + "@" + unSubTopic);
 
                 final Iterator<Client> clientIterator = groupTopicClients.iterator();
@@ -173,9 +173,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         }
 
                     }
-                    synchronized (eventMeshHTTPServer.localConsumerGroupMapping) {
+                    synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping()) {
                         final ConsumerGroupConf consumerGroupConf =
-                                eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup);
 
                         final Map<String, ConsumerGroupTopicConf> map =
                                 consumerGroupConf.getConsumerGroupTopicConf();
@@ -195,7 +195,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                 map.put(unSubTopic, latestTopicConf);
                             }
                         }
-                        eventMeshHTTPServer.localConsumerGroupMapping
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping()
                                 .put(consumerGroup, consumerGroupConf);
                     }
                 } else {
@@ -208,7 +208,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             if (isChange) {
                 try {
                     eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                            eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
+                            eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
 
                     responseEventMeshCommand =
                             asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
@@ -239,10 +239,10 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                             asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                     asyncContext.onComplete(responseEventMeshCommand, handler);
                     // clean ClientInfo
-                    eventMeshHTTPServer.localClientInfoMapping.keySet()
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().keySet()
                             .removeIf(s -> StringUtils.contains(s, consumerGroup));
                     // clean ConsumerGroupInfo
-                    eventMeshHTTPServer.localConsumerGroupMapping.keySet()
+                    eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().keySet()
                             .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
                     final HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
@@ -286,9 +286,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             client.setLastUpTime(new Date());
 
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
+            if (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().containsKey(groupTopicKey)) {
                 final List<Client> localClients =
-                        eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().get(groupTopicKey);
                 boolean isContains = false;
                 for (final Client localClient : localClients) {
                     if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
@@ -303,7 +303,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             } else {
                 final List<Client> clients = new ArrayList<>();
                 clients.add(client);
-                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
+                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().put(groupTopicKey, clients);
             }
         }
     }

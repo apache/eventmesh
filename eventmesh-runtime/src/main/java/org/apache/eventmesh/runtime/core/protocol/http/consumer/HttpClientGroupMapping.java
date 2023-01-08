@@ -229,9 +229,7 @@ public final class HttpClientGroupMapping {
             urls.add(url);
             idcUrls.put(clientIdc, urls);
             consumeTopicConfig.setIdcUrls(idcUrls);
-            final Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
-            map.put(subTopic.getTopic(), consumeTopicConfig);
-            consumerGroupConf.setConsumerGroupTopicConf(map);
+            consumerGroupConf.getConsumerGroupTopicConf().put(subTopic.getTopic(), consumeTopicConfig);
             localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
             isChange = true;
         } else {
