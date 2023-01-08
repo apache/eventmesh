@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
+	"google.golang.org/grpc"
 	"io"
 	"io/ioutil"
 	"net"
@@ -30,8 +31,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-
-	"google.golang.org/grpc"
 )
 
 // fakeServer used to do the test
@@ -62,7 +61,9 @@ func runFakeServer(ctx context.Context) error {
 	go func() {
 		select {
 		case <-ctx.Done():
-			srv.GracefulStop()
+			if srv != nil {
+				srv.GracefulStop()
+			}
 		}
 	}()
 	log.Infof("serve fake server on:%v", srv.GetServiceInfo())
@@ -98,6 +99,7 @@ func (f *fakeServer) Subscribe(ctx context.Context, msg *proto.Subscription) (*p
 func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamServer) error {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
+
 	go func() {
 		defer wg.Done()
 		for {
@@ -113,6 +115,7 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 			log.Infof("rece sub:%s", sub.String())
 		}
 	}()
+
 	go func() {
 		defer func() {
 			wg.Done()
@@ -150,6 +153,7 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 			time.Sleep(time.Second * 5)
 		}
 	}()
+
 	wg.Wait()
 	log.Infof("close SubscribeStream")
 	return nil
@@ -167,7 +171,7 @@ func (f *fakeServer) Unsubscribe(ctx context.Context, msg *proto.Subscription) (
 func (f *fakeServer) Heartbeat(ctx context.Context, msg *proto.Heartbeat) (*proto.Response, error) {
 	log.Infof("fake-server, receive heartbeat request:%v", msg.String())
 	return &proto.Response{
-		RespCode: "OK",
+		RespCode: "0",
 		RespMsg:  "OK",
 		RespTime: time.Now().Format("2006-01-02 15:04:05"),
 	}, nil
