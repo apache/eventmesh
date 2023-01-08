@@ -70,12 +70,12 @@ var _ = Describe("id_snake test", func() {
 
 			flake := NewFlakeWithSonyflake(aSonyflake)
 
-			want := "over the time limit"
+			want := "test error"
 			var ret string
 			defer func() {
 				if err := recover(); err != nil {
 					ret = err.(error).Error()
-					Ω(ret).To(Equal(want))
+					Ω(want).To(Equal(ret))
 				}
 				mockPatches.Reset()
 			}()
