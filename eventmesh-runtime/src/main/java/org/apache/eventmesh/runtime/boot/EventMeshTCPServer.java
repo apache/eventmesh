@@ -144,11 +144,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         this.registry = registry;
     }
 
-    @Override
-    public EventLoopGroup getWorkerGroup() {
-        return this.getWorkerGroup();
-    }
-
     private void startServer() {
         Runnable r = () -> {
             ServerBootstrap bootstrap = new ServerBootstrap();
