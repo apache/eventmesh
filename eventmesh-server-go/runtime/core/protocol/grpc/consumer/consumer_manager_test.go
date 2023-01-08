@@ -312,6 +312,7 @@ func Test_UpdateClientTime(t *testing.T) {
 func Test_RestartConsumer(t *testing.T) {
 	err := config.GlobalConfig().Plugins.Setup()
 	assert.NoError(t, err)
+	plugin.SetActivePlugin(config.GlobalConfig().ActivePlugins)
 	cli := &GroupClient{
 		ENV:              "env",
 		IDC:              "IDC",
@@ -353,12 +354,6 @@ func Test_RestartConsumer(t *testing.T) {
 				assert.NoError(t, err)
 
 			},
-		},
-		{
-			name: "state is inited",
-		},
-		{
-			name: "state is stoped",
 		},
 	}
 	for _, tc := range tests {

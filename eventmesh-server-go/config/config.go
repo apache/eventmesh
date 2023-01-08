@@ -94,13 +94,17 @@ func defaultConfig() *Config {
 		Multicore: false,
 	}
 	cfg.ActivePlugins = map[string]string{
-		"registry":  "nacos",
 		"connector": "standalone",
 		"log":       "default",
 	}
 	cfg.PProf = &PProfOption{
 		Enable: true,
 		Port:   "10011",
+	}
+	cfg.Plugins = map[string]map[string]yaml.Node{
+		"connector": {
+			"standalone": yaml.Node{},
+		},
 	}
 	return cfg
 }
