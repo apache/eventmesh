@@ -13,17 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package emserver
 
-// TCPOption option for eventmesh tcp server
-type TCPOption struct {
-	// Port http server listen
-	Port string `yaml:"port" toml:"port"`
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/stretchr/testify/assert"
+	"io"
+	"net/http"
+	"testing"
+)
 
-	// Multicore indicates whether the engine will
-	// be effectively created with multi-cores
-	Multicore bool `yaml:"multicore" toml:"multicore"`
-
-	// TLSOption process with the tls configuration
-	*TLSOption `yaml:"tls" toml:"tls"`
+func Test_pprof(t *testing.T) {
+	srv := NewPProfServer(&config.PProfOption{
+		Enable: true,
+		Port:   "8080",
+	})
+	assert.NotNil(t, srv)
+	go srv.Serve()
+	resp, err := http.Get("http://localhost:8080/debug/pprof")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	buf, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+	assert.NotNil(t, buf)
+	assert.True(t, len(buf) > 0)
+	t.Log(string(buf))
+	assert.NoError(t, srv.Stop())
 }
