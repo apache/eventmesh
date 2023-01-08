@@ -17,7 +17,6 @@ package emserver
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/unrolled/secure"
 
@@ -37,10 +36,6 @@ type HTTPServer struct {
 // NewHTTPServer create new http server by Gin
 func NewHTTPServer(httpOption *config.HTTPOption) (GracefulServer, error) {
 	r := gin.New()
-	if httpOption.PProfOption != nil {
-		log.Infof("enable pprof on http server, listen port:%v", httpOption.Port)
-		pprof.Register(r)
-	}
 	if !httpOption.TLSOption.EnableInsecure {
 		r.Use(TLSHandler())
 	}

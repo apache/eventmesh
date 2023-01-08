@@ -21,7 +21,6 @@ require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.1
 	github.com/cloudevents/sdk-go/v2 v2.11.0
 	github.com/deckarep/golang-set/v2 v2.1.0
-	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/gogf/gf v1.16.9
 	github.com/golang/mock v1.6.0
@@ -39,7 +38,6 @@ require (
 	go.uber.org/atomic v1.7.0
 	go.uber.org/fx v1.18.1
 	go.uber.org/zap v1.22.0
-	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -86,6 +84,7 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	google.golang.org/genproto v0.0.0-20200825200019-8632dd797987 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
