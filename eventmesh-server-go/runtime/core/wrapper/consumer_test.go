@@ -17,6 +17,7 @@ package wrapper
 
 import (
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
@@ -32,6 +33,9 @@ func TestConsumer_Subscribe(t *testing.T) {
 	type args struct {
 		topicName string
 	}
+	err := config.GlobalConfig().Plugins.Setup()
+	assert.NoError(t, err)
+	plugin.SetActivePlugin(config.GlobalConfig().ActivePlugins)
 	factory := plugin.Get(plugin.Connector, "standalone").(connector.Factory)
 	consu, err := factory.GetConsumer()
 	assert.NoError(t, err)
@@ -73,6 +77,9 @@ func TestConsumer_UnSubscribe(t *testing.T) {
 	type args struct {
 		topicName string
 	}
+	err := config.GlobalConfig().Plugins.Setup()
+	assert.NoError(t, err)
+	plugin.SetActivePlugin(config.GlobalConfig().ActivePlugins)
 	factory := plugin.Get(plugin.Connector, "standalone").(connector.Factory)
 	consu, err := factory.GetConsumer()
 	assert.NoError(t, err)
