@@ -36,6 +36,7 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -76,18 +77,22 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
     @Override
     public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
 
-        final ChannelHandlerContext ctx = handlerSpecific.getCtx();
-        final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
+        final AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
 
+        final ChannelHandlerContext ctx = handlerSpecific.getCtx();
+
+        final HttpEventWrapper requestWrapper = asyncContext.getRequest();
+
+        final String localAddress = IPUtils.getLocalAddress();
         if (log.isInfoEnabled()) {
             log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-                    EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                    IPUtils.getLocalAddress());
+                    EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         }
 
         // user request header
         final Map<String, Object> requestHeaderMap = requestWrapper.getHeaderMap();
         final String source = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+
         final String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv();
         final String meshGroup = new StringBuilder()
                 .append(env)
@@ -119,6 +124,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
                 new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 }
+
         )).orElseGet(Maps::newHashMap);
 
         requestWrapper.setBody(bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8));
@@ -139,14 +145,13 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, localAddress);
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         final Map<String, Object> responseBodyMap = new HashMap<>();
-
         final Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
         final Iterator<Map.Entry<String, Object>> it = requestHeaderMap.entrySet().iterator();
         while (it.hasNext()) {
@@ -215,6 +220,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             } catch (Exception e) {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
                         responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
+
                 log.error("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
                 return;
             }
@@ -313,7 +319,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             });
         } catch (Exception ex) {
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10_000));
-            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR, responseHeaderMap, responseBodyMap, null);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR, responseHeaderMap,
+                    responseBodyMap, null);
 
             if (log.isErrorEnabled()) {
                 log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
