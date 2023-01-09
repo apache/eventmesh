@@ -92,7 +92,12 @@ const Workflows: NextPage = () => {
               alignItems="flex-end"
             >
               <Button colorScheme="blue">Save</Button>
-              <Button variant="outline" onClick={() => router.push('/workflows')}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/workflows')}
+              >
+                Cancel
+              </Button>
             </Stack>
           </Stack>
         </GridItem>
