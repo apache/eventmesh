@@ -63,11 +63,11 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
         final Channel channel = handlerSpecific.getCtx().channel();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
-
+        String localAddress = IPUtils.getLocalAddress();
         if (log.isInfoEnabled()) {
             log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                     EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(channel),
-                    IPUtils.getLocalAddress());
+                    localAddress);
         }
 
         // user request header
