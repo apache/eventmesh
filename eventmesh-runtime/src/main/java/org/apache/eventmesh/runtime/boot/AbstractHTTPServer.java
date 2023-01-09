@@ -130,10 +130,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>>
-            processorTable = new ConcurrentHashMap(64);
+            processorTable = new ConcurrentHashMap<>(64);
 
     protected final transient Map<String/* request uri */, Pair<EventProcessor, ThreadPoolExecutor>>
-            eventProcessorTable = new ConcurrentHashMap(64);
+            eventProcessorTable = new ConcurrentHashMap<>(64);
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
                               final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
