@@ -49,7 +49,7 @@ public class HTTPClientHandler implements HttpHandler {
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-        EventMeshHTTPServer eventMeshHTTPServer
+            EventMeshHTTPServer eventMeshHTTPServer
     ) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
@@ -121,17 +121,18 @@ public class HTTPClientHandler implements HttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.getEnv()).orElse(""),
-                        Optional.ofNullable(client.getSys()).orElse(""),
-                        Optional.ofNullable(client.getUrl()).orElse(""),
-                        "0",
-                        Optional.ofNullable(client.getHostname()).orElse(""),
-                        0,
-                        Optional.ofNullable(client.getApiVersion()).orElse(""),
-                        Optional.ofNullable(client.getIdc()).orElse(""),
-                        Optional.ofNullable(client.getConsumerGroup()).orElse(""),
-                        "",
-                        "HTTP"
+                            Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
+                            "0",
+                            Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
+                            0,
+                            Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
+                            Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
+                            "",
+                            "HTTP"
+
                     );
                     getClientResponseList.add(getClientResponse);
                 }
