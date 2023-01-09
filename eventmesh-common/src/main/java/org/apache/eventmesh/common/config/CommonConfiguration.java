@@ -35,7 +35,7 @@ import lombok.Getter;
 
 @Config(prefix = "eventMesh")
 public class CommonConfiguration {
-    @ConfigFiled(field = "sysid")
+    @ConfigFiled(field = "sysid", beNumber = true)
     public String sysID = "5477";
 
     @ConfigFiled(field = "server.env")

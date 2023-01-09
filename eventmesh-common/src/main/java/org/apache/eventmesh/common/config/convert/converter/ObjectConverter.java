@@ -24,6 +24,8 @@ import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
 import org.apache.eventmesh.common.config.convert.ConverterMap;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -144,6 +146,12 @@ public class ObjectConverter implements ConvertValue<Object> {
             }
 
             return false;
+        }
+
+        if (configFiled.beNumber()) {
+            if (!(convertedValue instanceof String) || !StringUtils.isNumeric((String) convertedValue)) {
+                throw new RuntimeException(key + " must be number!");
+            }
         }
 
         return true;

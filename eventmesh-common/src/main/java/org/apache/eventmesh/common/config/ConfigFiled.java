@@ -63,4 +63,11 @@ public @interface ConfigFiled {
      * @return Whether the field can be null
      */
     boolean notNull() default false;
+
+    /**
+     * If it's not a number, an exception is thrown
+     *
+     * @return Whether the field must be number
+     */
+    boolean beNumber() default false;
 }
