@@ -6,7 +6,7 @@ EventMesh Go SDK
 
 - Makefile tip
  >1. use golangci-lint static code check
- >>- install: `go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
+ >>- install: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
  >>- `make lint`
  
  >2. test code
