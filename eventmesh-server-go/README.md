@@ -1,9 +1,4 @@
-EventMesh Go SDK
-- support api
- >1. gRPC
- >2. HTTP
- >3. TCP
-
+EventMesh Server Go
 - Makefile tip
  >1. use golangci-lint static code check
  >>- install: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
@@ -14,4 +9,7 @@ EventMesh Go SDK
  
  >3. test coverage
  >>- `make coverage`
+ 
+ >4. build code
+ >>- `make build`
 
