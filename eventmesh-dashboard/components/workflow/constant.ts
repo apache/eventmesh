@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,6 +18,8 @@
  * under the License.
  */
 
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 import { WorkflowStatusEnum, WorkflowInstanceStatusEnum } from './types';
 
 export const WorkflowStatusMap = new Map([

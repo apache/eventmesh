@@ -29,13 +29,20 @@ import {
   DrawerCloseButton,
   Button,
   useToast,
+<<<<<<< HEAD
   Spinner,
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 } from '@chakra-ui/react';
 import axios from 'axios';
 
 import Editor, { Monaco } from '@monaco-editor/react';
 
+<<<<<<< HEAD
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+=======
+const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
 const Create: FC<{
   visible: boolean;
@@ -43,12 +50,20 @@ const Create: FC<{
   onSucceed: () => void;
 }> = ({ visible = false, onClose = () => {}, onSucceed = () => {} }) => {
   const toast = useToast();
+<<<<<<< HEAD
   const [isSubmitting, setIsSubmitting] = useState(false);
+=======
+  const [isLoading, setIsLoading] = useState(false);
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
   const editorRef = useRef<Monaco | null>(null);
   const defaultEditorValue = '# Your code goes here';
 
   const onSubmit = () => {
+<<<<<<< HEAD
     setIsSubmitting(true);
+=======
+    setIsLoading(true);
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
     try {
       const value = editorRef.current.getValue();
@@ -59,7 +74,10 @@ const Create: FC<{
           status: 'warning',
           position: 'top-right',
         });
+<<<<<<< HEAD
         setIsSubmitting(false);
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
         return;
       }
       axios
@@ -79,7 +97,10 @@ const Create: FC<{
             position: 'top-right',
           });
           onSucceed();
+<<<<<<< HEAD
           setIsSubmitting(false);
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
         })
         .catch((error) => {
           toast({
@@ -88,10 +109,16 @@ const Create: FC<{
             status: 'error',
             position: 'top-right',
           });
+<<<<<<< HEAD
           setIsSubmitting(false);
         });
     } catch (error) {
       setIsSubmitting(false);
+=======
+        });
+    } catch (error) {
+      setIsLoading(false);
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
     }
   };
 
@@ -112,6 +139,36 @@ const Create: FC<{
         <DrawerCloseButton />
         <DrawerHeader>Create New Workflow</DrawerHeader>
         <DrawerBody>
+<<<<<<< HEAD
+=======
+          {/* <Box mb={5}>
+            <FormControl isRequired isInvalid={nameError}>
+              <FormLabel>Workflow name</FormLabel>
+              <Input
+                placeholder="Please input"
+                value={workflowName}
+                onChange={(evt) => setWorkflowName(evt.target.value.trim())}
+              />
+              {!nameError ? (
+                <FormHelperText>Max length 1024</FormHelperText>
+              ) : (
+                <FormErrorMessage>
+                  Workflow is required, max length is 1024.
+                </FormErrorMessage>
+              )}
+            </FormControl>
+            <FormControl mt={2}>
+              <FormLabel>Description</FormLabel>
+              <Textarea
+                minH={120}
+                placeholder="Optional"
+                value={description}
+                onChange={(evt) => setDescription(evt.target.value)}
+              />
+            </FormControl>
+          </Box> */}
+
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
           <Editor
             height="1000px"
             defaultLanguage="yaml"
@@ -122,7 +179,11 @@ const Create: FC<{
         </DrawerBody>
         <DrawerFooter justifyContent="flex-start">
           <Button colorScheme="blue" mr={3} onClick={onSubmit}>
+<<<<<<< HEAD
             {isSubmitting ? <Spinner colorScheme="white" size="sm" /> : 'Submit'}
+=======
+            Submit
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
           </Button>
           <Button variant="ghost" colorScheme="blue" onClick={onClose}>
             Cancel

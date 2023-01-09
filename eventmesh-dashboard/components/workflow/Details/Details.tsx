@@ -40,6 +40,10 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+<<<<<<< HEAD
+=======
+  Tag,
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
   useToast,
   AlertDialog,
   AlertDialogOverlay,
@@ -47,20 +51,32 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+<<<<<<< HEAD
   Alert,
   Badge,
 } from '@chakra-ui/react';
 
 import { WarningIcon, InfoIcon } from '@chakra-ui/icons';
+=======
+} from '@chakra-ui/react';
+
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 import moment from 'moment';
 
 import Editor, { Monaco } from '@monaco-editor/react';
 import axios from 'axios';
 import { WorkflowType, WorkflowStatusEnum } from '../types';
+<<<<<<< HEAD
 // import { WorkflowStatusMap } from '../constant';
 import Intances from './Instances';
 
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+=======
+import { WorkflowStatusMap } from '../constant';
+import Intances from './Instances';
+
+const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
 const Details: FC<{
   visible: boolean;
@@ -87,6 +103,10 @@ const Details: FC<{
         `${ApiRoot}/workflow`,
         {
           workflow: {
+<<<<<<< HEAD
+=======
+            id: data?.id,
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
             workflow_id: data?.workflow_id,
             definition: value,
           },
@@ -142,6 +162,7 @@ const Details: FC<{
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
+<<<<<<< HEAD
             <AlertDialogHeader
               fontSize="lg"
               fontWeight="bold"
@@ -158,12 +179,24 @@ const Details: FC<{
               <Text as="b">{data?.workflow_id}</Text>
               ?
             </AlertDialogBody>
+=======
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Saved Workflow
+            </AlertDialogHeader>
+
+            <AlertDialogBody>Are you sure?</AlertDialogBody>
+
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={() => setIsShowComfirm(false)}>
                 No
               </Button>
               <Button colorScheme="blue" onClick={onSubmit} ml={3}>
+<<<<<<< HEAD
                 Save
+=======
+                Yes
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -179,6 +212,7 @@ const Details: FC<{
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
+<<<<<<< HEAD
           <DrawerHeader>
             {data?.workflow_id}
             {/* <Badge
@@ -212,11 +246,41 @@ const Details: FC<{
                   <FormLabel opacity={0.5}>Updated At</FormLabel>
                   <Text>
                     {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
+=======
+          <DrawerHeader>Workflow Details</DrawerHeader>
+          <DrawerBody>
+            <Stack mb="30px" direction="row" spacing={10}>
+              <Flex flexDirection="column" h="full">
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Workflow ID</FormLabel>
+                  <Text>{data?.workflow_id}</Text>
+                </Box>
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Workflow Name</FormLabel>
+                  <Text>{data?.workflow_name}</Text>
+                </Box>
+                <Box>
+                  <FormLabel opacity={0.3}>Status</FormLabel>
+
+                  <Text>
+                    <Tag
+                      size="lg"
+                      variant="outline"
+                      colorScheme={
+                        data?.status === WorkflowStatusEnum.Normal
+                          ? 'blue'
+                          : 'red'
+                      }
+                    >
+                      {WorkflowStatusMap.get(data?.status ?? 0) ?? '-'}
+                    </Tag>
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
                   </Text>
                 </Box>
               </Flex>
 
               <Flex flexDirection="column" h="full">
+<<<<<<< HEAD
                 <Box mb={2}>
                   <FormLabel opacity={0.5}>Total Instance</FormLabel>
                   <Text>{data?.total_instances}</Text>
@@ -227,6 +291,37 @@ const Details: FC<{
                 </Box>
                 <Box>
                   <FormLabel opacity={0.5}>Failed</FormLabel>
+=======
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Version</FormLabel>
+                  <Text>{data?.version}</Text>
+                </Box>
+
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Created At</FormLabel>
+                  <Text>
+                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                  </Text>
+                </Box>
+                <Box>
+                  <FormLabel opacity={0.3}>Updated At</FormLabel>
+                  <Text>
+                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                  </Text>
+                </Box>
+              </Flex>
+              <Flex flexDirection="column" h="full">
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Total Instance</FormLabel>
+                  <Text>{data?.total_instances}</Text>
+                </Box>
+                <Box mb={5}>
+                  <FormLabel opacity={0.3}>Running</FormLabel>
+                  <Text>{data?.total_running_instances}</Text>
+                </Box>
+                <Box>
+                  <FormLabel opacity={0.3}>Failed</FormLabel>
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
                   <Text>{data?.total_failed_instances}</Text>
                 </Box>
               </Flex>
@@ -239,6 +334,7 @@ const Details: FC<{
               </TabList>
               <TabPanels>
                 <TabPanel>
+<<<<<<< HEAD
                   <Alert status="info" mb={2}>
                     <InfoIcon color="#3182ce" mr={2} />
                     <Text fontSize="sm" color="#3182ce">
@@ -246,6 +342,8 @@ const Details: FC<{
                       it
                     </Text>
                   </Alert>
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
                   <Editor
                     height="1000px"
                     defaultLanguage="yaml"
@@ -264,6 +362,7 @@ const Details: FC<{
             <Button colorScheme="blue" mr={3} onClick={onConfirm}>
               OK
             </Button>
+<<<<<<< HEAD
             <Button
               colorScheme="blue"
               mr={3}
@@ -272,6 +371,8 @@ const Details: FC<{
             >
               Cancel
             </Button>
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

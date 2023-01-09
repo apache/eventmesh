@@ -22,6 +22,11 @@ import React, {
 } from 'react';
 import axios from 'axios';
 import {
+<<<<<<< HEAD
+=======
+  Button,
+  Stack,
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
   Flex,
   Text,
   Table,
@@ -33,7 +38,10 @@ import {
   TableContainer,
   TableCaption,
   Tag,
+<<<<<<< HEAD
   Spinner,
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 } from '@chakra-ui/react';
 import moment from 'moment';
 import { WorkflowInstanceType } from '../types';
@@ -42,14 +50,25 @@ import {
   WorkflowIntanceStatusColorMap,
 } from '../constant';
 
+<<<<<<< HEAD
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+=======
+const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
 const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [instances, setInstances] = useState<WorkflowInstanceType[]>([]);
   const [total, setTotal] = useState(0);
+<<<<<<< HEAD
   const [pageIndex, setPageIndex] = useState(1);
   const pageSize = 10;
+=======
+  const [keywordFilter, setKeywordFilter] = useState('');
+  const [pageIndex, setPageIndex] = useState(1);
+  const pageSize = 10;
+  const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
   const getWorkflows = useCallback(async () => {
     setIsLoading(true);
@@ -70,13 +89,21 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
       }>(`${ApiRoot}/workflow/instances`, {
         params: reqParams,
       });
+<<<<<<< HEAD
       setInstances([...instances, ...(data?.workflow_instances ?? [])]);
+=======
+      setInstances(data.workflow_instances);
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
       setTotal(data.total);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
+<<<<<<< HEAD
   }, [workflowId, pageIndex, pageSize]);
+=======
+  }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,6 +111,7 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
     return () => {
       controller.abort();
     };
+<<<<<<< HEAD
   }, [workflowId, pageIndex, pageSize]);
 
   return (
@@ -158,6 +186,67 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
         )}
       </Table>
     </TableContainer>
+=======
+  }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
+
+  return (
+    <Stack>
+      <Flex justifyContent="space-between" alignItems="center">
+        <Button
+          variant="ghost"
+          colorScheme="blue"
+          onClick={() => setRefreshFlag(+new Date())}
+        >
+          Refresh
+        </Button>
+        <Text>{`${total} instance${total > 1 ? 's' : ''} in total`}</Text>
+      </Flex>
+      <TableContainer>
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Instance ID</Th>
+              <Th>Status</Th>
+              <Th>Updated at</Th>
+              <Th>Created At</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {instances.map((workflow) => (
+              <Tr key={workflow.workflow_instance_id}>
+                <Td>{workflow.workflow_instance_id}</Td>
+                <Td>
+                  <Tag
+                    size="sm"
+                    colorScheme={WorkflowIntanceStatusColorMap.get(
+                      workflow.workflow_status,
+                    )}
+                    variant="outline"
+                  >
+                    {WorkflowIntanceStatusMap.get(workflow.workflow_status)}
+                  </Tag>
+                </Td>
+                <Td>
+                  {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                </Td>
+                <Td>
+                  {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+
+          {instances.length === 0 && (
+            <TableCaption>
+              <Text variant="xs" color="#909090">
+                empty
+              </Text>
+            </TableCaption>
+          )}
+        </Table>
+      </TableContainer>
+    </Stack>
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
   );
 };
 

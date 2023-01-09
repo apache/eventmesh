@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,6 +18,8 @@
  * under the License.
  */
 
+=======
+>>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 export type WorkflowType = {
   create_time: string;
   definition: string;
