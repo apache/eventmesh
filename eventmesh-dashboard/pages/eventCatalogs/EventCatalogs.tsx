@@ -29,7 +29,6 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
@@ -37,7 +36,12 @@ import {
   Box,
 } from '@chakra-ui/react';
 import SchemaView from './SchemaView';
-import { SchemaTypes } from './types';
+
+export type SchemaTypes = {
+  schemaId: string;
+  lastVersion: string;
+  description: string;
+};
 
 const schemaData: SchemaTypes[] = [
   {
@@ -86,7 +90,7 @@ const EventCatalogs: NextPage = () => {
         </Flex>
         <Divider mt="15" mb="15" orientation="horizontal" />
         <TableContainer>
-          <Table variant="simple" size="lg">
+          <Table variant="simple">
             <Thead>
               <Tr>
                 <Th>Shema ID</Th>
@@ -117,14 +121,6 @@ const EventCatalogs: NextPage = () => {
                 </Tr>
               ))}
             </Tbody>
-            <Tfoot>
-              <Tr>
-                {/* <Th>Shema ID</Th>
-                <Th>Lastest Version</Th>
-                <Th>Description</Th>
-                <Th>Action</Th> */}
-              </Tr>
-            </Tfoot>
           </Table>
         </TableContainer>
       </Box>
