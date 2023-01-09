@@ -20,17 +20,21 @@ package org.apache.eventmesh.webhook.receive;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
+import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
 import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -40,8 +44,6 @@ import org.slf4j.LoggerFactory;
 import lombok.Setter;
 
 public class WebHookController {
-
-    private static final String WEBHOOK_PRODUCER_CONNECTOR_PROP = "eventMesh.webHook.producer.connector";
 
     private static final String PROTOCOL_ADAPTOR = "webhook";
 
@@ -55,7 +57,9 @@ public class WebHookController {
      * protocol pool
      */
     private final ProtocolManage protocolManage = new ProtocolManage();
+
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
     /**
      * config pool
      */
@@ -65,13 +69,14 @@ public class WebHookController {
 
     private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
 
-    @Setter
-    private ConfigurationWrapper configurationWrapper;
+    private ReceiveConfiguration receiveConfiguration;
 
     public void init() throws Exception {
-        this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProperties(),
-            configurationWrapper.getProp(WEBHOOK_PRODUCER_CONNECTOR_PROP));
-        this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
+        receiveConfiguration = ConfigService.getInstance().getConfig(ReceiveConfiguration.class);
+        Properties rootConfig = ConfigService.getInstance().getRootConfig();
+
+        this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getConnectorPluginType());
+        this.hookConfigOperationManage = new HookConfigOperationManage(receiveConfiguration);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
 

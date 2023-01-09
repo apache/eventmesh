@@ -1,4 +1,4 @@
-    /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,24 +15,35 @@
  * limitations under the License.
  */
 
-dependencies {
+package org.apache.eventmesh.webhook.config;
 
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-    implementation 'org.slf4j:slf4j-api'
-    implementation "com.alibaba.nacos:nacos-client"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+import java.util.Properties;
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+import lombok.Data;
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+@Data
+@Config(prefix = "eventMesh.webHook")
+public class AdminConfiguration {
 
-    testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")
+    @ConfigFiled(field = "admin.start")
+    private boolean adminStart = false;
 
+    @ConfigFiled(field = "operationMode")
+    private String operationMode;
 
+    @ConfigFiled(field = "", reload = true)
+    private Properties operationProperties;
+
+    public void reload() {
+        processOperationProperties();
+    }
+
+    public void processOperationProperties() {
+        String prefix = operationMode + "Mode";
+        this.operationProperties = (Properties) operationProperties.get(prefix);
+    }
 }
+

@@ -398,7 +398,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         WebHookProcessor webHookProcessor = new WebHookProcessor();
 
         WebHookController webHookController = new WebHookController();
-        webHookController.setConfigurationWrapper(eventMeshHttpConfiguration.getConfigurationWrapper());
         webHookController.init();
         webHookProcessor.setWebHookController(webHookController);
         this.handlerService.register(webHookProcessor, webhookExecutor);

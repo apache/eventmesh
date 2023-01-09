@@ -37,9 +37,9 @@ public class WebHookOperationConstant {
 
     public static final long TIMEOUT_MS = 3 * 1000L;
 
-    public static final String ADMIN_START_CONFIG_NAME = "eventMesh.webHook.admin.start";
+    public static final String OPERATION_MODE_FILE = "file";
 
-    public static final String OPERATION_MODE_CONFIG_NAME = "eventMesh.webHook.operationMode";
+    public static final String OPERATION_MODE_NACOS = "nacos";
 
     public static final String EVENTMESH_HOME = "#{eventMeshHome}";
 

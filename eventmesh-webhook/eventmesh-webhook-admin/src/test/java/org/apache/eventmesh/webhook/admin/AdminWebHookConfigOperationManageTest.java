@@ -1,4 +1,4 @@
-    /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-dependencies {
+package org.apache.eventmesh.webhook.admin;
 
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+import org.apache.eventmesh.common.config.ConfigService;
 
-    implementation 'org.slf4j:slf4j-api'
-    implementation "com.alibaba.nacos:nacos-client"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+import org.junit.Assert;
+import org.junit.Test;
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+public class AdminWebHookConfigOperationManageTest {
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    @Test
+    public void init() throws Exception {
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://eventmesh.properties");
 
-    testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")
+        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
+        adminWebHookConfigOperationManage.init();
 
-
+        Assert.assertTrue(
+                adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
+    }
 }

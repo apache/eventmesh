@@ -34,6 +34,9 @@ public class ConfigService {
 
     private static final ConfigService INSTANCE = new ConfigService();
 
+    /**
+     * Unified configuration Properties corresponding to eventmesh.properties
+     */
     private Properties properties = new Properties();
 
     private final ConfigMonitorService configMonitorService = new ConfigMonitorService();
@@ -57,6 +60,10 @@ public class ConfigService {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setPath(path);
         properties = this.getConfig(configInfo);
+    }
+
+    public Properties getRootConfig() {
+        return this.properties;
     }
 
     public <T> T getConfig(Class<?> clazz) {
