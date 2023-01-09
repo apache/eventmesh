@@ -78,7 +78,7 @@ var _ = Describe("id_snake test", func() {
 			defer func() {
 				if err := recover(); err != nil {
 					ret = err.(error).Error()
-					Ω(ret).To(Equal(want))
+					Ω(want).To(Equal(ret))
 				}
 				So(ret, ShouldEqual, want)
 				mockPatches.Reset()

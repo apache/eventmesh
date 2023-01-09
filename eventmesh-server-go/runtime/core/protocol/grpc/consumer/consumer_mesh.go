@@ -48,8 +48,8 @@ type EventMeshConsumer interface {
 
 type eventMeshConsumer struct {
 	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
+	persistentConsumer wrapper.Consumer
+	broadcastConsumer  wrapper.Consumer
 	messageHandler     MessageHandler
 	serviceState       consts.ServiceState
 	// consumerGroupTopicConfig key is topic
@@ -192,6 +192,7 @@ func (e *eventMeshConsumer) Shutdown() error {
 	if err := e.broadcastConsumer.Shutdown(); err != nil {
 		return err
 	}
+	e.serviceState = consts.STOPED
 	return nil
 }
 

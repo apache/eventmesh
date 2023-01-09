@@ -46,10 +46,6 @@ type Processor interface {
 type processor struct {
 }
 
-func NewProcessor() Processor {
-	return &processor{}
-}
-
 func (p *processor) Subscribe(consumerMgr ConsumerManager, msg *pb.Subscription) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := validator.ValidateHeader(hdr); err != nil {
