@@ -41,9 +41,12 @@ import {
   Tab,
   TabPanel,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   Tag,
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+>>>>>>> 6c6dc141 ([Dashboard] Hide status in details)
   useToast,
   AlertDialog,
   AlertDialogOverlay,
