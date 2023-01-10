@@ -260,7 +260,7 @@ func (w *workflowDALImpl) delete(tx *gorm.DB, workflowID string) error {
 	var handlers []func() error
 	handlers = append(handlers, func() error {
 		record := model.Workflow{Status: constants.InvalidStatus, UpdateTime: time.Now()}
-		return tx.Debug().Where("workflow_id = ?", workflowID).Updates(&record).Error
+		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
 	}, func() error {
 		record := model.WorkflowTask{Status: constants.InvalidStatus, UpdateTime: time.Now()}
 		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
