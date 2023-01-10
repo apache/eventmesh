@@ -176,7 +176,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
         int len = newBody.length;
         this.body = new byte[len];
-        System.arraycopy(this.body, 0, this.body, 0, len);
+        System.arraycopy(newBody, 0, this.body, 0, len);
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
