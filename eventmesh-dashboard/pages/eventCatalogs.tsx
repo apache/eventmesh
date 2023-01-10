@@ -17,10 +17,9 @@
  * under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import type { NextPage } from 'next';
-// import { useRouter } from 'next/router';
 
 import {
   Divider,
@@ -29,15 +28,19 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
   TableContainer,
   Box,
 } from '@chakra-ui/react';
-import SchemaView from './SchemaView';
-import { SchemaTypes } from './types';
+import SchemaView from '../components/eventCatalogs/SchemaView';
+
+export type SchemaTypes = {
+  schemaId: string;
+  lastVersion: string;
+  description: string;
+};
 
 const schemaData: SchemaTypes[] = [
   {
@@ -53,10 +56,25 @@ const schemaData: SchemaTypes[] = [
 ];
 
 const EventCatalogs: NextPage = () => {
-  // const router = useRouter();
   const [isShowCreate, setIsShowCreate] = useState(false);
   const [detailMode, setDetailMode] = useState<'create' | 'edit'>('create');
   const [curSchema, setCurSchema] = useState<SchemaTypes>();
+
+  const pageSize = 1;
+  const [pageIndex, setPageIndex] = useState(1);
+  const [keywordFilter, setKeywordFilter] = useState('');
+
+  const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
+
+  const getEventCatalogs = useCallback(async () => {}, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getEventCatalogs();
+    return () => {
+      controller.abort();
+    };
+  }, [pageIndex, pageSize, keywordFilter, refreshFlag]);
 
   return (
     <>
@@ -86,7 +104,7 @@ const EventCatalogs: NextPage = () => {
         </Flex>
         <Divider mt="15" mb="15" orientation="horizontal" />
         <TableContainer>
-          <Table variant="simple" size="lg">
+          <Table variant="simple">
             <Thead>
               <Tr>
                 <Th>Shema ID</Th>
@@ -98,10 +116,8 @@ const EventCatalogs: NextPage = () => {
             <Tbody>
               {schemaData.map((schema) => (
                 <Tr key={schema.schemaId}>
-                  <Td>{schema.schemaId}</Td>
-                  <Td>{schema.lastVersion}</Td>
-                  <Td>{schema.description}</Td>
-                  <Th>
+                  <Td>
+
                     <Button
                       colorScheme="blue"
                       variant="ghost"
@@ -111,20 +127,15 @@ const EventCatalogs: NextPage = () => {
                         setCurSchema(schema);
                       }}
                     >
-                      Details
+                      {schema.schemaId}
                     </Button>
-                  </Th>
+
+                  </Td>
+                  <Td>{schema.lastVersion}</Td>
+                  <Td>{schema.description}</Td>
                 </Tr>
               ))}
             </Tbody>
-            <Tfoot>
-              <Tr>
-                {/* <Th>Shema ID</Th>
-                <Th>Lastest Version</Th>
-                <Th>Description</Th>
-                <Th>Action</Th> */}
-              </Tr>
-            </Tfoot>
           </Table>
         </TableContainer>
       </Box>
