@@ -35,7 +35,7 @@ import {
   Flex,
   Input,
   Stack,
-  Select,
+  // Select,
   Table,
   Thead,
   Tbody,
@@ -58,9 +58,9 @@ import axios from 'axios';
 import Details from '../components/workflow/Details';
 import Create from '../components/workflow/Create';
 import { WorkflowType } from '../components/workflow/types';
-import { WorkflowStatusMap } from '../components/workflow/constant';
+// import { WorkflowStatusMap } from '../components/workflow/constant';
 
-const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
 
 const Workflows: NextPage = () => {
   const toast = useToast();
@@ -124,10 +124,10 @@ const Workflows: NextPage = () => {
         page: pageIndex,
         size: pageSize,
       };
-      if (statusFilter !== 'any') {
-        reqParams.status = statusFilter;
-      }
-      if (keywordFilter !== '') {
+      // if (statusFilter) {
+      //   reqParams.status = statusFilter;
+      // }
+      if (keywordFilter) {
         reqParams.workflow_id = keywordFilter;
       }
       const { data } = await axios.get<{
@@ -184,16 +184,15 @@ const Workflows: NextPage = () => {
               value={keywordFilter}
               onChange={(evt) => setKeywordFilter(evt.target.value)}
             />
-            <Select
+            {/* <Select
               size="md"
               placeholder="Status"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
-              <option value="any">Any</option>
               <option value="1">Running</option>
               <option value="-1">Deleted</option>
-            </Select>
+            </Select> */}
             <Box>
               <Button
                 colorScheme="blue"
@@ -212,7 +211,7 @@ const Workflows: NextPage = () => {
               <Tr>
                 <Th>Workflow ID</Th>
                 <Th>Workflow Name</Th>
-                <Th>Status</Th>
+                {/* <Th>Status</Th> */}
                 <Th isNumeric>Total Instance</Th>
                 <Th isNumeric>Running</Th>
                 <Th isNumeric>Failed</Th>
@@ -239,7 +238,7 @@ const Workflows: NextPage = () => {
                   </Td>
                   <Td>{workflow.workflow_name}</Td>
 
-                  <Td>{WorkflowStatusMap.get(workflow.status)}</Td>
+                  {/* <Td>{WorkflowStatusMap.get(workflow.status)}</Td> */}
                   <Td isNumeric>{workflow.total_instances}</Td>
                   <Td isNumeric>{workflow.total_running_instances}</Td>
                   <Td isNumeric>{workflow.total_failed_instances}</Td>
@@ -311,17 +310,22 @@ const Workflows: NextPage = () => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              <WarningTwoIcon mr={4} boxSize={8} color="orange" />
-              Confirm
+              <Flex alignItems="center">
+                <WarningTwoIcon mr={2} boxSize={6} color="orange" />
+                <Text fontSize="xl" as="b">
+                  Confirm
+                </Text>
+              </Flex>
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure to delet workflow?
-              <Box>
-                <Text fontSize="sm" as="b">
-                  {selectedWorkflow?.workflow_name}
-                </Text>
-              </Box>
+              Are you sure to delete
+              {' '}
+              <Text fontSize="sm" as="b">
+                {selectedWorkflow?.workflow_name}
+              </Text>
+              ?
+              <Box />
             </AlertDialogBody>
 
             <AlertDialogFooter>

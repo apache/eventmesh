@@ -58,10 +58,10 @@ import moment from 'moment';
 import Editor, { Monaco } from '@monaco-editor/react';
 import axios from 'axios';
 import { WorkflowType, WorkflowStatusEnum } from '../types';
-import { WorkflowStatusMap } from '../constant';
+// import { WorkflowStatusMap } from '../constant';
 import Intances from './Instances';
 
-const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
 
 const Details: FC<{
   visible: boolean;
@@ -149,11 +149,16 @@ const Details: FC<{
               fontWeight="bold"
               alignItems="center"
             >
-              <WarningIcon boxSize="8" mr={2} color="orange" />
-              Confirm
+              <WarningIcon boxSize="6" mr={2} color="orange" />
+              <Text fontSize="xl" as="b">
+                Confirm
+              </Text>
             </AlertDialogHeader>
             <AlertDialogBody>
-              Workflow has been modified, do you want to save the changes?
+              Are you sure to save the changes to
+              {' '}
+              <Text as="b">{data?.workflow_id}</Text>
+              ?
             </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={() => setIsShowComfirm(false)}>
@@ -178,14 +183,14 @@ const Details: FC<{
           <DrawerCloseButton />
           <DrawerHeader>
             {data?.workflow_id}
-            <Badge
+            {/* <Badge
               ml={2}
               colorScheme={
                 data?.status === WorkflowStatusEnum.Normal ? 'blue' : 'red'
               }
             >
               {WorkflowStatusMap.get(data?.status ?? 0) ?? '-'}
-            </Badge>
+            </Badge> */}
             <Badge ml={2}>
               Version
               {' '}
@@ -196,17 +201,17 @@ const Details: FC<{
             <Stack mb="15px" direction="row" spacing={10}>
               <Flex flexDirection="column" h="full">
                 <Box mb={2}>
-                  <FormLabel opacity={0.3}>Workflow Name</FormLabel>
+                  <FormLabel opacity={0.5}>Workflow Name</FormLabel>
                   <Text>{data?.workflow_name}</Text>
                 </Box>
                 <Box mb={2}>
-                  <FormLabel opacity={0.3}>Created At</FormLabel>
+                  <FormLabel opacity={0.5}>Created At</FormLabel>
                   <Text>
                     {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
                 </Box>
                 <Box>
-                  <FormLabel opacity={0.3}>Updated At</FormLabel>
+                  <FormLabel opacity={0.5}>Updated At</FormLabel>
                   <Text>
                     {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
@@ -215,15 +220,15 @@ const Details: FC<{
 
               <Flex flexDirection="column" h="full">
                 <Box mb={2}>
-                  <FormLabel opacity={0.3}>Total Instance</FormLabel>
+                  <FormLabel opacity={0.5}>Total Instance</FormLabel>
                   <Text>{data?.total_instances}</Text>
                 </Box>
                 <Box mb={2}>
-                  <FormLabel opacity={0.3}>Running</FormLabel>
+                  <FormLabel opacity={0.5}>Running</FormLabel>
                   <Text>{data?.total_running_instances}</Text>
                 </Box>
                 <Box>
-                  <FormLabel opacity={0.3}>Failed</FormLabel>
+                  <FormLabel opacity={0.5}>Failed</FormLabel>
                   <Text>{data?.total_failed_instances}</Text>
                 </Box>
               </Flex>
@@ -239,9 +244,8 @@ const Details: FC<{
                   <Alert status="info" mb={2}>
                     <InfoIcon color="#3182ce" mr={2} />
                     <Text fontSize="sm" color="#3182ce">
-                      You can edit the workflow directly, and save it by
-                      clicking `OK`
-                      {' '}
+                      You can edit the workflow directly and click &quot;OK&quot; to save
+                      it
                     </Text>
                   </Alert>
                   <Editor
@@ -266,7 +270,7 @@ const Details: FC<{
               colorScheme="blue"
               mr={3}
               variant="ghost"
-              onClick={onConfirm}
+              onClick={onClose}
             >
               Cancel
             </Button>
