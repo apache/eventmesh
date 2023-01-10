@@ -242,10 +242,10 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
                 </Tag>
               </Td>
               <Td>
-                {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                {moment(workflow.update_time).format('YYYY-MM-DD HH:mm:ss')}
               </Td>
               <Td>
-                {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+                {moment(workflow.create_time).format('YYYY-MM-DD HH:mm:ss')}
               </Td>
             </Tr>
           ))}

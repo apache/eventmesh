@@ -335,13 +335,13 @@ const Details: FC<{
 >>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
                   <FormLabel opacity={0.3}>Created At</FormLabel>
                   <Text>
-                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
                 </Box>
                 <Box>
                   <FormLabel opacity={0.3}>Updated At</FormLabel>
                   <Text>
-                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
                 </Box>
               </Flex>

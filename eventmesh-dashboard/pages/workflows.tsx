@@ -284,6 +284,7 @@ const Workflows: NextPage = () => {
                   <Td isNumeric>{workflow.total_failed_instances}</Td>
                   <Td>
 <<<<<<< HEAD
+<<<<<<< HEAD
                     {moment(workflow.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Td>
                   <Td>
@@ -294,6 +295,12 @@ const Workflows: NextPage = () => {
                   <Td>
                     {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+                    {moment(workflow.update_time).format('YYYY-MM-DD HH:mm:ss')}
+                  </Td>
+                  <Td>
+                    {moment(workflow.create_time).format('YYYY-MM-DD HH:mm:ss')}
+>>>>>>> e880f6a9 ([Dashboard] Fixed time display issue)
                   </Td>
                   <Td>
                     <Button
