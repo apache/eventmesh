@@ -17,10 +17,9 @@
  * under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import type { NextPage } from 'next';
-// import { useRouter } from 'next/router';
 
 import {
   Divider,
@@ -35,7 +34,7 @@ import {
   TableContainer,
   Box,
 } from '@chakra-ui/react';
-import SchemaView from './SchemaView';
+import SchemaView from '../components/eventCatalogs/SchemaView';
 
 export type SchemaTypes = {
   schemaId: string;
@@ -57,10 +56,25 @@ const schemaData: SchemaTypes[] = [
 ];
 
 const EventCatalogs: NextPage = () => {
-  // const router = useRouter();
   const [isShowCreate, setIsShowCreate] = useState(false);
   const [detailMode, setDetailMode] = useState<'create' | 'edit'>('create');
   const [curSchema, setCurSchema] = useState<SchemaTypes>();
+
+  const pageSize = 1;
+  const [pageIndex, setPageIndex] = useState(1);
+  const [keywordFilter, setKeywordFilter] = useState('');
+
+  const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
+
+  const getEventCatalogs = useCallback(async () => {}, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getEventCatalogs();
+    return () => {
+      controller.abort();
+    };
+  }, [pageIndex, pageSize, keywordFilter, refreshFlag]);
 
   return (
     <>
@@ -102,10 +116,8 @@ const EventCatalogs: NextPage = () => {
             <Tbody>
               {schemaData.map((schema) => (
                 <Tr key={schema.schemaId}>
-                  <Td>{schema.schemaId}</Td>
-                  <Td>{schema.lastVersion}</Td>
-                  <Td>{schema.description}</Td>
-                  <Th>
+                  <Td>
+
                     <Button
                       colorScheme="blue"
                       variant="ghost"
@@ -115,9 +127,12 @@ const EventCatalogs: NextPage = () => {
                         setCurSchema(schema);
                       }}
                     >
-                      Details
+                      {schema.schemaId}
                     </Button>
-                  </Th>
+
+                  </Td>
+                  <Td>{schema.lastVersion}</Td>
+                  <Td>{schema.description}</Td>
                 </Tr>
               ))}
             </Tbody>
