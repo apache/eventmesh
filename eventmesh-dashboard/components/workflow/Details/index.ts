@@ -17,6 +17,6 @@
  * under the License.
  */
 
-import EventCatalogs from './EventCatalogs';
+import Details from './Details';
 
-export default EventCatalogs;
+export default Details;

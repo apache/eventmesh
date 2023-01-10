@@ -67,7 +67,6 @@ const SchemaView: FC<{
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
-
         {mode === 'create' ? (
           <>
             <DrawerHeader>Create New Schema</DrawerHeader>
