@@ -69,7 +69,7 @@ func (c *catalogDALImpl) SelectList(ctx context.Context, page int, size int) ([]
 	}
 	var count int64
 	db = db.Limit(size).Offset(size * (page - 1)).Order("update_time DESC")
-	if err := db.Find(&r).Count(&count).Error; err != nil {
+	if err := db.Find(&r).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
 		}
