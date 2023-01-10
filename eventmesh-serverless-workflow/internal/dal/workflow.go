@@ -35,7 +35,11 @@ import (
 const maxSize = 100
 
 type WorkflowDAL interface {
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error)
+=======
+	Select(ctx context.Context, workflowID string) (*model.Workflow, error)
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	SelectList(ctx context.Context, param *model.QueryParam) ([]model.Workflow, int, error)
 	Save(ctx context.Context, record *model.Workflow) error
 	Delete(ctx context.Context, workflowID string) error
@@ -57,7 +61,11 @@ func NewWorkflowDAL() WorkflowDAL {
 type workflowDALImpl struct {
 }
 
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 func (w *workflowDALImpl) Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error) {
+=======
+func (w *workflowDALImpl) Select(ctx context.Context, workflowID string) (*model.Workflow, error) {
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	var condition = model.Workflow{WorkflowID: workflowID, Status: constants.NormalStatus}
 	var r model.Workflow
 	if err := tx.WithContext(ctx).Where(&condition).First(&r).Error; err != nil {
@@ -90,7 +98,11 @@ func (w *workflowDALImpl) SelectList(ctx context.Context, param *model.QueryPara
 	}
 	var count int64
 	db = db.Limit(param.Size).Offset(param.Size * (param.Page - 1)).Order("update_time DESC")
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	if err := db.Find(&res).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+=======
+	if err := db.Find(&res).Count(&count).Error; err != nil {
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
 		}
@@ -118,7 +130,11 @@ func (w *workflowDALImpl) SelectInstances(ctx context.Context, param *model.Quer
 	}
 	var count int64
 	db = db.Limit(param.Size).Offset(param.Size * (param.Page - 1)).Order("update_time DESC")
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	if err := db.Find(&r).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+=======
+	if err := db.Find(&r).Count(&count).Error; err != nil {
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
 		}
@@ -268,13 +284,18 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 	if wf == nil {
 		return errors.New("workflow text invalid")
 	}
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	r, err := w.Select(ctx, tx, wf.ID)
+=======
+	r, err := w.Select(ctx, wf.ID)
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	if err != nil {
 		return err
 	}
 	if r != nil {
 		return errors.New("workflow id already exists")
 	}
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	var insertData = model.Workflow{}
 	insertData.WorkflowID = wf.ID
 	insertData.WorkflowName = wf.Name
@@ -286,6 +307,17 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 	var handlers []func() error
 	handlers = append(handlers, func() error {
 		return tx.Create(insertData).Error
+=======
+	record.WorkflowID = wf.ID
+	record.WorkflowName = wf.Name
+	record.Version = wf.Version
+	record.Status = constants.NormalStatus
+	record.CreateTime = time.Now()
+	record.UpdateTime = time.Now()
+	var handlers []func() error
+	handlers = append(handlers, func() error {
+		return tx.Create(record).Error
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	})
 	tasks := w.buildTask(wf)
 	for _, task := range tasks {

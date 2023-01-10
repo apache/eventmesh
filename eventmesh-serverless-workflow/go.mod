@@ -40,11 +40,15 @@ require (
 	github.com/reactivex/rxgo/v2 v2.5.0
 	github.com/serverlessworkflow/sdk-go/v2 v2.1.1
 <<<<<<< HEAD:eventmesh-serverless-workflow/go.mod
+<<<<<<< HEAD:eventmesh-serverless-workflow/go.mod
+=======
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/go.mod
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/files v1.0.0
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.9 // indirect
 	github.com/ugorji/go/codec v1.2.8 // indirect
+<<<<<<< HEAD:eventmesh-serverless-workflow/go.mod
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 	google.golang.org/grpc v1.48.0
@@ -55,6 +59,13 @@ require (
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
 >>>>>>> 24d88fc3 (upgrade nacos version and remove go-lexer dependency):eventmesh-workflow-go/go.mod
+=======
+	github.com/urfave/cli/v2 v2.23.7 // indirect
+	golang.org/x/crypto v0.4.0 // indirect
+	golang.org/x/tools v0.5.0 // indirect
+	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.1
+>>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/go.mod
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
