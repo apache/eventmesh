@@ -68,12 +68,15 @@ github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235/go.mod h1:MTYedVRixE9pk9Bs9MXPrwhnGZwuh2uXx0jrQo7GUKA=
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20230110063418-8d8aa909d909 h1:3UeXyRObOjCKuEO5tc2aagzpbAihmkschGN65OmWtGY=
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20230110063418-8d8aa909d909/go.mod h1:cr90Cj9ddgZqGm9Hax1rZ1K2iwP7D5oVeGqXAWoSqhQ=
+<<<<<<< HEAD:eventmesh-serverless-workflow/go.sum
 =======
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652-3768a592fc3f h1:SmBdnpOBjWUqXx2rmoYnBOjf4UeDdHdVniKFQakKMjE=
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652-3768a592fc3f/go.mod h1:5V5tuoj3sI0hyW+yVwsARYEJMQ41ty0ssfQVenqS26k=
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235 h1:AmTgHo34yws/03uqm3BKqzILleySCpkUmrWFMZ61MY0=
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235/go.mod h1:MTYedVRixE9pk9Bs9MXPrwhnGZwuh2uXx0jrQo7GUKA=
 >>>>>>> 24d88fc3 (upgrade nacos version and remove go-lexer dependency):eventmesh-workflow-go/go.sum
+=======
+>>>>>>> ba7e6833 (add go LICENSE dependency files):eventmesh-workflow-go/go.sum
 github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b h1:0UIzwfZ5ViQ16vONWteAEw+vpFslRbPnxlxUmk1QRF8=
 github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b/go.mod h1:jvTQE6fSkOk/eOH0pT0faPDe1wT4SFJ/W9Jq1XDCwrA=
 github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea h1:2HgaPliO/+mIcOEY3YXIv+uTyZK+TjXzm+P9rYxACh0=
