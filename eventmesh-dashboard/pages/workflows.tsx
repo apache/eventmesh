@@ -209,10 +209,14 @@ const Workflows: NextPage = () => {
             onClick={() => setIsShowCreate(true)}
           >
 <<<<<<< HEAD
+<<<<<<< HEAD
             Create Workflow
 =======
             Create Wokrflow
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+            Create Workflow
+>>>>>>> 432a2fd8 ([Dashboard] Change environment variables; fix wrong page total count number;)
           </Button>
           <Stack direction="row" spacing="2">
             <Input
@@ -360,10 +364,14 @@ const Workflows: NextPage = () => {
           ) : (
             <Text fontSize="sm" color="#909090">
 <<<<<<< HEAD
+<<<<<<< HEAD
               {total}
 =======
               {workflows.length}
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+              {total}
+>>>>>>> 432a2fd8 ([Dashboard] Change environment variables; fix wrong page total count number;)
               {` workflow${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>

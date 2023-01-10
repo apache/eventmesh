@@ -297,10 +297,14 @@ const EventCatalogs: NextPage = () => {
           ) : (
             <Text fontSize="sm" color="#909090">
 <<<<<<< HEAD
+<<<<<<< HEAD
               {total}
 =======
               {catalogs.length}
 >>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
+=======
+              {total}
+>>>>>>> 432a2fd8 ([Dashboard] Change environment variables; fix wrong page total count number;)
               {` catalog${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>
