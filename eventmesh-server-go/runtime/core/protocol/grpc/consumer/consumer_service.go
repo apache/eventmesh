@@ -34,6 +34,7 @@ type ConsumerService struct {
 	pb.UnimplementedConsumerServiceServer
 	consumerManager ConsumerManager
 	producerManager producer.ProducerManager
+	process         Processor
 	subscribePool   *ants.Pool
 	replyPool       *ants.Pool
 	msgToClient     chan *pb.SimpleMessage
@@ -56,6 +57,7 @@ func NewConsumerServiceServer(consumerManager ConsumerManager, producerManager p
 		producerManager: producerManager,
 		subscribePool:   subPool,
 		replyPool:       replyPool,
+		process:         &processor{},
 	}, nil
 }
 
@@ -69,7 +71,7 @@ func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = NewProcessor().Subscribe(c.consumerManager, sub)
+		resp, err = c.process.Subscribe(c.consumerManager, sub)
 		errChan <- err
 	})
 	select {
@@ -120,7 +122,7 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 		err     error
 	)
 	c.subscribePool.Submit(func() {
-		resp, err = NewProcessor().UnSubscribe(c.consumerManager, sub)
+		resp, err = c.process.UnSubscribe(c.consumerManager, sub)
 		errChan <- err
 	})
 	select {
@@ -138,7 +140,7 @@ func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription)
 func (c *ConsumerService) handleSubscriptionStream(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.subscribePool.Submit(func() {
 		emiter := emitter.NewEventEmitter(stream)
-		NewProcessor().SubscribeStream(c.consumerManager, emiter, sub)
+		c.process.SubscribeStream(c.consumerManager, emiter, sub)
 	})
 	return nil
 }
@@ -147,7 +149,7 @@ func (c *ConsumerService) handleSubscribeReply(sub *pb.Subscription, stream pb.C
 	c.replyPool.Submit(func() {
 		emiter := emitter.NewEventEmitter(stream)
 		reply := sub.Reply
-		NewProcessor().ReplyMessage(context.TODO(), c.producerManager, emiter, &pb.SimpleMessage{
+		c.process.ReplyMessage(context.TODO(), c.producerManager, emiter, &pb.SimpleMessage{
 			Header:        sub.Header,
 			ProducerGroup: reply.ProducerGroup,
 			Content:       reply.Content,

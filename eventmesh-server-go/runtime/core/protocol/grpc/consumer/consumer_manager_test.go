@@ -17,7 +17,7 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/golang/mock/gomock"
 	"testing"
 	"time"
@@ -25,6 +25,7 @@ import (
 	"github.com/liyue201/gostl/ds/set"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
@@ -182,6 +183,176 @@ func Test_RegisterClient(t *testing.T) {
 				assert.NotEqual(t, cliInMgr.LastUPTime.Second(), firstTime.Second())
 				assert.Nil(t, oldEmiter.SendStreamResp(&pb.RequestHeader{}, &grpc.StatusCode{}))
 				assert.Error(t, cliInMgr.Emiter.SendStreamResp(&pb.RequestHeader{}, &grpc.StatusCode{}))
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mgr, err := NewConsumerManager()
+			assert.NoError(t, err)
+			assert.NotNil(t, mgr)
+			tc.expect(t, mgr)
+		})
+	}
+}
+
+func Test_DeRegisterClient(t *testing.T) {
+	tests := []struct {
+		name   string
+		expect func(t *testing.T, mgr ConsumerManager)
+	}{
+		{
+			name: "load consumer not exist",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				err := mgr.DeRegisterClient(&GroupClient{
+					ConsumerGroup: "not exist",
+				})
+				assert.Nil(t, err)
+			},
+		},
+		{
+			name: "deregister exist",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				mockctl := gomock.NewController(t)
+				newEmiter := emitermock.NewMockEventEmitter(mockctl)
+				cli := &GroupClient{
+					ENV:              "env",
+					IDC:              "IDC",
+					ConsumerGroup:    "ConsumerGroup",
+					Topic:            "Topic",
+					GRPCType:         consts.WEBHOOK,
+					SubscriptionMode: pb.Subscription_SubscriptionItem_CLUSTERING,
+					SYS:              "SYS",
+					IP:               "IP",
+					PID:              util.PID(),
+					Hostname:         "test",
+					APIVersion:       "v1",
+					LastUPTime:       time.Now(),
+					Emiter:           newEmiter,
+				}
+				err := mgr.RegisterClient(cli)
+				assert.NoError(t, err)
+				err = mgr.DeRegisterClient(cli)
+				assert.NoError(t, err)
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mgr, err := NewConsumerManager()
+			assert.NoError(t, err)
+			assert.NotNil(t, mgr)
+			tc.expect(t, mgr)
+		})
+	}
+}
+
+func Test_UpdateClientTime(t *testing.T) {
+	getClientInConsumer := func(cg string, mgr ConsumerManager) (*GroupClient, bool) {
+		cm := mgr.(*consumerManager)
+		v, ok := cm.consumerGroupClients.Load(cg)
+		if !ok {
+			return nil, false
+		}
+		return v.(*set.Set).First().Value().(*GroupClient), true
+	}
+	tests := []struct {
+		name   string
+		expect func(t *testing.T, mgr ConsumerManager)
+	}{
+		{
+			name: "update consumer not exist",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				mgr.UpdateClientTime(&GroupClient{
+					ConsumerGroup: "not exist",
+				})
+			},
+		},
+		{
+			name: "update consumer exist",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				mockctl := gomock.NewController(t)
+				newEmiter := emitermock.NewMockEventEmitter(mockctl)
+				firstTime := time.Now()
+				cli := &GroupClient{
+					ENV:              "env",
+					IDC:              "IDC",
+					ConsumerGroup:    "ConsumerGroup",
+					Topic:            "Topic",
+					GRPCType:         consts.WEBHOOK,
+					SubscriptionMode: pb.Subscription_SubscriptionItem_CLUSTERING,
+					SYS:              "SYS",
+					IP:               "IP",
+					PID:              util.PID(),
+					Hostname:         "test",
+					APIVersion:       "v1",
+					LastUPTime:       firstTime,
+					Emiter:           newEmiter,
+				}
+				err := mgr.RegisterClient(cli)
+				assert.NoError(t, err)
+				time.Sleep(time.Second * 3)
+				mgr.UpdateClientTime(cli)
+				existCli, ok := getClientInConsumer(cli.ConsumerGroup, mgr)
+				assert.True(t, ok)
+				assert.NotEqual(t, existCli.LastUPTime.UnixMilli(), firstTime.UnixMilli())
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mgr, err := NewConsumerManager()
+			assert.NoError(t, err)
+			assert.NotNil(t, mgr)
+			tc.expect(t, mgr)
+		})
+	}
+}
+
+func Test_RestartConsumer(t *testing.T) {
+	err := config.GlobalConfig().Plugins.Setup()
+	assert.NoError(t, err)
+	plugin.SetActivePlugin(config.GlobalConfig().ActivePlugins)
+	cli := &GroupClient{
+		ENV:              "env",
+		IDC:              "IDC",
+		ConsumerGroup:    "ConsumerGroup",
+		Topic:            "Topic",
+		GRPCType:         consts.WEBHOOK,
+		SubscriptionMode: pb.Subscription_SubscriptionItem_CLUSTERING,
+		SYS:              "SYS",
+		IP:               "IP",
+		PID:              util.PID(),
+		Hostname:         "test",
+		APIVersion:       "v1",
+		LastUPTime:       time.Now(),
+		Emiter:           nil,
+	}
+	tests := []struct {
+		name   string
+		expect func(t *testing.T, mgr ConsumerManager)
+	}{
+		{
+			name: "consumer group not found",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				err := mgr.RestartConsumer("not exist consumer group")
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "state is running",
+			expect: func(t *testing.T, mgr ConsumerManager) {
+				err := mgr.RegisterClient(cli)
+				assert.NoError(t, err)
+				mesh, err := mgr.GetConsumer(cli.ConsumerGroup)
+				assert.NoError(t, err)
+				assert.NotNil(t, mesh)
+				ok := mesh.RegisterClient(cli)
+				assert.True(t, ok)
+				err = mgr.RestartConsumer(cli.ConsumerGroup)
+				assert.Equal(t, mesh.ServiceState(), consts.RUNNING)
+				assert.NoError(t, err)
+
 			},
 		},
 	}

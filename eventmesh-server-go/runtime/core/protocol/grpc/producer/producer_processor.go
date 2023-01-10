@@ -55,10 +55,6 @@ type Processor interface {
 type processor struct {
 }
 
-func NewProcessor() Processor {
-	return &processor{}
-}
-
 func (p *processor) AsyncMessage(ctx context.Context, producerMgr ProducerManager, msg *pb.SimpleMessage) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := validator.ValidateHeader(hdr); err != nil {

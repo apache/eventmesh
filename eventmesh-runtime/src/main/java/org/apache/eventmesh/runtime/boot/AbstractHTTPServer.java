@@ -49,11 +49,6 @@ import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -65,9 +60,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
@@ -107,10 +99,11 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractHTTPServer.class);
-
 
     private HandlerService handlerService;
 
@@ -122,7 +115,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private final transient AtomicBoolean started = new AtomicBoolean(false);
 
     private final transient boolean useTLS;
-
 
     private Boolean useTrace = false; //Determine whether trace is enabled
 
@@ -137,12 +129,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         DiskAttribute.deleteOnExitTemporaryFile = false;
     }
 
-
     protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>>
-            processorTable = new ConcurrentHashMap(64);
+            processorTable = new ConcurrentHashMap<>(64);
 
     protected final transient Map<String/* request uri */, Pair<EventProcessor, ThreadPoolExecutor>>
-            eventProcessorTable = new ConcurrentHashMap(64);
+            eventProcessorTable = new ConcurrentHashMap<>(64);
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
                               final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -151,6 +142,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.useTLS = useTLS;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
     }
+
 
     public void setUseTrace(final Boolean useTrace) {
         this.useTrace = useTrace;
@@ -192,8 +184,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void sendResponse(final ChannelHandlerContext ctx, final DefaultFullHttpResponse response) {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("send response to [{}] fail, will close this channel",
+                if (log.isWarnEnabled()) {
+                    log.warn("send response to [{}] fail, will close this channel",
                             RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 }
                 f.channel().close();
@@ -212,8 +204,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                 useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
                         .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("HTTPServer[port={}] started.", this.getPort());
+                if (log.isInfoEnabled()) {
+                    log.info("HTTPServer[port={}] started.", this.getPort());
                 }
 
                 b.bind(this.getPort())
@@ -221,16 +213,18 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         .closeFuture()
                         .sync();
             } catch (Exception e) {
-                LOGGER.error("HTTPServer start error!", e);
+                log.error("HTTPServer start error!", e);
                 try {
                     shutdown();
                 } catch (Exception ex) {
-                    LOGGER.error("HTTPServer shutdown error!", ex);
+                    log.error("HTTPServer shutdown error!", ex);
                 }
             }
         };
 
-        new Thread(r, "EventMesh-http-server").start();
+        final Thread t = new Thread(r, "EventMesh-http-server");
+        t.setDaemon(true);
+        t.start();
         started.compareAndSet(false, true);
     }
 
@@ -291,6 +285,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private void preProcessHttpRequestHeader(final ChannelHandlerContext ctx, final HttpRequest httpRequest) {
         final long startTime = System.currentTimeMillis();
         final HttpHeaders requestHeaders = httpRequest.headers();
+
         requestHeaders.set(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
         if (StringUtils.isBlank(requestHeaders.get(ProtocolKey.VERSION))) {
             requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
@@ -333,8 +328,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         public void channelRead(final ChannelHandlerContext ctx, final Object message) {
-
             final HttpRequest httpRequest = (HttpRequest) message;
+
+            if (httpRequest == null) {
+                return;
+            }
+
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
                 handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);
                 return;
@@ -366,9 +365,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                 if (useRequestURI) {
                     if (useTrace) {
-                        span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
-                        span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
-                        span.setAttribute(SemanticAttributes.HTTP_URL, httpRequest.uri());
+                        span.setAttribute(SemanticAttributes.HTTP_METHOD,
+                                httpRequest.method() == null ? "" : httpRequest.method().name());
+                        span.setAttribute(SemanticAttributes.HTTP_FLAVOR,
+                                httpRequest.protocolVersion() == null ? "" : httpRequest.protocolVersion().protocolName());
+                        span.setAttribute(SemanticAttributes.HTTP_URL,
+                                httpRequest.uri());
                     }
                     final HttpEventWrapper httpEventWrapper = parseHttpRequest(httpRequest);
 
@@ -385,7 +387,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             : MapUtils.getString(bodyMap, StringUtils.lowerCase(ProtocolKey.REQUEST_CODE), "");
 
                     requestCommand.setHttpMethod(httpRequest.method().name());
-                    requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
+                    requestCommand.setHttpVersion(httpRequest.protocolVersion() == null ? ""
+                            : httpRequest.protocolVersion().protocolName());
                     requestCommand.setRequestCode(requestCode);
 
                     HttpCommand responseCommand = null;
@@ -418,8 +421,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         return;
                     }
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("{}", requestCommand);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{}", requestCommand);
                     }
 
                     final AsyncContext<HttpCommand> asyncContext =
@@ -428,7 +431,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
             } catch (Exception ex) {
-                LOGGER.error("AbrstractHTTPServer.HTTPHandler.channelRead err", ex);
+                log.error("AbrstractHTTPServer.HTTPHandler.channelRead error", ex);
             } finally {
                 ReferenceCountUtil.release(message);
             }
@@ -457,11 +460,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                             asyncContext.onComplete(responseWrapper);
 
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("{}", asyncContext.getResponse());
-                            }
 
                             if (asyncContext.isComplete()) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("{}", asyncContext.getResponse());
+                                }
                                 sendResponse(ctx, asyncContext.getResponse().httpResponse());
                             }
                             return;
@@ -475,13 +478,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         metrics.getSummaryMetrics()
                                 .recordHTTPReqResTimeCost(System.currentTimeMillis() - requestWrapper.getReqTime());
 
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("{}", asyncContext.getResponse());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{}", asyncContext.getResponse());
                         }
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
                     } catch (Exception e) {
-                        LOGGER.error("process error", e);
+                        log.error("process error", e);
                     }
                 });
             } catch (RejectedExecutionException re) {
@@ -493,7 +496,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
                 } catch (Exception e) {
-                    LOGGER.error("sendResponse error", e);
+                    log.error("sendResponse error", e);
                 }
             }
 
@@ -512,17 +515,17 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                     request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
                             asyncContext.onComplete(responseCommand);
 
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("{}", asyncContext.getResponse());
-                            }
 
                             if (asyncContext.isComplete()) {
                                 sendResponse(ctx, responseCommand.httpResponse());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("{}", asyncContext.getResponse());
+                                }
                                 final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
-                                final Span span = TraceUtils.prepareServerSpan(traceMap,
-                                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-                                        false);
-                                TraceUtils.finishSpanWithException(span, traceMap,
+                                TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
+                                                EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                                                false),
+                                        traceMap,
                                         EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                             }
 
@@ -537,14 +540,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         metrics.getSummaryMetrics()
                                 .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("{}", asyncContext.getResponse());
+                        if (log.isDebugEnabled()) {
+                            log.debug("{}", asyncContext.getResponse());
                         }
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
                     } catch (Exception e) {
-                        LOGGER.error("process error", e);
+                        log.error("process error", e);
                     }
                 });
             } catch (RejectedExecutionException re) {
@@ -555,6 +558,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
                     final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
+
                     TraceUtils.finishSpanWithException(
                             TraceUtils.prepareServerSpan(traceMap,
                                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
@@ -563,7 +567,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getErrMsg(),
                             re);
                 } catch (Exception e) {
-                    LOGGER.error("processEventMeshRequest fail", re);
+                    log.error("processEventMeshRequest fail", re);
                 }
             }
         }
@@ -577,7 +581,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
             if (null != cause) {
-                LOGGER.error("", cause);
+                log.error("", cause);
             }
 
             if (null != ctx) {
@@ -585,12 +589,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         }
 
+        Map<String, String> extractFromRequest(final HttpRequest httpRequest) {
+            return new HashMap<>();
+        }
     }
 
-    private HttpEventWrapper parseHttpRequest(final HttpRequest httpRequest)
-            throws IOException, MethodNotSupportedException {
-
+    private HttpEventWrapper parseHttpRequest(final HttpRequest httpRequest) throws IOException, MethodNotSupportedException {
         final HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
+        httpEventWrapper.setHttpMethod(httpRequest.method().name());
         httpEventWrapper.setHttpVersion(httpRequest.protocolVersion().protocolName());
         httpEventWrapper.setRequestURI(httpRequest.uri());
 
@@ -600,6 +606,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         }
 
         final long bodyDecodeStart = System.currentTimeMillis();
+
         final FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
         final Map<String, Object> bodyMap = new HashMap<>();
 
@@ -640,13 +647,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     private class HttpConnectionHandler extends ChannelDuplexHandler {
+
         public final transient AtomicInteger connections = new AtomicInteger(0);
 
         @Override
         public void channelActive(final ChannelHandlerContext ctx) throws Exception {
             if (connections.incrementAndGet() > MAX_CONNECTIONS) {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
+                if (log.isWarnEnabled()) {
+                    log.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
                             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
                 }
                 ctx.close();
@@ -666,14 +674,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
             if (evt instanceof IdleStateEvent) {
                 final IdleStateEvent event = (IdleStateEvent) evt;
-
-                if (LOGGER.isInfoEnabled()) {
+                if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                    LOGGER.info("client|http|userEventTriggered|remoteAddress={}|msg={}",
-                            remoteAddress, evt.getClass().getName());
-                }
-
-                if (IdleState.ALL_IDLE.equals(event.state())) {
+                    if (log.isInfoEnabled()) {
+                        log.info("client|http|userEventTriggered|remoteAddress={}|msg={}",
+                                remoteAddress, evt.getClass().getName());
+                    }
                     ctx.close();
                 }
             }
@@ -687,7 +693,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         private final transient SSLContext sslContext;
 
         public HttpsServerInitializer(final SSLContext sslContext) {
-            super();
             this.sslContext = sslContext;
         }
 

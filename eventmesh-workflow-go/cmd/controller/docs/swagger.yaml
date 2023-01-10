@@ -1,0 +1,247 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+definitions:
+  main.QueryWorkflowInstancesResponse:
+    properties:
+      total:
+        description: total count
+        type: integer
+      workflow_instances:
+        items:
+          $ref: '#/definitions/model.WorkflowInstance'
+        type: array
+    type: object
+  main.QueryWorkflowResponse:
+    properties:
+      workflow:
+        $ref: '#/definitions/model.Workflow'
+    type: object
+  main.QueryWorkflowsResponse:
+    properties:
+      total:
+        description: total count
+        type: integer
+      workflows:
+        items:
+          $ref: '#/definitions/model.Workflow'
+        type: array
+    type: object
+  main.SaveWorkflowRequest:
+    properties:
+      workflow:
+        $ref: '#/definitions/model.Workflow'
+    type: object
+  model.Workflow:
+    properties:
+      create_time:
+        type: string
+      definition:
+        type: string
+      id:
+        type: integer
+      status:
+        type: integer
+      total_failed_instances:
+        type: integer
+      total_instances:
+        type: integer
+      total_running_instances:
+        type: integer
+      update_time:
+        type: string
+      version:
+        type: string
+      workflow_id:
+        type: string
+      workflow_name:
+        type: string
+    type: object
+  model.WorkflowInstance:
+    properties:
+      create_time:
+        type: string
+      id:
+        type: integer
+      update_time:
+        type: string
+      workflow_id:
+        type: string
+      workflow_instance_id:
+        type: string
+      workflow_status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: This is a workflow server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Workflow API
+  version: "1.0"
+paths:
+  /workflow:
+    get:
+      consumes:
+      - application/json
+      description: query workflow list
+      parameters:
+      - description: workflow id
+        in: query
+        name: workflow_id
+        type: string
+      - description: workflow status
+        in: query
+        name: status
+        type: string
+      - description: query page
+        in: query
+        name: page
+        type: string
+      - description: query size
+        in: query
+        name: size
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.QueryWorkflowsResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: query workflow list
+      tags:
+      - workflow
+    post:
+      consumes:
+      - application/json
+      description: save a workflow
+      parameters:
+      - description: workflow data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.SaveWorkflowRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: save a workflow
+      tags:
+      - workflow
+  /workflow/{workflowId}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a workflow
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflowId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.QueryWorkflowsResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: delete a workflow
+      tags:
+      - workflow
+    get:
+      consumes:
+      - application/json
+      description: query workflow detail info
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflowId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.QueryWorkflowResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: query workflow detail info
+      tags:
+      - workflow
+  /workflow/instances:
+    get:
+      consumes:
+      - application/json
+      description: query workflow instances
+      parameters:
+      - description: workflow id
+        in: query
+        name: workflow_id
+        type: string
+      - description: query page
+        in: query
+        name: page
+        type: string
+      - description: query size
+        in: query
+        name: size
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.QueryWorkflowInstancesResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: query workflow instances
+      tags:
+      - workflow
+swagger: "2.0"

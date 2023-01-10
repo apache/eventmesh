@@ -29,7 +29,7 @@ import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
@@ -86,6 +86,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private transient ConsumerManager consumerManager;
 
+    private transient SubscriptionManager subscriptionManager;
+
     private transient ProducerManager producerManager;
 
     private transient HttpRetryer httpRetryer;
@@ -111,12 +113,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private transient RateLimiter batchRateLimiter;
 
     public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
-
-    public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
-            new ConcurrentHashMap<>();
-
-    public final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
-            new ConcurrentHashMap<>();
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer,
                                final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -245,6 +241,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer.init();
 
         this.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
+
+        subscriptionManager = new SubscriptionManager();
 
         consumerManager = new ConsumerManager(this);
         consumerManager.init();
@@ -407,6 +405,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         webHookController.init();
         webHookProcessor.setWebHookController(webHookController);
         this.getHandlerService().register(webHookProcessor, webhookExecutor);
+    }
+
+    public SubscriptionManager getSubscriptionManager() {
+        return subscriptionManager;
     }
 
     public ConsumerManager getConsumerManager() {

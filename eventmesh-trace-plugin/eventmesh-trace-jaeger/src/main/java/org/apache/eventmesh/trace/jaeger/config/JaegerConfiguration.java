@@ -63,7 +63,7 @@ public class JaegerConfiguration {
                     PROPERTIES.load(reader);
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Load zipkin.properties file from classpath error", e);
+                throw new RuntimeException("Load jaeger.properties file from classpath error", e);
             }
         }
         // get from config home
