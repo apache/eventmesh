@@ -202,13 +202,13 @@ const Details: FC<{
                 <Box mb={2}>
                   <FormLabel opacity={0.3}>Created At</FormLabel>
                   <Text>
-                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
                 </Box>
                 <Box>
                   <FormLabel opacity={0.3}>Updated At</FormLabel>
                   <Text>
-                    {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Text>
                 </Box>
               </Flex>

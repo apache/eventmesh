@@ -244,10 +244,10 @@ const Workflows: NextPage = () => {
                   <Td isNumeric>{workflow.total_running_instances}</Td>
                   <Td isNumeric>{workflow.total_failed_instances}</Td>
                   <Td>
-                    {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(workflow.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Td>
                   <Td>
-                    {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+                    {moment(workflow.create_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Td>
                   <Td>
                     <Button
