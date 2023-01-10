@@ -13,9 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package constants
+package main
 
-const (
-	NormalStatus  = 1
-	InvalidStatus = -1
-)
+import "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/dal/model"
+
+// SaveEventRequest save event request body
+type SaveEventRequest struct {
+	Event model.Event `json:"event"`
+}
+
+// QueryEventsRequest query events request body
+type QueryEventsRequest struct {
+	Page int `form:"page" json:"page"` // page num
+	Size int `form:"size" json:"size"` // page size
+}
