@@ -219,7 +219,6 @@ public class EventMeshServerTest {
         }
 
         ConfigService configService = ConfigService.getInstance();
-        CommonConfiguration commonConfiguration = configService.getConfig(CommonConfiguration.class);
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = configService.getConfig(EventMeshHTTPConfiguration.class);
         EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
         EventMeshGrpcConfiguration eventMeshGrpcConfiguration = configService.getConfig(EventMeshGrpcConfiguration.class);

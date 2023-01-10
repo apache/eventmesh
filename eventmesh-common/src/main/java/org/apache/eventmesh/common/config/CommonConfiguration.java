@@ -101,7 +101,7 @@ public class CommonConfiguration {
 
 
     @ConfigFiled(reload = true)
-    private String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
+    private String eventMeshWebhookOrigin;
 
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;

@@ -95,18 +95,4 @@ public class ConfigurationWrapper {
             logger.error("loading properties [{}] error", file, e);
         }
     }
-
-    public String getProp(String key) {
-        return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
-    }
-
-    public int getIntProp(String configKey, int defaultValue) {
-        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
-        if (StringUtils.isEmpty(configValue)) {
-            return defaultValue;
-        }
-        Preconditions.checkState(StringUtils.isNumeric(configValue),
-                String.format("key:%s, value:%s error", configKey, configValue));
-        return Integer.parseInt(configValue);
-    }
 }

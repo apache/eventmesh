@@ -149,7 +149,7 @@ public class ObjectConverter implements ConvertValue<Object> {
         }
 
         if (configFiled.beNumber()) {
-            if (!(convertedValue instanceof String) || !StringUtils.isNumeric((String) convertedValue)) {
+            if (!StringUtils.isNumeric(String.valueOf(convertedValue))) {
                 throw new RuntimeException(key + " must be number!");
             }
         }
