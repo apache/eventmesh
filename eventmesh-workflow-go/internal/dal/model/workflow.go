@@ -17,17 +17,22 @@ package model
 
 import "time"
 
+// Workflow workflow model definition
 type Workflow struct {
-	ID           int       `json:"id" gorm:"column:id;type:int;primaryKey;autoIncrement"`
-	WorkflowID   string    `json:"workflow_id" gorm:"column:workflow_id;type:varchar;size:1024"`
-	WorkflowName string    `json:"workflow_name" gorm:"column:workflow_name;type:varchar;size:1024"`
-	Definition   string    `json:"definition" gorm:"column:definition;type:text;"`
-	Status       int       `json:"status" gorm:"column:status;type:int"`
-	Version      string    `json:"version" gorm:"column:version;type:varchar;size:64"`
-	CreateTime   time.Time `json:"create_time"`
-	UpdateTime   time.Time `json:"update_time"`
+	ID                    int       `json:"id" gorm:"column:id;type:int;primaryKey;autoIncrement"`
+	WorkflowID            string    `json:"workflow_id" gorm:"column:workflow_id;type:varchar;size:1024"`
+	WorkflowName          string    `json:"workflow_name" gorm:"column:workflow_name;type:varchar;size:1024"`
+	Definition            string    `json:"definition" gorm:"column:definition;type:text;"`
+	Status                int       `json:"status" gorm:"column:status;type:int"`
+	Version               string    `json:"version" gorm:"column:version;type:varchar;size:64"`
+	CreateTime            time.Time `json:"create_time"`
+	UpdateTime            time.Time `json:"update_time"`
+	TotalInstances        int       `json:"total_instances" gorm:"-"`
+	TotalRunningInstances int       `json:"total_running_instances" gorm:"-"`
+	TotalFailedInstances  int       `json:"total_failed_instances" gorm:"-"`
 }
 
+// TableName workflow table name define
 func (w Workflow) TableName() string {
 	return "t_workflow"
 }
@@ -43,4 +48,11 @@ type WorkflowInstance struct {
 
 func (w WorkflowInstance) TableName() string {
 	return "t_workflow_instance"
+}
+
+type QueryParam struct {
+	WorkflowID string `json:"workflow_id"`
+	Status     int    `json:"status"`
+	Page       int    `json:"page"` // page num
+	Size       int    `json:"size"` // page size
 }

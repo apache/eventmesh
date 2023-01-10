@@ -22,10 +22,16 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/registry"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/selector"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto"
 	pconfig "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/schedule"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/util"
 	"google.golang.org/grpc"
@@ -33,17 +39,32 @@ import (
 )
 
 type Server struct {
-	Server   *grpc.Server
+	server   *grpc.Server
 	schedule schedule.Scheduler
 	queue    queue.ObserveQueue
 }
 
-func NewServer() (*Server, error) {
+func main() {
+	s, err := initServer()
+	if err != nil {
+		log.Fatal("flow new server fail: " + err.Error())
+	}
+	router(s)
+	if err = s.run(); err != nil {
+		log.Fatal("run server fail: " + err.Error())
+	}
+}
+
+func router(s *Server) {
+	proto.RegisterWorkflowServer(s.server, api.NewWorkflowService())
+}
+
+func initServer() (*Server, error) {
 	plugin.Register(constants.LogSchedule, log.DefaultLogFactory)
 	plugin.Register(constants.LogQueue, log.DefaultLogFactory)
 
 	var s Server
-	if err := s.SetupConfig(); err != nil {
+	if err := s.setupConfig(); err != nil {
 		return nil, err
 	}
 	reg := registry.Get(config.GlobalConfig().Server.Name)
@@ -63,11 +84,11 @@ func NewServer() (*Server, error) {
 	}
 	s.queue = queue.GetQueue(config.GlobalConfig().Flow.Queue.Store)
 
-	s.Server = grpc.NewServer()
+	s.server = grpc.NewServer()
 	return &s, nil
 }
 
-func (s *Server) Run() error {
+func (s *Server) run() error {
 	s.queue.Observe()
 	s.schedule.Run()
 
@@ -75,14 +96,16 @@ func (s *Server) Run() error {
 	if err != nil {
 		return err
 	}
-	return s.Server.Serve(l)
+	return s.server.Serve(l)
 }
 
-func (s *Server) SetupConfig() error {
+func (s *Server) setupConfig() error {
 	config.ServerConfigPath = "./configs/workflow.yaml"
+	// compatible local environment
 	if !util.Exists(config.ServerConfigPath) {
 		config.ServerConfigPath = "../configs/workflow.yaml"
 	}
+	// compatible deploy environment
 	if !util.Exists(config.ServerConfigPath) {
 		config.ServerConfigPath = "../conf/workflow.yaml"
 	}
