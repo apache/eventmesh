@@ -107,10 +107,14 @@ func (w *workflowDALImpl) SelectList(ctx context.Context, param *model.QueryPara
 	var count int64
 	db = db.Limit(param.Size).Offset(param.Size * (param.Page - 1)).Order("update_time DESC")
 <<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	if err := db.Find(&res).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
 =======
 	if err := db.Find(&res).Count(&count).Error; err != nil {
 >>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
+=======
+	if err := db.Find(&res).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+>>>>>>> 913dd1f3 (modify gorm count sql):eventmesh-workflow-go/internal/dal/workflow.go
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
 		}
@@ -139,10 +143,14 @@ func (w *workflowDALImpl) SelectInstances(ctx context.Context, param *model.Quer
 	var count int64
 	db = db.Limit(param.Size).Offset(param.Size * (param.Page - 1)).Order("update_time DESC")
 <<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	if err := db.Find(&r).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
 =======
 	if err := db.Find(&r).Count(&count).Error; err != nil {
 >>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
+=======
+	if err := db.Find(&r).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+>>>>>>> 913dd1f3 (modify gorm count sql):eventmesh-workflow-go/internal/dal/workflow.go
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
 		}
