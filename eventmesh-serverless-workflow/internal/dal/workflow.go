@@ -36,10 +36,14 @@ const maxSize = 100
 
 type WorkflowDAL interface {
 <<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error)
 =======
 	Select(ctx context.Context, workflowID string) (*model.Workflow, error)
 >>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
+=======
+	Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error)
+>>>>>>> 7758e528 (optimize workflow dashboard controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	SelectList(ctx context.Context, param *model.QueryParam) ([]model.Workflow, int, error)
 	Save(ctx context.Context, record *model.Workflow) error
 	Delete(ctx context.Context, workflowID string) error
@@ -62,10 +66,14 @@ type workflowDALImpl struct {
 }
 
 <<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 func (w *workflowDALImpl) Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error) {
 =======
 func (w *workflowDALImpl) Select(ctx context.Context, workflowID string) (*model.Workflow, error) {
 >>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
+=======
+func (w *workflowDALImpl) Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error) {
+>>>>>>> 7758e528 (optimize workflow dashboard controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	var condition = model.Workflow{WorkflowID: workflowID, Status: constants.NormalStatus}
 	var r model.Workflow
 	if err := tx.WithContext(ctx).Where(&condition).First(&r).Error; err != nil {
@@ -252,7 +260,7 @@ func (w *workflowDALImpl) delete(tx *gorm.DB, workflowID string) error {
 	var handlers []func() error
 	handlers = append(handlers, func() error {
 		record := model.Workflow{Status: constants.InvalidStatus, UpdateTime: time.Now()}
-		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
+		return tx.Debug().Where("workflow_id = ?", workflowID).Updates(&record).Error
 	}, func() error {
 		record := model.WorkflowTask{Status: constants.InvalidStatus, UpdateTime: time.Now()}
 		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
@@ -285,10 +293,14 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 		return errors.New("workflow text invalid")
 	}
 <<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/dal/workflow.go
 	r, err := w.Select(ctx, tx, wf.ID)
 =======
 	r, err := w.Select(ctx, wf.ID)
 >>>>>>> 110f7ce9 (add workflow controller module):eventmesh-workflow-go/internal/dal/workflow.go
+=======
+	r, err := w.Select(ctx, tx, wf.ID)
+>>>>>>> 7758e528 (optimize workflow dashboard controller module):eventmesh-workflow-go/internal/dal/workflow.go
 	if err != nil {
 		return err
 	}

@@ -110,7 +110,7 @@ func (c *WorkflowController) QueryList(ctx *gin.Context) {
 // @Router       /workflow/{workflowId} [get]
 func (c *WorkflowController) QueryDetail(ctx *gin.Context) {
 	workflowID := ctx.Param(workflowIDParam)
-	res, err := c.workflowDAL.Select(ctx, workflowID)
+	res, err := c.workflowDAL.Select(ctx, dal.GetDalClient(), workflowID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
