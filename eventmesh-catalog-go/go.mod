@@ -24,6 +24,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 <<<<<<< HEAD
+<<<<<<< HEAD
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 =======
@@ -31,11 +32,16 @@ require (
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
 >>>>>>> ebbf8e00 (upgrade nacos version and remove go-lexer dependency)
+=======
+	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.1
+>>>>>>> b89123c5 (add catalog controller module)
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
 )
 
 require (
+<<<<<<< HEAD
 <<<<<<< HEAD
 	github.com/gin-gonic/gin v1.8.2
 	github.com/nacos-group/nacos-sdk-go/v2 v2.0.4 // indirect
@@ -87,4 +93,11 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 >>>>>>> ebbf8e00 (upgrade nacos version and remove go-lexer dependency)
+=======
+	github.com/gin-gonic/gin v1.8.2
+	github.com/nacos-group/nacos-sdk-go/v2 v2.0.4 // indirect
+	github.com/swaggo/files v1.0.0
+	github.com/swaggo/gin-swagger v1.5.3
+	github.com/swaggo/swag v1.8.9 // indirect
+>>>>>>> b89123c5 (add catalog controller module)
 )
