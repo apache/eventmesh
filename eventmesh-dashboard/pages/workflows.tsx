@@ -22,7 +22,6 @@ import React, {
 } from 'react';
 import Head from 'next/head';
 import type { NextPage } from 'next';
-// import { useRouter } from 'next/router';
 import moment from 'moment';
 import {
   ChevronLeftIcon,
@@ -53,12 +52,13 @@ import {
   AlertDialogFooter,
   useToast,
   Box,
+  Spinner,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import Details from '../../components/workflow/Details';
-import Create from '../../components/workflow/Create';
-import { WorkflowType } from '../../components/workflow/types';
-import { WorkflowStatusMap } from '../../components/workflow/constant';
+import Details from '../components/workflow/Details';
+import Create from '../components/workflow/Create';
+import { WorkflowType } from '../components/workflow/types';
+import { WorkflowStatusMap } from '../components/workflow/constant';
 
 const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
 
@@ -71,7 +71,7 @@ const Workflows: NextPage = () => {
   const [keywordFilter, setKeywordFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('any');
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 1;
+  const pageSize = 10;
   const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
   const [isShowCreate, setIsShowCreate] = useState(false);
   const [isShowDetails, setIsShowDetails] = useState(false);
@@ -269,10 +269,10 @@ const Workflows: NextPage = () => {
         </TableContainer>
         <Flex mt={4} alignItems="center">
           {isLoading ? (
-            <Text fontSize="sm">Loading</Text>
+            <Spinner colorScheme="blue" size="sm" />
           ) : (
             <Text fontSize="sm" color="#909090">
-              {total}
+              {workflows.length}
               {` workflow${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>
