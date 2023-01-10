@@ -42,14 +42,14 @@ import {
   WorkflowIntanceStatusColorMap,
 } from '../constant';
 
-const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
 
 const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [instances, setInstances] = useState<WorkflowInstanceType[]>([]);
   const [total, setTotal] = useState(0);
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 2;
+  const pageSize = 10;
 
   const getWorkflows = useCallback(async () => {
     setIsLoading(true);
@@ -85,8 +85,6 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
       controller.abort();
     };
   }, [workflowId, pageIndex, pageSize]);
-
-  console.log(instances.length);
 
   return (
     <TableContainer>

@@ -17,24 +17,11 @@
  * under the License.
  */
 
-export type SchemaTypes = {
-  schemaId: string;
-  lastVersion: string;
-  description: string;
-};
+import { CatalogStatusEnum } from './types';
 
-export type EventCatalogType = {
-  create_time: string,
-  definition: string,
-  file_name: string,
-  id: 0,
-  status: 0,
-  title: string,
-  update_time: string,
-  version: string
-};
+export const WorkflowStatusMap = new Map([
+  [CatalogStatusEnum.Normal, 'Normal'],
+  [CatalogStatusEnum.Deleted, 'Deleted'],
+]);
 
-export enum CatalogStatusEnum {
-  'Normal' = 1,
-  'Deleted' = -1,
-}
+export default WorkflowStatusMap;
