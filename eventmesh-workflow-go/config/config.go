@@ -17,7 +17,7 @@ package config
 
 import (
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
+	"os"
 )
 
 var (
@@ -75,7 +75,7 @@ func Get() *Config {
 }
 
 func parseConfigFromFile(configPath string) (*Config, error) {
-	buf, err := ioutil.ReadFile(configPath)
+	buf, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
