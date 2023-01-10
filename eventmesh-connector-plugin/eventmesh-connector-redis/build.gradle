@@ -50,3 +50,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
+
+test {
+    systemProperty "io.netty.tryUnsafe", "false"
+}
