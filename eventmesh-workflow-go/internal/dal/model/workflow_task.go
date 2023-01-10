@@ -29,7 +29,7 @@ type WorkflowTask struct {
 	UpdateTime         time.Time               `json:"update_time"`
 	Actions            []*WorkflowTaskAction   `json:"-" gorm:"-"`
 	TaskIDs            []string                `json:"-" gorm:"-"`
-	WorkflowInstanceID string                  `json:"-" gorm:"-"`
+	WorkflowInstanceID string                  `json:"workflow_instance_id" gorm:"-"`
 	ChildTasks         []*WorkflowTaskRelation `json:"-" gorm:"-"`
 }
 
