@@ -22,30 +22,33 @@ import React, { FC, useRef, useState } from 'react';
 import {
   Drawer,
   DrawerContent,
+  DrawerCloseButton,
   DrawerOverlay,
   DrawerHeader,
   DrawerBody,
   DrawerFooter,
-  DrawerCloseButton,
   Button,
+  Box,
   useToast,
   Spinner,
 } from '@chakra-ui/react';
+import Editor, { Monaco } from '@monaco-editor/react';
 import axios from 'axios';
 
-import Editor, { Monaco } from '@monaco-editor/react';
+const ApiRoot = process.env.NEXT_PUBLIC_EVENTCATALOG_API_ROOT;
 
-const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
-
-const Create: FC<{
-  visible: boolean;
-  onClose: () => void;
-  onSucceed: () => void;
-}> = ({ visible = false, onClose = () => {}, onSucceed = () => {} }) => {
+const Create: FC<{ visible: boolean; onClose: () => void; onSucceed:()=>void
+}> = ({ visible = false, onClose, onSucceed }) => {
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const editorRef = useRef<Monaco | null>(null);
   const defaultEditorValue = '# Your code goes here';
+
+  const handleEditorDidMount = (editor: any) => {
+    // here is the editor instance
+    // you can store it in `useRef` for further usage
+    editorRef.current = editor;
+  };
 
   const onSubmit = () => {
     setIsSubmitting(true);
@@ -64,8 +67,8 @@ const Create: FC<{
       }
       axios
         .post(
-          `${ApiRoot}/workflow`,
-          { workflow: { definition: value } },
+          `${ApiRoot}/catalog`,
+          { event: { definition: value } },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -95,30 +98,27 @@ const Create: FC<{
     }
   };
 
-  const handleEditorDidMount = (editor: Monaco) => {
-    editorRef.current = editor;
-  };
-
   return (
     <Drawer
       isOpen={visible}
       size="xl"
       placement="right"
-      closeOnEsc={false}
       onClose={() => onClose()}
     >
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
-        <DrawerHeader>Create New Workflow</DrawerHeader>
+        <DrawerHeader>Create Catalog</DrawerHeader>
         <DrawerBody>
-          <Editor
-            height="1000px"
-            defaultLanguage="yaml"
-            defaultValue={defaultEditorValue}
-            onMount={handleEditorDidMount}
-            theme="vs-dark"
-          />
+          <Box height="full">
+            <Editor
+              height="100%"
+              defaultLanguage="yaml"
+              defaultValue="# Your code goes here"
+              onMount={handleEditorDidMount}
+              theme="vs-dark"
+            />
+          </Box>
         </DrawerBody>
         <DrawerFooter justifyContent="flex-start">
           <Button colorScheme="blue" mr={3} onClick={onSubmit}>
@@ -129,8 +129,9 @@ const Create: FC<{
           </Button>
         </DrawerFooter>
       </DrawerContent>
+
     </Drawer>
   );
 };
 
-export default React.memo(Create);
+export default Create;
