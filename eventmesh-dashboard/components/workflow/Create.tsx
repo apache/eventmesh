@@ -29,6 +29,7 @@ import {
   DrawerCloseButton,
   Button,
   useToast,
+  Spinner,
 } from '@chakra-ui/react';
 import axios from 'axios';
 
@@ -42,12 +43,12 @@ const Create: FC<{
   onSucceed: () => void;
 }> = ({ visible = false, onClose = () => {}, onSucceed = () => {} }) => {
   const toast = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const editorRef = useRef<Monaco | null>(null);
   const defaultEditorValue = '# Your code goes here';
 
   const onSubmit = () => {
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const value = editorRef.current.getValue();
@@ -77,6 +78,7 @@ const Create: FC<{
             position: 'top-right',
           });
           onSucceed();
+          setIsSubmitting(false);
         })
         .catch((error) => {
           toast({
@@ -85,9 +87,10 @@ const Create: FC<{
             status: 'error',
             position: 'top-right',
           });
+          setIsSubmitting(false);
         });
     } catch (error) {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -145,7 +148,7 @@ const Create: FC<{
         </DrawerBody>
         <DrawerFooter justifyContent="flex-start">
           <Button colorScheme="blue" mr={3} onClick={onSubmit}>
-            Submit
+            {isSubmitting ? <Spinner colorScheme="white" size="sm" /> : 'Submit'}
           </Button>
           <Button variant="ghost" colorScheme="blue" onClick={onClose}>
             Cancel
