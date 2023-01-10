@@ -18,7 +18,7 @@ module github.com/apache/incubator-eventmesh/eventmesh-workflow-go
 go 1.16
 
 require (
-	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235
+	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20230110063418-8d8aa909d909
 	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b
 	github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea
 	github.com/avast/retry-go/v4 v4.0.1
@@ -40,7 +40,6 @@ require (
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.9 // indirect
 	github.com/ugorji/go/codec v1.2.8 // indirect
-	github.com/urfave/cli/v2 v2.23.7 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 	google.golang.org/grpc v1.48.0
