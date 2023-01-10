@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,8 +21,11 @@
  * under the License.
  */
 
+<<<<<<< HEAD
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 import { WorkflowStatusEnum, WorkflowInstanceStatusEnum } from './types';
 
 export const WorkflowStatusMap = new Map([

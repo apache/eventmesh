@@ -35,7 +35,11 @@ import {
   Flex,
   Input,
   Stack,
+<<<<<<< HEAD
   // Select,
+=======
+  Select,
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
   Table,
   Thead,
   Tbody,
@@ -58,9 +62,15 @@ import axios from 'axios';
 import Details from '../components/workflow/Details';
 import Create from '../components/workflow/Create';
 import { WorkflowType } from '../components/workflow/types';
+<<<<<<< HEAD
 // import { WorkflowStatusMap } from '../components/workflow/constant';
 
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+=======
+import { WorkflowStatusMap } from '../components/workflow/constant';
+
+const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 
 const Workflows: NextPage = () => {
   const toast = useToast();
@@ -124,10 +134,17 @@ const Workflows: NextPage = () => {
         page: pageIndex,
         size: pageSize,
       };
+<<<<<<< HEAD
       // if (statusFilter) {
       //   reqParams.status = statusFilter;
       // }
       if (keywordFilter) {
+=======
+      if (statusFilter !== 'any') {
+        reqParams.status = statusFilter;
+      }
+      if (keywordFilter !== '') {
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
         reqParams.workflow_id = keywordFilter;
       }
       const { data } = await axios.get<{
@@ -175,7 +192,11 @@ const Workflows: NextPage = () => {
             _hover={{ bg: '#dce5fe', color: '#2a62ad' }}
             onClick={() => setIsShowCreate(true)}
           >
+<<<<<<< HEAD
             Create Workflow
+=======
+            Create Wokrflow
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
           </Button>
           <Stack direction="row" spacing="2">
             <Input
@@ -184,15 +205,26 @@ const Workflows: NextPage = () => {
               value={keywordFilter}
               onChange={(evt) => setKeywordFilter(evt.target.value)}
             />
+<<<<<<< HEAD
             {/* <Select
+=======
+            <Select
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
               size="md"
               placeholder="Status"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
+<<<<<<< HEAD
               <option value="1">Running</option>
               <option value="-1">Deleted</option>
             </Select> */}
+=======
+              <option value="any">Any</option>
+              <option value="1">Running</option>
+              <option value="-1">Deleted</option>
+            </Select>
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
             <Box>
               <Button
                 colorScheme="blue"
@@ -211,7 +243,11 @@ const Workflows: NextPage = () => {
               <Tr>
                 <Th>Workflow ID</Th>
                 <Th>Workflow Name</Th>
+<<<<<<< HEAD
                 {/* <Th>Status</Th> */}
+=======
+                <Th>Status</Th>
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
                 <Th isNumeric>Total Instance</Th>
                 <Th isNumeric>Running</Th>
                 <Th isNumeric>Failed</Th>
@@ -238,15 +274,26 @@ const Workflows: NextPage = () => {
                   </Td>
                   <Td>{workflow.workflow_name}</Td>
 
+<<<<<<< HEAD
                   {/* <Td>{WorkflowStatusMap.get(workflow.status)}</Td> */}
+=======
+                  <Td>{WorkflowStatusMap.get(workflow.status)}</Td>
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
                   <Td isNumeric>{workflow.total_instances}</Td>
                   <Td isNumeric>{workflow.total_running_instances}</Td>
                   <Td isNumeric>{workflow.total_failed_instances}</Td>
                   <Td>
+<<<<<<< HEAD
                     {moment(workflow.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Td>
                   <Td>
                     {moment(workflow.create_time).format('YYYY-MM-DD HH:mm:ss')}
+=======
+                    {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+                  </Td>
+                  <Td>
+                    {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
                   </Td>
                   <Td>
                     <Button
@@ -271,7 +318,11 @@ const Workflows: NextPage = () => {
             <Spinner colorScheme="blue" size="sm" />
           ) : (
             <Text fontSize="sm" color="#909090">
+<<<<<<< HEAD
               {total}
+=======
+              {workflows.length}
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
               {` workflow${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>
@@ -310,6 +361,7 @@ const Workflows: NextPage = () => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
+<<<<<<< HEAD
               <Flex alignItems="center">
                 <WarningTwoIcon mr={2} boxSize={6} color="orange" />
                 <Text fontSize="xl" as="b">
@@ -326,6 +378,19 @@ const Workflows: NextPage = () => {
               </Text>
               ?
               <Box />
+=======
+              <WarningTwoIcon mr={4} boxSize={8} color="orange" />
+              Confirm
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure to delet workflow?
+              <Box>
+                <Text fontSize="sm" as="b">
+                  {selectedWorkflow?.workflow_name}
+                </Text>
+              </Box>
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
             </AlertDialogBody>
 
             <AlertDialogFooter>

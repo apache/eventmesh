@@ -33,6 +33,7 @@ import {
   Td,
   TableContainer,
   Box,
+<<<<<<< HEAD
   Spinner,
   Text,
 } from '@chakra-ui/react';
@@ -75,6 +76,42 @@ const EventCatalogs: NextPage = () => {
       setIsLoading(false);
     }
   }, []);
+=======
+} from '@chakra-ui/react';
+import SchemaView from '../components/eventCatalogs/SchemaView';
+
+export type SchemaTypes = {
+  schemaId: string;
+  lastVersion: string;
+  description: string;
+};
+
+const schemaData: SchemaTypes[] = [
+  {
+    schemaId: 'schema 1',
+    lastVersion: '3',
+    description: 'new schema 1',
+  },
+  {
+    schemaId: 'schema 2',
+    lastVersion: '3',
+    description: 'new schema 2',
+  },
+];
+
+const EventCatalogs: NextPage = () => {
+  const [isShowCreate, setIsShowCreate] = useState(false);
+  const [detailMode, setDetailMode] = useState<'create' | 'edit'>('create');
+  const [curSchema, setCurSchema] = useState<SchemaTypes>();
+
+  const pageSize = 1;
+  const [pageIndex, setPageIndex] = useState(1);
+  const [keywordFilter, setKeywordFilter] = useState('');
+
+  const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
+
+  const getEventCatalogs = useCallback(async () => {}, []);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 
   useEffect(() => {
     const controller = new AbortController();
@@ -82,7 +119,11 @@ const EventCatalogs: NextPage = () => {
     return () => {
       controller.abort();
     };
+<<<<<<< HEAD
   }, [pageIndex, pageSize, refreshFlag]);
+=======
+  }, [pageIndex, pageSize, keywordFilter, refreshFlag]);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 
   return (
     <>
@@ -107,6 +148,7 @@ const EventCatalogs: NextPage = () => {
             _hover={{ bg: '#dce5fe', color: '#2a62ad' }}
             onClick={() => setIsShowCreate(true)}
           >
+<<<<<<< HEAD
             Create Catalog
           </Button>
           <Button
@@ -116,6 +158,9 @@ const EventCatalogs: NextPage = () => {
             onClick={() => setRefreshFlag(+new Date())}
           >
             Refresh
+=======
+            Create Shecma
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
           </Button>
         </Flex>
         <Divider mt="15" mb="15" orientation="horizontal" />
@@ -123,6 +168,7 @@ const EventCatalogs: NextPage = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
+<<<<<<< HEAD
                 {/* <Th>Catalog ID</Th> */}
                 <Th>Title</Th>
                 <Th>File Name</Th>
@@ -162,11 +208,40 @@ const EventCatalogs: NextPage = () => {
                   <Td>
                     {moment(catalog.update_time).format('YYYY-MM-DD HH:mm:ss')}
                   </Td>
+=======
+                <Th>Shema ID</Th>
+                <Th>Lastest Version</Th>
+                <Th>Description</Th>
+                <Th align="center">Action</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {schemaData.map((schema) => (
+                <Tr key={schema.schemaId}>
+                  <Td>
+
+                    <Button
+                      colorScheme="blue"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsShowCreate(true);
+                        setDetailMode('edit');
+                        setCurSchema(schema);
+                      }}
+                    >
+                      {schema.schemaId}
+                    </Button>
+
+                  </Td>
+                  <Td>{schema.lastVersion}</Td>
+                  <Td>{schema.description}</Td>
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </TableContainer>
+<<<<<<< HEAD
         <Flex mt={4} alignItems="center">
           {isLoading ? (
             <Spinner colorScheme="blue" size="sm" />
@@ -214,6 +289,13 @@ const EventCatalogs: NextPage = () => {
           setPageIndex(1);
           setRefreshFlag(+new Date());
         }}
+=======
+      </Box>
+      <SchemaView
+        mode={detailMode}
+        data={curSchema}
+        visible={isShowCreate}
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
         onClose={() => setIsShowCreate(false)}
       />
     </>

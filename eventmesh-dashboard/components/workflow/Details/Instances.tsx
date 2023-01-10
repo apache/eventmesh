@@ -268,7 +268,7 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
               } in list `}
             </Text>
             {isLoading ? (
-              <Spinner />
+              <Spinner ml={2} size="sm" colorScheme="blue" />
             ) : (
               instances.length < total && (
               <Text

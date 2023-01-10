@@ -30,9 +30,13 @@ import {
   Button,
   useToast,
 <<<<<<< HEAD
+<<<<<<< HEAD
   Spinner,
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+  Spinner,
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 } from '@chakra-ui/react';
 import axios from 'axios';
 
@@ -51,19 +55,27 @@ const Create: FC<{
 }> = ({ visible = false, onClose = () => {}, onSucceed = () => {} }) => {
   const toast = useToast();
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [isSubmitting, setIsSubmitting] = useState(false);
 =======
   const [isLoading, setIsLoading] = useState(false);
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+  const [isSubmitting, setIsSubmitting] = useState(false);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
   const editorRef = useRef<Monaco | null>(null);
   const defaultEditorValue = '# Your code goes here';
 
   const onSubmit = () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     setIsSubmitting(true);
 =======
     setIsLoading(true);
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+    setIsSubmitting(true);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
 
     try {
       const value = editorRef.current.getValue();
@@ -98,9 +110,13 @@ const Create: FC<{
           });
           onSucceed();
 <<<<<<< HEAD
+<<<<<<< HEAD
           setIsSubmitting(false);
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+          setIsSubmitting(false);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
         })
         .catch((error) => {
           toast({
@@ -109,6 +125,7 @@ const Create: FC<{
             status: 'error',
             position: 'top-right',
           });
+<<<<<<< HEAD
 <<<<<<< HEAD
           setIsSubmitting(false);
         });
@@ -119,6 +136,12 @@ const Create: FC<{
     } catch (error) {
       setIsLoading(false);
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+          setIsSubmitting(false);
+        });
+    } catch (error) {
+      setIsSubmitting(false);
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
     }
   };
 
@@ -180,10 +203,14 @@ const Create: FC<{
         <DrawerFooter justifyContent="flex-start">
           <Button colorScheme="blue" mr={3} onClick={onSubmit}>
 <<<<<<< HEAD
+<<<<<<< HEAD
             {isSubmitting ? <Spinner colorScheme="white" size="sm" /> : 'Submit'}
 =======
             Submit
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+            {isSubmitting ? <Spinner colorScheme="white" size="sm" /> : 'Submit'}
+>>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
           </Button>
           <Button variant="ghost" colorScheme="blue" onClick={onClose}>
             Cancel
