@@ -52,15 +52,21 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
   Alert,
   Badge,
 } from '@chakra-ui/react';
 
 import { WarningIcon, InfoIcon } from '@chakra-ui/icons';
+<<<<<<< HEAD
 =======
 } from '@chakra-ui/react';
 
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
 import moment from 'moment';
 
 import Editor, { Monaco } from '@monaco-editor/react';
@@ -163,11 +169,15 @@ const Details: FC<{
         <AlertDialogOverlay>
           <AlertDialogContent>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
             <AlertDialogHeader
               fontSize="lg"
               fontWeight="bold"
               alignItems="center"
             >
+<<<<<<< HEAD
               <WarningIcon boxSize="6" mr={2} color="orange" />
               <Text fontSize="xl" as="b">
                 Confirm
@@ -187,16 +197,28 @@ const Details: FC<{
             <AlertDialogBody>Are you sure?</AlertDialogBody>
 
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+              <WarningIcon boxSize="8" mr={2} color="orange" />
+              Confirm
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              Workflow has been modified, do you want to save the changes?
+            </AlertDialogBody>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={() => setIsShowComfirm(false)}>
                 No
               </Button>
               <Button colorScheme="blue" onClick={onSubmit} ml={3}>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Save
 =======
                 Yes
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+                Save
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -213,22 +235,33 @@ const Details: FC<{
         <DrawerContent>
           <DrawerCloseButton />
 <<<<<<< HEAD
+<<<<<<< HEAD
           <DrawerHeader>
             {data?.workflow_id}
             {/* <Badge
+=======
+          <DrawerHeader>
+            {data?.workflow_id}
+            <Badge
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
               ml={2}
               colorScheme={
                 data?.status === WorkflowStatusEnum.Normal ? 'blue' : 'red'
               }
             >
               {WorkflowStatusMap.get(data?.status ?? 0) ?? '-'}
+<<<<<<< HEAD
             </Badge> */}
+=======
+            </Badge>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
             <Badge ml={2}>
               Version
               {' '}
               {data?.version}
             </Badge>
           </DrawerHeader>
+<<<<<<< HEAD
           <DrawerBody>
             <Stack mb="15px" direction="row" spacing={10}>
               <Flex flexDirection="column" h="full">
@@ -248,17 +281,16 @@ const Details: FC<{
                     {moment(data?.update_time).format('YYYY-MM-DD HH:mm:ss')}
 =======
           <DrawerHeader>Workflow Details</DrawerHeader>
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
           <DrawerBody>
-            <Stack mb="30px" direction="row" spacing={10}>
+            <Stack mb="15px" direction="row" spacing={10}>
               <Flex flexDirection="column" h="full">
-                <Box mb={5}>
-                  <FormLabel opacity={0.3}>Workflow ID</FormLabel>
-                  <Text>{data?.workflow_id}</Text>
-                </Box>
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Workflow Name</FormLabel>
                   <Text>{data?.workflow_name}</Text>
                 </Box>
+<<<<<<< HEAD
                 <Box>
                   <FormLabel opacity={0.3}>Status</FormLabel>
 
@@ -298,6 +330,9 @@ const Details: FC<{
                 </Box>
 
                 <Box mb={5}>
+=======
+                <Box mb={2}>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
                   <FormLabel opacity={0.3}>Created At</FormLabel>
                   <Text>
                     {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
@@ -310,12 +345,13 @@ const Details: FC<{
                   </Text>
                 </Box>
               </Flex>
+
               <Flex flexDirection="column" h="full">
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Total Instance</FormLabel>
                   <Text>{data?.total_instances}</Text>
                 </Box>
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Running</FormLabel>
                   <Text>{data?.total_running_instances}</Text>
                 </Box>
@@ -335,6 +371,7 @@ const Details: FC<{
               <TabPanels>
                 <TabPanel>
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <Alert status="info" mb={2}>
                     <InfoIcon color="#3182ce" mr={2} />
                     <Text fontSize="sm" color="#3182ce">
@@ -344,6 +381,16 @@ const Details: FC<{
                   </Alert>
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+                  <Alert status="info" mb={2}>
+                    <InfoIcon color="#3182ce" mr={2} />
+                    <Text fontSize="sm" color="#3182ce">
+                      You can edit the workflow directly, and save it by
+                      clicking `OK`
+                      {' '}
+                    </Text>
+                  </Alert>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
                   <Editor
                     height="1000px"
                     defaultLanguage="yaml"
@@ -363,16 +410,26 @@ const Details: FC<{
               OK
             </Button>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
             <Button
               colorScheme="blue"
               mr={3}
               variant="ghost"
+<<<<<<< HEAD
               onClick={onClose}
             >
               Cancel
             </Button>
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+              onClick={onConfirm}
+            >
+              Cancel
+            </Button>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

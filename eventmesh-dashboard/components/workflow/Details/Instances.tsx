@@ -23,10 +23,13 @@ import React, {
 import axios from 'axios';
 import {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   Button,
   Stack,
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
   Flex,
   Text,
   Table,
@@ -39,9 +42,13 @@ import {
   TableCaption,
   Tag,
 <<<<<<< HEAD
+<<<<<<< HEAD
   Spinner,
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+  Spinner,
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
 } from '@chakra-ui/react';
 import moment from 'moment';
 import { WorkflowInstanceType } from '../types';
@@ -61,6 +68,7 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const [instances, setInstances] = useState<WorkflowInstanceType[]>([]);
   const [total, setTotal] = useState(0);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [pageIndex, setPageIndex] = useState(1);
   const pageSize = 10;
 =======
@@ -69,6 +77,10 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const pageSize = 10;
   const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+  const [pageIndex, setPageIndex] = useState(1);
+  const pageSize = 2;
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
 
   const getWorkflows = useCallback(async () => {
     setIsLoading(true);
@@ -90,20 +102,28 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
         params: reqParams,
       });
 <<<<<<< HEAD
+<<<<<<< HEAD
       setInstances([...instances, ...(data?.workflow_instances ?? [])]);
 =======
       setInstances(data.workflow_instances);
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+      setInstances([...instances, ...(data?.workflow_instances ?? [])]);
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
       setTotal(data.total);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
   }, [workflowId, pageIndex, pageSize]);
 =======
   }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+  }, [workflowId, pageIndex, pageSize]);
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
 
   useEffect(() => {
     const controller = new AbortController();
@@ -111,6 +131,7 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
     return () => {
       controller.abort();
     };
+<<<<<<< HEAD
 <<<<<<< HEAD
   }, [workflowId, pageIndex, pageSize]);
 
@@ -188,65 +209,93 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
     </TableContainer>
 =======
   }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
+=======
+  }, [workflowId, pageIndex, pageSize]);
+
+  console.log(instances.length);
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
 
   return (
-    <Stack>
-      <Flex justifyContent="space-between" alignItems="center">
-        <Button
-          variant="ghost"
-          colorScheme="blue"
-          onClick={() => setRefreshFlag(+new Date())}
-        >
-          Refresh
-        </Button>
-        <Text>{`${total} instance${total > 1 ? 's' : ''} in total`}</Text>
-      </Flex>
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Instance ID</Th>
-              <Th>Status</Th>
-              <Th>Updated at</Th>
-              <Th>Created At</Th>
+    <TableContainer>
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Instance ID</Th>
+            <Th>Status</Th>
+            <Th>Updated at</Th>
+            <Th>Created At</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {instances.map((workflow) => (
+            <Tr key={workflow.workflow_instance_id}>
+              <Td>{workflow.workflow_instance_id}</Td>
+              <Td>
+                <Tag
+                  size="sm"
+                  colorScheme={WorkflowIntanceStatusColorMap.get(
+                    workflow.workflow_status,
+                  )}
+                  variant="outline"
+                >
+                  {WorkflowIntanceStatusMap.get(workflow.workflow_status)}
+                </Tag>
+              </Td>
+              <Td>
+                {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+              </Td>
+              <Td>
+                {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+              </Td>
             </Tr>
-          </Thead>
-          <Tbody>
-            {instances.map((workflow) => (
-              <Tr key={workflow.workflow_instance_id}>
-                <Td>{workflow.workflow_instance_id}</Td>
-                <Td>
-                  <Tag
-                    size="sm"
-                    colorScheme={WorkflowIntanceStatusColorMap.get(
-                      workflow.workflow_status,
-                    )}
-                    variant="outline"
-                  >
-                    {WorkflowIntanceStatusMap.get(workflow.workflow_status)}
-                  </Tag>
-                </Td>
-                <Td>
-                  {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
-                </Td>
-                <Td>
-                  {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
+          ))}
+        </Tbody>
 
-          {instances.length === 0 && (
-            <TableCaption>
-              <Text variant="xs" color="#909090">
-                empty
+        {instances.length === 0 && (
+          <TableCaption>
+            <Text variant="xs" color="#909090">
+              empty
+            </Text>
+          </TableCaption>
+        )}
+
+        {instances.length > 0 && (
+        <TableCaption>
+          <Flex alignItems="center">
+            <Text fontSize="sx">
+              {`${instances.length} of ${total}  intance${
+                total > 1 ? 's' : ''
+              } in list `}
+            </Text>
+            {isLoading ? (
+              <Spinner />
+            ) : (
+              instances.length < total && (
+              <Text
+                color={instances.length < total ? '#3182ce' : ''}
+                ml="2"
+                cursor="pointer"
+                as="u"
+                onClick={() => setPageIndex(pageIndex + 1)}
+              >
+                Load More
               </Text>
+<<<<<<< HEAD
             </TableCaption>
           )}
         </Table>
       </TableContainer>
     </Stack>
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+              )
+            )}
+          </Flex>
+        </TableCaption>
+        )}
+      </Table>
+    </TableContainer>
+>>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
   );
 };
 
