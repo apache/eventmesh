@@ -22,8 +22,6 @@ import React, {
 } from 'react';
 import axios from 'axios';
 import {
-  Button,
-  Stack,
   Flex,
   Text,
   Table,
@@ -35,6 +33,7 @@ import {
   TableContainer,
   TableCaption,
   Tag,
+  Spinner,
 } from '@chakra-ui/react';
 import moment from 'moment';
 import { WorkflowInstanceType } from '../types';
@@ -49,10 +48,8 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [instances, setInstances] = useState<WorkflowInstanceType[]>([]);
   const [total, setTotal] = useState(0);
-  const [keywordFilter, setKeywordFilter] = useState('');
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 10;
-  const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
+  const pageSize = 2;
 
   const getWorkflows = useCallback(async () => {
     setIsLoading(true);
@@ -73,13 +70,13 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
       }>(`${ApiRoot}/workflow/instances`, {
         params: reqParams,
       });
-      setInstances(data.workflow_instances);
+      setInstances([...instances, ...(data?.workflow_instances ?? [])]);
       setTotal(data.total);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
-  }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
+  }, [workflowId, pageIndex, pageSize]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -87,65 +84,82 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
     return () => {
       controller.abort();
     };
-  }, [workflowId, pageIndex, pageSize, keywordFilter, refreshFlag]);
+  }, [workflowId, pageIndex, pageSize]);
+
+  console.log(instances.length);
 
   return (
-    <Stack>
-      <Flex justifyContent="space-between" alignItems="center">
-        <Button
-          variant="ghost"
-          colorScheme="blue"
-          onClick={() => setRefreshFlag(+new Date())}
-        >
-          Refresh
-        </Button>
-        <Text>{`${total} instance${total > 1 ? 's' : ''} in total`}</Text>
-      </Flex>
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Instance ID</Th>
-              <Th>Status</Th>
-              <Th>Updated at</Th>
-              <Th>Created At</Th>
+    <TableContainer>
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Instance ID</Th>
+            <Th>Status</Th>
+            <Th>Updated at</Th>
+            <Th>Created At</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {instances.map((workflow) => (
+            <Tr key={workflow.workflow_instance_id}>
+              <Td>{workflow.workflow_instance_id}</Td>
+              <Td>
+                <Tag
+                  size="sm"
+                  colorScheme={WorkflowIntanceStatusColorMap.get(
+                    workflow.workflow_status,
+                  )}
+                  variant="outline"
+                >
+                  {WorkflowIntanceStatusMap.get(workflow.workflow_status)}
+                </Tag>
+              </Td>
+              <Td>
+                {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
+              </Td>
+              <Td>
+                {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
+              </Td>
             </Tr>
-          </Thead>
-          <Tbody>
-            {instances.map((workflow) => (
-              <Tr key={workflow.workflow_instance_id}>
-                <Td>{workflow.workflow_instance_id}</Td>
-                <Td>
-                  <Tag
-                    size="sm"
-                    colorScheme={WorkflowIntanceStatusColorMap.get(
-                      workflow.workflow_status,
-                    )}
-                    variant="outline"
-                  >
-                    {WorkflowIntanceStatusMap.get(workflow.workflow_status)}
-                  </Tag>
-                </Td>
-                <Td>
-                  {moment(workflow.update_time).format('YYYY-mm-DD HH:mm:ss')}
-                </Td>
-                <Td>
-                  {moment(workflow.create_time).format('YYYY-mm-DD HH:mm:ss')}
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
+          ))}
+        </Tbody>
 
-          {instances.length === 0 && (
-            <TableCaption>
-              <Text variant="xs" color="#909090">
-                empty
+        {instances.length === 0 && (
+          <TableCaption>
+            <Text variant="xs" color="#909090">
+              empty
+            </Text>
+          </TableCaption>
+        )}
+
+        {instances.length > 0 && (
+        <TableCaption>
+          <Flex alignItems="center">
+            <Text fontSize="sx">
+              {`${instances.length} of ${total}  intance${
+                total > 1 ? 's' : ''
+              } in list `}
+            </Text>
+            {isLoading ? (
+              <Spinner />
+            ) : (
+              instances.length < total && (
+              <Text
+                color={instances.length < total ? '#3182ce' : ''}
+                ml="2"
+                cursor="pointer"
+                as="u"
+                onClick={() => setPageIndex(pageIndex + 1)}
+              >
+                Load More
               </Text>
-            </TableCaption>
-          )}
-        </Table>
-      </TableContainer>
-    </Stack>
+              )
+            )}
+          </Flex>
+        </TableCaption>
+        )}
+      </Table>
+    </TableContainer>
   );
 };
 

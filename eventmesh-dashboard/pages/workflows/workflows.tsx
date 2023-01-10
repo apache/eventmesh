@@ -24,7 +24,11 @@ import Head from 'next/head';
 import type { NextPage } from 'next';
 // import { useRouter } from 'next/router';
 import moment from 'moment';
-import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  WarningTwoIcon,
+} from '@chakra-ui/icons';
 
 import {
   Divider,
@@ -67,7 +71,7 @@ const Workflows: NextPage = () => {
   const [keywordFilter, setKeywordFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('any');
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 10;
+  const pageSize = 1;
   const [refreshFlag, setRefreshFlag] = useState<number>(+new Date());
   const [isShowCreate, setIsShowCreate] = useState(false);
   const [isShowDetails, setIsShowDetails] = useState(false);
@@ -190,15 +194,15 @@ const Workflows: NextPage = () => {
               <option value="1">Running</option>
               <option value="-1">Deleted</option>
             </Select>
-            <Button
-              size="md"
-              w="60"
-              colorScheme="blue"
-              variant="outline"
-              onClick={() => setRefreshFlag(+new Date())}
-            >
-              Refresh
-            </Button>
+            <Box>
+              <Button
+                colorScheme="blue"
+                variant="ghost"
+                onClick={() => setRefreshFlag(+new Date())}
+              >
+                Refresh
+              </Button>
+            </Box>
           </Stack>
         </Flex>
         <Divider mt="15" mb="15" orientation="horizontal" />
@@ -275,26 +279,23 @@ const Workflows: NextPage = () => {
           )}
           <Flex flex={1} justifyContent="flex-end" align="center">
             <Button
+              mr={2}
               size="sm"
-              leftIcon={<ArrowBackIcon />}
+              leftIcon={<ChevronLeftIcon />}
               colorScheme="blue"
-              variant="ghost"
+              variant="outline"
               disabled={pageIndex < 2}
-              onClick={() => setPageIndex(pageIndex > 2 ? pageIndex - 1 : pageIndex)}
+              onClick={() => setPageIndex(pageIndex - 1)}
             >
               Prev
             </Button>
             <Button
               size="sm"
-              rightIcon={<ArrowForwardIcon />}
+              rightIcon={<ChevronRightIcon />}
               colorScheme="blue"
-              variant="ghost"
+              variant="outline"
               disabled={pageIndex >= Math.ceil(total / pageSize)}
-              onClick={() => setPageIndex(
-                pageIndex < Math.ceil(total / pageSize)
-                  ? pageIndex - 1
-                  : pageIndex,
-              )}
+              onClick={() => setPageIndex(pageIndex + 1)}
             >
               Next
             </Button>
@@ -310,10 +311,18 @@ const Workflows: NextPage = () => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Saved Workflow
+              <WarningTwoIcon mr={4} boxSize={8} color="orange" />
+              Confirm
             </AlertDialogHeader>
 
-            <AlertDialogBody>Are you sure?</AlertDialogBody>
+            <AlertDialogBody>
+              Are you sure to delet workflow?
+              <Box>
+                <Text fontSize="sm" as="b">
+                  {selectedWorkflow?.workflow_name}
+                </Text>
+              </Box>
+            </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button
@@ -326,7 +335,7 @@ const Workflows: NextPage = () => {
                 No
               </Button>
               <Button colorScheme="blue" onClick={() => onDelete()} ml={3}>
-                Yes
+                Delete
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

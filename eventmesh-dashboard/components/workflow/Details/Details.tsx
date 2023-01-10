@@ -48,8 +48,11 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  Alert,
+  Badge,
 } from '@chakra-ui/react';
 
+import { WarningIcon, InfoIcon } from '@chakra-ui/icons';
 import moment from 'moment';
 
 import Editor, { Monaco } from '@monaco-editor/react';
@@ -141,18 +144,23 @@ const Details: FC<{
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Saved Workflow
+            <AlertDialogHeader
+              fontSize="lg"
+              fontWeight="bold"
+              alignItems="center"
+            >
+              <WarningIcon boxSize="8" mr={2} color="orange" />
+              Confirm
             </AlertDialogHeader>
-
-            <AlertDialogBody>Are you sure?</AlertDialogBody>
-
+            <AlertDialogBody>
+              Workflow has been modified, do you want to save the changes?
+            </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={() => setIsShowComfirm(false)}>
                 No
               </Button>
               <Button colorScheme="blue" onClick={onSubmit} ml={3}>
-                Yes
+                Save
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -168,44 +176,30 @@ const Details: FC<{
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Workflow Details</DrawerHeader>
+          <DrawerHeader>
+            {data?.workflow_id}
+            <Badge
+              ml={2}
+              colorScheme={
+                data?.status === WorkflowStatusEnum.Normal ? 'blue' : 'red'
+              }
+            >
+              {WorkflowStatusMap.get(data?.status ?? 0) ?? '-'}
+            </Badge>
+            <Badge ml={2}>
+              Version
+              {' '}
+              {data?.version}
+            </Badge>
+          </DrawerHeader>
           <DrawerBody>
-            <Stack mb="30px" direction="row" spacing={10}>
+            <Stack mb="15px" direction="row" spacing={10}>
               <Flex flexDirection="column" h="full">
-                <Box mb={5}>
-                  <FormLabel opacity={0.3}>Workflow ID</FormLabel>
-                  <Text>{data?.workflow_id}</Text>
-                </Box>
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Workflow Name</FormLabel>
                   <Text>{data?.workflow_name}</Text>
                 </Box>
-                <Box>
-                  <FormLabel opacity={0.3}>Status</FormLabel>
-
-                  <Text>
-                    <Tag
-                      size="lg"
-                      variant="outline"
-                      colorScheme={
-                        data?.status === WorkflowStatusEnum.Normal
-                          ? 'blue'
-                          : 'red'
-                      }
-                    >
-                      {WorkflowStatusMap.get(data?.status ?? 0) ?? '-'}
-                    </Tag>
-                  </Text>
-                </Box>
-              </Flex>
-
-              <Flex flexDirection="column" h="full">
-                <Box mb={5}>
-                  <FormLabel opacity={0.3}>Version</FormLabel>
-                  <Text>{data?.version}</Text>
-                </Box>
-
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Created At</FormLabel>
                   <Text>
                     {moment(data?.update_time).format('YYYY-mm-DD HH:mm:ss')}
@@ -218,12 +212,13 @@ const Details: FC<{
                   </Text>
                 </Box>
               </Flex>
+
               <Flex flexDirection="column" h="full">
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Total Instance</FormLabel>
                   <Text>{data?.total_instances}</Text>
                 </Box>
-                <Box mb={5}>
+                <Box mb={2}>
                   <FormLabel opacity={0.3}>Running</FormLabel>
                   <Text>{data?.total_running_instances}</Text>
                 </Box>
@@ -241,6 +236,14 @@ const Details: FC<{
               </TabList>
               <TabPanels>
                 <TabPanel>
+                  <Alert status="info" mb={2}>
+                    <InfoIcon color="#3182ce" mr={2} />
+                    <Text fontSize="sm" color="#3182ce">
+                      You can edit the workflow directly, and save it by
+                      clicking `OK`
+                      {' '}
+                    </Text>
+                  </Alert>
                   <Editor
                     height="1000px"
                     defaultLanguage="yaml"
@@ -258,6 +261,14 @@ const Details: FC<{
           <DrawerFooter justifyContent="flex-start">
             <Button colorScheme="blue" mr={3} onClick={onConfirm}>
               OK
+            </Button>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              variant="ghost"
+              onClick={onConfirm}
+            >
+              Cancel
             </Button>
           </DrawerFooter>
         </DrawerContent>
