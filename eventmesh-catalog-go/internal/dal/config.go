@@ -42,7 +42,3 @@ func Open() error {
 	}
 	return nil
 }
-
-func GetDalClient() *gorm.DB {
-	return catalogDB
-}
