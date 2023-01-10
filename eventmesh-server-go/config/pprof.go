@@ -17,6 +17,9 @@ package config
 
 // PProfOption option to start the prof
 type PProfOption struct {
+	// Enable the pprof or not
+	Enable bool `yaml:"enable" toml:"enable"`
 	// Port pprof server listen on
-	Port string `yaml:"port" toml:"port"`
+	Port       string `yaml:"port" toml:"port"`
+	*TLSOption `yaml:"tls" toml:"tls"`
 }

@@ -67,6 +67,10 @@ func Start() error {
 		}
 		gracesrvs = append(gracesrvs, httpserver)
 	}
+	if config.GlobalConfig().PProf != nil && config.GlobalConfig().PProf.Enable {
+		pprofserver := emserver.NewPProfServer(config.GlobalConfig().PProf)
+		gracesrvs = append(gracesrvs, pprofserver)
+	}
 	srv := &Server{
 		servers: gracesrvs,
 	}
@@ -82,11 +86,12 @@ func Start() error {
 }
 
 func register(lifecycle fx.Lifecycle, srv *Server) {
-	for _, srv := range srv.servers {
-		rs := srv
+	for _, sr := range srv.servers {
+		rs := sr
 		lifecycle.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
-				return rs.Serve()
+				go rs.Serve()
+				return nil
 			},
 			OnStop: func(ctx context.Context) error {
 				return rs.Stop()

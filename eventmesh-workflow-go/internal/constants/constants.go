@@ -26,9 +26,10 @@ const (
 )
 
 const (
-	TaskStartID  = "START"
-	TaskEndID    = "END"
-	NormalStatus = 1
+	TaskStartID   = "START"
+	TaskEndID     = "END"
+	NormalStatus  = 1
+	InvalidStatus = -1
 )
 
 // task instance status

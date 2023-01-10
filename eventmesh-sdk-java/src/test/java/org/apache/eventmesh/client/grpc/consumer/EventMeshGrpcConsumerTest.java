@@ -103,7 +103,7 @@ public class EventMeshGrpcConsumerTest {
         assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()),
             "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).subscribe(any());
-        verify(heartbeatClient, Mockito.after(10000L).times(1)).heartbeat(any());
+        verify(heartbeatClient, Mockito.after(20_000L).times(1)).heartbeat(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()),
             "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).unsubscribe(any());

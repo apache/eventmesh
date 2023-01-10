@@ -29,6 +29,7 @@ var defaultAsyncTimeout = time.Second * 5
 type ProducerService struct {
 	pb.UnimplementedPublisherServiceServer
 	producerMgr ProducerManager
+	process     Processor
 	sendPool    *ants.Pool
 }
 
@@ -41,6 +42,7 @@ func NewProducerServiceServer(producerMgr ProducerManager) (*ProducerService, er
 	return &ProducerService{
 		producerMgr: producerMgr,
 		sendPool:    pl,
+		process:     &processor{},
 	}, nil
 }
 
@@ -55,7 +57,7 @@ func (p *ProducerService) Publish(ctx context.Context, msg *pb.SimpleMessage) (*
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().AsyncMessage(ctx, p.producerMgr, msg)
+		resp, err = p.process.AsyncMessage(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
@@ -80,7 +82,7 @@ func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessag
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().RequestReplyMessage(ctx, p.producerMgr, msg)
+		resp, err = p.process.RequestReplyMessage(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
@@ -106,7 +108,7 @@ func (p *ProducerService) BatchPublish(ctx context.Context, msg *pb.BatchMessage
 		err     error
 	)
 	p.sendPool.Submit(func() {
-		resp, err = NewProcessor().BatchPublish(ctx, p.producerMgr, msg)
+		resp, err = p.process.BatchPublish(ctx, p.producerMgr, msg)
 		errChan <- err
 	})
 	select {
