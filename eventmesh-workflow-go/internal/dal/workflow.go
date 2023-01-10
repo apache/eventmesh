@@ -35,7 +35,7 @@ import (
 const maxSize = 100
 
 type WorkflowDAL interface {
-	Select(ctx context.Context, workflowID string) (*model.Workflow, error)
+	Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error)
 	SelectList(ctx context.Context, param *model.QueryParam) ([]model.Workflow, int, error)
 	Save(ctx context.Context, record *model.Workflow) error
 	Delete(ctx context.Context, workflowID string) error
@@ -57,10 +57,10 @@ func NewWorkflowDAL() WorkflowDAL {
 type workflowDALImpl struct {
 }
 
-func (w *workflowDALImpl) Select(ctx context.Context, workflowID string) (*model.Workflow, error) {
+func (w *workflowDALImpl) Select(ctx context.Context, tx *gorm.DB, workflowID string) (*model.Workflow, error) {
 	var condition = model.Workflow{WorkflowID: workflowID, Status: constants.NormalStatus}
 	var r model.Workflow
-	if err := workflowDB.WithContext(ctx).Where(&condition).First(&r).Error; err != nil {
+	if err := tx.WithContext(ctx).Where(&condition).First(&r).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -236,7 +236,7 @@ func (w *workflowDALImpl) delete(tx *gorm.DB, workflowID string) error {
 	var handlers []func() error
 	handlers = append(handlers, func() error {
 		record := model.Workflow{Status: constants.InvalidStatus, UpdateTime: time.Now()}
-		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
+		return tx.Debug().Where("workflow_id = ?", workflowID).Updates(&record).Error
 	}, func() error {
 		record := model.WorkflowTask{Status: constants.InvalidStatus, UpdateTime: time.Now()}
 		return tx.Where("workflow_id = ?", workflowID).Updates(&record).Error
@@ -268,7 +268,7 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 	if wf == nil {
 		return errors.New("workflow text invalid")
 	}
-	r, err := w.Select(ctx, wf.ID)
+	r, err := w.Select(ctx, tx, wf.ID)
 	if err != nil {
 		return err
 	}
