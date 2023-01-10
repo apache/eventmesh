@@ -43,10 +43,14 @@ import axios from 'axios';
 import Editor, { Monaco } from '@monaco-editor/react';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
 =======
 const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
 
 const Create: FC<{
   visible: boolean;
@@ -87,9 +91,13 @@ const Create: FC<{
           position: 'top-right',
         });
 <<<<<<< HEAD
+<<<<<<< HEAD
         setIsSubmitting(false);
 =======
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+        setIsSubmitting(false);
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
         return;
       }
       axios
@@ -163,6 +171,7 @@ const Create: FC<{
         <DrawerHeader>Create New Workflow</DrawerHeader>
         <DrawerBody>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           {/* <Box mb={5}>
             <FormControl isRequired isInvalid={nameError}>
@@ -192,6 +201,8 @@ const Create: FC<{
           </Box> */}
 
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
           <Editor
             height="1000px"
             defaultLanguage="yaml"

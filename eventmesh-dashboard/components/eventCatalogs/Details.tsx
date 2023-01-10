@@ -36,7 +36,11 @@ import {
 import moment from 'moment';
 import Editor, { Monaco } from '@monaco-editor/react';
 import { EventCatalogType } from './types';
+<<<<<<< HEAD
 // import { WorkflowStatusMap } from './constant';
+=======
+import { WorkflowStatusMap } from './constant';
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
 
 const Details: FC<{
   visible: boolean;
@@ -61,7 +65,12 @@ const Details: FC<{
         <DrawerCloseButton />
         <DrawerHeader>
           {data?.title}
+<<<<<<< HEAD
           <Badge ml={2}>
+=======
+          <Badge ml={2} mr={2} colorScheme="blue">{WorkflowStatusMap.get(data?.status)}</Badge>
+          <Badge>
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
             Version
             {' '}
             {data?.version}

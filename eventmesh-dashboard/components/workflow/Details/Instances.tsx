@@ -58,10 +58,14 @@ import {
 } from '../constant';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
 =======
 const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
+=======
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
 
 const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -79,8 +83,12 @@ const Instances: FC<{ workflowId: string }> = ({ workflowId }) => {
 >>>>>>> 5185581f ([Dashboard] Complete workflow all functions)
 =======
   const [pageIndex, setPageIndex] = useState(1);
+<<<<<<< HEAD
   const pageSize = 2;
 >>>>>>> bbd9da7f ([Dashboard] Update pagination in workflow and instance list)
+=======
+  const pageSize = 10;
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
 
   const getWorkflows = useCallback(async () => {
     setIsLoading(true);

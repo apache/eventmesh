@@ -36,10 +36,14 @@ import {
   Input,
   Stack,
 <<<<<<< HEAD
+<<<<<<< HEAD
   // Select,
 =======
   Select,
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+  // Select,
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
   Table,
   Thead,
   Tbody,
@@ -63,6 +67,7 @@ import Details from '../components/workflow/Details';
 import Create from '../components/workflow/Create';
 import { WorkflowType } from '../components/workflow/types';
 <<<<<<< HEAD
+<<<<<<< HEAD
 // import { WorkflowStatusMap } from '../components/workflow/constant';
 
 const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
@@ -71,6 +76,11 @@ import { WorkflowStatusMap } from '../components/workflow/constant';
 
 const ApiRoot = process.env.NEXT_PUBLIC_API_ROOT;
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+// import { WorkflowStatusMap } from '../components/workflow/constant';
+
+const ApiRoot = process.env.NEXT_PUBLIC_WORKFLOW_API_ROOT;
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
 
 const Workflows: NextPage = () => {
   const toast = useToast();
@@ -135,16 +145,22 @@ const Workflows: NextPage = () => {
         size: pageSize,
       };
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
       // if (statusFilter) {
       //   reqParams.status = statusFilter;
       // }
       if (keywordFilter) {
+<<<<<<< HEAD
 =======
       if (statusFilter !== 'any') {
         reqParams.status = statusFilter;
       }
       if (keywordFilter !== '') {
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
         reqParams.workflow_id = keywordFilter;
       }
       const { data } = await axios.get<{
@@ -206,15 +222,20 @@ const Workflows: NextPage = () => {
               onChange={(evt) => setKeywordFilter(evt.target.value)}
             />
 <<<<<<< HEAD
+<<<<<<< HEAD
             {/* <Select
 =======
             <Select
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+            {/* <Select
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
               size="md"
               placeholder="Status"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
+<<<<<<< HEAD
 <<<<<<< HEAD
               <option value="1">Running</option>
               <option value="-1">Deleted</option>
@@ -225,6 +246,11 @@ const Workflows: NextPage = () => {
               <option value="-1">Deleted</option>
             </Select>
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+              <option value="1">Running</option>
+              <option value="-1">Deleted</option>
+            </Select> */}
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
             <Box>
               <Button
                 colorScheme="blue"
@@ -244,10 +270,14 @@ const Workflows: NextPage = () => {
                 <Th>Workflow ID</Th>
                 <Th>Workflow Name</Th>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 {/* <Th>Status</Th> */}
 =======
                 <Th>Status</Th>
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+                {/* <Th>Status</Th> */}
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
                 <Th isNumeric>Total Instance</Th>
                 <Th isNumeric>Running</Th>
                 <Th isNumeric>Failed</Th>
@@ -275,10 +305,14 @@ const Workflows: NextPage = () => {
                   <Td>{workflow.workflow_name}</Td>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                   {/* <Td>{WorkflowStatusMap.get(workflow.status)}</Td> */}
 =======
                   <Td>{WorkflowStatusMap.get(workflow.status)}</Td>
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+                  {/* <Td>{WorkflowStatusMap.get(workflow.status)}</Td> */}
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
                   <Td isNumeric>{workflow.total_instances}</Td>
                   <Td isNumeric>{workflow.total_running_instances}</Td>
                   <Td isNumeric>{workflow.total_failed_instances}</Td>
@@ -369,12 +403,16 @@ const Workflows: NextPage = () => {
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
               <Flex alignItems="center">
                 <WarningTwoIcon mr={2} boxSize={6} color="orange" />
                 <Text fontSize="xl" as="b">
                   Confirm
                 </Text>
               </Flex>
+<<<<<<< HEAD
             </AlertDialogHeader>
 
             <AlertDialogBody>
@@ -398,6 +436,18 @@ const Workflows: NextPage = () => {
                 </Text>
               </Box>
 >>>>>>> 75dfa8b8 ([Dashboard] Update paginations)
+=======
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure to delete
+              {' '}
+              <Text fontSize="sm" as="b">
+                {selectedWorkflow?.workflow_name}
+              </Text>
+              ?
+              <Box />
+>>>>>>> 91196cde ([Dashboard] Completed EventCatalogs feature; Minor adjustment to Workflow)
             </AlertDialogBody>
 
             <AlertDialogFooter>
