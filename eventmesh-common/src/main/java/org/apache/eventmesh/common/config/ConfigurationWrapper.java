@@ -109,39 +109,4 @@ public class ConfigurationWrapper {
                 String.format("key:%s, value:%s error", configKey, configValue));
         return Integer.parseInt(configValue);
     }
-
-    public boolean getBoolProp(String configKey, boolean defaultValue) {
-        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
-        if (StringUtils.isEmpty(configValue)) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(configValue);
-    }
-
-    private String removePrefix(String key, String prefix, boolean removePrefix) {
-        return removePrefix ? key.replace(prefix, "") : key;
-    }
-
-    public Properties getPropertiesByConfig(String prefix, boolean removePrefix) {
-        Properties properties = new Properties();
-        prefix = prefix.endsWith(".") ? prefix : prefix + ".";
-        for (Entry<Object, Object> entry : this.properties.entrySet()) {
-            String key = (String) entry.getKey();
-            if (key.startsWith(prefix)) {
-                properties.put(removePrefix(key, prefix, removePrefix), entry.getValue());
-            }
-        }
-        return properties;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getPropertiesByConfig(String prefix, Class<?> clazz, boolean removePrefix) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
-    }
-
-    public Properties getProperties() {
-        return this.properties;
-    }
-
 }

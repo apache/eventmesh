@@ -56,7 +56,7 @@ public class AbstractEventProcessor {
      * Add a topic with subscribers to the service's metadata.
      */
     protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRegistryEnable) {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
             return;
         }
         try {
@@ -95,20 +95,20 @@ public class AbstractEventProcessor {
         throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.eventMeshServerRegistryEnable) {
+        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
             return "";
         }
 
         String targetMesh = "";
         Registry registry = eventMeshHTTPServer.getRegistry();
         List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
-        String httpServiceName =
-            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP;
+        String httpServiceName = ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@"
+                + httpConfiguration.getEventMeshName() + "-" + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
             }
-            if (httpConfiguration.eventMeshCluster.equals(eventMeshDataInfo.getEventMeshClusterName())) {
+            if (httpConfiguration.getEventMeshCluster().equals(eventMeshDataInfo.getEventMeshClusterName())) {
                 continue;
             }
             Map<String, String> metadata = eventMeshDataInfo.getMetadata();

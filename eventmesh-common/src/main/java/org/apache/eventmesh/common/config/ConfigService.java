@@ -22,12 +22,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 
 import org.assertj.core.util.Strings;
+
+import lombok.Getter;
 
 
 public class ConfigService {
@@ -38,6 +38,9 @@ public class ConfigService {
      * Unified configuration Properties corresponding to eventmesh.properties
      */
     private Properties properties = new Properties();
+
+    @Getter
+    private String rootPath;
 
     private final ConfigMonitorService configMonitorService = new ConfigMonitorService();
 
@@ -58,7 +61,8 @@ public class ConfigService {
 
     public void setRootConfig(String path) throws Exception {
         ConfigInfo configInfo = new ConfigInfo();
-        configInfo.setPath(path);
+        rootPath = path;
+        configInfo.setPath(rootPath);
         properties = this.getConfig(configInfo);
     }
 

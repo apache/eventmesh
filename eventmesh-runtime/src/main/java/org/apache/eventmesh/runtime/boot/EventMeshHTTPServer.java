@@ -235,7 +235,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
-        Optional.ofNullable(eventMeshHttpConfiguration.eventMeshMetricsPluginType)
+        Optional.ofNullable(eventMeshHttpConfiguration.getEventMeshMetricsPluginType())
             .ifPresent(
                 metricsPlugins -> metricsPlugins.forEach(
                     pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
@@ -257,12 +257,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
 
         //get the trace-plugin
-        if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+        if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
+                && eventMeshHttpConfiguration.isEventMeshServerTraceEnable()) {
 
-            super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
+            super.useTrace = eventMeshHttpConfiguration.isEventMeshServerTraceEnable();
         }
 
-        this.handlerService.setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.eventMeshServerTraceEnable));
+        this.handlerService.setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable()));
 
         registerHTTPRequestProcessor();
         this.initWebhook();
@@ -276,7 +277,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         consumerManager.start();
         producerManager.start();
         httpRetryer.start();
-        if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
         }
         logger.info("--------------------------EventMeshHTTPServer started");
@@ -299,7 +300,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         httpRetryer.shutdown();
 
-        if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.unRegister();
         }
         logger.info("--------------------------EventMeshHTTPServer shutdown");
@@ -311,8 +312,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
-            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
-            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
+            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName()
+                    + "-" + ConfigurationContextUtil.HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
             registerResult = registry.register(eventMeshRegisterInfo);
@@ -327,8 +329,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
-        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
-        eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName);
+        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
+        eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);

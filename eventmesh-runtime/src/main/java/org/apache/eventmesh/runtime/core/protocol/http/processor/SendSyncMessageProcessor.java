@@ -87,10 +87,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader
                         .buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
                                 IPUtils.getLocalAddress(),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate event
         if (event == null
@@ -157,7 +157,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
             String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();

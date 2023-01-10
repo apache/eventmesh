@@ -167,9 +167,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         eventMeshServerAdminPort = configurationWrapper.getIntProp(
                 ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT, eventMeshServerAdminPort);
 
-        eventMeshTcpSendBackEnabled = configurationWrapper.getBoolProp(
-                ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED, eventMeshTcpSendBackEnabled);
-
         eventMeshTcpPushFailIsolateTimeInMills = configurationWrapper.getIntProp(
                 ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME, eventMeshTcpPushFailIsolateTimeInMills);
 
