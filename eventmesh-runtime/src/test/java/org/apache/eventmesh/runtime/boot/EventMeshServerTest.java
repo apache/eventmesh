@@ -176,7 +176,7 @@ public class EventMeshServerTest {
         Assert.assertEquals(config.eventMeshIDC, "idc-succeed!!!");
         Assert.assertEquals(config.eventMeshCluster, "cluster-succeed!!!");
         Assert.assertEquals(config.eventMeshName, "name-succeed!!!");
-        Assert.assertEquals(config.sysID, "sysid-succeed!!!");
+        Assert.assertEquals(config.sysID, "816");
         Assert.assertEquals(config.eventMeshConnectorPluginType, "connector-succeed!!!");
         Assert.assertEquals(config.eventMeshSecurityPluginType, "security-succeed!!!");
         Assert.assertEquals(config.eventMeshRegistryPluginType, "registry-succeed!!!");
