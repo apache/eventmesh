@@ -46,7 +46,6 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public synchronized void init(Properties keyValue) {
-        clientConfiguration.init();
         String producerGroup = keyValue.getProperty(Constants.PRODUCER_GROUP);
 
         String omsNamesrv = clientConfiguration.namesrvAddr;

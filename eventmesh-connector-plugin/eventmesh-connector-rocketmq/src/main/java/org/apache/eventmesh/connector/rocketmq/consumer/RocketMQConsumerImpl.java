@@ -48,7 +48,6 @@ public class RocketMQConsumerImpl implements Consumer {
 
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
-        clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
 
         String consumerGroup = keyValue.getProperty("consumerGroup");

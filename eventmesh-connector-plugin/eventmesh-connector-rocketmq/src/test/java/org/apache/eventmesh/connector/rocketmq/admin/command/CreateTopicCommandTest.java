@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.config;
+package org.apache.eventmesh.connector.rocketmq.admin.command;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ConfigurationWrapperTest {
+public class CreateTopicCommandTest {
 
     @Test
-    public void getProp() {
-        String namesrcAddr = ConfigurationWrapper.getProp("eventMesh.server.rocketmq.namesrvAddr");
-        Assert.assertNotNull(namesrcAddr);
+    public void executeTest() {
+        CreateTopicCommand createTopicCommand = new CreateTopicCommand();
+        createTopicCommand.init();
+
+        Assert.assertEquals(createTopicCommand.getNameServerAddr(), "127.0.0.1:9876;127.0.0.1:9876");
+        Assert.assertEquals(createTopicCommand.getClusterName(), "cluster-succeed!!!");
     }
 }
