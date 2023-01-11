@@ -165,7 +165,7 @@ public class SessionSender {
                 // TODO: How to assign values here
                 event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
+                    .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().getEventMeshServerIp())
                     .build();
                 Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();

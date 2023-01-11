@@ -92,15 +92,15 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         Map<String, Object> requestHeaderMap = requestWrapper.getHeaderMap();
         String source = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
 
-        String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv;
-        String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC;
-        String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster;
-        String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().sysID;
+        String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv();
+        String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC();
+        String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster();
+        String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID();
         String meshGroup = env + "-" + idc + "-" + cluster + "-" + sysId;
         requestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, source);
-        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, eventMeshHTTPServer.getEventMeshHttpConfiguration().sysID);
+        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
+        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
+        requestHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, eventMeshHTTPServer.getEventMeshHttpConfiguration().getSysID());
         requestHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
 
         // build sys header
@@ -130,12 +130,12 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
@@ -201,7 +201,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         }
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" :
                 event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();

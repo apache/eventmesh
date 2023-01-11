@@ -87,9 +87,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         ReplyMessageResponseHeader replyMessageResponseHeader =
                 ReplyMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate event
         if (event == null

@@ -45,7 +45,7 @@ public class EventMeshServerTest {
     public void testGetConfigForEventMeshHTTPConfiguration() throws Exception {
 
         ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://newConfiguration-runtime.properties");
+        configService.setRootConfig("classPath://configuration.properties");
 
         EventMeshHTTPConfiguration config = configService.getConfig(EventMeshHTTPConfiguration.class);
 
@@ -95,7 +95,7 @@ public class EventMeshServerTest {
     public void testGetConfigForEventMeshGrpcConfiguration() throws Exception {
 
         ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://newConfiguration-runtime.properties");
+        configService.setRootConfig("classPath://configuration.properties");
 
         EventMeshGrpcConfiguration config = configService.getConfig(EventMeshGrpcConfiguration.class);
 
@@ -134,7 +134,7 @@ public class EventMeshServerTest {
     public void testGetConfigForEventMeshTCPConfiguration() throws Exception {
 
         ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://newConfiguration-runtime.properties");
+        configService.setRootConfig("classPath://configuration.properties");
 
         EventMeshTCPConfiguration config = configService.getConfig(EventMeshTCPConfiguration.class);
 
@@ -172,28 +172,28 @@ public class EventMeshServerTest {
     }
 
     private void assertCommonConfig(CommonConfiguration config) {
-        Assert.assertEquals(config.eventMeshEnv, "env-succeed!!!");
-        Assert.assertEquals(config.eventMeshIDC, "idc-succeed!!!");
-        Assert.assertEquals(config.eventMeshCluster, "cluster-succeed!!!");
-        Assert.assertEquals(config.eventMeshName, "name-succeed!!!");
-        Assert.assertEquals(config.sysID, "816");
-        Assert.assertEquals(config.eventMeshConnectorPluginType, "connector-succeed!!!");
-        Assert.assertEquals(config.eventMeshSecurityPluginType, "security-succeed!!!");
-        Assert.assertEquals(config.eventMeshRegistryPluginType, "registry-succeed!!!");
-        Assert.assertEquals(config.eventMeshTracePluginType, "trace-succeed!!!");
-        Assert.assertEquals(config.eventMeshServerIp, "hostIp-succeed!!!");
+        Assert.assertEquals("env-succeed!!!", config.getEventMeshEnv());
+        Assert.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
+        Assert.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
+        Assert.assertEquals("name-succeed!!!", config.getEventMeshName());
+        Assert.assertEquals("816", config.getSysID());
+        Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
+        Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
+        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
+        Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
+        Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
 
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");
         list.add("metrics-succeed2!!!");
         list.add("metrics-succeed3!!!");
-        Assert.assertEquals(config.eventMeshMetricsPluginType, list);
+        Assert.assertEquals(list, config.getEventMeshMetricsPluginType());
 
-        Assert.assertEquals(config.eventMeshServerSecurityEnable, Boolean.TRUE);
-        Assert.assertEquals(config.eventMeshServerRegistryEnable, Boolean.TRUE);
-        Assert.assertEquals(config.eventMeshServerTraceEnable, Boolean.TRUE);
+        Assert.assertTrue(config.isEventMeshServerSecurityEnable());
+        Assert.assertTrue(config.isEventMeshServerRegistryEnable());
+        Assert.assertTrue(config.isEventMeshServerTraceEnable());
 
-        Assert.assertEquals(config.eventMeshWebhookOrigin, "eventmesh.idc-succeed!!!");
+        Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
     }
 
 
@@ -207,7 +207,7 @@ public class EventMeshServerTest {
     }
 
     private void testGetConfigWhenStartup(Boolean hasEnv) throws Exception {
-        String eventMeshConfFile = "newConfiguration-runtime.properties";
+        String eventMeshConfFile = "configuration.properties";
 
         if (hasEnv) {
             ConfigService.getInstance()
@@ -219,7 +219,6 @@ public class EventMeshServerTest {
         }
 
         ConfigService configService = ConfigService.getInstance();
-        CommonConfiguration commonConfiguration = configService.getConfig(CommonConfiguration.class);
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = configService.getConfig(EventMeshHTTPConfiguration.class);
         EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
         EventMeshGrpcConfiguration eventMeshGrpcConfiguration = configService.getConfig(EventMeshGrpcConfiguration.class);

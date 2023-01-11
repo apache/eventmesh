@@ -95,10 +95,10 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
             SendMessageBatchV2ResponseHeader.buildHeader(
                 requestCode,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
                 IPUtils.getLocalAddress(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
             );
 
         // todo: use validate processor to check
@@ -173,7 +173,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" :
                 event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();

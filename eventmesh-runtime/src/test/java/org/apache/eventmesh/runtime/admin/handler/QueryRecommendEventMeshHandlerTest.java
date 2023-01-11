@@ -21,13 +21,13 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -53,8 +53,10 @@ public class QueryRecommendEventMeshHandlerTest {
     public void testHandle() throws Exception {
         // mock eventMeshTCPServer
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
-        EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
-        doNothing().when(tcpConfiguration).init();
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+        EventMeshTCPConfiguration tcpConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
         URI uri = mock(URI.class);
@@ -66,7 +68,7 @@ public class QueryRecommendEventMeshHandlerTest {
         QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
 
         // case 1: normal case
-        tcpConfiguration.eventMeshServerRegistryEnable = true;
+        tcpConfiguration.setEventMeshServerRegistryEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
@@ -86,7 +88,7 @@ public class QueryRecommendEventMeshHandlerTest {
         }
 
         // case 3: registry disable
-        tcpConfiguration.eventMeshServerRegistryEnable = false;
+        tcpConfiguration.setEventMeshServerRegistryEnable(false);
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);

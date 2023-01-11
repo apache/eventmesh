@@ -127,7 +127,7 @@ public class SubscribeStreamProcessor {
 
     private void doAclCheck(Subscription subscription) throws AclException {
         RequestHeader header = subscription.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = header.getIp();
             String user = header.getUsername();
             String pass = header.getPassword();

@@ -80,10 +80,10 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         UnSubscribeResponseHeader unSubscribeResponseHeader =
                 UnSubscribeResponseHeader
                         .buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
                                 IPUtils.getLocalAddress(),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate header
         if (StringUtils.isBlank(unSubscribeRequestHeader.getIdc())

@@ -87,10 +87,10 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         SubscribeResponseHeader subscribeResponseHeader =
             SubscribeResponseHeader
                 .buildHeader(requestCode,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
                     IPUtils.getLocalAddress(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         //validate header
         if (StringUtils.isBlank(subscribeRequestHeader.getIdc())
@@ -122,7 +122,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = subscribeRequestHeader.getUsername();
             String pass = subscribeRequestHeader.getPasswd();
@@ -175,7 +175,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         // obtain webhook delivery agreement for Abuse Protection
         boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshWebhookOrigin);
+            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
             httpLogger.error("subscriber url {} is not allowed by the target system", url);

@@ -77,10 +77,10 @@ public class ZookeeperRegistryService implements RegistryService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.namesrvAddr)) {
+            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.namesrvAddr;
+            this.serverAddr = commonConfiguration.getNamesrvAddr();
             break;
         }
     }
@@ -126,7 +126,7 @@ public class ZookeeperRegistryService implements RegistryService {
             if (Objects.isNull(configuration)) {
                 continue;
             }
-            String eventMeshName = configuration.eventMeshName;
+            String eventMeshName = configuration.getEventMeshName();
             try {
                 String serviceName = eventMeshName.concat("-").concat(key);
                 String servicePath = formatServicePath(clusterName, serviceName);
