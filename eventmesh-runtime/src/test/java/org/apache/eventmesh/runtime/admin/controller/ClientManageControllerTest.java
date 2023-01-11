@@ -65,8 +65,7 @@ public class ClientManageControllerTest {
 
         when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);
         when(eventMeshHTTPServer.getMetrics().getSummaryMetrics()).thenReturn(httpSummaryMetrics);
-        ClientManageController controller = new ClientManageController(eventMeshTCPServer,
-            eventMeshHTTPServer, eventMeshGrpcServer, registry);
+
 
         EventMeshTcpMonitor eventMeshTcpMonitor = mock(EventMeshTcpMonitor.class);
         TcpSummaryMetrics tcpSummaryMetrics = mock(TcpSummaryMetrics.class);
@@ -76,6 +75,9 @@ public class ClientManageControllerTest {
         AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManage.class);
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
+
+        ClientManageController controller = new ClientManageController(eventMeshTCPServer,
+            eventMeshHTTPServer, eventMeshGrpcServer, registry);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
         when(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType()).thenReturn("standalone");
