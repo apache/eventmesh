@@ -87,7 +87,6 @@ const Details: FC<{
         `${ApiRoot}/workflow`,
         {
           workflow: {
-            id: data?.id,
             workflow_id: data?.workflow_id,
             definition: value,
           },
