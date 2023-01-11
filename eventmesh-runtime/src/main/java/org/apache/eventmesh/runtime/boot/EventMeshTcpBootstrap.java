@@ -66,4 +66,13 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
             eventMeshTcpServer.shutdown();
         }
     }
+
+    public EventMeshTCPServer getEventMeshTcpServer() {
+        return eventMeshTcpServer;
+    }
+
+    public void setEventMeshTcpServer(EventMeshTCPServer eventMeshTcpServer) {
+        this.eventMeshTcpServer = eventMeshTcpServer;
+    }
+
 }
