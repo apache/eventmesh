@@ -35,98 +35,98 @@ import inet.ipaddr.IPAddress;
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "http.port", notNull = true, beNumber = true)
-    public int httpServerPort = 10105;
+    private int httpServerPort = 10105;
 
     @ConfigFiled(field = "batchmsg.batch.enabled")
-    public boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
+    private boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
 
     @ConfigFiled(field = "batchmsg.threads.num")
-    public int eventMeshServerBatchMsgThreadNum = 10;
+    private int eventMeshServerBatchMsgThreadNum = 10;
 
     @ConfigFiled(field = "sendmsg.threads.num")
-    public int eventMeshServerSendMsgThreadNum = 8;
+    private int eventMeshServerSendMsgThreadNum = 8;
 
     @ConfigFiled(field = "remotemsg.threads.num")
-    public int eventMeshServerRemoteMsgThreadNum = 8;
+    private int eventMeshServerRemoteMsgThreadNum = 8;
 
     @ConfigFiled(field = "pushmsg.threads.num")
-    public int eventMeshServerPushMsgThreadNum = 8;
+    private int eventMeshServerPushMsgThreadNum = 8;
 
     @ConfigFiled(field = "replymsg.threads.num")
-    public int eventMeshServerReplyMsgThreadNum = 8;
+    private int eventMeshServerReplyMsgThreadNum = 8;
 
     @ConfigFiled(field = "clientmanage.threads.num")
-    public int eventMeshServerClientManageThreadNum = 4;
+    private int eventMeshServerClientManageThreadNum = 4;
 
     @ConfigFiled(field = "registry.threads.num")
-    public int eventMeshServerRegistryThreadNum = 10;
+    private int eventMeshServerRegistryThreadNum = 10;
 
     @ConfigFiled(field = "admin.threads.num")
-    public int eventMeshServerAdminThreadNum = 2;
+    private int eventMeshServerAdminThreadNum = 2;
 
     @ConfigFiled(field = "retry.threads.num")
-    public int eventMeshServerRetryThreadNum = 2;
+    private int eventMeshServerRetryThreadNum = 2;
 
     @ConfigFiled(field = "")
-    public int eventMeshServerWebhookThreadNum = 4;
+    private int eventMeshServerWebhookThreadNum = 4;
 
     @ConfigFiled(field = "pull.registry.interval")
-    public int eventMeshServerPullRegistryInterval = 30000;
+    private int eventMeshServerPullRegistryInterval = 30000;
 
     @ConfigFiled(field = "async.accumulation.threshold")
-    public int eventMeshServerAsyncAccumulationThreshold = 1000;
+    private int eventMeshServerAsyncAccumulationThreshold = 1000;
 
     @ConfigFiled(field = "retry.blockQ.size")
-    public int eventMeshServerRetryBlockQSize = 10000;
+    private int eventMeshServerRetryBlockQSize = 10000;
 
     @ConfigFiled(field = "batchmsg.blockQ.size")
-    public int eventMeshServerBatchBlockQSize = 1000;
+    private int eventMeshServerBatchBlockQSize = 1000;
 
     @ConfigFiled(field = "sendmsg.blockQ.size")
-    public int eventMeshServerSendMsgBlockQSize = 1000;
+    private int eventMeshServerSendMsgBlockQSize = 1000;
 
     @ConfigFiled(field = "")
-    public int eventMeshServerRemoteMsgBlockQSize = 1000;
+    private int eventMeshServerRemoteMsgBlockQSize = 1000;
 
     @ConfigFiled(field = "pushmsg.blockQ.size")
-    public int eventMeshServerPushMsgBlockQSize = 1000;
+    private int eventMeshServerPushMsgBlockQSize = 1000;
 
     @ConfigFiled(field = "clientM.blockQ.size")
-    public int eventMeshServerClientManageBlockQSize = 1000;
+    private int eventMeshServerClientManageBlockQSize = 1000;
 
     @ConfigFiled(field = "busy.check.interval")
-    public int eventMeshServerBusyCheckInterval = 1000;
+    private int eventMeshServerBusyCheckInterval = 1000;
 
     @ConfigFiled(field = "consumer.enabled")
-    public boolean eventMeshServerConsumerEnabled = false;
+    private boolean eventMeshServerConsumerEnabled = false;
 
     @ConfigFiled(field = "useTls.enabled")
-    public boolean eventMeshServerUseTls = false;
+    private boolean eventMeshServerUseTls = false;
 
     @ConfigFiled(field = "ssl.protocol")
-    public String eventMeshServerSSLProtocol = "TLSv1.1";
+    private String eventMeshServerSSLProtocol = "TLSv1.1";
 
     @ConfigFiled(field = "ssl.cer")
-    public String eventMeshServerSSLCer = "sChat2.jks";
+    private String eventMeshServerSSLCer = "sChat2.jks";
 
     @ConfigFiled(field = "ssl.pass")
-    public String eventMeshServerSSLPass = "sNetty";
+    private String eventMeshServerSSLPass = "sNetty";
 
     @ConfigFiled(field = "http.msgReqnumPerSecond")
-    public int eventMeshHttpMsgReqNumPerSecond = 15000;
+    private int eventMeshHttpMsgReqNumPerSecond = 15000;
 
     @ConfigFiled(field = "batchmsg.reqNumPerSecond")
-    public int eventMeshBatchMsgRequestNumPerSecond = 20000;
+    private int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
     @ConfigFiled(field = "maxEventSize")
-    public int eventMeshEventSize = 1000;
+    private int eventMeshEventSize = 1000;
 
     @ConfigFiled(field = "maxEventBatchSize")
-    public int eventMeshEventBatchSize = 10;
+    private int eventMeshEventBatchSize = 10;
 
     @ConfigFiled(field = "blacklist.ipv4")
-    public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
+    private List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
 
     @ConfigFiled(field = "blacklist.ipv6")
-    public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
+    private List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
 }

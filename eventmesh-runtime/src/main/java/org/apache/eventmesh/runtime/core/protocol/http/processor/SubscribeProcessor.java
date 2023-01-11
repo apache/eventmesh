@@ -151,8 +151,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         // validate URL
         try {
-            if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
+            if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv4BlackList(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv6BlackList())) {
                 httpLogger.error("subscriber url {} is not valid", url);
                 responseEventMeshCommand = request.createHttpCommandResponse(
                     subscribeResponseHeader,

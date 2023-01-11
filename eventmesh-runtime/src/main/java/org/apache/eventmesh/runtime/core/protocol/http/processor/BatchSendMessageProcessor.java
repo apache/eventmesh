@@ -112,14 +112,14 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         String producerGroup = "";
         int eventSize = eventList.size();
 
-        if (eventSize > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize) {
+        if (eventSize > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventBatchSize()) {
             batchMessageLogger.error("Event batch size exceeds the limit: {}",
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize);
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventBatchSize());
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageBatchResponseHeader,
                 SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                    "Event batch size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize));
+                    "Event batch size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventBatchSize()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -140,14 +140,14 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             }
 
             String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
+            if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()) {
                 batchMessageLogger.error("Event size exceeds the limit: {}",
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize());
 
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                        "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
+                        sendMessageBatchResponseHeader,
+                        SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
+                                "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()));
                 asyncContext.onComplete(responseEventMeshCommand);
                 return;
             }
@@ -284,7 +284,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         long delta = eventSize;
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsg(delta);
 
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerBatchMsgBatchEnabled()) {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 CloudEvent event = null;
