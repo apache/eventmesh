@@ -20,12 +20,13 @@ package org.apache.eventmesh.trace.zipkin.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 
 /**
  * to load the properties form zipkin.properties
  */
-@Slf4j
+
+@Data
 @Config(prefix = "eventmesh.trace.zipkin", path = "classPath://zipkin.properties")
 public class ZipkinConfiguration {
 
@@ -34,20 +35,4 @@ public class ZipkinConfiguration {
 
     @ConfigFiled(field = "port")
     private int eventMeshZipkinPort = 9411;
-
-    public String getEventMeshZipkinIP() {
-        return eventMeshZipkinIP;
-    }
-
-    public int getEventMeshZipkinPort() {
-        return eventMeshZipkinPort;
-    }
-
-    public void setEventMeshZipkinIP(String eventMeshZipkinIP) {
-        this.eventMeshZipkinIP = eventMeshZipkinIP;
-    }
-
-    public void setEventMeshZipkinPort(int eventMeshZipkinPort) {
-        this.eventMeshZipkinPort = eventMeshZipkinPort;
-    }
 }
