@@ -22,6 +22,9 @@ import org.apache.eventmesh.common.config.ConfigFiled;
 
 import java.util.Properties;
 
+import lombok.Data;
+
+@Data
 @Config(prefix = "eventMesh.server.redis", path = "classPath://redis-client.properties")
 public class RedisProperties {
 
@@ -55,46 +58,6 @@ public class RedisProperties {
      */
     @ConfigFiled(field = "redisson")
     private Properties redissonProperties;
-
-    public ServerType getServerType() {
-        return serverType;
-    }
-
-    public void setServerType(ServerType serverType) {
-        this.serverType = serverType;
-    }
-
-    public String getServerAddress() {
-        return serverAddress;
-    }
-
-    public void setServerAddress(String serverAddress) {
-        this.serverAddress = serverAddress;
-    }
-
-    public String getServerPassword() {
-        return serverPassword;
-    }
-
-    public void setServerPassword(String serverPassword) {
-        this.serverPassword = serverPassword;
-    }
-
-    public String getServerMasterName() {
-        return serverMasterName;
-    }
-
-    public void setServerMasterName(String serverMasterName) {
-        this.serverMasterName = serverMasterName;
-    }
-
-    public Properties getRedissonProperties() {
-        return redissonProperties;
-    }
-
-    public void setRedissonProperties(Properties redissonProperties) {
-        this.redissonProperties = redissonProperties;
-    }
 
     public enum ServerType {
         SINGLE,
