@@ -41,29 +41,29 @@ public class EventMeshGrpcConfigurationTest {
     }
 
     private void assertGrpcConfig(EventMeshGrpcConfiguration config) {
-        Assert.assertEquals(config.grpcServerPort, 816);
-        Assert.assertEquals(config.eventMeshSessionExpiredInMills, 1816);
-        Assert.assertEquals(config.eventMeshServerBatchMsgBatchEnabled, Boolean.FALSE);
-        Assert.assertEquals(config.eventMeshServerBatchMsgThreadNum, 2816);
-        Assert.assertEquals(config.eventMeshServerSendMsgThreadNum, 3816);
-        Assert.assertEquals(config.eventMeshServerPushMsgThreadNum, 4816);
-        Assert.assertEquals(config.eventMeshServerReplyMsgThreadNum, 5816);
-        Assert.assertEquals(config.eventMeshServerSubscribeMsgThreadNum, 6816);
-        Assert.assertEquals(config.eventMeshServerRegistryThreadNum, 7816);
-        Assert.assertEquals(config.eventMeshServerAdminThreadNum, 8816);
-        Assert.assertEquals(config.eventMeshServerRetryThreadNum, 9816);
-        Assert.assertEquals(config.eventMeshServerPullRegistryInterval, 11816);
-        Assert.assertEquals(config.eventMeshServerAsyncAccumulationThreshold, 12816);
-        Assert.assertEquals(config.eventMeshServerRetryBlockQueueSize, 13816);
-        Assert.assertEquals(config.eventMeshServerBatchBlockQueueSize, 14816);
-        Assert.assertEquals(config.eventMeshServerSendMsgBlockQueueSize, 15816);
-        Assert.assertEquals(config.eventMeshServerPushMsgBlockQueueSize, 16816);
-        Assert.assertEquals(config.eventMeshServerSubscribeMsgBlockQueueSize, 17816);
-        Assert.assertEquals(config.eventMeshServerBusyCheckInterval, 18816);
-        Assert.assertEquals(config.eventMeshServerConsumerEnabled, Boolean.TRUE);
-        Assert.assertEquals(config.eventMeshServerUseTls, Boolean.TRUE);
-        Assert.assertEquals(config.eventMeshBatchMsgRequestNumPerSecond, 21816);
-        Assert.assertEquals(config.eventMeshMsgReqNumPerSecond, 19816);
+        Assert.assertEquals(config.getGrpcServerPort(), 816);
+        Assert.assertEquals(config.getEventMeshSessionExpiredInMills(), 1816);
+        Assert.assertEquals(config.isEventMeshServerBatchMsgBatchEnabled(), Boolean.FALSE);
+        Assert.assertEquals(config.getEventMeshServerBatchMsgThreadNum(), 2816);
+        Assert.assertEquals(config.getEventMeshServerSendMsgThreadNum(), 3816);
+        Assert.assertEquals(config.getEventMeshServerPushMsgThreadNum(), 4816);
+        Assert.assertEquals(config.getEventMeshServerReplyMsgThreadNum(), 5816);
+        Assert.assertEquals(config.getEventMeshServerSubscribeMsgThreadNum(), 6816);
+        Assert.assertEquals(config.getEventMeshServerRegistryThreadNum(), 7816);
+        Assert.assertEquals(config.getEventMeshServerAdminThreadNum(), 8816);
+        Assert.assertEquals(config.getEventMeshServerRetryThreadNum(), 9816);
+        Assert.assertEquals(config.getEventMeshServerPullRegistryInterval(), 11816);
+        Assert.assertEquals(config.getEventMeshServerAsyncAccumulationThreshold(), 12816);
+        Assert.assertEquals(config.getEventMeshServerRetryBlockQueueSize(), 13816);
+        Assert.assertEquals(config.getEventMeshServerBatchBlockQueueSize(), 14816);
+        Assert.assertEquals(config.getEventMeshServerSendMsgBlockQueueSize(), 15816);
+        Assert.assertEquals(config.getEventMeshServerPushMsgBlockQueueSize(), 16816);
+        Assert.assertEquals(config.getEventMeshServerSubscribeMsgBlockQueueSize(), 17816);
+        Assert.assertEquals(config.getEventMeshServerBusyCheckInterval(), 18816);
+        Assert.assertEquals(config.isEventMeshServerConsumerEnabled(), Boolean.TRUE);
+        Assert.assertEquals(config.isEventMeshServerUseTls(), Boolean.TRUE);
+        Assert.assertEquals(config.getEventMeshBatchMsgRequestNumPerSecond(), 21816);
+        Assert.assertEquals(config.getEventMeshMsgReqNumPerSecond(), 19816);
     }
 
     private void assertCommonConfig(CommonConfiguration config) {
