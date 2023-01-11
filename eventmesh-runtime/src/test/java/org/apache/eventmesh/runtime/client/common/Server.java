@@ -17,9 +17,7 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class Server {
 

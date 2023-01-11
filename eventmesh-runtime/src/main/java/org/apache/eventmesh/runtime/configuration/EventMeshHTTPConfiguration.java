@@ -129,9 +129,4 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "blacklist.ipv6")
     public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
-
-    @Override
-    public void init() {
-        super.init();
-    }
 }

@@ -1,62 +1,26 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package org.apache.eventmesh.runtime.boot;
+package org.apache.eventmesh.runtime.configuration;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EventMeshServerTest {
+public class EventMeshTCPConfigurationTest {
 
-    /**
-     * True Environment variables need to be set during startup
-     */
     @Test
-    public void testGetConfigWhenStartup() throws Exception {
-
-        testGetConfigWhenStartup(Boolean.FALSE);
-    }
-
-    private void testGetConfigWhenStartup(Boolean hasEnv) throws Exception {
-        String eventMeshConfFile = "configuration.properties";
-
-        if (hasEnv) {
-            ConfigService.getInstance()
-                    .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                    .setRootConfig(eventMeshConfFile);
-        } else {
-            eventMeshConfFile = "classPath://" + eventMeshConfFile;
-            ConfigService.getInstance().setRootConfig(eventMeshConfFile);
-        }
+    public void testGetEventMeshTCPConfiguration() throws Exception {
 
         ConfigService configService = ConfigService.getInstance();
-        EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+        configService.setRootConfig("classPath://configuration.properties");
 
-        assertCommonConfig(eventMeshTCPConfiguration);
-        assertTCPConfig(eventMeshTCPConfiguration);
+        EventMeshTCPConfiguration config = configService.getConfig(EventMeshTCPConfiguration.class);
+
+        assertCommonConfig(config);
+        assertTCPConfig(config);
     }
 
     private void assertTCPConfig(EventMeshTCPConfiguration config) {

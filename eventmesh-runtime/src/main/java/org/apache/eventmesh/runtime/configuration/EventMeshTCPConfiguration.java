@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Config(prefix = "eventMesh.server")
 public class EventMeshTCPConfiguration extends CommonConfiguration {
+
     @ConfigFiled(field = "tcp.port")
     public int eventMeshTcpServerPort = 10000;
 
@@ -111,11 +112,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
     private final TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
     private final TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
-
-    @Override
-    public void init() {
-        super.init();
-    }
 
     @Data
     @NoArgsConstructor
