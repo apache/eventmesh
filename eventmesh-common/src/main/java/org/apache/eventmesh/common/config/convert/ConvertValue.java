@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.config.ConfigFiled;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -47,12 +48,23 @@ public interface ConvertValue<T> {
         Properties properties = convertInfo.getProperties();
         String value = properties.getProperty(key);
 
+        if (Objects.isNull(value)) {
+            return null;
+        }
+
+        value = value.trim();
+
         boolean findEnv = configFiled.findEnv();
         String fieldName = configFiled.field();
 
         if (StringUtils.isBlank(value) && !StringUtils.isBlank(fieldName) && findEnv) {
             value = Optional.ofNullable(System.getProperty(fieldName)).orElse(System.getenv(fieldName));
         }
+
+        if (StringUtils.isBlank(value) && configFiled.notEmpty()) {
+            throw new RuntimeException(key + " can't be empty!");
+        }
+
         return value;
     }
 
