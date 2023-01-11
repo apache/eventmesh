@@ -17,27 +17,21 @@
 
 package org.apache.eventmesh.trace.api.config;
 
-import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigService;
 
-import lombok.Data;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * to load the properties form exporter.properties
- */
-@Data
-@Config(prefix = "eventmesh.trace", path = "classPath://exporter.properties")
-public class ExporterConfiguration {
+public class ExporterConfigurationTest {
 
-    @ConfigFiled(field = "max.export.size")
-    private int eventMeshTraceMaxExportSize = 512;
+    @Test
+    public void testGetExporterConfiguration() {
+        ConfigService configService = ConfigService.getInstance();
+        ExporterConfiguration config = configService.getConfig(ExporterConfiguration.class);
 
-    @ConfigFiled(field = "max.queue.size")
-    private int eventMeshTraceMaxQueueSize = 2048;
-
-    @ConfigFiled(field = "export.timeout")
-    private int eventMeshTraceExportTimeout = 30;
-
-    @ConfigFiled(field = "export.interval")
-    private int eventMeshTraceExportInterval = 5;
+        Assert.assertEquals(816, config.getEventMeshTraceMaxExportSize());
+        Assert.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());
+        Assert.assertEquals(2816, config.getEventMeshTraceExportTimeout());
+        Assert.assertEquals(3816, config.getEventMeshTraceExportInterval());
+    }
 }
