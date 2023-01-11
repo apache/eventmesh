@@ -65,4 +65,12 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
             eventMeshHttpServer.shutdown();
         }
     }
+
+    public EventMeshHTTPServer getEventMeshHttpServer() {
+        return eventMeshHttpServer;
+    }
+
+    public void setEventMeshHttpServer(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
+    }
 }

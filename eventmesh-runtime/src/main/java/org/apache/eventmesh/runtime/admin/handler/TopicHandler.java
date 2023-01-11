@@ -18,11 +18,13 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
@@ -35,19 +37,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * The topic handler
  */
-public class TopicHandler implements HttpHandler {
+@EventHttpHandler(path = "/topic")
+public class TopicHandler extends AbstractHttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
     public TopicHandler(
-        String connectorPluginType
+        String connectorPluginType,
+        HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {
             admin.init(null);
