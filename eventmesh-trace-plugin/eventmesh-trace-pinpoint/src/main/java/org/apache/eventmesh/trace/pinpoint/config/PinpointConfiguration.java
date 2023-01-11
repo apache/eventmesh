@@ -31,6 +31,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
 
+import lombok.Data;
+
+@Data
 @Config(prefix = "eventmesh.trace.pinpoint", path = "classPath://pinpoint.properties")
 public final class PinpointConfiguration {
 
@@ -55,6 +58,7 @@ public final class PinpointConfiguration {
         if (StringUtils.isBlank(agentName)) {
             agentName = applicationName;
         }
+
         if (StringUtils.isBlank(agentId)) {
             // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
             agentId = StringUtils.substring(agentName, 0, 15)
@@ -72,21 +76,5 @@ public final class PinpointConfiguration {
         } catch (IllegalArgumentException e) {
             throw new JsonException("convertValue fromValue to toValueType instance error", e);
         }
-    }
-
-    public String getAgentId() {
-        return agentId;
-    }
-
-    public String getAgentName() {
-        return agentName;
-    }
-
-    public String getApplicationName() {
-        return applicationName;
-    }
-
-    public GrpcTransportConfig getGrpcTransportConfig() {
-        return grpcTransportConfig;
     }
 }
