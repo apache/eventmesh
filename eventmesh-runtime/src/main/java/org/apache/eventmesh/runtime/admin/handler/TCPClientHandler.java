@@ -18,12 +18,14 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -43,19 +45,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * The client handler
  */
-public class TCPClientHandler implements HttpHandler {
+@EventHttpHandler(path = "/client/tcp")
+public class TCPClientHandler extends AbstractHttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(TCPClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
     public TCPClientHandler(
-        EventMeshTCPServer eventMeshTCPServer
+        EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
