@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
@@ -359,7 +360,7 @@ public final class HttpClientGroupMapping {
             }
         }
 
-        if (isChange &&  MapUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
+        if (isChange && CollectionUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
