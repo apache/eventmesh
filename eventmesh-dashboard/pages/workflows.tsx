@@ -175,7 +175,7 @@ const Workflows: NextPage = () => {
             _hover={{ bg: '#dce5fe', color: '#2a62ad' }}
             onClick={() => setIsShowCreate(true)}
           >
-            Create Wokrflow
+            Create Workflow
           </Button>
           <Stack direction="row" spacing="2">
             <Input
@@ -271,7 +271,7 @@ const Workflows: NextPage = () => {
             <Spinner colorScheme="blue" size="sm" />
           ) : (
             <Text fontSize="sm" color="#909090">
-              {workflows.length}
+              {total}
               {` workflow${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>

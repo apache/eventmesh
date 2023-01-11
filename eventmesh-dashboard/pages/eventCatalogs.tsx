@@ -172,7 +172,7 @@ const EventCatalogs: NextPage = () => {
             <Spinner colorScheme="blue" size="sm" />
           ) : (
             <Text fontSize="sm" color="#909090">
-              {catalogs.length}
+              {total}
               {` catalog${total > 1 ? 's' : ''} in total, `}
               {`page ${pageIndex} of ${Math.ceil(total / pageSize)}`}
             </Text>
