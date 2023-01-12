@@ -28,6 +28,9 @@
 
 ![EventMesh Architecture](docs/images/eventmesh-architecture-2.png)
 
+### EventMesh Dashboard
+![EventMesh Dashboard](docs/images/dashboard.png)
+
 ## Features
 
 Apache EventMesh (Incubating) has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
