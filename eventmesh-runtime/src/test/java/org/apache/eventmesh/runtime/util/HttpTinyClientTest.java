@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-@Ignore
 public class HttpTinyClientTest {
 
     @Test
