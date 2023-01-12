@@ -87,7 +87,10 @@ const Details: FC<{
         `${ApiRoot}/workflow`,
         {
           workflow: {
+<<<<<<< HEAD
             id: data?.id,
+=======
+>>>>>>> upstream/master
             workflow_id: data?.workflow_id,
             definition: value,
           },

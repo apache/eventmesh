@@ -275,6 +275,7 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 	if r != nil {
 		return errors.New("workflow id already exists")
 	}
+<<<<<<< HEAD
 	record.WorkflowID = wf.ID
 	record.WorkflowName = wf.Name
 	record.Version = wf.Version
@@ -284,6 +285,19 @@ func (w *workflowDALImpl) create(ctx context.Context, tx *gorm.DB, record *model
 	var handlers []func() error
 	handlers = append(handlers, func() error {
 		return tx.Create(record).Error
+=======
+	var insertData = model.Workflow{}
+	insertData.WorkflowID = wf.ID
+	insertData.WorkflowName = wf.Name
+	insertData.Version = wf.Version
+	insertData.Definition = record.Definition
+	insertData.Status = constants.NormalStatus
+	insertData.CreateTime = time.Now()
+	insertData.UpdateTime = time.Now()
+	var handlers []func() error
+	handlers = append(handlers, func() error {
+		return tx.Create(insertData).Error
+>>>>>>> upstream/master
 	})
 	tasks := w.buildTask(wf)
 	for _, task := range tasks {

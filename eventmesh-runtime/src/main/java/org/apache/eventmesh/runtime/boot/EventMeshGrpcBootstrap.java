@@ -60,4 +60,12 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
             eventMeshGrpcServer.shutdown();
         }
     }
+
+    public EventMeshGrpcServer getEventMeshGrpcServer() {
+        return eventMeshGrpcServer;
+    }
+
+    public void setEventMeshGrpcServer(EventMeshGrpcServer eventMeshGrpcServer) {
+        this.eventMeshGrpcServer = eventMeshGrpcServer;
+    }
 }

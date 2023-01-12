@@ -17,6 +17,7 @@
  * under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-dashboard/components/eventCatalogs/types.ts
 export type SchemaTypes = {
   schemaId: string;
   lastVersion: string;
@@ -38,3 +39,8 @@ export enum CatalogStatusEnum {
   'Normal' = 1,
   'Deleted' = -1,
 }
+========
+
+NEXT_PUBLIC_WORKFLOW_API_ROOT=http://175.27.131.65:11022
+NEXT_PUBLIC_EVENTCATALOG_API_ROOT=http://175.27.131.65:12013
+>>>>>>>> upstream/master:eventmesh-dashboard/.env.development

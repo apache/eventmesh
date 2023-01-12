@@ -18,9 +18,11 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import java.io.IOException;
@@ -35,14 +37,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class RegistryHandler implements HttpHandler {
+@EventHttpHandler(path = "/registry")
+public class RegistryHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
     private final Registry eventMeshRegistry;
 
-    public RegistryHandler(Registry eventMeshRegistry) {
+    public RegistryHandler(Registry eventMeshRegistry,
+                           HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshRegistry = eventMeshRegistry;
     }
 

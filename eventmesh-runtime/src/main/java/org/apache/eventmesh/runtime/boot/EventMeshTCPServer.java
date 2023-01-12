@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
-import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
@@ -76,8 +75,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private transient EventMeshTcpMonitor eventMeshTcpMonitor;
 
-    private transient ClientManageController clientManageController;
-
     private final transient EventMeshServer eventMeshServer;
 
     private final transient EventMeshTCPConfiguration eventMeshTCPConfiguration;
@@ -93,18 +90,13 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private final transient Registry registry;
 
     private transient EventMeshRebalanceService eventMeshRebalanceService;
+
+    private transient AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
+
     private transient RateLimiter rateLimiter;
 
     public void setClientSessionGroupMapping(final ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
-    }
-
-    public ClientManageController getClientManageController() {
-        return clientManageController;
-    }
-
-    public void setClientManageController(final ClientManageController clientManageController) {
-        this.clientManageController = clientManageController;
     }
 
     public ScheduledExecutorService getScheduler() {
@@ -214,12 +206,10 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         globalTrafficShapingHandler = newGTSHandler(scheduler, eventMeshTCPConfiguration.getGtc().getReadLimit());
 
 
-        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
+        adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
         adminWebHookConfigOperationManage.setConfigurationWrapper(eventMeshTCPConfiguration.getConfigurationWrapper());
         adminWebHookConfigOperationManage.init();
 
-        clientManageController = new ClientManageController(this);
-        clientManageController.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
         clientSessionGroupMapping.init();
@@ -256,8 +246,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshTcpRetryer.start();
 
         eventMeshTcpMonitor.start();
-
-        clientManageController.start();
 
         if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
@@ -417,5 +405,13 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public EventMeshRebalanceService getEventMeshRebalanceService() {
         return eventMeshRebalanceService;
+    }
+
+    public AdminWebHookConfigOperationManage getAdminWebHookConfigOperationManage() {
+        return adminWebHookConfigOperationManage;
+    }
+
+    public void setAdminWebHookConfigOperationManage(AdminWebHookConfigOperationManage adminWebHookConfigOperationManage) {
+        this.adminWebHookConfigOperationManage = adminWebHookConfigOperationManage;
     }
 }
