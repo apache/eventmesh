@@ -144,7 +144,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private void addSubscription(List<SubscriptionItem> subscriptionItems, String url) {
         for (SubscriptionItem item : subscriptionItems) {
-            subscriptionMap.put(item.getTopic(), new SubscriptionInfo(item, url));
+            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url));
         }
     }
 
