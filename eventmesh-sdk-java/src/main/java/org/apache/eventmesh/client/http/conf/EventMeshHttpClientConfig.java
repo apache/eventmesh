@@ -36,54 +36,54 @@ public class EventMeshHttpClientConfig {
      * <p>If you use weighted round robin or weighted random strategy, the format like: 127.0.0.1:10105:1;127.0.0.2:10105:2
      */
     @Builder.Default
-    private String liteEventMeshAddr = "127.0.0.1:10105";
+    private transient String liteEventMeshAddr = "localhost:10105";
 
     @Builder.Default
-    private LoadBalanceType loadBalanceType = LoadBalanceType.RANDOM;
+    private transient LoadBalanceType loadBalanceType = LoadBalanceType.RANDOM;
 
     @Builder.Default
-    private int consumeThreadCore = 2;
+    private transient int consumeThreadCore = 2;
 
     @Builder.Default
-    private int consumeThreadMax = 5;
+    private transient int consumeThreadMax = 5;
 
     @Builder.Default
-    private String env = "";
+    private transient String env = "";
 
     @Builder.Default
-    private String consumerGroup = "DefaultConsumerGroup";
+    private transient String consumerGroup = "DefaultConsumerGroup";
 
     @Builder.Default
-    private String producerGroup = "DefaultProducerGroup";
+    private transient String producerGroup = "DefaultProducerGroup";
 
     @Builder.Default
-    private String idc = "";
+    private transient String idc = "";
 
     @Builder.Default
-    private String ip = "127.0.0.1";
+    private transient String ip = "localhost";
 
     @Builder.Default
-    private String pid = "";
+    private transient String pid = "";
 
     @Builder.Default
-    private String sys = "";
+    private transient String sys = "";
 
     @Builder.Default
-    private String userName = "";
+    private transient String userName = "";
 
     @Builder.Default
-    private String password = "";
+    private transient String password = "";
 
     @Builder.Default
-    private boolean useTls = false;
+    private transient boolean useTls = false;
 
     @Builder.Default
-    private String sslClientProtocol = "TLSv1.2";
+    private transient String sslClientProtocol = "TLSv1.2";
 
     @Builder.Default
-    private int maxConnectionPoolSize = 30;
+    private transient int maxConnectionPoolSize = 30;
 
     @Builder.Default
-    private int connectionIdleTimeSeconds = 10;
+    private transient int connectionIdleTimeSeconds = 10;
 
 }
