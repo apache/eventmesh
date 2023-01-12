@@ -37,13 +37,13 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 public class MyX509TrustManager implements X509TrustManager {
-    private X509TrustManager myTrustManager;
+    private transient X509TrustManager myTrustManager;
 
     public MyX509TrustManager() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        String fileName = System.getProperty("ssl.client.cer", "");
-        String pass = System.getProperty("ssl.client.pass", "");
-        char[] filePass = StringUtils.isNotBlank(pass) ? pass.toCharArray() : new char[0];
+        final KeyStore keyStore = KeyStore.getInstance("JKS");
+        final String fileName = System.getProperty("ssl.client.cer", "");
+        final String pass = System.getProperty("ssl.client.pass", "");
+        final char[] filePass = StringUtils.isNotBlank(pass) ? pass.toCharArray() : new char[0];
 
         try (InputStream in = Files.newInputStream(
                 Paths.get(System.getProperty("confPath", System.getenv("confPath"))
@@ -51,10 +51,10 @@ public class MyX509TrustManager implements X509TrustManager {
             keyStore.load(in, filePass);
         }
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
-        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-        for (TrustManager trustManager : trustManagers) {
+        final TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        for (final TrustManager trustManager : trustManagers) {
             if (trustManager instanceof X509TrustManager) {
                 myTrustManager = (X509TrustManager) trustManager;
                 return;
@@ -65,12 +65,12 @@ public class MyX509TrustManager implements X509TrustManager {
     }
 
     @Override
-    public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+    public void checkClientTrusted(final X509Certificate[] x509Certificates, final String s) throws CertificateException {
     }
 
     @Override
-    public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
-        if ((certificates != null) && (certificates.length == 1)) {
+    public void checkServerTrusted(final X509Certificate[] certificates, final String authType) throws CertificateException {
+        if (certificates != null && certificates.length == 1) {
             certificates[0].checkValidity();
         } else {
             myTrustManager.checkServerTrusted(certificates, authType);
