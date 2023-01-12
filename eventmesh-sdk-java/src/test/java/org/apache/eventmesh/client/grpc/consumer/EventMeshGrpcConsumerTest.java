@@ -69,9 +69,9 @@ public class EventMeshGrpcConsumerTest {
     public void setUp() {
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(EventMeshGrpcClientConfig.builder().build());
         eventMeshGrpcConsumer.init();
-        eventMeshGrpcConsumer.consumerClient = consumerClient;
-        eventMeshGrpcConsumer.consumerAsyncClient = consumerAsyncClient;
-        eventMeshGrpcConsumer.heartbeatClient = heartbeatClient;
+        eventMeshGrpcConsumer.setConsumerClient(consumerClient);
+        eventMeshGrpcConsumer.setConsumerAsyncClient(consumerAsyncClient);
+        eventMeshGrpcConsumer.setHeartbeatClient(heartbeatClient);
         when(consumerClient.subscribe(any())).thenReturn(Response.getDefaultInstance());
         when(consumerClient.unsubscribe(any())).thenReturn(Response.getDefaultInstance());
         when(heartbeatClient.heartbeat(any())).thenReturn(Response.getDefaultInstance());
