@@ -21,19 +21,17 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RequestContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestContext.class);
+    private transient Object key;
+    private transient Package request;
+    private transient Package response;
+    private transient CountDownLatch latch;
 
-    private Object key;
-    private Package request;
-    private Package response;
-    private CountDownLatch latch;
-
-    public RequestContext(Object key, Package request, CountDownLatch latch) {
+    public RequestContext(final Object key, final Package request, final CountDownLatch latch) {
         this.key = key;
         this.request = request;
         this.latch = latch;
@@ -43,7 +41,7 @@ public class RequestContext {
         return key;
     }
 
-    public void setKey(Object key) {
+    public void setKey(final Object key) {
         this.key = key;
     }
 
@@ -51,7 +49,7 @@ public class RequestContext {
         return request;
     }
 
-    public void setRequest(Package request) {
+    public void setRequest(final Package request) {
         this.request = request;
     }
 
@@ -59,7 +57,7 @@ public class RequestContext {
         return response;
     }
 
-    public void setResponse(Package response) {
+    public void setResponse(final Package response) {
         this.response = response;
     }
 
@@ -67,23 +65,25 @@ public class RequestContext {
         return latch;
     }
 
-    public void setLatch(CountDownLatch latch) {
+    public void setLatch(final CountDownLatch latch) {
         this.latch = latch;
     }
 
-    public void finish(Package msg) {
+    public void finish(final Package msg) {
         this.response = msg;
         latch.countDown();
     }
 
-    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
-        RequestContext c = new RequestContext(key, request, latch);
-        logger.info("_RequestContext|create|key=" + key);
+    public static RequestContext context(final Object key, final Package request, final CountDownLatch latch) throws Exception {
+        final RequestContext c = new RequestContext(key, request, latch);
+        if (log.isInfoEnabled()) {
+            log.info("_RequestContext|create|key={}", key);
+        }
         return c;
     }
 
 
-    public static Object key(Package request) {
+    public static Object key(final Package request) {
         return request.getHeader().getSeq();
     }
 }
