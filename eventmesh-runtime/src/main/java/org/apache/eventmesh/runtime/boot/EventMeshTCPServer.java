@@ -207,7 +207,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
 
         adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
-        adminWebHookConfigOperationManage.setConfigurationWrapper(eventMeshTCPConfiguration.getConfigurationWrapper());
         adminWebHookConfigOperationManage.init();
 
 

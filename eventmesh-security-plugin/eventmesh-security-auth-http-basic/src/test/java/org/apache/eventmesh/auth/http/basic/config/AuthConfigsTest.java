@@ -17,17 +17,32 @@
 
 package org.apache.eventmesh.auth.http.basic.config;
 
+import org.apache.eventmesh.api.auth.AuthService;
+import org.apache.eventmesh.auth.http.basic.impl.AuthHttpBasicService;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 public class AuthConfigsTest {
 
     @Test
-    public void testGetConfigs() {
-        AuthConfigs configs = AuthConfigs.getConfigs();
-        String password = configs.getPassword();
-        String username = configs.getUsername();
-        Assert.assertEquals(password, "password");
-        Assert.assertEquals(username, "usera");
+    public void getConfigWhenAuthHttpBasicServiceInit() {
+        AuthHttpBasicService authService = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
+                AuthService.class, "auth-http-basic");
+
+<<<<<<<< HEAD:eventmesh-security-plugin/eventmesh-security-auth-http-basic/src/test/java/org/apache/eventmesh/auth/http/basic/config/AuthConfigsTest.java
+        AuthConfigs config = authService.getClientConfiguration();
+        assertConfig(config);
+========
+    @Test(expected = NullPointerException.class)
+    public void construct() {
+        ConfigurationWrapper newWrapper = new ConfigurationWrapper(null, "eventmesh.properties", false);
+>>>>>>>> config-manage-improve:eventmesh-common/src/test/java/org/apache/eventmesh/common/config/ConfigurationWrapperTest.java
+    }
+
+    private void assertConfig(AuthConfigs config) {
+        Assert.assertEquals(config.getUsername(), "username-success!!!");
+        Assert.assertEquals(config.getPassword(), "password-success!!!");
     }
 }

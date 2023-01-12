@@ -15,16 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.config;
+package org.apache.eventmesh.webhook.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-public class ConfigurationWrapperTest {
+import java.util.Properties;
 
-    @Test
-    public void getProp() {
-        String namesrcAddr = ConfigurationWrapper.getProp("eventMesh.server.rocketmq.namesrvAddr");
-        Assert.assertNotNull(namesrcAddr);
+import lombok.Data;
+
+@Data
+@Config(prefix = "eventMesh.webHook")
+public class AdminConfiguration {
+
+    @ConfigFiled(field = "admin.start")
+    private boolean adminStart = false;
+
+    @ConfigFiled(field = "operationMode")
+    private String operationMode;
+
+    @ConfigFiled(field = "", reload = true)
+    private Properties operationProperties;
+
+    public void reload() {
+        processOperationProperties();
+    }
+
+    public void processOperationProperties() {
+        String prefix = operationMode + "Mode";
+        this.operationProperties = (Properties) operationProperties.get(prefix);
     }
 }
+

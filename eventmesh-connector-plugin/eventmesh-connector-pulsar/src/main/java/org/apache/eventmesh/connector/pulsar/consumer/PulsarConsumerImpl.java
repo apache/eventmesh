@@ -24,6 +24,7 @@ import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 
 import org.apache.pulsar.client.api.ClientBuilder;
@@ -45,6 +46,7 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Config(field = "clientConfiguration")
 public class PulsarConsumerImpl implements Consumer {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -53,11 +55,14 @@ public class PulsarConsumerImpl implements Consumer {
     private org.apache.pulsar.client.api.Consumer<byte[]> consumer;
     private EventListener eventListener;
 
+    /**
+     * Unified configuration class corresponding to pulsar-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
+
     @Override
     public void init(Properties properties) throws Exception {
         this.properties = properties;
-
-        final ClientConfiguration clientConfiguration = ClientConfiguration.getInstance();
 
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
@@ -159,5 +164,9 @@ public class PulsarConsumerImpl implements Consumer {
             throw new ConnectorRuntimeException(
               String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));
         }
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
     }
 }

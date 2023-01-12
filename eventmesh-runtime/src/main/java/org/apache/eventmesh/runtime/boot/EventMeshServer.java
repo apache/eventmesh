@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
@@ -61,24 +61,26 @@ public class EventMeshServer {
         CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
         configuration.init();
         this.configuration = configuration;
+    public EventMeshServer() {
+        ConfigService configService = ConfigService.getInstance();
+        this.configuration = configService.getConfig(CommonConfiguration.class);
+
         this.acl = new Acl();
         this.registry = new Registry();
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
+        trace = new Trace(configuration.isEventMeshServerTraceEnable());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this,
-                        configurationWrapper, registry));
+                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this, registry));
             }
             if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this,
-                        configurationWrapper, registry));
+                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this, registry));
             }
             if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(configurationWrapper,
-                        registry));
+                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(registry));
             }
         }
 

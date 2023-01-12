@@ -17,8 +17,10 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import java.io.File;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +31,12 @@ public class EventMeshStartup {
 
     public static void main(String[] args) throws Exception {
         try {
-            final EventMeshServer server = new EventMeshServer(
-                    new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
-                    EventMeshConstants.EVENTMESH_CONF_FILE, false));
+            ConfigService.getInstance()
+                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
+
+            EventMeshServer server = new EventMeshServer();
+            server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {

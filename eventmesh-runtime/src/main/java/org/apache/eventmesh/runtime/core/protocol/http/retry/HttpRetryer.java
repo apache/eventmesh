@@ -48,7 +48,7 @@ public class HttpRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize) {
+        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -56,11 +56,11 @@ public class HttpRetryer {
     }
 
     public void init() {
-        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
+        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
                 60000,
                 TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 

@@ -15,10 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.knative.common;
+package org.apache.eventmesh.common.config.convert.converter;
 
-public class EventMeshConstants {
+import org.apache.eventmesh.common.config.convert.ConvertInfo;
+import org.apache.eventmesh.common.config.convert.ConvertValue;
 
-    public static final String EVENTMESH_CONF_FILE = "knative-client.properties";
+import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Config field conversion class for String
+ */
+public class StringConverter  implements ConvertValue<String> {
+
+    @Override
+    public String convert(ConvertInfo convertInfo) {
+        String value = (String) convertInfo.getValue();
+
+        return StringUtils.trim(value);
+    }
 }

@@ -17,17 +17,10 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.AGENT_ID_KEY;
-import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.AGENT_NAME_KEY;
-import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.APPLICATION_NAME;
-import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.APPLICATION_NAME_KEY;
-import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.PROPERTY_KEY_PREFIX;
-
-import static java.util.Objects.requireNonNull;
-
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.exception.JsonException;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,56 +39,34 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
 
+import lombok.Data;
+
+@Data
+@Config(prefix = "eventmesh.trace.pinpoint", path = "classPath://pinpoint.properties")
 public final class PinpointConfiguration {
 
-    private static final String CONFIG_FILE = "pinpoint.properties";
+    @ConfigFiled(field = "agentId", reload = true)
+    private String agentId;
+
+    @ConfigFiled(field = "agentName", reload = true)
+    private String agentName;
+
+    @ConfigFiled(field = "applicationName", findEnv = true, notNull = true)
+    private String applicationName;
+
+    @ConfigFiled(field = "", reload = true)
+    private Properties grpcTransportProperties;
+
+    private GrpcTransportConfig grpcTransportConfig;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-    private static final Properties properties = new Properties();
-
-    private static String agentId;
-    private static String agentName;
-    private static String applicationName;
-    private static GrpcTransportConfig grpcTransportConfig;
-
-    static {
-        loadProperties();
-        initializeConfig();
-    }
-
-    public static String getAgentId() {
-        return agentId;
-    }
-
-    public static String getAgentName() {
-        return agentName;
-    }
-
-    public static String getApplicationName() {
-        return applicationName;
-    }
-
-    public static GrpcTransportConfig getGrpcTransportConfig() {
-        return grpcTransportConfig;
-    }
-
-    private static void initializeConfig() {
-        applicationName = properties.getProperty(APPLICATION_NAME_KEY);
-        if (StringUtils.isBlank(applicationName)) {
-            applicationName = Optional.ofNullable(System.getProperty(APPLICATION_NAME))
-                    .orElseGet(() -> System.getenv(APPLICATION_NAME));
-        }
-
-        requireNonNull(applicationName, String.format("%s can not be null", APPLICATION_NAME_KEY));
-
-        agentName = properties.getProperty(AGENT_NAME_KEY);
+    public void reload() {
         if (StringUtils.isBlank(agentName)) {
             agentName = applicationName;
         }
 
-        agentId = properties.getProperty(AGENT_ID_KEY);
         if (StringUtils.isBlank(agentId)) {
             // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
             agentId = StringUtils.substring(agentName, 0, 15)
@@ -103,32 +74,8 @@ public final class PinpointConfiguration {
                     + RandomStringUtils.generateNum(8);
         }
 
-        Properties temporary = PropertiesUtils.getPropertiesByPrefix(properties, PROPERTY_KEY_PREFIX);
-
         // Map to Pinpoint property configuration.
-        grpcTransportConfig = convertValue(temporary, GrpcTransportConfig.class);
-    }
-
-    private static void loadProperties() {
-        URL resource = PinpointConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
-        if (resource != null) {
-            try (InputStream inputStream = resource.openStream();
-                 BufferedReader reader = new BufferedReader(
-                         new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                if (inputStream.available() > 0) {
-                    properties.load(reader);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(String.format("Load %s file from classpath error", CONFIG_FILE));
-            }
-        }
-        // get from config home
-        try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Can not load %s file from conf", CONFIG_FILE));
-        }
+        grpcTransportConfig = convertValue(grpcTransportProperties, GrpcTransportConfig.class);
     }
 
     public static <T> T convertValue(Object fromValue, Class<T> toValueType) {

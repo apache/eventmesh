@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
@@ -41,6 +42,7 @@ import io.cloudevents.CloudEvent;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
+@Config(field = "configurationHolder")
 public class RabbitmqProducer implements Producer {
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitmqProducer.class);
@@ -55,7 +57,10 @@ public class RabbitmqProducer implements Producer {
 
     private volatile boolean started = false;
 
-    private final ConfigurationHolder configurationHolder = new ConfigurationHolder();
+    /**
+     * Unified configuration class corresponding to rabbitmq-client.properties
+     */
+    private ConfigurationHolder configurationHolder;
 
     @Override
     public boolean isStarted() {
@@ -88,7 +93,6 @@ public class RabbitmqProducer implements Producer {
 
     @Override
     public void init(Properties properties) throws Exception {
-        this.configurationHolder.init();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(configurationHolder.getHost(), configurationHolder.getUsername(),
                 configurationHolder.getPasswd(), configurationHolder.getPort(), configurationHolder.getVirtualHost());
@@ -157,5 +161,9 @@ public class RabbitmqProducer implements Producer {
 
     public void setRabbitmqConnectionFactory(RabbitmqConnectionFactory rabbitmqConnectionFactory) {
         this.rabbitmqConnectionFactory = rabbitmqConnectionFactory;
+    }
+
+    public ConfigurationHolder getClientConfiguration() {
+        return this.configurationHolder;
     }
 }

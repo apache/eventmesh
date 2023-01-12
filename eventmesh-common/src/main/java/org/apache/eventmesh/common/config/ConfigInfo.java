@@ -17,32 +17,33 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.io.File;
+import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class ConfigurationWrapperTest {
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ConfigInfo {
 
-    private ConfigurationWrapper wraper;
+    public static final String HUMP_SPOT = "spot";
+    public static final String HUMP_ROD = "rod";
 
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
-    }
+    private String path;
+    private String field;
+    private String prefix;
+    private String hump;
+    private boolean monitor;
+    private boolean removePrefix;
 
-    @Test
-    public void testGetProp() {
-        Assert.assertEquals("value1", wraper.getProp("eventMesh.server.env"));
-        Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
-    }
+    private Class<?> clazz;
+    private Object object;
+    private String filePath;
 
-    @Test(expected = NullPointerException.class)
-    public void construct() {
-        ConfigurationWrapper newWrapper = new ConfigurationWrapper(null, "eventmesh.properties", false);
-    }
-
+    Field objectField;
+    Object instance;
 }

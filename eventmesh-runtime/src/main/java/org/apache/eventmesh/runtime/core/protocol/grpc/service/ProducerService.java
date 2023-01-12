@@ -54,7 +54,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void publish(SimpleMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
         
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
@@ -73,7 +73,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void requestReply(SimpleMessage request, StreamObserver<SimpleMessage> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
@@ -92,7 +92,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void batchPublish(BatchMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "BatchPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient(request.getMessageItemCount());
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
