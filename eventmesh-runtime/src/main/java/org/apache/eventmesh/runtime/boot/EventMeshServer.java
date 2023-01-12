@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
+import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -49,6 +50,8 @@ public class EventMeshServer {
     private ServiceState serviceState;
 
     private final CommonConfiguration configuration;
+
+    private transient ClientManageController clientManageController;
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
@@ -96,9 +99,33 @@ public class EventMeshServer {
             }
         }
 
+        EventMeshTCPServer eventMeshTCPServer = null;
+
+        EventMeshGrpcServer eventMeshGrpcServer = null;
+
+        EventMeshHTTPServer eventMeshHTTPServer = null;
+
         // server init
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.init();
+            if (eventMeshBootstrap instanceof EventMeshTcpBootstrap) {
+                eventMeshTCPServer = ((EventMeshTcpBootstrap) eventMeshBootstrap).getEventMeshTcpServer();
+            }
+            if (eventMeshBootstrap instanceof EventMeshHttpBootstrap) {
+                eventMeshHTTPServer = ((EventMeshHttpBootstrap) eventMeshBootstrap).getEventMeshHttpServer();
+            }
+            if (eventMeshBootstrap instanceof EventMeshGrpcBootstrap) {
+                eventMeshGrpcServer = ((EventMeshGrpcBootstrap) eventMeshBootstrap).getEventMeshGrpcServer();
+            }
+        }
+
+        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer)
+            && Objects.nonNull(eventMeshGrpcServer)) {
+            clientManageController = new ClientManageController(eventMeshTCPServer,
+                eventMeshHTTPServer, eventMeshGrpcServer, registry);
+
+            clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
+
         }
 
         final String eventStore = System
@@ -129,6 +156,11 @@ public class EventMeshServer {
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.start();
         }
+
+        if (Objects.nonNull(clientManageController)) {
+            clientManageController.start();
+        }
+
 
         serviceState = ServiceState.RUNNING;
         if (LOGGER.isInfoEnabled()) {
