@@ -21,17 +21,15 @@ package org.apache.eventmesh.runtime.admin.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-
-import java.io.IOException;
 
 import org.junit.Test;
 import org.mockito.MockedStatic;
@@ -42,11 +40,14 @@ import com.sun.net.httpserver.HttpServer;
 public class ClientManageControllerTest {
 
     @Test
-    public void testStart() throws IOException {
+    public void testStart() throws Exception {
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         AdminController adminController = mock(AdminController.class);
-        EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
-        doNothing().when(tcpConfiguration).init();
+
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+        EventMeshTCPConfiguration tcpConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer);
 

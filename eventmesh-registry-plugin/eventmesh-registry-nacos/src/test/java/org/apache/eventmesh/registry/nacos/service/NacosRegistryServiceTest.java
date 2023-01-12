@@ -47,7 +47,7 @@ public class NacosRegistryServiceTest {
     @Before
     public void setUp() {
         nacosRegistryService = new NacosRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
+        CommonConfiguration configuration = new CommonConfiguration();
         configuration.setNamesrvAddr("127.0.0.1");
         configuration.setEventMeshRegistryPluginPassword("nacos");
         configuration.setEventMeshRegistryPluginUsername("nacos");

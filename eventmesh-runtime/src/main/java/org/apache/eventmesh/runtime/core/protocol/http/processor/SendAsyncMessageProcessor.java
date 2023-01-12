@@ -232,14 +232,14 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
+        if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()) {
             httpLogger.error("Event size exceeds the limit: {}",
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize());
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_SIZE_ERR.getRetCode(),
-                    "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
+                    "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()));
             asyncContext.onComplete(responseEventMeshCommand);
 
             Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),

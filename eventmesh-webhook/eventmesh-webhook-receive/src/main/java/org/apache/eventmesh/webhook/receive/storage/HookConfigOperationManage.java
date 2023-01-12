@@ -23,11 +23,9 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATIO
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATION_MODE_NACOS;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.apache.eventmesh.webhook.api.utils.StringUtils;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 

@@ -65,6 +65,13 @@ public @interface ConfigFiled {
     boolean notNull() default false;
 
     /**
+     * If it cannot be empty but is empty, an exception is thrown
+     *
+     * @return Whether the field can be empty
+     */
+    boolean notEmpty() default false;
+
+    /**
      * If it's not a number, an exception is thrown
      *
      * @return Whether the field must be number

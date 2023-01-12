@@ -52,12 +52,12 @@ public class SSLContextFactory {
         SSLContext sslContext;
         InputStream inputStream = null;
         try {
-            protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
+            protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
 
-            fileName = eventMeshHttpConfiguration.eventMeshServerSSLCer;
+            fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
 
             char[] filePass = null;
-            pass = eventMeshHttpConfiguration.eventMeshServerSSLPass;
+            pass = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
             if (StringUtils.isNotBlank(pass)) {
                 filePass = pass.toCharArray();
             }

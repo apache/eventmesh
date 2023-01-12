@@ -20,17 +20,12 @@ package org.apache.eventmesh.metrics.prometheus.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 
+import lombok.Data;
+
+@Data
 @Config(prefix = "eventMesh.metrics.prometheus", path = "classPath://prometheus.properties")
 public class PrometheusConfiguration {
 
     @ConfigFiled(field = "port")
     private int eventMeshPrometheusPort = 19090;
-
-    public int getEventMeshPrometheusPort() {
-        return this.eventMeshPrometheusPort;
-    }
-
-    public void setEventMeshPrometheusPort(int eventMeshPrometheusPort) {
-        this.eventMeshPrometheusPort = eventMeshPrometheusPort;
-    }
 }

@@ -19,28 +19,13 @@ package org.apache.eventmesh.trace.api.config;
 
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
-import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 
 /**
  * to load the properties form exporter.properties
  */
+@Data
 @Config(prefix = "eventmesh.trace", path = "classPath://exporter.properties")
 public class ExporterConfiguration {
 
@@ -55,36 +40,4 @@ public class ExporterConfiguration {
 
     @ConfigFiled(field = "export.interval")
     private int eventMeshTraceExportInterval = 5;
-
-    public int getEventMeshTraceMaxExportSize() {
-        return eventMeshTraceMaxExportSize;
-    }
-
-    public void setEventMeshTraceMaxExportSize(int eventMeshTraceMaxExportSize) {
-        this.eventMeshTraceMaxExportSize = eventMeshTraceMaxExportSize;
-    }
-
-    public int getEventMeshTraceMaxQueueSize() {
-        return eventMeshTraceMaxQueueSize;
-    }
-
-    public void setEventMeshTraceMaxQueueSize(int eventMeshTraceMaxQueueSize) {
-        this.eventMeshTraceMaxQueueSize = eventMeshTraceMaxQueueSize;
-    }
-
-    public int getEventMeshTraceExportTimeout() {
-        return eventMeshTraceExportTimeout;
-    }
-
-    public void setEventMeshTraceExportTimeout(int eventMeshTraceExportTimeout) {
-        this.eventMeshTraceExportTimeout = eventMeshTraceExportTimeout;
-    }
-
-    public int getEventMeshTraceExportInterval() {
-        return eventMeshTraceExportInterval;
-    }
-
-    public void setEventMeshTraceExportInterval(int eventMeshTraceExportInterval) {
-        this.eventMeshTraceExportInterval = eventMeshTraceExportInterval;
-    }
 }

@@ -107,7 +107,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
             builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshGrpcConfiguration.getEventMeshCluster());
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIp);
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.getEventMeshIp());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.getEventMeshEnv());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.getEventMeshIDC());
 

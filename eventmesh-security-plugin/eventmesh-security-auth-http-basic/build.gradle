@@ -18,6 +18,8 @@
 dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-common")
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 }

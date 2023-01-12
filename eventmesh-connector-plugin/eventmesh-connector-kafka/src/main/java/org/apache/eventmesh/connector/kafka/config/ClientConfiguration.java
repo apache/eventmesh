@@ -20,14 +20,10 @@ package org.apache.eventmesh.connector.kafka.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.Preconditions;
-
 @Config(prefix = "eventMesh.server.kafka", path = "classPath://kafka-client.properties")
 public class ClientConfiguration {
 
-    @ConfigFiled(field = "namesrvAddr")
+    @ConfigFiled(field = "namesrvAddr", notEmpty = true)
     public String namesrvAddr = "";
 
     @ConfigFiled(field = "username")
@@ -74,17 +70,4 @@ public class ClientConfiguration {
 
     @ConfigFiled(field = "secretKey")
     public String secretKey = "";
-
-    public void init() {
-        String namesrvAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_KAFKA_SERVER_PORT);
-        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_KAFKA_SERVER_PORT));
-        namesrvAddr = StringUtils.trim(namesrvAddrStr);
-    }
-
-    static class ConfKeys {
-
-        public static String KEYS_EVENTMESH_KAFKA_SERVER_PORT = "eventMesh.server.kafka.namesrvAddr";
-
-    }
 }

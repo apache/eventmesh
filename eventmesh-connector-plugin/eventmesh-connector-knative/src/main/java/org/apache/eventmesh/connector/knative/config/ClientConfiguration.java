@@ -23,6 +23,9 @@ import org.apache.eventmesh.common.config.convert.converter.ListConverter.ListCo
 
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 @Config(prefix = "eventMesh.server.knative", path = "classPath://knative-client.properties")
 public class ClientConfiguration {
 
@@ -44,29 +47,5 @@ public class ClientConfiguration {
     public void reload() {
         emurl = this.service.get(0);
         serviceAddr = this.service.get(1);
-    }
-
-    public List<String> getService() {
-        return service;
-    }
-
-    public void setService(List<String> service) {
-        this.service = service;
-    }
-
-    public String getEmurl() {
-        return emurl;
-    }
-
-    public void setEmurl(String emurl) {
-        this.emurl = emurl;
-    }
-
-    public String getServiceAddr() {
-        return serviceAddr;
-    }
-
-    public void setServiceAddr(String serviceAddr) {
-        this.serviceAddr = serviceAddr;
     }
 }

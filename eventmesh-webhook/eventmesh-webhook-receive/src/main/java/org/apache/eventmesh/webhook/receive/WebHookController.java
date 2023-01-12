@@ -20,9 +20,7 @@ package org.apache.eventmesh.webhook.receive;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -39,9 +37,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
-import lombok.Setter;
 
 public class WebHookController {
 

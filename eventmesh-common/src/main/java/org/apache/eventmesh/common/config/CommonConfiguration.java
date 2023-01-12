@@ -28,7 +28,6 @@ import java.util.List;
 import org.assertj.core.util.Strings;
 
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -113,16 +112,5 @@ public class CommonConfiguration {
         if (CollectionUtils.isEmpty(eventMeshProvideServerProtocols)) {
             this.eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
         }
-    }
-
-    @Getter
-    protected ConfigurationWrapper configurationWrapper;
-
-    public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
-        this.configurationWrapper = configurationWrapper;
-    }
-
-    public void init() {
-
     }
 }

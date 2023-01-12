@@ -27,7 +27,7 @@ import org.junit.Test;
 public class ClientConfigurationTest {
 
     @Test
-    public void getConfigWhenRocketMQConsumerInit() {
+    public void getConfigWhenKnativeConsumerInit() {
         KnativeConsumerImpl consumer =
                 (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
 
@@ -36,7 +36,7 @@ public class ClientConfigurationTest {
     }
 
     @Test
-    public void getConfigWhenRocketMQProducerInit() {
+    public void getConfigWhenKnativeProducerInit() {
         KnativeProducerImpl producer =
                 (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
 

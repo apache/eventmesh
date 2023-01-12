@@ -15,48 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.boot;
+package org.apache.eventmesh.runtime.configuration;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EventMeshServerTest {
+public class EventMeshTCPConfigurationTest {
 
-    /**
-     * True Environment variables need to be set during startup
-     */
     @Test
-    public void testGetConfigWhenStartup() throws Exception {
-
-        testGetConfigWhenStartup(Boolean.FALSE);
-    }
-
-    private void testGetConfigWhenStartup(Boolean hasEnv) throws Exception {
-        String eventMeshConfFile = "configuration.properties";
-
-        if (hasEnv) {
-            ConfigService.getInstance()
-                    .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                    .setRootConfig(eventMeshConfFile);
-        } else {
-            eventMeshConfFile = "classPath://" + eventMeshConfFile;
-            ConfigService.getInstance().setRootConfig(eventMeshConfFile);
-        }
+    public void testGetEventMeshTCPConfiguration() throws Exception {
 
         ConfigService configService = ConfigService.getInstance();
-        EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+        configService.setRootConfig("classPath://configuration.properties");
 
-        assertCommonConfig(eventMeshTCPConfiguration);
-        assertTCPConfig(eventMeshTCPConfiguration);
+        EventMeshTCPConfiguration config = configService.getConfig(EventMeshTCPConfiguration.class);
+
+        assertCommonConfig(config);
+        assertTCPConfig(config);
     }
 
     private void assertTCPConfig(EventMeshTCPConfiguration config) {
