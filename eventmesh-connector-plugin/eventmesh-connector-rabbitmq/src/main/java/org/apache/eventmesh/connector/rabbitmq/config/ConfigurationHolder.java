@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 

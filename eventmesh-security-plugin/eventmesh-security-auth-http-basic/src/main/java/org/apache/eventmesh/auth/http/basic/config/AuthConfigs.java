@@ -19,9 +19,7 @@ package org.apache.eventmesh.auth.http.basic.config;
 
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
-import org.apache.eventmesh.api.exception.AuthException;
 
-import java.io.IOException;
 import lombok.Data;
 
 @Data
