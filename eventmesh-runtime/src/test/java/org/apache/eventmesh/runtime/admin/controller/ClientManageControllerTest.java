@@ -51,21 +51,19 @@ public class ClientManageControllerTest {
 
     @Test
     public void testStart() throws Exception {
-        EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
-        EventMeshHTTPServer eventMeshHTTPServer = mock(EventMeshHTTPServer.class);
-        EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
-        Registry registry = mock(Registry.class);
         AdminController adminController = mock(AdminController.class);
 
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
         EventMeshTCPConfiguration tcpConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
 
+        EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
         HttpSummaryMetrics httpSummaryMetrics = mock(HttpSummaryMetrics.class);
         HTTPMetricsServer metrics = mock(HTTPMetricsServer.class);
 
+        EventMeshHTTPServer eventMeshHTTPServer = mock(EventMeshHTTPServer.class);
         when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);
         when(eventMeshHTTPServer.getMetrics().getSummaryMetrics()).thenReturn(httpSummaryMetrics);
 
@@ -79,11 +77,13 @@ public class ClientManageControllerTest {
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
 
+        EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
+        Registry registry = mock(Registry.class);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer,
             eventMeshHTTPServer, eventMeshGrpcServer, registry);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
-        when(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType()).thenReturn("standalone");
+        eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshConnectorPluginType("standalone");
 
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);

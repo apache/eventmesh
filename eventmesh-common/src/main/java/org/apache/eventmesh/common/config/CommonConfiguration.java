@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.config;
 
-import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 
@@ -25,8 +24,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.assertj.core.util.Strings;
 
@@ -37,41 +34,41 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Config(prefix = "eventMesh")
 public class CommonConfiguration {
-    @ConfigFiled(field = "sysid", beNumber = true, notNull = true)
+    @ConfigFiled(field = "sysid", beNumber = true, notEmpty = true)
     private String sysID = "5477";
 
-    @ConfigFiled(field = "server.env", notNull = true)
+    @ConfigFiled(field = "server.env", notEmpty = true)
     private String eventMeshEnv = "P";
 
-    @ConfigFiled(field = "server.idc", notNull = true)
-                        private String eventMeshIDC = "FT";
+    @ConfigFiled(field = "server.idc", notEmpty = true)
+    private String eventMeshIDC = "FT";
 
-    @ConfigFiled(field = "server.name", notNull = true)
+    @ConfigFiled(field = "server.name", notEmpty = true)
     private String eventMeshName = "";
 
-    @ConfigFiled(field = "server.cluster", notNull = true)
+    @ConfigFiled(field = "server.cluster", notEmpty = true)
     private String eventMeshCluster = "LS";
 
     @ConfigFiled(field = "server.hostIp", reload = true)
     private String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "registry.plugin.server-addr", notNull = true)
+    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
     private String namesrvAddr = "";
 
 
-    @ConfigFiled(field = "trace.plugin", notNull = true)
+    @ConfigFiled(field = "trace.plugin", notEmpty = true)
     private String eventMeshTracePluginType;
 
-    @ConfigFiled(field = "metrics.plugin", notNull = true)
+    @ConfigFiled(field = "metrics.plugin", notEmpty = true)
     private List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "registry.plugin.type", notNull = true)
+    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
     private String eventMeshRegistryPluginType = "namesrv";
 
-    @ConfigFiled(field = "security.plugin.type", notNull = true)
+    @ConfigFiled(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
 
-    @ConfigFiled(field = "connector.plugin.type", notNull = true)
+    @ConfigFiled(field = "connector.plugin.type", notEmpty = true)
     private String eventMeshConnectorPluginType = "rocketmq";
 
 
@@ -105,6 +102,9 @@ public class CommonConfiguration {
     @ConfigFiled(reload = true)
     private String eventMeshWebhookOrigin;
 
+    @ConfigFiled(reload = true)
+    private String meshGroup;
+
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
@@ -115,5 +115,7 @@ public class CommonConfiguration {
         if (CollectionUtils.isEmpty(eventMeshProvideServerProtocols)) {
             this.eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
         }
+
+        meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshCluster, this.sysID);
     }
 }

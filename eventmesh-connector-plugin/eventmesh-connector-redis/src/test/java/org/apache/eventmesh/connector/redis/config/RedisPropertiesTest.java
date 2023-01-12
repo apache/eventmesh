@@ -27,7 +27,7 @@ import org.junit.Test;
 public class RedisPropertiesTest {
 
     @Test
-    public void getConfigWhenRocketMQConsumerInit() {
+    public void getRedisProperties() {
         ConfigService configService = ConfigService.getInstance();
         RedisProperties config = configService.getConfig(RedisProperties.class);
         assertConfig(config);

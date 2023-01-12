@@ -31,9 +31,8 @@ public class Server {
     }
 
     public void startAccessServer() throws Exception {
-        server = new EventMeshServer();
-        server.init();
-        server.start();
+        eventMeshServer = new EventMeshServer();
+        eventMeshServer.start();
     }
 
     public void shutdownAccessServer() throws Exception {

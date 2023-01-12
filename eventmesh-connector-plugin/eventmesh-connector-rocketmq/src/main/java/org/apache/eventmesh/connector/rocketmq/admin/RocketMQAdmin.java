@@ -21,6 +21,8 @@ package org.apache.eventmesh.connector.rocketmq.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,8 +62,8 @@ public class RocketMQAdmin implements Admin {
     public RocketMQAdmin(Properties properties) {
         isStarted = new AtomicBoolean(false);
 
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
+        ConfigService configService = ConfigService.getInstance();
+        ClientConfiguration clientConfiguration = configService.getConfig(ClientConfiguration.class);
 
         nameServerAddr = clientConfiguration.namesrvAddr;
         clusterName = clientConfiguration.clusterName;

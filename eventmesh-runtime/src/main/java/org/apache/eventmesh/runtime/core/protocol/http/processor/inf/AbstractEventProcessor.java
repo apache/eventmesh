@@ -132,8 +132,6 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         String httpServiceName =
                 ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
                         + "-" + ConfigurationContextUtil.HTTP;
-        String httpServiceName = ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@"
-                + httpConfiguration.getEventMeshName() + "-" + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;

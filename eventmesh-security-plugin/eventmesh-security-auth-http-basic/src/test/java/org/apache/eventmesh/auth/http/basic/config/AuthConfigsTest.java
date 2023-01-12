@@ -31,14 +31,8 @@ public class AuthConfigsTest {
         AuthHttpBasicService authService = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
                 AuthService.class, "auth-http-basic");
 
-<<<<<<<< HEAD:eventmesh-security-plugin/eventmesh-security-auth-http-basic/src/test/java/org/apache/eventmesh/auth/http/basic/config/AuthConfigsTest.java
         AuthConfigs config = authService.getClientConfiguration();
         assertConfig(config);
-========
-    @Test(expected = NullPointerException.class)
-    public void construct() {
-        ConfigurationWrapper newWrapper = new ConfigurationWrapper(null, "eventmesh.properties", false);
->>>>>>>> config-manage-improve:eventmesh-common/src/test/java/org/apache/eventmesh/common/config/ConfigurationWrapperTest.java
     }
 
     private void assertConfig(AuthConfigs config) {

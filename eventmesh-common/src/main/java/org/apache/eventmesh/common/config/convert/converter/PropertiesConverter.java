@@ -47,8 +47,7 @@ public class PropertiesConverter implements ConvertValue<Properties> {
         if (StringUtils.isBlank(prefix)) {
             return null;
         }
-        Properties to = new Properties();
 
-        return PropertiesUtils.getPropertiesByPrefix(properties, to, prefix);
+        return PropertiesUtils.getPropertiesByPrefix(properties, prefix);
     }
 }

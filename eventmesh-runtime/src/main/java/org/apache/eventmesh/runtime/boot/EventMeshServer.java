@@ -57,11 +57,7 @@ public class EventMeshServer {
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
-    public EventMeshServer(final ConfigurationWrapper configurationWrapper) throws Exception {
-        CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
-        configuration.init();
-        this.configuration = configuration;
-    public EventMeshServer() {
+    public EventMeshServer() throws Exception {
         ConfigService configService = ConfigService.getInstance();
         this.configuration = configService.getConfig(CommonConfiguration.class);
 
