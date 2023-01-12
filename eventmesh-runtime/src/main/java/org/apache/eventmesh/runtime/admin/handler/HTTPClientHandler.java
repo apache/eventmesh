@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 
 import java.io.IOException;
@@ -43,14 +45,16 @@ import com.sun.net.httpserver.HttpHandler;
 /**
  * The client handler
  */
-public class HTTPClientHandler implements HttpHandler {
+@EventHttpHandler(path = "/client/http")
+public class HTTPClientHandler extends AbstractHttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(HTTPClientHandler.class);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-            EventMeshHTTPServer eventMeshHTTPServer
+            EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
