@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
@@ -27,6 +28,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -357,14 +359,14 @@ public final class HttpClientGroupMapping {
             }
         }
 
-        if (isChange && consumerGroupTopicConf.getUrls().size() == 0) {
+        if (isChange && CollectionUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
             }
         }
 
-        if (isChange && consumerGroupConf.getConsumerGroupTopicConf().size() == 0) {
+        if (isChange && MapUtils.isEmpty(consumerGroupConf.getConsumerGroupTopicConf())) {
             localConsumerGroupMapping.remove(consumerGroup);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("group unsubscribe success,group:{}", consumerGroup);
