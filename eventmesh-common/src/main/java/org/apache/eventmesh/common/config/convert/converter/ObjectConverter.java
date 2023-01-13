@@ -111,7 +111,7 @@ public class ObjectConverter implements ConvertValue<Object> {
                     continue;
                 }
 
-                String key = this.buildKey(field, configFiled);
+                String key = this.buildKey(configFiled);
                 needReload = this.checkNeedReload(needReload, configFiled);
 
                 ConvertValue<?> convertValue = ConverterMap.getFieldConverter(field);
@@ -197,11 +197,11 @@ public class ObjectConverter implements ConvertValue<Object> {
         return needReload;
     }
 
-    private String buildKey(Field field, ConfigFiled configFiled) {
+    private String buildKey(ConfigFiled configFiled) {
         String key;
         StringBuilder keyPrefix = new StringBuilder(Objects.isNull(prefix) ? "" : prefix);
 
-        if (configFiled == null || configFiled.field().isEmpty()) {
+        if (configFiled == null || configFiled.field().isEmpty() && keyPrefix.length() > 0) {
             key = keyPrefix.deleteCharAt(keyPrefix.length() - 1).toString();
         } else {
             key = keyPrefix.append(configFiled.field()).toString();

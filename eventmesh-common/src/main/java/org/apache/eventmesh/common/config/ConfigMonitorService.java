@@ -65,7 +65,7 @@ public class ConfigMonitorService {
                 configInfo.setObject(object);
                 log.info("config reload success: {}", object);
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("config reload failed", e);
             }
         }
     }

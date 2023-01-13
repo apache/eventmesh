@@ -34,6 +34,9 @@ public class ConfigService {
 
     private static final ConfigService INSTANCE = new ConfigService();
 
+    private static final String CLASS_PATH_PREFIX = "classPath://";
+    private static final String FILE_PATH_PREFIX = "file://";
+
     /**
      * Unified configuration Properties corresponding to eventmesh.properties
      */
@@ -42,7 +45,7 @@ public class ConfigService {
     @Getter
     private String rootPath;
 
-    private final ConfigMonitorService configMonitorService = new ConfigMonitorService();
+    private static final ConfigMonitorService configMonitorService = new ConfigMonitorService();
 
     private String configPath;
 
@@ -120,10 +123,13 @@ public class ConfigService {
         } else {
             String path = configInfo.getPath();
             String filePath;
-            if (path.startsWith("classPath://")) {
-                filePath = Objects.requireNonNull(ConfigService.class.getResource("/" + path.substring(12))).getPath();
-            } else if (path.startsWith("file://")) {
-                filePath = path.substring(7);
+
+            if (path.startsWith(CLASS_PATH_PREFIX)) {
+                filePath = Objects.requireNonNull(
+                        ConfigService.class.getResource("/" + path.substring(CLASS_PATH_PREFIX.length()))
+                ).getPath();
+            } else if (path.startsWith(FILE_PATH_PREFIX)) {
+                filePath = path.substring(FILE_PATH_PREFIX.length());
             } else {
                 filePath = this.configPath + path;
             }
