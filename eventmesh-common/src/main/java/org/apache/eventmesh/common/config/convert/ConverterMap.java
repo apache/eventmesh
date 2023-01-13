@@ -47,12 +47,17 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import inet.ipaddr.IPAddress;
 
 /**
  * Use to map the field clazz and the converter for the field clazz
  */
 public class ConverterMap {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(ConverterMap.class);
 
     private static final ObjectConverter objectConverter = new ObjectConverter();
 
@@ -102,7 +107,7 @@ public class ConverterMap {
                     ConvertValue<?> convertValue = (ConvertValue<?>) converter1.newInstance();
                     register(convertValue, converter1);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error("The converter failed to register.", e);
                 }
             }
 
