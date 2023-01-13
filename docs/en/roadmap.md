@@ -39,7 +39,7 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **Implemented in 1.7.0**                           | Support Zookeeper               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.7.0**                           | Support RabbitMQ as EventStore               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/1553) |
 | **In Progress**                           | Provide Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465)
-| **In Progress**                           | Support Filter Chain                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
+| **Implemented in 1.8.0**                           | Support Filter Chain                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
 | **In Progress**                           | Metadata consistency persistent | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/817)  |
 | Planned                                   | Support Dledger                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | Planned                                   | Provide NodeJS SDK              | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
