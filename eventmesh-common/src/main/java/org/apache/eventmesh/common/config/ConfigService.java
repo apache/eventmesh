@@ -34,8 +34,8 @@ public class ConfigService {
 
     private static final ConfigService INSTANCE = new ConfigService();
 
-    private static final String CLASS_PATH_PREFIX = "classPath://";
-    private static final String FILE_PATH_PREFIX = "file://";
+    public static final String CLASS_PATH_PREFIX = "classPath://";
+    public static final String FILE_PATH_PREFIX = "file://";
 
     /**
      * Unified configuration Properties corresponding to eventmesh.properties
@@ -136,7 +136,7 @@ public class ConfigService {
 
             File file = new File(filePath);
             if (!file.exists()) {
-                throw new RuntimeException("fie is not exists");
+                throw new RuntimeException("file is not exists");
             }
 
             String suffix = path.substring(path.lastIndexOf('.') + 1);
