@@ -59,7 +59,7 @@ public class EventMeshServer {
 
     public EventMeshServer() throws Exception {
         ConfigService configService = ConfigService.getInstance();
-        this.configuration = configService.getConfig(CommonConfiguration.class);
+        this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
 
         this.acl = new Acl();
         this.registry = new Registry();

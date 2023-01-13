@@ -38,7 +38,7 @@ public abstract class Command {
 
     public void init() {
         ConfigService configService = ConfigService.getInstance();
-        ClientConfiguration clientConfiguration = configService.getConfig(ClientConfiguration.class);
+        ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
         nameServerAddr = clientConfiguration.namesrvAddr;
         clusterName = clientConfiguration.clusterName;

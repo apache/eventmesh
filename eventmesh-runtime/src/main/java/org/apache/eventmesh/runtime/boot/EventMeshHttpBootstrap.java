@@ -37,7 +37,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
         this.registry = registry;
 
         ConfigService configService = ConfigService.getInstance();
-        this.eventMeshHttpConfiguration = configService.getConfig(EventMeshHTTPConfiguration.class);
+        this.eventMeshHttpConfiguration = configService.buildConfigInstance(EventMeshHTTPConfiguration.class);
 
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
     }

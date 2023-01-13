@@ -29,7 +29,7 @@ public class RedisPropertiesTest {
     @Test
     public void getRedisProperties() {
         ConfigService configService = ConfigService.getInstance();
-        RedisProperties config = configService.getConfig(RedisProperties.class);
+        RedisProperties config = configService.buildConfigInstance(RedisProperties.class);
         assertConfig(config);
     }
 

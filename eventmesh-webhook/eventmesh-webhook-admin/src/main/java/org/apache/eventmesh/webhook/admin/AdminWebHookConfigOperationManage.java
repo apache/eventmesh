@@ -54,7 +54,7 @@ public class AdminWebHookConfigOperationManage {
     }
 
     public void init() throws Exception {
-        adminConfiguration = ConfigService.getInstance().getConfig(AdminConfiguration.class);
+        adminConfiguration = ConfigService.getInstance().buildConfigInstance(AdminConfiguration.class);
         if (!adminConfiguration.isAdminStart()) {
             return;
         }

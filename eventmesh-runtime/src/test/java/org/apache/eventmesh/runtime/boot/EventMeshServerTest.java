@@ -53,7 +53,7 @@ public class EventMeshServerTest {
         }
 
         ConfigService configService = ConfigService.getInstance();
-        EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+        EventMeshTCPConfiguration eventMeshTCPConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 
         assertCommonConfig(eventMeshTCPConfiguration);
         assertTCPConfig(eventMeshTCPConfiguration);

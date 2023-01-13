@@ -34,7 +34,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
         this.registry = registry;
 
         ConfigService configService = ConfigService.getInstance();
-        this.eventMeshGrpcConfiguration = configService.getConfig(EventMeshGrpcConfiguration.class);
+        this.eventMeshGrpcConfiguration = configService.buildConfigInstance(EventMeshGrpcConfiguration.class);
 
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
     }

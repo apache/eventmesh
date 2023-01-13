@@ -37,7 +37,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
         this.registry = registry;
 
         ConfigService configService = ConfigService.getInstance();
-        this.eventMeshTcpConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+        this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
     }

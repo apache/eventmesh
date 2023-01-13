@@ -88,7 +88,7 @@ public class EventMeshExtensionFactory {
                     return null;
                 }
                 T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
-                ConfigService.getInstance().getConfig(extensionInstance);
+                ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
                 logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
                         extensionType, extensionInstanceName);
@@ -110,7 +110,7 @@ public class EventMeshExtensionFactory {
                 return null;
             }
             T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
-            ConfigService.getInstance().getConfig(extensionInstance);
+            ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
                     extensionType, extensionInstanceName);

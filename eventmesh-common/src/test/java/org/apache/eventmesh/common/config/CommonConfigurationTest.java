@@ -33,7 +33,7 @@ public class CommonConfigurationTest {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
 
-        config = configService.getConfig(CommonConfiguration.class);
+        config = configService.buildConfigInstance(CommonConfiguration.class);
 
         testGetCommonConfiguration();
     }

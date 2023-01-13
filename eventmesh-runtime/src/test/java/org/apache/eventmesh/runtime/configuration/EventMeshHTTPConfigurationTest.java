@@ -38,7 +38,7 @@ public class EventMeshHTTPConfigurationTest {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
 
-        EventMeshHTTPConfiguration config = configService.getConfig(EventMeshHTTPConfiguration.class);
+        EventMeshHTTPConfiguration config = configService.buildConfigInstance(EventMeshHTTPConfiguration.class);
 
         assertCommonConfig(config);
         assertHTTPConfig(config);

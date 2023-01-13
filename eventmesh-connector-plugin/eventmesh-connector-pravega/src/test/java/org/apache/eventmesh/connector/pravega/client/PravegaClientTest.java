@@ -24,9 +24,7 @@ import static org.junit.Assert.fail;
 
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.common.config.convert.Convert;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 
 import java.net.URI;
@@ -151,7 +149,7 @@ public class PravegaClientTest {
     public PravegaClient getNewPravegaClient() {
         ConfigService configService = ConfigService.getInstance();
 
-        this.config = configService.getConfig(PravegaConnectorConfig.class);
+        this.config = configService.buildConfigInstance(PravegaConnectorConfig.class);
         this.config.setControllerURI(controllerURI);
         return PravegaClient.getNewInstance(this.config);
     }

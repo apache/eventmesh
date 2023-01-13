@@ -35,7 +35,7 @@ public class ReceiveConfigurationTest {
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
         Assert.assertEquals("DEFAULT", rootConfig.get("eventMesh.server.idc"));
 
-        ReceiveConfiguration config = configService.getConfig(ReceiveConfiguration.class);
+        ReceiveConfiguration config = configService.buildConfigInstance(ReceiveConfiguration.class);
         assertReceiveConfiguration(config);
     }
 

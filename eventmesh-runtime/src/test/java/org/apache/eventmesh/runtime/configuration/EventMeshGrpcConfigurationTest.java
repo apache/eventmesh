@@ -34,7 +34,7 @@ public class EventMeshGrpcConfigurationTest {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
 
-        EventMeshGrpcConfiguration config = configService.getConfig(EventMeshGrpcConfiguration.class);
+        EventMeshGrpcConfiguration config = configService.buildConfigInstance(EventMeshGrpcConfiguration.class);
 
         assertCommonConfig(config);
         assertGrpcConfig(config);

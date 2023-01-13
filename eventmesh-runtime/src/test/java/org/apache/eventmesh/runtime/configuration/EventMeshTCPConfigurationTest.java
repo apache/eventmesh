@@ -34,7 +34,7 @@ public class EventMeshTCPConfigurationTest {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
 
-        EventMeshTCPConfiguration config = configService.getConfig(EventMeshTCPConfiguration.class);
+        EventMeshTCPConfiguration config = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 
         assertCommonConfig(config);
         assertTCPConfig(config);

@@ -67,7 +67,7 @@ public class WebHookController {
     private ReceiveConfiguration receiveConfiguration;
 
     public void init() throws Exception {
-        receiveConfiguration = ConfigService.getInstance().getConfig(ReceiveConfiguration.class);
+        receiveConfiguration = ConfigService.getInstance().buildConfigInstance(ReceiveConfiguration.class);
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
 
         this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getConnectorPluginType());

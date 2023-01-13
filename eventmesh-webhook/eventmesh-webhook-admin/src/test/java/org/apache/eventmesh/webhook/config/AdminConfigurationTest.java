@@ -32,7 +32,7 @@ public class AdminConfigurationTest {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://eventmesh.properties");
 
-        AdminConfiguration config = configService.getConfig(AdminConfiguration.class);
+        AdminConfiguration config = configService.buildConfigInstance(AdminConfiguration.class);
 
         assertAdminConfiguration(config);
     }

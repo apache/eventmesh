@@ -70,7 +70,7 @@ public class ConfigService {
         return this.properties;
     }
 
-    public <T> T getConfig(Class<?> clazz) {
+    public <T> T buildConfigInstance(Class<?> clazz) {
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
         if (configArray.length == 0) {
             try {
@@ -99,7 +99,7 @@ public class ConfigService {
         }
     }
 
-    public void getConfig(Object object) throws IllegalAccessException, NoSuchFieldException, IOException {
+    public void populateConfigForObject(Object object) throws IllegalAccessException, NoSuchFieldException, IOException {
         Class<?> clazz = object.getClass();
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
         if (configArray.length == 0) {

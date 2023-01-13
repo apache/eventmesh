@@ -27,7 +27,7 @@ public class ExporterConfigurationTest {
     @Test
     public void testGetExporterConfiguration() {
         ConfigService configService = ConfigService.getInstance();
-        ExporterConfiguration config = configService.getConfig(ExporterConfiguration.class);
+        ExporterConfiguration config = configService.buildConfigInstance(ExporterConfiguration.class);
 
         Assert.assertEquals(816, config.getEventMeshTraceMaxExportSize());
         Assert.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());

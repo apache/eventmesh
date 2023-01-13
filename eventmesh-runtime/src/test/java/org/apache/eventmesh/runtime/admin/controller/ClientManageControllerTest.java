@@ -55,7 +55,7 @@ public class ClientManageControllerTest {
 
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
-        EventMeshTCPConfiguration tcpConfiguration = configService.getConfig(EventMeshTCPConfiguration.class);
+        EventMeshTCPConfiguration tcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
