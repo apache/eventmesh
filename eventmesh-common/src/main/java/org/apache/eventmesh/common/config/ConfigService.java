@@ -160,9 +160,14 @@ public class ConfigService {
         }
 
         Object configObject = this.getConfig(configInfo);
-        field.setAccessible(true);
-        field.set(object, configObject);
 
+        boolean isAccessible = field.isAccessible();
+        try {
+            field.setAccessible(true);
+            field.set(object, configObject);
+        } finally {
+            field.setAccessible(isAccessible);
+        }
         if (configInfo.isMonitor()) {
             configInfo.setObjectField(field);
             configInfo.setInstance(object);

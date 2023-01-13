@@ -100,32 +100,38 @@ public class ObjectConverter implements ConvertValue<Object> {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            field.setAccessible(true);
 
-            ConvertInfo convertInfo = this.convertInfo;
-            ConfigFiled configFiled = field.getAnnotation(ConfigFiled.class);
-            if (Objects.isNull(configFiled)) {
-                continue;
+            boolean isAccessible = field.isAccessible();
+            try {
+                field.setAccessible(true);
+
+                ConvertInfo convertInfo = this.convertInfo;
+                ConfigFiled configFiled = field.getAnnotation(ConfigFiled.class);
+                if (Objects.isNull(configFiled)) {
+                    continue;
+                }
+
+                String key = this.buildKey(field, configFiled);
+                needReload = this.checkNeedReload(needReload, configFiled);
+
+                ConvertValue<?> convertValue = ConverterMap.getFieldConverter(field);
+                Object fieldValue = convertValue.processFieldValue(convertInfo, key, configFiled);
+
+                if (!checkFieldValueBefore(configFiled, key, convertValue, fieldValue)) {
+                    continue;
+                }
+                convertInfo.setValue(fieldValue);
+                convertInfo.setField(field);
+                convertInfo.setKey(key);
+                Object convertedValue = convertValue.convert(convertInfo);
+
+                if (!checkFieldValueAfter(configFiled, key, convertedValue)) {
+                    continue;
+                }
+                field.set(object, convertedValue);
+            } finally {
+                field.setAccessible(isAccessible);
             }
-
-            String key = this.buildKey(field, configFiled);
-            needReload = this.checkNeedReload(needReload, configFiled);
-
-            ConvertValue<?> convertValue = ConverterMap.getFieldConverter(field);
-            Object fieldValue = convertValue.processFieldValue(convertInfo, key, configFiled);
-
-            if (!checkFieldValueBefore(configFiled, key, convertValue, fieldValue)) {
-                continue;
-            }
-            convertInfo.setValue(fieldValue);
-            convertInfo.setField(field);
-            convertInfo.setKey(key);
-            Object convertedValue = convertValue.convert(convertInfo);
-
-            if (!checkFieldValueAfter(configFiled, key, convertedValue)) {
-                continue;
-            }
-            field.set(object, convertedValue);
         }
 
         reloadConfigIfNeed(needReload);
@@ -134,8 +140,14 @@ public class ObjectConverter implements ConvertValue<Object> {
     private void reloadConfigIfNeed(boolean needReload) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (needReload) {
             Method method = this.clazz.getDeclaredMethod("reload", null);
-            method.setAccessible(true);
-            method.invoke(this.object, null);
+
+            boolean isAccessible = method.isAccessible();
+            try {
+                method.setAccessible(true);
+                method.invoke(this.object, null);
+            } finally {
+                method.setAccessible(isAccessible);
+            }
         }
     }
 

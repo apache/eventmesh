@@ -19,6 +19,7 @@ package org.apache.eventmesh.common.config;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,7 +34,7 @@ public class ConfigMonitorService {
 
     private final List<ConfigInfo> configInfoList = new ArrayList<>();
 
-    private ScheduledExecutorService configLoader = ThreadPoolFactory
+    private final ScheduledExecutorService configLoader = ThreadPoolFactory
         .createSingleScheduledExecutor("eventMesh-configLoader-");
 
     {
@@ -51,9 +52,18 @@ public class ConfigMonitorService {
                 if (configInfo.getObject().equals(object)) {
                     continue;
                 }
-                configInfo.getObjectField().set(configInfo.getInstance(), object);
+
+                Field field = configInfo.getObjectField();
+                boolean isAccessible = field.isAccessible();
+                try {
+                    field.setAccessible(true);
+                    field.set(configInfo.getInstance(), object);
+                } finally {
+                    field.setAccessible(isAccessible);
+                }
+
                 configInfo.setObject(object);
-                log.info("config connent : {}", object);
+                log.info("config reload success: {}", object);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
