@@ -19,6 +19,8 @@ package org.apache.eventmesh.trace.zipkin;
 
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+
 import java.lang.reflect.Field;
 
 import org.junit.Assert;
@@ -31,7 +33,8 @@ public class ZipkinTraceServiceTest {
 
     @Test
     public void testInit() {
-        ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
+        ZipkinTraceService zipkinTraceService =
+                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
 
         Assert.assertNotNull(zipkinTraceService.sdkTracerProvider);
@@ -46,7 +49,9 @@ public class ZipkinTraceServiceTest {
     @Test
     public void testShutdown() throws Exception {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-        ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
+
+        ZipkinTraceService zipkinTraceService =
+                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
         Field sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

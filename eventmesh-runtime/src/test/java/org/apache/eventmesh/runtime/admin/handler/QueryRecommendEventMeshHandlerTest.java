@@ -21,13 +21,13 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -54,8 +54,7 @@ public class QueryRecommendEventMeshHandlerTest {
     public void testHandle() throws Exception {
         // mock eventMeshTCPServer
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
-        EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
-        doNothing().when(tcpConfiguration).init();
+        EventMeshTCPConfiguration tcpConfiguration = new EventMeshTCPConfiguration();
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
         URI uri = mock(URI.class);
@@ -70,7 +69,6 @@ public class QueryRecommendEventMeshHandlerTest {
 
         // case 1: normal case
         tcpConfiguration.setEventMeshServerRegistryEnable(true);
-        outputStream.write("result".getBytes(StandardCharsets.UTF_8));
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
@@ -81,7 +79,6 @@ public class QueryRecommendEventMeshHandlerTest {
 
         // case 2: params illegal
         outputStream = new ByteArrayOutputStream();
-        outputStream.write("params illegal!".getBytes(StandardCharsets.UTF_8));
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
             dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);

@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @EventMeshTrace
 @Slf4j
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
-    
+
     public LocalSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
@@ -135,12 +135,12 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
         // validate URL
         try {
-            if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
+            if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv4BlackList(),
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv6BlackList())) {
                 if (log.isErrorEnabled()) {
                     log.error("subscriber url {} is not valid", url);
                 }
-                
+
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 return;

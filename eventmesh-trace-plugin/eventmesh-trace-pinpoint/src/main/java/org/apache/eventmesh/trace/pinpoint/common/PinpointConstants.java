@@ -17,21 +17,9 @@
 
 package org.apache.eventmesh.trace.pinpoint.common;
 
-import org.apache.eventmesh.common.Constants;
-
 public class PinpointConstants {
 
     public static final String SERVICE_NAME = "eventmesh_trace";
-
-    public static final String PROPERTY_KEY_PREFIX = "eventmesh.trace.pinpoint";
-
-    public static final String AGENT_ID_KEY = PROPERTY_KEY_PREFIX + Constants.DOT + "agentId";
-
-    public static final String AGENT_NAME_KEY = PROPERTY_KEY_PREFIX + Constants.DOT + "agentName";
-
-    public static final String APPLICATION_NAME = "applicationName";
-
-    public static final String APPLICATION_NAME_KEY = PROPERTY_KEY_PREFIX + Constants.DOT + APPLICATION_NAME;
 
     public static final String REQ_IP = "req0ip";
 
