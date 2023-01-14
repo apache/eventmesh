@@ -116,7 +116,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer,
                                final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls, eventMeshHttpConfiguration);
+        super(eventMeshHttpConfiguration.getHttpServerPort(),
+                eventMeshHttpConfiguration.isEventMeshServerUseTls(), eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
@@ -140,47 +141,47 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private void initThreadPool() {
 
-        batchMsgExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerBatchMsgThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerBatchMsgThreadNum,
-                        new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerBatchBlockQSize),
-                        "eventMesh-batchMsg-", true);
+        batchMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
+                new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.getEventMeshServerBatchBlockQSize()),
+                "eventMesh-batchMsg-", true);
 
-        sendMsgExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerSendMsgThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerSendMsgThreadNum,
-                        new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerSendMsgBlockQSize),
-                        "eventMesh-sendMsg-", true);
+        sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
+                new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.getEventMeshServerSendMsgBlockQSize()),
+                "eventMesh-sendMsg-", true);
 
-        remoteMsgExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerRemoteMsgThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerRemoteMsgThreadNum,
-                        new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerRemoteMsgBlockQSize),
-                        "eventMesh-remoteMsg-", true);
+        remoteMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
+                new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.getEventMeshServerRemoteMsgBlockQSize()),
+                "eventMesh-remoteMsg-", true);
 
-        pushMsgExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerPushMsgThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerPushMsgThreadNum,
-                        new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerPushMsgBlockQSize),
-                        "eventMesh-pushMsg-", true);
+        pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
+                new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.getEventMeshServerPushMsgBlockQSize()),
+                "eventMesh-pushMsg-", true);
 
-        clientManageExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerClientManageThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerClientManageThreadNum,
-                        new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerClientManageBlockQSize),
-                        "eventMesh-clientManage-", true);
+        clientManageExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
+                new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
+                "eventMesh-clientManage-", true);
 
-        adminExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerAdminThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerAdminThreadNum,
-                        new LinkedBlockingQueue<Runnable>(50), "eventMesh-admin-",
-                        true);
+        adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
+                new LinkedBlockingQueue<Runnable>(50), "eventMesh-admin-",
+                true);
 
-        replyMsgExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerReplyMsgThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerReplyMsgThreadNum,
-                        new LinkedBlockingQueue<Runnable>(100),
-                        "eventMesh-replyMsg-", true);
+        replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
+                new LinkedBlockingQueue<Runnable>(100),
+                "eventMesh-replyMsg-", true);
     }
 
     public ThreadPoolExecutor getBatchMsgExecutor() {
@@ -227,8 +228,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         initThreadPool();
 
-        msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshHttpMsgReqNumPerSecond);
-        batchRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshBatchMsgRequestNumPerSecond);
+        msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.getEventMeshHttpMsgReqNumPerSecond());
+        batchRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.getEventMeshBatchMsgRequestNumPerSecond());
 
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
@@ -315,10 +316,11 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         boolean registerResult = false;
         try {
             final String endPoints = IPUtils.getLocalAddress()
-                    + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
+                    + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
             final EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
-            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName() + "-" + ConfigurationContextUtil.HTTP);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName()
+                    + "-" + ConfigurationContextUtil.HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
             registerResult = registry.register(eventMeshRegisterInfo);
@@ -331,7 +333,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private void unRegister() throws Exception {
         final String endPoints = IPUtils.getLocalAddress()
-                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
+                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
         final EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
@@ -394,14 +396,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private void initWebhook() throws Exception {
 
-        webhookExecutor =
-                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum,
-                        eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum, new LinkedBlockingQueue<Runnable>(100),
-                        "eventMesh-webhook-", true);
+        webhookExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
+                eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
+                new LinkedBlockingQueue<Runnable>(100), "eventMesh-webhook-", true);
         final WebHookProcessor webHookProcessor = new WebHookProcessor();
 
         final WebHookController webHookController = new WebHookController();
-        webHookController.setConfigurationWrapper(eventMeshHttpConfiguration.getConfigurationWrapper());
         webHookController.init();
         webHookProcessor.setWebHookController(webHookController);
         this.getHandlerService().register(webHookProcessor, webhookExecutor);

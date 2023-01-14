@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.knative.consumer;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
+@Config(field = "clientConfiguration")
 public class KnativeConsumerImpl implements Consumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(KnativeConsumerImpl.class);
@@ -37,12 +39,16 @@ public class KnativeConsumerImpl implements Consumer {
     private transient PullConsumerImpl pullConsumer;
 
 
+    /**
+     * Unified configuration class corresponding to knative-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
+
+    private static final Logger logger = LoggerFactory.getLogger(KnativeConsumerImpl.class);
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
         // Load parameters from properties file:
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
         properties.put("emUrl", clientConfiguration.getEmurl());
         properties.put("serviceAddr", clientConfiguration.getServiceAddr());
 
@@ -91,5 +97,9 @@ public class KnativeConsumerImpl implements Consumer {
     @Override
     public void shutdown() {
         pullConsumer.shutdown();
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
     }
 }

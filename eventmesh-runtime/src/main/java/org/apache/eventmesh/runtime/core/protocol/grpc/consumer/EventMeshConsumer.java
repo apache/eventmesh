@@ -145,7 +145,6 @@ public class EventMeshConsumer {
         keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
                 eventMeshGrpcConfiguration.getEventMeshCluster()));
-
         persistentMqConsumer.init(keyValue);
         persistentMqConsumer.registerEventListener(createEventListener(SubscriptionMode.CLUSTERING));
 

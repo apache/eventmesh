@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -36,34 +37,35 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Config(field = "clientConfiguration")
 public class RocketMQConsumerImpl implements Consumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
     private PushConsumerImpl pushConsumer;
 
+    private ClientConfiguration clientConfiguration;
+
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-        boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty(Constants.IS_BROADCAST));
+        boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
 
-        String consumerGroup = keyValue.getProperty(Constants.CONSUMER_GROUP);
+        String consumerGroup = keyValue.getProperty("consumerGroup");
         if (isBroadcast) {
             consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
         }
 
         String namesrvAddr = clientConfiguration.namesrvAddr;
-        String instanceName = keyValue.getProperty(Constants.INSTANCE_NAME);
+        String instanceName = keyValue.getProperty("instanceName");
         Properties properties = new Properties();
-        properties.put(Constants.ACCESS_POINTS, namesrvAddr);
-        properties.put(Constants.REGION, Constants.NAMESPACE);
-        properties.put(Constants.INSTANCE_NAME, instanceName);
-        properties.put(Constants.CONSUMER_ID, consumerGroup);
+        properties.put("ACCESS_POINTS", namesrvAddr);
+        properties.put("REGION", "namespace");
+        properties.put("instanceName", instanceName);
+        properties.put("CONSUMER_ID", consumerGroup);
         if (isBroadcast) {
-            properties.put(Constants.MESSAGE_MODEL, MessageModel.BROADCASTING.name());
+            properties.put("MESSAGE_MODEL", MessageModel.BROADCASTING.name());
         } else {
-            properties.put(Constants.MESSAGE_MODEL, MessageModel.CLUSTERING.name());
+            properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
 
         pushConsumer = new PushConsumerImpl(properties);
@@ -113,4 +115,7 @@ public class RocketMQConsumerImpl implements Consumer {
         return pushConsumer.attributes();
     }
 
+    public ClientConfiguration getClientConfiguration() {
+        return clientConfiguration;
+    }
 }

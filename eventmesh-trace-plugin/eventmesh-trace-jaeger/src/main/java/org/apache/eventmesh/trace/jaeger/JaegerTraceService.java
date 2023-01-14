@@ -19,6 +19,7 @@ package org.apache.eventmesh.trace.jaeger;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
@@ -49,6 +50,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
+@Config(field = "jaegerConfiguration")
+@Config(field = "exporterConfiguration")
 public class JaegerTraceService implements EventMeshTraceService {
 
     private String eventMeshJaegerIp;
@@ -73,16 +76,26 @@ public class JaegerTraceService implements EventMeshTraceService {
 
     private TextMapPropagator textMapPropagator;
 
+    /**
+     * Unified configuration class corresponding to jaeger.properties
+     */
+    private JaegerConfiguration jaegerConfiguration;
+
+    /**
+     * Unified configuration class corresponding to exporter.properties
+     */
+    private ExporterConfiguration exporterConfiguration;
+
     @Override
     public void init() throws TraceException {
         // jaeger's config
-        eventMeshJaegerIp = JaegerConfiguration.getEventMeshJaegerIp();
-        eventMeshJaegerPort = JaegerConfiguration.getEventMeshJaegerPort();
+        eventMeshJaegerIp = jaegerConfiguration.getEventMeshJaegerIp();
+        eventMeshJaegerPort = jaegerConfiguration.getEventMeshJaegerPort();
         // exporter's config
-        eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         String httpEndpoint = String.format("http://%s:%s", eventMeshJaegerIp, eventMeshJaegerPort);
         JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
@@ -164,5 +177,13 @@ public class JaegerTraceService implements EventMeshTraceService {
     @Override
     public void shutdown() throws TraceException {
         sdkTracerProvider.close();
+    }
+
+    public JaegerConfiguration getClientConfiguration() {
+        return this.jaegerConfiguration;
+    }
+
+    public ExporterConfiguration getExporterConfiguration() {
+        return this.exporterConfiguration;
     }
 }
