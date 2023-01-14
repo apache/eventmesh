@@ -1555,9 +1555,7 @@ public final class BatchMessage extends
                 (!getTopicBytes().isEmpty() ?
                         com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_) : 0);
 
-        for (MessageItem messageItem : messageItem_) {
-            size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, messageItem);
-        }
+        messageItem_.forEach(messageItem -> size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, messageItem));
 
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
