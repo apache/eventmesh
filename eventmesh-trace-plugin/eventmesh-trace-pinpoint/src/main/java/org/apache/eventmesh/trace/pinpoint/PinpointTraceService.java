@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.trace.pinpoint;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
@@ -48,6 +49,8 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 /**
  * https://github.com/pinpoint-apm/pinpoint
  */
+@Config(field = "pinpointConfiguration")
+@Config(field = "exporterConfiguration")
 public class PinpointTraceService implements EventMeshTraceService {
 
     private SdkTracerProvider sdkTracerProvider;
@@ -58,20 +61,29 @@ public class PinpointTraceService implements EventMeshTraceService {
 
     protected Thread shutdownHook;
 
+    /**
+     * Unified configuration class corresponding to pinpoint.properties
+     */
+    private PinpointConfiguration pinpointConfiguration;
+
+    /**
+     * Unified configuration class corresponding to exporter.properties
+     */
+    private ExporterConfiguration exporterConfiguration;
 
     @Override
     public void init() throws TraceException {
-        long eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        long eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        int eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        int eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        long eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        long eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(
                 new PinpointSpanExporter(
-                    PinpointConfiguration.getAgentId(),
-                    PinpointConfiguration.getAgentName(),
-                    PinpointConfiguration.getApplicationName(),
-                    PinpointConfiguration.getGrpcTransportConfig()))
+                    pinpointConfiguration.getAgentId(),
+                    pinpointConfiguration.getAgentName(),
+                    pinpointConfiguration.getApplicationName(),
+                    pinpointConfiguration.getGrpcTransportConfig()))
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
             .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
@@ -147,5 +159,13 @@ public class PinpointTraceService implements EventMeshTraceService {
     @Override
     public void shutdown() throws TraceException {
         sdkTracerProvider.close();
+    }
+
+    public PinpointConfiguration getClientConfiguration() {
+        return this.pinpointConfiguration;
+    }
+
+    public ExporterConfiguration getExporterConfiguration() {
+        return this.exporterConfiguration;
     }
 }

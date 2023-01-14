@@ -48,7 +48,7 @@ public class EtcdRegistryServiceTest {
     @Before
     public void setUp() {
         etcdRegistryService = new EtcdRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
+        CommonConfiguration configuration = new CommonConfiguration();
         configuration.setNamesrvAddr("127.0.0.1:2379");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 

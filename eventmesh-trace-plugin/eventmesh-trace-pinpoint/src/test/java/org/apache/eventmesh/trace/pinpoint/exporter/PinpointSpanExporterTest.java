@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.trace.pinpoint.exporter;
 
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getAgentId;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getAgentName;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getApplicationName;
-import static org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration.getGrpcTransportConfig;
 
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;
+import org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,11 +51,16 @@ public class PinpointSpanExporterTest {
 
     @Before
     public void setup() {
+        PinpointTraceService pinpointTrace =
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+
+        PinpointConfiguration config = pinpointTrace.getClientConfiguration();
+
         this.exporter = new PinpointSpanExporter(
-            getAgentId(),
-            getAgentName(),
-            getApplicationName(),
-            getGrpcTransportConfig()
+                config.getAgentId(),
+                config.getAgentName(),
+                config.getApplicationName(),
+                config.getGrpcTransportConfig()
         );
     }
 

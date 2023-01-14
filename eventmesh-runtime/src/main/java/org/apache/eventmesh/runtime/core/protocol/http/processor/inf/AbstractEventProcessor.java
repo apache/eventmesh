@@ -206,7 +206,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         return requestBodyMap.get(EventMeshConstants.URL) == null
             || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
             || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
-        
+
     }
 
     /**
@@ -274,5 +274,5 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         return client.execute(httpPost, responseHandler);
     }
-    
+
 }

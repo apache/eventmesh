@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapperTest;
+import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -44,13 +44,16 @@ public class PropertiesUtilsTest {
     }
 
     @Test
-    public void testLoadPropertiesWhenFileExist() {
+    public void testLoadPropertiesWhenFileExist() throws Exception {
         Properties properties = new Properties();
-        String path = ConfigurationWrapperTest.class.getResource("/configuration.properties").getPath();
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+        properties = configService.getRootConfig();
+        String path = configService.getRootPath();
         try {
             PropertiesUtils.loadPropertiesWhenFileExist(properties, path);
-            Assert.assertEquals(properties.get("eventMesh.server.env").toString(), "value1");
-            Assert.assertEquals(properties.get("eventMesh.server.idc").toString(), "value2");
+            Assert.assertEquals(properties.get("eventMesh.server.env").toString(), "env-succeed!!!");
+            Assert.assertEquals(properties.get("eventMesh.server.idc").toString(), "idc-succeed!!!");
         } catch (Exception e) {
             Assert.fail();
         }

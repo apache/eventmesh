@@ -96,11 +96,11 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 // TCP Configuration
                 eventMeshTCPConfiguration.eventMeshTcpServerPort,
                 // HTTP Configuration
-                eventMeshHTTPConfiguration.httpServerPort,
-                eventMeshHTTPConfiguration.eventMeshServerUseTls,
+                eventMeshHTTPConfiguration.getHttpServerPort(),
+                eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
                 // gRPC Configuration
-                eventMeshGrpcConfiguration.grpcServerPort,
-                eventMeshGrpcConfiguration.eventMeshServerUseTls
+                eventMeshGrpcConfiguration.getGrpcServerPort(),
+                eventMeshGrpcConfiguration.isEventMeshServerUseTls()
             );
 
             String result = JsonUtils.toJson(getConfigurationResponse);

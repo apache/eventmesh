@@ -93,7 +93,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
         Map<String, Object> responseBodyMap = new HashMap<>();
-        
+
 
         //validate header
         if (validateSysHeader(sysHeaderMap)) {
@@ -130,11 +130,11 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             String sysId = eventMeshHttpConfiguration.getSysID();
             String meshGroup = String.join("-", env, idc, cluster, sysId);
 
-  
+
 
             // local unSubscription url
             String unsubscribeUrl = "http://" + localAddress + ":"
-                + eventMeshHttpConfiguration.httpServerPort
+                + eventMeshHttpConfiguration.getHttpServerPort()
                 + RequestURI.PUBLISH_BRIDGE.getRequestURI();
 
             Map<String, Object> remoteBodyMap = new HashMap<>();
@@ -197,6 +197,6 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         return new String[] {RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
     }
 
-    
+
 
 }
