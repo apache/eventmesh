@@ -39,8 +39,8 @@ public class RedisPropertiesTest {
         Assert.assertEquals(config.getServerMasterName(), "serverMasterName-success!!!");
 
         Properties properties = new Properties();
-        properties.put("threads", "816");
-        properties.put("nettyThreads", "1816");
+        properties.put("threads", "2");
+        properties.put("nettyThreads", "2");
         Properties redissonProperties = config.getRedissonProperties();
         Assert.assertEquals(redissonProperties, properties);
     }
