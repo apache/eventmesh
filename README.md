@@ -44,7 +44,8 @@ Apache EventMesh (Incubating) has a vast amount of features to help users achiev
 - Event schema management by catalog service.
 - Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/) engine.
 - Powerful event filtering and transformation.
-- Rapid, seamless scalability to add new machines.
+- Rapid, seamless scalability.
+- Easy Function develop and framework integration.
 
 ## Roadmap
 
