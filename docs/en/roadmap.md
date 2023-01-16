@@ -38,13 +38,12 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **Implemented in 1.7.0**                           | Provide Rust SDK                        | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/815) |
 | **Implemented in 1.7.0**                           | Support Zookeeper               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.7.0**                           | Support RabbitMQ as EventStore               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/1553) |
-| **In Progress**                           | Provide Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465)
-| **Implemented in 1.8.0**                           | Support Filter Chain                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
+| **Implemented in 1.8.0**                           | Provide Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465)
+| **In Progress**                           | Filter and transform            | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
 | **In Progress**                           | Metadata consistency persistent | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/817)  |
-| Planned                                   | Support Dledger                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| Planned                                   | Transaction Event               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/697) |
 | Planned                                   | Provide NodeJS SDK              | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | Planned                                   | Provide PHP    SDK              | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/1193) |
-| Planned                                   | Transaction Event               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/697) |
 | Planned                                   | Event Query Language (EQL)      | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/778) |
 | Planned                                   | WebAssembly Runtime             | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/576) |
 
