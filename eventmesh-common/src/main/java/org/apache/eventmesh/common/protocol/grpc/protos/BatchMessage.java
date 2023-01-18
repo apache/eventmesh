@@ -21,6 +21,7 @@
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.protobuf.ByteString;
 
@@ -1542,24 +1543,15 @@ public final class BatchMessage extends
     }
 
     public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        size += (header_ != null ?
-                com.google.protobuf.CodedOutputStream.computeMessageSize(1, getHeader()) : 0)
-                +
-                (!getProducerGroupBytes().isEmpty() ?
-                        com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_) : 0)
-                +
-                (!getTopicBytes().isEmpty() ?
-                        com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_) : 0);
-
-        for (int i = 0; i < messageItem_.size(); i++) {
-            size += com.google.protobuf.CodedOutputStream
-                    .computeMessageSize(4, messageItem_.get(i));
-        }
-
+        int size;
+        if (memoizedSize != -1) return memoizedSize;
+        size = header_ != null ?
+                com.google.protobuf.CodedOutputStream.computeMessageSize(1, getHeader()) : 0;
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_);
+        size += messageItem_.stream()
+                .mapToInt(messageItem -> com.google.protobuf.CodedOutputStream.computeMessageSize(4, messageItem))
+                .sum();
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
         return memoizedSize;
