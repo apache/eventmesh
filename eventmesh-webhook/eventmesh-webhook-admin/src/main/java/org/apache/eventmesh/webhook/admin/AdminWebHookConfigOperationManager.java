@@ -68,13 +68,16 @@ public class AdminWebHookConfigOperationManager {
         final Constructor<? extends WebHookConfigOperation> constructor =
                 WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
         final boolean oldAccesssible = constructor.isAccessible();
-        constructor.setAccessible(true);
-        final Properties operationProperties = adminConfiguration.getOperationProperties();
-        if (log.isInfoEnabled()) {
-            log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
+        try {
+            constructor.setAccessible(true);
+            final Properties operationProperties = adminConfiguration.getOperationProperties();
+            if (log.isInfoEnabled()) {
+                log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
+            }
+            this.webHookConfigOperation = constructor.newInstance(operationProperties);
+        } finally {
+            constructor.setAccessible(oldAccesssible);
         }
-        this.webHookConfigOperation = constructor.newInstance(operationProperties);
-        constructor.setAccessible(oldAccesssible);
 
     }
 }
