@@ -196,7 +196,7 @@ func (r *Registry) Register(info *registry.EventMeshRegisterInfo) error {
 		return err
 	}
 
-	r.client.RegisterInstance(vo.RegisterInstanceParam{
+	_, err = r.client.RegisterInstance(vo.RegisterInstanceParam{
 		Ip:          ip,
 		Port:        uint64(port),
 		ServiceName: info.EventMeshName,
@@ -205,6 +205,9 @@ func (r *Registry) Register(info *registry.EventMeshRegisterInfo) error {
 		Enable:      true,
 		Weight:      DefaultWeight,
 	})
+	if err != nil {
+		return err
+	}
 	r.registryInfos.Store(info.EventMeshName, info)
 	return nil
 }
@@ -220,12 +223,15 @@ func (r *Registry) UnRegister(info *registry.EventMeshUnRegisterInfo) error {
 		return err
 	}
 
-	r.client.DeregisterInstance(vo.DeregisterInstanceParam{
+	_, err = r.client.DeregisterInstance(vo.DeregisterInstanceParam{
 		Ip:          ip,
 		Port:        uint64(port),
 		ServiceName: info.EventMeshName,
 		GroupName:   uniqGroupName(info.ProtocolType),
 	})
+	if err != nil {
+		return err
+	}
 	r.registryInfos.Delete(info.EventMeshName)
 	return nil
 }
