@@ -25,8 +25,6 @@ public class WebHookOperationConstant {
 
     public static final String FILE_SEPARATOR = File.separator;
 
-    public static final String FILE_EXTENSION = ".json";
-
     public static final String GROUP_PREFIX = "webhook_";
 
     public static final String CALLBACK_PATH_PREFIX = "/webhook";
@@ -35,7 +33,7 @@ public class WebHookOperationConstant {
 
     public static final String MANUFACTURERS_DATA_ID = "manufacturers" + DATA_ID_EXTENSION;
 
-    public static final long TIMEOUT_MS = 3 * 1000L;
+    public static final long TIMEOUT_MS = 3_000L;
 
     public static final String OPERATION_MODE_FILE = "file";
 

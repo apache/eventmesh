@@ -23,42 +23,42 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ManufacturerObject {
+public class Manufacturer {
 
-    private Set<String> manufacturerSet = new HashSet<>();
+    private final Set<String> manufacturerSet = new HashSet<>();
 
-    private Map<String, List<String>> manufacturerEventMap = new HashMap<>();
+    private final Map<String, List<String>> manufacturerEventMap = new ConcurrentHashMap<>();
 
 
     public Set<String> getManufacturerSet() {
         return manufacturerSet;
     }
 
-    public Set<String> addManufacturer(String manufacturer) {
+    public void addManufacturer(final String manufacturer) {
         manufacturerSet.add(manufacturer);
-        return manufacturerSet;
     }
 
-    public Set<String> removeManufacturer(String manufacturer) {
+    public void removeManufacturer(final String manufacturer) {
         manufacturerSet.remove(manufacturer);
-        return manufacturerSet;
     }
 
     public Map<String, List<String>> getManufacturerEventMap() {
         return manufacturerEventMap;
     }
 
-    public void setManufacturerEventMap(Map<String, List<String>> manufacturerEventMap) {
-        this.manufacturerEventMap = manufacturerEventMap;
+    public void setManufacturerEventMap(final Map<String, List<String>> manufacturerEventMap) {
+        this.manufacturerEventMap.putAll(manufacturerEventMap);
     }
 
-    public List<String> getManufacturerEvents(String manufacturerName) {
-        if (!manufacturerEventMap.containsKey(manufacturerName)) {
-            List<String> m = new ArrayList<>();
+    public List<String> getManufacturerEvents(final String manufacturerName) {
+        List<String> m = manufacturerEventMap.get(manufacturerName);
+        if (m == null) {
+            m = new ArrayList<>();
             manufacturerEventMap.put(manufacturerName, m);
-            return m;
         }
-        return manufacturerEventMap.get(manufacturerName);
+
+        return m;
     }
 }

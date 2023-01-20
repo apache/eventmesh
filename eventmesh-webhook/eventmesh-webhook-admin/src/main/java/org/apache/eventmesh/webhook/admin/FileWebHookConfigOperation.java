@@ -21,7 +21,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
-import org.apache.eventmesh.webhook.api.utils.StringUtils;
+import org.apache.eventmesh.webhook.api.utils.ClassUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -167,7 +167,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private File getWebhookConfigFile(WebHookConfig webHookConfig) {
         String webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR
-            + StringUtils.getFileName(webHookConfig.getCallbackPath());
+            + ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath());
 
         return new File(webhookConfigFilePath);
     }

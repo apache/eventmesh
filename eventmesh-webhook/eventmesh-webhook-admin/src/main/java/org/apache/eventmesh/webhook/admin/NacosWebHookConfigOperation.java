@@ -23,7 +23,7 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.MANUFACT
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.webhook.api.ManufacturerObject;
+import org.apache.eventmesh.webhook.api.Manufacturer;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
@@ -59,7 +59,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         String manufacturers = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         if (manufacturers == null) {
             configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
-                JsonUtils.serialize(new ManufacturerObject()), ConfigType.JSON.getType());
+                JsonUtils.serialize(new Manufacturer()), ConfigType.JSON.getType());
         }
 
     }
@@ -86,7 +86,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         if (result) {
             // update manufacturer config
             try {
-                ManufacturerObject manufacturerObject = getManufacturersInfo();
+                Manufacturer manufacturerObject = getManufacturersInfo();
                 manufacturerObject.addManufacturer(manufacturerName);
                 manufacturerObject.getManufacturerEvents(manufacturerName).add(getWebHookConfigDataId(webHookConfig));
                 configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
@@ -131,7 +131,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         }
         if (result) {
             try {
-                ManufacturerObject manufacturerObject = getManufacturersInfo();
+                Manufacturer manufacturerObject = getManufacturersInfo();
                 manufacturerObject.getManufacturerEvents(manufacturerName).remove(getWebHookConfigDataId(webHookConfig));
                 configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
                     JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
@@ -160,7 +160,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         String manufacturerName = webHookConfig.getManufacturerName();
         // get manufacturer event list
         try {
-            ManufacturerObject manufacturerObject = getManufacturersInfo();
+            Manufacturer manufacturerObject = getManufacturersInfo();
             List<String> manufacturerEvents = manufacturerObject.getManufacturerEvents(manufacturerName);
             int startIndex = (pageNum - 1) * pageSize;
             int endIndex = pageNum * pageSize - 1;
@@ -196,10 +196,10 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         return GROUP_PREFIX + webHookConfig.getManufacturerName();
     }
 
-    private ManufacturerObject getManufacturersInfo() throws NacosException {
+    private Manufacturer getManufacturersInfo() throws NacosException {
         String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         return StringUtil.isNullOrEmpty(manufacturersContent)
-            ? new ManufacturerObject() : JsonUtils.deserialize(manufacturersContent, ManufacturerObject.class);
+            ? new Manufacturer() : JsonUtils.deserialize(manufacturersContent, Manufacturer.class);
     }
 
 }
