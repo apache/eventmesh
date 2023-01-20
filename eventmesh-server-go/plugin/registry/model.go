@@ -13,18 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package selector
+package registry
 
-// Config selector config
-type Config struct {
-	ServiceName string
-	Weight      int
-	ClusterName string
-	GroupName   string
-	Metadata    map[string]string
+import "time"
+
+type EventMeshDataInfo struct {
+	EventMeshClusterName string
+	EventMeshName        string
+	Endpoint             string
+	LastUpdateTimestamp  time.Time
+	Metadata             map[string]string
 }
 
-// PluginConfig define selector plugin config
-type PluginConfig struct {
-	AddressList string `yaml:"address_list"`
+type EventMeshRegisterInfo struct {
+	EventMeshClusterName    string
+	EventMeshName           string
+	EndPoint                string
+	EventMeshInstanceNumMap map[string]map[string]int
+	Metadata                map[string]string
+	ProtocolType            string
+}
+
+type EventMeshUnRegisterInfo struct {
+	EventMeshClusterName string
+	EventMeshName        string
+	EndPoint             string
+	ProtocolType         string
 }
