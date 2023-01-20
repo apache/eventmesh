@@ -44,6 +44,8 @@ public class ConfigInfo {
     private Object object;
     private String filePath;
 
+    private String reloadMethodName;
+
     Field objectField;
     Object instance;
 }

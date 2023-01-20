@@ -30,6 +30,8 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,8 +57,6 @@ public class CloudEventProducer {
     }
 
     public Response publish(List<CloudEvent> events) {
-        logger.info("BatchPublish message, batch size=" + events.size());
-
         if (CollectionUtils.isEmpty(events)) {
             return null;
         }
