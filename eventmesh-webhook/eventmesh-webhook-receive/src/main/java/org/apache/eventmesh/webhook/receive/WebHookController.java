@@ -27,17 +27,17 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
-import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.protocol.ProtocolManager;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WebHookController {
 
     private static final String PROTOCOL_ADAPTOR = "webhook";
@@ -51,27 +51,25 @@ public class WebHookController {
     /**
      * protocol pool
      */
-    private final ProtocolManage protocolManage = new ProtocolManage();
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final transient ProtocolManager protocolManager = new ProtocolManager();
 
     /**
      * config pool
      */
-    private HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManager hookConfigOperationManager;
 
-    private WebHookMQProducer webHookMQProducer;
+    private transient WebHookMQProducer webHookMQProducer;
 
-    private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
+    private transient ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
 
-    private ReceiveConfiguration receiveConfiguration;
+    private transient ReceiveConfiguration receiveConfiguration;
 
     public void init() throws Exception {
         receiveConfiguration = ConfigService.getInstance().buildConfigInstance(ReceiveConfiguration.class);
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
 
         this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getConnectorPluginType());
-        this.hookConfigOperationManage = new HookConfigOperationManage(receiveConfiguration);
+        this.hookConfigOperationManager = new HookConfigOperationManager(receiveConfiguration);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
 
@@ -88,19 +86,19 @@ public class WebHookController {
         // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
-        webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
+        webHookConfig = hookConfigOperationManager.queryWebHookConfigById(webHookConfig);
         if (webHookConfig == null) {
             throw new Exception("No matching webhookConfig.");
         }
 
         if (!Objects.equals(webHookConfig.getContentType(), header.get(CONTENT_TYPE))) {
             throw new Exception(
-                "http request header content-type value is mismatch. current value " + header.get(CONTENT_TYPE));
+                    "http request header content-type value is mismatch. current value " + header.get(CONTENT_TYPE));
         }
 
         // 2. get ManufacturerProtocol and execute
         String manufacturerName = webHookConfig.getManufacturerName();
-        ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
+        ManufacturerProtocol protocol = protocolManager.getManufacturerProtocol(manufacturerName);
         WebHookRequest webHookRequest = new WebHookRequest();
         webHookRequest.setData(body);
         try {
@@ -111,26 +109,28 @@ public class WebHookController {
 
         // 3. convert to cloudEvent obj
         String cloudEventId = UUID_GENERATE_MODE.equals(webHookConfig.getCloudEventIdGenerateMode()) ? UUID.randomUUID().toString()
-            : webHookRequest.getManufacturerEventId();
+                : webHookRequest.getManufacturerEventId();
         String eventType = manufacturerName + DOT + webHookConfig.getManufacturerEventName();
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
-            .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
-            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
-            .dataContentType(webHookConfig.getDataContentType()).body(body).build();
+                .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
+                .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+                .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(sendResult.toString());
+                if (log.isDebugEnabled()) {
+                    log.debug(sendResult.toString());
                 }
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("", context.getException());
+                if (log.isWarnEnabled()) {
+                    log.warn("", context.getException());
+                }
             }
 
         });

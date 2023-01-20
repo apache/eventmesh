@@ -24,13 +24,14 @@ import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
 
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GithubProtocol implements ManufacturerProtocol {
 
     private static final String MANU_FACTURER_NAME = "github";
@@ -45,17 +46,16 @@ public class GithubProtocol implements ManufacturerProtocol {
 
     private static final char ZERO_CHAR = '0';
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Override
     public String getManufacturerName() {
         return MANU_FACTURER_NAME;
     }
 
     @Override
-    public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
+    public void execute(final WebHookRequest webHookRequest, final WebHookConfig webHookConfig,
+                        final Map<String, String> header) throws Exception {
 
-        String fromSignature = header.get(FROM_SIGNATURE);
+        final String fromSignature = header.get(FROM_SIGNATURE);
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
@@ -86,7 +86,7 @@ public class GithubProtocol implements ManufacturerProtocol {
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
-            logger.error("Error HmacSHA256", e);
+            log.error("Error HmacSHA256", e);
         }
         return hash.equals(fromSignature);
     }
@@ -98,15 +98,21 @@ public class GithubProtocol implements ManufacturerProtocol {
      * @return hexadecimal character string
      */
     private String byteArrayToHexString(byte[] b) {
-        StringBuilder hs = new StringBuilder();
-        String stmp;
-        for (int n = 0; b != null && n < b.length; n++) {
-            stmp = Integer.toHexString(b[n] & 0XFF);
-            if (stmp.length() == 1) {
-                hs.append(ZERO_CHAR);
-            }
-            hs.append(stmp);
+        if (b == null) {
+            return "";
         }
+
+        final StringBuilder hs = new StringBuilder();
+        IntStream.range(0, b.length)
+                .forEach(i -> {
+                            String stmp = Integer.toHexString(b[i] & 0XFF);
+                            if (stmp.length() == 1) {
+                                hs.append(ZERO_CHAR);
+                            }
+                            hs.append(stmp);
+                        }
+                );
+
         return hs.toString().toLowerCase();
     }
 }
