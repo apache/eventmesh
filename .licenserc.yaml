@@ -42,5 +42,6 @@ header:
     - 'gradlew'
     - 'gradlew.bat'
     - '**/*.txt'
+    - 'DISCLAIMER'
 
   comment: on-failure
