@@ -30,50 +30,51 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 
-public class AdminWebHookConfigOperationManage {
+@Slf4j
+public class AdminWebHookConfigOperationManager {
 
-    private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
+    private static final transient Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
+            = new HashMap<>();
 
     static {
-        map.put(OPERATION_MODE_FILE, FileWebHookConfigOperation.class);
-        map.put(OPERATION_MODE_NACOS, NacosWebHookConfigOperation.class);
+        WEBHOOK_CONFIG_OPERATION_MAP.put(OPERATION_MODE_FILE, FileWebHookConfigOperation.class);
+        WEBHOOK_CONFIG_OPERATION_MAP.put(OPERATION_MODE_NACOS, NacosWebHookConfigOperation.class);
     }
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private transient AdminConfiguration adminConfiguration;
 
-    private AdminConfiguration adminConfiguration;
-
-    private WebHookConfigOperation webHookConfigOperation;
+    private transient WebHookConfigOperation webHookConfigOperation;
 
     public WebHookConfigOperation getWebHookConfigOperation() {
         return webHookConfigOperation;
     }
 
-    public void init() throws Exception {
+    public void init() throws InvocationTargetException, InstantiationException, IllegalAccessException,
+            NoSuchMethodException {
+
         adminConfiguration = ConfigService.getInstance().buildConfigInstance(AdminConfiguration.class);
         if (!adminConfiguration.isAdminStart()) {
             return;
         }
 
-        String operationMode = adminConfiguration.getOperationMode();
-        if (!map.containsKey(operationMode)) {
+        final String operationMode = adminConfiguration.getOperationMode();
+        if (!WEBHOOK_CONFIG_OPERATION_MAP.containsKey(operationMode)) {
             throw new IllegalStateException("operationMode is not supported.");
         }
 
-        Constructor<? extends WebHookConfigOperation> constructor =
-                map.get(operationMode).getDeclaredConstructor(Properties.class);
+        final Constructor<? extends WebHookConfigOperation> constructor =
+                WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
+        final boolean oldAccesssible = constructor.isAccessible();
         constructor.setAccessible(true);
-        Properties operationProperties = adminConfiguration.getOperationProperties();
-        try {
-            logger.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
-            this.webHookConfigOperation = constructor.newInstance(operationProperties);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            logger.error("can't find WebHookConfigOperation implementation");
-            throw new Exception("can't find WebHookConfigOperation implementation", e);
+        final Properties operationProperties = adminConfiguration.getOperationProperties();
+        if (log.isInfoEnabled()) {
+            log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
         }
+        this.webHookConfigOperation = constructor.newInstance(operationProperties);
+        constructor.setAccessible(oldAccesssible);
+
     }
 }
