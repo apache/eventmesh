@@ -35,7 +35,7 @@ public class ProtocolManager {
     }
 
     void register(final ManufacturerProtocol manufacturerProtocol) {
-        Objects.requireNonNull(manufacturerProtocol,"manufacturerProtocol can not be null");
+        Objects.requireNonNull(manufacturerProtocol, "manufacturerProtocol can not be null");
 
         protocolMap.put(manufacturerProtocol.getManufacturerName(), manufacturerProtocol);
     }

@@ -35,21 +35,19 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class CloudEventProducer {
-    
-    private static final Logger logger = LoggerFactory.getLogger(CloudEventProducer.class);
 
     private static final String PROTOCOL_TYPE = EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
 
-    private final EventMeshGrpcClientConfig clientConfig;
+    private final transient EventMeshGrpcClientConfig clientConfig;
 
-    private final PublisherServiceBlockingStub publisherClient;
+    private final transient PublisherServiceBlockingStub publisherClient;
 
     public CloudEventProducer(EventMeshGrpcClientConfig clientConfig, PublisherServiceBlockingStub publisherClient) {
         this.clientConfig = clientConfig;
@@ -62,13 +60,13 @@ public class CloudEventProducer {
         }
 
         List<CloudEvent> enhancedEvents = events.stream()
-            .map(event -> enhanceCloudEvent(event, null))
-            .collect(Collectors.toList());
+                .map(event -> enhanceCloudEvent(event, null))
+                .collect(Collectors.toList());
 
         BatchMessage enhancedMessage = EventMeshClientUtil.buildBatchMessages(enhancedEvents, clientConfig, PROTOCOL_TYPE);
         try {
             Response response = publisherClient.batchPublish(enhancedMessage);
-            logger.info("Received response " + response.toString());
+            logger.info("Received response {}", response.toString());
             return response;
         } catch (Exception e) {
             logger.error("Error in BatchPublish message {}, error {}", events, e.getMessage());
@@ -108,27 +106,27 @@ public class CloudEventProducer {
                 return null;
             }
         } catch (Exception e) {
-            logger.error("Error in RequestReply message {}, error {}", cloudEvent, e.getMessage());
+            logger.error("Error in RequestReply message {}", cloudEvent, e);
             return null;
         }
     }
 
     private CloudEvent enhanceCloudEvent(final CloudEvent cloudEvent, String timeout) {
         CloudEventBuilder builder = CloudEventBuilder.from(cloudEvent)
-            .withExtension(ProtocolKey.ENV, clientConfig.getEnv())
-            .withExtension(ProtocolKey.IDC, clientConfig.getIdc())
-            .withExtension(ProtocolKey.IP, IPUtils.getLocalAddress())
-            .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
-            .withExtension(ProtocolKey.SYS, clientConfig.getSys())
-            .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-            .withExtension(ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_GRPC)
-            .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
-            .withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30))
-            .withExtension(ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30))
-            .withExtension(ProtocolKey.USERNAME, clientConfig.getUserName())
-            .withExtension(ProtocolKey.PASSWD, clientConfig.getPassword())
-            .withExtension(ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
+                .withExtension(ProtocolKey.ENV, clientConfig.getEnv())
+                .withExtension(ProtocolKey.IDC, clientConfig.getIdc())
+                .withExtension(ProtocolKey.IP, IPUtils.getLocalAddress())
+                .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
+                .withExtension(ProtocolKey.SYS, clientConfig.getSys())
+                .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_GRPC)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
+                .withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30))
+                .withExtension(ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30))
+                .withExtension(ProtocolKey.USERNAME, clientConfig.getUserName())
+                .withExtension(ProtocolKey.PASSWD, clientConfig.getPassword())
+                .withExtension(ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
 
         if (timeout != null) {
             builder.withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, timeout);
