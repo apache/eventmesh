@@ -103,15 +103,14 @@ public class GithubProtocol implements ManufacturerProtocol {
         }
 
         final StringBuilder hs = new StringBuilder();
-        IntStream.range(0, b.length)
-                .forEach(i -> {
-                            String stmp = Integer.toHexString(b[i] & 0XFF);
-                            if (stmp.length() == 1) {
-                                hs.append(ZERO_CHAR);
-                            }
-                            hs.append(stmp);
-                        }
-                );
+
+        IntStream.range(0, b.length).forEach(i -> {
+            String stmp = Integer.toHexString(b[i] & 0XFF);
+            if (stmp.length() == 1) {
+                hs.append(ZERO_CHAR);
+            }
+            hs.append(stmp);
+        });
 
         return hs.toString().toLowerCase();
     }
