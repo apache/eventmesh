@@ -30,6 +30,8 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
