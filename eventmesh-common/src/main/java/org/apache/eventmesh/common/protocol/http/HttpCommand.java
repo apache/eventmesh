@@ -45,29 +45,20 @@ import lombok.Data;
 @Data
 public class HttpCommand implements ProtocolTransportObject {
 
-    public static final long serialVersionUID = 4825360350457735498L;
 
     private static final AtomicLong requestId = new AtomicLong(0);
-
-    private long opaque;
-
-    private String requestCode;
-
+    private static final long serialVersionUID = -8763824685105888009L;
     public String httpMethod;
-
     public String httpVersion;
-
     public Header header;
-
     public Body body;
-
     //Command request time
     public long reqTime;
-
     //Command response time
     public long resTime;
-
     public CmdType cmdType = CmdType.REQ;
+    private long opaque;
+    private String requestCode;
 
     public HttpCommand() {
         this(null, null, null);
@@ -155,9 +146,9 @@ public class HttpCommand implements ProtocolTransportObject {
     public String simpleDesc() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-                .append(cmdType).append(",")
-                .append(httpMethod).append("/").append(httpVersion).append(",")
-                .append("requestCode=").append(requestCode).append("}");
+            .append(cmdType).append(",")
+            .append(httpMethod).append("/").append(httpVersion).append(",")
+            .append("requestCode=").append(requestCode).append("}");
 
         return sb.toString();
     }
