@@ -35,30 +35,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
-    private static EventMeshTCPClient<EventMeshMessage> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+        final UserAgent userAgent = EventMeshTestUtils.generateClient1();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
         try {
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+            final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
                     eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
-            EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
-            log.info("begin send rr msg: {}", eventMeshMessage);
-            Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            log.info("receive rr reply: {}", response);
+            final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
+
+            if (log.isInfoEnabled()) {
+                log.info("begin send rr msg: {}", eventMeshMessage);
+            }
+
+            final Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            if (log.isInfoEnabled()) {
+                log.info("receive rr reply: {}", response);
+            }
 
         } catch (Exception e) {
-            log.warn("SyncRequest failed", e);
+            log.error("SyncRequest failed", e);
         }
     }
 }
