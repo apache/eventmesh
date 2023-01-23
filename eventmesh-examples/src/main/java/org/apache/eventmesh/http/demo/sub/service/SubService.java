@@ -42,39 +42,39 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PreDestroy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class SubService implements InitializingBean {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(SubService.class);
-
     private transient EventMeshHttpConsumer eventMeshHttpConsumer;
 
-    private final transient Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+    private transient Properties properties;
 
     private final transient List<SubscriptionItem> topicList = Lists.newArrayList(
             new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
-    private final transient String localIp = IPUtils.getLocalAddress();
-    private final transient String localPort = properties.getProperty(SERVER_PORT);
-    private final transient String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-    private final transient String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-    private final transient String url = "http://" + localIp + ":" + localPort + "/sub/test";
+    private transient String testURL;
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private transient CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
+    private transient CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        final String localIP = IPUtils.getLocalAddress();
+        final String localPort = properties.getProperty(SERVER_PORT);
+        final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventmeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
+        final String testURL = "http://" + localIP + ":" + localPort + "/sub/test";
 
-        final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+        final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
+        final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
                 .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
                 .env(ENV)
@@ -84,50 +84,60 @@ public class SubService implements InitializingBean {
                 .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
-        eventMeshHttpConsumer.heartBeat(topicList, url);
-        eventMeshHttpConsumer.subscribe(topicList, url);
+        eventMeshHttpConsumer.heartBeat(topicList, testURL);
+        eventMeshHttpConsumer.subscribe(topicList, testURL);
+
+        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
         // Wait for all messaged to be consumed
-        Thread stopThread = new Thread(() -> {
+        final Thread stopThread = new Thread(() -> {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                LOGGER.error("interrupted exception", e);
+                log.error("interrupted exception", e);
             }
-            LOGGER.info("stopThread start....");
-            throw new RuntimeException();
+            if (log.isInfoEnabled()) {
+                log.info("stopThread start....");
+            }
         });
         stopThread.start();
     }
 
     @PreDestroy
     public void cleanup() {
-        LOGGER.info("start destory ....");
+        if (log.isInfoEnabled()) {
+            log.info("start destory ....");
+        }
+
         try {
-            List<String> unSubList = new ArrayList<>();
-            for (SubscriptionItem item : topicList) {
+            final List<String> unSubList = new ArrayList<>();
+            for (final SubscriptionItem item : topicList) {
                 unSubList.add(item.getTopic());
             }
-            eventMeshHttpConsumer.unsubscribe(unSubList, url);
+            eventMeshHttpConsumer.unsubscribe(unSubList, testURL);
         } catch (Exception e) {
-            LOGGER.error("unsubscribe exception", e);
+            log.error("unsubscribe exception", e);
         }
 
-        try (final EventMeshHttpConsumer ignore = eventMeshHttpConsumer) {
-            // close consumer
-        } catch (Exception e) {
-            LOGGER.error("close exception", e);
+        if (eventMeshHttpConsumer != null) {
+            eventMeshHttpConsumer.close();
         }
 
-        LOGGER.info("end destory.");
+        if (log.isInfoEnabled()) {
+            log.info("end destory.");
+        }
     }
 
     /**
      * Count the message already consumed
      */
-    public void consumeMessage(String msg) {
-        LOGGER.info("consume message: {}", msg);
+    public void consumeMessage(final String msg) {
+        if (log.isInfoEnabled()) {
+            log.info("consume message: {}", msg);
+        }
         countDownLatch.countDown();
-        LOGGER.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
+        if (log.isInfoEnabled()) {
+            log.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
+        }
     }
 }

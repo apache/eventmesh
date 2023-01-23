@@ -57,30 +57,26 @@ public class Utils {
      * @return IP address
      */
     private static String getLinuxLocalIp() throws SocketException {
-        String ip = "";
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                String name = intf.getName();
-                if (!name.contains("docker") && !name.contains("lo")) {
-                    for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
-                         enumIpAddr.hasMoreElements(); ) {
-                        InetAddress inetAddress = enumIpAddr.nextElement();
-                        if (!inetAddress.isLoopbackAddress()) {
-                            String ipaddress = inetAddress.getHostAddress();
-                            if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                    && !ipaddress.contains("fe80")) {
-                                ip = ipaddress;
-                            }
+        String ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
+
+        for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+            final NetworkInterface intf = en.nextElement();
+            final String name = intf.getName();
+            if (!name.contains("docker") && !name.contains("lo")) {
+                for (final Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
+                     enumIpAddr.hasMoreElements(); ) {
+                    final InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        final String ipaddress = inetAddress.getHostAddress();
+                        if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
+                                && !ipaddress.contains("fe80")) {
+                            ip = ipaddress;
                         }
                     }
                 }
             }
-        } catch (SocketException ex) {
-            ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
-            //ex.printStackTrace();
-            throw ex;
         }
+
         return ip;
     }
 
@@ -88,13 +84,11 @@ public class Utils {
      * @param fileName
      * @return Properties
      */
-    public static Properties readPropertiesFile(String fileName) {
-        try (final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
-            Properties properties = new Properties();
+    public static Properties readPropertiesFile(final String fileName) throws IOException {
+        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+            final Properties properties = new Properties();
             properties.load(inputStream);
             return properties;
-        } catch (Exception e) {
-            throw new IllegalArgumentException(String.format("File: %s is not exist", fileName), e);
         }
     }
 

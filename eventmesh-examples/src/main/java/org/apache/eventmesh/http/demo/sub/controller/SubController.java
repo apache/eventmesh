@@ -52,26 +52,30 @@ public class SubController {
     private transient SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(HttpServletRequest request) {
-        String content = request.getParameter("content");
-        log.info("receive message: {}", content);
+    public String subTest(final HttpServletRequest request) {
+        final String content = request.getParameter("content");
+        if (log.isInfoEnabled()) {
+            log.info("receive message: {}", content);
+        }
         @SuppressWarnings("unchecked")
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
+        final Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (eventFormat != null) {
-                CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
-                CloudEventData eventData = event.getData();
+                final CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                final CloudEventData eventData = event.getData();
                 if (eventData != null) {
-                    String data = new String(eventData.toBytes(), StandardCharsets.UTF_8);
-                    log.info("receive data: {}", data);
+                    final String data = new String(eventData.toBytes(), StandardCharsets.UTF_8);
+                    if (log.isInfoEnabled()) {
+                        log.info("receive data: {}", data);
+                    }
                 }
             }
         }
 
         subService.consumeMessage(content);
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
         return JsonUtils.serialize(map);
     }

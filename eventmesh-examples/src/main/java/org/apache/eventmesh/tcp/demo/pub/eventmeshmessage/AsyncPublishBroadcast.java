@@ -29,37 +29,37 @@ import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class AsyncPublishBroadcast {
 
-    public static final Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
-
-    private static EventMeshTCPClient<EventMeshMessage> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+        final UserAgent userAgent = EventMeshTestUtils.generateClient1();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host(eventMeshIp)
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
-        client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+        final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                eventMeshTcpClientConfig, EventMeshMessage.class);
         try {
             client.init();
 
-            EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
-            logger.info("begin send broadcast msg: {}", eventMeshMessage);
+            final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
+
+            if(log.isInfoEnabled()) {
+                log.info("begin send broadcast msg: {}", eventMeshMessage);
+            }
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-            Thread.sleep(2000);
+            Thread.sleep(2_000);
 
         } catch (Exception e) {
-            logger.warn("AsyncPublishBroadcast failed", e);
+            log.error("AsyncPublishBroadcast failed", e);
         }
     }
 }
