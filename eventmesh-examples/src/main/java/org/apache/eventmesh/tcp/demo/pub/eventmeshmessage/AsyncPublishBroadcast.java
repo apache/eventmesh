@@ -40,10 +40,10 @@ public class AsyncPublishBroadcast {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient1();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
         final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
                 eventMeshTcpClientConfig, EventMeshMessage.class);
         try {
@@ -51,7 +51,7 @@ public class AsyncPublishBroadcast {
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
 
-            if(log.isInfoEnabled()) {
+            if (log.isInfoEnabled()) {
                 log.info("begin send broadcast msg: {}", eventMeshMessage);
             }
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);

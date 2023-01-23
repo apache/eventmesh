@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.client.selector;
 
-import com.sun.xml.internal.ws.api.model.CheckedException;
-
 public class SelectorException extends Exception {
     private static final long serialVersionUID = 7126682512429265292L;
 
