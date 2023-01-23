@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
 
-     private static EventMeshWorkflowClient workflowClient;
+    private static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
