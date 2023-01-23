@@ -263,7 +263,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 }
             }
             for (String eventMesh : eventMeshMap.keySet()) {
-                if (!localEventMeshDistributeData.keySet().contains(eventMesh)) {
+                if (!localEventMeshDistributeData.containsKey(eventMesh)) {
                     localEventMeshDistributeData.put(eventMesh, 0);
                 }
             }
