@@ -38,7 +38,7 @@ header:
     - '**/Cargo.lock'
     - 'LICENSE'
     - 'NOTICE'
-    - 'DISCLAIMER-WIP'
+    - 'DISCLAIMER'
     - 'gradlew'
     - 'gradlew.bat'
     - '**/*.txt'
