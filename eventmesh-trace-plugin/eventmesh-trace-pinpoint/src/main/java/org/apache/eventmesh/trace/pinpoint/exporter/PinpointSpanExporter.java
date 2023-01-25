@@ -93,8 +93,8 @@ import com.navercorp.pinpoint.profiler.util.AgentInfoFactory;
 
 public final class PinpointSpanExporter implements SpanExporter {
 
-    private static final ThrottlingLogger logger =
-        new ThrottlingLogger(Logger.getLogger(PinpointSpanExporter.class.getName()));
+    private static final ThrottlingLogger THROTTLING_LOGGER =
+            new ThrottlingLogger(Logger.getLogger(PinpointSpanExporter.class.getName()));
 
     private static final String AGENT_CHANNEL_FACTORY = "agentChannelFactory";
     private static final String SPAN_CHANNEL_FACTORY = "spanChannelFactory";
@@ -102,13 +102,13 @@ public final class PinpointSpanExporter implements SpanExporter {
     private final long agentStartTime = System.currentTimeMillis();
 
     private final ScheduledExecutorService scheduledExecutorService =
-        Executors.newSingleThreadScheduledExecutor();
+            Executors.newSingleThreadScheduledExecutor();
 
     private final ReconnectExecutor reconnectExecutor =
-        new ReconnectExecutor(scheduledExecutorService);
+            new ReconnectExecutor(scheduledExecutorService);
 
     private final NameResolverProvider nameResolverProvider =
-        new GrpcNameResolverProvider(new DnsExecutorServiceProvider()).get();
+            new GrpcNameResolverProvider(new DnsExecutorServiceProvider()).get();
 
     private final String agentId;
 
@@ -135,11 +135,11 @@ public final class PinpointSpanExporter implements SpanExporter {
         this.grpcTransportConfig = Objects.requireNonNull(grpcTransportConfig, "grpcTransportConfig cannot be  null");
 
         this.headerFactory = new AgentHeaderFactory(
-            agentId,
-            agentName,
-            applicationName,
-            ServiceType.UNDEFINED.getCode(),
-            agentStartTime
+                agentId,
+                agentName,
+                applicationName,
+                ServiceType.UNDEFINED.getCode(),
+                agentStartTime
         );
 
         this.agentInfoSender = createAgentInfoSender();
@@ -149,76 +149,76 @@ public final class PinpointSpanExporter implements SpanExporter {
     }
 
     private AgentInfoSender createAgentInfoSender() {
-        ChannelFactory agentChannelFactory = createAgentChannelFactory();
+        final ChannelFactory agentChannelFactory = createAgentChannelFactory();
 
-        AgentGrpcDataSender<MetaDataType> agentGrpcDataSender =
-            new AgentGrpcDataSender<>(
-                grpcTransportConfig.getAgentCollectorIp(),
-                grpcTransportConfig.getAgentCollectorPort(),
-                grpcTransportConfig.getAgentSenderExecutorQueueSize(),
-                new GrpcAgentInfoMessageConverter(),
-                reconnectExecutor,
-                scheduledExecutorService,
-                agentChannelFactory,
-                new ProfilerCommandLocatorBuilder().build());
+        final AgentGrpcDataSender<MetaDataType> agentGrpcDataSender =
+                new AgentGrpcDataSender<>(
+                        grpcTransportConfig.getAgentCollectorIp(),
+                        grpcTransportConfig.getAgentCollectorPort(),
+                        grpcTransportConfig.getAgentSenderExecutorQueueSize(),
+                        new GrpcAgentInfoMessageConverter(),
+                        reconnectExecutor,
+                        scheduledExecutorService,
+                        agentChannelFactory,
+                        new ProfilerCommandLocatorBuilder().build());
 
-        AgentInformationProvider agentInformationProvider =
-            new AgentInformationProvider(
-                agentId,
-                agentName,
-                applicationName,
-                true,
-                agentStartTime,
-                ServiceType.STAND_ALONE);
+        final AgentInformationProvider agentInformationProvider =
+                new AgentInformationProvider(
+                        agentId,
+                        agentName,
+                        applicationName,
+                        true,
+                        agentStartTime,
+                        ServiceType.STAND_ALONE);
 
-        JvmInformation jvmInformation = new JvmInformation(
-            JvmUtils.getSystemProperty(SystemPropertyKey.JAVA_VERSION),
-            JvmGcType.UNKNOWN);
+        final JvmInformation jvmInformation = new JvmInformation(
+                JvmUtils.getSystemProperty(SystemPropertyKey.JAVA_VERSION),
+                JvmGcType.UNKNOWN);
 
-        ServerMetaDataRegistryService serverMetaDataRegistryService = new DefaultServerMetaDataRegistryService(
-            Collections.emptyList()
+        final ServerMetaDataRegistryService serverMetaDataRegistryService = new DefaultServerMetaDataRegistryService(
+                Collections.emptyList()
         );
         serverMetaDataRegistryService.setServerName(PinpointConstants.SERVICE_NAME);
 
-        AgentInfoFactory agentInfoFactory = new AgentInfoFactory(
-            agentInformationProvider.createAgentInformation(),
-            serverMetaDataRegistryService,
-            jvmInformation
+        final AgentInfoFactory agentInfoFactory = new AgentInfoFactory(
+                agentInformationProvider.createAgentInformation(),
+                serverMetaDataRegistryService,
+                jvmInformation
         );
 
         return new AgentInfoSender.Builder(agentGrpcDataSender, agentInfoFactory).build();
     }
 
     private SpanGrpcDataSender createSpanGrpcDataSender() {
-        ChannelFactory spanChannelFactory = createSpanChannelFactory();
+        final ChannelFactory spanChannelFactory = createSpanChannelFactory();
 
-        GrpcSpanMessageConverter messageConverter =
-            new GrpcSpanMessageConverter(
-                agentId,
-                ServiceType.STAND_ALONE.getCode(),
-                new GrpcSpanProcessorV2()
-            );
+        final GrpcSpanMessageConverter messageConverter =
+                new GrpcSpanMessageConverter(
+                        agentId,
+                        ServiceType.STAND_ALONE.getCode(),
+                        new GrpcSpanProcessorV2()
+                );
 
-        StreamState streamState =
-            new SimpleStreamState(
-                grpcTransportConfig.getSpanClientOption().getLimitCount(),
-                grpcTransportConfig.getSpanClientOption().getLimitTime()
-            );
+        final StreamState streamState =
+                new SimpleStreamState(
+                        grpcTransportConfig.getSpanClientOption().getLimitCount(),
+                        grpcTransportConfig.getSpanClientOption().getLimitTime()
+                );
 
         return new SpanGrpcDataSender(
-            grpcTransportConfig.getSpanCollectorIp(),
-            grpcTransportConfig.getSpanCollectorPort(),
-            grpcTransportConfig.getSpanSenderExecutorQueueSize(),
-            messageConverter,
-            reconnectExecutor,
-            spanChannelFactory,
-            streamState
+                grpcTransportConfig.getSpanCollectorIp(),
+                grpcTransportConfig.getSpanCollectorPort(),
+                grpcTransportConfig.getSpanSenderExecutorQueueSize(),
+                messageConverter,
+                reconnectExecutor,
+                spanChannelFactory,
+                streamState
         );
     }
 
     private ChannelFactory createAgentChannelFactory() {
-        ChannelFactoryBuilder channelFactoryBuilder =
-            new DefaultChannelFactoryBuilder(AGENT_CHANNEL_FACTORY);
+        final ChannelFactoryBuilder channelFactoryBuilder =
+                new DefaultChannelFactoryBuilder(AGENT_CHANNEL_FACTORY);
         channelFactoryBuilder.setHeaderFactory(headerFactory);
         channelFactoryBuilder.setNameResolverProvider(nameResolverProvider);
         channelFactoryBuilder.setSslOption(grpcTransportConfig.getSslOption());
@@ -229,8 +229,8 @@ public final class PinpointSpanExporter implements SpanExporter {
     }
 
     private ChannelFactory createSpanChannelFactory() {
-        ChannelFactoryBuilder channelFactoryBuilder =
-            new DefaultChannelFactoryBuilder(SPAN_CHANNEL_FACTORY);
+        final ChannelFactoryBuilder channelFactoryBuilder =
+                new DefaultChannelFactoryBuilder(SPAN_CHANNEL_FACTORY);
         channelFactoryBuilder.setHeaderFactory(headerFactory);
         channelFactoryBuilder.setNameResolverProvider(nameResolverProvider);
         channelFactoryBuilder.setSslOption(grpcTransportConfig.getSslOption());
@@ -241,11 +241,11 @@ public final class PinpointSpanExporter implements SpanExporter {
     }
 
     @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(final Collection<SpanData> spans) {
         if (spans.isEmpty()) {
             return CompletableResultCode.ofSuccess();
         }
-        for (SpanData spanData : spans) {
+        for (final SpanData spanData : spans) {
             if (spanData == null) {
                 continue;
             }
@@ -254,7 +254,7 @@ public final class PinpointSpanExporter implements SpanExporter {
                     return CompletableResultCode.ofFailure();
                 }
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Failed to export span", e);
+                THROTTLING_LOGGER.log(Level.WARNING, "Failed to export span", e);
                 return CompletableResultCode.ofFailure();
             }
         }
@@ -283,10 +283,10 @@ public final class PinpointSpanExporter implements SpanExporter {
         return CompletableResultCode.ofSuccess();
     }
 
-    private Span toSpan(SpanData spanData) {
-        long startTimestamp = toMillis(spanData.getStartEpochNanos());
-        long transactionId = hex32StringToLong(spanData.getTraceId());
-        long spanId = hex16StringToLong(spanData.getSpanId());
+    private Span toSpan(final SpanData spanData) {
+        final long startTimestamp = toMillis(spanData.getStartEpochNanos());
+        final long transactionId = hex32StringToLong(spanData.getTraceId());
+        final long spanId = hex16StringToLong(spanData.getSpanId());
         final long[] parentSpanId = {SpanId.NULL};
 
         Optional.ofNullable(spanData.getParentSpanContext()).ifPresent(parentSpanContext -> {
@@ -295,14 +295,14 @@ public final class PinpointSpanExporter implements SpanExporter {
             }
         });
 
-        TraceId traceId = new DefaultTraceId(agentId, startTimestamp, transactionId, parentSpanId[0], spanId,
-            (short) spanData.getKind().ordinal());
+        final TraceId traceId = new DefaultTraceId(agentId, startTimestamp, transactionId, parentSpanId[0], spanId,
+                (short) spanData.getKind().ordinal());
 
-        TraceRoot traceRoot = new DefaultTraceRoot(traceId, this.agentId, startTimestamp, transactionId);
+        final TraceRoot traceRoot = new DefaultTraceRoot(traceId, this.agentId, startTimestamp, transactionId);
 
-        Span span = new Span(traceRoot);
+        final Span span = new Span(traceRoot);
 
-        StatusData statusData = spanData.getStatus();
+        final StatusData statusData = spanData.getStatus();
         if (statusData != null) {
             Optional.ofNullable(traceRoot.getShared()).ifPresent(shared -> {
                 shared.setRpcName(spanData.getName());
@@ -315,26 +315,26 @@ public final class PinpointSpanExporter implements SpanExporter {
         }
 
         span.setStartTime(startTimestamp);
-        long endTimestamp = toMillis(spanData.getEndEpochNanos());
+        final long endTimestamp = toMillis(spanData.getEndEpochNanos());
         span.setElapsedTime((int) (endTimestamp - startTimestamp));
         span.setServiceType(ServiceType.STAND_ALONE.getCode());
         span.setRemoteAddr(UNKNOWN_REQ_IP);
 
         Optional.ofNullable(spanData.getAttributes()).ifPresent(attributes -> {
-                span.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
-                    JsonUtils.serialize(attributes)));
-                attributes.forEach((key, value) -> {
-                    if (REQ_IP.equals(key.getKey())) {
-                        span.setRemoteAddr(String.valueOf(value));
-                    }
-                });
-            }
+                    span.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
+                            JsonUtils.serialize(attributes)));
+                    attributes.forEach((key, value) -> {
+                        if (REQ_IP.equals(key.getKey())) {
+                            span.setRemoteAddr(String.valueOf(value));
+                        }
+                    });
+                }
         );
 
         if (CollectionUtils.isNotEmpty(spanData.getEvents())) {
             final AtomicInteger sequence = new AtomicInteger();
             span.setSpanEventList(spanData.getEvents().stream().map(event -> {
-                SpanEvent spanEvent = toSpanEvent(event);
+                final SpanEvent spanEvent = toSpanEvent(event);
                 spanEvent.setSequence(sequence.getAndIncrement());
                 return spanEvent;
             }).collect(Collectors.toList()));
@@ -343,42 +343,43 @@ public final class PinpointSpanExporter implements SpanExporter {
         return span;
     }
 
-    private SpanEvent toSpanEvent(EventData eventData) {
-        SpanEvent spanEvent = new SpanEvent();
+    private SpanEvent toSpanEvent(final EventData eventData) {
+        final SpanEvent spanEvent = new SpanEvent();
         spanEvent.setServiceType(ServiceType.INTERNAL_METHOD.getCode());
         spanEvent.setEndPoint(eventData.getName());
         spanEvent.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
-            JsonUtils.serialize(eventData.getAttributes())));
+                JsonUtils.serialize(eventData.getAttributes())));
         spanEvent.setElapsedTime((int) toMillis(eventData.getEpochNanos()));
         return spanEvent;
     }
 
-    private static long toMillis(long epochNanos) {
+    private static long toMillis(final long epochNanos) {
         return NANOSECONDS.toMillis(epochNanos);
     }
 
-    private static long hex32StringToLong(String hex32String) {
-        CharSequence charSequence = new StringBuilder().append(hex32String);
+    private static long hex32StringToLong(final String hex32String) {
+        final CharSequence charSequence = new StringBuilder().append(hex32String);
         return OtelEncodingUtils.isValidBase16String(charSequence)
-            ? (
-            OtelEncodingUtils.longFromBase16String(charSequence, 0)
-                & OtelEncodingUtils.longFromBase16String(charSequence, 16))
-            : hex32String.hashCode();
+                ?
+                OtelEncodingUtils.longFromBase16String(charSequence, 0)
+                        & OtelEncodingUtils.longFromBase16String(charSequence, 16)
+                : hex32String.hashCode();
     }
 
-    private static long hex16StringToLong(String hex16String) {
-        CharSequence charSequence = new StringBuilder().append(hex16String);
+    private static long hex16StringToLong(final String hex16String) {
+        final CharSequence charSequence = new StringBuilder().append(hex16String);
         return OtelEncodingUtils.isValidBase16String(charSequence)
-            ? OtelEncodingUtils.longFromBase16String(charSequence, 0)
-            : hex16String.hashCode();
+                ? OtelEncodingUtils.longFromBase16String(charSequence, 0)
+                : hex16String.hashCode();
     }
 
-    private static String getEndpoint(Resource resource) {
+    private static String getEndpoint(final Resource resource) {
         if (resource == null) {
             return null;
         }
 
-        Attributes resourceAttributes = resource.getAttributes();
+        final Attributes resourceAttributes = resource.getAttributes();
+        Objects.requireNonNull(resourceAttributes, "resourceAttributes can not be null");
 
         String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
         if (serviceNameValue == null) {
