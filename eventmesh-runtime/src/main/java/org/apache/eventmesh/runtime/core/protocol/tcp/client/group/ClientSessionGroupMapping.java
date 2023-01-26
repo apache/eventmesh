@@ -34,6 +34,8 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.collections4.MapUtils;
 
+import org.apache.commons.collections4.CollectionUtils
+
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -323,14 +325,14 @@ public class ClientSessionGroupMapping {
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
         log.info("GroupConsumerSessions size:{}",
                 clientGroupWrapper.getGroupConsumerSessions().size());
-        if (MapUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
+        if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
 
         log.info("GroupProducerSessions size:{}",
                 clientGroupWrapper.getGroupProducerSessions().size());
-        if ((MapUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
-                && (MapUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
+        if ((CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
+                && (CollectionUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
             shutdownClientGroupProducer(clientGroupWrapper);
 
             clientGroupMap.remove(clientGroupWrapper.getGroup());
