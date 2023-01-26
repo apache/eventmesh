@@ -323,14 +323,14 @@ public class ClientSessionGroupMapping {
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
         log.info("GroupConsumerSessions size:{}",
                 clientGroupWrapper.getGroupConsumerSessions().size());
-        if (clientGroupWrapper.getGroupConsumerSessions().isEmpty()) {
+        if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
 
         log.info("GroupProducerSessions size:{}",
                 clientGroupWrapper.getGroupProducerSessions().size());
-        if ((clientGroupWrapper.getGroupConsumerSessions().isEmpty())
-                && (clientGroupWrapper.getGroupProducerSessions().isEmpty())) {
+        if ((CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
+                && (CollectionUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
             shutdownClientGroupProducer(clientGroupWrapper);
 
             clientGroupMap.remove(clientGroupWrapper.getGroup());
