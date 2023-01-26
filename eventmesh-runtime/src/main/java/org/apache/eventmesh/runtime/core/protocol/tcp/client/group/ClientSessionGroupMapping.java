@@ -32,9 +32,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
-import org.apache.commons.collections4.MapUtils;
-
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
