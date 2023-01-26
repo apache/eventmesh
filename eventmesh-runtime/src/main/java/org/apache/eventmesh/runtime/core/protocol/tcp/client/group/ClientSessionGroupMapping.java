@@ -322,8 +322,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        log.info("GroupConsumerSessions size:{}",
-                clientGroupWrapper.getGroupConsumerSessions().size());
+        
         if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
