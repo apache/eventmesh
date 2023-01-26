@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionStat
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.commons.collections4.CollectionUtils;
 
 import org.apache.commons.collections4.MapUtils;
 
@@ -324,14 +323,14 @@ public class ClientSessionGroupMapping {
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
         log.info("GroupConsumerSessions size:{}",
                 clientGroupWrapper.getGroupConsumerSessions().size());
-        if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
+        if (MapUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
 
         log.info("GroupProducerSessions size:{}",
                 clientGroupWrapper.getGroupProducerSessions().size());
-        if ((CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
-                && (CollectionUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
+        if ((MapUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
+                && (MapUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
             shutdownClientGroupProducer(clientGroupWrapper);
 
             clientGroupMap.remove(clientGroupWrapper.getGroup());
