@@ -20,6 +20,7 @@ package org.apache.eventmesh.auth.http.basic.impl;
 import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.api.exception.AuthException;
 import org.apache.eventmesh.auth.http.basic.config.AuthConfigs;
+import org.apache.eventmesh.common.config.Config;
 
 import org.apache.commons.lang3.Validate;
 
@@ -28,13 +29,17 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+@Config(field = "authConfigs")
 public class AuthHttpBasicService implements AuthService {
 
+    /**
+     * Unified configuration class corresponding to auth-http-basic.properties
+     */
     private AuthConfigs authConfigs;
 
     @Override
     public void init() throws AuthException {
-        authConfigs = AuthConfigs.getConfigs();
+
     }
 
     @Override
@@ -49,16 +54,17 @@ public class AuthHttpBasicService implements AuthService {
 
     @Override
     public Map<String, String> getAuthParams() throws AuthException {
-        if (authConfigs == null) {
-            init();
-        }
-
-        Validate.notNull(authConfigs);
-        String token = Base64.getEncoder().encodeToString((authConfigs.getUsername() + authConfigs.getPassword())
-                .getBytes(StandardCharsets.UTF_8));
+        String password = authConfigs.getPassword();
+        String username = authConfigs.getUsername();
+        String token = Base64.getEncoder()
+                .encodeToString((username + password).getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> authParams = new HashMap<>(2);
         authParams.put("Authorization", "Basic " + token);
         return authParams;
+    }
+
+    public AuthConfigs getClientConfiguration() {
+        return this.authConfigs;
     }
 }

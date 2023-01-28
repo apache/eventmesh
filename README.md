@@ -22,7 +22,7 @@
 
 # Apache EventMesh (Incubating)
 
-**Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application multi-runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+**Apache EventMesh (Incubating)** is a fully serverless platform used to build distributed [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture)  applications. 
 
 ### EventMesh Architecture
 
@@ -44,7 +44,8 @@ Apache EventMesh (Incubating) has a vast amount of features to help users achiev
 - Event schema management by catalog service.
 - Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/) engine.
 - Powerful event filtering and transformation.
-- Rapid, seamless scalability to add new machines.
+- Rapid, seamless scalability.
+- Easy Function develop and framework integration.
 
 ## Roadmap
 

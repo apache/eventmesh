@@ -17,65 +17,44 @@
 
 package org.apache.eventmesh.connector.pravega.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.connector.pravega.PravegaConsumerImpl;
+import org.apache.eventmesh.connector.pravega.PravegaProducerImpl;
 
 import java.net.URI;
 
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class PravegaConnectorConfigTest {
 
-    private static PravegaConnectorConfig config;
+    @Test
+    public void getConfigWhenPravegaConsumerInit() {
+        PravegaConsumerImpl consumer =
+                (PravegaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pravega");
 
-    @BeforeClass
-    public static void init() {
-        config = PravegaConnectorConfig.getInstance();
+        PravegaConnectorConfig config = consumer.getClientConfiguration();
+        assertConfig(config);
     }
 
     @Test
-    public void getControllerURI() {
-        assertEquals(URI.create("tcp://127.0.0.1:9090"), config.getControllerURI());
+    public void getConfigWhenPravegaProducerInit() {
+        PravegaProducerImpl producer =
+                (PravegaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pravega");
+
+        PravegaConnectorConfig config = producer.getClientConfiguration();
+        assertConfig(config);
     }
 
-    @Test
-    public void getScope() {
-        assertEquals("eventmesh-pravega", config.getScope());
-    }
-
-    @Test
-    public void isAuthEnabled() {
-        assertFalse(config.isAuthEnabled());
-    }
-
-    @Test
-    public void getUsername() {
-        assertEquals("", config.getUsername());
-    }
-
-    @Test
-    public void getPassword() {
-        assertEquals("", config.getPassword());
-    }
-
-    @Test
-    public void isTslEnabled() {
-        assertFalse(config.isTlsEnable());
-    }
-
-    @Test
-    public void getTruststore() {
-        assertEquals("", config.getTruststore());
-    }
-
-    @Test
-    public void getClientPoolSize() {
-        assertEquals(8, config.getClientPoolSize());
-    }
-
-    @Test
-    public void getQueueSize() {
-        assertEquals(512, config.getQueueSize());
+    private void assertConfig(PravegaConnectorConfig config) {
+        Assert.assertEquals(config.getControllerURI(), URI.create("tcp://127.0.0.1:816"));
+        Assert.assertEquals(config.getScope(), "scope-success!!!");
+        Assert.assertTrue(config.isAuthEnabled());
+        Assert.assertEquals(config.getUsername(), "username-success!!!");
+        Assert.assertEquals(config.getPassword(), "password-success!!!");
+        Assert.assertTrue(config.isTlsEnable());
+        Assert.assertEquals(config.getTruststore(), "truststore-success!!!");
+        Assert.assertEquals(config.getClientPoolSize(), 816);
+        Assert.assertEquals(config.getQueueSize(), 1816);
     }
 }

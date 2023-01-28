@@ -58,9 +58,9 @@ public class SSLContextFactory {
         try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
                 + File.separator
                 + fileName), StandardOpenOption.READ)) {
-            protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
-            fileName = eventMeshHttpConfiguration.eventMeshServerSSLCer;
-            password = eventMeshHttpConfiguration.eventMeshServerSSLPass;
+            protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
+            fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
+            password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
 
             char[] filePass = StringUtils.isNotBlank(password) ? password.toCharArray() : new char[0];
             final KeyStore keyStore = KeyStore.getInstance("JKS");

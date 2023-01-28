@@ -79,6 +79,7 @@ public class NacosRegistryService implements RegistryService {
             if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
+
             this.serverAddr = commonConfiguration.getNamesrvAddr();
             this.username = commonConfiguration.getEventMeshRegistryPluginUsername();
             this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
