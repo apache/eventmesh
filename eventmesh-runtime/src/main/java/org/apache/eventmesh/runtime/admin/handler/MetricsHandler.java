@@ -19,11 +19,13 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,15 +36,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class MetricsHandler implements HttpHandler {
+@EventHttpHandler(path = "/metrics")
+public class MetricsHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
     private final HttpSummaryMetrics httpSummaryMetrics;
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
-    public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer, EventMeshTCPServer eventMeshTcpServer) {
+    public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
+                          EventMeshTCPServer eventMeshTcpServer,
+                          HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
     }

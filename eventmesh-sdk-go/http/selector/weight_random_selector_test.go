@@ -17,45 +17,49 @@ package selector
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"math"
-	"testing"
 )
 
-func TestWeightRandomLoadSelector_Select(t *testing.T) {
-	testAddr := "192.168.0.1:10105:10;192.168.0.2:10105:20;192.168.0.3:10105:40;"
-	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
-	eventMeshClientConfig.SetLoadBalanceType(WeightRandomSelectorType)
-	eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
+var _ = Describe("WeightRandomLoadSelector test", func() {
 
-	selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(), &eventMeshClientConfig)
-	if err != nil {
-		t.Fail()
-	}
+	Context("Select test ", func() {
+		It("should success", func() {
+			testAddr := "192.168.0.1:10105:10;192.168.0.2:10105:20;192.168.0.3:10105:40;"
+			eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
+			eventMeshClientConfig.SetLoadBalanceType(WeightRandomSelectorType)
+			eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
 
-	counter := make(map[string]int)
-	testRange := 100_000
-	for i := 0; i < testRange; i++ {
-		node := selector.Select()
-		counter[node.Addr]++
-	}
+			selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(),
+				&eventMeshClientConfig)
+			Ω(err).Should(BeNil())
 
-	diff := float64(counter["192.168.0.3:10105"] - counter["192.168.0.2:10105"]*2)
-	assert.True(t, math.Abs(diff) < float64(testRange/20))
+			counter := make(map[string]int)
+			testRange := 100_000
+			for i := 0; i < testRange; i++ {
+				node := selector.Select()
+				counter[node.Addr]++
+			}
 
-	diff = float64(counter["192.168.0.3:10105"] - counter["192.168.0.1:10105"]*4)
-	assert.True(t, math.Abs(diff) < float64(testRange/20))
-}
+			diff := float64(counter["192.168.0.3:10105"] - counter["192.168.0.2:10105"]*2)
+			Ω(math.Abs(diff) < float64(testRange/20)).Should(BeTrue())
 
-func TestWeightRandomLoadSelector_GetType(t *testing.T) {
-	testAddr := "192.168.0.1:10105:10;192.168.0.2:10105:20;192.168.0.3:10105:40;"
-	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
-	eventMeshClientConfig.SetLoadBalanceType(WeightRandomSelectorType)
-	eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
+			diff = float64(counter["192.168.0.3:10105"] - counter["192.168.0.1:10105"]*4)
+			Ω(math.Abs(diff) < float64(testRange/20)).Should(BeTrue())
+		})
+	})
 
-	selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(), &eventMeshClientConfig)
-	if err != nil {
-		t.Fail()
-	}
-	assert.Equal(t, WeightRandomSelectorType, selector.GetType())
-}
+	Context("GetType test ", func() {
+		It("should success", func() {
+			testAddr := "192.168.0.1:10105:10;192.168.0.2:10105:20;192.168.0.3:10105:40;"
+			eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
+			eventMeshClientConfig.SetLoadBalanceType(WeightRandomSelectorType)
+			eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
+
+			selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(), &eventMeshClientConfig)
+			Ω(err).Should(BeNil())
+			Ω(selector.GetType()).To(Equal(WeightRandomSelectorType))
+		})
+	})
+})

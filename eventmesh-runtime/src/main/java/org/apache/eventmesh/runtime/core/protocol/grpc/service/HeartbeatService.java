@@ -49,7 +49,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
     public void heartbeat(Heartbeat request, StreamObserver<Response> responseObserver) {
         LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                 "heartbeat", EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+                eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {

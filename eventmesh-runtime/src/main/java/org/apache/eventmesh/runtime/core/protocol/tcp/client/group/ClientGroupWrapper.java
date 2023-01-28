@@ -71,7 +71,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ClientGroupWrapper {
-    
+
     private final String sysId;
 
     private String group;
@@ -130,7 +130,6 @@ public class ClientGroupWrapper {
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
         this.mqProducerWrapper = new MQProducerWrapper(
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
-
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {

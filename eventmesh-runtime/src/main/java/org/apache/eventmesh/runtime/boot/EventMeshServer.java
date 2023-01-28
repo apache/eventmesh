@@ -18,9 +18,10 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
+import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -50,32 +51,32 @@ public class EventMeshServer {
 
     private final CommonConfiguration configuration;
 
+    private transient ClientManageController clientManageController;
+
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
-    public EventMeshServer(final ConfigurationWrapper configurationWrapper) throws Exception {
-        CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
-        configuration.init();
-        this.configuration = configuration;
+    public EventMeshServer() throws Exception {
+        ConfigService configService = ConfigService.getInstance();
+        this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
+
         this.acl = new Acl();
         this.registry = new Registry();
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
+        trace = new Trace(configuration.isEventMeshServerTraceEnable());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this,
-                        configurationWrapper, registry));
+                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this, registry));
             }
             if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this,
-                        configurationWrapper, registry));
+                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this, registry));
             }
             if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(configurationWrapper,
-                        registry));
+                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(registry));
             }
         }
 
@@ -96,9 +97,33 @@ public class EventMeshServer {
             }
         }
 
+        EventMeshTCPServer eventMeshTCPServer = null;
+
+        EventMeshGrpcServer eventMeshGrpcServer = null;
+
+        EventMeshHTTPServer eventMeshHTTPServer = null;
+
         // server init
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.init();
+            if (eventMeshBootstrap instanceof EventMeshTcpBootstrap) {
+                eventMeshTCPServer = ((EventMeshTcpBootstrap) eventMeshBootstrap).getEventMeshTcpServer();
+            }
+            if (eventMeshBootstrap instanceof EventMeshHttpBootstrap) {
+                eventMeshHTTPServer = ((EventMeshHttpBootstrap) eventMeshBootstrap).getEventMeshHttpServer();
+            }
+            if (eventMeshBootstrap instanceof EventMeshGrpcBootstrap) {
+                eventMeshGrpcServer = ((EventMeshGrpcBootstrap) eventMeshBootstrap).getEventMeshGrpcServer();
+            }
+        }
+
+        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer)
+            && Objects.nonNull(eventMeshGrpcServer)) {
+            clientManageController = new ClientManageController(eventMeshTCPServer,
+                eventMeshHTTPServer, eventMeshGrpcServer, registry);
+
+            clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
+
         }
 
         final String eventStore = System
@@ -129,6 +154,11 @@ public class EventMeshServer {
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.start();
         }
+
+        if (Objects.nonNull(clientManageController)) {
+            clientManageController.start();
+        }
+
 
         serviceState = ServiceState.RUNNING;
         if (LOGGER.isInfoEnabled()) {

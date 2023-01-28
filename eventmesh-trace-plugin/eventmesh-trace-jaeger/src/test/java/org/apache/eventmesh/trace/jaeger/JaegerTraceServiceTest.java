@@ -19,6 +19,8 @@ package org.apache.eventmesh.trace.jaeger;
 
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+
 import java.lang.reflect.Field;
 
 import org.junit.Assert;
@@ -31,7 +33,8 @@ public class JaegerTraceServiceTest {
 
     @Test
     public void testInit() {
-        JaegerTraceService jaegerTraceService = new JaegerTraceService();
+        JaegerTraceService jaegerTraceService =
+                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
 
         Assert.assertNotNull(jaegerTraceService.sdkTracerProvider);
@@ -47,7 +50,8 @@ public class JaegerTraceServiceTest {
     @Test
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-        JaegerTraceService jaegerTraceService = new JaegerTraceService();
+        JaegerTraceService jaegerTraceService =
+                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
         Field sdkTracerProviderField = JaegerTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

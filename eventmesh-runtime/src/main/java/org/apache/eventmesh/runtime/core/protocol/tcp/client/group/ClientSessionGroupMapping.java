@@ -32,6 +32,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
 import java.lang.ref.WeakReference;
@@ -321,16 +322,15 @@ public class ClientSessionGroupMapping {
     }
 
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        log.info("GroupConsumerSessions size:{}",
-                clientGroupWrapper.getGroupConsumerSessions().size());
-        if (clientGroupWrapper.getGroupConsumerSessions().size() == 0) {
+        
+        if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
 
         log.info("GroupProducerSessions size:{}",
                 clientGroupWrapper.getGroupProducerSessions().size());
-        if ((clientGroupWrapper.getGroupConsumerSessions().size() == 0)
-                && (clientGroupWrapper.getGroupProducerSessions().size() == 0)) {
+        if ((CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
+                && (CollectionUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
             shutdownClientGroupProducer(clientGroupWrapper);
 
             clientGroupMap.remove(clientGroupWrapper.getGroup());

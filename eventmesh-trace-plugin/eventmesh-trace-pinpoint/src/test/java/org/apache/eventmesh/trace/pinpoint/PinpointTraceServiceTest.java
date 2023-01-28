@@ -19,6 +19,8 @@ package org.apache.eventmesh.trace.pinpoint;
 
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+
 import java.lang.reflect.Field;
 
 import org.junit.Assert;
@@ -31,7 +33,8 @@ public class PinpointTraceServiceTest {
 
     @Test
     public void testInit() {
-        PinpointTraceService pinpointTraceService = new PinpointTraceService();
+        PinpointTraceService pinpointTraceService =
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
 
         IllegalArgumentException illegalArgumentException =
@@ -43,7 +46,9 @@ public class PinpointTraceServiceTest {
     @Test
     public void testShutdown() throws Exception {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-        PinpointTraceService pinpointTraceService = new PinpointTraceService();
+
+        PinpointTraceService pinpointTraceService =
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
         Field sdkTracerProviderField = PinpointTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

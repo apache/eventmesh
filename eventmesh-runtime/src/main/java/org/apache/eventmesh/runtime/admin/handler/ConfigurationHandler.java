@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -33,12 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * The config handler
  */
-public class ConfigurationHandler implements HttpHandler {
+@EventHttpHandler(path = "/configuration")
+public class ConfigurationHandler extends AbstractHttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
@@ -46,10 +48,12 @@ public class ConfigurationHandler implements HttpHandler {
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     public ConfigurationHandler(
-            EventMeshTCPConfiguration eventMeshTCPConfiguration,
-            EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-            EventMeshGrpcConfiguration eventMeshGrpcConfiguration
+        EventMeshTCPConfiguration eventMeshTCPConfiguration,
+        EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
+        EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
+        HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
@@ -79,24 +83,24 @@ public class ConfigurationHandler implements HttpHandler {
 
         try {
             GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                    eventMeshTCPConfiguration.getSysID(),
-                    eventMeshTCPConfiguration.getNamesrvAddr(),
-                    eventMeshTCPConfiguration.getEventMeshEnv(),
-                    eventMeshTCPConfiguration.getEventMeshIDC(),
-                    eventMeshTCPConfiguration.getEventMeshCluster(),
-                    eventMeshTCPConfiguration.getEventMeshServerIp(),
-                    eventMeshTCPConfiguration.getEventMeshName(),
-                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                    eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
-                    // TCP Configuration
-                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                    // HTTP Configuration
-                    eventMeshHTTPConfiguration.httpServerPort,
-                    eventMeshHTTPConfiguration.eventMeshServerUseTls,
-                    // gRPC Configuration
-                    eventMeshGrpcConfiguration.grpcServerPort,
-                    eventMeshGrpcConfiguration.eventMeshServerUseTls
+                eventMeshTCPConfiguration.getSysID(),
+                eventMeshTCPConfiguration.getNamesrvAddr(),
+                eventMeshTCPConfiguration.getEventMeshEnv(),
+                eventMeshTCPConfiguration.getEventMeshIDC(),
+                eventMeshTCPConfiguration.getEventMeshCluster(),
+                eventMeshTCPConfiguration.getEventMeshServerIp(),
+                eventMeshTCPConfiguration.getEventMeshName(),
+                eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+                eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+                eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
+                // TCP Configuration
+                eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                // HTTP Configuration
+                eventMeshHTTPConfiguration.getHttpServerPort(),
+                eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
+                // gRPC Configuration
+                eventMeshGrpcConfiguration.getGrpcServerPort(),
+                eventMeshGrpcConfiguration.isEventMeshServerUseTls()
             );
 
             String result = JsonUtils.toJson(getConfigurationResponse);

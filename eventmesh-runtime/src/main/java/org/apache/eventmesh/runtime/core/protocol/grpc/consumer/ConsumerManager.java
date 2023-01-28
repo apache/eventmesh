@@ -208,7 +208,7 @@ public class ConsumerManager {
     }
 
     private void startClientCheck() {
-        final int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshSessionExpiredInMills;
+        final int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshSessionExpiredInMills();
         if (clientTimeout > 0) {
             scheduledExecutorService.scheduleAtFixedRate(() -> {
                 if (LOGGER.isDebugEnabled()) {

@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
@@ -40,19 +42,21 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * The event handler
  */
-public class EventHandler implements HttpHandler {
+@EventHttpHandler(path = "/event")
+public class EventHandler extends AbstractHttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
     public EventHandler(
-        String connectorPluginType
+        String connectorPluginType,
+        HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {
             admin.init(null);

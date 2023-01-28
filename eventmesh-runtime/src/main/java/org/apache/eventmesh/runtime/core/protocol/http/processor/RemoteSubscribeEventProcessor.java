@@ -150,8 +150,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         // validate URL
         try {
-            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.eventMeshIpv4BlackList,
-                eventMeshHttpConfiguration.eventMeshIpv6BlackList)) {
+            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
+                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
                 httpLogger.error("subscriber url {} is not valid", url);
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                     responseBodyMap, null);
@@ -179,7 +179,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         try {
             // local subscription url
             String localUrl = "http://" + localAddress + ":"
-                + eventMeshHttpConfiguration.httpServerPort
+                + eventMeshHttpConfiguration.getHttpServerPort()
                 + RequestURI.PUBLISH_BRIDGE.getRequestURI();
             Map<String, Object> remoteBodyMap = new HashMap<>();
             remoteBodyMap.put(EventMeshConstants.URL, localUrl);
