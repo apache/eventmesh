@@ -46,7 +46,7 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpEventWrapper implements ProtocolTransportObject {
 
-    public static final long serialVersionUID = 7717419089390044263L;
+    public static final long serialVersionUID = -8547334421415366981L;
 
     private Map<String, Object> headerMap = new HashMap<>();
 
