@@ -17,35 +17,42 @@ package selector
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	"github.com/stretchr/testify/assert"
-	"testing"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestRandomLoadSelector_Select(t *testing.T) {
-	testAddr := "192.168.0.1:10105;192.168.0.2:10105;192.168.0.3:10105;"
-	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
-	eventMeshClientConfig.SetLoadBalanceType(RandomSelectorType)
-	eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
+var _ = Describe("RandomLoadSelector test", func() {
 
-	selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(), &eventMeshClientConfig)
-	if err != nil {
-		t.Fail()
-	}
+	Context("Select test ", func() {
+		It("should success", func() {
+			testAddr := "192.168.0.1:10105;192.168.0.2:10105;192.168.0.3:10105;"
+			eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
+			eventMeshClientConfig.SetLoadBalanceType(RandomSelectorType)
+			eventMeshClientConfig.SetLiteEventMeshAddr(testAddr)
 
-	for i := 0; i < 100; i++ {
-		node := selector.Select()
-		if node.Addr != "192.168.0.1:10105" && node.Addr != "192.168.0.2:10105" && node.Addr != "192.168.0.3:10105" {
-			t.Fail()
-		}
-	}
-}
+			selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(),
+				&eventMeshClientConfig)
+			Ω(err).Should(BeNil())
 
-func TestRandomLoadSelector_GetType(t *testing.T) {
-	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
-	eventMeshClientConfig.SetLoadBalanceType(RandomSelectorType)
-	selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(), &eventMeshClientConfig)
-	if err != nil {
-		t.Fail()
-	}
-	assert.Equal(t, RandomSelectorType, selector.GetType())
-}
+			for i := 0; i < 100; i++ {
+				node := selector.Select()
+				Ω(node.Addr).Should(Or(
+					Equal("192.168.0.1:10105"),
+					Equal("192.168.0.2:10105"),
+					Equal("192.168.0.3:10105")),
+				)
+			}
+		})
+	})
+
+	Context("GetType test ", func() {
+		It("should success", func() {
+			eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
+			eventMeshClientConfig.SetLoadBalanceType(RandomSelectorType)
+			selector, err := CreateNewSelector(eventMeshClientConfig.GetLoadBalanceType(),
+				&eventMeshClientConfig)
+			Ω(err).Should(BeNil())
+			Ω(selector.GetType()).Should(Equal(RandomSelectorType))
+		})
+	})
+})
