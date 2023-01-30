@@ -45,7 +45,7 @@ import lombok.Data;
 @Data
 public class HttpCommand implements ProtocolTransportObject {
 
-    public static final long serialVersionUID = 4825360350457735498L;
+    private static final long serialVersionUID = -8763824685105888009L;
 
     private static final AtomicLong requestId = new AtomicLong(0);
 

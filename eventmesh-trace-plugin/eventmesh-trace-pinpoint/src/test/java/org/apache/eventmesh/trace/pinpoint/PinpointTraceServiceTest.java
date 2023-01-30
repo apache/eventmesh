@@ -39,7 +39,7 @@ public class PinpointTraceServiceTest {
 
         IllegalArgumentException illegalArgumentException =
             assertThrows(IllegalArgumentException.class, () ->
-                Runtime.getRuntime().addShutdownHook(pinpointTraceService.shutdownHook));
+                Runtime.getRuntime().addShutdownHook(pinpointTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,22 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package selector
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import (
+	"testing"
 
-public class SimpleMessageWrapper implements ProtocolTransportObject {
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-    private static final long serialVersionUID = 4562321593749195797L;
-
-    private final SimpleMessage simpleMessage;
-
-    public SimpleMessageWrapper(SimpleMessage simpleMessage) {
-        this.simpleMessage = simpleMessage;
-    }
-
-    public SimpleMessage getMessage() {
-        return simpleMessage;
-    }
+func TestSelectorAPIs(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "selector module Tests")
 }
