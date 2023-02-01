@@ -17,15 +17,17 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Properties;
 
-import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Strings;
+
+import lombok.Getter;
 
 
 public class ConfigService {
