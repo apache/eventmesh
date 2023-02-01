@@ -93,6 +93,7 @@ public class ConfigService {
             configInfo.setHump(config.hump());
             configInfo.setPrefix(config.prefix());
             configInfo.setMonitor(config.monitor());
+            configInfo.setReloadMethodName(config.reloadMethodName());
 
             return this.getConfig(configInfo);
         } catch (Exception e) {
@@ -150,6 +151,7 @@ public class ConfigService {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setField(config.field());
         configInfo.setMonitor(config.monitor());
+        configInfo.setReloadMethodName(config.reloadMethodName());
 
         Field field = clazz.getDeclaredField(configInfo.getField());
         Class<?> fieldClazz = field.getType();

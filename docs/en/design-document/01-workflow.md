@@ -1,258 +1,261 @@
-#事件网格工作流程
+# EventMesh Workflow
 
-## 业务问题
-假设您正在为电子商务商店构建一个简单的订单管理系统。 该系统应该能够接收和提供来自商店网站的新订单。 供应流程应该能够处理所有订单、处理付款以及处理发货。
+## Business Problem
 
-为了实现高可用性和高性能，您使用事件驱动架构 (EDA) 构建系统，并构建微服务应用程序来处理商店前端、订单管理、支付处理和发货管理。 您将整个系统部署在云环境中。 为了处理高工作负载，您可以利用消息传递系统来缓冲负载，并扩展多个微服务实例。 该架构可能类似于：
+Imaging you are building a simple Order Management System for an E-Commerce Store. The system should be able to receive and provision new orders from a store website. The provisioning process should be able to process all orders, handle payments, as well as process shipments.
+
+For high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle store frontend, order management, payment processing, and shipment management. You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads, and scale up multiple instances of microservices. The architecture could look similar to:
 
 ![Workflow Use Case](../../images/design-document/workflow-use-case.jpg)
 
-虽然每个微服务都在自己的事件通道上运行，但 EventMesh 在进行事件编排方面起着至关重要的作用。
+While each microservice is acting on its own event channels, EventMesh plays a crucial role of doing Event Orchestration.
 
 We use [CNCF Serverless Workflow](https://serverlessworkflow.io/) to describe this Event Workflow Orchestration.
 
-## CNCF 无服务器工作流
+## CNCF Serverless Workflow
 
-CNCF Serverless Workflow 定义了一个供应商中立、开源且完全由社区驱动的生态系统，用于定义和运行面向 Serverless 技术领域的基于 DSL 的工作流。
+CNCF Serverless Workflow defines a vendor-neutral, open-source, and fully community-driven ecosystem for defining and running DSL-based workflows that target the Serverless technology domain.
 
-无服务器工作流定义了一种领域特定语言 (DSL) 来描述无状态和无状态基于工作流的无服务器功能和微服务编排。
+Serverless Workflow defines a Domain Specific Language (DSL) to describe stateful and stateless workflow-based orchestrations of serverless functions and microservices.
 
 More details could be found in its [official github site](https://github.com/serverlessworkflow/specification)
 
-## 事件网格工作流程
+## EventMesh Workflow
 
-我们利用无服务器工作流 DSL 来描述 EventMesh 工作流。 根据其规范，工作流由一系列用于描述控制流逻辑的工作流状态组成。 目前我们只支持与事件相关的工作流状态。 请参阅 [工作流 DSL 设计](#workflow-dsl-design-wip) 中的支持状态。
+We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of workflow states used to describe the control-flow logic. At this time we only support event related workflow states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
 
-“工作流状态”可以包括适用的“操作”，或应在工作流执行期间调用的服务/功能。 这些“动作”可以引用可重用的“功能”定义，这些定义定义了这些功能/服务应该如何被调用。 它们还可以引用触发基于事件的服务调用的事件，以及等待表示此类基于事件的服务调用完成的事件。
+A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution. These `actions` can reference reusable `function` definitions which define how these functions/services should be invoked. They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of such event-based service invocation completion.
+
 In EDA solution, we usually defined our event-driven microservice using AsyncAPI. Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI. See [Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations) for more information.
 
-### 异步API
+### AsyncAPI
 
-AsyncAPI 是一项开源计划，旨在改善事件驱动架构 (EDA) 的当前状态。
-我们的长期目标是让使用 EDA 就像使用 REST API 一样简单。
-从文档到代码生成，从发现到事件管理。
-您现在应用于 REST API 的大多数流程也适用于您的事件驱动/异步 API。
+AsyncAPI is an open source initiative that seeks to improve the current state of Event-Driven Architectures (EDA).
+Our long-term goal is to make working with EDAs as easy as it is to work with REST APIs.
+That goes from documentation to code generation, discovery to event management.
+Most of the processes you apply to your REST APIs nowadays would be applicable to your event-driven/asynchronous APIs too.
 
 See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/getting-started)
 
-### 工作流程示例
+### Workflow Example
 
-在这个例子中，我们构建了上面订单管理系统的事件驱动工作流。
+In this example, we build the event-driven workflow of the Order management system above.
 
-首先，我们需要为我们的微服务应用程序定义 AsyncAPI 定义。
+First, we need to define AsyncAPI definitions for our microservice apps.
 
-- 在线商店应用
+- Online Store App
 
 ```yaml
-异步API：2.2.0
-信息：
-   标题：在线商店应用程序
-   版本：'0.1.0'
-渠道：
-   商店/订单：
-     订阅：
-       operationId：newStoreOrder
-       信息：
-         $ref : '#/组件/新订单'
+asyncapi: 2.2.0
+info:
+  title: Online Store application
+  version: '0.1.0'
+channels:
+  store/order:
+    subscribe:
+      operationId: newStoreOrder
+      message:
+        $ref : '#/components/NewOrder'
 
 ```
 
-- 订购服务
+- Order Service
 
 ```yaml
-异步API：2.2.0
-信息：
-   title: 订单服务
-   版本：'0.1.0'
-渠道：
-   订单/入库：
-     发布：
-       operationId：发送订单
-       信息：
-         $ref : '#/组件/订单'
-   订单/出站：
-     订阅：
-       operationId: processedOrder
-       信息：
-         $ref : '#/组件/订单'
+asyncapi: 2.2.0
+info:
+  title: Order Service
+  version: '0.1.0'
+channels:
+  order/inbound:
+    publish:
+      operationId: sendOrder
+      message:
+        $ref : '#/components/Order'
+  order/outbound:
+    subscribe:
+      operationId: processedOrder
+      message:
+        $ref : '#/components/Order'
 ```
 
-- 支付服务
+- Payment Service
 
 ```yaml
-异步API：2.2.0
-信息：
-   title: 支付服务
-   版本：'0.1.0'
-渠道：
-   付款/入站：
-     发布：
-       operationId：发送付款
-       信息：
-         $ref : '#/组件/OrderPayment'
-   支付/出站：
-     订阅：
-       operationId：付款收据
-       信息：
-         $ref : '#/组件/OrderPayment'
+asyncapi: 2.2.0
+info:
+  title: Payment Service
+  version: '0.1.0'
+channels:
+  payment/inbound:
+    publish:
+      operationId: sendPayment
+      message:
+        $ref : '#/components/OrderPayment'
+  payment/outbound:
+    subscribe:
+      operationId: paymentReceipt
+      message:
+        $ref : '#/components/OrderPayment'
 ```
 
-- 寄件服务
+- Shipment Service
 
 ```yaml
-异步API：2.2.0
-信息：
-   title: 运输服务
-   版本：'0.1.0'
-渠道：
-   装运/入境：
-     发布：
-       operationId：sendShipment
-       信息：
-         $ref : '#/组件/OrderShipment'
+asyncapi: 2.2.0
+info:
+  title: Shipment Service
+  version: '0.1.0'
+channels:
+  shipment/inbound:
+    publish:
+      operationId: sendShipment
+      message:
+        $ref : '#/components/OrderShipment'
 ```
 
-定义完成后，我们将定义描述订单管理业务逻辑的订单工作流。
+Once that is defined, we define the order workflow that describes our Order Management business logic.
 
 ```yaml
 id: storeorderworkflow
-版本：'1.0'
-规格版本：'0.8'
-名称：商店订单管理工作流
-状态：
-   - 名称：接收新订单事件
-     类型：事件
-     关于事件：
-       - 事件参考：
-           - 新订单事件
-         动作：
-           - 事件参考：
-               triggerEventRef：OrderServiceSendEvent
-               resultEventRef：OrderServiceResultEvent
-           - 事件参考：
-               triggerEventRef：PaymentServiceSendEvent
-               resultEventRef：PaymentServiceResultEvent
-     过渡：检查付款状态
-   - 名称：检查付款状态
-     类型：开关
-     数据条件：
-       - 姓名：支付成功
-         条件：“${.payment.status =='成功'}”
-         过渡：发送订单发货
-       - 名称：付款被拒绝
-         条件：“${.payment.status =='拒绝'}”
-         结束：真
-     默认条件：
-       结束：真
-   - 名称：发送订单发货
-     类型：操作
-     动作：
-       - 事件参考：
-           triggerEventRef：ShipmentServiceSendEvent
-     结束：真
-事件：
-   - 名称：NewOrderEvent
-     来源：文件：//onlineStoreApp.yaml#newStoreOrder
-     类型：asyncapi
-     种类：消费
-   - 名称：OrderServiceSendEvent
-     来源：文件：//orderService.yaml#sendOrder
-     类型：asyncapi
-     种类：生产
-   - 名称：OrderServiceResultEvent
-     来源：文件：//orderService.yaml#processedOrder
-     类型：asyncapi
-     种类：消费
-   - 名称：PaymentServiceSendEvent
-     来源：文件：//paymentService.yaml#sendPayment
-     类型：asyncapi
-     种类：生产
-   - 名称：PaymentServiceResultEvent
-     来源：文件：//paymentService.yaml#paymentReceipt
-     类型：asyncapi
-     种类：消费
-   - 名称：ShipmentServiceSendEvent
-     来源：文件：//shipmentService.yaml#sendShipment
-     类型：asyncapi
-     种类：生产
+version: '1.0'
+specVersion: '0.8'
+name: Store Order Management Workflow
+states:
+  - name: Receive New Order Event
+    type: event
+    onEvents:
+      - eventRefs:
+          - NewOrderEvent
+        actions:
+          - eventRef:
+              triggerEventRef: OrderServiceSendEvent
+              resultEventRef: OrderServiceResultEvent
+          - eventRef:
+              triggerEventRef: PaymentServiceSendEvent
+              resultEventRef: PaymentServiceResultEvent
+    transition: Check Payment Status
+  - name: Check Payment Status
+    type: switch
+    dataConditions:
+      - name: Payment Successfull
+        condition: "${ .payment.status == 'success' }"
+        transition: Send Order Shipment
+      - name: Payment Denied
+        condition: "${ .payment.status == 'denied' }"
+        end: true
+    defaultCondition:
+      end: true
+  - name: Send Order Shipment
+    type: operation
+    actions:
+      - eventRef:
+          triggerEventRef: ShipmentServiceSendEvent
+    end: true
+events:
+  - name: NewOrderEvent
+    source: file://onlineStoreApp.yaml#newStoreOrder
+    type: asyncapi
+    kind: consumed
+  - name: OrderServiceSendEvent
+    source: file://orderService.yaml#sendOrder
+    type: asyncapi
+    kind: produced
+  - name: OrderServiceResultEvent
+    source: file://orderService.yaml#processedOrder
+    type: asyncapi
+    kind: consumed
+  - name: PaymentServiceSendEvent
+    source: file://paymentService.yaml#sendPayment
+    type: asyncapi
+    kind: produced
+  - name: PaymentServiceResultEvent
+    source: file://paymentService.yaml#paymentReceipt
+    type: asyncapi
+    kind: consumed
+  - name: ShipmentServiceSendEvent
+    source: file://shipmentService.yaml#sendShipment
+    type: asyncapi
+    kind: produced
 ```
 
-对应的工作流程图如下：
+The corresponding workflow diagram is the following:
 
 ![Workflow Diagram](../../images/design-document/workflow-diagram.png)
 
-## EventMesh 工作流引擎
+## EventMesh Workflow Engine
 
-在下面的架构图中，EventMesh Catalog、EventMesh Workflow Engine 和 EventMesh Runtime 运行在三个不同的处理器中。
+In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
 
 ![Workflow Architecture](../../images/design-document/workflow-architecture.jpg)
 
-运行工作流的步骤如下：
+The steps running the workflow is the followings:
 
-1. 在环境中部署发布者和订阅者应用程序。
-    使用 AsyncAPI 描述 App API，生成 asyncAPI yaml。
-    使用 AsyncAPI 在 EventMesh 目录中注册发布者和订阅者应用程序。
+1. Deploy the Publisher and Subscriber Apps in the environment.
+   Describe the App APIs using AsyncAPI, generate the asyncAPI yaml.
+   Register the Publisher and Subscriber Apps in EventMesh Catalog using AsyncAPI.
 
-2. 在 EventMesh Workflow Engine 中注册 Serverless Workflow DSL。
+2. Register the Serverless Workflow DSL in EventMesh Workflow Engine.
 
-3. EventMesh Workflow Engine查询EventMesh Catalog for Publisher和Subscribers在Workflow DSL`function`中需要
+3. EventMesh Workflow Engine query the EventMesh Catalog for Publisher and Subscribers required in Workflow DSL `function`
 
-4. 事件驱动的应用程序是将事件发布到 EventMesh Runtime 以触发工作流。 EventMesh Workflow Engine 还发布和订阅事件以编排事件。
+4. Event-driven Apps are publish events to EventMesh Runtime to trigger the Workflow. EventMesh Workflow Engine also publish and subscribe events for orchestrating the events.
 
-### EventMesh目录设计
+### EventMesh Catalog Design
 
-EventMesh Catalog 存储发布者、订阅者和频道元数据。 由以下模块组成：
+EventMesh Catalog store the Publisher, Subscriber and Channel metadata. consists of the following modules:
 
-- 异步 API 解析器
+- AsyncAPI Parser
 
-使用AsyncAPI社区提供的SDK（参见[工具列表](https://www.asyncapi.com/docs/community/tooling)），
-   解析并验证 AsyncAPI yaml 输入，并生成 AsyncAPI 定义。
-- 发布者、频道、订阅者模块
+  Using the SDK provided by AsyncAPI community (see [tool list](https://www.asyncapi.com/docs/community/tooling)),
+  parse and validated the AsyncAPI yaml inputs, and generate the AsyncAPI definition.
 
-   从 AsyncAPI 定义存储发布者、订阅者和频道信息。
+- Publisher, Channel, Subscriber Modules
 
-### EventMesh 工作流引擎设计
+  From the AsyncAPI definition store the Publisher, Subscriber and Channel information.
 
-EventMesh 工作流引擎由以下模块组成：
+### EventMesh Workflow Engine Design
 
-- 工作流解析器
+EventMesh Workflow Engine consists of the following modules:
 
-   使用 Serverless Workflow 社区提供的 SDK（参见支持的 [SDKs](https://github.com/serverlessworkflow/specification#sdks)），
-   解析和验证工作流 DSL 输入，并生成工作流定义。
+- Workflow Parser
 
-- 工作流模块
+  Using the SDK provided by Serverless Workflow community (see supported [SDKs](https://github.com/serverlessworkflow/specification#sdks)),
+  parse and validated the workflow DSL inputs, and generate workflow definition.
 
-   它管理一个工作流实例生命周期，从创建、开始、停止到销毁。
+- Workflow Module
 
-- 状态模块
+  It manages a workflow instance life cycle, from create, start, stop to destroy.
 
-   它管理工作流状态生命周期。 我们支持事件相关的状态，下面支持的状态列表是 Work-in-Progress。
+- State Module
 
-   | 工作流状态 | 说明 |
-   | --- | --- |
-   | 操作 | 执行 Actions | 中定义的 AsyncAPI 函数
-   | 活动 | 检查定义的事件是否匹配，如果匹配则执行定义的 AsyncAPI 函数 |
-   | 切换 | 检查事件是否与事件条件匹配，并执行定义的 AsyncAPI 函数 |
-   | 并行 | 并行执行定义的 AsyncAPI 函数 |
-   | 为每个 | 迭代 inputCollection 并执行定义的 AsyncAPI 函数 |
+  It manages workflow state life cycle. We support the event-related states, and the supported state list below is Work-in-Progress.
 
-- 动作模块
+  | Workflow State | Description |
+  | --- | --- |
+  | Operation | Execute the AsyncAPI functions defined in the Actions |
+  | Event | Check if the defined Event matched, if so execute the defined AsyncAPI functions |
+  | Switch | Check the event is matched with the event-conditions, and execute teh defined AsyncAPI functions |
+  | Parallel | Execute the defined AsyncAPI functions in parallel |
+  | ForEach | Iterate the inputCollection and execute the defined AsyncAPI functions |
 
-   它管理动作中的函数。
+- Action Module
 
-- 功能模块
+  It managed the functions inside the action.
 
-   它通过在 EventMesh Runtime 中创建发布者和/或订阅者来管理 AsyncAPI 函数，并管理发布者/订阅者的生命周期。
+- Function Module
 
-     | AsyncAPI 操作 | EventMesh 运行时 |
-     | --- | --- |
-     | 发布 | 出版商 |
-     | 订阅 | 订户 |
+  It manages the AsyncAPI functions by creating the publisher and/or subscriber in EventMesh Runtime, and manage the publisher/subscriber life cycle.
 
-- 事件模块
+    | AsyncAPI Operation | EventMesh Runtime |
+    | --- | --- |
+    |  Publish | Publisher |
+    | Subscribe | Subscriber |
 
-   它使用工作流 DSL 中定义的规则管理 CloudEvents 数据模型，包括事件过滤器、关联和转换。
+- Event Module
 
-- 重试模块
+  It manages the CloudEvents data model, including event filter, correlation and transformation using the rules defined in the workflow DSL.
 
-   它管理事件发布到 EventMesh Runtime 的重试逻辑。
+- Retry Module
+
+  It manages the retry logic of the event publishing into EventMesh Runtime.
