@@ -34,7 +34,7 @@ import (
 )
 
 var (
-	defaultConnectTimeout uint64  = 5000
+	defaultConnectTimeout         = 5000 * time.Millisecond
 	DefaultClusterName            = "DEFAULT"
 	DefaultGroupName              = "DEFAULT_GROUP"
 	DefaultWeight         float64 = 10
@@ -90,7 +90,7 @@ func (r *Registry) Start() error {
 	}
 
 	p.ClientConfig = &constant.ClientConfig{
-		TimeoutMs: defaultConnectTimeout,
+		TimeoutMs: uint64(defaultConnectTimeout.Milliseconds()),
 		CacheDir:  r.cfg.CacheDir,
 	}
 	cli, err := clients.NewNamingClient(p)
