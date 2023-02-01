@@ -50,96 +50,86 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
+import lombok.Data;
+
 @Config(field = "jaegerConfiguration")
 @Config(field = "exporterConfiguration")
+@Data
 public class JaegerTraceService implements EventMeshTraceService {
 
-    private String eventMeshJaegerIp;
+    private transient SdkTracerProvider sdkTracerProvider;
 
-    private int eventMeshJaegerPort;
+    private transient Tracer tracer;
 
-    private int eventMeshTraceExportInterval;
-
-    private int eventMeshTraceExportTimeout;
-
-    private int eventMeshTraceMaxExportSize;
-
-    private int eventMeshTraceMaxQueueSize;
-
-    protected SdkTracerProvider sdkTracerProvider;
-
-    protected OpenTelemetry openTelemetry;
-
-    protected Thread shutdownHook;
-
-    private Tracer tracer;
-
-    private TextMapPropagator textMapPropagator;
+    private transient TextMapPropagator textMapPropagator;
 
     /**
      * Unified configuration class corresponding to jaeger.properties
      */
-    private JaegerConfiguration jaegerConfiguration;
+    private transient JaegerConfiguration jaegerConfiguration;
 
     /**
      * Unified configuration class corresponding to exporter.properties
      */
-    private ExporterConfiguration exporterConfiguration;
+    private transient ExporterConfiguration exporterConfiguration;
+
+    private transient Thread shutdownHook;
 
     @Override
     public void init() throws TraceException {
         // jaeger's config
-        eventMeshJaegerIp = jaegerConfiguration.getEventMeshJaegerIp();
-        eventMeshJaegerPort = jaegerConfiguration.getEventMeshJaegerPort();
+        final String eventMeshJaegerIp = jaegerConfiguration.getEventMeshJaegerIp();
+        final int eventMeshJaegerPort = jaegerConfiguration.getEventMeshJaegerPort();
         // exporter's config
-        eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
-        eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
-        eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
-        eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
+        final int eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        final int eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        final int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        final int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
-        String httpEndpoint = String.format("http://%s:%s", eventMeshJaegerIp, eventMeshJaegerPort);
-        JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-            .setEndpoint(httpEndpoint)
-            .build();
+        final String httpEndpoint = String.format("http://%s:%s", eventMeshJaegerIp, eventMeshJaegerPort);
+        final JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
+                .setEndpoint(httpEndpoint)
+                .build();
 
-        SpanProcessor spanProcessor = BatchSpanProcessor.builder(jaegerExporter)
-            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-            .build();
+        final SpanProcessor spanProcessor = BatchSpanProcessor.builder(jaegerExporter)
+                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+                .build();
 
-        Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), JaegerConstants.SERVICE_NAME));
+        final Resource serviceNameResource =
+                Resource.create(Attributes.of(stringKey("service.name"), JaegerConstants.SERVICE_NAME));
 
         sdkTracerProvider = SdkTracerProvider.builder()
-            .addSpanProcessor(spanProcessor)
-            .setResource(Resource.getDefault().merge(serviceNameResource))
-            .build();
+                .addSpanProcessor(spanProcessor)
+                .setResource(Resource.getDefault().merge(serviceNameResource))
+                .build();
 
-        openTelemetry = OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .setTracerProvider(sdkTracerProvider)
-            .build();
+        final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+                .setTracerProvider(sdkTracerProvider)
+                .build();
 
         tracer = openTelemetry.getTracer(JaegerConstants.SERVICE_NAME);
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
 
         shutdownHook = new Thread(sdkTracerProvider::close);
+        shutdownHook.setDaemon(true);
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     @Override
-    public Context extractFrom(Context context, Map<String, Object> carrier) throws TraceException {
+    public Context extractFrom(final Context context, final Map<String, Object> carrier) throws TraceException {
         textMapPropagator.extract(context, carrier, new TextMapGetter<Map<String, Object>>() {
             @Override
-            public Iterable<String> keys(Map<String, Object> carrier) {
+            public Iterable<String> keys(final Map<String, Object> carrier) {
                 return carrier.keySet();
             }
 
             @Nullable
             @Override
-            public String get(@Nullable Map<String, Object> carrier, String key) {
+            public String get(final @Nullable Map<String, Object> carrier, final String key) {
                 return Optional.ofNullable(carrier.get(key)).map(Objects::toString).orElse(null);
             }
         });
@@ -147,7 +137,7 @@ public class JaegerTraceService implements EventMeshTraceService {
     }
 
     @Override
-    public void inject(Context context, Map<String, Object> carrier) {
+    public void inject(final Context context, final Map<String, Object> carrier) {
         textMapPropagator.inject(context, carrier, (cr, key, value) -> {
             if (cr != null) {
                 cr.put(key, value);
@@ -156,27 +146,35 @@ public class JaegerTraceService implements EventMeshTraceService {
     }
 
     @Override
-    public Span createSpan(String spanName, SpanKind spanKind, long startTimestamp, TimeUnit timeUnit, Context context,
-                           boolean isSpanFinishInOtherThread) throws TraceException {
+    public Span createSpan(final String spanName, final SpanKind spanKind, final long startTimestamp,
+                           final TimeUnit timeUnit, final Context context,
+                           final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(startTimestamp, timeUnit)
-            .startSpan();
+                .setParent(context)
+                .setSpanKind(spanKind)
+                .setStartTimestamp(startTimestamp, timeUnit)
+                .startSpan();
     }
 
     @Override
-    public Span createSpan(String spanName, SpanKind spanKind, Context context, boolean isSpanFinishInOtherThread) throws TraceException {
+    public Span createSpan(final String spanName, final SpanKind spanKind, final Context context,
+                           final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            .startSpan();
+                .setParent(context)
+                .setSpanKind(spanKind)
+                .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                .startSpan();
     }
 
     @Override
     public void shutdown() throws TraceException {
-        sdkTracerProvider.close();
+        try {
+            if (sdkTracerProvider != null) {
+                sdkTracerProvider.close();
+            }
+        } catch (Exception e) {
+            throw new TraceException("trace close error", e);
+        }
     }
 
     public JaegerConfiguration getClientConfiguration() {

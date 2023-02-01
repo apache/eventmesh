@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,9 +70,9 @@ public class EventMeshGrpcConsumerTest {
     public void setUp() {
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(EventMeshGrpcClientConfig.builder().build());
         eventMeshGrpcConsumer.init();
-        eventMeshGrpcConsumer.consumerClient = consumerClient;
-        eventMeshGrpcConsumer.consumerAsyncClient = consumerAsyncClient;
-        eventMeshGrpcConsumer.heartbeatClient = heartbeatClient;
+        eventMeshGrpcConsumer.setConsumerClient(consumerClient);
+        eventMeshGrpcConsumer.setConsumerAsyncClient(consumerAsyncClient);
+        eventMeshGrpcConsumer.setHeartbeatClient(heartbeatClient);
         when(consumerClient.subscribe(any())).thenReturn(Response.getDefaultInstance());
         when(consumerClient.unsubscribe(any())).thenReturn(Response.getDefaultInstance());
         when(heartbeatClient.heartbeat(any())).thenReturn(Response.getDefaultInstance());
@@ -81,8 +82,8 @@ public class EventMeshGrpcConsumerTest {
                 @Override
                 public void onNext(Subscription value) {
                     receiver.onNext(
-                        SimpleMessage.newBuilder().setUniqueId("uniqueId").setSeqNum("1").setContent("mockContent")
-                            .setTopic("mockTopic").build());
+                            SimpleMessage.newBuilder().setUniqueId("uniqueId").setSeqNum("1").setContent("mockContent")
+                                    .setTopic("mockTopic").build());
                     receiver.onCompleted();
                 }
 
@@ -101,11 +102,11 @@ public class EventMeshGrpcConsumerTest {
     @Test
     public void testSubscribeWithUrl() {
         assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()),
-            "customUrl")).isEqualTo(Response.getDefaultInstance());
+                "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).subscribe(any());
         verify(heartbeatClient, Mockito.after(20_000L).times(1)).heartbeat(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()),
-            "customUrl")).isEqualTo(Response.getDefaultInstance());
+                "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -131,13 +132,15 @@ public class EventMeshGrpcConsumerTest {
             }
         });
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()));
+        assertThat(eventMeshGrpcConsumer.getSubscriptionMap().size()).isEqualTo(1);
+
         assertThat(result).hasSize(1).first().isInstanceOf(EventMeshMessage.class)
-            .hasFieldOrPropertyWithValue("bizSeqNo", "1").hasFieldOrPropertyWithValue("uniqueId", "uniqueId")
-            .hasFieldOrPropertyWithValue("topic", "mockTopic")
-            .hasFieldOrPropertyWithValue("content", "mockContent");
+                .hasFieldOrPropertyWithValue("bizSeqNo", "1").hasFieldOrPropertyWithValue("uniqueId", "uniqueId")
+                .hasFieldOrPropertyWithValue("topic", "mockTopic")
+                .hasFieldOrPropertyWithValue("content", "mockContent");
         verify(consumerAsyncClient, times(1)).subscribeStream(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()))).isEqualTo(
-            Response.getDefaultInstance());
+                Response.getDefaultInstance());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -147,5 +150,14 @@ public class EventMeshGrpcConsumerTest {
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setTopic("topic");
         return subscriptionItem;
+    }
+
+    @Test
+    public void testBuildSubscription() {
+        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(buildMockSubscriptionItem());
+        subscriptionItems.add(buildMockSubscriptionItem());
+        Subscription subsription = eventMeshGrpcConsumer.buildSubscription(subscriptionItems, "test_url");
+        Assert.assertEquals(1, subsription.getSubscriptionItemsList().size());
     }
 }
