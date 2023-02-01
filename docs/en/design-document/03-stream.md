@@ -36,7 +36,7 @@ and easily integrate various systems consuming or producing data.
 
 ## Architecture
 
-![Stream Architecture](../../images/design-document/stream-architecture.png)
+![Stream Architecture](/images/design-document/stream-architecture.png)
 
 ## Design
 
@@ -83,7 +83,7 @@ The main advantage of the pipeline is that you can create complex event processi
 
 Component interface is the primary entry point, you can use Component object as a factory to create EndPoint objects.
 
-![Stream Component Interface](../../images/design-document/stream-component-interface.png)
+![Stream Component Interface](/images/design-document/stream-component-interface.png)
 
 ### EndPoint
 
@@ -92,14 +92,14 @@ EndPoint which is act as factories for creating Consumer, Producer and Event obj
 - `createConsumer()` — Creates a consumer endpoint, which represents the source endpoint at the beginning of a route.
 - `createProducer()` — Creates a producer endpoint, which represents the target endpoint at the end of a route.
 
-![Stream Component Routes](../../images/design-document/stream-component-routes.png)
+![Stream Component Routes](/images/design-document/stream-component-routes.png)
 
 #### Producer
 
 User can create following types of producer
 > Synchronous Producer-Processing thread blocks until the producer has finished the event processing.
 
-![Stream Sync Producer](../../images/design-document/stream-sync-producer.png)
+![Stream Sync Producer](/images/design-document/stream-sync-producer.png)
 
 In future Producer Types:
 
@@ -110,7 +110,7 @@ In future Producer Types:
 User can create following types of consumer
 > Event-driven consumer-the processing of an incoming request is initiated when message binder call a method in consumer.
 
-![Stream Event-Driven Consumer](../../images/design-document/stream-event-driven-consumer.png)
+![Stream Event-Driven Consumer](/images/design-document/stream-event-driven-consumer.png)
 
 In the Future
 

@@ -98,7 +98,7 @@ path: /webhook/insertWebHookConfig
 method: POST
 contentType: application/json
 
-input params: 
+input params:
 | field | desc | type |　necessary | default　|
 | -- | -- | -- | -- | -- |
 | callbackPath | call address, unique address | string | Y　| null　|
@@ -135,7 +135,7 @@ path: /webhook/deleteWebHookConfig
 method: POST
 contentType： application/json
 
-input params: 
+input params:
 | field | desc | type |　necessary | default　|
 | -- | -- | -- | -- | -- |
 | callbackPath | call address, unique address | string | Y　| null　|
@@ -230,7 +230,7 @@ Output params:
 #### The third step: Check if the configuration is successful
 
 1. file storage mode. Please go to the eventMesh.webHook.fileMode.filePath directory to view. filename callbackPath.
-   
+
 2. nacos storage mode. Please go to the nacos service configured by eventMesh.webHook.nacosMode.serverAddr to see.
 
 #### The fourth step: Configure the consumer of cloudevent
@@ -247,19 +247,19 @@ Output params:
 
 #### The second step: click setting
 
-![](../../images/design-document/webhook/webhook-github-setting.png)
+![](/images/design-document/webhook/webhook-github-setting.png)
 
 #### The third step: click Webhooks
 
-![](../../images/design-document/webhook/webhook-github-webhooks.png)
+![](/images/design-document/webhook/webhook-github-webhooks.png)
 
 #### The fourth step: Click on Add webhook
 
-![](../../images/design-document/webhook/webhook-github-add.png)
+![](/images/design-document/webhook/webhook-github-add.png)
 
 #### The fifth step: Fill in the webhook information
 
-![](../../images/design-document/webhook/webhook-github-info.png)
+![](/images/design-document/webhook/webhook-github-info.png)
 
 Payload URL: Service address and pahts. [http or https]://[domain or IP]:[port]/webhook/[callbackPath]
 Content type: http header content type

@@ -25,40 +25,40 @@
 
 您也可以使用`./gradlew check`来检查代码风格。
 (注意：这个命令将检查项目中的所有文件，当您提交一个项目时，CI将只检查这个项目中被修改的文件）。
- 
+
 CheckStyle-IDEA插件导入演示：
 
-a.如图安装CheckStyle-IDEA插件  
+a.如图安装CheckStyle-IDEA插件
 
-![CheckStyle01](../../images/contribute/checkstyle01.png)
+![CheckStyle01](/images/contribute/checkstyle01.png)
 
-b.下载完成后需要导入EventMesh的检查样式文件，如下步骤：  
+b.下载完成后需要导入EventMesh的检查样式文件，如下步骤：
 
-1.如图：  
+1.如图：
 
-![CheckStyle02](../../images/contribute/checkstyle02.png)
+![CheckStyle02](/images/contribute/checkstyle02.png)
 
-2.当点击+号之后会出现以下界面  
+2.当点击+号之后会出现以下界面
 
-![CheckStyle03](../../images/contribute/checkstyle03.png)  
+![CheckStyle03](/images/contribute/checkstyle03.png)
 
 标号1的地方简单取个名字即可，标号2的地方是EventMesh CheckStyle文件的位置，在项目的style文件夹下。
 
-3.点击finish之后就会出现下图界面  
+3.点击finish之后就会出现下图界面
 
-![CheckStyle04](../../images/contribute/checkstyle04.png)
+![CheckStyle04](/images/contribute/checkstyle04.png)
 
 将添加的样式检查文件勾选上并Apply
 
 c.当完成以上步骤之后就可以在您完成代码编写后进行样式检查了，步骤如下：
 
-1.选择添加的EM-checks文件。  
+1.选择添加的EM-checks文件。
 
-![CheckStyle05](../../images/contribute/checkstyle05.png)
+![CheckStyle05](/images/contribute/checkstyle05.png)
 
-2.点击这两个地方都可检查文件样式   
+2.点击这两个地方都可检查文件样式
 
-![CheckStyle06](../../images/contribute/checkstyle06.png)  
+![CheckStyle06](/images/contribute/checkstyle06.png)
 
 这两个标号都只检测当前页的文件样式，标号2在当前页鼠标右键即可出现。
 
@@ -66,44 +66,44 @@ c.当完成以上步骤之后就可以在您完成代码编写后进行样式检
 
 以下是贡献者提交代码的工作流程:
 
-0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE中讨论的内容使用相应的模板。   
+0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE中讨论的内容使用相应的模板。
 
-ISSUE创建示例:  
-   a.进入到项目仓库的主页，切换到issue标签，点击New issue  
-   ![contributor01](../../images/contribute/zh/contribute14.png)
-   
-   b.就会出现下图界面  
-   ![contributor01](../../images/contribute/zh/contribute15.png)  
+ISSUE创建示例:
+   a.进入到项目仓库的主页，切换到issue标签，点击New issue
+   ![contributor01](/images/contribute/zh/contribute14.png)
+
+   b.就会出现下图界面
+   ![contributor01](/images/contribute/zh/contribute15.png)
    根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
-   当前EventMesh提供了六种ISSUE模板  
-   Bug report: 发现代码bug，请使用此模板  
-   Documentation Related: 文档相关的，请使用此模板  
-   Enhancement Request: 代码优化，增强代码实现的，请使用此模板  
-   Feature Request: 为EventMesh提供新的特性功能的使用此模板  
-   Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
-   Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
-   
+   当前EventMesh提供了六种ISSUE模板
+   Bug report: 发现代码bug，请使用此模板
+   Documentation Related: 文档相关的，请使用此模板
+   Enhancement Request: 代码优化，增强代码实现的，请使用此模板
+   Feature Request: 为EventMesh提供新的特性功能的使用此模板
+   Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板
+   Unit Test: 想为EventMesh做一些单元测试的，请使用此模板
+
    c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
-   
-   [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
-   如图：  
-   ![contributor01](../../images/contribute/zh/contribute16.png)  
+
+   [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)
+   如图：
+   ![contributor01](/images/contribute/zh/contribute16.png)
 
 ISSUE与PR关联：
    后续提交PR的时候，PR的标题和内容应该跟ISSUE完成关联，这样才符合开源的规范，如下图所示
-   
-   ![contributor01](../../images/contribute/zh/contribute17.png)  
-   
+
+   ![contributor01](/images/contribute/zh/contribute17.png)
+
    上图ISSUE编号为2148，那么你的PR标题前就是 [ISSUE #2148]，这样就关联上了。
 
 
-1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中  
-例：  
-   a.点击eventmesh右上角的fork     
-   ![contributor01](../../images/contribute/zh/contribute01.png)  
+1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中
+例：
+   a.点击eventmesh右上角的fork
+   ![contributor01](/images/contribute/zh/contribute01.png)
    b.就会出现下图，点击Create fork即可将eventmesh fork到自己的仓库
-   ![contributor02](../../images/contribute/zh/contribute02.png)
-   
+   ![contributor02](/images/contribute/zh/contribute02.png)
+
 
 2. fork完成后，克隆自己仓库的代码到本地
 ```git
@@ -122,7 +122,7 @@ git fetch upstream master:upstream_master
 git rebase upstream_master
 ```
 
-5. 提交您的修改（确保您的提交信息简洁明了）  
+5. 提交您的修改（确保您的提交信息简洁明了）
 
 **特别注意：在提交代码之前要确保你提交代码的邮箱要与GitHub邮箱一致，不然在统计contributor数量时会发生无法正常计入的情况**
 
@@ -130,44 +130,44 @@ git rebase upstream_master
 ```git
 git config --global --list
 ```
-如图：  
-![contributor12](../../images/contribute/zh/contribute12.png)  
-如果你在提交之前还未登陆邮箱，使用注册GitHub账号时的邮箱  
+如图：
+![contributor12](/images/contribute/zh/contribute12.png)
+如果你在提交之前还未登陆邮箱，使用注册GitHub账号时的邮箱
 
 - 如果你发现你的邮箱与GitHub邮箱不一致可通过以下git命令进行修改
 ```git
 git config --global user.name 你的目标用户名
 git config --global user.email 你的目标邮箱名
 ```
-如图：  
-![contributor13](../../images/contribute/zh/contribute13.png)   
+如图：
+![contributor13](/images/contribute/zh/contribute13.png)
 修改邮箱同理(也可以用这个命令来登陆邮箱)
 
-例：用IDEA提交代码为例，如果您在IDEA本地修改完毕  
+例：用IDEA提交代码为例，如果您在IDEA本地修改完毕
    a.点击Commit，点击图片中两个地方中任意一个即可
-   ![contributor03](../../images/contribute/zh/contribute03.png)  
-   b.就会出现以下图中界面  
-   ![contributor04](../../images/contribute/zh/contribute04.png)  
-   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）  
-   ![contributor09](../../images/contribute/zh/contribute09.png)  
-   
-6. 将您的提交推送到自己的fork仓库   
-   a.需要push到远程仓库中，注意是您自己的仓库，您需要点击  
-   ![contributor05](../../images/contribute/zh/contribute05.png)  
-   或者是  
-   ![contributor06](../../images/contribute/zh/contribute06.png)  
-   b.就会出现以下界面，确认无误后点击右下角push，就push到自己的仓库了  
-   ![contributor07](../../images/contribute/zh/contribute07.png)  
-   c.当您成功push到自己仓库就会出现下图的提示（在IDEA界面的右下角）  
-   ![contributor08](../../images/contribute/zh/contribute08.png)  
+   ![contributor03](/images/contribute/zh/contribute03.png)
+   b.就会出现以下图中界面
+   ![contributor04](/images/contribute/zh/contribute04.png)
+   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）
+   ![contributor09](/images/contribute/zh/contribute09.png)
 
-7. 创建一个Pull Request (PR)  
-例：  
-   a.当您成功push到自己的仓库当中后，进入自己的仓库主页，会出现下图界面  
-   ![contributor10](../../images/contribute/zh/contribute10.png)
-   b.点击Compare & pull request，就会出现以下界面，按照图中操作即可创建pull request  
-   ![contributor11](../../images/contribute/zh/contribute11.png)
-   
+6. 将您的提交推送到自己的fork仓库
+   a.需要push到远程仓库中，注意是您自己的仓库，您需要点击
+   ![contributor05](/images/contribute/zh/contribute05.png)
+   或者是
+   ![contributor06](/images/contribute/zh/contribute06.png)
+   b.就会出现以下界面，确认无误后点击右下角push，就push到自己的仓库了
+   ![contributor07](/images/contribute/zh/contribute07.png)
+   c.当您成功push到自己仓库就会出现下图的提示（在IDEA界面的右下角）
+   ![contributor08](/images/contribute/zh/contribute08.png)
+
+7. 创建一个Pull Request (PR)
+例：
+   a.当您成功push到自己的仓库当中后，进入自己的仓库主页，会出现下图界面
+   ![contributor10](/images/contribute/zh/contribute10.png)
+   b.点击Compare & pull request，就会出现以下界面，按照图中操作即可创建pull request
+   ![contributor11](/images/contribute/zh/contribute11.png)
+
 
 ## 解释
 

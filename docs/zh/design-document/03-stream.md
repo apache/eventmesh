@@ -34,7 +34,7 @@
 
 ## 架构
 
-![Stream Architecture](../../images/design-document/stream-architecture.png)
+![Stream Architecture](/images/design-document/stream-architecture.png)
 
 ## 设计
 
@@ -80,7 +80,7 @@
 
 Component 接口是主要的入口点，您可以使用 Component 对象作为工厂来创建 EndPoint 对象。
 
-![Stream Component Interface](../../images/design-document/stream-component-interface.png)
+![Stream Component Interface](/images/design-document/stream-component-interface.png)
 
 ### EndPoint（端点）
 
@@ -89,14 +89,14 @@ EndPoint 作为创建消费者、生产者和事件对象的工厂。
 - `createConsumer()` — 创建消费者端点，该端点表示路由开始的源端点。
 - `createProducer()` — 创建生产者端点，该端点表示路由末端的目标端点。
 
-![Stream Component Routes](../../images/design-document/stream-component-routes.png)
+![Stream Component Routes](/images/design-document/stream-component-routes.png)
 
 #### Producer（生产者）
 
 用户可以创建以下类型的生产者
 > 同步生产者：处理线程阻塞，直到生产者完成事件处理。
 
-![Stream Sync Producer](../../images/design-document/stream-sync-producer.png)
+![Stream Sync Producer](/images/design-document/stream-sync-producer.png)
 
 未来将会实现的生产者类型：
 
@@ -107,7 +107,7 @@ EndPoint 作为创建消费者、生产者和事件对象的工厂。
 用户可以创建以下类型的消费者
 > 事件驱动的消费者：当消息绑定器调用消费者中的方法时，开始处理传入请求。
 
-![Stream Event-Driven Consumer](../../images/design-document/stream-event-driven-consumer.png)
+![Stream Event-Driven Consumer](/images/design-document/stream-event-driven-consumer.png)
 
 未来将会实现的消费者类型：
 

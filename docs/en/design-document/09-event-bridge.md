@@ -1,10 +1,10 @@
 # Event Bridge
 
-![event-bridge](../../images/eventmesh-bridge.png)
+![event-bridge](/images/eventmesh-bridge.png)
 
 Event Bridge 可以支持跨mesh集群的消息投递，下面展示这一功能的详细设计与体验步骤
 
-![event-bridge-detail](../../images/design-document/event-bridge-detail.png)
+![event-bridge-detail](/images/design-document/event-bridge-detail.png)
 
 > 注：在本地体验这一功能时需要启动两台eventmesh实例，同时要修改`eventmesh-runtime`目录下的`eventmesh.properties`文件中的端口配置，避免端口冲突。便于下文描述，event-bridge特性按照上图信息进行表述。
 

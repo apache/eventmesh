@@ -6,7 +6,7 @@ Imaging you are building a simple Order Management System for an E-Commerce Stor
 
 For high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle store frontend, order management, payment processing, and shipment management. You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads, and scale up multiple instances of microservices. The architecture could look similar to:
 
-![Workflow Use Case](../../images/design-document/workflow-use-case.jpg)
+![Workflow Use Case](/images/design-document/workflow-use-case.jpg)
 
 While each microservice is acting on its own event channels, EventMesh plays a crucial role of doing Event Orchestration.
 
@@ -181,13 +181,13 @@ events:
 
 The corresponding workflow diagram is the following:
 
-![Workflow Diagram](../../images/design-document/workflow-diagram.png)
+![Workflow Diagram](/images/design-document/workflow-diagram.png)
 
 ## EventMesh Workflow Engine
 
 In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
 
-![Workflow Architecture](../../images/design-document/workflow-architecture.jpg)
+![Workflow Architecture](/images/design-document/workflow-architecture.jpg)
 
 The steps running the workflow is the followings:
 
