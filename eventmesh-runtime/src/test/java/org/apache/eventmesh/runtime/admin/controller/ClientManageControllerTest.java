@@ -35,7 +35,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
+import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class ClientManageControllerTest {
         when(eventMeshTCPServer.getEventMeshTcpMonitor()).thenReturn(eventMeshTcpMonitor);
         when(eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()).thenReturn(tcpSummaryMetrics);
 
-        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManage.class);
+        AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManager.class);
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
 

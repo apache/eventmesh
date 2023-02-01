@@ -60,6 +60,7 @@ public class CloudEventProducer {
             return null;
         }
 
+
         final List<CloudEvent> enhancedEvents = events.stream()
                 .map(event -> enhanceCloudEvent(event, null))
                 .collect(Collectors.toList());

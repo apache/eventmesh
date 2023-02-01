@@ -45,7 +45,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
+import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class ClientManageController {
     private final transient Registry eventMeshRegistry;
 
     @Setter
-    private AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
+    private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
                                   EventMeshHTTPServer eventMeshHTTPServer,

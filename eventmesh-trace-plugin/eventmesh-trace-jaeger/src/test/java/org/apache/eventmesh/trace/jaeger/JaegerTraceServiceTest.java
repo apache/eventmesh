@@ -37,13 +37,12 @@ public class JaegerTraceServiceTest {
                 (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
 
-        Assert.assertNotNull(jaegerTraceService.sdkTracerProvider);
-        Assert.assertNotNull(jaegerTraceService.openTelemetry);
-        Assert.assertNotNull(jaegerTraceService.shutdownHook);
+        Assert.assertNotNull(jaegerTraceService.getSdkTracerProvider());
+        Assert.assertNotNull(jaegerTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () ->
-                Runtime.getRuntime().addShutdownHook(jaegerTraceService.shutdownHook));
+                assertThrows(IllegalArgumentException.class, () ->
+                        Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
