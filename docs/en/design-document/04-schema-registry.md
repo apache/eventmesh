@@ -39,11 +39,11 @@ OpenSchema[[5]](#References) proposes a specification for data schema when excha
 
 ### Architecture
 
-![OpenSchema](../../images/design-document/schema-registry-architecture.png)
+![OpenSchema](/images/design-document/schema-registry-architecture.png)
 
 ### Process of Transferring Messages under Schema Registry
 
-![Process](../../images/design-document/schema-registry-process.jpg)
+![Process](/images/design-document/schema-registry-process.jpg)
 
 The highlevel process of messages transmission contains 10 steps as follows:
 
@@ -119,7 +119,7 @@ No. | Type | URL | response | exception | code | test
 
 ```CompatibilityController.java```+```CompatibilityService.java``` : ```OpenSchema 7.3.1~7.3.3 (API 11~13)``` + ```Check for Compatibility```
 
-![Project Structure](../../images/design-document/schema-registry-project-structure.png)
+![Project Structure](/images/design-document/schema-registry-project-structure.png)
 
 ## References
 

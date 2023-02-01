@@ -6,7 +6,7 @@
 
 为了实现高可用和高性能，你可以使用事件驱动架构（EDA）构建微服务应用去处理商店前端，订单管理，支付处理和发货管理。你可以在云上部署整个系统。要处理高并发，你可以利用消息系统缓冲，并扩展多个微服务实例。架构类似于：
 
-![Workflow Use Case](../../images/design-document/workflow-use-case.jpg)
+![Workflow Use Case](/images/design-document/workflow-use-case.jpg)
 
 当每个微服务都在自己的事件通道上运行时，EventMesh在执行事件编排方面发挥着至关重要的作用。
 
@@ -178,13 +178,13 @@ events:
 
 对应的工作流图如下：
 
-![Workflow Diagram](../../images/design-document/workflow-diagram.png)
+![Workflow Diagram](/images/design-document/workflow-diagram.png)
 
 ## EventMesh工作流引擎
 
 在下面的体系结构图中, EventMesh目录, EventMesh工作流引擎 和 EventMesh Runtime在三个不同的处理器中运行。
 
-![Workflow Architecture](../../images/design-document/workflow-architecture.jpg)
+![Workflow Architecture](/images/design-document/workflow-architecture.jpg)
 
 运行工作流的步骤如下：
 

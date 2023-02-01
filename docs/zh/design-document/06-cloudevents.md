@@ -43,7 +43,7 @@ EventMesh 的用户非常渴望能得到对 CloudEvents 的支持。有许多理
 
 ### 可插拔协议
 
-![可插拔协议](../../images/design-document/cloudevents-pluggable-protocols.png)
+![可插拔协议](/images/design-document/cloudevents-pluggable-protocols.png)
 
 ### EventMesh 集成 CloudEvents 进度表
 
