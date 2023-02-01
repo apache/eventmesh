@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.webhook.admin;
 
-/**
- * Json format exception, see {@link org.apache.eventmesh.common.utils.JsonUtils}.
- */
-public class JsonException extends RuntimeException {
+import org.apache.eventmesh.common.config.ConfigService;
 
-    private static final long serialVersionUID = -7236194555178359309L;
+import org.junit.Assert;
+import org.junit.Test;
 
-    public JsonException(String message) {
-        super(message);
-    }
+public class AdminWebHookConfigOperationManagerTest {
 
-    public JsonException(String message, Throwable cause) {
-        super(message, cause);
+    @Test
+    public void init() throws Exception {
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://eventmesh.properties");
+
+        AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
+        adminWebHookConfigOperationManage.init();
+
+        Assert.assertTrue(
+                adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
     }
 }
