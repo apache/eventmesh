@@ -126,18 +126,22 @@ public class ConfigService {
             String filePath;
 
             if (path.startsWith(CLASS_PATH_PREFIX)) {
+                final String resourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
                 filePath = Objects.requireNonNull(
-                        ConfigService.class.getResource("/" + path.substring(CLASS_PATH_PREFIX.length()))
+                    ConfigService.class.getResource(resourceUrl)
                 ).getPath();
-            } else if (path.startsWith(FILE_PATH_PREFIX)) {
-                filePath = path.substring(FILE_PATH_PREFIX.length());
+                if (filePath.contains(".jar")) {
+                    filePath = resourceUrl;
+                }
             } else {
-                filePath = this.configPath + path;
+                filePath = path.startsWith(FILE_PATH_PREFIX) ? path.substring(FILE_PATH_PREFIX.length()) : this.configPath + path;
             }
 
-            File file = new File(filePath);
-            if (!file.exists()) {
-                throw new RuntimeException("file is not exists");
+            if (!filePath.startsWith("/")) {
+                File file = new File(filePath);
+                if (!file.exists()) {
+                    throw new RuntimeException("file is not exists");
+                }
             }
 
             String suffix = path.substring(path.lastIndexOf('.') + 1);

@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -63,8 +64,13 @@ public interface FileLoad {
 
         @SuppressWarnings("unchecked")
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
-            Properties properties = new Properties();
-            properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
+            final Properties properties = new Properties();
+            if (configInfo.getFilePath().startsWith("/")) {
+                properties.load(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(configInfo.getFilePath()))));
+            } else {
+                properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
+            }
+
             if (Objects.isNull(configInfo.getClazz())) {
                 return (T) properties;
             }
