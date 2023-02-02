@@ -26,7 +26,7 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-import org.apache.eventmesh.webhook.api.utils.StringUtils;
+import org.apache.eventmesh.webhook.api.utils.ClassUtils;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 
 import java.io.FileNotFoundException;
@@ -78,11 +78,11 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
         if (OPERATION_MODE_FILE.equals(operationMode)) {
-            return cacheWebHookConfig.get(StringUtils.getFileName(webHookConfig.getCallbackPath()));
+            return cacheWebHookConfig.get(ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath()));
         } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
             try {
                 String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
-                    GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                        GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
                 return JsonUtils.deserialize(content, WebHookConfig.class);
             } catch (NacosException e) {
                 logger.error("queryWebHookConfigById failed", e);
