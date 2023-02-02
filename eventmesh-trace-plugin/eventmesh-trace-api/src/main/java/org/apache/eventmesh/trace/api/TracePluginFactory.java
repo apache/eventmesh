@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.trace.api;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import java.util.Objects;
 
 import lombok.experimental.UtilityClass;
 
@@ -34,10 +34,12 @@ public class TracePluginFactory {
      * @param traceServiceType
      * @return
      */
-    public static EventMeshTraceService getEventMeshTraceService(String traceServiceType) {
-        checkNotNull(traceServiceType, "traceServiceType cannot be null");
+    public static EventMeshTraceService getEventMeshTraceService(final String traceServiceType) {
+        Objects.requireNonNull(traceServiceType, "traceServiceType cannot be null");
 
-        EventMeshTraceService eventMeshTraceService = EventMeshExtensionFactory.getExtension(EventMeshTraceService.class, traceServiceType);
-        return checkNotNull(eventMeshTraceService, "traceServiceType: " + traceServiceType + " is not supported");
+        EventMeshTraceService eventMeshTraceService = EventMeshExtensionFactory.getExtension(EventMeshTraceService.class,
+                traceServiceType);
+        return Objects.requireNonNull(eventMeshTraceService,
+                "traceServiceType: " + traceServiceType + " is not supported");
     }
 }

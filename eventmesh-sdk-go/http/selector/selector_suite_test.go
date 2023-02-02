@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.admin;
+package selector
 
-import org.apache.eventmesh.common.config.ConfigService;
+import (
+	"testing"
 
-import org.junit.Assert;
-import org.junit.Test;
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-public class AdminWebHookConfigOperationManageTest {
-
-    @Test
-    public void init() throws Exception {
-        ConfigService configService = ConfigService.getInstance();
-        configService.setRootConfig("classPath://eventmesh.properties");
-
-        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
-        adminWebHookConfigOperationManage.init();
-
-        Assert.assertTrue(
-                adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
-    }
+func TestSelectorAPIs(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "selector module Tests")
 }
