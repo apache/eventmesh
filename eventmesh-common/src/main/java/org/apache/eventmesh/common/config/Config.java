@@ -43,6 +43,8 @@ public @interface Config {
 
     boolean monitor() default false;
 
+    String reloadMethodName() default "reload";
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @interface Configs {
