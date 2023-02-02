@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+common:
+  cluster: "test"
+  registry-name: "test"
+  env: "env"
+  idc: "idc1"
 server:
   grpc:
     port: 10010
@@ -27,10 +32,6 @@ server:
     push-message-pool-size: 10
     reply-pool-size: 10
     msg-req-num-per-second: 5
-    cluster: "test"
-    registry-name: "test"
-    env: "env"
-    idc: "idc1"
     session-expired-in-mills: 5s
     send-message-timeout: 5s
   http:

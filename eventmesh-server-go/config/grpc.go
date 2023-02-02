@@ -43,18 +43,6 @@ type GRPCOption struct {
 	//MsgReqNumPerSecond
 	MsgReqNumPerSecond float64 `yaml:"msg-req-num-per-second" toml:"msg-req-num-per-second"`
 
-	// RegistryName name for registry plugin support nacos or etcd
-	RegistryName string `yaml:"registry-name" toml:"registry-name"`
-
-	// Cluster cluster for grpc server
-	Cluster string `yaml:"cluster" toml:"cluster"`
-
-	// Env for env variable
-	Env string `yaml:"env" toml:"env"`
-
-	// IDC idc for grpc server
-	IDC string `yaml:"idc" toml:"idc"`
-
 	// SessionExpiredInMills internal to clean the not work session consumer
 	SessionExpiredInMills time.Duration `yaml:"session-expired-in-mills"`
 	// SendMessageTimeout timeout in send message
