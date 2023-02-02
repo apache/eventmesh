@@ -28,7 +28,6 @@ import java.util.List;
 import org.assertj.core.util.Strings;
 
 import lombok.Data;
-<<<<<<< HEAD
 import lombok.NoArgsConstructor;
 
 @Data
@@ -111,93 +110,6 @@ public class CommonConfiguration {
 
         if (Strings.isNullOrEmpty(this.eventMeshServerIp)) {
             this.eventMeshServerIp = IPUtils.getLocalAddress();
-=======
-
-@Data
-public class CommonConfiguration {
-    private transient String eventMeshEnv = "P";
-    private transient String eventMeshIDC = "FT";
-    private transient String eventMeshCluster = "LS";
-    
-    private transient String eventMeshName = "";
-    private transient List<String> eventMeshProvideServerProtocols;
-    private transient String sysID = "5477";
-    private transient String eventMeshConnectorPluginType = "rocketmq";
-    private transient String eventMeshSecurityPluginType = "security";
-    private transient String eventMeshRegistryPluginType = "namesrv";
-    private transient List<String> eventMeshMetricsPluginType;
-    private transient String eventMeshTracePluginType;
-
-    private transient String namesrvAddr = "";
-    private transient String eventMeshRegistryPluginUsername = "";
-    private transient String eventMeshRegistryPluginPassword = "";
-    private transient Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-    private transient Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
-    private transient String eventMeshServerIp = null;
-    private transient boolean eventMeshServerSecurityEnable = false;
-    
-    private transient boolean eventMeshServerRegistryEnable = false;
-    
-    private transient boolean eventMeshServerTraceEnable = false;
-
-    protected transient ConfigurationWrapper configurationWrapper;
-
-    private transient String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
-
-    public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
-        this.configurationWrapper = configurationWrapper;
-    }
-    
-
-    public void init() {
-
-        if (configurationWrapper != null) {
-            eventMeshEnv = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_ENV);
-
-            sysID = checkNumeric(ConfKeys.KEYS_EVENTMESH_SYSID);
-
-            eventMeshCluster = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
-
-            eventMeshName = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
-
-            eventMeshIDC = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_IDC);
-
-            eventMeshServerIp = get(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP, IPUtils::getLocalAddress);
-
-            eventMeshConnectorPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
-
-            eventMeshServerSecurityEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED, () -> "false"));
-
-            eventMeshSecurityPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
-
-            eventMeshServerRegistryEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, () -> "false"));
-
-            eventMeshRegistryPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
-
-            namesrvAddr = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR);
-
-            eventMeshRegistryPluginUsername = Optional.ofNullable(
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME)).orElse("");
-
-            eventMeshRegistryPluginPassword = Optional.ofNullable(
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD)).orElse("");
-
-            String metricsPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_METRICS_PLUGIN_TYPE);
-            if (StringUtils.isNotEmpty(metricsPluginType)) {
-                eventMeshMetricsPluginType = Arrays
-                        .stream(metricsPluginType.split(","))
-                        .filter(StringUtils::isNotBlank)
-                        .map(String::trim)
-                        .collect(Collectors.toList());
-            }
-
-            eventMeshProvideServerProtocols = getProvideServerProtocols();
-
-            eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
-            if (eventMeshServerTraceEnable) {
-                eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
-            }
->>>>>>> d9fcc86a (Simplify the code)
         }
 
         if (CollectionUtils.isEmpty(eventMeshProvideServerProtocols)) {

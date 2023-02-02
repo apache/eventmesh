@@ -41,11 +41,7 @@ include 'eventmesh-registry-plugin:eventmesh-registry-api'
 include 'eventmesh-registry-plugin:eventmesh-registry-nacos'
 include 'eventmesh-registry-plugin:eventmesh-registry-etcd'
 include 'eventmesh-registry-plugin:eventmesh-registry-consul'
-<<<<<<< HEAD
 include 'eventmesh-registry-plugin:eventmesh-registry-zookeeper'
-=======
-
->>>>>>> 058e415a (add qmq connector)
 include 'eventmesh-admin'
 
 include 'eventmesh-protocol-plugin'
