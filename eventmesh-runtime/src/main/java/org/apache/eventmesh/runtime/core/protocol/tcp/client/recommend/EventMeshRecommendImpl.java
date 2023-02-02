@@ -243,17 +243,12 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             }
             return null;
         } else {
-<<<<<<< HEAD
             final List<Map.Entry<String, Integer>> list = new ArrayList<>();
             clientDistributionMap.entrySet().forEach(list::add);
             Collections.sort(list, new ValueComparator());
             if (log.isInfoEnabled()) {
                 log.info("clientDistributionMap after sort:{}", list);
             }
-=======
-            Collections.sort(list, vc);
-            logger.info("clientDistributionMap after sort:{}", list);
->>>>>>> 274af9e0 (return the value assigned by the local variable directly)
             return eventMeshMap.get(list.get(0).getKey());
         }
     }

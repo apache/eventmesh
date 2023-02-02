@@ -126,28 +126,6 @@ public class Utils {
     }
 
     /**
-<<<<<<< HEAD
-=======
-     * print part of the mq message
-     *
-     * @param eventMeshMessage
-     * @return
-     */
-    public static String printMqMessage(EventMeshMessage eventMeshMessage) {
-        Map<String, String> properties = eventMeshMessage.getProperties();
-
-        String bizSeqNo = properties.get(EventMeshConstants.KEYS_UPPERCASE);
-        if (!StringUtils.isNotBlank(bizSeqNo)) {
-            bizSeqNo = properties.get(EventMeshConstants.KEYS_LOWERCASE);
-        }
-
-        return String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
-                properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
-                bizSeqNo);
-    }
-
-    /**
->>>>>>> d979d449 (Method stores return result in local before immediately returning it [EventMeshRecommendImpl])
      * get serviceId according to topic
      */
     public static String getServiceId(String topic) {

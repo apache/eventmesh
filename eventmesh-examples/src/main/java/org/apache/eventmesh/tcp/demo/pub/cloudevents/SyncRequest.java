@@ -54,50 +54,12 @@ public class SyncRequest {
             .userAgent(userAgent)
             .build();
         try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ad83e9e6 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
-
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
-            client.init();
-
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
             log.info("begin send rr msg: {}", event);
             Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-=======
-            Package response;
-=======
->>>>>>> ae2118e7 (remove sync try-with-resources)
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-            log.info("begin send rr msg: {}", event);
-<<<<<<< HEAD
-            response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
->>>>>>> a4b2fcd4 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
-=======
-            Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
->>>>>>> ae2118e7 (remove sync try-with-resources)
-=======
-            Package response;
-=======
->>>>>>> 6cd79025 (remove sync try-with-resources)
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
-            client.init();
-
-            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-            log.info("begin send rr msg: {}", event);
-<<<<<<< HEAD
-            response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
->>>>>>> 64941e80 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
-=======
-            Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
->>>>>>> 6cd79025 (remove sync try-with-resources)
             // check-NPE EventFormat
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {

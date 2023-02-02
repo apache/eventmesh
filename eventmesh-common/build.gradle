@@ -47,9 +47,6 @@ dependencies {
 
     implementation "com.github.stefanbirkner:system-rules"
     implementation "org.yaml:snakeyaml"
-    implementation project(path: ':eventmesh-security-plugin:eventmesh-security-api')
-    implementation project(path: ':eventmesh-security-plugin:eventmesh-security-api')
-    implementation project(path: ':eventmesh-security-plugin:eventmesh-security-api')
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

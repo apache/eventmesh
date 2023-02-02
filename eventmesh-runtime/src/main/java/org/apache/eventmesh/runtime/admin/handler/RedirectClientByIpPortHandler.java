@@ -55,20 +55,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         try (OutputStream out = httpExchange.getResponseBody()) {
-=======
-        OutputStream out = httpExchange.getResponseBody();
-        try(out) {
->>>>>>> 9f48f05c (Update RedirectClientByIpPortHandler.java)
-=======
-        try(OutputStream out = httpExchange.getResponseBody()) {
->>>>>>> 2eed2012 (Update RedirectClientByIpPortHandler.java)
-=======
-        try (OutputStream out = httpExchange.getResponseBody()) {
->>>>>>> 97afcd9e (Update RedirectClientByIpPortHandler.java)
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
