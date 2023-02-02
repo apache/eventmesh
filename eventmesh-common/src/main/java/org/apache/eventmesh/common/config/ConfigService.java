@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Properties;
@@ -124,20 +125,26 @@ public class ConfigService {
         } else {
             String path = configInfo.getPath();
             String filePath;
-
+            String resourceUrl = null;
             if (path.startsWith(CLASS_PATH_PREFIX)) {
-                final String resourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
+                final String tempResourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
                 filePath = Objects.requireNonNull(
-                    ConfigService.class.getResource(resourceUrl)
+                    ConfigService.class.getResource(tempResourceUrl)
                 ).getPath();
                 if (filePath.contains(".jar")) {
-                    filePath = resourceUrl;
+                    resourceUrl = tempResourceUrl;
                 }
             } else {
                 filePath = path.startsWith(FILE_PATH_PREFIX) ? path.substring(FILE_PATH_PREFIX.length()) : this.configPath + path;
             }
 
-            if (!filePath.startsWith("/")) {
+            if (StringUtils.isNotBlank(resourceUrl)) {
+                try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
+                    if (null == inputStream) {
+                        throw new RuntimeException("file is not exists");
+                    }
+                }
+            } else {
                 File file = new File(filePath);
                 if (!file.exists()) {
                     throw new RuntimeException("file is not exists");
@@ -146,6 +153,7 @@ public class ConfigService {
 
             String suffix = path.substring(path.lastIndexOf('.') + 1);
             configInfo.setFilePath(filePath);
+            configInfo.setResourceUrl(resourceUrl);
             object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
         }
         return (T) object;

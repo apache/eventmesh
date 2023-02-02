@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.config;
 
 import org.apache.eventmesh.common.config.convert.Convert;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -65,8 +67,8 @@ public interface FileLoad {
         @SuppressWarnings("unchecked")
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             final Properties properties = new Properties();
-            if (configInfo.getFilePath().startsWith("/")) {
-                properties.load(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(configInfo.getFilePath()))));
+            if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {
+                properties.load(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(configInfo.getResourceUrl()))));
             } else {
                 properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
             }
