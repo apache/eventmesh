@@ -32,7 +32,7 @@ const (
 )
 
 type Config struct {
-	Name   string `yaml:"name" toml:"name"`
+	Common *Common `yaml:"common" toml:"common"`
 	Server struct {
 		*HTTPOption `yaml:"http" toml:"http"`
 		*GRPCOption `yaml:"grpc" toml:"grpc"`
@@ -50,8 +50,13 @@ func init() {
 }
 
 func defaultConfig() *Config {
-	cfg := &Config{
-		Name: "eventmesh-server",
+	cfg := &Config{}
+	cfg.Common = &Common{
+		Name:         "eventmesh-server",
+		RegistryName: "eventmesh-go",
+		Cluster:      "1",
+		Env:          "{}",
+		IDC:          "idc1",
 	}
 	cfg.Server.GRPCOption = &GRPCOption{
 		Port: "10010",
@@ -67,10 +72,6 @@ func defaultConfig() *Config {
 		PushMessagePoolSize:   10,
 		ReplyPoolSize:         10,
 		MsgReqNumPerSecond:    5,
-		RegistryName:          "eventmesh-go",
-		Cluster:               "1",
-		Env:                   "{}",
-		IDC:                   "idc1",
 		SessionExpiredInMills: 5 * time.Second,
 		SendMessageTimeout:    5 * time.Second,
 	}

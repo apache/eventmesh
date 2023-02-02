@@ -27,8 +27,8 @@ import (
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/metrics/prometheus"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/registry"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol/cloudevents"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/registry/nacos"
 )
 
 var confPath string
