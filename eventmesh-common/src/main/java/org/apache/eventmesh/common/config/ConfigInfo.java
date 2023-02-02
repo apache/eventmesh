@@ -48,4 +48,6 @@ public class ConfigInfo {
 
     Field objectField;
     Object instance;
+
+    private String resourceUrl;
 }
