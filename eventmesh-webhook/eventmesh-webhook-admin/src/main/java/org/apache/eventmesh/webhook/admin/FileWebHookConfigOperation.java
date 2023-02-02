@@ -194,7 +194,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     private File getWebhookConfigFile(final WebHookConfig webHookConfig) {
         final String webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig)
                 + WebHookOperationConstant.FILE_SEPARATOR
-                + StringUtils.getFileName(webHookConfig.getCallbackPath());
+                + ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath());
 
         return new File(webhookConfigFilePath);
     }
