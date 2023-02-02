@@ -49,6 +49,8 @@ public class ObjectConverter implements ConvertValue<Object> {
 
     private Class<?> clazz;
 
+    private String reloadMethodName;
+
     private void init(ConfigInfo configInfo) {
         String prefix = configInfo.getPrefix();
         if (Objects.nonNull(prefix)) {
@@ -57,6 +59,7 @@ public class ObjectConverter implements ConvertValue<Object> {
         this.hump = Objects.equals(configInfo.getHump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
         this.clazz = convertInfo.getClazz();
         this.convertInfo.setHump(this.hump);
+        this.reloadMethodName = configInfo.getReloadMethodName();
     }
 
     @Override
@@ -82,6 +85,7 @@ public class ObjectConverter implements ConvertValue<Object> {
                     this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
                     this.hump = Objects.equals(configArray[0].hump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
                     this.convertInfo.setHump(this.hump);
+                    this.reloadMethodName = configArray[0].reloadMethodName();
                 }
 
                 this.setValue();
@@ -139,12 +143,12 @@ public class ObjectConverter implements ConvertValue<Object> {
 
     private void reloadConfigIfNeed(boolean needReload) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (needReload) {
-            Method method = this.clazz.getDeclaredMethod("reload", null);
+            Method method = this.clazz.getDeclaredMethod(this.reloadMethodName == null ? "reload" : this.reloadMethodName);
 
             boolean isAccessible = method.isAccessible();
             try {
                 method.setAccessible(true);
-                method.invoke(this.object, null);
+                method.invoke(this.object);
             } finally {
                 method.setAccessible(isAccessible);
             }
@@ -188,7 +192,7 @@ public class ObjectConverter implements ConvertValue<Object> {
 
         if (needReload) {
             try {
-                this.clazz.getDeclaredMethod("reload", null);
+                this.clazz.getDeclaredMethod(this.reloadMethodName == null ? "reload" : this.reloadMethodName);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("The field needs to be reloaded, but the reload method cannot be found.", e);
             }
