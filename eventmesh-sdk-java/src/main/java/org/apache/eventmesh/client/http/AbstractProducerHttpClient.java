@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * AbstractProducerHttpClient
@@ -48,7 +49,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         try {
             String response = HttpUtils.post(httpClient, target, builderPublishRequestParam(t));
             EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
-            if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
+            if (Objects.requireNonNull(ret).getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
         } catch (Exception exception) {
@@ -63,7 +64,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         try {
             String response = HttpUtils.post(httpClient, target, builderRequestParam(message, timeout));
             EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
-            if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
+            if (Objects.requireNonNull(ret).getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
                 return transformMessage(ret);
             }
             throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
