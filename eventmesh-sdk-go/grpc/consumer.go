@@ -162,6 +162,14 @@ func (d *eventMeshConsumer) replyMsg(msg *proto.SimpleMessage, reply interface{}
 		return ErrUnSupportResponse
 	}
 	ttl := GetTTLWithDefault(msg, defaultTTL)
+
+	var err error = nil
+	defer func() {
+		if rerr := recover(); rerr != nil {
+			err = rerr.(error)
+		}
+	}()
+
 	d.streamSubscribeChan <- &proto.Subscription{
 		Header:        msg.Header,
 		ConsumerGroup: d.cfg.ConsumerGroup,
@@ -177,7 +185,7 @@ func (d *eventMeshConsumer) replyMsg(msg *proto.SimpleMessage, reply interface{}
 		},
 	}
 
-	return nil
+	return err
 }
 
 // Subscribe topic for webhook

@@ -29,10 +29,12 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,10 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class Codec {
+    private static final Logger LOG = LoggerFactory.getLogger(Codec.class);
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
@@ -78,8 +78,8 @@ public class Codec {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            if (log.isDebugEnabled()) {
-                log.debug("Encoder pkg={}", JsonUtils.serialize(pkg));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Encoder pkg={}", JsonUtils.serialize(pkg));
             }
 
             final byte[] headerData = serializeBytes(OBJECT_MAPPER.writeValueAsString(header));
@@ -134,7 +134,7 @@ public class Codec {
                 Package pkg = new Package(header, body);
                 out.add(pkg);
             } catch (Exception e) {
-                log.error("decode error| receive: {}.", deserializeBytes(in.array()));
+                LOG.error(String.format("decode error| receive: %s.", deserializeBytes(in.array())), e);
                 throw e;
             }
         }
@@ -157,8 +157,8 @@ public class Codec {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode headerJson={}", deserializeBytes(headerData));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Decode headerJson={}", deserializeBytes(headerData));
             }
             return OBJECT_MAPPER.readValue(deserializeBytes(headerData), Header.class);
         }
@@ -169,16 +169,15 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Decode bodyJson={}", deserializeBytes(bodyData));
             }
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
         private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
             if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
-                String errorMsg = String.format(
-                        "invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
+                String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
                         deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
                 throw new IllegalArgumentException(errorMsg);
             }
@@ -212,7 +211,9 @@ public class Codec {
             case REDIRECT_TO_CLIENT:
                 return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);
             default:
-                log.warn("Invalidate TCP command: {}", command);
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Invalidate TCP command: {}", command);
+                }
                 return null;
         }
     }
@@ -235,7 +236,7 @@ public class Codec {
      */
     private static byte[] serializeBytes(String str) {
         if (str == null) {
-            return null;
+            return new byte[0];
         }
         return str.getBytes(Constants.DEFAULT_CHARSET);
     }

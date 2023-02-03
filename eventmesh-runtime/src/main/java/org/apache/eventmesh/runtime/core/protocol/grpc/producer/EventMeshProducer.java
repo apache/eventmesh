@@ -62,19 +62,19 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
-            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.eventMeshCluster));
+            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-            eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
+                eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         logger.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void start() throws Exception {
-        if (serviceState == null || ServiceState.RUNNING.equals(serviceState)) {
+        if (serviceState == null || ServiceState.RUNNING == serviceState) {
             return;
         }
 
@@ -84,7 +84,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void shutdown() throws Exception {
-        if (serviceState == null || ServiceState.INITED.equals(serviceState)) {
+        if (serviceState == null || ServiceState.INITED == serviceState) {
             return;
         }
 

@@ -1,0 +1,80 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+server:
+  port: 11012
+  name: "EVENTMESH-workflow"
+flow:
+  queue:
+    store: in-memory
+  scheduler:
+    type: in-line
+    interval: 10 # milliseconds
+  protocol: meshmessage
+catalog:
+  server_name: "EVENTMESH-catalog"
+eventmesh:
+  host: "127.0.0.1"
+  env: "PRD"
+  idc: "DEFAULT"
+  sys: "DEFAULT"
+  username: "username"
+  password: "password"
+  producer_group: "EventMeshTest-producerGroup"
+  ttl: 4000
+  grpc:
+    port: 10205
+plugins:
+  registry:
+    nacos:
+      address_list: "127.0.0.1:8848"
+  selector:
+    nacos:
+      address_list: "127.0.0.1:8848"
+  database:
+    mysql:
+      dsn: "root:123456@(127.0.0.1:3306)/db_workflow?charset=utf8&parseTime=True&loc=Local"
+      max_idle: 50
+      max_open: 100
+      max_lifetime: 180000
+  log:
+    default:
+      - writer: file
+        level: info
+        writer_config:
+          filename: ./workflow.log
+          max_size: 10
+          max_backups: 10
+          max_age: 7
+          compress:  false
+    schedule:
+      - writer: file
+        level: info
+        writer_config:
+          filename: ./workflow_schedule.log
+          max_size: 10
+          max_backups: 10
+          max_age: 7
+          compress:  false
+    queue:
+      - writer: file
+        level: info
+        writer_config:
+          filename: ./workflow_queue.log
+          max_size: 10
+          max_backups: 10
+          max_age: 7
+          compress:  false

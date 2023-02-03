@@ -35,7 +35,7 @@ Our long-term goal is to make working with EDAs as easy as it is to work with RE
 That goes from documentation to code generation, discovery to event management.
 Most of the processes you apply to your REST APIs nowadays would be applicable to your event-driven/asynchronous APIs too.
 
-See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/getting-started)
+See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/guides)
 
 ### Workflow Example
 

@@ -37,10 +37,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefaultConsumer {
 
-    public Logger messageLogger = LoggerFactory.getLogger(DefaultConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultConsumer.class);
 
-    AsyncHttpClient asyncHttpClient;
-    private EventMeshMessageListenerConcurrently messageListener;
+    private transient AsyncHttpClient asyncHttpClient;
+
+
+    private transient EventMeshMessageListenerConcurrently messageListener;
+
+    public EventMeshMessageListenerConcurrently getMessageListener() {
+        return messageListener;
+    }
 
     public DefaultConsumer() throws Exception {
         this.asyncHttpClient = asyncHttpClient();
@@ -57,7 +63,7 @@ public class DefaultConsumer {
 
         if (response.getStatusCode() == HttpConstants.ResponseStatusCodes.OK_200) {
             responseBody = response.getResponseBody();
-            messageLogger.info(responseBody);
+            LOG.info(responseBody);
             return responseBody;
         }
         throw new IllegalStateException("HTTP response code error: " + response.getStatusCode());

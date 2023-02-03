@@ -18,7 +18,10 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
@@ -33,26 +36,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * This handler used to print the total client info
  */
-public class ShowClientHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/showClient")
+public class ShowClientHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ShowClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public ShowClientHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public ShowClientHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        StringBuilder result = new StringBuilder();
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String newLine = System.getProperty("line.separator");
             logger.info("showAllClient=================");
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
@@ -71,25 +74,14 @@ public class ShowClientHandler implements HttpHandler {
                 }
 
                 for (Map.Entry<String, AtomicInteger> entry : statMap.entrySet()) {
-                    result += String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())
-                            +
-                            newLine;
+                    result.append(String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())).append(newLine);
                 }
             }
 
-            httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
+            out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowClientHandler fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
         }
-
     }
 }

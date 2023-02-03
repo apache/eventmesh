@@ -17,17 +17,10 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/api/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/dal/model"
-	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/util"
-	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/pkg/asyncapi"
-	v2 "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/pkg/asyncapi/v2"
 	"github.com/gogf/gf/util/gconv"
-	"gorm.io/gorm"
-	"time"
 )
 
 type catalogImpl struct {
@@ -46,67 +39,21 @@ func (c *catalogImpl) Registry(ctx context.Context, request *proto.RegistryReque
 	if len(request.Definition) == 0 {
 		return rsp, nil
 	}
-	var doc = new(v2.Document)
-	if err := v2.Decode(gconv.Bytes(request.Definition), &doc); err != nil {
-		return rsp, err
-	}
-	if len(doc.Channels()) == 0 {
-		return rsp, nil
-	}
-	if err := dal.GetDalClient().Transaction(func(tx *gorm.DB) error {
-		var handlers []func() error
-		for _, channel := range doc.Channels() {
-			for _, operation := range channel.Operations() {
-				var record = c.buildEventCatalog(request.FileName, channel, operation)
-				handlers = append(handlers, func() error {
-					return c.catalogDAL.Insert(context.Background(), tx, record)
-				})
-			}
-		}
-		handlers = append(handlers, func() error {
-			return c.catalogDAL.InsertEvent(context.Background(), tx, c.buildEvent(request.FileName,
-				request.Definition, doc))
-		})
-		return util.GoAndWait(handlers...)
-	}); err != nil {
+	if err := c.catalogDAL.Save(ctx, &model.Event{Definition: request.Definition}); err != nil {
 		return rsp, err
 	}
 	return rsp, nil
 }
 
-func (c *catalogImpl) Query(ctx context.Context, in *proto.QueryRequest) (*proto.QueryResponse, error) {
-	var rsp = &proto.QueryResponse{}
-	res, err := c.catalogDAL.Select(ctx, in.OperationId)
+func (c *catalogImpl) QueryOperations(ctx context.Context, in *proto.QueryOperationsRequest) (*proto.
+	QueryOperationsResponse, error) {
+	var rsp = &proto.QueryOperationsResponse{}
+	res, err := c.catalogDAL.SelectOperations(ctx, in.ServiceName, in.OperationId)
 	if err != nil {
 		return rsp, err
 	}
-	rsp.Type = res.Type
-	rsp.ChannelName = res.ChannelName
-	rsp.Schema = res.Schema
+	if err = gconv.Structs(res, &rsp.Operations); err != nil {
+		return nil, err
+	}
 	return rsp, nil
-}
-
-func (c *catalogImpl) buildEventCatalog(fileName string, channel asyncapi.Channel,
-	operation asyncapi.Operation) *model.EventCatalog {
-	var record model.EventCatalog
-	record.OperationID = fmt.Sprintf("file://%s#%s", fileName, operation.ID())
-	record.ChannelName = channel.ID()
-	record.Type = string(operation.Type())
-	record.Status = constants.NormalStatus
-	record.CreateTime = time.Now()
-	record.UpdateTime = time.Now()
-	record.Schema = gconv.String(operation.Messages()[0].Payload())
-	return &record
-}
-
-func (c *catalogImpl) buildEvent(fileName string, definition string, doc asyncapi.Document) *model.Event {
-	var record model.Event
-	record.Title = doc.Info().Title()
-	record.FileName = fileName
-	record.Definition = definition
-	record.Status = constants.NormalStatus
-	record.Version = doc.Info().Version()
-	record.CreateTime = time.Now()
-	record.UpdateTime = time.Now()
-	return &record
 }

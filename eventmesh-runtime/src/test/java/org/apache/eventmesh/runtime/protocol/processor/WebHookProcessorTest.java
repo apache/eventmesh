@@ -30,6 +30,8 @@ import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,13 +53,13 @@ import io.netty.handler.codec.http.HttpVersion;
 public class WebHookProcessorTest {
 
     @Mock
-    private HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManage hookConfigOperationManage;
     @Mock
-    private WebHookMQProducer webHookMQProducer;
+    private transient WebHookMQProducer webHookMQProducer;
 
-    private WebHookController controller = new WebHookController();
+    private transient WebHookController controller = new WebHookController();
 
-    private ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
+    private transient ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
 
     @Before
     public void init() throws Exception {
@@ -84,7 +86,7 @@ public class WebHookProcessorTest {
             Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
             Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
             Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
-            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes()), msgSendToMq.getData());
+            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -92,7 +94,7 @@ public class WebHookProcessorTest {
 
     private HttpRequest buildMockWebhookRequest() {
         ByteBuf buffer = Unpooled.buffer();
-        buffer.writeBytes("\"mock_data\":0".getBytes());
+        buffer.writeBytes("\"mock_data\":0".getBytes(StandardCharsets.UTF_8));
 
         FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/webhook/github/eventmesh/all", buffer);
         request.headers().set("content-type", "application/json");

@@ -44,7 +44,7 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-examples**模块下
 运行 org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast 的main方法
 ```
 
-更多关于TCP部分的内容，请参考 [EventMesh TCP](docs/zh/sdk-java/03-tcp.md)
+更多关于TCP部分的内容，请参考 [EventMesh TCP](/docs/zh/sdk-java/03-tcp.md)
 
 ### 2. HTTP演示
 
@@ -71,7 +71,7 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-examples**模块下
 ```
 运行 org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance 的main方法
 ```
-更多关于HTTP部分的内容，请参考 [EventMesh HTTP](docs/zh/sdk-java/02-http.md)
+更多关于HTTP部分的内容，请参考 [EventMesh HTTP](/docs/zh/sdk-java/02-http.md)
 
 ### 3. GRPC 演示
 
@@ -125,11 +125,11 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-examples**模块下
 运行 org.apache.eventmesh.grpc.pub.eventmeshmessage.BatchPublishInstance 的main方法
 ```
 
-更多关于 gRPC 部分的内容，请参考 [EventMesh gRPC](docs/zh/sdk-java/04-grpc.md)
+更多关于 gRPC 部分的内容，请参考 [EventMesh gRPC](/docs/zh/sdk-java/04-grpc.md)
 
 ### 3.4 测试
 
-请参考[EventMesh Store](docs/zh/instruction/01-store.md) 和 [EventMesh Runtime](docs/zh/instruction/02-runtime.md) 完成运行环境的部署
+请参考[EventMesh Store](/docs/zh/instruction/01-store.md) 和 [EventMesh Runtime](/docs/zh/instruction/02-runtime.md) 完成运行环境的部署
 
 完成 store 和 runtime 的部署后，就可以在 eventmesh-examples 模块下运行我们的 demo 来体验 eventmesh 了：
 

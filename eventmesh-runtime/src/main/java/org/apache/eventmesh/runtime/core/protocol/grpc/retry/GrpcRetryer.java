@@ -49,7 +49,7 @@ public class GrpcRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= grpcConfiguration.eventMeshServerRetryBlockQueueSize) {
+        if (failed.size() >= grpcConfiguration.getEventMeshServerRetryBlockQueueSize()) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -57,22 +57,21 @@ public class GrpcRetryer {
     }
 
     public void init() {
-        pool = new ThreadPoolExecutor(grpcConfiguration.eventMeshServerRetryThreadNum,
-            grpcConfiguration.eventMeshServerRetryThreadNum,
-            60000,
-            TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(grpcConfiguration.eventMeshServerRetryBlockQueueSize),
-            new ThreadFactory() {
-                private AtomicInteger count = new AtomicInteger();
+        pool = new ThreadPoolExecutor(
+                grpcConfiguration.getEventMeshServerRetryThreadNum(),
+                grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
+                new ThreadFactory() {
+                    private AtomicInteger count = new AtomicInteger();
 
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread thread = new Thread(r, "grpc-retry-" + count.incrementAndGet());
-                    thread.setPriority(Thread.NORM_PRIORITY);
-                    thread.setDaemon(true);
-                    return thread;
-                }
-            }, new ThreadPoolExecutor.AbortPolicy());
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread thread = new Thread(r, "grpc-retry-" + count.incrementAndGet());
+                        thread.setPriority(Thread.NORM_PRIORITY);
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                }, new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {

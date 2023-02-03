@@ -21,13 +21,14 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
@@ -38,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,8 +54,7 @@ public class QueryRecommendEventMeshHandlerTest {
     public void testHandle() throws Exception {
         // mock eventMeshTCPServer
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
-        EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
-        doNothing().when(tcpConfiguration).init();
+        EventMeshTCPConfiguration tcpConfiguration = new EventMeshTCPConfiguration();
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
         URI uri = mock(URI.class);
@@ -61,16 +62,19 @@ public class QueryRecommendEventMeshHandlerTest {
         OutputStream outputStream = new ByteArrayOutputStream();
         HttpExchange httpExchange = mock(HttpExchange.class);
         when(httpExchange.getRequestURI()).thenReturn(uri);
-        QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer);
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
+
+        String returnValue = "result";
 
         // case 1: normal case
-        tcpConfiguration.eventMeshServerRegistryEnable = true;
+        tcpConfiguration.setEventMeshServerRegistryEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertEquals("result", response);
+            Assert.assertEquals(returnValue, response);
         }
 
         // case 2: params illegal
@@ -84,15 +88,15 @@ public class QueryRecommendEventMeshHandlerTest {
         }
 
         // case 3: registry disable
-        tcpConfiguration.eventMeshServerRegistryEnable = false;
+        tcpConfiguration.setEventMeshServerRegistryEnable(false);
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertNotEquals("result", response);
+            Assert.assertNotEquals(returnValue, response);
         }
     }
 }

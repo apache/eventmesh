@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,7 +40,12 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
+import lombok.Data;
+
+@Data
 public class HttpCommand implements ProtocolTransportObject {
+
+    private static final long serialVersionUID = -8763824685105888009L;
 
     private static final AtomicLong requestId = new AtomicLong(0);
 
@@ -108,94 +114,22 @@ public class HttpCommand implements ProtocolTransportObject {
         return response;
     }
 
-    public long getReqTime() {
-        return reqTime;
-    }
-
-    public void setReqTime(long reqTime) {
-        this.reqTime = reqTime;
-    }
-
-    public long getResTime() {
-        return resTime;
-    }
-
-    public void setResTime(long resTime) {
-        this.resTime = resTime;
-    }
-
-    public long getOpaque() {
-        return opaque;
-    }
-
-    public void setOpaque(long opaque) {
-        this.opaque = opaque;
-    }
-
-    public CmdType getCmdType() {
-        return cmdType;
-    }
-
-    public void setCmdType(CmdType cmdType) {
-        this.cmdType = cmdType;
-    }
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public String getHttpVersion() {
-        return httpVersion;
-    }
-
-    public void setHttpVersion(String httpVersion) {
-        this.httpVersion = httpVersion;
-    }
-
-    public String getRequestCode() {
-        return requestCode;
-    }
-
-    public void setRequestCode(String requestCode) {
-        this.requestCode = requestCode;
-    }
-
-    public Header getHeader() {
-        return header;
-    }
-
-    public void setHeader(Header header) {
-        this.header = header;
-    }
-
-    public Body getBody() {
-        return body;
-    }
-
-    public void setBody(Body body) {
-        this.body = body;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-                .append(cmdType).append(",")
-                .append(httpMethod).append("/").append(httpVersion).append(",")
-                .append("requestCode=").append(requestCode).append(",")
-                .append("opaque=").append(opaque).append(",");
+            .append(cmdType).append(",")
+            .append(httpMethod).append("/").append(httpVersion).append(",")
+            .append("requestCode=").append(requestCode).append(",")
+            .append("opaque=").append(opaque).append(",");
 
         if (cmdType == CmdType.RES) {
             sb.append("cost=").append(resTime - reqTime).append(",");
         }
 
         sb.append("header=").append(header).append(",")
-                .append("body=").append(body)
-                .append("}");
+            .append("body=").append(body)
+            .append("}");
 
         return sb.toString();
     }
@@ -203,17 +137,17 @@ public class HttpCommand implements ProtocolTransportObject {
     public String abstractDesc() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-                .append(cmdType).append(",")
-                .append(httpMethod).append("/").append(httpVersion).append(",")
-                .append("requestCode=").append(requestCode).append(",")
-                .append("opaque=").append(opaque).append(",");
+            .append(cmdType).append(",")
+            .append(httpMethod).append("/").append(httpVersion).append(",")
+            .append("requestCode=").append(requestCode).append(",")
+            .append("opaque=").append(opaque).append(",");
 
         if (cmdType == CmdType.RES) {
             sb.append("cost=").append(resTime - reqTime).append(",");
         }
 
         sb.append("header=").append(header).append(",")
-                .append("bodySize=").append(body.toString().length()).append("}");
+            .append("bodySize=").append(body.toString().length()).append("}");
 
         return sb.toString();
     }
@@ -233,7 +167,7 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(JsonUtils.serialize(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
+            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.serialize(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());

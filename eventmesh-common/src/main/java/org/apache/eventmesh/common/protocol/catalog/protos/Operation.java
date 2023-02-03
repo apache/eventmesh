@@ -20,50 +20,77 @@
 
 package org.apache.eventmesh.common.protocol.catalog.protos;
 
+import java.util.Objects;
+
+import com.google.protobuf.ByteString;
+
 /**
  * Protobuf type {@code eventmesh.catalog.api.protocol.Operation}
  */
 @SuppressWarnings({"all"})
 public final class Operation extends
-    com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.Operation)
-    OperationOrBuilder {
-    private static final long serialVersionUID = 0L;
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.Operation)
+        OperationOrBuilder {
+    private static final long serialVersionUID = 7231240618302324570L;
+
+    public static final int CHANNEL_NAME_FIELD_NUMBER = 1;
+    public static final int SCHEMA_FIELD_NUMBER = 2;
+    public static final int TYPE_FIELD_NUMBER = 3;
+
+    private static final Operation DEFAULT_INSTANCE;
+
+    private volatile String channelName;
+    private volatile String schema;
+    private volatile String type;
+    private byte memoizedIsInitialized = -1;
 
     // Use Operation.newBuilder() to construct.
+
+
+    static {
+        DEFAULT_INSTANCE = new Operation();
+    }
+
+    public static Operation getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
     private Operation(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
     }
 
     private Operation() {
-        channelName_ = "";
-        schema_ = "";
-        type_ = "";
+        channelName = "";
+        schema = "";
+        type = "";
     }
 
     @Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
-        UnusedPrivateParameter unused) {
+    protected Object newInstance(UnusedPrivateParameter unused) {
         return new Operation();
     }
 
     @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
         return this.unknownFields;
     }
 
     private Operation(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+
         this();
+        Objects.requireNonNull(input, "CodedInputStream can not be null");
+        Objects.requireNonNull(extensionRegistry, "ExtensionRegistryLite can not be null");
+
         if (extensionRegistry == null) {
             throw new NullPointerException();
         }
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
+                com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
             boolean done = false;
             while (!done) {
@@ -73,26 +100,20 @@ public final class Operation extends
                         done = true;
                         break;
                     case 10: {
-                        String s = input.readStringRequireUtf8();
-
-                        channelName_ = s;
+                        channelName = input.readStringRequireUtf8();
                         break;
                     }
                     case 18: {
-                        String s = input.readStringRequireUtf8();
-
-                        schema_ = s;
+                        schema = input.readStringRequireUtf8();
                         break;
                     }
                     case 26: {
-                        String s = input.readStringRequireUtf8();
-
-                        type_ = s;
+                        type = input.readStringRequireUtf8();
                         break;
                     }
                     default: {
                         if (!parseUnknownField(
-                            input, unknownFields, extensionRegistry, tag)) {
+                                input, unknownFields, extensionRegistry, tag)) {
                             done = true;
                         }
                         break;
@@ -103,15 +124,14 @@ public final class Operation extends
             throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
             throw new com.google.protobuf.InvalidProtocolBufferException(
-                e).setUnfinishedMessage(this);
+                    e).setUnfinishedMessage(this);
         } finally {
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
         }
     }
 
-    public static final com.google.protobuf.Descriptors.Descriptor
-    getDescriptor() {
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_Operation_descriptor;
     }
 
@@ -119,12 +139,10 @@ public final class Operation extends
     protected FieldAccessorTable
     internalGetFieldAccessorTable() {
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_Operation_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                Operation.class, Builder.class);
+                .ensureFieldAccessorsInitialized(
+                        Operation.class, Builder.class);
     }
 
-    public static final int CHANNEL_NAME_FIELD_NUMBER = 1;
-    private volatile Object channelName_;
 
     /**
      * <code>string channel_name = 1;</code>
@@ -133,16 +151,7 @@ public final class Operation extends
      */
     @Override
     public String getChannelName() {
-        Object ref = channelName_;
-        if (ref instanceof String) {
-            return (String) ref;
-        } else {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            String s = bs.toStringUtf8();
-            channelName_ = s;
-            return s;
-        }
+        return channelName;
     }
 
     /**
@@ -151,22 +160,10 @@ public final class Operation extends
      * @return The bytes for channelName.
      */
     @Override
-    public com.google.protobuf.ByteString
-    getChannelNameBytes() {
-        Object ref = channelName_;
-        if (ref instanceof String) {
-            com.google.protobuf.ByteString b =
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (String) ref);
-            channelName_ = b;
-            return b;
-        } else {
-            return (com.google.protobuf.ByteString) ref;
-        }
+    public com.google.protobuf.ByteString getChannelNameBytes() {
+        return ByteString.copyFromUtf8(channelName);
     }
 
-    public static final int SCHEMA_FIELD_NUMBER = 2;
-    private volatile Object schema_;
 
     /**
      * <code>string schema = 2;</code>
@@ -175,16 +172,7 @@ public final class Operation extends
      */
     @Override
     public String getSchema() {
-        Object ref = schema_;
-        if (ref instanceof String) {
-            return (String) ref;
-        } else {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            String s = bs.toStringUtf8();
-            schema_ = s;
-            return s;
-        }
+        return schema;
     }
 
     /**
@@ -193,22 +181,10 @@ public final class Operation extends
      * @return The bytes for schema.
      */
     @Override
-    public com.google.protobuf.ByteString
-    getSchemaBytes() {
-        Object ref = schema_;
-        if (ref instanceof String) {
-            com.google.protobuf.ByteString b =
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (String) ref);
-            schema_ = b;
-            return b;
-        } else {
-            return (com.google.protobuf.ByteString) ref;
-        }
-    }
+    public com.google.protobuf.ByteString getSchemaBytes() {
 
-    public static final int TYPE_FIELD_NUMBER = 3;
-    private volatile Object type_;
+        return ByteString.copyFromUtf8(schema);
+    }
 
     /**
      * <pre>
@@ -221,16 +197,8 @@ public final class Operation extends
      */
     @Override
     public String getType() {
-        Object ref = type_;
-        if (ref instanceof String) {
-            return (String) ref;
-        } else {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            String s = bs.toStringUtf8();
-            type_ = s;
-            return s;
-        }
+
+        return type;
     }
 
     /**
@@ -243,21 +211,11 @@ public final class Operation extends
      * @return The bytes for type.
      */
     @Override
-    public com.google.protobuf.ByteString
-    getTypeBytes() {
-        Object ref = type_;
-        if (ref instanceof String) {
-            com.google.protobuf.ByteString b =
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (String) ref);
-            type_ = b;
-            return b;
-        } else {
-            return (com.google.protobuf.ByteString) ref;
-        }
+    public com.google.protobuf.ByteString getTypeBytes() {
+
+        return ByteString.copyFromUtf8(type);
     }
 
-    private byte memoizedIsInitialized = -1;
 
     @Override
     public final boolean isInitialized() {
@@ -275,15 +233,15 @@ public final class Operation extends
 
     @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-        throws java.io.IOException {
+            throws java.io.IOException {
         if (!getChannelNameBytes().isEmpty()) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, channelName_);
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, channelName);
         }
         if (!getSchemaBytes().isEmpty()) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 2, schema_);
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 2, schema);
         }
         if (!getTypeBytes().isEmpty()) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 3, type_);
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 3, type);
         }
         unknownFields.writeTo(output);
     }
@@ -297,13 +255,13 @@ public final class Operation extends
 
         size = 0;
         if (!getChannelNameBytes().isEmpty()) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, channelName_);
+            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, channelName);
         }
         if (!getSchemaBytes().isEmpty()) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, schema_);
+            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, schema);
         }
         if (!getTypeBytes().isEmpty()) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, type_);
+            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, type);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -321,15 +279,15 @@ public final class Operation extends
         Operation other = (Operation) obj;
 
         if (!getChannelName()
-            .equals(other.getChannelName())) {
+                .equals(other.getChannelName())) {
             return false;
         }
         if (!getSchema()
-            .equals(other.getSchema())) {
+                .equals(other.getSchema())) {
             return false;
         }
         if (!getType()
-            .equals(other.getType())) {
+                .equals(other.getType())) {
             return false;
         }
         if (!unknownFields.equals(other.unknownFields)) {
@@ -357,84 +315,84 @@ public final class Operation extends
     }
 
     public static Operation parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
     public static Operation parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            java.nio.ByteBuffer data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static Operation parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
     public static Operation parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static Operation parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
     public static Operation parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
     public static Operation parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
+                .parseWithIOException(PARSER, input);
     }
 
     public static Operation parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
+                .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
     public static Operation parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
+                .parseDelimitedWithIOException(PARSER, input);
     }
 
     public static Operation parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
 
     public static Operation parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
+                .parseWithIOException(PARSER, input);
     }
 
     public static Operation parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
+                .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
     @Override
@@ -453,23 +411,25 @@ public final class Operation extends
     @Override
     public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
-            ? new Builder() : new Builder().mergeFrom(this);
+                ? new Builder() : new Builder().mergeFrom(this);
     }
 
     @Override
-    protected Builder newBuilderForType(
-        BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
+    protected Builder newBuilderForType(BuilderParent parent) {
+        return new Builder(parent);
     }
+
 
     /**
      * Protobuf type {@code eventmesh.catalog.api.protocol.Operation}
      */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.Operation)
-        OperationOrBuilder {
+    public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+            implements OperationOrBuilder {
+
+        private String type = "";
+        private String channelName = "";
+        private String schema = "";
+
         public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_Operation_descriptor;
@@ -479,8 +439,8 @@ public final class Operation extends
         protected FieldAccessorTable
         internalGetFieldAccessorTable() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_Operation_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                    Operation.class, Builder.class);
+                    .ensureFieldAccessorsInitialized(
+                            Operation.class, Builder.class);
         }
 
         // Construct using org.apache.eventmesh.common.protocol.catalog.protos.Operation.newBuilder()
@@ -489,26 +449,23 @@ public final class Operation extends
         }
 
         private Builder(
-            BuilderParent parent) {
+                BuilderParent parent) {
             super(parent);
             maybeForceBuilderInitialization();
         }
 
         private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+                    .alwaysUseFieldBuilders) {
             }
         }
 
         @Override
         public Builder clear() {
             super.clear();
-            channelName_ = "";
-
-            schema_ = "";
-
-            type_ = "";
-
+            channelName = "";
+            schema = "";
+            type = "";
             return this;
         }
 
@@ -535,9 +492,9 @@ public final class Operation extends
         @Override
         public Operation buildPartial() {
             Operation result = new Operation(this);
-            result.channelName_ = channelName_;
-            result.schema_ = schema_;
-            result.type_ = type_;
+            result.channelName = channelName;
+            result.schema = schema;
+            result.type = type;
             onBuilt();
             return result;
         }
@@ -549,34 +506,34 @@ public final class Operation extends
 
         @Override
         public Builder setField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                Object value) {
             return super.setField(field, value);
         }
 
         @Override
         public Builder clearField(
-            com.google.protobuf.Descriptors.FieldDescriptor field) {
+                com.google.protobuf.Descriptors.FieldDescriptor field) {
             return super.clearField(field);
         }
 
         @Override
         public Builder clearOneof(
-            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
             return super.clearOneof(oneof);
         }
 
         @Override
         public Builder setRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                int index, Object value) {
             return super.setRepeatedField(field, index, value);
         }
 
         @Override
         public Builder addRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                Object value) {
             return super.addRepeatedField(field, value);
         }
 
@@ -595,15 +552,15 @@ public final class Operation extends
                 return this;
             }
             if (!other.getChannelName().isEmpty()) {
-                channelName_ = other.channelName_;
+                channelName = other.channelName;
                 onChanged();
             }
             if (!other.getSchema().isEmpty()) {
-                schema_ = other.schema_;
+                schema = other.schema;
                 onChanged();
             }
             if (!other.getType().isEmpty()) {
-                type_ = other.type_;
+                type = other.type;
                 onChanged();
             }
             this.mergeUnknownFields(other.unknownFields);
@@ -618,9 +575,9 @@ public final class Operation extends
 
         @Override
         public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws java.io.IOException {
             Operation parsedMessage = null;
             try {
                 parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -635,7 +592,6 @@ public final class Operation extends
             return this;
         }
 
-        private Object channelName_ = "";
 
         /**
          * <code>string channel_name = 1;</code>
@@ -643,16 +599,7 @@ public final class Operation extends
          * @return The channelName.
          */
         public String getChannelName() {
-            Object ref = channelName_;
-            if (!(ref instanceof String)) {
-                com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
-                String s = bs.toStringUtf8();
-                channelName_ = s;
-                return s;
-            } else {
-                return (String) ref;
-            }
+            return channelName;
         }
 
         /**
@@ -660,18 +607,9 @@ public final class Operation extends
          *
          * @return The bytes for channelName.
          */
-        public com.google.protobuf.ByteString
-        getChannelNameBytes() {
-            Object ref = channelName_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                        (String) ref);
-                channelName_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
+        public com.google.protobuf.ByteString getChannelNameBytes() {
+
+            return ByteString.copyFromUtf8(channelName);
         }
 
         /**
@@ -680,13 +618,10 @@ public final class Operation extends
          * @param value The channelName to set.
          * @return This builder for chaining.
          */
-        public Builder setChannelName(
-            String value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setChannelName(String value) {
+            Objects.requireNonNull(value, "channelname can not be null");
 
-            channelName_ = value;
+            channelName = value;
             onChanged();
             return this;
         }
@@ -697,8 +632,7 @@ public final class Operation extends
          * @return This builder for chaining.
          */
         public Builder clearChannelName() {
-
-            channelName_ = getDefaultInstance().getChannelName();
+            channelName = getDefaultInstance().getChannelName();
             onChanged();
             return this;
         }
@@ -709,19 +643,14 @@ public final class Operation extends
          * @param value The bytes for channelName to set.
          * @return This builder for chaining.
          */
-        public Builder setChannelNameBytes(
-            com.google.protobuf.ByteString value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setChannelNameBytes(com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "channelname can not be null");
             checkByteStringIsUtf8(value);
 
-            channelName_ = value;
+            channelName = value.toStringUtf8();
             onChanged();
             return this;
         }
-
-        private Object schema_ = "";
 
         /**
          * <code>string schema = 2;</code>
@@ -729,16 +658,7 @@ public final class Operation extends
          * @return The schema.
          */
         public String getSchema() {
-            Object ref = schema_;
-            if (!(ref instanceof String)) {
-                com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
-                String s = bs.toStringUtf8();
-                schema_ = s;
-                return s;
-            } else {
-                return (String) ref;
-            }
+            return schema;
         }
 
         /**
@@ -748,16 +668,7 @@ public final class Operation extends
          */
         public com.google.protobuf.ByteString
         getSchemaBytes() {
-            Object ref = schema_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                        (String) ref);
-                schema_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
+            return ByteString.copyFromUtf8(schema);
         }
 
         /**
@@ -766,13 +677,10 @@ public final class Operation extends
          * @param value The schema to set.
          * @return This builder for chaining.
          */
-        public Builder setSchema(
-            String value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setSchema(String value) {
+            Objects.requireNonNull(value, "schema can not be null");
 
-            schema_ = value;
+            schema = value;
             onChanged();
             return this;
         }
@@ -783,8 +691,7 @@ public final class Operation extends
          * @return This builder for chaining.
          */
         public Builder clearSchema() {
-
-            schema_ = getDefaultInstance().getSchema();
+            schema = getDefaultInstance().getSchema();
             onChanged();
             return this;
         }
@@ -795,19 +702,15 @@ public final class Operation extends
          * @param value The bytes for schema to set.
          * @return This builder for chaining.
          */
-        public Builder setSchemaBytes(
-            com.google.protobuf.ByteString value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setSchemaBytes(com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "schema can not be null");
             checkByteStringIsUtf8(value);
 
-            schema_ = value;
+            schema = value.toStringUtf8();
             onChanged();
             return this;
         }
 
-        private Object type_ = "";
 
         /**
          * <pre>
@@ -819,16 +722,8 @@ public final class Operation extends
          * @return The type.
          */
         public String getType() {
-            Object ref = type_;
-            if (!(ref instanceof String)) {
-                com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
-                String s = bs.toStringUtf8();
-                type_ = s;
-                return s;
-            } else {
-                return (String) ref;
-            }
+
+            return type;
         }
 
         /**
@@ -840,18 +735,8 @@ public final class Operation extends
          *
          * @return The bytes for type.
          */
-        public com.google.protobuf.ByteString
-        getTypeBytes() {
-            Object ref = type_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                        (String) ref);
-                type_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
+        public com.google.protobuf.ByteString getTypeBytes() {
+            return ByteString.copyFromUtf8(type);
         }
 
         /**
@@ -864,13 +749,10 @@ public final class Operation extends
          * @param value The type to set.
          * @return This builder for chaining.
          */
-        public Builder setType(
-            String value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setType(String value) {
+            Objects.requireNonNull(value, "type can not be null");
 
-            type_ = value;
+            type = value;
             onChanged();
             return this;
         }
@@ -885,8 +767,7 @@ public final class Operation extends
          * @return This builder for chaining.
          */
         public Builder clearType() {
-
-            type_ = getDefaultInstance().getType();
+            type = getDefaultInstance().getType();
             onChanged();
             return this;
         }
@@ -901,27 +782,24 @@ public final class Operation extends
          * @param value The bytes for type to set.
          * @return This builder for chaining.
          */
-        public Builder setTypeBytes(
-            com.google.protobuf.ByteString value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
+        public Builder setTypeBytes(com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "type can not be null");
             checkByteStringIsUtf8(value);
 
-            type_ = value;
+            type = value.toStringUtf8();
             onChanged();
             return this;
         }
 
         @Override
         public final Builder setUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
+                final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.setUnknownFields(unknownFields);
         }
 
         @Override
         public final Builder mergeUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
+                final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.mergeUnknownFields(unknownFields);
         }
 
@@ -930,23 +808,15 @@ public final class Operation extends
     }
 
     // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.Operation)
-    private static final Operation DEFAULT_INSTANCE;
 
-    static {
-        DEFAULT_INSTANCE = new Operation();
-    }
-
-    public static Operation getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
 
     private static final com.google.protobuf.Parser<Operation>
-        PARSER = new com.google.protobuf.AbstractParser<Operation>() {
+            PARSER = new com.google.protobuf.AbstractParser<Operation>() {
         @Override
         public Operation parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
             return new Operation(input, extensionRegistry);
         }
     };

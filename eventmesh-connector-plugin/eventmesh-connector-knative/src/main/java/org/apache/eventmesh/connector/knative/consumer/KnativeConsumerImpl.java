@@ -20,24 +20,37 @@ package org.apache.eventmesh.connector.knative.consumer;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.cloudevents.CloudEvent;
 
+@Config(field = "clientConfiguration")
 public class KnativeConsumerImpl implements Consumer {
 
-    private PullConsumerImpl pullConsumer;
+    private static final Logger LOG = LoggerFactory.getLogger(KnativeConsumerImpl.class);
+
+    private transient PullConsumerImpl pullConsumer;
+
+
+    /**
+     * Unified configuration class corresponding to knative-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
+
+    private static final Logger logger = LoggerFactory.getLogger(KnativeConsumerImpl.class);
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
         // Load parameters from properties file:
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-        properties.put("emUrl", clientConfiguration.emurl);
-        properties.put("serviceAddr", clientConfiguration.serviceAddr);
+        properties.put("emUrl", clientConfiguration.getEmurl());
+        properties.put("serviceAddr", clientConfiguration.getServiceAddr());
 
         pullConsumer = new PullConsumerImpl(properties);
     }
@@ -52,7 +65,7 @@ public class KnativeConsumerImpl implements Consumer {
         try {
             pullConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("unsubscribe error", e);
         }
     }
 
@@ -84,5 +97,9 @@ public class KnativeConsumerImpl implements Consumer {
     @Override
     public void shutdown() {
         pullConsumer.shutdown();
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
     }
 }

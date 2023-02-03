@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.metrics.prometheus;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.metrics.prometheus.config.PrometheusConfiguration;
+import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusGrpcExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusHttpExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
 
@@ -34,9 +37,15 @@ import io.prometheus.client.exporter.HTTPServer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Config(field = "prometheusConfiguration")
 public class PrometheusMetricsRegistry implements MetricsRegistry {
 
     private volatile HTTPServer prometheusHttpServer;
+
+    /**
+     * Unified configuration class corresponding to prometheus.properties
+     */
+    private PrometheusConfiguration prometheusConfiguration;
 
     @Override
     public void start() {
@@ -46,7 +55,7 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
                     SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
                     PrometheusCollector
                         .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
-                    int port = PrometheusConfiguration.getEventMeshPrometheusPort();
+                    int port = prometheusConfiguration.getEventMeshPrometheusPort();
                     try {
                         //Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
                         prometheusHttpServer = new HTTPServer(port, true);
@@ -78,10 +87,18 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
         if (metric instanceof TcpSummaryMetrics) {
             PrometheusTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
         }
+
+        if (metric instanceof GrpcSummaryMetrics) {
+            PrometheusGrpcExporter.export("apache-eventmesh", (GrpcSummaryMetrics) metric);
+        }
     }
 
     @Override
     public void unRegister(Metric metric) {
         // todo: need to split the current metrics
+    }
+
+    public PrometheusConfiguration getClientConfiguration() {
+        return this.prometheusConfiguration;
     }
 }

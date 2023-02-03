@@ -23,6 +23,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,6 +34,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
 
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +45,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.slf4j.Logger;
@@ -51,56 +52,72 @@ import org.slf4j.LoggerFactory;
 
 public class HTTPClientPool {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final Logger LOGGER = LoggerFactory.getLogger(HTTPClientPool.class);
 
-    private List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
+    private final transient List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
 
-    private int core = 1;
+    private int core;
 
-    public HTTPClientPool(int core) {
-        this.core = core;
+    private static final int DEFAULT_MAX_TOTAL = 200;
+    private static final int DEFAULT_IDLETIME_SECONDS = 30;
+
+    private transient PoolingHttpClientConnectionManager connectionManager;
+
+    public HTTPClientPool(final int core) {
+        this.core = core <= 0 ? 1 : core;
     }
 
     public CloseableHttpClient getClient() {
         if (CollectionUtils.size(clients) < core) {
-            CloseableHttpClient client = getHttpClient(200, 30, null);
+            final CloseableHttpClient client = getHttpClient(DEFAULT_MAX_TOTAL, DEFAULT_IDLETIME_SECONDS, null);
             clients.add(client);
             return client;
         }
+
         return clients.get(RandomUtils.nextInt(core, 2 * core) % core);
     }
 
-    public void shutdown() throws Exception {
-        Iterator<CloseableHttpClient> itr = clients.iterator();
-        while (itr.hasNext()) {
-            CloseableHttpClient client = itr.next();
-            client.close();
-            itr.remove();
+    public void shutdown() throws IOException {
+        synchronized (clients) {
+            final Iterator<CloseableHttpClient> itr = clients.iterator();
+            while (itr.hasNext()) {
+                try (CloseableHttpClient client = itr.next()) {
+                    itr.remove();
+                }
+            }
+        }
+
+        if (this.connectionManager == null) {
+            this.connectionManager.close();
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public CloseableHttpClient getHttpClient(int maxTotal, int idleTimeInSeconds, SSLContext sslContext) {
+    //@SuppressWarnings("deprecation")
+    public CloseableHttpClient getHttpClient(final int maxTotal, final int idleTimeInSeconds, final SSLContext sslContext) {
+
+        SSLContext innerSSLContext = sslContext;
         try {
-            if (sslContext == null) {
-                sslContext = SSLContexts.custom().loadTrustMaterial(new TheTrustStrategy()).build();
-            }
+            innerSSLContext = innerSSLContext == null ? SSLContexts.custom().loadTrustMaterial(new TheTrustStrategy()).build() : innerSSLContext;
+
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-            logger.error("Get sslContext error: {}", e.getMessage());
+            LOGGER.error("Get sslContext error", e);
             return HttpClients.createDefault();
         }
 
-        HostnameVerifier hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-        Registry<ConnectionSocketFactory> socketFactoryRegistry
-                = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", sslsf).build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        if (connectionManager == null) {
+            final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(innerSSLContext, NoopHostnameVerifier.INSTANCE);
+            final Registry<ConnectionSocketFactory> socketFactoryRegistry
+                    = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", sslsf)
+                    .build();
+            connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+            connectionManager.setDefaultMaxPerRoute(maxTotal);
+            connectionManager.setMaxTotal(maxTotal);
+        }
 
-        connectionManager.setDefaultMaxPerRoute(maxTotal);
-        connectionManager.setMaxTotal(maxTotal);
+
         return HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
@@ -110,9 +127,9 @@ public class HTTPClientPool {
                 .build();
     }
 
-    public static class TheTrustStrategy implements TrustStrategy {
+    private static class TheTrustStrategy implements TrustStrategy {
         @Override
-        public boolean isTrusted(X509Certificate[] arg0, String arg1) {
+        public boolean isTrusted(final X509Certificate[] chain, final String authType) {
             return true;
         }
     }

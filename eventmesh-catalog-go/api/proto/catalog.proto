@@ -19,11 +19,15 @@ syntax = "proto3";
 
 package eventmesh.catalog.api.protocol;
 
+option java_multiple_files = true;
+option java_package="org.apache.eventmesh.common.protocol.catalog.protos";
+option java_outer_classname = "EventmeshCatalogGrpc";
+
 option go_package = "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/api/proto";
 
 service Catalog {
     rpc Registry (RegistryRequest) returns (RegistryResponse) {}
-    rpc Query (QueryRequest) returns (QueryResponse) {}
+    rpc QueryOperations (QueryOperationsRequest) returns (QueryOperationsResponse) {}
 }
 
 message RegistryRequest {
@@ -34,13 +38,18 @@ message RegistryRequest {
 message RegistryResponse {
 }
 
-message QueryRequest {
-    string operation_id = 1;
+message QueryOperationsRequest {
+    string service_name = 1;
+    string operation_id = 2;
 }
 
-message QueryResponse {
+message Operation {
     string channel_name = 1;
     string schema = 2;
     // publish/subscribe
     string type = 3;
+}
+
+message QueryOperationsResponse {
+    repeated Operation operations = 1;
 }

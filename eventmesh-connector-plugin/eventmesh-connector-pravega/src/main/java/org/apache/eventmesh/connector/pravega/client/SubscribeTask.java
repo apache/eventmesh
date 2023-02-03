@@ -34,6 +34,7 @@ public class SubscribeTask extends Thread {
     private final EventStreamReader<byte[]> reader;
     private final EventListener listener;
     private final AtomicBoolean running = new AtomicBoolean(true);
+    private final AtomicBoolean continueRead = new AtomicBoolean(true);
 
     public SubscribeTask(String name, EventStreamReader<byte[]> reader, EventListener listener) {
         super(name);
@@ -43,27 +44,44 @@ public class SubscribeTask extends Thread {
 
     @Override
     public void run() {
+        CloudEvent cloudEvent = null;
         while (running.get()) {
-            EventRead<byte[]> event;
-            while ((event = reader.readNextEvent(2000)) != null) {
+            if (continueRead.get()) {
+                EventRead<byte[]> event = reader.readNextEvent(2000);
+                if (event == null) {
+                    continue;
+                }
                 byte[] eventByteArray = event.getEvent();
                 if (eventByteArray == null) {
                     continue;
                 }
                 PravegaEvent pravegaEvent = PravegaEvent.getFromByteArray(eventByteArray);
-                CloudEvent cloudEvent = pravegaEvent.convertToCloudEvent();
-                EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
-                    @Override
-                    public void commit(EventMeshAction action) {
-                        // nothing to do
-                    }
-                };
-                listener.consume(cloudEvent, consumeContext);
+                cloudEvent = pravegaEvent.convertToCloudEvent();
+
+                listener.consume(cloudEvent, new PravegaEventMeshAsyncConsumeContext());
+            } else {
+                listener.consume(cloudEvent, new PravegaEventMeshAsyncConsumeContext());
             }
         }
     }
 
     public void stopRead() {
         running.compareAndSet(true, false);
+    }
+
+    private class PravegaEventMeshAsyncConsumeContext extends EventMeshAsyncConsumeContext {
+        @Override
+        public void commit(EventMeshAction action) {
+            switch (action) {
+                case CommitMessage:
+                case ReconsumeLater:
+                    continueRead.set(false);
+                    break;
+                case ManualAck:
+                    continueRead.set(true);
+                    break;
+                default:
+            }
+        }
     }
 }

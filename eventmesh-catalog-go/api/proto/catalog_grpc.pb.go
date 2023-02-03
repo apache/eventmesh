@@ -39,7 +39,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CatalogClient interface {
 	Registry(ctx context.Context, in *RegistryRequest, opts ...grpc.CallOption) (*RegistryResponse, error)
-	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	QueryOperations(ctx context.Context, in *QueryOperationsRequest, opts ...grpc.CallOption) (*QueryOperationsResponse, error)
 }
 
 type catalogClient struct {
@@ -59,9 +59,9 @@ func (c *catalogClient) Registry(ctx context.Context, in *RegistryRequest, opts 
 	return out, nil
 }
 
-func (c *catalogClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
-	out := new(QueryResponse)
-	err := c.cc.Invoke(ctx, "/eventmesh.catalog.api.protocol.Catalog/Query", in, out, opts...)
+func (c *catalogClient) QueryOperations(ctx context.Context, in *QueryOperationsRequest, opts ...grpc.CallOption) (*QueryOperationsResponse, error) {
+	out := new(QueryOperationsResponse)
+	err := c.cc.Invoke(ctx, "/eventmesh.catalog.api.protocol.Catalog/QueryOperations", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *catalogClient) Query(ctx context.Context, in *QueryRequest, opts ...grp
 // for forward compatibility
 type CatalogServer interface {
 	Registry(context.Context, *RegistryRequest) (*RegistryResponse, error)
-	Query(context.Context, *QueryRequest) (*QueryResponse, error)
+	QueryOperations(context.Context, *QueryOperationsRequest) (*QueryOperationsResponse, error)
 	mustEmbedUnimplementedCatalogServer()
 }
 
@@ -84,8 +84,8 @@ type UnimplementedCatalogServer struct {
 func (UnimplementedCatalogServer) Registry(context.Context, *RegistryRequest) (*RegistryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Registry not implemented")
 }
-func (UnimplementedCatalogServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
+func (UnimplementedCatalogServer) QueryOperations(context.Context, *QueryOperationsRequest) (*QueryOperationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperations not implemented")
 }
 func (UnimplementedCatalogServer) mustEmbedUnimplementedCatalogServer() {}
 
@@ -118,20 +118,20 @@ func _Catalog_Registry_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Catalog_Query_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRequest)
+func _Catalog_QueryOperations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOperationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CatalogServer).Query(ctx, in)
+		return srv.(CatalogServer).QueryOperations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/eventmesh.catalog.api.protocol.Catalog/Query",
+		FullMethod: "/eventmesh.catalog.api.protocol.Catalog/QueryOperations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServer).Query(ctx, req.(*QueryRequest))
+		return srv.(CatalogServer).QueryOperations(ctx, req.(*QueryOperationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -148,8 +148,8 @@ var Catalog_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Catalog_Registry_Handler,
 		},
 		{
-			MethodName: "Query",
-			Handler:    _Catalog_Query_Handler,
+			MethodName: "QueryOperations",
+			Handler:    _Catalog_QueryOperations_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -34,22 +34,22 @@ import io.grpc.stub.StreamObserver;
 
 public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplBase {
 
-    private final Logger logger = LoggerFactory.getLogger(ProducerService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatService.class);
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final ThreadPoolExecutor threadPoolExecutor;
+    private final transient ThreadPoolExecutor threadPoolExecutor;
 
-    public HeartbeatService(EventMeshGrpcServer eventMeshGrpcServer,
-                            ThreadPoolExecutor threadPoolExecutor) {
+    public HeartbeatService(final EventMeshGrpcServer eventMeshGrpcServer,
+                            final ThreadPoolExecutor threadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
     public void heartbeat(Heartbeat request, StreamObserver<Response> responseObserver) {
-        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-            "heartbeat", EventMeshConstants.PROTOCOL_GRPC,
-            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+                "heartbeat", EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
+                eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
@@ -57,8 +57,8 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
             try {
                 heartbeatProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
-                    StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
+                LOGGER.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
+                        StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
             }
         });

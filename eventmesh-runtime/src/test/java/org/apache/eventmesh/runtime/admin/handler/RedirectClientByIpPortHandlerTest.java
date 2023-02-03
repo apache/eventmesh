@@ -19,6 +19,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 import java.io.ByteArrayOutputStream;
@@ -35,12 +36,13 @@ import com.sun.net.httpserver.HttpExchange;
 
 public class RedirectClientByIpPortHandlerTest {
 
-    private RedirectClientByIpPortHandler redirectClientByIpPortHandler;
+    private static transient RedirectClientByIpPortHandler redirectClientByIpPortHandler;
 
     @Before
     public void init() {
         EventMeshTCPServer mockServer = PowerMockito.mock(EventMeshTCPServer.class);
-        redirectClientByIpPortHandler = new RedirectClientByIpPortHandler(mockServer);
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        redirectClientByIpPortHandler = new RedirectClientByIpPortHandler(mockServer, httpHandlerManager);
     }
 
     @Test
