@@ -28,6 +28,12 @@ func TestConfig_Load(t *testing.T) {
 	assert := testifyassert.New(t)
 
 	config := &Config{}
+	config.Common = &Common{
+		RegistryName: "test",
+		Cluster:      "test",
+		Env:          "env",
+		IDC:          "idc1",
+	}
 	config.Server.GRPCOption = &GRPCOption{
 		Port: "10010",
 		TLSOption: &TLSOption{
@@ -42,10 +48,6 @@ func TestConfig_Load(t *testing.T) {
 		PushMessagePoolSize:   10,
 		ReplyPoolSize:         10,
 		MsgReqNumPerSecond:    5,
-		RegistryName:          "test",
-		Cluster:               "test",
-		Env:                   "env",
-		IDC:                   "idc1",
 		SessionExpiredInMills: 5 * time.Second,
 		SendMessageTimeout:    5 * time.Second,
 	}

@@ -46,8 +46,8 @@ type GroupClient struct {
 func DefaultStreamGroupClient() *GroupClient {
 	hostname, _ := os.Hostname()
 	return &GroupClient{
-		ENV:              config.GlobalConfig().Server.GRPCOption.Env,
-		IDC:              config.GlobalConfig().Server.GRPCOption.IDC,
+		ENV:              config.GlobalConfig().Common.Env,
+		IDC:              config.GlobalConfig().Common.IDC,
 		ConsumerGroup:    "ConsumerGroup",
 		Topic:            "Topic",
 		GRPCType:         consts.STREAM,
@@ -66,8 +66,8 @@ func DefaultStreamGroupClient() *GroupClient {
 func DefaultWebhookGroupClient() *GroupClient {
 	hostname, _ := os.Hostname()
 	return &GroupClient{
-		ENV:              config.GlobalConfig().Server.GRPCOption.Env,
-		IDC:              config.GlobalConfig().Server.GRPCOption.IDC,
+		ENV:              config.GlobalConfig().Common.Env,
+		IDC:              config.GlobalConfig().Common.IDC,
 		ConsumerGroup:    "ConsumerGroup",
 		Topic:            "Topic",
 		GRPCType:         consts.WEBHOOK,
