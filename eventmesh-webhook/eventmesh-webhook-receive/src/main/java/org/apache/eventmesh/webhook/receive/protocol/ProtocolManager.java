@@ -21,23 +21,26 @@ import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class ProtocolManage {
+public class ProtocolManager {
 
     /**
      * ManufacturerProtocol pool
      */
-    private final Map<String, ManufacturerProtocol> protocolMap = new HashMap<>();
+    private final transient Map<String, ManufacturerProtocol> protocolMap = new HashMap<>();
 
     {
         this.register(new GithubProtocol());
     }
 
-    void register(ManufacturerProtocol manufacturerProtocol) {
+    void register(final ManufacturerProtocol manufacturerProtocol) {
+        Objects.requireNonNull(manufacturerProtocol, "manufacturerProtocol can not be null");
+
         protocolMap.put(manufacturerProtocol.getManufacturerName(), manufacturerProtocol);
     }
 
-    public ManufacturerProtocol getManufacturerProtocol(String manufacturerName) {
+    public ManufacturerProtocol getManufacturerProtocol(final String manufacturerName) {
         return protocolMap.get(manufacturerName);
     }
 }
