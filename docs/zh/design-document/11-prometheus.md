@@ -1,46 +1,15 @@
-# 通过 Prometheus 观察 Metrics
+使用 Prometheus 观察指标
+普罗米修斯
+Prometheus 是一个开源系统监控和警报工具包，用于收集指标并将其存储为时间序列数据。 EventMesh 公开了一组可以由 Prometheus 抓取和分析的指标数据。 请按照“使用 Prometheus 的第一步”教程下载并安装最新版本的 Prometheus。
 
-## 下载 Prometheus
+编辑普罗米修斯配置
+eventmesh-runtime/conf/prometheus.yml 配置文件指定指标 HTTP 端点的端口。 默认指标端口为 19090。
 
-官网：https://prometheus.io/
-
-本地下载Prometheus：https://prometheus.io/download/
-
-选择自己电脑对应的版本下载并解压缩
-
-![Prometheus-download](../../images/Prometheus-download.png)
-
-### 2、在prometheus.yml中添加配置
-
-如果你是Prometheus的新手，可以直接复制eventmesh-runtime/conf/prometheus.yml替换
-
-例如：这是win-64的下载后的样子：
-
-![prometheus-yml](../../images/prometheus-yml.png)
-
-替换红框中的文件
-
-如果你十分了解Prometheus，可以自行配置，eventmesh默认的导出的端口为19090。
-
-ps：如果需要更换端口的话，请修改eventmesh-runtime/conf/eventmesh.properties中的
-
-```properties
-#prometheusPort
 eventMesh.metrics.prometheus.port=19090
-```
+请参考 Prometheus 配置指南将 EventMesh 指标添加为配置文件中的抓取目标。 这是创建名为 eventmesh 和端点 http://localhost:19090 的作业的最低配置：
 
-## 运行 Prometheus 和 EventMesh
-
-双击Prometheus.exe运行
-
-运行eventmesh-starter(参考[eventmesh-runtime-quickstart](eventmesh-runtime-quickstart.md))
-
-运行eventmesh-example(参考[eventmesh-sdk-java-quickstart](eventmesh-sdk-java-quickstart.md))
-
-打开浏览器访问：http://localhost:9090/
-
-### 输入想观察的 Metrics
-
-输入’**eventmesh_**‘ 就会出现相关的指标的提示
-
-![promethus-search](../../images/promethus-search.png)
+抓取配置：
+   - job_name：“eventmesh”
+     静态配置：
+       - 目标：[“本地主机：19090”]
+请导航到 Prometheus 仪表板（例如 http://localhost:9090）以查看 EventMesh 导出的指标列表，这些指标以 eventmesh_ 为前缀。
