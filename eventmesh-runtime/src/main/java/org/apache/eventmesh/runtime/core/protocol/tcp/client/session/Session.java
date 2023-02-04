@@ -280,6 +280,16 @@ public class Session {
         }
         return true;
     }
+    
+     @Override
+    public int hashCode()
+    {
+        int result = 17   //primeNumber
+        result += 31*result + client!=null?client.hashCode():0;
+        result += 31*result + context!=null?context.hashCode():0;
+        result += 31*result + eventMeshTCPConfiguration!=null?eventMeshTCPConfiguration.hashCode():0;
+        return result;
+    }
 
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
