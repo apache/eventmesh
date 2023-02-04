@@ -13,20 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package config
 
-// Config registry config
-type Config struct {
-	ServiceName string
-	Weight      int
-	Address     string
-	Metadata    map[string]string
-}
-
-// PluginConfig define registry plugin config
-type PluginConfig struct {
-	ServiceName string `yaml:"service_name"`
-	CacheDir    string `yaml:"cache-dir"`
-	Port        string `yaml:"port"`         // nacos server port
-	AddressList string `yaml:"address_list"` // nacos server address list
+type Common struct {
+	Name         string `yaml:"name" toml:"name"`
+	RegistryName string `yaml:"registry-name" toml:"registry-name"`
+	Cluster      string `yaml:"cluster" toml:"cluster"`
+	Env          string `yaml:"env" toml:"env"`
+	IDC          string `yaml:"idc" toml:"idc"`
 }
