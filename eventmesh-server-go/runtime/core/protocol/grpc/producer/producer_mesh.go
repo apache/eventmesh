@@ -48,8 +48,8 @@ func NewEventMeshProducer(cfg *ProducerGroupConfig) (EventMeshProducer, error) {
 		return nil, err
 	}
 
-	cluster := config2.GlobalConfig().Server.GRPCOption.Cluster
-	idc := config2.GlobalConfig().Server.GRPCOption.IDC
+	cluster := config2.GlobalConfig().Common.Cluster
+	idc := config2.GlobalConfig().Common.IDC
 	mm := make(map[string]string)
 	mm["producerGroup"] = cfg.GroupName
 	mm["instanceName"] = util.BuildMeshClientID(cfg.GroupName, cluster)

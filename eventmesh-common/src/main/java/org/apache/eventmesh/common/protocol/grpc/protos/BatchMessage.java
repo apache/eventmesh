@@ -21,7 +21,6 @@
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.protobuf.ByteString;
 
