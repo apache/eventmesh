@@ -40,7 +40,6 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public class EventMeshGrpcConsumer implements AutoCloseable {
+    private static final transient String SDK_STREAM_URL = "grpc_stream";
     private transient ManagedChannel channel;
     private final transient EventMeshGrpcClientConfig clientConfig;
 
@@ -69,7 +69,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             Runtime.getRuntime().availableProcessors(),
             new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
 
-    private transient ManagedChannel channel;
     private transient ConsumerServiceBlockingStub consumerClient;
     private transient ConsumerServiceStub consumerAsyncClient;
     private transient HeartbeatServiceBlockingStub heartbeatClient;
