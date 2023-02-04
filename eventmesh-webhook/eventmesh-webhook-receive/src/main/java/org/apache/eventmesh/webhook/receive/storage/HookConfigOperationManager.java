@@ -43,7 +43,7 @@ import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
-public class HookConfigOperationManage implements WebHookConfigOperation {
+public class HookConfigOperationManager implements WebHookConfigOperation {
     /**
      * webhook config pool -> key is CallbackPath
      */
@@ -52,7 +52,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     private String operationMode;
     private ConfigService nacosConfigService;
 
-    public HookConfigOperationManage() {
+    public HookConfigOperationManager() {
     }
 
     /**
@@ -60,7 +60,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
      *
      * @param receiveConfiguration receiveConfiguration
      */
-    public HookConfigOperationManage(ReceiveConfiguration receiveConfiguration) throws FileNotFoundException, NacosException {
+    public HookConfigOperationManager(ReceiveConfiguration receiveConfiguration) throws FileNotFoundException, NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
