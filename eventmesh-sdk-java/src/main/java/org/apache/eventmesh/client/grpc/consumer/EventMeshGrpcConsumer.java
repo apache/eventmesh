@@ -40,6 +40,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,9 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public class EventMeshGrpcConsumer implements AutoCloseable {
-
-    private static final String SDK_STREAM_URL = "grpc_stream";
-
+    private transient ManagedChannel channel;
     private final transient EventMeshGrpcClientConfig clientConfig;
 
     private final transient Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
@@ -138,7 +137,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
         for (SubscriptionItem item : subscriptionItems) {
-            subscriptionMap.put(item.getTopic(), new SubscriptionInfo(item, url));
+            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url));
         }
     }
 
@@ -172,7 +171,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     public Response unsubscribe(final List<SubscriptionItem> subscriptionItems) {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-
         if (log.isInfoEnabled()) {
             log.info("Removing subscription stream: {}", subscriptionItems);
         }
@@ -230,13 +228,11 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             } else {
                 type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;
             }
-
             final Subscription.SubscriptionItem item = Subscription.SubscriptionItem.newBuilder()
                     .setTopic(subscriptionItem.getTopic())
                     .setMode(mode)
                     .setType(type)
                     .build();
-
             builder.addSubscriptionItems(item);
         });
 
@@ -286,7 +282,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             } catch (Exception e) {
                 log.error("Error in sending out heartbeat.", e);
             }
-        }, 10000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+        }, 10_000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
         if (log.isInfoEnabled()) {
             log.info("Grpc Consumer Heartbeat started.");

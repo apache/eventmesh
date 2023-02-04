@@ -27,39 +27,33 @@ import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WebhookFileListener {
 
-    private final Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
-    private final Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); // WatchKey's path
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-    private String filePath;
-    private Map<String, WebHookConfig> cacheWebHookConfig;
+    private final transient Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
+    private final transient Map<WatchKey, String> watchKeyPathMap = new ConcurrentHashMap<>(); // WatchKey's path
+    private transient String filePath;
+    private transient Map<String, WebHookConfig> cacheWebHookConfig;
 
-    public WebhookFileListener() {
-    }
-
-    public WebhookFileListener(String filePath, Map<String, WebHookConfig> cacheWebHookConfig) throws FileNotFoundException {
+    public WebhookFileListener(final String filePath, final Map<String, WebHookConfig> cacheWebHookConfig) {
         this.filePath = WebHookOperationConstant.getFilePath(filePath);
         this.cacheWebHookConfig = cacheWebHookConfig;
         filePatternInit();
@@ -68,13 +62,14 @@ public class WebhookFileListener {
     /**
      * Read the directory and register the listener
      */
-    public void filePatternInit() {
-        File webHookFileDir = new File(filePath);
+    private void filePatternInit() {
+        final File webHookFileDir = new File(filePath);
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
         } else {
             readFiles(webHookFileDir);
         }
+
         fileWatchRegister();
     }
 
@@ -83,9 +78,9 @@ public class WebhookFileListener {
      *
      * @param file file
      */
-    public void readFiles(File file) {
-        File[] fs = file.listFiles();
-        for (File f : Objects.requireNonNull(fs)) {
+    private void readFiles(final File file) {
+        final File[] fs = file.listFiles();
+        for (final File f : Objects.requireNonNull(fs)) {
             if (f.isDirectory()) {
                 readFiles(f);
             } else if (f.isFile()) {
@@ -99,46 +94,47 @@ public class WebhookFileListener {
      *
      * @param webhookConfigFile webhookConfigFile
      */
-    public void cacheInit(File webhookConfigFile) {
-        StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile), StandardCharsets.UTF_8))) {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                fileContent.append(line);
+    private void cacheInit(final File webhookConfigFile) {
+        final StringBuilder fileContent = new StringBuilder();
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
+                StandardCharsets.UTF_8)) {
+            while (br.ready()) {
+                fileContent.append(br.readLine());
             }
+
         } catch (IOException e) {
-            logger.error("cacheInit failed", e);
+            log.error("cacheInit failed", e);
         }
-        WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
+        final WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
     }
 
-    public void deleteConfig(File webhookConfigFile) {
+    public void deleteConfig(final File webhookConfigFile) {
         cacheWebHookConfig.remove(webhookConfigFile.getName());
     }
 
     /**
      * Register listeners with folders
      */
-    public void fileWatchRegister() {
-        ExecutorService cachedThreadPool = Executors.newFixedThreadPool(1);
+    private void fileWatchRegister() {
+        final ExecutorService cachedThreadPool = Executors.newFixedThreadPool(1);
         cachedThreadPool.execute(() -> {
-            File root = new File(filePath);
+            final File root = new File(filePath);
             loopDirInsertToSet(root, pathSet);
 
             WatchService service = null;
             try {
                 service = FileSystems.getDefault().newWatchService();
             } catch (Exception e) {
-                logger.error("getWatchService failed.", e);
+                log.error("getWatchService failed.", e);
             }
 
-            for (String path : pathSet) {
+            for (final String path : pathSet) {
                 WatchKey key = null;
                 try {
                     key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                 } catch (IOException e) {
-                    logger.error("registerWatchKey failed", e);
+                    log.error("registerWatchKey failed", e);
                 }
                 watchKeyPathMap.put(key, path);
             }
@@ -149,15 +145,15 @@ public class WebhookFileListener {
                     assert service != null;
                     key = service.take();
                 } catch (InterruptedException e) {
-                    logger.error("Interrupted", e);
+                    log.error("Interrupted", e);
                 }
 
                 assert key != null;
-                for (WatchEvent<?> event : key.pollEvents()) {
-                    String flashPath = watchKeyPathMap.get(key);
+                for (final WatchEvent<?> event : key.pollEvents()) {
+                    final String flashPath = watchKeyPathMap.get(key);
                     // manufacturer change
-                    String path = flashPath + "/" + event.context();
-                    File file = new File(path);
+                    final String path = flashPath + "/" + event.context();
+                    final File file = new File(path);
                     if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
                         if (file.isFile()) {
                             cacheInit(file);
@@ -166,7 +162,7 @@ public class WebhookFileListener {
                                 key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                                 watchKeyPathMap.put(key, path);
                             } catch (IOException e) {
-                                logger.error("registerWatchKey failed", e);
+                                log.error("registerWatchKey failed", e);
                             }
                         }
                     } else if (ENTRY_DELETE == event.kind()) {
@@ -190,12 +186,12 @@ public class WebhookFileListener {
      * @param parent  parent folder
      * @param pathSet folder's path set
      */
-    private void loopDirInsertToSet(File parent, Set<String> pathSet) {
+    private void loopDirInsertToSet(final File parent, final Set<String> pathSet) {
         if (!parent.isDirectory()) {
             return;
         }
         pathSet.add(parent.getPath());
-        for (File child : Objects.requireNonNull(parent.listFiles())) {
+        for (final File child : Objects.requireNonNull(parent.listFiles())) {
             loopDirInsertToSet(child, pathSet);
         }
     }

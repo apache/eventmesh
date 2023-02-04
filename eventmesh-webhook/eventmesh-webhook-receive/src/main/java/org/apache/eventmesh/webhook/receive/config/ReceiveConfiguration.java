@@ -44,7 +44,7 @@ public class ReceiveConfiguration {
     }
 
     public void processOperationProperties() {
-        String prefix = operationMode + "Mode";
+        final String prefix = operationMode + "Mode";
         this.operationProperties = (Properties) operationProperties.get(prefix);
     }
 }

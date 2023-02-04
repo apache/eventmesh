@@ -22,14 +22,14 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class AdminWebHookConfigOperationManageTest {
+public class AdminWebHookConfigOperationManagerTest {
 
     @Test
     public void init() throws Exception {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://eventmesh.properties");
 
-        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
+        AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
         adminWebHookConfigOperationManage.init();
 
         Assert.assertTrue(
