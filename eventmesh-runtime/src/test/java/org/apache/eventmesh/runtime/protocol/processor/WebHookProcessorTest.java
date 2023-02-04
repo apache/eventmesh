@@ -26,7 +26,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcesso
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 import org.apache.eventmesh.webhook.receive.WebHookMQProducer;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,7 +53,7 @@ import io.netty.handler.codec.http.HttpVersion;
 public class WebHookProcessorTest {
 
     @Mock
-    private transient HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManager hookConfigOperationManager;
     @Mock
     private transient WebHookMQProducer webHookMQProducer;
 
@@ -63,13 +63,13 @@ public class WebHookProcessorTest {
 
     @Before
     public void init() throws Exception {
-        hookConfigOperationManage = Mockito.mock(HookConfigOperationManage.class);
-        Mockito.when(hookConfigOperationManage.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
+        hookConfigOperationManager = Mockito.mock(HookConfigOperationManager.class);
+        Mockito.when(hookConfigOperationManager.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
         webHookMQProducer = Mockito.mock(WebHookMQProducer.class);
         Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
 
-        Whitebox.setInternalState(controller, HookConfigOperationManage.class, hookConfigOperationManage);
+        Whitebox.setInternalState(controller, HookConfigOperationManager.class, hookConfigOperationManager);
         Whitebox.setInternalState(controller, WebHookMQProducer.class, webHookMQProducer);
         Whitebox.setInternalState(controller, ProtocolAdaptor.class, protocolAdaptor);
     }
