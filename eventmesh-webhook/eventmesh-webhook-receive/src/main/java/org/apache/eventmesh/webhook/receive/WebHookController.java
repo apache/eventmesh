@@ -28,7 +28,7 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager;
 
 import java.util.Map;
 import java.util.Objects;
@@ -58,7 +58,7 @@ public class WebHookController {
     /**
      * config pool
      */
-    private HookConfigOperationManage hookConfigOperationManage;
+    private HookConfigOperationManager hookConfigOperationManager;
 
     private WebHookMQProducer webHookMQProducer;
 
@@ -71,7 +71,7 @@ public class WebHookController {
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
 
         this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getConnectorPluginType());
-        this.hookConfigOperationManage = new HookConfigOperationManage(receiveConfiguration);
+        this.hookConfigOperationManager = new HookConfigOperationManager(receiveConfiguration);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
 
@@ -88,7 +88,7 @@ public class WebHookController {
         // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
-        webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
+        webHookConfig = hookConfigOperationManager.queryWebHookConfigById(webHookConfig);
         if (webHookConfig == null) {
             throw new Exception("No matching webhookConfig.");
         }
