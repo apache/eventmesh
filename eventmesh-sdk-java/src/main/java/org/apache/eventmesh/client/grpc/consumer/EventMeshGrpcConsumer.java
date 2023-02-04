@@ -198,7 +198,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         return null;
     }
 
-    private Subscription buildSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
+    public Subscription buildSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
 
         final Subscription.Builder builder = Subscription.newBuilder()
