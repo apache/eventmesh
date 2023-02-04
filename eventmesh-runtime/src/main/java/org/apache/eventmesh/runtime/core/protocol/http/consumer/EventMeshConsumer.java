@@ -266,7 +266,7 @@ public class EventMeshConsumer {
     }
 
     public void subscribe(String topic, SubscriptionItem subscriptionItem) throws Exception {
-        if (SubscriptionMode.BROADCASTING!=subscriptionItem.getMode()) {
+        if (SubscriptionMode.BROADCASTING != subscriptionItem.getMode()) {
             persistentMqConsumer.subscribe(topic);
         } else {
             broadcastMqConsumer.subscribe(topic);
@@ -274,7 +274,7 @@ public class EventMeshConsumer {
     }
 
     public void unsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        if (SubscriptionMode.BROADCASTING==subscriptionMode) {
+        if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.unsubscribe(topic);
         } else {
             persistentMqConsumer.unsubscribe(topic);
@@ -290,7 +290,7 @@ public class EventMeshConsumer {
 
     public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<CloudEvent> events,
                              AbstractContext context) {
-        if (SubscriptionMode.BROADCASTING==subscriptionMode) {
+        if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {
             persistentMqConsumer.updateOffset(events, context);
