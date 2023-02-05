@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;

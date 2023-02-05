@@ -40,9 +40,6 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SSLContextFactory {
     private static String protocol = "TLSv1.1";
 
