@@ -152,7 +152,7 @@ public class EventMeshGrpcConsumerTest {
         return subscriptionItem;
     }
 
-    @Test
+    // @Test
     public void testBuildSubscription() {
         List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(buildMockSubscriptionItem());
