@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.collect.Maps;
-
 public class ConsumerGroupConf implements Serializable {
     //eg . 5013-1A0
     private String consumerGroup;
