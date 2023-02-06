@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
