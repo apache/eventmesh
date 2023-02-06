@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class UtilsConstants {
 
     public static final String ENV = "test";
-    public static final String HOST = "127.0.0.1";
+    public static final String HOST = "localhost";
     public static final Integer PASSWORD_LENGTH = 8;
     public static final String USER_NAME = "PU4283";
     public static final String GROUP = "EventmeshTestGroup";
@@ -34,8 +34,8 @@ public class UtilsConstants {
     public static final Integer PORT_2 = 9362;
     public static final String SUB_SYSTEM_1 = "5023";
     public static final String SUB_SYSTEM_2 = "5017";
-    public static final Integer PID_1 = 32893;
-    public static final Integer PID_2 = 42893;
+    public static final Integer PID_1 = 32_893;
+    public static final Integer PID_2 = 42_893;
     public static final String VERSION = "2.0.11";
     public static final String IDC = "FT";
     /**

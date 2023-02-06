@@ -32,7 +32,7 @@ Serverless工作流定义了一种领域特定语言（DSL）来描述有状态�
 
 AsyncAPI是一项开源计划，旨在改善事件驱动体系结构（EDA）的当前状态。我们的长期目标是让使用EDA和使用REST API一样容易。包括从文档到代码生成、发现到事件管理。现在应用于REST API的大多数流程也适用于事件驱动/异步API。
 
-详见[AsyncAPI官网](https://www.asyncapi.com/docs/getting-started)
+详见[AsyncAPI官网](https://www.asyncapi.com/docs/guides)
 
 ### 工作流示例
 

@@ -23,7 +23,6 @@ package org.apache.eventmesh.common.protocol.catalog.protos;
 import java.util.Objects;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Internal;
 
 /**
  * Protobuf type {@code eventmesh.catalog.api.protocol.Operation}

@@ -2,8 +2,6 @@
 
 #### 1. 协议格式
 
-![dataFlow](../../images/design-document/tcp-protocol.png)
-
 **消息组成详解：**
 
 ```
