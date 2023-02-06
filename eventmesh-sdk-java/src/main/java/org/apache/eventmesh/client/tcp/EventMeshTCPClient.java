@@ -54,8 +54,6 @@ public interface EventMeshTCPClient<ProtocolMessage> extends AutoCloseable {
 
     void registerSubBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
-    void close() throws EventMeshException;
-
     EventMeshTCPPubClient<ProtocolMessage> getPubClient();
 
     EventMeshTCPSubClient<ProtocolMessage> getSubClient();
