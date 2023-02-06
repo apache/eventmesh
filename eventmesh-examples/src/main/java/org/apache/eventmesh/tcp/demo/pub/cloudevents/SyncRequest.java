@@ -41,46 +41,54 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
-    private static EventMeshTCPClient<CloudEvent> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+        final UserAgent userAgent = EventMeshTestUtils.generateClient1();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
+
         try {
 
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+            final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                    eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-            log.info("begin send rr msg: {}", event);
-            Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
+
+            if (log.isInfoEnabled()) {
+                log.info("begin send rr msg: {}", event);
+            }
+
+            final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {
                 log.error("eventFormat is null. end the process");
                 return;
             }
-            CloudEvent replyEvent = eventFormat
-                .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
+
+            final CloudEvent replyEvent = eventFormat
+                    .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
 
             // check-NPE CloudEventData
-            CloudEventData cloudEventData = replyEvent.getData();
+            final CloudEventData cloudEventData = replyEvent.getData();
             if (null == cloudEventData) {
                 log.error("replyEvent.data is null. end the process");
                 return;
             }
-            String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-            log.info("receive rr reply: {}|{}", response, content);
+
+            final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+            if (log.isInfoEnabled()) {
+                log.info("receive rr reply: {}|{}", response, content);
+            }
 
         } catch (Exception e) {
-            log.warn("SyncRequest failed", e);
+            log.error("SyncRequest failed", e);
         }
     }
 }

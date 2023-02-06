@@ -17,74 +17,42 @@
 
 package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class SyncRequestInstance {
-
-    public static final Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
+@Slf4j
+public class SyncRequestInstance extends HttpAbstractDemo {
 
     public static void main(String[] args) throws Exception {
 
-        EventMeshHttpProducer eventMeshHttpProducer = null;
-        String eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
-        String topic = ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC;
+        final String topic = ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC;
 
-        try {
-            if (args.length > 0 && StringUtils.isNotBlank(args[0])) {
-                eventMeshIPPort = args[0];
-            }
-            if (args.length > 1 && StringUtils.isNotBlank(args[1])) {
-                topic = args[1];
-            }
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
-            if (StringUtils.isBlank(eventMeshIPPort)) {
-                // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
-            }
-
-            EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                    .liteEventMeshAddr(eventMeshIPPort)
-                    .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-                    .env("env")
-                    .idc("idc")
-                    .ip(IPUtils.getLocalAddress())
-                    .sys("1234")
-                    .pid(String.valueOf(ThreadUtils.getPID())).build();
-
-            eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
-
-            long startTime = System.currentTimeMillis();
-            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+            final long startTime = System.currentTimeMillis();
+            final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .bizSeqNo(RandomStringUtils.generateNum(30))
                     .content("contentStr with special protocal")
                     .topic(topic)
-                    .uniqueId(RandomStringUtils.generateNum(30)).build();
+                    .uniqueId(RandomStringUtils.generateNum(30))
+                    .build();
 
-            EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
-            if (logger.isDebugEnabled()) {
-                logger.debug("send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
+            final EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10_000);
+            if (log.isDebugEnabled()) {
+                log.debug("send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
                         System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
-            logger.warn("send msg failed, ", e);
+            log.error("send msg failed, ", e);
         }
 
-        Thread.sleep(30000);
-        try (final EventMeshHttpProducer close = eventMeshHttpProducer) {
-            // close producer
-        } catch (Exception e1) {
-            logger.warn("producer shutdown exception, ", e1);
-        }
+        Thread.sleep(30_000);
+
     }
 }
