@@ -17,10 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,41 +74,17 @@ public abstract class AbstractRemotingServer {
     }
 
     private EventLoopGroup initBossGroup(final String threadPrefix) {
-        bossGroup = new NioEventLoopGroup(1, new ThreadFactory() {
-            private final AtomicInteger count = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(final Runnable r) {
-                final Thread t = new Thread(r, threadPrefix + "-boss-" + count.incrementAndGet());
-                t.setDaemon(true);
-                return t;
-            }
-        });
-
+        bossGroup = new NioEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "-boss", true));
         return bossGroup;
     }
 
     private EventLoopGroup initIOGroup(final String threadPrefix, final int threadNum) {
-        ioGroup = new NioEventLoopGroup(threadNum, new ThreadFactory() {
-            private final AtomicInteger count = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(final Runnable r) {
-                return new Thread(r, threadPrefix + "-io-" + count.incrementAndGet());
-            }
-        });
+        ioGroup = new NioEventLoopGroup(threadNum, new EventMeshThreadFactory(threadPrefix + "-io"));
         return ioGroup;
     }
 
     private EventLoopGroup initWorkerGroup(final String threadPrefix, final int threadNum) {
-        workerGroup = new NioEventLoopGroup(threadNum, new ThreadFactory() {
-            private final AtomicInteger count = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(final Runnable r) {
-                return new Thread(r, threadPrefix + "-worker-" + count.incrementAndGet());
-            }
-        });
+        workerGroup = new NioEventLoopGroup(threadNum, new EventMeshThreadFactory(threadPrefix + "-worker"));
         return workerGroup;
     }
 

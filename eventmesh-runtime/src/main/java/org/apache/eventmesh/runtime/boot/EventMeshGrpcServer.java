@@ -245,7 +245,7 @@ public class EventMeshGrpcServer {
         sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(),
                 eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(), sendMsgThreadPoolQueue,
-                "eventMesh-grpc-sendMsg-%d", true);
+                "eventMesh-grpc-sendMsg", true);
 
         BlockingQueue<Runnable> subscribeMsgThreadPoolQueue =
             new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgBlockQueueSize());
@@ -253,7 +253,7 @@ public class EventMeshGrpcServer {
         clientMgmtExecutor = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(),
                 eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(), subscribeMsgThreadPoolQueue,
-                "eventMesh-grpc-clientMgmt-%d", true);
+                "eventMesh-grpc-clientMgmt", true);
 
         BlockingQueue<Runnable> pushMsgThreadPoolQueue =
             new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerPushMsgBlockQueueSize());
@@ -261,12 +261,12 @@ public class EventMeshGrpcServer {
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(),
                 eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(), pushMsgThreadPoolQueue,
-                "eventMesh-grpc-pushMsg-%d", true);
+                "eventMesh-grpc-pushMsg", true);
 
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(),
                 eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(), sendMsgThreadPoolQueue,
-                "eventMesh-grpc-replyMsg-%d", true);
+                "eventMesh-grpc-replyMsg", true);
     }
 
     private void initHttpClientPool() {

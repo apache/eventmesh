@@ -61,7 +61,7 @@ public class RabbitmqConsumer implements Consumer {
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors() * 2,
             Runtime.getRuntime().availableProcessors() * 2,
-            "EventMesh-Rabbitmq-Consumer-");
+            "EventMesh-Rabbitmq-Consumer");
 
     private RabbitmqConsumerHandler rabbitmqConsumerHandler;
 

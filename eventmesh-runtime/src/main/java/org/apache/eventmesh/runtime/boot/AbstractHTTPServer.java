@@ -121,7 +121,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private final transient ThreadPoolExecutor asyncContextCompleteHandler =
-            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext-");
+            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
 
     private static final int MAX_CONNECTIONS = 20_000;
 
