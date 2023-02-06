@@ -22,8 +22,6 @@ import org.apache.eventmesh.api.exception.AuthException;
 import org.apache.eventmesh.auth.http.basic.config.AuthConfigs;
 import org.apache.eventmesh.common.config.Config;
 
-import org.apache.commons.lang3.Validate;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;

@@ -486,7 +486,7 @@ public class ClientGroupWrapper {
                                 group, topic, bizSeqNo, sendBackTimes,
                                 sendBackFromEventMeshIp);
 
-                        if (sendBackTimes >= eventMeshTCPServer
+                        if (Objects.requireNonNull(sendBackTimes) >= eventMeshTCPServer
                                 .getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
                             log.error(
                                     "sendBack to broker over max times:{}, groupName:{}, topic:{}, "

@@ -19,8 +19,8 @@ package org.apache.eventmesh.common.config;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Properties;
@@ -135,11 +135,12 @@ public class ConfigService {
                 filePath = this.configPath + path;
             }
 
-            File file = new File(filePath);
-            if (!file.exists()) {
-                throw new RuntimeException("file is not exists");
-            }
 
+            InputStream configurationInputStream = getClass().getResourceAsStream(filePath);
+
+            if (configurationInputStream == null) {
+                throw new RuntimeException("configuration file does not exist");
+            }
             String suffix = path.substring(path.lastIndexOf('.') + 1);
             configInfo.setFilePath(filePath);
             object = FileLoad.getFileLoad(suffix).getConfig(configInfo);

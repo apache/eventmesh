@@ -56,10 +56,13 @@ public class CloudEventProducer {
     }
 
     public Response publish(final List<CloudEvent> events) {
+        if (log.isInfoEnabled()) {
+            log.info("BatchPublish message, batch size={}", events.size());
+        }
+
         if (CollectionUtils.isEmpty(events)) {
             return null;
         }
-
 
         final List<CloudEvent> enhancedEvents = events.stream()
                 .map(event -> enhanceCloudEvent(event, null))
@@ -69,20 +72,20 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.batchPublish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response {}", response.toString());
+                log.info("Received response " + response.toString());
             }
             return response;
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Error in BatchPublish message {}", events, e);
             }
-            return null;
         }
+        return null;
     }
 
     public Response publish(final CloudEvent cloudEvent) {
         if (log.isInfoEnabled()) {
-            log.info("Publish message {}", cloudEvent.toString());
+            log.info("Publish message " + cloudEvent.toString());
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, null);
 
@@ -91,28 +94,29 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.publish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response {}", response.toString());
+                log.info("Received response " + response.toString());
             }
             return response;
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Error in publishing message {}", cloudEvent, e);
             }
-            return null;
         }
+        return null;
     }
 
     public CloudEvent requestReply(final CloudEvent cloudEvent, final int timeout) {
         if (log.isInfoEnabled()) {
-            log.info("RequestReply message {}", cloudEvent.toString());
+            log.info("RequestReply message " + cloudEvent.toString());
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, String.valueOf(timeout));
 
-        final SimpleMessage enhancedMessage = EventMeshClientUtil.buildSimpleMessage(enhanceEvent, clientConfig, PROTOCOL_TYPE);
+        final SimpleMessage enhancedMessage = EventMeshClientUtil.buildSimpleMessage(enhanceEvent, clientConfig,
+                PROTOCOL_TYPE);
         try {
             final SimpleMessage reply = publisherClient.requestReply(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received reply message {}", reply.toString());
+                log.info("Received reply message:{}", reply.toString());
             }
 
             final Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
@@ -125,8 +129,8 @@ public class CloudEventProducer {
             if (log.isErrorEnabled()) {
                 log.error("Error in RequestReply message {}", cloudEvent, e);
             }
-            return null;
         }
+        return null;
     }
 
     private CloudEvent enhanceCloudEvent(final CloudEvent cloudEvent, final String timeout) {

@@ -28,19 +28,15 @@ import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AsyncPublish {
 
-    public static final Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
-
-    private static EventMeshTCPClient<CloudEvent> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         try {
@@ -50,20 +46,22 @@ public class AsyncPublish {
                     .port(eventMeshTcpPort)
                     .userAgent(userAgent)
                     .build();
-            client =
+            final EventMeshTCPClient<CloudEvent> client =
                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             for (int i = 0; i < 2; i++) {
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
-                logger.info("begin send async msg[{}]: {}", i, event);
+                if (log.isInfoEnabled()) {
+                    log.info("begin send async msg[{}]: {}", i, event);
+                }
                 client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-                Thread.sleep(1000);
+                Thread.sleep(1_000);
             }
-            Thread.sleep(2000);
+            Thread.sleep(2_000);
         } catch (Exception e) {
-            logger.warn("AsyncPublish failed", e);
+            log.error("AsyncPublish failed", e);
         }
     }
 }

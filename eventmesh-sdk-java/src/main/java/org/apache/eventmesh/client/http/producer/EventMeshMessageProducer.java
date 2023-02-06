@@ -32,49 +32,43 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.util.Objects;
+
 import io.cloudevents.SpecVersion;
 import io.netty.handler.codec.http.HttpMethod;
-
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessage> {
 
-    public EventMeshMessageProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+    public EventMeshMessageProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
     @Override
-    public RequestParam builderPublishRequestParam(EventMeshMessage message) {
+    public RequestParam builderPublishRequestParam(final EventMeshMessage message) {
         return buildCommonPostParam(message)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
     }
 
     @Override
-    public RequestParam builderRequestParam(EventMeshMessage message, long timeout) {
+    public RequestParam builderRequestParam(final EventMeshMessage message, final long timeout) {
         return buildCommonPostParam(message)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .setTimeout(timeout);
     }
 
     @Override
-    public void validateMessage(EventMeshMessage message) {
-        Preconditions.checkNotNull(message, "eventMeshMessage invalid");
-        Preconditions.checkNotNull(message.getTopic(), "eventMeshMessage[topic] invalid");
-        Preconditions.checkNotNull(message.getContent(), "eventMeshMessage[content] invalid");
+    public void validateMessage(final EventMeshMessage message) {
+        Objects.requireNonNull(message, "eventMeshMessage invalid");
+        Objects.requireNonNull(message.getTopic(), "eventMeshMessage[topic] invalid");
+        Objects.requireNonNull(message.getContent(), "eventMeshMessage[content] invalid");
 
     }
 
-    private void validateEventMeshMessage(EventMeshMessage message) {
-        Preconditions.checkNotNull(message, "eventMeshMessage invalid");
-        Preconditions.checkNotNull(message.getTopic(), "eventMeshMessage[topic] invalid");
-        Preconditions.checkNotNull(message.getContent(), "eventMeshMessage[content] invalid");
-    }
-
-    private RequestParam buildCommonPostParam(EventMeshMessage message) {
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
+    private RequestParam buildCommonPostParam(final EventMeshMessage message) {
+        final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
@@ -100,8 +94,8 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
     }
 
     @Override
-    public EventMeshMessage transformMessage(EventMeshRetObj retObj) {
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+    public EventMeshMessage transformMessage(final EventMeshRetObj retObj) {
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
             SendMessageResponseBody.ReplyMessage.class);
         return EventMeshMessage.builder()
             .content(replyMessage.body)

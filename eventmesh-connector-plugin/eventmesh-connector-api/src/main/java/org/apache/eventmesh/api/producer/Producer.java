@@ -20,7 +20,6 @@ package org.apache.eventmesh.api.producer;
 import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 

@@ -30,57 +30,57 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.util.Objects;
+
 import io.netty.handler.codec.http.HttpMethod;
 import io.openmessaging.api.Message;
-
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class OpenMessageProducer extends AbstractProducerHttpClient<Message> {
 
-    public OpenMessageProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+    public OpenMessageProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+            throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
     @Override
-    public RequestParam builderPublishRequestParam(Message openMessage) {
+    public RequestParam builderPublishRequestParam(final Message openMessage) {
         return buildCommonPostParam(openMessage)
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
     }
 
     @Override
-    public RequestParam builderRequestParam(Message message, long timeout) {
+    public RequestParam builderRequestParam(final Message message, final long timeout) {
         return buildCommonPostParam(message)
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-            .setTimeout(timeout);
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
+                .setTimeout(timeout);
     }
 
     @Override
-    public void validateMessage(Message message) {
-        Preconditions.checkNotNull(message, "Message cannot be null");
+    public void validateMessage(final Message message) {
+        Objects.requireNonNull(message, "Message cannot be null");
     }
 
-    private RequestParam buildCommonPostParam(Message openMessage) {
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
+    private RequestParam buildCommonPostParam(final Message openMessage) {
+        final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.OP_MESSAGE_PROTOCOL)
-            .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
-            // todo: add producerGroup to header, set protocol type, protocol version
-            .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.OP_MESSAGE_PROTOCOL)
+                .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
+                // todo: add producerGroup to header, set protocol type, protocol version
+                .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
+                .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));
         return requestParam;
     }
 
     @Override
-    public Message transformMessage(EventMeshRetObj retObj) {
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
-            SendMessageResponseBody.ReplyMessage.class);
+    public Message transformMessage(final EventMeshRetObj retObj) {
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+                SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;
     }
