@@ -37,39 +37,37 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static final AsyncSubscribe handler = new AsyncSubscribe();
-
-    private static EventMeshTCPClient<EventMeshMessage> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
         try {
-            client =
+            final EventMeshTCPClient<EventMeshMessage> client =
                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
                     SubscriptionType.ASYNC);
-            client.registerSubBusiHandler(handler);
+            client.registerSubBusiHandler(new AsyncSubscribe());
 
             client.listen();
 
         } catch (Exception e) {
-            log.warn("AsyncSubscribe failed", e);
+            log.error("AsyncSubscribe failed", e);
         }
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive async msg: {}", msg);
+    public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
+        if (log.isInfoEnabled()) {
+            log.info("receive async msg: {}", msg);
+        }
         return Optional.empty();
     }
 }

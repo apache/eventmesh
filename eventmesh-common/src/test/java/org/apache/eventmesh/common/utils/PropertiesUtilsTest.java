@@ -19,7 +19,6 @@ package org.apache.eventmesh.common.utils;
 
 import org.apache.eventmesh.common.config.ConfigService;
 
-import java.util.Enumeration;
 import java.util.Properties;
 
 import org.junit.Assert;

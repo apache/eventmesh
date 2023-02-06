@@ -30,29 +30,28 @@ import org.apache.eventmesh.webhook.api.utils.StringUtils;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
-public class HookConfigOperationManage implements WebHookConfigOperation {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class HookConfigOperationManager implements WebHookConfigOperation {
     /**
      * webhook config pool -> key is CallbackPath
      */
-    private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-    private String operationMode;
-    private ConfigService nacosConfigService;
+    private final transient Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
+    private transient String operationMode;
+    private transient ConfigService nacosConfigService;
 
-    public HookConfigOperationManage() {
+    public HookConfigOperationManager() {
     }
 
     /**
@@ -60,7 +59,8 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
      *
      * @param receiveConfiguration receiveConfiguration
      */
-    public HookConfigOperationManage(ReceiveConfiguration receiveConfiguration) throws FileNotFoundException, NacosException {
+    public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration)
+            throws FileNotFoundException, NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
@@ -71,46 +71,48 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
         }
     }
 
-    private void nacosModeInit(Properties config) throws NacosException {
+    private void nacosModeInit(final Properties config) throws NacosException {
         nacosConfigService = ConfigFactory.createConfigService(config);
     }
 
     @Override
-    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
+    public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         if (OPERATION_MODE_FILE.equals(operationMode)) {
             return cacheWebHookConfig.get(StringUtils.getFileName(webHookConfig.getCallbackPath()));
         } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
             try {
-                String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
-                    GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                final String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName()
+                                + DATA_ID_EXTENSION,
+                        GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
                 return JsonUtils.deserialize(content, WebHookConfig.class);
             } catch (NacosException e) {
-                logger.error("queryWebHookConfigById failed", e);
+                log.error("queryWebHookConfigById failed", e);
             }
         }
         return null;
     }
 
     @Override
-    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize) {
-        return null;
+    public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
+                                                                final Integer pageNum,
+                                                                final Integer pageSize) {
+        return new ArrayList<WebHookConfig>();
     }
 
     @Override
-    public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
+    public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         cacheWebHookConfig.put(webHookConfig.getCallbackPath(), webHookConfig);
         return 1;
     }
 
     @Override
-    public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
+    public Integer updateWebHookConfig(final WebHookConfig webHookConfig) {
         cacheWebHookConfig.put(webHookConfig.getCallbackPath(), webHookConfig);
         return 1;
     }
 
     @Override
-    public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
+    public Integer deleteWebHookConfig(final WebHookConfig webHookConfig) {
         cacheWebHookConfig.remove(webHookConfig.getCallbackPath());
         return 1;
     }

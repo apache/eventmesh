@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
@@ -85,8 +86,8 @@ public class TopicHandler extends AbstractHttpHandler {
         try {
             List<TopicProperties> topicList = admin.getTopic();
             String result = JsonUtils.toJson(topicList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -96,8 +97,8 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {
@@ -133,8 +134,8 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {
@@ -170,8 +171,8 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {

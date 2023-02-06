@@ -19,7 +19,6 @@ package org.apache.eventmesh.grpc.sub;
 
 import org.apache.eventmesh.client.catalog.EventMeshCatalogClient;
 import org.apache.eventmesh.client.catalog.config.EventMeshCatalogClientConfig;
-import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.selector.SelectorFactory;
@@ -30,6 +29,7 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import org.apache.eventmesh.selector.NacosSelector;
 import org.apache.eventmesh.util.Utils;
 
@@ -40,67 +40,63 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class WorkflowPaymentAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
+public class WorkflowPaymentAsyncSubscribe extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static final WorkflowPaymentAsyncSubscribe handler = new WorkflowPaymentAsyncSubscribe();
-    public static EventMeshWorkflowClient workflowClient;
+    private static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
         final String serverName = "paymentapp";
         final String workflowServerName = properties.getProperty(ExampleConstants.EVENTMESH_WORKFLOW_NAME);
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
-        EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env("env").idc("idc")
-                .sys("1234").build();
-
-        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig)) {
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
             eventMeshGrpcConsumer.init();
-            eventMeshGrpcConsumer.registerListener(handler);
+            eventMeshGrpcConsumer.registerListener(new WorkflowPaymentAsyncSubscribe());
 
-            NacosSelector nacosSelector = new NacosSelector();
+            final NacosSelector nacosSelector = new NacosSelector();
             nacosSelector.init();
             SelectorFactory.register(selectorType, nacosSelector);
 
-            EventMeshCatalogClientConfig eventMeshCatalogClientConfig = EventMeshCatalogClientConfig.builder()
+            final EventMeshCatalogClientConfig eventMeshCatalogClientConfig = EventMeshCatalogClientConfig.builder()
                     .serverName(catalogServerName)
                     .appServerName(serverName).build();
-            EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig,
+            final EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig,
                     eventMeshGrpcConsumer);
             eventMeshCatalogClient.init();
 
-            EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder()
+            final EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder()
                     .serverName(workflowServerName).build();
             workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-            Thread.sleep(60000000);
+            Thread.sleep(60_000_000);
             eventMeshCatalogClient.destroy();
         }
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) throws Exception {
-        log.info("receive async msg: {}", msg);
+    public Optional<EventMeshMessage> handle(final EventMeshMessage msg) throws Exception {
+        if (log.isInfoEnabled()) {
+            log.info("receive async msg: {}", msg);
+        }
         if (msg == null) {
             log.info("async msg is null, workflow end.");
-            return Optional.empty();    
+            return Optional.empty();
         }
-        Map<String, String> props = msg.getProp();
-        String workflowInstanceId = props.get("workflowinstanceid");
-        String taskInstanceId = props.get("workflowtaskinstanceid");
 
-        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
+        final Map<String, String> props = msg.getProp();
+        final String workflowInstanceId = props.get("workflowinstanceid");
+        final String taskInstanceId = props.get("workflowtaskinstanceid");
+
+        final ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
                 .setTaskInstanceId(taskInstanceId)
                 .setInstanceId(workflowInstanceId).build();
-        ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
-        log.info("receive workflow msg: {}", response.getInstanceId());
+        final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
+        if (log.isInfoEnabled()) {
+            log.info("receive workflow msg: {}", response.getInstanceId());
+        }
         return Optional.empty();
     }
 
