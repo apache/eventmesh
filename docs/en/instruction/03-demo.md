@@ -63,7 +63,7 @@ More information about EventMesh-HTTP, please refer to [EventMesh HTTP](/docs/en
 
 ## 3 GRPC DEMO
 
-### 3.1 ASYNC PUBLISH & WEBHOOK SUBSCRIBE </h4>
+### 3.1 ASYNC PUBLISH & WEBHOOK SUBSCRIBE
 
 - Start publisher to publish message (we have created the topic TEST-TOPIC-GRPC-ASYNC by default, you can also create other topic to test)
 
