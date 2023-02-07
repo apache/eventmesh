@@ -285,9 +285,9 @@ public class Session {
     public int hashCode()
     {
         int result = 17;                                 //primeNumber
-        result += 31*result + client!=null?Objects.hash(client);
-        result += 31*result + context!=null?Objects.hash(context);
-        result += 31*result + sessionState!=null?Objects.hash(sessionState);
+        result += 31*result + client!=null?Objects.hash(client) : 0;
+        result += 31*result + context!=null?Objects.hash(context) : 0;
+        result += 31*result + sessionState!=null?Objects.hash(sessionState) : 0;
         return result;
     }
 
