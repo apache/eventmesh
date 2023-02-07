@@ -68,7 +68,7 @@ public class SubStreamHandler<T> extends Thread {
 
                 if (msg instanceof Map) {
                     if (log.isInfoEnabled()) {
-                        log.info("Received message from Server:{}" , message);
+                        log.info("Received message from Server:{}", message);
                     }
                 } else {
                     if (log.isInfoEnabled()) {
