@@ -48,30 +48,36 @@ import lombok.extern.slf4j.Slf4j;
 public class SubController {
 
     @Autowired
-    private SubService subService;
+    private transient SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(HttpServletRequest request) {
-        String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
-        String content = request.getParameter("content");
-        log.info("=======receive message======= {}", content);
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
-            String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
+    public String subTest(final HttpServletRequest request) {
+        final String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
+        final String content = request.getParameter("content");
 
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
+        if (log.isInfoEnabled()) {
+            log.info("=======receive message======= {}", content);
+        }
+
+        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
+            final String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
+
+            final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
             if (eventFormat != null) {
-                CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
-                CloudEventData cloudEventData = event.getData();
+                final CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                final CloudEventData cloudEventData = event.getData();
                 if (cloudEventData != null) {
-                    String data = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-                    log.info("=======receive data======= {}", data);
+                    final String data = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+                    if (log.isInfoEnabled()) {
+                        log.info("=======receive data======= {}", data);
+                    }
                 }
             }
         }
 
         subService.consumeMessage(content);
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
         return JsonUtils.serialize(map);
     }

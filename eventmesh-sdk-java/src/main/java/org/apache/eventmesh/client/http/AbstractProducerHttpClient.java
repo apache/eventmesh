@@ -36,18 +36,18 @@ import java.io.IOException;
  */
 public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient implements EventMeshProtocolProducer<T> {
 
-    public AbstractProducerHttpClient(EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+    public AbstractProducerHttpClient(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+            throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
     @Override
-    public void publish(T t) throws EventMeshException {
+    public void publish(final T t) throws EventMeshException {
         validateMessage(t);
-        String target = selectEventMesh();
+        final String target = selectEventMesh();
         try {
-            String response = HttpUtils.post(httpClient, target, builderPublishRequestParam(t));
-            EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
+            final String response = HttpUtils.post(httpClient, target, builderPublishRequestParam(t));
+            final EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
@@ -57,12 +57,12 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
     }
 
     @Override
-    public T request(T message, long timeout) throws EventMeshException {
+    public T request(final T message, final long timeout) throws EventMeshException {
         validateMessage(message);
-        String target = selectEventMesh();
+        final String target = selectEventMesh();
         try {
-            String response = HttpUtils.post(httpClient, target, builderRequestParam(message, timeout));
-            EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
+            final String response = HttpUtils.post(httpClient, target, builderRequestParam(message, timeout));
+            final EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
             if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
                 return transformMessage(ret);
             }
@@ -73,11 +73,11 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
     }
 
     @Override
-    public void request(T message, RRCallback<T> rrCallback, long timeout) throws EventMeshException {
+    public void request(final T message, final RRCallback<T> rrCallback, final long timeout) throws EventMeshException {
         validateMessage(message);
-        String target = selectEventMesh();
-        RRCallbackResponseHandlerAdapter<T> adapter = new RRCallbackResponseHandlerAdapter<>(
-            message, rrCallback, timeout);
+        final String target = selectEventMesh();
+        final RRCallbackResponseHandlerAdapter<T> adapter = new RRCallbackResponseHandlerAdapter<>(
+                message, rrCallback, timeout);
         try {
             HttpUtils.post(httpClient, null, target, builderRequestParam(message, timeout), adapter);
         } catch (IOException e) {

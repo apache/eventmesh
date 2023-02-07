@@ -48,7 +48,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class HttpUtils {
+public final class HttpUtils {
 
     public static String post(final CloseableHttpClient client,
                               final String uri,

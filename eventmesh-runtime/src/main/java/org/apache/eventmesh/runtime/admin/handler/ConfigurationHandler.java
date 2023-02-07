@@ -77,53 +77,45 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      * Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            try {
+                GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+                    eventMeshTCPConfiguration.getSysID(),
+                    eventMeshTCPConfiguration.getNamesrvAddr(),
+                    eventMeshTCPConfiguration.getEventMeshEnv(),
+                    eventMeshTCPConfiguration.getEventMeshIDC(),
+                    eventMeshTCPConfiguration.getEventMeshCluster(),
+                    eventMeshTCPConfiguration.getEventMeshServerIp(),
+                    eventMeshTCPConfiguration.getEventMeshName(),
+                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+                    eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
+                    // TCP Configuration
+                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                    // HTTP Configuration
+                    eventMeshHTTPConfiguration.getHttpServerPort(),
+                    eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
+                    // gRPC Configuration
+                    eventMeshGrpcConfiguration.getGrpcServerPort(),
+                    eventMeshGrpcConfiguration.isEventMeshServerUseTls()
+                );
 
-        try {
-            GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                eventMeshTCPConfiguration.getSysID(),
-                eventMeshTCPConfiguration.getNamesrvAddr(),
-                eventMeshTCPConfiguration.getEventMeshEnv(),
-                eventMeshTCPConfiguration.getEventMeshIDC(),
-                eventMeshTCPConfiguration.getEventMeshCluster(),
-                eventMeshTCPConfiguration.getEventMeshServerIp(),
-                eventMeshTCPConfiguration.getEventMeshName(),
-                eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-                eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
-                // TCP Configuration
-                eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                // HTTP Configuration
-                eventMeshHTTPConfiguration.getHttpServerPort(),
-                eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
-                // gRPC Configuration
-                eventMeshGrpcConfiguration.getGrpcServerPort(),
-                eventMeshGrpcConfiguration.isEventMeshServerUseTls()
-            );
+                String result = JsonUtils.toJson(getConfigurationResponse);
+                httpExchange.sendResponseHeaders(200, result.getBytes().length);
+                out.write(result.getBytes());
+            } catch (Exception e) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-            String result = JsonUtils.toJson(getConfigurationResponse);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
-        } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
-
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJson(error);
+                httpExchange.sendResponseHeaders(500, result.getBytes().length);
+                out.write(result.getBytes());
             }
         }
     }

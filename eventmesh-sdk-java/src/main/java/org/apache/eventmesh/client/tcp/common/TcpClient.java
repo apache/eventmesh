@@ -32,9 +32,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -54,9 +51,10 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public abstract class TcpClient implements Closeable {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TcpClient.class);
+@Slf4j
+public abstract class TcpClient implements Closeable {
 
     protected static final transient int CLIENTNO = (new Random()).nextInt(1000);
 
@@ -97,6 +95,7 @@ public abstract class TcpClient implements Closeable {
                 .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
                         .addLast(handler, newExceptionHandler());
@@ -106,8 +105,8 @@ public abstract class TcpClient implements Closeable {
         ChannelFuture f = bootstrap.connect(host, port).sync();
         InetSocketAddress localAddress = (InetSocketAddress) f.channel().localAddress();
         channel = f.channel();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
+        if (log.isInfoEnabled()) {
+            log.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
                     localAddress.getPort(), host + ":" + port);
         }
     }
@@ -124,8 +123,8 @@ public abstract class TcpClient implements Closeable {
         } catch (Exception e) {
             Thread.currentThread().interrupt();
 
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
+            if (log.isWarnEnabled()) {
+                log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
             }
         }
     }
@@ -140,8 +139,8 @@ public abstract class TcpClient implements Closeable {
                         }
                         Package msg = MessageUtils.heartBeat();
                         io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("heart beat start {}", msg);
+                        if (log.isDebugEnabled()) {
+                            log.debug("heart beat start {}", msg);
                         }
                     } catch (Exception e) {
                         // ignore
@@ -164,8 +163,8 @@ public abstract class TcpClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn("send msg failed", future.cause());
+                    if (log.isWarnEnabled()) {
+                        log.warn("send msg failed", future.cause());
                     }
                 }
             });
@@ -181,8 +180,8 @@ public abstract class TcpClient implements Closeable {
         if (!contexts.contains(c)) {
             contexts.put(key, c);
         } else {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("duplicate key : {}", key);
+            if (log.isInfoEnabled()) {
+                log.info("duplicate key : {}", key);
             }
         }
         send(msg);
@@ -208,8 +207,8 @@ public abstract class TcpClient implements Closeable {
         return new ChannelDuplexHandler() {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("exceptionCaught, close connection.|remote address={}",
+                if (log.isInfoEnabled()) {
+                    log.info("exceptionCaught, close connection.|remote address={}",
                             ctx.channel().remoteAddress(), cause);
                 }
                 ctx.close();

@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.webhook.receive.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public abstract class AbstractWebHookConfigOperation {
 
 }
