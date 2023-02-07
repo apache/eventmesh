@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.webhook.api.utils;
 
-public class StringUtils {
+public class ClassUtils {
 
-    public static String getFileName(String path) {
+    public static String convertResourcePathToClassName(String path) {
         return path.substring(1).replace('/', '.');
     }
 }
