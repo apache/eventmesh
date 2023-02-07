@@ -40,9 +40,11 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -209,7 +211,10 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             builder.setUrl(url);
         }
 
-        subscriptionItems.forEach(subscriptionItem -> {
+        Set<SubscriptionItem> subscriptionItemSet = new HashSet<>();
+        subscriptionItemSet.addAll(subscriptionItems);
+
+        for (SubscriptionItem subscriptionItem : subscriptionItemSet) {
             Subscription.SubscriptionItem.SubscriptionMode mode;
             if (SubscriptionMode.CLUSTERING == subscriptionItem.getMode()) {
                 mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
@@ -233,7 +238,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                     .setType(type)
                     .build();
             builder.addSubscriptionItems(item);
-        });
+        }
 
         return builder.build();
     }
