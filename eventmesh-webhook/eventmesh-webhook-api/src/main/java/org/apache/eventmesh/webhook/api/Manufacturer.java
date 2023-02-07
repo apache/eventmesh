@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ManufacturerObject {
+public class Manufacturer {
 
     private Set<String> manufacturerSet = new HashSet<>();
 
