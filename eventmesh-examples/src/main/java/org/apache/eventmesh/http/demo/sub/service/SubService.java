@@ -67,6 +67,7 @@ public class SubService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String localIP = IPUtils.getLocalAddress();
         final String localPort = properties.getProperty(SERVER_PORT);
         final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
@@ -86,8 +87,6 @@ public class SubService implements InitializingBean {
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, testURL);
         eventMeshHttpConsumer.subscribe(topicList, testURL);
-
-        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
         // Wait for all messaged to be consumed
         final Thread stopThread = new Thread(() -> {
