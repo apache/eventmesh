@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Properties;
@@ -124,24 +125,35 @@ public class ConfigService {
         } else {
             String path = configInfo.getPath();
             String filePath;
-
+            String resourceUrl = null;
             if (path.startsWith(CLASS_PATH_PREFIX)) {
+                final String tempResourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
                 filePath = Objects.requireNonNull(
-                        ConfigService.class.getResource("/" + path.substring(CLASS_PATH_PREFIX.length()))
+                    ConfigService.class.getResource(tempResourceUrl)
                 ).getPath();
-            } else if (path.startsWith(FILE_PATH_PREFIX)) {
-                filePath = path.substring(FILE_PATH_PREFIX.length());
+                if (filePath.contains(".jar")) {
+                    resourceUrl = tempResourceUrl;
+                }
             } else {
-                filePath = this.configPath + path;
+                filePath = path.startsWith(FILE_PATH_PREFIX) ? path.substring(FILE_PATH_PREFIX.length()) : this.configPath + path;
             }
 
-            File file = new File(filePath);
-            if (!file.exists()) {
-                throw new RuntimeException("file is not exists");
+            if (StringUtils.isNotBlank(resourceUrl)) {
+                try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
+                    if (null == inputStream) {
+                        throw new RuntimeException("file is not exists");
+                    }
+                }
+            } else {
+                File file = new File(filePath);
+                if (!file.exists()) {
+                    throw new RuntimeException("file is not exists");
+                }
             }
 
             String suffix = path.substring(path.lastIndexOf('.') + 1);
             configInfo.setFilePath(filePath);
+            configInfo.setResourceUrl(resourceUrl);
             object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
         }
         return (T) object;

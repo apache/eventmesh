@@ -61,8 +61,8 @@ public class EventMeshGrpcProducerTest {
     @Before
     public void setUp() throws Exception {
         producer = new EventMeshGrpcProducer(EventMeshGrpcClientConfig.builder().build());
-        producer.cloudEventProducer = cloudEventProducer;
-        producer.publisherClient = stub;
+        producer.setCloudEventProducer(cloudEventProducer);
+        producer.setPublisherClient(stub);
         doThrow(RuntimeException.class).when(stub).publish(
             argThat(argument -> argument != null && StringUtils.equals(argument.getContent(),
                 "mockExceptionContent")));

@@ -95,9 +95,12 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
     @Override
     public void close() throws EventMeshException {
-        try (final EventMeshTCPPubClient<CloudEvent> pubClient = cloudEventTCPPubClient;
-             final EventMeshTCPSubClient<CloudEvent> subClient = cloudEventTCPSubClient) {
-            // close client
+        if (this.cloudEventTCPPubClient != null) {
+            this.cloudEventTCPPubClient.close();
+        }
+
+        if (this.cloudEventTCPSubClient != null) {
+            this.cloudEventTCPSubClient.close();
         }
     }
 
