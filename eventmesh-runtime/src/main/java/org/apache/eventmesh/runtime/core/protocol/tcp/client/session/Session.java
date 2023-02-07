@@ -284,13 +284,20 @@ public class Session {
     @Override
     public int hashCode()
     {
-        int result = 17;                                 //primeNumber
-        result += 31 * result + (client != null ? Objects.hash(client) : 0);
-        result += 31 * result + (context != null ? Objects.hash(context) : 0);
-        result += 31 * result + (sessionState != null ? Objects.hash(sessionState) : 0);
+        int result = 1001;   //primeNumber
+        if(null != client){
+            result += 31 * result + Objects.hash(client);
+        }
+
+        if(null != context){
+            result += 31 * result + Objects.hash(context);
+        }
+
+        if(null != sessionState){
+            result += 31 * result + Objects.hash(sessionState);
+        }
         return result;
     }
-
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
     }
