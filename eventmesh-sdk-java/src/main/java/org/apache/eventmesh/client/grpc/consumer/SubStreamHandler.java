@@ -68,7 +68,7 @@ public class SubStreamHandler<T> extends Thread {
 
                 if (msg instanceof Map) {
                     if (log.isInfoEnabled()) {
-                        log.info("Received message from Server." + message);
+                        log.info("Received message from Server:{}" , message);
                     }
                 } else {
                     if (log.isInfoEnabled()) {
@@ -101,7 +101,7 @@ public class SubStreamHandler<T> extends Thread {
             @Override
             public void onError(final Throwable t) {
                 if (log.isErrorEnabled()) {
-                    log.error("Received Server side error ", t);
+                    log.error("Received Server side error :{}", t);
                 }
                 close();
             }
@@ -141,7 +141,7 @@ public class SubStreamHandler<T> extends Thread {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            log.error("SubStreamHandler Thread interrupted.", e);
+            log.error("SubStreamHandler Thread interrupted:{}", e);
         }
     }
 
@@ -163,7 +163,7 @@ public class SubStreamHandler<T> extends Thread {
                 sender.onNext(subscription);
             }
         } catch (Exception e) {
-            log.error("StreamObserver Error onNext", e);
+            log.error("StreamObserver Error onNext:{}", e);
         }
     }
 
@@ -173,7 +173,7 @@ public class SubStreamHandler<T> extends Thread {
                 sender.onCompleted();
             }
         } catch (Exception e) {
-            log.error("StreamObserver Error onComplete", e);
+            log.error("StreamObserver Error onComplete:{}", e);
         }
     }
 }
