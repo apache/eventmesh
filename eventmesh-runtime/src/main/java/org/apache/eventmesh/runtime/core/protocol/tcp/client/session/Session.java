@@ -282,22 +282,22 @@ public class Session {
     }
     
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = 1001;   //primeNumber
-        if(null != client){
+        if (null != client) {
             result += 31 * result + Objects.hash(client);
         }
 
-        if(null != context){
+        if (null != context) {
             result += 31 * result + Objects.hash(context);
         }
 
-        if(null != sessionState){
+        if (null != sessionState) {
             result += 31 * result + Objects.hash(sessionState);
         }
         return result;
     }
+    
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
     }
