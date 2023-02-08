@@ -152,11 +152,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             }
 
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> clients = tmpMap.get(groupTopicKey);
-            if (clients == null) {
-                clients = new ArrayList<>();
-                tmpMap.put(groupTopicKey, clients);
-            }
+            List<Client> clients = tmpMap.computeIfAbsent(groupTopicKey, k -> new ArrayList<>());
 
             clients.add(client);
 
