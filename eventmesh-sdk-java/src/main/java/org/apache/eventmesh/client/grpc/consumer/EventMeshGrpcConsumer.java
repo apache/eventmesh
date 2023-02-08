@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -53,8 +54,6 @@ import java.util.stream.Collectors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,8 +67,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private final transient Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
 
     private final transient ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(),
-            new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
+        Runtime.getRuntime().availableProcessors(),
+        new EventMeshThreadFactory("GRPCClientScheduler", true));
 
     private transient ConsumerServiceBlockingStub consumerClient;
     private transient ConsumerServiceStub consumerAsyncClient;
@@ -84,7 +83,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     public void init() {
         channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
-                .usePlaintext().build();
+            .usePlaintext().build();
 
         consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
         consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);

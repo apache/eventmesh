@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,7 +43,7 @@ public class EventMeshTcpRetryer {
         3,
         60000,
         TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
-        new EventMeshThreadFactoryImpl("eventMesh-tcp-retry", true),
+        new EventMeshThreadFactory("eventMesh-tcp-retry", true),
         new ThreadPoolExecutor.AbortPolicy());
 
     private Thread dispatcher;
