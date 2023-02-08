@@ -280,7 +280,24 @@ public class Session {
         }
         return true;
     }
+    
+    @Override
+    public int hashCode() {
+        int result = 1001;   //primeNumber
+        if (null != client) {
+            result += 31 * result + Objects.hash(client);
+        }
 
+        if (null != context) {
+            result += 31 * result + Objects.hash(context);
+        }
+
+        if (null != sessionState) {
+            result += 31 * result + Objects.hash(sessionState);
+        }
+        return result;
+    }
+    
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
     }
