@@ -23,13 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.Objects;
+import java.net.URL;
 import java.util.Properties;
 
 import org.assertj.core.util.Strings;
 
 import lombok.Getter;
-
 
 public class ConfigService {
 
@@ -49,7 +48,6 @@ public class ConfigService {
     private static final ConfigMonitorService configMonitorService = new ConfigMonitorService();
 
     private String configPath;
-
 
     public static ConfigService getInstance() {
         return INSTANCE;
@@ -75,29 +73,18 @@ public class ConfigService {
     }
 
     public <T> T buildConfigInstance(Class<?> clazz) {
+
         Config[] configArray = clazz.getAnnotationsByType(Config.class);
-        if (configArray.length == 0) {
-            try {
-                return this.getConfig(ConfigInfo.builder()
-                        .clazz(clazz)
-                        .hump(ConfigInfo.HUMP_SPOT)
-                        .build());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+        Config config = configArray.length == 0 ? null : configArray[0];
+        ConfigInfo configInfo = new ConfigInfo();
+        configInfo.setClazz(clazz);
+        configInfo.setPath(config == null ? null : config.path());
+        configInfo.setHump(config == null ? ConfigInfo.HUMP_SPOT : config.hump());
+        configInfo.setPrefix(config == null ? null : config.prefix());
+        configInfo.setMonitor(config == null ? false : config.monitor());
+        configInfo.setReloadMethodName(config == null ? null : config.reloadMethodName());
 
-        Config config = configArray[0];
         try {
-            // todo Complete all attributes
-            ConfigInfo configInfo = new ConfigInfo();
-            configInfo.setClazz(clazz);
-            configInfo.setPath(config.path());
-            configInfo.setHump(config.hump());
-            configInfo.setPrefix(config.prefix());
-            configInfo.setMonitor(config.monitor());
-            configInfo.setReloadMethodName(config.reloadMethodName());
-
             return this.getConfig(configInfo);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -120,73 +107,69 @@ public class ConfigService {
     public <T> T getConfig(ConfigInfo configInfo) throws IOException {
         Object object;
 
-        if (Objects.isNull(configInfo.getPath()) || StringUtils.isEmpty(configInfo.getPath().trim())) {
+        String path = configInfo.getPath();
+        if (StringUtils.isBlank(path)) {
             object = FileLoad.getPropertiesFileLoad().getConfig(properties, configInfo);
-        } else {
-            String path = configInfo.getPath();
-            String filePath;
-            String resourceUrl = null;
-            if (path.startsWith(CLASS_PATH_PREFIX)) {
-                final String tempResourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
-                filePath = Objects.requireNonNull(
-                    ConfigService.class.getResource(tempResourceUrl)
-                ).getPath();
-                if (filePath.contains(".jar")) {
-                    resourceUrl = tempResourceUrl;
-                }
-            } else {
-                filePath = path.startsWith(FILE_PATH_PREFIX) ? path.substring(FILE_PATH_PREFIX.length()) : this.configPath + path;
-            }
+            return (T) object;
+        }
 
-            if (StringUtils.isNotBlank(resourceUrl)) {
-                try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
-                    if (null == inputStream) {
-                        throw new RuntimeException("file is not exists");
-                    }
-                }
-            } else {
-                File file = new File(filePath);
-                if (!file.exists()) {
+        String filePath;
+        String resourceUrl = null;
+        if (path.startsWith(CLASS_PATH_PREFIX)) {
+            resourceUrl = "/" + path.substring(CLASS_PATH_PREFIX.length());
+            URL fileURL = getClass().getResource(resourceUrl);
+            if (fileURL == null) {
+                throw new RuntimeException("file is not exists");
+            }
+            filePath = fileURL.getPath();
+        } else {
+            filePath = path.startsWith(FILE_PATH_PREFIX) ? path.substring(FILE_PATH_PREFIX.length()) : this.configPath + path;
+        }
+
+        if (filePath.contains(".jar")) {
+            try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
+                if (inputStream == null) {
                     throw new RuntimeException("file is not exists");
                 }
             }
-
-            String suffix = path.substring(path.lastIndexOf('.') + 1);
-            configInfo.setFilePath(filePath);
-            configInfo.setResourceUrl(resourceUrl);
-            object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
+        } else {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                throw new RuntimeException("file is not exists");
+            }
         }
+
+        String suffix = path.substring(path.lastIndexOf('.') + 1);
+        configInfo.setFilePath(filePath);
+        configInfo.setResourceUrl(resourceUrl);
+        object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
         return (T) object;
     }
 
     private void populateConfig(Object object, Class<?> clazz, Config config)
-            throws NoSuchFieldException, IOException, IllegalAccessException {
+        throws NoSuchFieldException, IOException, IllegalAccessException {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setField(config.field());
         configInfo.setMonitor(config.monitor());
         configInfo.setReloadMethodName(config.reloadMethodName());
 
         Field field = clazz.getDeclaredField(configInfo.getField());
-        Class<?> fieldClazz = field.getType();
-        configInfo.setClazz(fieldClazz);
+        configInfo.setClazz(field.getType());
 
-        Config[] configArray = fieldClazz.getAnnotationsByType(Config.class);
-        if (configArray.length != 0 && !Strings.isNullOrEmpty(configArray[0].prefix())) {
-            config = configArray[0];
-            configInfo.setPrefix(config.prefix());
-            configInfo.setPath(config.path());
-            configInfo.setPrefix(config.prefix());
-            configInfo.setHump(config.hump());
+        Config configType = field.getType().getAnnotation(Config.class);
+        if (configType != null && !Strings.isNullOrEmpty(configType.prefix())) {
+            configInfo.setPrefix(configType.prefix());
+            configInfo.setPath(configType.path());
+            configInfo.setHump(configType.hump());
         }
 
         Object configObject = this.getConfig(configInfo);
-
-        boolean isAccessible = field.isAccessible();
+        
         try {
             field.setAccessible(true);
             field.set(object, configObject);
         } finally {
-            field.setAccessible(isAccessible);
+            field.setAccessible(false);
         }
         if (configInfo.isMonitor()) {
             configInfo.setObjectField(field);
