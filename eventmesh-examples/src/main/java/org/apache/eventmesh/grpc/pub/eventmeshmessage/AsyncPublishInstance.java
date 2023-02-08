@@ -18,7 +18,6 @@
 package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 

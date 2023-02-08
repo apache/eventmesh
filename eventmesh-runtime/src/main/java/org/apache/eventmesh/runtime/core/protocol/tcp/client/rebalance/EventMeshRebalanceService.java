@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,8 +47,8 @@ public class EventMeshRebalanceService {
     }
 
     public void init() {
-        this.serviceRebalanceScheduler = ThreadPoolFactory.createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
-        logger.info("rebalance service inited......");
+        this.serviceRebalanceScheduler = ThreadPoolFactory.createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
+        logger.info("rebalance service inited ......");
     }
 
     public void start() throws Exception {

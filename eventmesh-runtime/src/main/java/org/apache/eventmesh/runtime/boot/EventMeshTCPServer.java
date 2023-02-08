@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
@@ -37,7 +38,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.Eventmesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
 import java.util.List;
@@ -334,19 +334,19 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         super.init("eventMesh-tcp");
 
         scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.eventMeshTcpGlobalScheduler,
-                new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
+                new EventMeshThreadFactory("eventMesh-tcp-scheduler", true));
 
         taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize,
                 eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize,
                 new LinkedBlockingQueue<>(10_000),
-                new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
+                new EventMeshThreadFactory("eventMesh-tcp-task-handle", true));
 
         broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
                 eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize,
                 eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize,
                 new LinkedBlockingQueue<>(10_000),
-                new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
+                new EventMeshThreadFactory("eventMesh-tcp-msg-downstream", true));
     }
 
     private void shutdownThreadPool() {

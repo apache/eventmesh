@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.common;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EventMeshThreadFactoryImplTest {
+public class EventMeshThreadFactoryTest {
 
     @Test
     public void testGetThreadNamePrefix() {
         final String threadNamePrefix = "threadNamePrefix";
-        EventMeshThreadFactoryImpl factory = new EventMeshThreadFactoryImpl(threadNamePrefix, false);
+        EventMeshThreadFactory factory = new EventMeshThreadFactory(threadNamePrefix, false);
         Assert.assertEquals(threadNamePrefix, factory.getThreadNamePrefix());
     }
 
     @Test
     public void testNewThread() {
         final String threadNamePrefix = "threadNamePrefix";
-        EventMeshThreadFactoryImpl factory = new EventMeshThreadFactoryImpl(threadNamePrefix, true);
-        Thread t = factory.newThread(() -> {});
+        EventMeshThreadFactory factory = new EventMeshThreadFactory(threadNamePrefix, true);
+        Thread t = factory.newThread(() -> {
+
+        });
         Assert.assertNotNull(t);
+        Assert.assertEquals(threadNamePrefix + "-1", t.getName());
+        Assert.assertTrue(t.isDaemon());
     }
 }

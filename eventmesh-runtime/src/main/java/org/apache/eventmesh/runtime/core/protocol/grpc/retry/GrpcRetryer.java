@@ -17,15 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,20 +57,11 @@ public class GrpcRetryer {
 
     public void init() {
         pool = new ThreadPoolExecutor(
-                grpcConfiguration.getEventMeshServerRetryThreadNum(),
-                grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
-                new ThreadFactory() {
-                    private AtomicInteger count = new AtomicInteger();
-
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r, "grpc-retry-" + count.incrementAndGet());
-                        thread.setPriority(Thread.NORM_PRIORITY);
-                        thread.setDaemon(true);
-                        return thread;
-                    }
-                }, new ThreadPoolExecutor.AbortPolicy());
+            grpcConfiguration.getEventMeshServerRetryThreadNum(),
+            grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
+            new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
+            new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {

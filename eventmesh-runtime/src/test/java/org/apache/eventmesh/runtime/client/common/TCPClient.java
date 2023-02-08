@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.io.Closeable;
@@ -25,10 +26,8 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
 
 /**
  * one Client connects one ACCESS
@@ -70,27 +68,9 @@ public abstract class TCPClient implements Closeable {
     private Bootstrap bootstrap = new Bootstrap();
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
-            new ThreadFactory() {
-                AtomicInteger count = new AtomicInteger(0);
+        new EventMeshThreadFactory("TCPClientScheduler", true));
 
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r, "TCPClientScheduler-" + count.incrementAndGet());
-                    t.setDaemon(true);
-                    return t;
-                }
-            }
-    );
-
-    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new ThreadFactory() {
-        AtomicInteger count = new AtomicInteger(0);
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, "TCPClientWorker-" + count.incrementAndGet());
-            return t;
-        }
-    });
+    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
 
     public Channel channel;
 
@@ -141,15 +121,15 @@ public abstract class TCPClient implements Closeable {
         bootstrap.group(workers);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
-                .option(ChannelOption.SO_KEEPALIVE, false)
-                .option(ChannelOption.SO_SNDBUF, 64 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 64 * 1024)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            .option(ChannelOption.SO_KEEPALIVE, false)
+            .option(ChannelOption.SO_SNDBUF, 64 * 1024)
+            .option(ChannelOption.SO_RCVBUF, 64 * 1024)
+            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             public void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
-                        .addLast(handler, newExceptionHandler());
+                    .addLast(handler, newExceptionHandler());
             }
         });
 

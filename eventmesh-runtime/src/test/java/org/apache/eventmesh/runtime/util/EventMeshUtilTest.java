@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -167,7 +168,7 @@ public class EventMeshUtilTest {
     public void testPrintState() {
         try {
             ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
-                    .createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
+                    .createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
             EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
         } catch (Exception e) {
             Assert.fail(e.getMessage());

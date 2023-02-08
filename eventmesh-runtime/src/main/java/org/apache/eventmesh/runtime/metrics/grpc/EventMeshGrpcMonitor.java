@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.runtime.metrics.grpc;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
+
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +50,7 @@ public class EventMeshGrpcMonitor {
         this.metricsRegistries = Preconditions.checkNotNull(metricsRegistries);
         this.grpcSummaryMetrics = new GrpcSummaryMetrics();
         this.scheduler = ThreadPoolFactory.createScheduledExecutor(SCHEDULE_THREAD_SIZE,
-            new EventMeshThreadFactoryImpl(THREAD_NAME_PREFIX, true));
+            new EventMeshThreadFactory(THREAD_NAME_PREFIX, true));
     }
 
     public void init() throws Exception {
