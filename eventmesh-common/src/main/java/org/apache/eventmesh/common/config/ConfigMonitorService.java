@@ -52,20 +52,16 @@ public class ConfigMonitorService {
                 if (configInfo.getObject().equals(object)) {
                     continue;
                 }
-
                 Field field = configInfo.getObjectField();
-                boolean isAccessible = field.isAccessible();
-                try {
-                    field.setAccessible(true);
-                    field.set(configInfo.getInstance(), object);
-                } finally {
-                    field.setAccessible(isAccessible);
-                }
+                field.setAccessible(true);
+                field.set(configInfo.getInstance(), object);
 
                 configInfo.setObject(object);
                 log.info("config reload success: {}", object);
             } catch (Exception e) {
                 log.error("config reload failed", e);
+            } finally {
+                configInfo.getObjectField().setAccessible(false);
             }
         }
     }
