@@ -1,3 +1,7 @@
+---
+sidebar_position: 0
+---
+
 # Apache EventMesh (Incubating)
 
 [![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
