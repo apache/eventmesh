@@ -17,14 +17,13 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,22 +56,12 @@ public class HttpRetryer {
 
     public void init() {
         pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-                60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
-                new ThreadFactory() {
-                    private AtomicInteger count = new AtomicInteger();
-
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r, "http-retry-" + count.incrementAndGet());
-                        thread.setPriority(Thread.NORM_PRIORITY);
-                        thread.setDaemon(true);
-                        return thread;
-                    }
-                },
-                new ThreadPoolExecutor.AbortPolicy());
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
+            60000,
+            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
+            new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
+            new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
@@ -292,7 +293,7 @@ public class EventMeshUtil {
 
     public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
+            LOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
                     .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
                     .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
                     .getCompletedTaskCount());
