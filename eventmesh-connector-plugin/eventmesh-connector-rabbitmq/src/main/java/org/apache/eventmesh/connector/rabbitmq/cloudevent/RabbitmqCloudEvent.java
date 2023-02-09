@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.rabbitmq.cloudevent;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.rabbitmq.exception.RabbitmqaConnectorException;
 import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 
@@ -30,6 +32,8 @@ import java.util.Optional;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -70,8 +74,8 @@ public class RabbitmqCloudEvent implements Serializable {
         return optionalBytes.orElseGet(() -> new byte[]{});
     }
 
-    public static RabbitmqCloudEvent getFromByteArray(byte[] body) throws Exception {
-        Optional<RabbitmqCloudEvent> optionalCloudEvent = ByteArrayUtils.bytesToObject(body);
-        return optionalCloudEvent.orElse(null);
+    public static RabbitmqCloudEvent getFromByteArray(byte[] body) {
+        return JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
+        });
     }
 }
