@@ -20,11 +20,14 @@ package org.apache.eventmesh.runtime.boot;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+
 
 public abstract class AbstractRemotingServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRemotingServer.class);
@@ -102,7 +105,7 @@ public abstract class AbstractRemotingServer {
             }
         }
 
-        ThreadUtils.randomSleep(DEFAULT_SLEEP_SECONDS);
+        ThreadUtils.randomSleep(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();

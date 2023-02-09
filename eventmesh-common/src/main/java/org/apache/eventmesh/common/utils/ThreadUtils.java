@@ -20,20 +20,43 @@ package org.apache.eventmesh.common.utils;
 import org.apache.logging.log4j.util.ProcessIdUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadUtils {
 
     private static volatile long currentPID = -1;
 
-    public static void randomSleep(int min, int max) throws Exception {
-        // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
-        int random = ThreadLocalRandom.current().nextInt(min, max + 1);
-        Thread.sleep(random);
-
+    public static void randomSleep(long min, long max) {
+        randomSleep(min, max, TimeUnit.MILLISECONDS);
     }
 
-    public static void randomSleep(int max) throws Exception {
+    public static void randomSleep(long min, long max, TimeUnit timeUnit) {
+        // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
+        try {
+            long timeout = ThreadLocalRandom.current().nextLong(min, max + 1);
+            timeUnit.sleep(timeout);
+        } catch (InterruptedException ignore) {
+            //ignore
+        }
+    }
+
+    public static void randomSleep(long max) {
         randomSleep(1, max);
+    }
+
+    public static void sleep(long timeout) {
+        sleep(timeout, TimeUnit.MILLISECONDS);
+    }
+
+    public static void sleep(long timeout, TimeUnit timeUnit) {
+        if (null == timeUnit) {
+            return;
+        }
+        try {
+            timeUnit.sleep(timeout);
+        } catch (InterruptedException ignore) {
+            //ignore
+        }
     }
 
     /**
