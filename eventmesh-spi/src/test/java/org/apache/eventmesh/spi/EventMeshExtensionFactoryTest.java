@@ -38,4 +38,18 @@ public class EventMeshExtensionFactoryTest {
         TestPrototypeExtension prototypeExtensionB = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
         Assert.assertNotSame(prototypeExtensionA, prototypeExtensionB);
     }
+
+    @Test(expected = ExtensionException.class)
+    public void testGetExtension() {
+        ExtensionException exception = null;
+        try {
+            EventMeshExtensionFactory.getExtension(null, "eventmesh");
+        } catch (Exception ex) {
+            if (ex instanceof ExtensionException) {
+                exception = (ExtensionException) ex;
+            }
+        }
+        Assert.assertNotNull(exception);
+        EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null);
+    }
 }

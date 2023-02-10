@@ -38,12 +38,21 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(MetaInfExtensionClassLoader.class);
 
-    private static final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> EXTENSION_CLASS_CACHE =
-            new ConcurrentHashMap<>(16);
+    private static final MetaInfExtensionClassLoader INSTANCE = new MetaInfExtensionClassLoader();
+
+    private final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> extensionClassCache = new ConcurrentHashMap<>(16);
+
+    private MetaInfExtensionClassLoader() {
+
+    }
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
-        return EXTENSION_CLASS_CACHE.computeIfAbsent(extensionType, this::doLoadExtensionClass);
+        return extensionClassCache.computeIfAbsent(extensionType, this::doLoadExtensionClass);
+    }
+
+    public static MetaInfExtensionClassLoader getInstance() {
+        return INSTANCE;
     }
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {
@@ -64,7 +73,7 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
         return extensionMap;
     }
 
-    private static <T> Map<String, Class<?>> loadResources(URL url, Class<T> extensionType) throws IOException {
+    private <T> Map<String, Class<?>> loadResources(URL url, Class<T> extensionType) throws IOException {
         Map<String, Class<?>> extensionMap = new HashMap<>();
         try (InputStream inputStream = url.openStream()) {
             Properties properties = new Properties();
@@ -74,11 +83,9 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
                 String extensionClassStr = (String) extensionClass;
                 try {
                     Class<?> targetClass = Class.forName(extensionClassStr);
-                    logger.info("load extension class success, extensionType: {}, extensionClass: {}",
-                            extensionType, targetClass);
+                    logger.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
-                        throw new ExtensionException(
-                                String.format("class: %s is not subClass of %s", targetClass, extensionType));
+                        throw new ExtensionException(String.format("class: %s is not subClass of %s", targetClass, extensionType));
                     }
                     extensionMap.put(extensionNameStr, targetClass);
                 } catch (ClassNotFoundException e) {
