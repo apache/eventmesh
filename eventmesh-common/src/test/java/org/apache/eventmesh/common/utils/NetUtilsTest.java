@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.common.utils;
 
-import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.common.enums.HttpMethod;
 
+import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.sun.net.httpserver.HttpExchange;
 
 public class NetUtilsTest {
 
@@ -50,5 +55,19 @@ public class NetUtilsTest {
         clients.add(localAddress);
         result = NetUtils.addressToString(clients);
         Assert.assertEquals(result, localAddress + "|");
+    }
+
+    @Test
+    public void testParsePostBody() throws Exception {
+
+        HttpExchange exchange = Mockito.mock(HttpExchange.class);
+        String expected = "mxsm";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(expected.getBytes(StandardCharsets.UTF_8));
+        Mockito.when(exchange.getRequestMethod()).thenReturn(HttpMethod.POST.name());
+        Mockito.when(exchange.getRequestBody()).thenReturn(inputStream);
+
+        String actual = NetUtils.parsePostBody(exchange);
+        Assert.assertEquals(expected, actual);
+
     }
 }
