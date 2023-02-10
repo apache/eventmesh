@@ -30,7 +30,7 @@ public class BroadCastPubClient {
             pubClient.init();
             pubClient.heartbeat();
             for (int i = 0; i < 10000; i++) {
-                ThreadUtils.randomSleep(0, 500);
+                ThreadUtils.randomPause(0, 500);
                 pubClient.broadcast(MessageUtils.broadcastMessage(ClientConstants.BROADCAST_TOPIC, i), 5000);
             }
         }

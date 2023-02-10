@@ -105,7 +105,7 @@ public abstract class AbstractRemotingServer {
             }
         }
 
-        ThreadUtils.randomSleep(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
+        ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();

@@ -26,11 +26,11 @@ public class ThreadUtils {
 
     private static volatile long currentPID = -1;
 
-    public static void randomSleep(long min, long max) {
-        randomSleep(min, max, TimeUnit.MILLISECONDS);
+    public static void randomPause(long min, long max) {
+        randomPause(min, max, TimeUnit.MILLISECONDS);
     }
 
-    public static void randomSleep(long min, long max, TimeUnit timeUnit) {
+    public static void randomPause(long min, long max, TimeUnit timeUnit) {
         // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
         try {
             long timeout = ThreadLocalRandom.current().nextLong(min, max + 1);
@@ -40,8 +40,8 @@ public class ThreadUtils {
         }
     }
 
-    public static void randomSleep(long max) {
-        randomSleep(1, max);
+    public static void randomPause(long max) {
+        randomPause(1, max);
     }
 
     public static void sleep(long timeout) {

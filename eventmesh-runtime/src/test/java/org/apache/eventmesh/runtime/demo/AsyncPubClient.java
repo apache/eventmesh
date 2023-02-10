@@ -49,7 +49,7 @@ public class AsyncPubClient {
             });
 
             for (int i = 0; i < 1; i++) {
-                ThreadUtils.randomSleep(0, 500);
+                ThreadUtils.randomPause(0, 500);
                 pubClient.broadcast(MessageUtils.asyncMessage(ClientConstants.ASYNC_TOPIC, i), 5000);
             }
         }
