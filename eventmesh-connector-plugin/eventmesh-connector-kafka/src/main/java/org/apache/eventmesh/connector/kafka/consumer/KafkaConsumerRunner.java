@@ -95,7 +95,6 @@ public class KafkaConsumerRunner implements Runnable {
                         logger.info("Error parsing cloudevents: {}", e.getMessage());
                     }
                 });
-
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
