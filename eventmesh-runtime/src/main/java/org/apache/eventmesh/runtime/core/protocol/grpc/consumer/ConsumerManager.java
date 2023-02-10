@@ -216,9 +216,7 @@ public class ConsumerManager {
                 }
 
                 final List<ConsumerGroupClient> clientList = new LinkedList<>();
-                clientTable.values().forEach(clients -> {
-                    clientList.addAll(clients);
-                });
+                clientTable.values().forEach(clientList::addAll);
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("total number of ConsumerGroupClients: {}", clientList.size());
