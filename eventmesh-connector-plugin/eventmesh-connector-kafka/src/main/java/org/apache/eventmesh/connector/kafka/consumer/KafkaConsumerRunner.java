@@ -58,8 +58,8 @@ public class KafkaConsumerRunner implements Runnable {
 
     @Override
     public void run() {
-        while (!closed.get()) {
-            try {
+        try {
+            while (!closed.get()) {
                 ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000));
                 // Handle new records
                 records.forEach(rec -> {
@@ -73,7 +73,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case CommitMessage:
                                         // update offset
                                         logger.info("message commit, topic: {}, current offset:{}", topicName,
-                                            rec.offset());
+                                                rec.offset());
                                         break;
                                     case ReconsumeLater:
                                         // don't update offset
@@ -81,7 +81,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case ManualAck:
                                         // update offset
                                         logger
-                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                                .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
                                     default:
                                 }
@@ -95,15 +95,14 @@ public class KafkaConsumerRunner implements Runnable {
                         logger.info("Error parsing cloudevents: {}", e.getMessage());
                     }
                 });
-            } catch (WakeupException e) {
-                // Ignore exception if closing
-                if (!closed.get()) {
-                    throw e;
-                }
-            } finally {
-                consumer.close();
-                break;
             }
+        } catch (WakeupException e) {
+            // Ignore exception if closing
+            if (!closed.get()) {
+                throw e;
+            }
+        } finally {
+            consumer.close();
         }
     }
 
