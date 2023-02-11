@@ -45,7 +45,7 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
 
                 final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                         .bizSeqNo(RandomStringUtils.generateNum(30))
-                        .content(JsonUtils.serialize(content))
+                        .content(JsonUtils.toJSONString(content))
                         .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
                         .uniqueId(RandomStringUtils.generateNum(30))
                         .build()

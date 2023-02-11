@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -102,7 +102,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshGrpcConfiguration.isEventMeshServerUseTls()
                 );
 
-                String result = JsonUtils.toJson(getConfigurationResponse);
+                String result = JsonUtils.toJSONString(getConfigurationResponse);
                 httpExchange.sendResponseHeaders(200, result.getBytes().length);
                 out.write(result.getBytes());
             } catch (Exception e) {
@@ -113,7 +113,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 String stackTrace = writer.toString();
 
                 Error error = new Error(e.toString(), stackTrace);
-                String result = JsonUtils.toJson(error);
+                String result = JsonUtils.toJSONString(error);
                 httpExchange.sendResponseHeaders(500, result.getBytes().length);
                 out.write(result.getBytes());
             }

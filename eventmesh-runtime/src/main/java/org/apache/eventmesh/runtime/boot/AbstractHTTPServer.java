@@ -619,7 +619,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 if (length > 0) {
                     final byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    bodyMap.putAll(Objects.requireNonNull(JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET),
+                    bodyMap.putAll(Objects.requireNonNull(JsonUtils.parseObject(new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {
                             })));
                 }
@@ -639,7 +639,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             throw new MethodNotSupportedException("UnSupported Method " + fullHttpRequest.method());
         }
 
-        httpEventWrapper.setBody(Objects.requireNonNull(JsonUtils.serialize(bodyMap)).getBytes(StandardCharsets.UTF_8));
+        httpEventWrapper.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(StandardCharsets.UTF_8));
 
         metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
 

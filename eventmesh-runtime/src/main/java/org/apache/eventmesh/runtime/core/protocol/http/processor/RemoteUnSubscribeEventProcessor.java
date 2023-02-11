@@ -105,7 +105,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {}
         )).orElseGet(Maps::newHashMap);
@@ -142,8 +142,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
             remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-            List<String> unSubTopicList = Optional.ofNullable(JsonUtils.deserialize(
-                JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
+            List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseObject(
+                JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
                 new TypeReference<List<String>>() {}
             )).orElseGet(Collections::emptyList);
 
@@ -168,7 +168,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseObject(
                 remoteResult,
                 new TypeReference<Map<String, String>>() {}
             )).orElseGet(Maps::newHashMap);

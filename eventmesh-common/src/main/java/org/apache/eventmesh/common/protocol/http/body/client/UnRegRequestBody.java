@@ -57,7 +57,7 @@ public class UnRegRequestBody extends Body {
     public static UnRegRequestBody buildBody(Map<String, Object> bodyParam) {
         UnRegRequestBody body = new UnRegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
+        body.setTopics(JsonUtils.parseObject(MapUtils.getString(bodyParam, TOPICS),
                 new TypeReference<List<UnRegTopicEntity>>() {
                 }));
         return body;
@@ -67,7 +67,7 @@ public class UnRegRequestBody extends Body {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put(CLIENTTYPE, clientType);
-        map.put(TOPICS, JsonUtils.serialize(topics));
+        map.put(TOPICS, JsonUtils.toJSONString(topics));
         return map;
     }
 

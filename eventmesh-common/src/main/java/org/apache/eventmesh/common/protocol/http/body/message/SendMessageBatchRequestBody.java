@@ -86,7 +86,7 @@ public class SendMessageBatchRequestBody extends Body {
                 .append("batchId=").append(batchId).append(",")
                 .append("size=").append(size).append(",")
                 .append("producerGroup=").append(producerGroup).append(",")
-                .append("contents=").append(JsonUtils.serialize(contents)).append("}");
+                .append("contents=").append(JsonUtils.toJSONString(contents)).append("}");
         return sb.toString();
     }
 
@@ -122,7 +122,7 @@ public class SendMessageBatchRequestBody extends Body {
         body.setBatchId(batchId);
         if (StringUtils.isNotBlank(contents)) {
             body.setContents(
-                    JsonUtils.deserialize(contents, new TypeReference<List<BatchMessageEntity>>() {
+                    JsonUtils.parseObject(contents, new TypeReference<List<BatchMessageEntity>>() {
                     }));
         }
         body.setSize(size);

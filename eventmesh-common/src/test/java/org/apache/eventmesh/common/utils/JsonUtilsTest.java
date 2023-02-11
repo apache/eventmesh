@@ -1,0 +1,78 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.common.utils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import lombok.Data;
+
+public class JsonUtilsTest {
+
+    @Test
+    public void toJSONString() {
+        Map<String, String> map = new HashMap<>();
+        String jsonString = JsonUtils.toJSONString(map);
+        Assert.assertEquals("{}", jsonString);
+        map.put("mxsm", "2");
+        jsonString = JsonUtils.toJSONString(map);
+        Assert.assertEquals("{\"mxsm\":\"2\"}", jsonString);
+    }
+
+    @Test
+    public void testToBytes() {
+        Map<String, String> map = new HashMap<>();
+        map.put("mxsm", "2");
+        Assert.assertArrayEquals("{\"mxsm\":\"2\"}".getBytes(StandardCharsets.UTF_8), JsonUtils.toBytes(map));
+    }
+
+    @Test
+    public void testParseObject() {
+
+        String json = "{\"mxsm\":\"2\"}";
+        Map<String, String> map = JsonUtils.parseObject(json, new TypeReference<Map<String, String>>() {
+
+        });
+        Assert.assertEquals("2", map.get("mxsm"));
+        EventMesh mxsm = JsonUtils.parseObject(json, EventMesh.class);
+        Assert.assertEquals("2", mxsm.mxsm);
+        EventMesh mxsm1 = JsonUtils.parseObject(json.getBytes(StandardCharsets.UTF_8), EventMesh.class);
+        Assert.assertEquals("2", mxsm1.mxsm);
+    }
+
+
+    @Test
+    public void getJsonNode() {
+        String json = "{\"mxsm\":\"2\"}";
+        JsonNode jsonNode = JsonUtils.getJsonNode(json);
+        Assert.assertEquals("2", jsonNode.findValue("mxsm").asText());
+    }
+
+    @Data
+    public static class EventMesh {
+
+        private String mxsm;
+    }
+}

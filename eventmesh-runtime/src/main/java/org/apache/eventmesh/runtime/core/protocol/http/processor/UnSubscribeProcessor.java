@@ -151,7 +151,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     if (StringUtils.equals(client.getPid(), pid)
                             && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
                         if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("client {} start unsubscribe", JsonUtils.serialize(client));
+                            LOGGER.warn("client {} start unsubscribe", JsonUtils.toJSONString(client));
                         }
                         clientIterator.remove();
                     }
@@ -225,7 +225,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     final long endTime = System.currentTimeMillis();
                     LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             endTime - startTime,
-                            JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
+                            JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
@@ -255,7 +255,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     final long endTime = System.currentTimeMillis();
                     LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                     + "|topic={}|url={}", endTime - startTime,
-                            JsonUtils.serialize(unSubscribeRequestBody.getTopics()),
+                            JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);

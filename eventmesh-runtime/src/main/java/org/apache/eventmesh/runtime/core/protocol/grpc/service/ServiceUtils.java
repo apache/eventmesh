@@ -127,7 +127,7 @@ public class ServiceUtils {
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
                 .setHeader(header)
-                .setContent(JsonUtils.serialize(resp))
+                .setContent(JsonUtils.toJSONString(resp))
                 .build();
 
         emitter.onNext(simpleMessage);
@@ -147,7 +147,7 @@ public class ServiceUtils {
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
                 .setHeader(header)
-                .setContent(JsonUtils.serialize(resp))
+                .setContent(JsonUtils.toJSONString(resp))
                 .build();
 
         emitter.onNext(simpleMessage);

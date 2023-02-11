@@ -105,7 +105,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {}
         )).orElseGet(Maps::newHashMap);
@@ -118,11 +118,11 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         String url = requestBodyMap.get(EventMeshConstants.URL).toString();
         String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
-        String topic = JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
+        String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseObject(
             topic,
             new TypeReference<List<SubscriptionItem>>() {}
         )).orElseGet(Collections::emptyList);
@@ -200,7 +200,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.deserialize(
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseObject(
                 remoteResult,
                 new TypeReference<Map<String, String>>() {}
             )).orElseGet(Maps::newHashMap);
@@ -220,7 +220,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             httpLogger.error(
                 "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
                     + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                JsonUtils.serialize(subscriptionList), url, e);
+                JsonUtils.toJSONString(subscriptionList), url, e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
                 responseBodyMap, null);
         }

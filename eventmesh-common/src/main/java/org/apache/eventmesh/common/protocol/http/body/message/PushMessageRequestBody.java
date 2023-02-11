@@ -108,7 +108,7 @@ public class PushMessageRequestBody extends Body {
 
         if (StringUtils.isNotBlank(extFields)) {
             pushMessageRequestBody.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         return pushMessageRequestBody;
@@ -122,7 +122,7 @@ public class PushMessageRequestBody extends Body {
         map.put(CONTENT, content);
         map.put(BIZSEQNO, bizSeqNo);
         map.put(UNIQUEID, uniqueId);
-        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
+        map.put(EXTFIELDS, JsonUtils.toJSONString(extFields));
 
         return map;
     }

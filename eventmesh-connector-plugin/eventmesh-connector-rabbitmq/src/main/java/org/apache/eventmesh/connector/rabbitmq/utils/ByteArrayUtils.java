@@ -29,13 +29,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class ByteArrayUtils {
 
     public static <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
-        String s = JsonUtils.serialize(obj);
+        String s = JsonUtils.toJSONString(obj);
         byte[] bytes = s.getBytes();
         return Optional.ofNullable(bytes);
     }
 
     public static <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
-        T t = JsonUtils.deserialize(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
+        T t = JsonUtils.parseObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
         });
         return Optional.ofNullable(t);
     }

@@ -227,7 +227,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     LOGGER.error(
                             "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
                                     + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                            JsonUtils.serialize(subscribeRequestBody.getTopics()),
+                            JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
                             subscribeRequestBody.getUrl(), e);
                 }
                 eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();

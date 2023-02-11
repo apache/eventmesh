@@ -738,7 +738,7 @@ public class ClientGroupWrapper {
             }
             List<String> paramValues = new ArrayList<String>();
             paramValues.add(EventMeshConstants.MANAGE_MSG);
-            paramValues.add(JsonUtils.serialize(msg));
+            paramValues.add(JsonUtils.toJSONString(msg));
             paramValues.add(EventMeshConstants.MANAGE_GROUP);
             paramValues.add(group);
 
