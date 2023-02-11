@@ -60,7 +60,7 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
         logger.info("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "");
 
         int c = connections.incrementAndGet();
-        if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpClientMaxNum) {
+        if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpClientMaxNum()) {
             logger.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect "
                     +
                     "this eventMesh server");

@@ -361,7 +361,7 @@ public class ClientSessionGroupMapping {
             () -> {
                 for (Session tmp : sessionTable.values()) {
                     if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
-                        > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
+                        > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills()) {
                         try {
                             if (log.isWarnEnabled()) {
                                 log.warn("clean expired session,client:{}", tmp.getClient());
@@ -372,8 +372,7 @@ public class ClientSessionGroupMapping {
                         }
                     }
                 }
-            }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills,
-                TimeUnit.MILLISECONDS);
+            }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills(), TimeUnit.MILLISECONDS);
     }
 
     private void initDownStreamMsgContextCleaner() {
@@ -427,7 +426,7 @@ public class ClientSessionGroupMapping {
                 }
             }
             try {
-                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().gracefulShutdownSleepIntervalInMills);
+                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills());
             } catch (InterruptedException e) {
                 log.warn("Thread.sleep occur InterruptedException", e);
             }

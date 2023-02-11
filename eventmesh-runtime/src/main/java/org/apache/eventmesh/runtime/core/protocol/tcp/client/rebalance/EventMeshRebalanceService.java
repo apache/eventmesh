@@ -43,7 +43,7 @@ public class EventMeshRebalanceService {
     public EventMeshRebalanceService(EventMeshTCPServer eventMeshTCPServer, EventMeshRebalanceStrategy rebalanceStrategy) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.rebalanceStrategy = rebalanceStrategy;
-        this.rebalanceIntervalMills = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpRebalanceIntervalInMills;
+        this.rebalanceIntervalMills = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpRebalanceIntervalInMills();
     }
 
     public void init() {

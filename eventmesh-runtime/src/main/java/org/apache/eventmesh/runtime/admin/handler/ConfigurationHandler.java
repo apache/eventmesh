@@ -93,7 +93,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
                     eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
                     // TCP Configuration
-                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                    eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
                     // HTTP Configuration
                     eventMeshHTTPConfiguration.getHttpServerPort(),
                     eventMeshHTTPConfiguration.isEventMeshServerUseTls(),

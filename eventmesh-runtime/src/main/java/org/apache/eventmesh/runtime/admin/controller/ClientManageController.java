@@ -88,7 +88,7 @@ public class ClientManageController {
 
 
     public void start() throws IOException {
-        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
+        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
