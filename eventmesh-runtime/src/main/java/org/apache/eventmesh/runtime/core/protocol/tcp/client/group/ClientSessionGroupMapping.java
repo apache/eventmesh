@@ -446,7 +446,7 @@ public class ClientSessionGroupMapping {
                 log.error("say goodbye to session error! {}", itr, e);
             }
         });
-        ThreadUtils.randomSleep(50);
+        ThreadUtils.randomPause(50);
         log.info("ClientSessionGroupMapping shutdown......");
     }
 
