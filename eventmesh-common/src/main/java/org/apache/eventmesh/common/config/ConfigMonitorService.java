@@ -34,8 +34,7 @@ public class ConfigMonitorService {
 
     private final List<ConfigInfo> configInfoList = new ArrayList<>();
 
-    private final ScheduledExecutorService configLoader = ThreadPoolFactory
-        .createSingleScheduledExecutor("eventMesh-configLoader-");
+    private final ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader");
 
     {
         configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
@@ -52,16 +51,20 @@ public class ConfigMonitorService {
                 if (configInfo.getObject().equals(object)) {
                     continue;
                 }
+
                 Field field = configInfo.getObjectField();
-                field.setAccessible(true);
-                field.set(configInfo.getInstance(), object);
+                boolean isAccessible = field.isAccessible();
+                try {
+                    field.setAccessible(true);
+                    field.set(configInfo.getInstance(), object);
+                } finally {
+                    field.setAccessible(isAccessible);
+                }
 
                 configInfo.setObject(object);
                 log.info("config reload success: {}", object);
             } catch (Exception e) {
                 log.error("config reload failed", e);
-            } finally {
-                configInfo.getObjectField().setAccessible(false);
             }
         }
     }
