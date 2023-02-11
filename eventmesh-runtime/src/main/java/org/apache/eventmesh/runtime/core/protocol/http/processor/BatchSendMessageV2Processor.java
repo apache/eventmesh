@@ -178,7 +178,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
             String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
             try {
-                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,

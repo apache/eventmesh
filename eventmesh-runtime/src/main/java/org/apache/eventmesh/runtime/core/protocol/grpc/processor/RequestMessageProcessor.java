@@ -145,7 +145,7 @@ public class RequestMessageProcessor {
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            Acl.getInstance().doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         }
     }
 }

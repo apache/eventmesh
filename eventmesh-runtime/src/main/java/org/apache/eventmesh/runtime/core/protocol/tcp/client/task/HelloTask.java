@@ -63,7 +63,7 @@ public class HelloTask extends AbstractTask {
             //do acl check in connect
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.getValue());
+                Acl.getInstance().doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.getValue());
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {

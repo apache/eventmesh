@@ -136,13 +136,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
             for (SubscriptionItem item : subscriptionList) {
                 try {
-                    Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
-                        requestWrapper.getRequestURI());
+                    Acl.getInstance().doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(), requestWrapper.getRequestURI());
                 } catch (Exception e) {
                     aclLogger.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
-                    handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
-                        responseBodyMap, null);
-
+                    handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap, responseBodyMap, null);
                     return;
                 }
             }

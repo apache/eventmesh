@@ -127,7 +127,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             //do acl check
             if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 try {
-                    Acl.doAclCheckInHttpHeartbeat(
+                    Acl.getInstance().doAclCheckInHttpHeartbeat(
                             RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                             heartbeatRequestHeader.getUsername(),
                             heartbeatRequestHeader.getPasswd(),

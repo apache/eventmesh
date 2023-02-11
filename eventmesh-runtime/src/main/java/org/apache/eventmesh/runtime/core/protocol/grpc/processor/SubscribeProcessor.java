@@ -131,7 +131,7 @@ public class SubscribeProcessor {
         final RequestHeader header = subscription.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
+                Acl.getInstance().doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
                         header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }

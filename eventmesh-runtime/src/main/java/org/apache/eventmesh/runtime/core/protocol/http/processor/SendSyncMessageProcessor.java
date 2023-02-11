@@ -161,7 +161,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             final int requestCode = Integer.parseInt(asyncContext.getRequest().getRequestCode());
 
             try {
-                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, sys, topic, requestCode);
+                Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, sys, topic, requestCode);
             } catch (Exception e) {
 
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(

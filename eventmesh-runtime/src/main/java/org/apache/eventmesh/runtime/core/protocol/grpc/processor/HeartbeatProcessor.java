@@ -110,7 +110,7 @@ public class HeartbeatProcessor {
             String sys = header.getSys();
             int requestCode = RequestCode.HEARTBEAT.getRequestCode();
             for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
-                Acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
+                Acl.getInstance().doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
             }
         }
     }

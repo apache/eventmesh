@@ -26,14 +26,25 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Acl {
+
     private static final Logger logger = LoggerFactory.getLogger(Acl.class);
-    private static AclService aclService;
+
+    private static final Acl INSTANCE = new Acl();
+
+    private AclService aclService;
+
+    private Acl() {
+
+    }
+
+    public static Acl getInstance() {
+        return INSTANCE;
+    }
 
     public void init(String aclPluginType) throws AclException {
         aclService = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
@@ -52,19 +63,19 @@ public class Acl {
         aclService.shutdown();
     }
 
-    public static void doAclCheckInTcpConnect(String remoteAddr, UserAgent userAgent, int requestCode) throws AclException {
+    public void doAclCheckInTcpConnect(String remoteAddr, UserAgent userAgent, int requestCode) throws AclException {
         aclService.doAclCheckInConnect(buildTcpAclProperties(remoteAddr, userAgent, null, requestCode));
     }
 
-    public static void doAclCheckInTcpHeartbeat(String remoteAddr, UserAgent userAgent, int requestCode) throws AclException {
+    public void doAclCheckInTcpHeartbeat(String remoteAddr, UserAgent userAgent, int requestCode) throws AclException {
         aclService.doAclCheckInHeartbeat(buildTcpAclProperties(remoteAddr, userAgent, null, requestCode));
     }
 
-    public static void doAclCheckInTcpSend(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
+    public void doAclCheckInTcpSend(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
         aclService.doAclCheckInSend(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
     }
 
-    public static void doAclCheckInTcpReceive(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
+    public void doAclCheckInTcpReceive(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
     }
 
@@ -81,33 +92,32 @@ public class Acl {
         return aclProperties;
     }
 
-    public static void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                            int requestCode) throws AclException {
+    public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode)
+        throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
-    public static void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                            String requestURI) throws AclException {
+    public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
+        String requestURI) throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
-    public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                               int requestCode) throws AclException {
+    public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
+        int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
-    public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                               String requestURI) throws AclException {
+    public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
+        String requestURI) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
-    public static void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                                 int requestCode) throws AclException {
+    public void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
+        int requestCode) throws AclException {
         aclService.doAclCheckInHeartbeat(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
-    private static Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem,
-                                                     String topic, int requestCode) {
+    private Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode) {
         Properties aclProperties = new Properties();
         aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
         aclProperties.put(AclPropertyKeys.USER, user);
@@ -120,8 +130,7 @@ public class Acl {
         return aclProperties;
     }
 
-    private static Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem,
-                                                     String topic, String requestURI) {
+    private Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, String requestURI) {
         Properties aclProperties = new Properties();
         aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
         aclProperties.put(AclPropertyKeys.USER, user);
@@ -132,13 +141,5 @@ public class Acl {
             aclProperties.put(AclPropertyKeys.TOPIC, topic);
         }
         return aclProperties;
-    }
-
-    private AclService getSpiAclService() {
-        ServiceLoader<AclService> serviceLoader = ServiceLoader.load(AclService.class);
-        if (serviceLoader.iterator().hasNext()) {
-            return serviceLoader.iterator().next();
-        }
-        return null;
     }
 }

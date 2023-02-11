@@ -133,8 +133,7 @@ public class SubscribeStreamProcessor {
             String pass = header.getPassword();
             String subsystem = header.getSys();
             for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
-                    RequestCode.SUBSCRIBE.getRequestCode());
+                Acl.getInstance().doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

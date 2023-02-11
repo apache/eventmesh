@@ -61,7 +61,7 @@ public class EventMeshServer {
         ConfigService configService = ConfigService.getInstance();
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
 
-        this.acl = new Acl();
+        this.acl = Acl.getInstance();
         this.registry = new Registry();
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();

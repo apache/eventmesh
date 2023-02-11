@@ -115,7 +115,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {
-                    Acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
+                    Acl.getInstance().doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString(),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString(),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString(),

@@ -211,7 +211,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             try {
-                Acl.doAclCheckInHttpSend(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+                Acl.getInstance().doAclCheckInHttpSend(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                         getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME),
                         getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD),
                         getExtension(event, ProtocolKey.ClientInstanceKey.SYS),
