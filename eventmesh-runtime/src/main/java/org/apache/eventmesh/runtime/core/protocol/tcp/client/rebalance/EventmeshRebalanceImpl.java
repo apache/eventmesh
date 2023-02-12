@@ -171,7 +171,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                     Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
             logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
             try {
-                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().sleepIntervalInRebalanceRedirectMills);
+                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getSleepIntervalInRebalanceRedirectMills());
             } catch (InterruptedException e) {
                 logger.warn("Thread.sleep occur InterruptedException", e);
             }
