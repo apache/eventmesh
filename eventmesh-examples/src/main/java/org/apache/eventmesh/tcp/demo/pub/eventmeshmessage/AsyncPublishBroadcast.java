@@ -24,10 +24,13 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +59,7 @@ public class AsyncPublishBroadcast {
             }
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-            Thread.sleep(2_000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             log.error("AsyncPublishBroadcast failed", e);

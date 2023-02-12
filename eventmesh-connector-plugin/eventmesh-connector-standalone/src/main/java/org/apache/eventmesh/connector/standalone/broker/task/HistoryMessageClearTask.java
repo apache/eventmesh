@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.standalone.broker.task;
 
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
@@ -60,7 +61,7 @@ public class HistoryMessageClearTask implements Runnable {
                 }
             });
             try {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+                ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 logger.error("Thread is interrupted, thread name: {}", Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();

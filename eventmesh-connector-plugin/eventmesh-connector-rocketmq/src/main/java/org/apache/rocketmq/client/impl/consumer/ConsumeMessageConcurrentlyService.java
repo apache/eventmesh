@@ -18,6 +18,7 @@
 package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -371,11 +372,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 boolean success = false;
                 for (int i = 0; i < times; i++) {
                     try {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            //ignore
-                        }
+                        ThreadUtils.sleep(1, TimeUnit.SECONDS);
                         ConsumeMessageConcurrentlyService.this.consumeExecutor.submit(consumeRequest);
                         success = true;
                         break;

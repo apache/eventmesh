@@ -26,6 +26,8 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,7 @@ public class SyncRequestInstance {
             logger.warn("send msg failed", e);
         }
 
-        Thread.sleep(30000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
         try (final EventMeshHttpProducer closed = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {

@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
@@ -269,12 +271,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         }
 
         clientSessionGroupMapping.shutdown();
-        try {
-            Thread.sleep(40 * 1000);
-        } catch (InterruptedException e) {
-            LOGGER.error("interruptedException occurred while sleeping", e);
-        }
-
+        ThreadUtils.sleep(40, TimeUnit.SECONDS);
         globalTrafficShapingHandler.release();
 
         if (this.getIoGroup() != null) {

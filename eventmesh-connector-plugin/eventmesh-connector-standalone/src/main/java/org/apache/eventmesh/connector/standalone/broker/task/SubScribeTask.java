@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.standalone.broker.task;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -101,7 +103,7 @@ public class SubScribeTask implements Runnable {
                     ex);
             }
             try {
-                Thread.sleep(1000);
+                ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 logger.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
                     topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
