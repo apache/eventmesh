@@ -34,8 +34,7 @@ public class ConfigMonitorService {
 
     private final List<ConfigInfo> configInfoList = new ArrayList<>();
 
-    private final ScheduledExecutorService configLoader = ThreadPoolFactory
-        .createSingleScheduledExecutor("eventMesh-configLoader-");
+    private final ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader");
 
     {
         configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
