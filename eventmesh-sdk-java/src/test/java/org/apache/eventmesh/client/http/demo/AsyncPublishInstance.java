@@ -55,9 +55,9 @@ public class AsyncPublishInstance {
                     .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
             eventMeshHttpProducer.publish(eventMeshMessage);
-            Thread.sleep(1000);
+            ThreadUtils.sleep(1000);
         }
-        Thread.sleep(30000);
+        ThreadUtils.sleep(30000);
         try (EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // ignore
         }

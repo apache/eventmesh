@@ -19,6 +19,7 @@ package org.apache.eventmesh.grpc.pub.cloudevents;
 
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class CloudEventsBatchPublishInstance extends GrpcAbstractDemo {
                 cloudEventList.add(buildCloudEvent(content));
             }
             eventMeshGrpcProducer.publish(cloudEventList);
-            Thread.sleep(10_000);
+            ThreadUtils.sleep(10_000);
         }
     }
 }

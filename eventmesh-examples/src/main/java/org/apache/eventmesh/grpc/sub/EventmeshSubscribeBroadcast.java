@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class EventmeshSubscribeBroadcast extends GrpcAbstractDemo implements Rec
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-            Thread.sleep(60_000);
+            ThreadUtils.sleep(60_000);
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
         }
     }

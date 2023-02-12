@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +53,7 @@ public class SyncRequestInstance extends HttpAbstractDemo {
             log.error("send msg failed, ", e);
         }
 
-        Thread.sleep(30_000);
+        ThreadUtils.sleep(30_000);
 
     }
 }

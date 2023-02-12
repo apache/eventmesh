@@ -33,6 +33,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -274,9 +275,9 @@ public class EventMeshConsumer {
                     return;
                 } else {
                     // can not handle the message due to the capacity limit is reached
-                    // wait for sometime and send this message back to mq and consume again
+                    // wait for some time and send this message back to mq and consume again
                     try {
-                        Thread.sleep(5000);
+                        ThreadUtils.sleep(5000);
                         sendMessageBack(consumerGroup, event, uniqueId, bizSeqNo);
                     } catch (Exception ignored) {
                         // ignore exception

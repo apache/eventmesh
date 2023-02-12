@@ -20,6 +20,7 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.HashMap;
@@ -44,9 +45,9 @@ public class RequestReplyInstance extends GrpcAbstractDemo {
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.requestReply(buildEventMeshMessage(content),
                         EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                Thread.sleep(1_000);
+                ThreadUtils.sleep(1_000);
             }
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30_000);
 
         }
     }

@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements Recei
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-            Thread.sleep(60_000);
+            ThreadUtils.sleep(60_000);
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
         }
     }

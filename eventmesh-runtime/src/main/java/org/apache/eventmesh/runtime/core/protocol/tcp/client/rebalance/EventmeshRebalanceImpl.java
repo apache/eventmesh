@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -170,11 +171,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, newProxyIp,
                     Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
             logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
-            try {
-                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getSleepIntervalInRebalanceRedirectMills());
-            } catch (InterruptedException e) {
-                logger.warn("Thread.sleep occur InterruptedException", e);
-            }
+            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getSleepIntervalInRebalanceRedirectMills());
         }
         logger.info("doRebalance redirect end---------------------group:{}", group);
     }

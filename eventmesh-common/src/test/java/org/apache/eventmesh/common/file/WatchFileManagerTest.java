@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.file;
 
+import org.apache.eventmesh.common.utils.ThreadUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -53,6 +55,6 @@ public class WatchFileManagerTest {
         FileWriter fw = new FileWriter(file);
         properties.store(fw, "newAdd");
 
-        Thread.sleep(500);
+        ThreadUtils.sleep(500);
     }
 }

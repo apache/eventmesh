@@ -322,7 +322,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        
+
         if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
             shutdownClientGroupConsumer(clientGroupWrapper);
         }
@@ -425,18 +425,12 @@ public class ClientSessionGroupMapping {
                     log.error("say goodbye to pubSession error! {}", pubSession, e);
                 }
             }
-            try {
-                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills());
-            } catch (InterruptedException e) {
-                log.warn("Thread.sleep occur InterruptedException", e);
-            }
+
+            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills());
+
         }
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Thread.sleep occur InterruptedException", e);
-        }
+        ThreadUtils.sleep(1000);
 
         sessionTable.values().parallelStream().forEach(itr -> {
             try {

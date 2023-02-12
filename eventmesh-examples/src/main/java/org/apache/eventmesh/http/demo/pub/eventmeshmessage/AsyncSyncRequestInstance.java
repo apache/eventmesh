@@ -22,6 +22,7 @@ import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,11 +58,11 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
                 }
             }, 3_000);
 
-            Thread.sleep(2_000);
+            ThreadUtils.sleep(2_000);
         } catch (Exception e) {
             log.error("async send msg failed", e);
         }
-        Thread.sleep(30_000);
+        ThreadUtils.sleep(30_000);
 
     }
 }

@@ -20,6 +20,7 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class BatchPublishInstance extends GrpcAbstractDemo {
             }
 
             eventMeshGrpcProducer.publish(messageList);
-            Thread.sleep(10_000);
+            ThreadUtils.sleep(10_000);
         }
     }
 }

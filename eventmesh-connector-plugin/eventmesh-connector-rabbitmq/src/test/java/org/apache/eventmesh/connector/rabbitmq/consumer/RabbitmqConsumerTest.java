@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.rabbitmq.RabbitmqServer;
 
 import java.net.URI;
@@ -60,7 +61,7 @@ public class RabbitmqConsumerTest extends RabbitmqServer {
 
         rabbitmqConsumer.subscribe("topic");
 
-        Thread.sleep(1000);
+        ThreadUtils.sleep(1000);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                     .withId(String.valueOf(i))

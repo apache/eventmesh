@@ -29,6 +29,7 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import org.apache.eventmesh.selector.NacosSelector;
 import org.apache.eventmesh.util.Utils;
@@ -71,7 +72,7 @@ public class WorkflowPaymentAsyncSubscribe extends GrpcAbstractDemo implements R
                     .serverName(workflowServerName).build();
             workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-            Thread.sleep(60_000_000);
+            ThreadUtils.sleep(60_000_000);
             eventMeshCatalogClient.destroy();
         }
     }

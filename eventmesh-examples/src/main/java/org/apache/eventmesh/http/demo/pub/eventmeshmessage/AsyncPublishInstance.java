@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
                 eventMeshHttpProducer.publish(eventMeshMessage);
             }
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30_000);
         }
     }
 }

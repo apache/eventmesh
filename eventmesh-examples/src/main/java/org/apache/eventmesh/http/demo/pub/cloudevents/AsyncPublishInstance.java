@@ -19,6 +19,7 @@ package org.apache.eventmesh.http.demo.pub.cloudevents;
 
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
                 eventMeshHttpProducer.publish(buildCloudEvent(content));
                 log.info("publish event success content: {}", content);
             }
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30_000);
         }
     }
 }

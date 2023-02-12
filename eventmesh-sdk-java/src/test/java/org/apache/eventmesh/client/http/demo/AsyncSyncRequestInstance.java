@@ -79,12 +79,12 @@ public class AsyncSyncRequestInstance {
                 }
             }, 3000);
 
-            Thread.sleep(2000);
+            ThreadUtils.sleep(2000);
         } catch (Exception e) {
             logger.warn("async send msg failed", e);
         }
 
-        Thread.sleep(30000);
+        ThreadUtils.sleep(30000);
         try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
