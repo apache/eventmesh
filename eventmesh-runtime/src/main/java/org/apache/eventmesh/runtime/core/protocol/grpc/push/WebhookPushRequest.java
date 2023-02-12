@@ -218,7 +218,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
         try {
             Map<String, Object> ret =
-                    JsonUtils.parseObject(content, new TypeReference<Map<String, Object>>() {
+                    JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                     });
             Integer retCode = (Integer) ret.get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {

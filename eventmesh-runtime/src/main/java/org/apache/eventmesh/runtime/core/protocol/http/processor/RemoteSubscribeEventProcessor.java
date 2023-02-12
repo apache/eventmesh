@@ -105,7 +105,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseObject(
+        Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {}
         )).orElseGet(Maps::newHashMap);
@@ -122,7 +122,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
 
         // SubscriptionItem
-        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseObject(
+        List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             topic,
             new TypeReference<List<SubscriptionItem>>() {}
         )).orElseGet(Collections::emptyList);
@@ -200,7 +200,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
-            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseObject(
+            Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 remoteResult,
                 new TypeReference<Map<String, String>>() {}
             )).orElseGet(Maps::newHashMap);

@@ -122,7 +122,7 @@ public class SendMessageBatchRequestBody extends Body {
         body.setBatchId(batchId);
         if (StringUtils.isNotBlank(contents)) {
             body.setContents(
-                    JsonUtils.parseObject(contents, new TypeReference<List<BatchMessageEntity>>() {
+                    JsonUtils.parseTypeReferenceObject(contents, new TypeReference<List<BatchMessageEntity>>() {
                     }));
         }
         body.setSize(size);

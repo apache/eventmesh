@@ -63,7 +63,7 @@ public class JsonUtils {
         }
     }
 
-    public static byte[] toBytes(Object obj) {
+    public static byte[] toJSONBytes(Object obj) {
         if (Objects.isNull(obj)) {
             return null;
         }
@@ -112,7 +112,7 @@ public class JsonUtils {
      * @param <T>           object type
      * @return object
      */
-    public static <T> T parseObject(String text, TypeReference<T> typeReference) {
+    public static <T> T parseTypeReferenceObject(String text, TypeReference<T> typeReference) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }

@@ -106,7 +106,7 @@ public class ReplyMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields(
-                    JsonUtils.parseObject(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));

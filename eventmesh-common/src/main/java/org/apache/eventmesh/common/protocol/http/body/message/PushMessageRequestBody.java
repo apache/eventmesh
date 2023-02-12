@@ -108,7 +108,7 @@ public class PushMessageRequestBody extends Body {
 
         if (StringUtils.isNotBlank(extFields)) {
             pushMessageRequestBody.setExtFields(
-                    JsonUtils.parseObject(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         return pushMessageRequestBody;

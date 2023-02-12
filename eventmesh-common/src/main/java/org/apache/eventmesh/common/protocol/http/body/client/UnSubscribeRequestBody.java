@@ -70,7 +70,7 @@ public class UnSubscribeRequestBody extends Body {
         UnSubscribeRequestBody body = new UnSubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JsonUtils
-                .parseObject(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
+                .parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
                 }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;

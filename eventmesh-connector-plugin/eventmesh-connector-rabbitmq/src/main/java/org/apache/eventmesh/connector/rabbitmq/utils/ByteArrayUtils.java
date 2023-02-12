@@ -35,7 +35,7 @@ public class ByteArrayUtils {
     }
 
     public static <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
-        T t = JsonUtils.parseObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
+        T t = JsonUtils.parseTypeReferenceObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
         });
         return Optional.ofNullable(t);
     }

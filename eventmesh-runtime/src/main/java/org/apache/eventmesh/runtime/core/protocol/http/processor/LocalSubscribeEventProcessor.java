@@ -88,7 +88,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         //validate body
-        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseObject(
+        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
                 new TypeReference<HashMap<String, Object>>() {
                 }
@@ -105,7 +105,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final String topic = JsonUtils.toJSONString(requestBodyMap.get("topic"));
 
         // SubscriptionItem
-        final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseObject(
+        final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 topic,
                 new TypeReference<List<SubscriptionItem>>() {
                 }

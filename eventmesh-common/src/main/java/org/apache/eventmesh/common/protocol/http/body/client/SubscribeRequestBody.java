@@ -70,7 +70,7 @@ public class SubscribeRequestBody extends Body {
     public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JsonUtils.parseObject(MapUtils.getString(bodyParam, TOPIC),
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPIC),
                 new TypeReference<List<SubscriptionItem>>() {
                 }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));

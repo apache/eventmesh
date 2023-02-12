@@ -103,7 +103,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         final byte[] requestBody = requestWrapper.getBody();
 
-        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseObject(
+        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 new String(requestBody, Constants.DEFAULT_CHARSET),
                 new TypeReference<HashMap<String, Object>>() {
                 }
@@ -119,7 +119,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
 
         // unSubscriptionItem
-        final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseObject(
+        final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
                 new TypeReference<List<String>>() {
                 }

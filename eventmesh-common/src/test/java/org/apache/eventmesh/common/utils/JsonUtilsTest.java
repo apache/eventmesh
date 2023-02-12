@@ -45,14 +45,14 @@ public class JsonUtilsTest {
     public void testToBytes() {
         Map<String, String> map = new HashMap<>();
         map.put("mxsm", "2");
-        Assert.assertArrayEquals("{\"mxsm\":\"2\"}".getBytes(StandardCharsets.UTF_8), JsonUtils.toBytes(map));
+        Assert.assertArrayEquals("{\"mxsm\":\"2\"}".getBytes(StandardCharsets.UTF_8), JsonUtils.toJSONBytes(map));
     }
 
     @Test
     public void testParseObject() {
 
         String json = "{\"mxsm\":\"2\"}";
-        Map<String, String> map = JsonUtils.parseObject(json, new TypeReference<Map<String, String>>() {
+        Map<String, String> map = JsonUtils.parseTypeReferenceObject(json, new TypeReference<Map<String, String>>() {
 
         });
         Assert.assertEquals("2", map.get("mxsm"));

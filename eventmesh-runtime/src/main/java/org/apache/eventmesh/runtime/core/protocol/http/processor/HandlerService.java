@@ -189,7 +189,7 @@ public class HandlerService {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
                     Optional
-                        .ofNullable(JsonUtils.parseObject(
+                        .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {}
                         ))

@@ -74,7 +74,7 @@ public class EventMeshClientUtil {
 
         // This is GRPC response message
         if (StringUtils.isEmpty(message.getSeqNum()) && StringUtils.isEmpty(message.getUniqueId())) {
-            return (T) JsonUtils.parseObject(content,
+            return (T) JsonUtils.parseTypeReferenceObject(content,
                     new TypeReference<HashMap<String, String>>() {
                     });
         }

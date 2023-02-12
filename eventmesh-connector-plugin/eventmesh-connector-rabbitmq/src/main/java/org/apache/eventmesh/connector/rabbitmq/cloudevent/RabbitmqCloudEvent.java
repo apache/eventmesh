@@ -75,7 +75,7 @@ public class RabbitmqCloudEvent implements Serializable {
     }
 
     public static RabbitmqCloudEvent getFromByteArray(byte[] body) {
-        return JsonUtils.parseObject(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
+        return JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
         });
     }
 }

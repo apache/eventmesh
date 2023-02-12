@@ -619,7 +619,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 if (length > 0) {
                     final byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    bodyMap.putAll(Objects.requireNonNull(JsonUtils.parseObject(new String(body, Constants.DEFAULT_CHARSET),
+                    bodyMap.putAll(Objects.requireNonNull(JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {
                             })));
                 }

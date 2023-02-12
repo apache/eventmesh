@@ -71,7 +71,7 @@ public class RegRequestBody extends Body {
         RegRequestBody body = new RegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
-        body.setTopics(JsonUtils.parseObject(MapUtils.getString(bodyParam, TOPICS),
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPICS),
                 new TypeReference<List<SubscriptionItem>>() {
                 }));
         return body;
