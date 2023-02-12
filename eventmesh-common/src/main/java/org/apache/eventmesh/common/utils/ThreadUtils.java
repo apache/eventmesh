@@ -44,19 +44,24 @@ public class ThreadUtils {
         randomPause(1, max);
     }
 
+    @Deprecated
     public static void sleep(long timeout) {
         sleep(timeout, TimeUnit.MILLISECONDS);
     }
 
     public static void sleep(long timeout, TimeUnit timeUnit) {
-        if (null == timeUnit) {
-            return;
-        }
         try {
-            timeUnit.sleep(timeout);
+            sleepWithThrowException(timeout, timeUnit);
         } catch (InterruptedException ignore) {
             //ignore
         }
+    }
+
+    public static void sleepWithThrowException(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        if (null == timeUnit) {
+            return;
+        }
+        timeUnit.sleep(timeout);
     }
 
     /**
