@@ -105,7 +105,7 @@ public class WebhookFileListener {
         } catch (IOException e) {
             log.error("cacheInit failed", e);
         }
-        final WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
+        final WebHookConfig webHookConfig = JsonUtils.parseObject(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
     }
 

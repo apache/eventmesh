@@ -80,7 +80,7 @@ public class HttpRequestProtocolResolver {
 
             byte[] requestBody = httpEventWrapper.getBody();
 
-            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
+            Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody, Constants.DEFAULT_CHARSET),
                     new TypeReference<HashMap<String, Object>>() {
                     });
 
@@ -92,7 +92,7 @@ public class HttpRequestProtocolResolver {
             data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
             data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
             // with data
-            return builder.withData(JsonUtils.serialize(data).getBytes(StandardCharsets.UTF_8)).build();
+            return builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8)).build();
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e);
         }

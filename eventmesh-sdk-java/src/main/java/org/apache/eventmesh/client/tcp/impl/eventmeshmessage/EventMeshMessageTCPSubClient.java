@@ -139,7 +139,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
 
         @Override
         public EventMeshMessage getProtocolMessage(Package tcpPackage) {
-            return JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class);
+            return JsonUtils.parseObject(tcpPackage.getBody().toString(), EventMeshMessage.class);
         }
 
         @Override

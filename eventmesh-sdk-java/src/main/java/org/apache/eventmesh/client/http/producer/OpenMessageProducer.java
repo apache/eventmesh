@@ -73,13 +73,13 @@ class OpenMessageProducer extends AbstractProducerHttpClient<Message> {
                 .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
                 // todo: add producerGroup to header, set protocol type, protocol version
                 .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-                .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));
+                .addBody(SendMessageRequestBody.CONTENT, JsonUtils.toJSONString(openMessage));
         return requestParam;
     }
 
     @Override
     public Message transformMessage(final EventMeshRetObj retObj) {
-        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
                 SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;

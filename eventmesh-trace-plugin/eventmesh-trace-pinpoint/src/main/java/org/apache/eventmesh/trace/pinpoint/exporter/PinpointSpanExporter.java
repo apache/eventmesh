@@ -323,7 +323,7 @@ public final class PinpointSpanExporter implements SpanExporter {
         Optional.ofNullable(spanData.getAttributes())
                 .ifPresent(attributes -> {
                     span.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
-                            JsonUtils.serialize(attributes)));
+                            JsonUtils.toJSONString(attributes)));
                     attributes.forEach((key, value) -> {
                         if (REQ_IP.equals(key.getKey())) {
                             span.setRemoteAddr(String.valueOf(value));
@@ -348,7 +348,7 @@ public final class PinpointSpanExporter implements SpanExporter {
         spanEvent.setServiceType(ServiceType.INTERNAL_METHOD.getCode());
         spanEvent.setEndPoint(eventData.getName());
         spanEvent.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
-                JsonUtils.serialize(eventData.getAttributes())));
+                JsonUtils.toJSONString(eventData.getAttributes())));
         spanEvent.setElapsedTime((int) toMillis(eventData.getEpochNanos()));
         return spanEvent;
     }

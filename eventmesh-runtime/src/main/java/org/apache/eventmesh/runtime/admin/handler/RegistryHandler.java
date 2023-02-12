@@ -18,10 +18,10 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.registry.Registry;
 
@@ -86,12 +86,12 @@ public class RegistryHandler extends AbstractHttpHandler {
             }
             getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.eventMeshClusterName));
 
-            String result = JsonUtils.toJson(getRegistryResponseList);
+            String result = JsonUtils.toJSONString(getRegistryResponseList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
-            String result = JsonUtils.toJson(new ArrayList<>());
+            String result = JsonUtils.toJSONString(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public class RegistryHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {

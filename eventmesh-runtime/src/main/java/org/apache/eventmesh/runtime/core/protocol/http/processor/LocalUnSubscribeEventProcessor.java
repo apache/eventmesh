@@ -103,7 +103,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         final byte[] requestBody = requestWrapper.getBody();
 
-        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 new String(requestBody, Constants.DEFAULT_CHARSET),
                 new TypeReference<HashMap<String, Object>>() {
                 }
@@ -119,8 +119,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
 
         // unSubscriptionItem
-        final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.deserialize(
-                JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
+        final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
+                JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
                 new TypeReference<List<String>>() {
                 }
         )).orElseGet(Collections::emptyList);
@@ -141,7 +141,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     if (StringUtils.equals(client.getPid(), pid)
                             && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
                         if (log.isWarnEnabled()) {
-                            log.warn("client {} start unsubscribe", JsonUtils.serialize(client));
+                            log.warn("client {} start unsubscribe", JsonUtils.toJSONString(client));
                         }
                         clientIterator.remove();
                     }
@@ -206,7 +206,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                         + "|topic={}|url={}", System.currentTimeMillis() - startTime,
-                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
+                                JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);
@@ -230,7 +230,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                         + "|topic={}|url={}", System.currentTimeMillis() - startTime,
-                                JsonUtils.serialize(unSubTopicList), unSubscribeUrl, e);
+                                JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                             responseBodyMap, null);

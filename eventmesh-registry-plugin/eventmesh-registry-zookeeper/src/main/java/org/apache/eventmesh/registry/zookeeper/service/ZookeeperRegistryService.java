@@ -152,7 +152,7 @@ public class ZookeeperRegistryService implements RegistryService {
                         continue;
                     }
 
-                    EventMeshInstance eventMeshInstance = JsonUtils.deserialize(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
+                    EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
                         new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
@@ -200,7 +200,7 @@ public class ZookeeperRegistryService implements RegistryService {
                         continue;
                     }
 
-                    EventMeshInstance eventMeshInstance = JsonUtils.deserialize(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
+                    EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
                         new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
@@ -256,7 +256,7 @@ public class ZookeeperRegistryService implements RegistryService {
                 .orSetData()
                 .creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
-                .forPath(path, JsonUtils.serialize(eventMeshInstance).getBytes(StandardCharsets.UTF_8));
+                .forPath(path, JsonUtils.toJSONString(eventMeshInstance).getBytes(StandardCharsets.UTF_8));
 
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (Exception e) {

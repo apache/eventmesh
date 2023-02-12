@@ -120,7 +120,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         requestWrapper.buildSysHeaderForCE();
 
         // process remote event body
-        final Map<String, Object> bodyMap = Optional.ofNullable(JsonUtils.deserialize(
+        final Map<String, Object> bodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 }

@@ -80,7 +80,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     private CloudEvent deserializeTcpProtocol(Header header, String bodyJson) throws ProtocolHandleException {
-        return TcpMessageProtocolResolver.buildEvent(header, JsonUtils.deserialize(bodyJson, EventMeshMessage.class));
+        return TcpMessageProtocolResolver.buildEvent(header, JsonUtils.parseObject(bodyJson, EventMeshMessage.class));
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,

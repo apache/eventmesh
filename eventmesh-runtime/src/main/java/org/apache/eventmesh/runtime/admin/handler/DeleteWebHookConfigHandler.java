@@ -53,7 +53,7 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
 
         // get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
-        WebHookConfig webHookConfig = JsonUtils.deserialize(requestBody, WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
 

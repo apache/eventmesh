@@ -95,7 +95,7 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
 
     @Override
     public EventMeshMessage transformMessage(final EventMeshRetObj retObj) {
-        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
             SendMessageResponseBody.ReplyMessage.class);
         return EventMeshMessage.builder()
             .content(replyMessage.body)

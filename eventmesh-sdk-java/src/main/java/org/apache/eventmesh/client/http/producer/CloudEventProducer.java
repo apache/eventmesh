@@ -116,7 +116,7 @@ class CloudEventProducer extends AbstractProducerHttpClient<CloudEvent> {
 
     @Override
     public CloudEvent transformMessage(final EventMeshRetObj retObj) {
-        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
             SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;

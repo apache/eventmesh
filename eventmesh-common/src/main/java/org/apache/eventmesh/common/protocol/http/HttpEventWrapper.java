@@ -84,7 +84,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         HttpEventWrapper response = new HttpEventWrapper(this.httpMethod, this.httpVersion, this.requestURI);
         response.setReqTime(this.reqTime);
         response.setHeaderMap(responseHeaderMap);
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(JsonUtils.toJSONString(responseBodyMap).getBytes(StandardCharsets.UTF_8));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -101,7 +101,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         Map<String, Object> responseBodyMap = new HashMap<>();
         responseBodyMap.put("retCode", eventMeshRetCode.getRetCode());
         responseBodyMap.put("retMessage", eventMeshRetCode.getErrMsg());
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(JsonUtils.toJSONString(responseBodyMap).getBytes(StandardCharsets.UTF_8));
         response.setResTime(System.currentTimeMillis());
         return response;
     }

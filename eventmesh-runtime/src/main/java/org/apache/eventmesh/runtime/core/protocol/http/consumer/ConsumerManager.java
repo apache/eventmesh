@@ -258,7 +258,7 @@ public class ConsumerManager {
         if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
             logger.info("start unsubscribe topic with consumer group manager {}",
-                    JsonUtils.serialize(cgm));
+                    JsonUtils.toJSONString(cgm));
             cgm.unsubscribe(consumerGroup);
             cgm.shutdown();
         }

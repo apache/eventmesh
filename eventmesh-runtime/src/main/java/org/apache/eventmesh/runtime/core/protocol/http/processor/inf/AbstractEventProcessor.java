@@ -107,7 +107,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
                 }
 
                 consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
+                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
             }
 
             eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
@@ -148,7 +148,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
             }
 
             ConsumerGroupMetadata consumerGroupMetadata =
-                    JsonUtils.deserialize(topicMetadataJson, ConsumerGroupMetadata.class);
+                    JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     Optional.ofNullable(consumerGroupMetadata)
                             .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
@@ -260,7 +260,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         //body
         if (MapUtils.isNotEmpty(requestBody)) {
-            String jsonStr = Optional.ofNullable(JsonUtils.serialize(requestBody)).orElse("");
+            String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 

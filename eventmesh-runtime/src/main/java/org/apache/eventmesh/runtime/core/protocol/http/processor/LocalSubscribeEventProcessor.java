@@ -88,7 +88,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         //validate body
-        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.deserialize(
+        final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
                 new TypeReference<HashMap<String, Object>>() {
                 }
@@ -102,10 +102,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
         final String url = requestBodyMap.get("url").toString();
         final String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        final String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
+        final String topic = JsonUtils.toJSONString(requestBodyMap.get("topic"));
 
         // SubscriptionItem
-        final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.deserialize(
+        final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 topic,
                 new TypeReference<List<SubscriptionItem>>() {
                 }
@@ -186,7 +186,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 if (log.isErrorEnabled()) {
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             System.currentTimeMillis() - startTime,
-                            JsonUtils.serialize(subscriptionList),
+                            JsonUtils.toJSONString(subscriptionList),
                             url, e);
                 }
 
