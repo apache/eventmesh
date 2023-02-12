@@ -248,7 +248,7 @@ public class HandleMsgContext {
                 .append(",ttl=")
                 .append(ttl)
                 .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
+                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
                 .append('}')
                 .toString();
     }

@@ -167,11 +167,11 @@ public class WebhookPushRequest extends AbstractPushRequest {
                 + ",retryTimes=" + retryTimes
                 + ",uniqueId=" + simpleMessage.getUniqueId()
                 + ",executeTime="
-                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT)
+                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
                 + ",lastPushTime="
-                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT)
+                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
                 + ",createTime="
-                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT) + "}";
+                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS) + "}";
     }
 
     private ResponseHandler<Object> handleResponse(String selectedPushUrl) {

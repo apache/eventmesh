@@ -18,11 +18,14 @@
 package org.apache.eventmesh.common.utils;
 
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshDateFormat;
 import org.apache.eventmesh.common.exception.JsonException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -41,9 +44,11 @@ public class JsonUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
-        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        OBJECT_MAPPER.setDateFormat(new EventMeshDateFormat(Constants.DATE_FORMAT_DEFAULT));
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     /**

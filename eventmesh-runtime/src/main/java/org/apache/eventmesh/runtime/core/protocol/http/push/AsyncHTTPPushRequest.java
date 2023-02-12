@@ -296,11 +296,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .append(",retryTimes=").append(retryTimes)
             .append(",uniqueId=").append(handleMsgContext.getUniqueId())
             .append(",executeTime=")
-            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
+            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",lastPushTime=")
-            .append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT))
+            .append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",createTime=")
-            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

@@ -18,11 +18,14 @@
 package org.apache.eventmesh.common.utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,13 +54,14 @@ public class JsonUtilsTest {
     @Test
     public void testParseObject() {
 
-        String json = "{\"mxsm\":\"2\"}";
+        String json = "{\"mxsm\":\"2\",\"date\":\"2022-02-12 21:36:01\"}";
         Map<String, String> map = JsonUtils.parseTypeReferenceObject(json, new TypeReference<Map<String, String>>() {
 
         });
         Assert.assertEquals("2", map.get("mxsm"));
         EventMesh mxsm = JsonUtils.parseObject(json, EventMesh.class);
         Assert.assertEquals("2", mxsm.mxsm);
+        Assert.assertEquals(new GregorianCalendar(2022, 1, 12, 21, 36, 01).getTime().getTime(), mxsm.date.getTime());
         EventMesh mxsm1 = JsonUtils.parseObject(json.getBytes(StandardCharsets.UTF_8), EventMesh.class);
         Assert.assertEquals("2", mxsm1.mxsm);
     }
@@ -65,7 +69,7 @@ public class JsonUtilsTest {
 
     @Test
     public void getJsonNode() {
-        String json = "{\"mxsm\":\"2\"}";
+        String json = "{\"mxsm\":\"2\",\"date\":\"2022-02-12 21:36:01\"}";
         JsonNode jsonNode = JsonUtils.getJsonNode(json);
         Assert.assertEquals("2", jsonNode.findValue("mxsm").asText());
     }
@@ -74,5 +78,7 @@ public class JsonUtilsTest {
     public static class EventMesh {
 
         private String mxsm;
+
+        private Date date;
     }
 }
