@@ -130,7 +130,7 @@ public class SendMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));

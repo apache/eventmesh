@@ -166,7 +166,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             return null;
         }
 
-        return JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
+        return JsonUtils.parseObject(fileContent.toString(), WebHookConfig.class);
     }
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
@@ -174,7 +174,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
              BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
             // lock this file, and will auto release after fos close
             fos.getChannel().lock();
-            bw.write(Objects.requireNonNull(JsonUtils.serialize(webHookConfig)));
+            bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
                 log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());

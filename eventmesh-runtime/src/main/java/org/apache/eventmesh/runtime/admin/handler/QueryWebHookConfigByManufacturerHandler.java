@@ -68,13 +68,13 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
         Objects.requireNonNull(node, "JsonNode can not be null");
 
-        WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.parseObject(node.get("webHookConfig").toString(), WebHookConfig.class);
         Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
         Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             LOGGER.error("get WebHookConfigOperation implementation Failed.", e);
         }

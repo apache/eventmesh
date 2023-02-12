@@ -81,7 +81,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         }
 
         final String res = EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-        final EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
+        final EventMeshRetObj ret = JsonUtils.parseObject(res, EventMeshRetObj.class);
         Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
@@ -99,7 +99,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
     private ProtocolMessage transformToProtocolMessage(final EventMeshRetObj ret) {
         Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
 
-        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(ret.getRetMsg(),
                 SendMessageResponseBody.ReplyMessage.class);
         Objects.requireNonNull(replyMessage, "ReplyMessage must not be null");
         if (protocolMessage instanceof EventMeshMessage) {

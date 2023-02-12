@@ -75,7 +75,7 @@ public class SendMessageBatchV2ResponseBody extends Body {
         sb.append("sendMessageBatchV2ResponseBody={")
                 .append("retCode=").append(retCode).append(",")
                 .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

@@ -45,11 +45,11 @@ public class PravegaEvent implements Serializable {
     private long createTimestamp;
 
     public static byte[] toByteArray(PravegaEvent pravegaEvent) {
-        return JsonUtils.serialize(pravegaEvent).getBytes(StandardCharsets.UTF_8);
+        return JsonUtils.toJSONString(pravegaEvent).getBytes(StandardCharsets.UTF_8);
     }
 
     public static PravegaEvent getFromByteArray(byte[] body) {
-        return JsonUtils.deserialize(new String(body, StandardCharsets.UTF_8), PravegaEvent.class);
+        return JsonUtils.parseObject(new String(body, StandardCharsets.UTF_8), PravegaEvent.class);
     }
 
     public CloudEvent convertToCloudEvent() {

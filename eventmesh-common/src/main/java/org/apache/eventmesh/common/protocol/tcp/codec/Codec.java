@@ -79,7 +79,7 @@ public class Codec {
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Encoder pkg={}", JsonUtils.serialize(pkg));
+                LOG.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
             }
 
             final byte[] headerData = serializeBytes(OBJECT_MAPPER.writeValueAsString(header));

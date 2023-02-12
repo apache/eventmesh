@@ -90,14 +90,14 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
         final RequestParam subscribeParam = buildCommonRequestParam()
                 .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
-                .addBody(SubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
+                .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(topicList))
                 .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
                 .addBody(SubscribeRequestBody.URL, subscribeUrl);
 
         final String target = selectEventMesh();
         try {
             final String subRes = HttpUtils.post(httpClient, target, subscribeParam);
-            final EventMeshRetObj ret = JsonUtils.deserialize(subRes, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(subRes, EventMeshRetObj.class);
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
@@ -125,10 +125,10 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
                 final RequestParam requestParam = buildCommonRequestParam()
                         .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
                         .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
-                        .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
+                        .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.toJSONString(heartbeatEntities));
                 final String target = selectEventMesh();
                 final String res = HttpUtils.post(httpClient, target, requestParam);
-                final EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
+                final EventMeshRetObj ret = JsonUtils.parseObject(res, EventMeshRetObj.class);
                 if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
                     throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                 }
@@ -149,13 +149,13 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
         final RequestParam unSubscribeParam = buildCommonRequestParam()
                 .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
-                .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
+                .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.toJSONString(topicList))
                 .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
 
         final String target = selectEventMesh();
         try {
             final String unSubRes = HttpUtils.post(httpClient, target, unSubscribeParam);
-            final EventMeshRetObj ret = JsonUtils.deserialize(unSubRes, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(unSubRes, EventMeshRetObj.class);
 
             if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());

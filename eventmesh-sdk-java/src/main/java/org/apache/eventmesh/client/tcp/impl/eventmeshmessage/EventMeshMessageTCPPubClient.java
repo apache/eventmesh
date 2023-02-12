@@ -160,7 +160,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
         @Override
         public EventMeshMessage getMessage(Package tcpPackage) {
-            return JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class);
+            return JsonUtils.parseObject(tcpPackage.getBody().toString(), EventMeshMessage.class);
         }
 
         @Override

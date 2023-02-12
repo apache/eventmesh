@@ -64,7 +64,7 @@ public class TopicsHandler implements HttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
-                JsonUtils.deserialize(params, TopicCreateRequest.class);
+                JsonUtils.parseObject(params, TopicCreateRequest.class);
             String topic = topicCreateRequest.getName();
 
             if (StringUtils.isBlank(topic)) {
@@ -80,7 +80,7 @@ public class TopicsHandler implements HttpHandler {
                 logger.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
-                result = JsonUtils.serialize(topicResponse);
+                result = JsonUtils.toJSONString(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } else {

@@ -233,7 +233,7 @@ public class ConsumerManager {
                     if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
                         if (LOGGER.isWarnEnabled()) {
                             LOGGER.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
-                                    JsonUtils.serialize(client), client.getLastUpTime());
+                                    JsonUtils.toJSONString(client), client.getLastUpTime());
                         }
 
                         deregisterClient(client);
