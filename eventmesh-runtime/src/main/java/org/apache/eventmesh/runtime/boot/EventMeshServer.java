@@ -65,7 +65,6 @@ public class EventMeshServer {
         this.registry = new Registry();
         trace = new Trace(configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
-        trace = new Trace(configuration.isEventMeshServerTraceEnable());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
@@ -117,17 +116,13 @@ public class EventMeshServer {
             }
         }
 
-        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer)
-            && Objects.nonNull(eventMeshGrpcServer)) {
-            clientManageController = new ClientManageController(eventMeshTCPServer,
-                eventMeshHTTPServer, eventMeshGrpcServer, registry);
+        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
 
+            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, registry);
             clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
-
         }
 
-        final String eventStore = System
-                .getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+        final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("eventStore : {}", eventStore);
@@ -177,8 +172,7 @@ public class EventMeshServer {
             eventMeshBootstrap.shutdown();
         }
 
-        if (configuration != null
-                && configuration.isEventMeshServerRegistryEnable()) {
+        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
             registry.shutdown();
         }
 
