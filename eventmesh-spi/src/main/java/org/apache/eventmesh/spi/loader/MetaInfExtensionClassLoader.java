@@ -31,12 +31,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Load extension from classpath
  */
-public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(MetaInfExtensionClassLoader.class);
+@Slf4j
+public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
     private static final MetaInfExtensionClassLoader INSTANCE = new MetaInfExtensionClassLoader();
 
@@ -83,7 +86,7 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
                 String extensionClassStr = (String) extensionClass;
                 try {
                     Class<?> targetClass = Class.forName(extensionClassStr);
-                    logger.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
+                    log.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(String.format("class: %s is not subClass of %s", targetClass, extensionType));
                     }

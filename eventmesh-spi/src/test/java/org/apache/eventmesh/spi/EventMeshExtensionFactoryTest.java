@@ -39,7 +39,7 @@ public class EventMeshExtensionFactoryTest {
         Assert.assertNotSame(prototypeExtensionA, prototypeExtensionB);
     }
 
-    @Test(expected = ExtensionException.class)
+    @Test
     public void testGetExtension() {
         ExtensionException exception = null;
         try {
@@ -50,6 +50,14 @@ public class EventMeshExtensionFactoryTest {
             }
         }
         Assert.assertNotNull(exception);
-        EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null);
+        exception = null;
+        try {
+            EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null);
+        } catch (Exception ex) {
+            if (ex instanceof ExtensionException) {
+                exception = (ExtensionException) ex;
+            }
+        }
+        Assert.assertNotNull(exception);
     }
 }

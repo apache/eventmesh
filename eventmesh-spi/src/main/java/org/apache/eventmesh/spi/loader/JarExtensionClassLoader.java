@@ -41,12 +41,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Load extension from '${eventMeshPluginDir}', the default loading directory is './plugin'
  */
+@Slf4j
 public class JarExtensionClassLoader implements ExtensionClassLoader {
-
-    private static final Logger logger = LoggerFactory.getLogger(JarExtensionClassLoader.class);
 
     private static final String EVENT_MESH_PLUGIN_DIR = "eventMeshPluginDir";
 
@@ -97,7 +98,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     private List<URL> loadJarPathFromResource(String pluginPath) {
         File plugin = new File(pluginPath);
         if (!plugin.exists()) {
-            logger.warn("plugin dir:{} is not exist", pluginPath);
+            log.warn("plugin dir:{} is not exist", pluginPath);
             return Lists.newArrayList();
         }
         if (plugin.isFile() && plugin.getName().endsWith(".jar")) {
@@ -130,7 +131,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 String extensionClassStr = (String) extensionClass;
                 try {
                     Class<?> targetClass = urlClassLoader.loadClass(extensionClassStr);
-                    logger.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
+                    log.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(
                             String.format("class: %s is not subClass of %s", targetClass, extensionType));
