@@ -97,7 +97,8 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         httpEventWrapper.setSysHeaderMap(sysHeaderMap);
         // ce data
         if (null != cloudEvent.getData()) {
-            Map<String, Object> dataContentMap = JsonUtils.parseTypeReferenceObject(new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
+            Map<String, Object> dataContentMap = JsonUtils.parseTypeReferenceObject(
+                new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 });
             String requestHeader = JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_HEADERS));
