@@ -129,14 +129,14 @@ public class SessionPusher {
 
                             //how long to isolate client when push fail
                             long isolateTime = System.currentTimeMillis()
-                                + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
+                                + session.getEventMeshTCPConfiguration().getEventMeshTcpPushFailIsolateTimeInMills();
                             session.setIsolateTime(isolateTime);
                             logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                             //retry
                             long delayTime = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
-                                ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
-                                : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
+                                ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
+                                : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
                             downStreamMsgContext.delay(delayTime);
                             Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                         } else {

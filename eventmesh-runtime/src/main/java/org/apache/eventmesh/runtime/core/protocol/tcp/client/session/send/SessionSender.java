@@ -83,7 +83,7 @@ public class SessionSender {
 
     public SessionSender(Session session) {
         this.session = session;
-        this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().eventMeshTcpSessionUpstreamBufferSize);
+        this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().getEventMeshTcpSessionUpstreamBufferSize());
     }
 
     public EventMeshTcpSendResult send(Header header, CloudEvent event, SendCallback sendCallback, long startTime,
