@@ -49,7 +49,7 @@ public class HTTPMessageHandler implements MessageHandler {
     private transient EventMeshConsumer eventMeshConsumer;
 
     private static final transient ScheduledExecutorService SCHEDULER =
-            ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
+            ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
