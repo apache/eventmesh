@@ -46,6 +46,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
@@ -270,7 +271,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         }
 
         clientSessionGroupMapping.shutdown();
-        ThreadUtils.sleep(40 * 1000);
+        ThreadUtils.sleep(40, TimeUnit.SECONDS);
         globalTrafficShapingHandler.release();
 
         if (this.getIoGroup() != null) {

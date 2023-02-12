@@ -28,6 +28,7 @@ import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
@@ -58,9 +59,9 @@ public class AsyncPublish {
                 }
                 client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-                ThreadUtils.sleep(1_000);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
-            ThreadUtils.sleep(2_000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("AsyncPublish failed", e);
         }

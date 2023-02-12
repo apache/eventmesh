@@ -28,6 +28,8 @@ import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +55,7 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
                 eventMeshHttpProducer.publish(eventMeshMessage);
             }
-            ThreadUtils.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,7 +49,7 @@ public class BatchPublishInstance extends GrpcAbstractDemo {
             }
 
             eventMeshGrpcProducer.publish(messageList);
-            ThreadUtils.sleep(10_000);
+            ThreadUtils.sleep(10, TimeUnit.SECONDS);
         }
     }
 }

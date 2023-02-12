@@ -31,6 +31,8 @@ import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +54,7 @@ public class EventmeshAsyncSubscribe extends GrpcAbstractDemo implements Receive
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-            ThreadUtils.sleep(60_000);
+            ThreadUtils.sleep(1, TimeUnit.MINUTES);
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
         }
     }

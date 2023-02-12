@@ -24,6 +24,9 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
+import java.util.concurrent.TimeUnit;
+
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +56,7 @@ public class SyncRequestInstance extends HttpAbstractDemo {
             log.error("send msg failed, ", e);
         }
 
-        ThreadUtils.sleep(30_000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
 
     }
 }

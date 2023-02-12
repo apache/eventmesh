@@ -29,6 +29,8 @@ import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +59,7 @@ public class AsyncPublishBroadcast {
             }
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-            ThreadUtils.sleep(2_000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             log.error("AsyncPublishBroadcast failed", e);

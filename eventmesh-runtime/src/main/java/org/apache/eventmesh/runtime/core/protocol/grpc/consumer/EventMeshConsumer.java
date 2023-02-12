@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -277,7 +278,7 @@ public class EventMeshConsumer {
                     // can not handle the message due to the capacity limit is reached
                     // wait for some time and send this message back to mq and consume again
                     try {
-                        ThreadUtils.sleep(5000);
+                        ThreadUtils.sleep(5, TimeUnit.SECONDS);
                         sendMessageBack(consumerGroup, event, uniqueId, bizSeqNo);
                     } catch (Exception ignored) {
                         // ignore exception

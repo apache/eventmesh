@@ -30,6 +30,7 @@ import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
@@ -53,7 +54,7 @@ public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements Recei
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-            ThreadUtils.sleep(60_000);
+            ThreadUtils.sleep(1, TimeUnit.MINUTES);
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
         }
     }

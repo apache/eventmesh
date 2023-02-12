@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
@@ -47,7 +48,7 @@ public class CloudEventsBatchPublishInstance extends GrpcAbstractDemo {
                 cloudEventList.add(buildCloudEvent(content));
             }
             eventMeshGrpcProducer.publish(cloudEventList);
-            ThreadUtils.sleep(10_000);
+            ThreadUtils.sleep(10, TimeUnit.SECONDS);
         }
     }
 }

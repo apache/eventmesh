@@ -25,6 +25,9 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
+import java.util.concurrent.TimeUnit;
+
+
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -58,11 +61,11 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
                 }
             }, 3_000);
 
-            ThreadUtils.sleep(2_000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("async send msg failed", e);
         }
-        ThreadUtils.sleep(30_000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
 
     }
 }

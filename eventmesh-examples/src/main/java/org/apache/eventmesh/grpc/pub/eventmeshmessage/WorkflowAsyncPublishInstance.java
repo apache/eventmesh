@@ -32,6 +32,8 @@ import org.apache.eventmesh.util.Utils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 
@@ -69,7 +71,7 @@ public class WorkflowAsyncPublishInstance extends GrpcAbstractDemo {
                 log.info("received response: {}", response.toString());
             }
 
-            ThreadUtils.sleep(60_000);
+            ThreadUtils.sleep(1, TimeUnit.MINUTES);
 
         }
     }

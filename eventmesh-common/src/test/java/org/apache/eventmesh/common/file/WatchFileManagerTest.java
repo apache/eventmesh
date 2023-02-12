@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,6 +56,6 @@ public class WatchFileManagerTest {
         FileWriter fw = new FileWriter(file);
         properties.store(fw, "newAdd");
 
-        ThreadUtils.sleep(500);
+        ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
     }
 }

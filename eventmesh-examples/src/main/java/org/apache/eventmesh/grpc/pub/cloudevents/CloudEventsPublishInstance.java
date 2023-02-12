@@ -24,6 +24,8 @@ import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,10 +45,10 @@ public class CloudEventsPublishInstance extends GrpcAbstractDemo {
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.publish(buildCloudEvent(content));
-                ThreadUtils.sleep(1_000);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
 
-            ThreadUtils.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

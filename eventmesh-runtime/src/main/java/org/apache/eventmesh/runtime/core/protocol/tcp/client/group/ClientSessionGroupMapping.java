@@ -426,11 +426,11 @@ public class ClientSessionGroupMapping {
                 }
             }
 
-            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills());
+            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills(), TimeUnit.MILLISECONDS);
 
         }
 
-        ThreadUtils.sleep(1000);
+        ThreadUtils.sleep(1, TimeUnit.SECONDS);
 
         sessionTable.values().parallelStream().forEach(itr -> {
             try {

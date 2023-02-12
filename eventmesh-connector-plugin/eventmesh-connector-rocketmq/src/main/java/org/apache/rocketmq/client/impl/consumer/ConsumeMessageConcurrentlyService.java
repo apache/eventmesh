@@ -372,7 +372,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 boolean success = false;
                 for (int i = 0; i < times; i++) {
                     try {
-                        ThreadUtils.sleep(1000);
+                        ThreadUtils.sleep(1, TimeUnit.SECONDS);
                         ConsumeMessageConcurrentlyService.this.consumeExecutor.submit(consumeRequest);
                         success = true;
                         break;

@@ -24,6 +24,8 @@ import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +44,7 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
                 eventMeshHttpProducer.publish(buildCloudEvent(content));
                 log.info("publish event success content: {}", content);
             }
-            ThreadUtils.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

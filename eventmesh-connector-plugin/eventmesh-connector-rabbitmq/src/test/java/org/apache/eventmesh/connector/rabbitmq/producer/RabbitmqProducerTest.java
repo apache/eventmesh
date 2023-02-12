@@ -61,7 +61,7 @@ public class RabbitmqProducerTest extends RabbitmqServer {
 
         rabbitmqConsumer.subscribe("topic");
 
-        ThreadUtils.sleep(1000);
+        ThreadUtils.sleep(1, TimeUnit.SECONDS);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                     .withId(String.valueOf(i))

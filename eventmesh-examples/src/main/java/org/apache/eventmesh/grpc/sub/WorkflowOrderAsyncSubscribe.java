@@ -37,6 +37,8 @@ import org.apache.eventmesh.util.Utils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,7 +74,7 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
                     .serverName(workflowServerName).build();
             workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-            ThreadUtils.sleep(60_000_000);
+            ThreadUtils.sleep(60_000, TimeUnit.SECONDS);
             eventMeshCatalogClient.destroy();
         }
     }
