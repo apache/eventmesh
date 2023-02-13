@@ -24,7 +24,9 @@ public class Constants {
 
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DATE_FORMAT_INCLUDE_MILLISECONDS = "yyyy-MM-dd HH:mm:ss.SSS";
+
+    public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
     public static final String LANGUAGE_JAVA = "JAVA";
 

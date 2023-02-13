@@ -126,7 +126,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
             body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, simpleMessage.getTopic()));
             body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-                    JsonUtils.serialize(simpleMessage.getPropertiesMap())));
+                    JsonUtils.toJSONString(simpleMessage.getPropertiesMap())));
 
             simpleMessage = SimpleMessage.newBuilder(simpleMessage)
                     .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
@@ -167,11 +167,11 @@ public class WebhookPushRequest extends AbstractPushRequest {
                 + ",retryTimes=" + retryTimes
                 + ",uniqueId=" + simpleMessage.getUniqueId()
                 + ",executeTime="
-                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT)
+                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
                 + ",lastPushTime="
-                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT)
+                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
                 + ",createTime="
-                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT) + "}";
+                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS) + "}";
     }
 
     private ResponseHandler<Object> handleResponse(String selectedPushUrl) {
@@ -218,7 +218,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
         try {
             Map<String, Object> ret =
-                    JsonUtils.deserialize(content, new TypeReference<Map<String, Object>>() {
+                    JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                     });
             Integer retCode = (Integer) ret.get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {

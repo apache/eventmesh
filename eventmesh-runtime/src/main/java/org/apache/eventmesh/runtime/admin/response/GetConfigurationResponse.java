@@ -42,17 +42,6 @@ public class GetConfigurationResponse {
     public int eventMeshGrpcServerPort;
     public boolean eventMeshGrpcServerUseTls;
 
-    //    public String eventMeshConnectorPluginType;
-    //    public String eventMeshSecurityPluginType;
-    //    public String eventMeshRegistryPluginType;
-    //    public String eventMeshRegistryPluginUsername = "";
-    //    public String eventMeshRegistryPluginPassword = "";
-    //    public Integer eventMeshRegisterIntervalInMills;
-    //    public Integer eventMeshFetchRegistryAddrInterval;
-    //    public List<String> eventMeshMetricsPluginType;
-    //    public String eventMeshTracePluginType;
-    //    public boolean eventMeshServerTraceEnable;
-
     @JsonCreator
     public GetConfigurationResponse(
             // Common Configuration

@@ -57,11 +57,11 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
         // get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
-        WebHookConfig webHookConfig = JsonUtils.deserialize(requestBody, WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
-            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("get WebHookConfigOperation implementation Failed.", e);
         }

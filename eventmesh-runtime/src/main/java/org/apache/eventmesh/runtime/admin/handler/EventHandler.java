@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
@@ -125,7 +125,7 @@ public class EventHandler extends AbstractHttpHandler {
                     .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
-            String result = JsonUtils.toJson(eventJsonList);
+            String result = JsonUtils.toJSONString(eventJsonList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -136,7 +136,7 @@ public class EventHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -175,7 +175,7 @@ public class EventHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {

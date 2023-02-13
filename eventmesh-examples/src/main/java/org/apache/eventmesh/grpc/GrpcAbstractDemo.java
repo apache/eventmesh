@@ -60,7 +60,7 @@ public class GrpcAbstractDemo {
                 .withSource(URI.create("/"))
                 .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
                 .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
                 .build();
 
@@ -68,7 +68,7 @@ public class GrpcAbstractDemo {
 
     protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content) {
         return EventMeshMessage.builder()
-                .content(JsonUtils.serialize(content))
+                .content(JsonUtils.toJSONString(content))
                 .topic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC)
                 .uniqueId(RandomStringUtils.generateNum(30))
                 .bizSeqNo(RandomStringUtils.generateNum(30))

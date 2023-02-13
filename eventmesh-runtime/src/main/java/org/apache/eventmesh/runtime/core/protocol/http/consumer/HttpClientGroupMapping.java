@@ -174,13 +174,13 @@ public final class HttpClientGroupMapping {
                     consumerGroupTopicMetadataMap.put(consumerGroupTopicConfEntry.getKey(), consumerGroupTopicMetadata);
                 }
                 consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
+                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
             }
         } finally {
             READ_WRITE_LOCK.readLock().unlock();
         }
 
-        metadata.put("topicSet", JsonUtils.serialize(localTopicSet));
+        metadata.put("topicSet", JsonUtils.toJSONString(localTopicSet));
         return metadata;
     }
 

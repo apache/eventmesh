@@ -23,10 +23,13 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,14 +48,14 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
 
                 final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                         .bizSeqNo(RandomStringUtils.generateNum(30))
-                        .content(JsonUtils.serialize(content))
+                        .content(JsonUtils.toJSONString(content))
                         .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
                         .uniqueId(RandomStringUtils.generateNum(30))
                         .build()
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
                 eventMeshHttpProducer.publish(eventMeshMessage);
             }
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

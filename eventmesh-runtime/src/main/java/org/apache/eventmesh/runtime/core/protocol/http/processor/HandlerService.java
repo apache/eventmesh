@@ -189,7 +189,7 @@ public class HandlerService {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
                     Optional
-                        .ofNullable(JsonUtils.deserialize(
+                        .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {}
                         ))
@@ -211,7 +211,7 @@ public class HandlerService {
             throw new RuntimeException("UnSupported Method " + fullHttpRequest.method());
         }
 
-        byte[] requestBody = Optional.ofNullable(JsonUtils.serialize(bodyMap))
+        byte[] requestBody = Optional.ofNullable(JsonUtils.toJSONString(bodyMap))
             .map(s -> s.getBytes(StandardCharsets.UTF_8))
             .orElse(new byte[0]);
 

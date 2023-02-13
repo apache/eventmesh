@@ -18,6 +18,7 @@
 package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -73,7 +75,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
         this.defaultMQPushConsumer = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer();
         this.consumerGroup = this.defaultMQPushConsumer.getConsumerGroup();
-        this.consumeRequestQueue = new LinkedBlockingQueue<Runnable>();
+        this.consumeRequestQueue = new LinkedBlockingQueue<>();
 
         this.consumeExecutor = new ThreadPoolExecutor(
             this.defaultMQPushConsumer.getConsumeThreadMin(),
@@ -91,17 +93,12 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     public void start() {
         if (this.defaultMQPushConsumer.getConsumeTimeout() > 0) {
-            this.cleanExpireMsgExecutors.scheduleAtFixedRate(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        cleanExpireMsg();
-                    } catch (Exception e) {
-                        log.warn("cleanExpireMsg ", e);
-                    }
+            this.cleanExpireMsgExecutors.scheduleAtFixedRate(() -> {
+                try {
+                    cleanExpireMsg();
+                } catch (Exception e) {
+                    log.warn("cleanExpireMsg ", e);
                 }
-
             }, this.defaultMQPushConsumer.getConsumeTimeout(), this.defaultMQPushConsumer.getConsumeTimeout(), TimeUnit.MINUTES);
         }
     }
@@ -214,7 +211,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             }
         } else {
             for (int total = 0; total < msgs.size(); ) {
-                List<MessageExt> msgThis = new ArrayList<MessageExt>(consumeBatchSize);
+                List<MessageExt> msgThis = new ArrayList<>(consumeBatchSize);
                 for (int i = 0; i < consumeBatchSize; i++, total++) {
                     if (total < msgs.size()) {
                         msgThis.add(msgs.get(total));
@@ -351,44 +348,31 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         final MessageQueue messageQueue
     ) {
 
-        this.scheduledExecutorService.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true);
-            }
-        }, 5000, TimeUnit.MILLISECONDS);
+        this.scheduledExecutorService.schedule(
+            () -> ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true), 5000, TimeUnit.MILLISECONDS);
     }
 
     private void submitConsumeRequestLater(final ConsumeRequest consumeRequest) {
         final int times = defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getMaxReconsumeTimes();
         log.warn("rejected by thread pool, try resubmit {} times, consumerGroup:{}", times,
             defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumerGroup());
-        this.scheduledExecutorService.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                boolean success = false;
-                for (int i = 0; i < times; i++) {
-                    try {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            //ignore
-                        }
-                        ConsumeMessageConcurrentlyService.this.consumeExecutor.submit(consumeRequest);
-                        success = true;
-                        break;
-                    } catch (RejectedExecutionException e) {
-                        //ignore
-                    }
+        this.scheduledExecutorService.schedule(() -> {
+            boolean success = false;
+            for (int i = 0; i < times; i++) {
+                try {
+                    ThreadUtils.sleep(1, TimeUnit.SECONDS);
+                    ConsumeMessageConcurrentlyService.this.consumeExecutor.submit(consumeRequest);
+                    success = true;
+                    break;
+                } catch (RejectedExecutionException e) {
+                    //ignore
                 }
-                if (!success) {
-                    for (MessageExt messageExt : consumeRequest.getMsgs()) {
-                        log.warn("discard rejected messages {} after retry {} times", messageExt, times);
-                    }
-                    consumeRequest.getProcessQueue().removeMessage(consumeRequest.getMsgs());
+            }
+            if (!success) {
+                for (MessageExt messageExt : consumeRequest.getMsgs()) {
+                    log.warn("discard rejected messages {} after retry {} times", messageExt, times);
                 }
+                consumeRequest.getProcessQueue().removeMessage(consumeRequest.getMsgs());
             }
         }, 1000, TimeUnit.MILLISECONDS);
     }
@@ -420,7 +404,6 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 return;
             }
 
-            MessageListenerConcurrently listener = ConsumeMessageConcurrentlyService.this.messageListener;
             EventMeshConsumeConcurrentlyContext context = new EventMeshConsumeConcurrentlyContext(messageQueue, processQueue);
             ConsumeConcurrentlyStatus status = null;
 
@@ -428,7 +411,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {
                 consumeMessageContext = new ConsumeMessageContext();
                 consumeMessageContext.setConsumerGroup(defaultMQPushConsumer.getConsumerGroup());
-                consumeMessageContext.setProps(new HashMap<String, String>());
+                consumeMessageContext.setProps(new HashMap<>());
                 consumeMessageContext.setMq(messageQueue);
                 consumeMessageContext.setMsgList(msgs);
                 consumeMessageContext.setSuccess(false);
@@ -447,7 +430,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
 
                 }
-                status = listener.consumeMessage(Collections.unmodifiableList(msgs), context);
+                status = ConsumeMessageConcurrentlyService.this.messageListener.consumeMessage(Collections.unmodifiableList(msgs), context);
             } catch (Throwable e) {
                 log.warn("consumeMessage exception: {} Group: {} Msgs: {} MQ: {}",
                     RemotingHelper.exceptionSimpleDesc(e),
@@ -467,12 +450,10 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 returnType = ConsumeReturnType.TIME_OUT;
             } else if (ConsumeConcurrentlyStatus.RECONSUME_LATER == status) {
                 returnType = ConsumeReturnType.FAILED;
-            } else if (ConsumeConcurrentlyStatus.CONSUME_SUCCESS == status) {
-                returnType = ConsumeReturnType.SUCCESS;
             }
 
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {
-                consumeMessageContext.getProps().put(MixAll.CONSUME_CONTEXT_TYPE, returnType.name());
+                Objects.requireNonNull(consumeMessageContext).getProps().put(MixAll.CONSUME_CONTEXT_TYPE, returnType.name());
             }
 
             if (null == status) {
@@ -484,7 +465,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             }
 
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {
-                consumeMessageContext.setStatus(status.toString());
+                Objects.requireNonNull(consumeMessageContext).setStatus(status.toString());
                 consumeMessageContext.setSuccess(ConsumeConcurrentlyStatus.CONSUME_SUCCESS == status);
                 ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.executeHookAfter(consumeMessageContext);
             }

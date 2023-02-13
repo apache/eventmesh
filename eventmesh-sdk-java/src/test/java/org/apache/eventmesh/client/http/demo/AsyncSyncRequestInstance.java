@@ -28,6 +28,8 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,12 +81,12 @@ public class AsyncSyncRequestInstance {
                 }
             }, 3000);
 
-            Thread.sleep(2000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.warn("async send msg failed", e);
         }
 
-        Thread.sleep(30000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
         try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {

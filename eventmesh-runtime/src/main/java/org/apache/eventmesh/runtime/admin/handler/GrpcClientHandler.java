@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
@@ -79,7 +79,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.toObject(request, DeleteGrpcClientRequest.class);
+            DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
             String url = deleteGrpcClientRequest.url;
 
             ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
@@ -102,7 +102,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -157,7 +157,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 return Integer.compare(rhs.port, lhs.port);
             });
 
-            String result = JsonUtils.toJson(getClientResponseList);
+            String result = JsonUtils.toJSONString(getClientResponseList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -168,7 +168,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {

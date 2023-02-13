@@ -77,7 +77,7 @@ public class HttpAbstractDemo {
                 .withSource(URI.create("/"))
                 .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
                 .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000))
                 .build();
     }
@@ -85,7 +85,7 @@ public class HttpAbstractDemo {
     protected static EventMeshMessage buildMessage(final Map<String, String> content) {
         return EventMeshMessage.builder()
                 .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content(JsonUtils.serialize(content))
+                .content(JsonUtils.toJSONString(content))
                 .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
                 .uniqueId(RandomStringUtils.generateNum(30))
                 .build()

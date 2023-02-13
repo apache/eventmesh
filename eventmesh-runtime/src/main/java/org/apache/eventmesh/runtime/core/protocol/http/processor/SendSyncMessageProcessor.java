@@ -295,7 +295,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                         final HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                                 sendMessageResponseHeader,
                                 SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
-                                        JsonUtils.serialize(SendMessageResponseBody.ReplyMessage.builder()
+                                        JsonUtils.toJSONString(SendMessageResponseBody.ReplyMessage.builder()
                                                 .topic(topic)
                                                 .body(rtnMsg)
                                                 .properties(EventMeshUtil.getEventProp(newEvent))
