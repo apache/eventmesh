@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,14 +120,14 @@ public class EventHandler extends AbstractHttpHandler {
 
             List<String> eventJsonList = new ArrayList<>();
             for (CloudEvent event : eventList) {
-                byte[] serializedEvent = EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE)
+                byte[] serializedEvent = Objects.requireNonNull(EventFormatProvider
+                        .getInstance()
+                        .resolveFormat(JsonFormat.CONTENT_TYPE))
                     .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
             String result = JsonUtils.toJSONString(eventJsonList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -137,7 +138,7 @@ public class EventHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
             out.write(result.getBytes());
         } finally {
             if (out != null) {
@@ -162,9 +163,9 @@ public class EventHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
-            CloudEvent event = EventFormatProvider
+            CloudEvent event = Objects.requireNonNull(EventFormatProvider
                 .getInstance()
-                .resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(rawRequest);
+                .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
             admin.publish(event);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -176,7 +177,7 @@ public class EventHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
             out.write(result.getBytes());
         } finally {
             if (out != null) {
