@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -29,11 +30,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class GrpcRetryer {
-
-    private final Logger retryLogger = LoggerFactory.getLogger("retry");
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final EventMeshGrpcConfiguration grpcConfiguration;
 
@@ -49,7 +47,7 @@ public class GrpcRetryer {
 
     public void pushRetry(DelayRetryable delayRetryable) {
         if (failed.size() >= grpcConfiguration.getEventMeshServerRetryBlockQueueSize()) {
-            retryLogger.error("[RETRY-QUEUE] is full!");
+            log.error("[RETRY-QUEUE] is full!");
             return;
         }
         failed.offer(delayRetryable);
@@ -72,20 +70,20 @@ public class GrpcRetryer {
                     pool.execute(() -> {
                         try {
                             delayRetryable.retry();
-                            if (retryLogger.isDebugEnabled()) {
-                                retryLogger.debug("retryObj : {}", delayRetryable);
+                            if (log.isDebugEnabled()) {
+                                log.debug("retryObj : {}", delayRetryable);
                             }
                         } catch (Exception e) {
-                            retryLogger.error("grpc-retry-dispatcher error!", e);
+                            log.error("grpc-retry-dispatcher error!", e);
                         }
                     });
                 }
             } catch (Exception e) {
-                retryLogger.error("grpc-retry-dispatcher error!", e);
+                log.error("grpc-retry-dispatcher error!", e);
             }
         }, "grpc-retry-dispatcher");
         dispatcher.setDaemon(true);
-        logger.info("GrpcRetryer inited......");
+        log.info("GrpcRetryer inited......");
     }
 
     public int size() {
@@ -95,11 +93,11 @@ public class GrpcRetryer {
     public void shutdown() {
         dispatcher.interrupt();
         pool.shutdown();
-        logger.info("GrpcRetryer shutdown......");
+        log.info("GrpcRetryer shutdown......");
     }
 
     public void start() throws Exception {
         dispatcher.start();
-        logger.info("GrpcRetryer started......");
+        log.info("GrpcRetryer started......");
     }
 }
