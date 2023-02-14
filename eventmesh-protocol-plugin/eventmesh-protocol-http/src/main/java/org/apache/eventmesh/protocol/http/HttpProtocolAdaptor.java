@@ -103,9 +103,9 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
                 new TypeReference<Map<String, Object>>() {
                 });
             String requestHeader = JsonUtils.toJSONString(
-                Objects.requireNonNull(dataContentMap,"Headers must not be null").get(CONSTANTS_KEY_HEADERS));
+                Objects.requireNonNull(dataContentMap, "Headers must not be null").get(CONSTANTS_KEY_HEADERS));
             byte[] requestBody = Objects.requireNonNull(
-                JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)),"Body must not be null").getBytes(StandardCharsets.UTF_8);
+                JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)), "Body must not be null").getBytes(StandardCharsets.UTF_8);
             Map<String, Object> requestHeaderMap = JsonUtils.parseTypeReferenceObject(requestHeader, new TypeReference<Map<String, Object>>() {
             });
             String requestURI = dataContentMap.get(CONSTANTS_KEY_PATH).toString();
