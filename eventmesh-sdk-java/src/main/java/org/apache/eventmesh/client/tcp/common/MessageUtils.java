@@ -45,40 +45,40 @@ public class MessageUtils {
 
     public static Package hello(UserAgent user) {
         final Package msg = new Package();
-        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, null, generateRandomString()));
         msg.setBody(user);
         return msg;
     }
 
     public static Package heartBeat() {
         final Package msg = new Package();
-        msg.setHeader(new Header(Command.HEARTBEAT_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.HEARTBEAT_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package goodbye() {
         final Package msg = new Package();
-        msg.setHeader(new Header(Command.CLIENT_GOODBYE_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.CLIENT_GOODBYE_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package listen() {
         final Package msg = new Package();
-        msg.setHeader(new Header(Command.LISTEN_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.LISTEN_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
                                     SubscriptionType subscriptionType) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString()));
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
         return msg;
     }
 
     public static Package unsubscribe() {
         final Package msg = new Package();
-        msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
@@ -91,7 +91,7 @@ public class MessageUtils {
 
     public static Package buildPackage(Object message, Command command) {
         final Package msg = new Package();
-        msg.setHeader(new Header(command, 0, null, generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(command, 0, null, generateRandomString()));
         if (message instanceof CloudEvent) {
             final CloudEvent cloudEvent = (CloudEvent) message;
             Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
@@ -182,9 +182,9 @@ public class MessageUtils {
         return subscription;
     }
 
-    private static String generateRandomString(int length) {
-        final StringBuilder builder = new StringBuilder(length);
-        IntStream.range(0, length).forEach(i -> {
+    private static String generateRandomString() {
+        final StringBuilder builder = new StringBuilder(MessageUtils.SEQ_LENGTH);
+        IntStream.range(0, MessageUtils.SEQ_LENGTH).forEach(i -> {
             builder.append((char) ThreadLocalRandom.current().nextInt(48, 57));
         });
 
