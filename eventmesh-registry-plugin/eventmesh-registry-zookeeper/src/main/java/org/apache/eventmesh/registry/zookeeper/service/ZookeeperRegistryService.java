@@ -155,7 +155,8 @@ public class ZookeeperRegistryService implements RegistryService {
                     EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
+                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -203,7 +204,8 @@ public class ZookeeperRegistryService implements RegistryService {
                     EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
+                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -256,7 +258,8 @@ public class ZookeeperRegistryService implements RegistryService {
                 .orSetData()
                 .creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
-                .forPath(path, JsonUtils.toJSONString(eventMeshInstance).getBytes(StandardCharsets.UTF_8));
+                .forPath(path,
+                    Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null").getBytes(StandardCharsets.UTF_8));
 
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (Exception e) {
