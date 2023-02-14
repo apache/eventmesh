@@ -20,7 +20,7 @@
 -->
 
 <!--
-(If this PR fixes a GitHub issue, please add `Fixes #<XXX>` or `Cloese #<XXX>`.)
+(If this PR fixes a GitHub issue, please add `Fixes #<XXX>` or `Closes #<XXX>`.)
 -->
 
 Fixes #<XXXX>.
