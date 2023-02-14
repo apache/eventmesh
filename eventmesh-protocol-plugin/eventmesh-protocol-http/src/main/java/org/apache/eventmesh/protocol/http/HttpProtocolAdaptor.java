@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import io.cloudevents.CloudEvent;
@@ -101,8 +102,10 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
                 new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 });
-            String requestHeader = JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_HEADERS));
-            byte[] requestBody = JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)).getBytes(StandardCharsets.UTF_8);
+            String requestHeader = JsonUtils.toJSONString(
+                Objects.requireNonNull(dataContentMap, "Headers must not be null").get(CONSTANTS_KEY_HEADERS));
+            byte[] requestBody = Objects.requireNonNull(
+                JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)), "Body must not be null").getBytes(StandardCharsets.UTF_8);
             Map<String, Object> requestHeaderMap = JsonUtils.parseTypeReferenceObject(requestHeader, new TypeReference<Map<String, Object>>() {
             });
             String requestURI = dataContentMap.get(CONSTANTS_KEY_PATH).toString();
