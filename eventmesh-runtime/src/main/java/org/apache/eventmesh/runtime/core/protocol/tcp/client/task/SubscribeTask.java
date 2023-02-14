@@ -41,8 +41,11 @@ public class SubscribeTask extends AbstractTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeTask.class);
 
+    private final Acl acl;
+
     public SubscribeTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -60,7 +63,7 @@ public class SubscribeTask extends AbstractTask {
             subscriptionInfo.getTopicList().forEach(item -> {
                 //do acl check for receive msg
                 if (eventMeshServerSecurityEnable) {
-                    Acl.getInstance().doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.getValue());
+                    this.acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.getValue());
                 }
 
                 subscriptionItems.add(item);

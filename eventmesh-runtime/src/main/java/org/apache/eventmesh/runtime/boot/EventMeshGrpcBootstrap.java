@@ -28,11 +28,10 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final Registry registry;
+    private final EventMeshServer eventMeshServer;
 
-    public EventMeshGrpcBootstrap(Registry registry) {
-        this.registry = registry;
-
+    public EventMeshGrpcBootstrap(final EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshGrpcConfiguration = configService.buildConfigInstance(EventMeshGrpcConfiguration.class);
 
@@ -43,7 +42,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     public void init() throws Exception {
         // server init
         if (eventMeshGrpcConfiguration != null) {
-            eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration, registry);
+            eventMeshGrpcServer = new EventMeshGrpcServer(this.eventMeshServer, this.eventMeshGrpcConfiguration);
             eventMeshGrpcServer.init();
         }
     }

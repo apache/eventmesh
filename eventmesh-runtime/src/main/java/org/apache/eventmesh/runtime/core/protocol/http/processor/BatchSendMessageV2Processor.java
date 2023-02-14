@@ -64,8 +64,11 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public BatchSendMessageV2Processor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
@@ -178,7 +181,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
             String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
             try {
-                Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,

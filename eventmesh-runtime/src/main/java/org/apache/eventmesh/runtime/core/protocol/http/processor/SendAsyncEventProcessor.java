@@ -61,11 +61,16 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @EventMeshTrace(isEnable = true)
-@RequiredArgsConstructor
 public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
+    public SendAsyncEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
+    }
 
     @Override
     public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
@@ -170,7 +175,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             final String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
             final String requestURI = requestWrapper.getRequestURI();
             try {
-                Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);
+                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);
             } catch (Exception e) {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
                         responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));

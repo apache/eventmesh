@@ -62,7 +62,7 @@ import io.opentelemetry.api.trace.Span;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
     public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
@@ -74,6 +74,13 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
+
+    private final Acl acl;
+
+    public SendAsyncMessageProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
+    }
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
@@ -171,7 +178,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
             int requestCode = Integer.parseInt(request.getRequestCode());
             try {
-                Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 responseEventMeshCommand = request.createHttpCommandResponse(
                     sendMessageResponseHeader,

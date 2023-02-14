@@ -67,9 +67,11 @@ public class MessageTransferTask extends AbstractTask {
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
-    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime,
-        EventMeshTCPServer eventMeshTCPServer) {
+    private final Acl acl;
+
+    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -121,7 +123,7 @@ public class MessageTransferTask extends AbstractTask {
             //do acl check in sending msg
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.getInstance().doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(), cmd.getValue());
+                this.acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(), cmd.getValue());
             }
 
             if (!eventMeshTCPServer.getRateLimiter()

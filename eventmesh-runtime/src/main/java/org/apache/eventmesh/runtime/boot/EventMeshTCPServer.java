@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
@@ -90,6 +91,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private final transient Registry registry;
 
+    private final Acl acl;
+
     private transient EventMeshRebalanceService eventMeshRebalanceService;
 
     private transient AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
@@ -129,12 +132,12 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
 
-    public EventMeshTCPServer(final EventMeshServer eventMeshServer,
-                              final EventMeshTCPConfiguration eventMeshTCPConfiguration, final Registry registry) {
+    public EventMeshTCPServer(final EventMeshServer eventMeshServer, final EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         super();
         this.eventMeshServer = eventMeshServer;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.registry = registry;
+        this.registry = eventMeshServer.getRegistry();
+        this.acl = eventMeshServer.getAcl();
     }
 
     private void startServer() {
@@ -408,5 +411,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public void setAdminWebHookConfigOperationManage(AdminWebHookConfigOperationManager adminWebHookConfigOperationManage) {
         this.adminWebHookConfigOperationManage = adminWebHookConfigOperationManage;
+    }
+
+    public Acl getAcl() {
+        return acl;
     }
 }

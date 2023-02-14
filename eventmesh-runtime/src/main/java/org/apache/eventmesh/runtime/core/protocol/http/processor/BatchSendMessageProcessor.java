@@ -70,8 +70,11 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
-    public BatchSendMessageProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+    private final Acl acl;
+
+    public BatchSendMessageProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
@@ -232,7 +235,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             //do acl check
             if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 try {
-                    Acl.getInstance().doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
+                    this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
                 } catch (Exception e) {
                     //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
 

@@ -55,8 +55,11 @@ public class SendAsyncMessageProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public SendAsyncMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public SendAsyncMessageProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
@@ -135,7 +138,7 @@ public class SendAsyncMessageProcessor {
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.getInstance().doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            this.acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         }
     }
 }

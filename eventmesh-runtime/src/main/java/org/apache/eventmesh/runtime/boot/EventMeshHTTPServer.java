@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -80,6 +81,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final transient Registry registry;
 
+    private final Acl acl;
+
     public final transient EventBus eventBus = new EventBus();
 
     private transient ConsumerManager consumerManager;
@@ -119,6 +122,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
+        this.acl = eventMeshServer.getAcl();
 
     }
 
@@ -432,5 +436,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public HttpRetryer getHttpRetryer() {
         return httpRetryer;
+    }
+
+    public Acl getAcl() {
+        return acl;
     }
 }

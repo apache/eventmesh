@@ -56,8 +56,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public SubscribeProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     @Override
@@ -118,7 +121,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subTopicList) {
                 try {
-                    Acl.getInstance().doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+                    this.acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                         subscribeRequestHeader.getUsername(),
                         subscribeRequestHeader.getPasswd(),
                         subscribeRequestHeader.getSys(), item.getTopic(),

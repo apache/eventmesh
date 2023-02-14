@@ -25,16 +25,20 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Acl {
 
-    private static final Logger logger = LoggerFactory.getLogger(Acl.class);
-
-    private static final Acl INSTANCE = new Acl();
+    private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;
 
@@ -42,16 +46,23 @@ public class Acl {
 
     }
 
-    public static Acl getInstance() {
-        return INSTANCE;
+    public static Acl getInstance(String aclPluginType) {
+        return ACL_CACHE.computeIfAbsent(aclPluginType, key -> aclBuilder(key));
     }
 
-    public void init(String aclPluginType) throws AclException {
-        aclService = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
-        if (aclService == null) {
-            logger.error("can't load the aclService plugin, please check.");
+    private static Acl aclBuilder(String aclPluginType) {
+        AclService aclServiceExt = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
+        if (aclServiceExt == null) {
+            log.error("can't load the aclService plugin, please check.");
             throw new RuntimeException("doesn't load the aclService plugin, please check.");
         }
+        Acl acl = new Acl();
+        acl.aclService = aclServiceExt;
+
+        return acl;
+    }
+
+    public void init() throws AclException {
         aclService.init();
     }
 

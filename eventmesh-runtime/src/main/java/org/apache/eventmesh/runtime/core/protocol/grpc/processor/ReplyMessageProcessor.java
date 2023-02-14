@@ -54,8 +54,11 @@ public class ReplyMessageProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public ReplyMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public ReplyMessageProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(SimpleMessage message, EventEmitter<SimpleMessage> emitter) throws Exception {
@@ -134,7 +137,7 @@ public class ReplyMessageProcessor {
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.getInstance().doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.REPLY_MESSAGE.getRequestCode());
+            this.acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.REPLY_MESSAGE.getRequestCode());
         }
     }
 }
