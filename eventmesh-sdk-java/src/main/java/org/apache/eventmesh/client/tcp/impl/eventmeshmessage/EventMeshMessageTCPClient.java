@@ -103,20 +103,16 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void close() throws EventMeshException {
-        if (this.eventMeshMessageTCPPubClient != null) {
-            try {
-                this.eventMeshMessageTCPPubClient.close();
-            } catch (Exception e) {
-                throw new EventMeshException(e);
-            }
+        try {
+            this.eventMeshMessageTCPPubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
         }
 
-        if (this.eventMeshMessageTCPSubClient != null) {
-            try {
-                this.eventMeshMessageTCPSubClient.close();
-            } catch (Exception e) {
-                throw new EventMeshException(e);
-            }
+        try {
+            this.eventMeshMessageTCPSubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
         }
     }
 
