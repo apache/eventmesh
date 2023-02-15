@@ -78,7 +78,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
-            String url = deleteHTTPClientRequest.url;
+            String url = deleteHTTPClientRequest.getUrl();
 
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
@@ -142,10 +142,10 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             }
 
             getClientResponseList.sort((lhs, rhs) -> {
-                if (lhs.host.equals(rhs.host)) {
-                    return lhs.host.compareTo(rhs.host);
+                if (lhs.getHost().equals(rhs.getHost())) {
+                    return lhs.getHost().compareTo(rhs.getHost());
                 }
-                return Integer.compare(rhs.port, lhs.port);
+                return Integer.compare(rhs.getPort(), lhs.getPort());
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);

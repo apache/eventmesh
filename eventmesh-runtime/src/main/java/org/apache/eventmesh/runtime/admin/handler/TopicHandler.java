@@ -122,7 +122,7 @@ public class TopicHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             CreateTopicRequest createTopicRequest = JsonUtils.parseObject(request, CreateTopicRequest.class);
-            String topicName = createTopicRequest.name;
+            String topicName = createTopicRequest.getName();
             admin.createTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class TopicHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTopicRequest deleteTopicRequest = JsonUtils.parseObject(request, DeleteTopicRequest.class);
-            String topicName = deleteTopicRequest.name;
+            String topicName = deleteTopicRequest.getName();
             admin.deleteTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {

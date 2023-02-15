@@ -83,8 +83,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.parseObject(request, DeleteTCPClientRequest.class);
-            String host = deleteTCPClientRequest.host;
-            int port = deleteTCPClientRequest.port;
+            String host = deleteTCPClientRequest.getHost();
+            int port = deleteTCPClientRequest.getPort();
 
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -157,10 +157,10 @@ public class TCPClientHandler extends AbstractHttpHandler {
             }
 
             getClientResponseList.sort((lhs, rhs) -> {
-                if (lhs.host.equals(rhs.host)) {
-                    return lhs.host.compareTo(rhs.host);
+                if (lhs.getHost().equals(rhs.getHost())) {
+                    return lhs.getHost().compareTo(rhs.getHost());
                 }
-                return Integer.compare(rhs.port, lhs.port);
+                return Integer.compare(rhs.getPort(), lhs.getPort());
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);

@@ -22,13 +22,15 @@ package org.apache.eventmesh.runtime.admin.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class DeleteGrpcClientRequest {
-    public String url;
+
+    private String url;
 
     @JsonCreator
-    public DeleteGrpcClientRequest(
-            @JsonProperty("url") String url
-    ) {
+    public DeleteGrpcClientRequest(@JsonProperty("url") String url) {
         super();
         this.url = url;
     }
