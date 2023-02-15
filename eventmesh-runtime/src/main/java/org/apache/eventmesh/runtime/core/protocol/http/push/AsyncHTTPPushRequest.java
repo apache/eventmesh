@@ -83,7 +83,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
-                                Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
+        Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
         super(handleMsgContext);
         this.waitingRequests = waitingRequests;
     }
@@ -188,7 +188,6 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
             eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
             urlAuthType);
-
 
         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordPushMsg();
 
@@ -350,13 +349,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             }
             return ClientRetCode.FAIL;
-        } catch (JsonException e) {
-            if (MESSAGE_LOGGER.isWarnEnabled()) {
-                MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            }
-            return ClientRetCode.FAIL;
-        } catch (Throwable t) {
+        } catch (Throwable e) {
             if (MESSAGE_LOGGER.isWarnEnabled()) {
                 MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
