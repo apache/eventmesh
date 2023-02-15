@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,12 @@ public class Acl {
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;
+
+    private final AtomicBoolean inited = new AtomicBoolean(false);
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
     private Acl() {
 
@@ -63,14 +70,25 @@ public class Acl {
     }
 
     public void init() throws AclException {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
         aclService.init();
     }
 
     public void start() throws AclException {
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
         aclService.start();
     }
 
     public void shutdown() throws AclException {
+        inited.compareAndSet(true, false);
+        started.compareAndSet(true, false);
+        if (!shutdown.compareAndSet(false, true)) {
+            return;
+        }
         aclService.shutdown();
     }
 
