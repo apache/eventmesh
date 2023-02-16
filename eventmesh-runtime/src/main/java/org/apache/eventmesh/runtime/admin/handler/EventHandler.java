@@ -99,12 +99,11 @@ public class EventHandler extends AbstractHttpHandler {
      * GET /event
      * Return the list of event
      */
-    void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
+    void get(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             if (queryString == null || queryString.equals("")) {
                 httpExchange.sendResponseHeaders(401, 0);
@@ -130,23 +129,19 @@ public class EventHandler extends AbstractHttpHandler {
             httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
+                out.write(result.getBytes());
+            } catch (IOException ioe) {
+                logger.warn("out close failed...", ioe);
             }
         }
     }
@@ -155,8 +150,7 @@ public class EventHandler extends AbstractHttpHandler {
      * POST /event
      * Create an event
      */
-    void post(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
+    void post(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
@@ -169,23 +163,19 @@ public class EventHandler extends AbstractHttpHandler {
             admin.publish(event);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
+                out.write(result.getBytes());
+            } catch (IOException ioe) {
+                logger.warn("out close failed...", ioe);
             }
         }
     }
