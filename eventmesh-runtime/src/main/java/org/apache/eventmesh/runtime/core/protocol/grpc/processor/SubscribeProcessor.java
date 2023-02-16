@@ -47,8 +47,11 @@ public class SubscribeProcessor {
 
     private final transient GrpcType grpcType = GrpcType.WEBHOOK;
 
+    private final Acl acl;
+
     public SubscribeProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(final Subscription subscription, final EventEmitter<Response> emitter) throws Exception {
@@ -131,7 +134,7 @@ public class SubscribeProcessor {
         final RequestHeader header = subscription.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
+                this.acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
                         header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }

@@ -30,11 +30,8 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
     private final EventMeshServer eventMeshServer;
 
-    private final Registry registry;
-
-    public EventMeshHttpBootstrap(EventMeshServer eventMeshServer, Registry registry) {
+    public EventMeshHttpBootstrap(final EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
-        this.registry = registry;
 
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshHttpConfiguration = configService.buildConfigInstance(EventMeshHTTPConfiguration.class);

@@ -56,8 +56,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public HeartBeatProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     @Override
@@ -127,7 +130,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             //do acl check
             if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 try {
-                    Acl.doAclCheckInHttpHeartbeat(
+                    this.acl.doAclCheckInHttpHeartbeat(
                             RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                             heartbeatRequestHeader.getUsername(),
                             heartbeatRequestHeader.getPasswd(),

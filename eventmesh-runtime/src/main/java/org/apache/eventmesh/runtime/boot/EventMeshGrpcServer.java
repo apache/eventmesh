@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
@@ -87,13 +88,19 @@ public class EventMeshGrpcServer {
 
     private RateLimiter msgRateLimiter;
 
-    private Registry registry;
+    private final Registry registry;
+
+    private final Acl acl;
+
+    private final EventMeshServer eventMeshServer;
 
     private EventMeshGrpcMonitor eventMeshGrpcMonitor;
 
-    public EventMeshGrpcServer(EventMeshGrpcConfiguration eventMeshGrpcConfiguration, Registry registry) {
+    public EventMeshGrpcServer(final EventMeshServer eventMeshServer, final EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
+        this.eventMeshServer = eventMeshServer;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
-        this.registry = registry;
+        this.registry = eventMeshServer.getRegistry();
+        this.acl = eventMeshServer.getAcl();
     }
 
     public void init() throws Exception {
@@ -306,5 +313,13 @@ public class EventMeshGrpcServer {
             }
             itr.remove();
         }
+    }
+
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    public Acl getAcl() {
+        return acl;
     }
 }
