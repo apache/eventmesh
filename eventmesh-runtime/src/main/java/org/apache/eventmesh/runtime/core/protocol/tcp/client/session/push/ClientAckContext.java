@@ -28,14 +28,13 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class ClientAckContext {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class ClientAckContext {
 
     private String seq;
 
@@ -112,9 +111,9 @@ public class ClientAckContext {
     public void ackMsg() {
         if (consumer != null && context != null && events != null) {
             consumer.updateOffset(events, context);
-            logger.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
+            log.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
         } else {
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
+            log.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
                     consumer == null, context == null, events == null);
         }
     }

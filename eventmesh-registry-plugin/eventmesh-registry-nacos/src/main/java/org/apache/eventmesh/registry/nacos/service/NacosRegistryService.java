@@ -37,18 +37,16 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.client.naming.NacosNamingService;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 
-public class NacosRegistryService implements RegistryService {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosRegistryService.class);
+@Slf4j
+public class NacosRegistryService implements RegistryService {
 
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
@@ -100,7 +98,7 @@ public class NacosRegistryService implements RegistryService {
             properties.setProperty(NacosConstant.PASSWORD, password);
             namingService = new NacosNamingService(properties);
         } catch (NacosException e) {
-            logger.error("[NacosRegistryService][start] error", e);
+            log.error("[NacosRegistryService][start] error", e);
             throw new RegistryException(e.getMessage());
         }
     }
@@ -112,10 +110,10 @@ public class NacosRegistryService implements RegistryService {
         try {
             namingService.shutDown();
         } catch (NacosException e) {
-            logger.error("[NacosRegistryService][shutdown] error", e);
+            log.error("[NacosRegistryService][shutdown] error", e);
             throw new RegistryException(e.getMessage());
         }
-        logger.info("NacosRegistryService close");
+        log.info("NacosRegistryService close");
     }
 
     @Override
@@ -143,7 +141,7 @@ public class NacosRegistryService implements RegistryService {
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
-                logger.error("[NacosRegistryService][findEventMeshInfoByCluster] error", e);
+                log.error("[NacosRegistryService][findEventMeshInfoByCluster] error", e);
                 throw new RegistryException(e.getMessage());
             }
 
@@ -176,7 +174,7 @@ public class NacosRegistryService implements RegistryService {
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
-                logger.error("[NacosRegistryService][findEventMeshInfoByCluster] error", e);
+                log.error("[NacosRegistryService][findEventMeshInfoByCluster] error", e);
                 throw new RegistryException(e.getMessage());
             }
 
@@ -221,10 +219,10 @@ public class NacosRegistryService implements RegistryService {
                     + NacosConstant.GROUP, instance);
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (NacosException e) {
-            logger.error("[NacosRegistryService][register] error", e);
+            log.error("[NacosRegistryService][register] error", e);
             throw new RegistryException(e.getMessage());
         }
-        logger.info("EventMesh successfully registered to nacos");
+        log.info("EventMesh successfully registered to nacos");
         return true;
     }
 
@@ -241,10 +239,10 @@ public class NacosRegistryService implements RegistryService {
             namingService.deregisterInstance(eventMeshName, eventMeshUnRegisterInfo.getProtocolType()
                     + "-" + NacosConstant.GROUP, instance);
         } catch (NacosException e) {
-            logger.error("[NacosRegistryService][unRegister] error", e);
+            log.error("[NacosRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());
         }
-        logger.info("EventMesh successfully logout to nacos");
+        log.info("EventMesh successfully logout to nacos");
         return true;
     }
 

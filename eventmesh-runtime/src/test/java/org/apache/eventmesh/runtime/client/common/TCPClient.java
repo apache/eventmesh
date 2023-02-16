@@ -29,9 +29,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -47,19 +44,21 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * one Client connects one ACCESS
  * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability,
  * The service is request-dependent. If the disconnection and reconnection capability is provided,
  * it will cause business insensitivity, that is, it will not follow the business reconnection logic.
  */
+@Slf4j
 public abstract class TCPClient implements Closeable {
 
     public int clientNo = (new Random()).nextInt(1000);
 
     protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected String host = "10.255.34.120";
 
@@ -87,7 +86,7 @@ public abstract class TCPClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    logger.warn("send msg failed", future.isSuccess(), future.cause());
+                    log.warn("send msg failed", future.isSuccess(), future.cause());
                 }
             });
         } else {
@@ -106,7 +105,7 @@ public abstract class TCPClient implements Closeable {
             if (!contexts.contains(c)) {
                 contexts.put(key, c);
             } else {
-                logger.info("duplicate key : {}", key);
+                log.info("duplicate key : {}", key);
             }
             send(msg);
             if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS)) {
@@ -136,7 +135,7 @@ public abstract class TCPClient implements Closeable {
         ChannelFuture f = bootstrap.connect(host, port).sync();
         InetSocketAddress localAddress = (InetSocketAddress) f.channel().localAddress();
         channel = f.channel();
-        logger.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(), localAddress.getPort(), host + ":" + port);
+        log.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(), localAddress.getPort(), host + ":" + port);
     }
 
     protected synchronized void reconnect() throws Exception {
@@ -148,7 +147,7 @@ public abstract class TCPClient implements Closeable {
         return new ChannelDuplexHandler() {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                logger.warn("exceptionCaught, close connection.|remote address={}", ctx.channel().remoteAddress(), cause);
+                log.warn("exceptionCaught, close connection.|remote address={}", ctx.channel().remoteAddress(), cause);
                 ctx.close();
             }
         };
@@ -159,7 +158,7 @@ public abstract class TCPClient implements Closeable {
         try {
             channel.disconnect().sync();
         } catch (InterruptedException e) {
-            logger.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
+            log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
         }
         workers.shutdownGracefully();
     }

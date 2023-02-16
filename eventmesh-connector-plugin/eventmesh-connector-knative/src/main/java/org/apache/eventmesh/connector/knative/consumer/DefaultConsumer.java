@@ -27,8 +27,6 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.util.HttpConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -36,8 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DefaultConsumer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultConsumer.class);
 
     private transient AsyncHttpClient asyncHttpClient;
 
@@ -63,7 +59,7 @@ public class DefaultConsumer {
 
         if (response.getStatusCode() == HttpConstants.ResponseStatusCodes.OK_200) {
             responseBody = response.getResponseBody();
-            LOG.info(responseBody);
+            log.info(responseBody);
             return responseBody;
         }
         throw new IllegalStateException("HTTP response code error: " + response.getStatusCode());

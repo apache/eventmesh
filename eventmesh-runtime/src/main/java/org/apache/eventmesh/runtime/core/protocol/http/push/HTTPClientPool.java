@@ -47,12 +47,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HTTPClientPool {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(HTTPClientPool.class);
 
     private final transient List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
 
@@ -100,7 +99,7 @@ public class HTTPClientPool {
             innerSSLContext = innerSSLContext == null ? SSLContexts.custom().loadTrustMaterial(new TheTrustStrategy()).build() : innerSSLContext;
 
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-            LOGGER.error("Get sslContext error", e);
+            log.error("Get sslContext error", e);
             return HttpClients.createDefault();
         }
 

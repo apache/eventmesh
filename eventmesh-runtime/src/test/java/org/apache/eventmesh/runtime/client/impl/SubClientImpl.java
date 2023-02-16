@@ -39,16 +39,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class SubClientImpl extends TCPClient implements SubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SubClientImpl.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SubClientImpl extends TCPClient implements SubClient {
 
     private transient UserAgent userAgent;
 
@@ -70,8 +70,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("SubClientImpl|{}|started!", clientNo);
+        if (log.isInfoEnabled()) {
+            log.info("SubClientImpl|{}|started!", clientNo);
         }
     }
 
@@ -105,8 +105,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
                         SubClientImpl.this.reconnect();
                     }
                     Package msg = MessageUtils.heartBeat();
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                    if (log.isDebugEnabled()) {
+                        log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
                                 msg.getHeader().getCommand(), msg);
                     }
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -203,8 +203,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
+            if (log.isInfoEnabled()) {
+                log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
                         msg.getHeader().getCommand(), msg);
             }
             Command cmd = msg.getHeader().getCommand();
@@ -218,24 +218,24 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     Package responsePKG = MessageUtils.rrResponse(msg);
                     send(responsePKG);
                 } catch (Exception e) {
-                    LOGGER.error("send rr request to client ack failed", e);
+                    log.error("send rr request to client ack failed", e);
                 }
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
                 Package asyncAck = MessageUtils.asyncMessageAck(msg);
                 try {
                     send(asyncAck);
                 } catch (Exception e) {
-                    LOGGER.error("send async request to client ack failed", e);
+                    log.error("send async request to client ack failed", e);
                 }
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                 Package broadcastAck = MessageUtils.broadcastMessageAck(msg);
                 try {
                     send(broadcastAck);
                 } catch (Exception e) {
-                    LOGGER.error("send broadcast request to client ack failed", e);
+                    log.error("send broadcast request to client ack failed", e);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                LOGGER.info("server goodby request: ---------------------------" + msg);
+                log.info("server goodby request: ---------------------------" + msg);
                 close();
             } else {
                 //control instruction set
@@ -244,7 +244,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                 } else {
-                    LOGGER.error("msg ignored,context not found.|{}|{}", cmd, msg);
+                    log.error("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             }
         }

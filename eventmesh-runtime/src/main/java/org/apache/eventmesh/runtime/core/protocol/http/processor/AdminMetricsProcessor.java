@@ -22,11 +22,12 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AdminMetricsProcessor implements HttpRequestProcessor {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -34,8 +35,6 @@ public class AdminMetricsProcessor implements HttpRequestProcessor {
     public AdminMetricsProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {

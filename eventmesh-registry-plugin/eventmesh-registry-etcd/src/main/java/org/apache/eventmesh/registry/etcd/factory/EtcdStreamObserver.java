@@ -17,16 +17,14 @@
 
 package org.apache.eventmesh.registry.etcd.factory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.grpc.stub.StreamObserver;
 
 
-public class EtcdStreamObserver implements StreamObserver<LeaseKeepAliveResponse> {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(EtcdStreamObserver.class);
+@Slf4j
+public class EtcdStreamObserver implements StreamObserver<LeaseKeepAliveResponse> {
 
     private EtcdLeaseId etcdLeaseId;
 
@@ -36,12 +34,12 @@ public class EtcdStreamObserver implements StreamObserver<LeaseKeepAliveResponse
 
     @Override
     public void onError(Throwable t) {
-        logger.debug("EtcdStreamObserver lease renewal Exception", t);
+        log.debug("EtcdStreamObserver lease renewal Exception", t);
     }
 
     @Override
     public void onCompleted() {
-        logger.info("EtcdStreamObserver completed");
+        log.info("EtcdStreamObserver completed");
     }
 
     public void setEtcdLeaseId(EtcdLeaseId etcdLeaseId) {

@@ -34,18 +34,16 @@ import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
-@Config(field = "configurationHolder")
-public class RabbitmqProducer implements Producer {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(RabbitmqProducer.class);
+@Config(field = "configurationHolder")
+@Slf4j
+public class RabbitmqProducer implements Producer {
 
     private RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 
@@ -114,7 +112,7 @@ public class RabbitmqProducer implements Producer {
                 sendCallback.onSuccess(sendResult);
             }
         } catch (Exception ex) {
-            logger.error("[RabbitmqProducer] publish happen exception.", ex);
+            log.error("[RabbitmqProducer] publish happen exception.", ex);
             sendCallback.onException(
                     OnExceptionContext.builder()
                             .topic(cloudEvent.getSubject())
@@ -135,7 +133,7 @@ public class RabbitmqProducer implements Producer {
                         configurationHolder.getRoutingKey(), data);
             }
         } catch (Exception ex) {
-            logger.error("[RabbitmqProducer] sendOneway happen exception.", ex);
+            log.error("[RabbitmqProducer] sendOneway happen exception.", ex);
         }
     }
 

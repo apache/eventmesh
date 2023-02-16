@@ -49,14 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class UnSubscribeProcessor implements HttpRequestProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnSubscribeProcessor.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class UnSubscribeProcessor implements HttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -69,8 +68,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             throws Exception {
         HttpCommand responseEventMeshCommand;
         final String localAddress = IPUtils.getLocalAddress();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+        if (log.isInfoEnabled()) {
+            log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                     RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                     EventMeshConstants.PROTOCOL_HTTP,
                     RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
@@ -124,8 +123,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             @Override
             public void onResponse(final HttpCommand httpCommand) {
                 try {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("{}", httpCommand);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
@@ -150,8 +149,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     final Client client = clientIterator.next();
                     if (StringUtils.equals(client.getPid(), pid)
                             && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
-                        if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("client {} start unsubscribe", JsonUtils.toJSONString(client));
+                        if (log.isWarnEnabled()) {
+                            log.warn("client {} start unsubscribe", JsonUtils.toJSONString(client));
                         }
                         clientIterator.remove();
                     }
@@ -223,7 +222,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                                     + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err);
                     final long endTime = System.currentTimeMillis();
-                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                             endTime - startTime,
                             JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);
@@ -253,7 +252,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                                     + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err);
                     final long endTime = System.currentTimeMillis();
-                    LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                                     + "|topic={}|url={}", endTime - startTime,
                             JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
                             unSubscribeRequestBody.getUrl(), e);

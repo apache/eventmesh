@@ -32,18 +32,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This handler used to print the total client info
  */
+@Slf4j
 @EventHttpHandler(path = "/clientManage/showClient")
 public class ShowClientHandler extends AbstractHttpHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(ShowClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -57,7 +56,7 @@ public class ShowClientHandler extends AbstractHttpHandler {
         StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
             String newLine = System.getProperty("line.separator");
-            logger.info("showAllClient=================");
+            log.info("showAllClient=================");
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
 
             HashMap<String, AtomicInteger> statMap = new HashMap<String, AtomicInteger>();
@@ -81,7 +80,7 @@ public class ShowClientHandler extends AbstractHttpHandler {
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("ShowClientHandler fail...", e);
+            log.error("ShowClientHandler fail...", e);
         }
     }
 }

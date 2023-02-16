@@ -43,9 +43,11 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-public class HelloTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HelloTask.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class HelloTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
@@ -70,7 +72,7 @@ public class HelloTask extends AbstractTask {
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
-                LOGGER.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
+                log.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
                 throw new Exception("server state is not running, maybe deploying...");
             }
 
@@ -92,7 +94,7 @@ public class HelloTask extends AbstractTask {
                             } else {
                                 Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                             }
-                            LOGGER.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
+                            log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
                             eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                         }
                     }

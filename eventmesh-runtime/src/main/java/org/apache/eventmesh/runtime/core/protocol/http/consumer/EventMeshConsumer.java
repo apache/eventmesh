@@ -59,6 +59,10 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshConsumer {
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
@@ -70,8 +74,6 @@ public class EventMeshConsumer {
     private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
@@ -130,7 +132,7 @@ public class EventMeshConsumer {
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
                 if (currentTopicConfig == null) {
-                    logger.error("no topicConfig found, consumerGroup:{} topic:{}",
+                    log.error("no topicConfig found, consumerGroup:{} topic:{}",
                         consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
@@ -210,7 +212,7 @@ public class EventMeshConsumer {
                     (EventMeshAsyncConsumeContext) context;
 
                 if (currentTopicConfig == null) {
-                    logger.error("no topicConfig found, consumerGroup:{} topic:{}",
+                    log.error("no topicConfig found, consumerGroup:{} topic:{}",
                         consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
@@ -250,7 +252,7 @@ public class EventMeshConsumer {
 
         inited4Persistent.compareAndSet(false, true);
         inited4Broadcast.compareAndSet(false, true);
-        logger.info("EventMeshConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
+        log.info("EventMeshConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
     }
 
     private String getEventExtension(CloudEvent event, String protocolKey, String defaultValue) {
@@ -315,7 +317,7 @@ public class EventMeshConsumer {
             = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
 
         if (sendMessageBack == null) {
-            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
+            log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
                 consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             return;
         }
@@ -330,7 +332,7 @@ public class EventMeshConsumer {
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
+                log.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
                     consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             }
         });

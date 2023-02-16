@@ -39,9 +39,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubscribeStreamProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SubscribeStreamProcessor {
 
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
@@ -120,10 +122,10 @@ public class SubscribeStreamProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            logger.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+            log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
         ServiceUtils.sendStreamResp(header, StatusCode.SUCCESS, "subscribe success", emitter);

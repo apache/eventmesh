@@ -19,17 +19,16 @@ package org.apache.eventmesh.connector.rabbitmq.client;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RabbitmqClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(RabbitmqClient.class);
 
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory;
 
@@ -97,7 +96,7 @@ public class RabbitmqClient {
             routingKey = builtinExchangeType.getType().equals(BuiltinExchangeType.FANOUT.getType()) ? "" : routingKey;
             channel.queueBind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {
-            logger.error("[RabbitmqClient] binding happen exception.", ex);
+            log.error("[RabbitmqClient] binding happen exception.", ex);
         }
     }
 
@@ -113,7 +112,7 @@ public class RabbitmqClient {
         try {
             channel.queueUnbind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {
-            logger.error("[RabbitmqClient] unbinding happen exception.", ex);
+            log.error("[RabbitmqClient] unbinding happen exception.", ex);
         }
     }
 
@@ -127,7 +126,7 @@ public class RabbitmqClient {
             try {
                 connection.close();
             } catch (Exception ex) {
-                logger.error("[RabbitmqClient] connection close happen exception.", ex);
+                log.error("[RabbitmqClient] connection close happen exception.", ex);
             }
         }
     }
@@ -142,7 +141,7 @@ public class RabbitmqClient {
             try {
                 channel.close();
             } catch (Exception ex) {
-                logger.error("[RabbitmqClient] channel close happen exception.", ex);
+                log.error("[RabbitmqClient] channel close happen exception.", ex);
             }
         }
     }

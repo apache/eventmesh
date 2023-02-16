@@ -22,15 +22,14 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public abstract class AbstractRemotingServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRemotingServer.class);
 
     private static final int DEFAULT_SLEEP_SECONDS = 30;
 
@@ -100,8 +99,8 @@ public abstract class AbstractRemotingServer {
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("shutdown bossGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown bossGroup");
             }
         }
 
@@ -109,15 +108,15 @@ public abstract class AbstractRemotingServer {
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("shutdown ioGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown ioGroup");
             }
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("shutdown workerGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown workerGroup");
             }
         }
     }

@@ -33,9 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -48,8 +45,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Codec {
-    private static final Logger LOG = LoggerFactory.getLogger(Codec.class);
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
@@ -78,8 +77,8 @@ public class Codec {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
+            if (log.isDebugEnabled()) {
+                log.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
             }
 
             final byte[] headerData = serializeBytes(OBJECT_MAPPER.writeValueAsString(header));
@@ -134,7 +133,7 @@ public class Codec {
                 Package pkg = new Package(header, body);
                 out.add(pkg);
             } catch (Exception e) {
-                LOG.error(String.format("decode error| receive: %s.", deserializeBytes(in.array())), e);
+                log.error(String.format("decode error| receive: %s.", deserializeBytes(in.array())), e);
                 throw e;
             }
         }
@@ -157,8 +156,8 @@ public class Codec {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Decode headerJson={}", deserializeBytes(headerData));
+            if (log.isDebugEnabled()) {
+                log.debug("Decode headerJson={}", deserializeBytes(headerData));
             }
             return OBJECT_MAPPER.readValue(deserializeBytes(headerData), Header.class);
         }
@@ -169,8 +168,8 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Decode bodyJson={}", deserializeBytes(bodyData));
+            if (log.isDebugEnabled()) {
+                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
             }
             return deserializeBody(deserializeBytes(bodyData), header);
         }
@@ -211,8 +210,8 @@ public class Codec {
             case REDIRECT_TO_CLIENT:
                 return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);
             default:
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn("Invalidate TCP command: {}", command);
+                if (log.isWarnEnabled()) {
+                    log.warn("Invalidate TCP command: {}", command);
                 }
                 return null;
         }

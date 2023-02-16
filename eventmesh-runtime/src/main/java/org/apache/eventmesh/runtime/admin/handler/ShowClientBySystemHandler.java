@@ -33,15 +33,14 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/clientManage/showClientBySystem")
 public class ShowClientBySystemHandler extends AbstractHttpHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -65,8 +64,8 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("showClientBySubsys,subsys:{}", subSystem);
+            if (log.isInfoEnabled()) {
+                log.info("showClientBySubsys,subsys:{}", subSystem);
             }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();

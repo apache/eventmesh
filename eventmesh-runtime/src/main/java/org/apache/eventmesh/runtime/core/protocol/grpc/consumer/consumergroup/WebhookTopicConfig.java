@@ -27,12 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
-    private final Logger logger = LoggerFactory.getLogger(WebhookTopicConfig.class);
-
     /**
      * PUSH URL
      * <p>
@@ -50,7 +49,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
     @Override
     public synchronized void registerClient(ConsumerGroupClient client) {
         if (client.getGrpcType() != grpcType) {
-            logger.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
+            log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
                 client.getGrpcType(), grpcType, client.toString());
             return;
         }
