@@ -30,9 +30,9 @@ public class ProducerManager {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
 
     public ProducerManager(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
