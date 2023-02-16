@@ -143,6 +143,7 @@ public class Acl {
 
     public void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
         int requestCode) throws AclException {
+
         aclService.doAclCheckInHeartbeat(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
