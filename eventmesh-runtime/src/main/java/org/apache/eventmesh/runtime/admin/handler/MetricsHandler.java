@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import java.util.Objects;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
