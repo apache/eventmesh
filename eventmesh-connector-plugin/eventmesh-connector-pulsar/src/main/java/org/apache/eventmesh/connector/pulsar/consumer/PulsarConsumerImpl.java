@@ -80,7 +80,7 @@ public class PulsarConsumerImpl implements Consumer {
             this.pulsarClient = clientBuilder.build();
         } catch (Exception ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to connect pulsar with exception: %", ex.getMessage()));
+              String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
         }
     }
 
