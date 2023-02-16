@@ -38,8 +38,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Utils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     /**
@@ -74,7 +78,7 @@ public class Utils {
                 }
             );
         } catch (Exception e) {
-            LOGGER.error("exception while sending message to client", e);
+            log.error("exception while sending message to client", e);
         }
     }
 

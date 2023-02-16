@@ -20,18 +20,18 @@ package org.apache.eventmesh.runtime.connector;
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConnectorResource {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConnectorResource.class);
     private static ConnectorResourceService connectorResourceService;
 
     public void init(String connectorResourcePluginType) throws Exception {
         connectorResourceService = EventMeshExtensionFactory.getExtension(ConnectorResourceService.class, connectorResourcePluginType);
         if (connectorResourceService == null) {
-            logger.error("can't load the connectorResourceService plugin, please check.");
+            log.error("can't load the connectorResourceService plugin, please check.");
             throw new RuntimeException("doesn't load the connectorResourceService plugin, please check.");
         }
         connectorResourceService.init();

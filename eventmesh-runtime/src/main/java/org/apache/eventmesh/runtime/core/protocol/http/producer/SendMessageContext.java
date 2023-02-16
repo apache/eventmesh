@@ -30,14 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class SendMessageContext extends RetryContext {
 
-    public static final Logger logger = LoggerFactory.getLogger("retry");
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SendMessageContext extends RetryContext {
 
     private CloudEvent event;
 
@@ -142,7 +141,7 @@ public class SendMessageContext extends RetryContext {
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("", context.getException());
+                log.warn("", context.getException());
                 eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendBatchMsgFailed(1);
             }
 

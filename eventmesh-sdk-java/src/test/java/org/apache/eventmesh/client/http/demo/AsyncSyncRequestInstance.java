@@ -30,12 +30,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AsyncSyncRequestInstance {
-
-    public static final Logger logger = LoggerFactory.getLogger(AsyncSyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -71,26 +70,26 @@ public class AsyncSyncRequestInstance {
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
+                    log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
                             System.currentTimeMillis() - startTime);
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    logger.debug("sendmsg failed", e);
+                    log.debug("sendmsg failed", e);
                 }
             }, 3000);
 
             ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.warn("async send msg failed", e);
+            log.warn("async send msg failed", e);
         }
 
         ThreadUtils.sleep(30, TimeUnit.SECONDS);
         try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
-            logger.warn("producer shutdown exception", e1);
+            log.warn("producer shutdown exception", e1);
         }
     }
 }

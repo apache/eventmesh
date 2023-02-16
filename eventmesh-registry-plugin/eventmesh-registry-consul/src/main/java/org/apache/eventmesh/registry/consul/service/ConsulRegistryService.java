@@ -33,9 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.ConsulRawClient;
 import com.ecwid.consul.v1.agent.model.NewService;
@@ -43,11 +40,12 @@ import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConsulRegistryService implements RegistryService {
 
     public static final String IP_PORT_SEPARATOR = ":";
-
-    private static final Logger logger = LoggerFactory.getLogger(ConsulRegistryService.class);
 
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
@@ -108,7 +106,7 @@ public class ConsulRegistryService implements RegistryService {
         } catch (Exception e) {
             throw new RegistryException(e.getMessage());
         }
-        logger.info("EventMesh successfully registered to consul");
+        log.info("EventMesh successfully registered to consul");
         return true;
     }
 
@@ -120,7 +118,7 @@ public class ConsulRegistryService implements RegistryService {
         } catch (Exception e) {
             throw new RegistryException(e.getMessage());
         }
-        logger.info("EventMesh successfully unregistered to consul");
+        log.info("EventMesh successfully unregistered to consul");
         return true;
     }
 

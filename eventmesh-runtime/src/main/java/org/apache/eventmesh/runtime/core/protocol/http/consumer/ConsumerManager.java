@@ -29,11 +29,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConsumerManager {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -46,8 +47,6 @@ public class ConsumerManager {
 
     private static final int DEFAULT_UPDATE_TIME = 3 * 30 * 1000;
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private ScheduledExecutorService scheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor();
 
@@ -57,11 +56,11 @@ public class ConsumerManager {
 
     public void init() throws Exception {
         eventMeshHTTPServer.getEventBus().register(this);
-        logger.info("consumerManager inited......");
+        log.info("consumerManager inited......");
     }
 
     public void start() throws Exception {
-        logger.info("consumerManager started......");
+        log.info("consumerManager started......");
 
         //        scheduledExecutorService.scheduleAtFixedRate(() -> {
         //            logger.info("clientInfo check start.....");
@@ -203,10 +202,10 @@ public class ConsumerManager {
             try {
                 consumerGroupManager.shutdown();
             } catch (Exception ex) {
-                logger.error("shutdown consumerGroupManager[{}] err", consumerGroupManager, ex);
+                log.error("shutdown consumerGroupManager[{}] err", consumerGroupManager, ex);
             }
         }
-        logger.info("consumerManager shutdown......");
+        log.info("consumerManager shutdown......");
     }
 
     public boolean contains(String consumerGroup) {
@@ -254,21 +253,21 @@ public class ConsumerManager {
      * @param consumerGroup
      */
     public synchronized void delConsumer(String consumerGroup) throws Exception {
-        logger.info("start delConsumer with consumerGroup {}", consumerGroup);
+        log.info("start delConsumer with consumerGroup {}", consumerGroup);
         if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
-            logger.info("start unsubscribe topic with consumer group manager {}",
+            log.info("start unsubscribe topic with consumer group manager {}",
                     JsonUtils.toJSONString(cgm));
             cgm.unsubscribe(consumerGroup);
             cgm.shutdown();
         }
-        logger.info("end delConsumer with consumerGroup {}", consumerGroup);
+        log.info("end delConsumer with consumerGroup {}", consumerGroup);
     }
 
     @Subscribe
     public void onChange(ConsumerGroupTopicConfChangeEvent event) {
         try {
-            logger.info("onChange event:{}", event);
+            log.info("onChange event:{}", event);
             if (event.action
                     == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.NEW) {
                 ConsumerGroupManager manager = getConsumer(event.consumerGroup);
@@ -300,14 +299,14 @@ public class ConsumerManager {
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.topic);
             }
         } catch (Exception ex) {
-            logger.error("onChange event:{} err", event, ex);
+            log.error("onChange event:{} err", event, ex);
         }
     }
 
     @Subscribe
     public void onChange(ConsumerGroupStateEvent event) {
         try {
-            logger.info("onChange event:{}", event);
+            log.info("onChange event:{}", event);
             if (event.action == ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW) {
                 addConsumer(event.consumerGroup, event.consumerGroupConfig);
                 return;
@@ -323,7 +322,7 @@ public class ConsumerManager {
                 return;
             }
         } catch (Exception ex) {
-            logger.error("onChange event:{} err", event, ex);
+            log.error("onChange event:{} err", event, ex);
         }
     }
 

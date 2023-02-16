@@ -30,11 +30,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SubscriptionManager {
-    private static final Logger logger = LoggerFactory.getLogger(SubscriptionManager.class);
+
     private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
 
@@ -94,7 +95,7 @@ public class SubscriptionManager {
                     .get(consumerGroup + "@" + subscription.getTopic());
 
             if (CollectionUtils.isEmpty(groupTopicClients)) {
-                logger.error("group {} topic {} clients is empty", consumerGroup, subscription);
+                log.error("group {} topic {} clients is empty", consumerGroup, subscription);
             }
 
             ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
@@ -102,7 +103,7 @@ public class SubscriptionManager {
                 // new subscription
                 ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup, new ConsumerGroupConf(consumerGroup));
                 if (prev == null) {
-                    logger.info("add new subscription, consumer group: {}", consumerGroup);
+                    log.info("add new subscription, consumer group: {}", consumerGroup);
                 }
                 consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
             }
@@ -115,7 +116,7 @@ public class SubscriptionManager {
                     newTopicConf.setConsumerGroup(consumerGroup);
                     newTopicConf.setTopic(topic);
                     newTopicConf.setSubscriptionItem(subscription);
-                    logger.info("add new {}", newTopicConf);
+                    log.info("add new {}", newTopicConf);
                     return newTopicConf;
                 });
                 consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(subscription.getTopic());

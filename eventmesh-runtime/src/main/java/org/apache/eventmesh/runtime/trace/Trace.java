@@ -23,9 +23,6 @@ import org.apache.eventmesh.trace.api.TracePluginFactory;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
@@ -33,8 +30,11 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Trace {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final boolean useTrace;
     private EventMeshTraceService eventMeshTraceService;
@@ -96,7 +96,7 @@ public class Trace {
         Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
 
         if (span == null) {
-            logger.warn("span is null when finishSpan");
+            log.warn("span is null when finishSpan");
             return null;
         }
 
@@ -113,7 +113,7 @@ public class Trace {
         }
 
         if (span == null) {
-            logger.warn("span is null when finishSpan");
+            log.warn("span is null when finishSpan");
             return null;
         }
 
@@ -133,7 +133,7 @@ public class Trace {
         }
 
         if (span == null) {
-            logger.warn("span is null when finishSpan");
+            log.warn("span is null when finishSpan");
             return null;
         }
 
@@ -154,7 +154,7 @@ public class Trace {
                 Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
 
                 if (span == null) {
-                    logger.warn("span is null when finishSpan");
+                    log.warn("span is null when finishSpan");
                     return;
                 }
                 if (statusCode != null) {
@@ -163,7 +163,7 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            logger.warn("finishSpan occur exception,", e);
+            log.warn("finishSpan occur exception,", e);
         }
     }
 
@@ -171,7 +171,7 @@ public class Trace {
         try {
             if (useTrace) {
                 if (span == null) {
-                    logger.warn("span is null when finishSpan");
+                    log.warn("span is null when finishSpan");
                     return;
                 }
                 if (statusCode != null) {
@@ -180,7 +180,7 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            logger.warn("finishSpan occur exception,", e);
+            log.warn("finishSpan occur exception,", e);
         }
     }
 
@@ -188,7 +188,7 @@ public class Trace {
         try {
             if (useTrace) {
                 if (span == null) {
-                    logger.warn("span is null when finishSpan");
+                    log.warn("span is null when finishSpan");
                     return;
                 }
                 if (statusCode != null) {
@@ -200,7 +200,7 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            logger.warn("finishSpan occur exception,", e);
+            log.warn("finishSpan occur exception,", e);
         }
     }
 
@@ -212,7 +212,7 @@ public class Trace {
                 Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
 
                 if (span == null) {
-                    logger.warn("span is null when finishSpan");
+                    log.warn("span is null when finishSpan");
                     return;
                 }
                 if (statusCode != null) {
@@ -224,7 +224,7 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            logger.warn("finishSpan occur exception,", e);
+            log.warn("finishSpan occur exception,", e);
         }
     }
 

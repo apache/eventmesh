@@ -31,16 +31,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The extension fetching factory, all extension plugins should be fetched by this factory. And all the extension plugins defined in eventmesh should
  * have {@link EventMeshSPI} annotation.
  */
+@Slf4j
 public class EventMeshExtensionFactory {
-
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
 
     private static final List<ExtensionClassLoader> EXTENSION_CLASS_LOADERS = new ArrayList<>();
 
@@ -90,13 +89,13 @@ public class EventMeshExtensionFactory {
                 T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
                 ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
-                logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
+                log.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
                     extensionType, extensionInstanceName);
                 return extensionInstance;
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ExtensionException("Extension initialize error", e);
             } catch (NoSuchFieldException | IOException e) {
-                logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+                log.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
                     extensionType, extensionInstanceName, e);
                 throw new ExtensionException("Extension initialize error", e);
             }
@@ -112,13 +111,13 @@ public class EventMeshExtensionFactory {
             T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
             ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
-            logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
+            log.info("initialize extension instance success, extensionType: {}, extensionName: {}",
                 extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ExtensionException("Extension initialize error", e);
         } catch (NoSuchFieldException | IOException e) {
-            logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+            log.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
                 extensionType, extensionInstanceName, e);
             throw new ExtensionException("Extension initialize error", e);
         }

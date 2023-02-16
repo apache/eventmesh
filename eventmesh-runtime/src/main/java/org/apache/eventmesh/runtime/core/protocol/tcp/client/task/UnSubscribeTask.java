@@ -36,9 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class UnSubscribeTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnSubscribeTask.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class UnSubscribeTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 

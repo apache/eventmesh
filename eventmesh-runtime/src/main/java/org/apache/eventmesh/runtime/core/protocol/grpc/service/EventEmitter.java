@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.grpc.stub.StreamObserver;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventEmitter<T> {
-    private final Logger logger = LoggerFactory.getLogger(EventEmitter.class);
 
     private final StreamObserver<T> emitter;
 
@@ -35,7 +35,7 @@ public class EventEmitter<T> {
         try {
             emitter.onNext(event);
         } catch (Throwable t) {
-            logger.warn("StreamObserver Error onNext. {}", t.getMessage());
+            log.warn("StreamObserver Error onNext. {}", t.getMessage());
         }
     }
 
@@ -43,7 +43,7 @@ public class EventEmitter<T> {
         try {
             emitter.onCompleted();
         } catch (Throwable t) {
-            logger.warn("StreamObserver Error onCompleted. {}", t.getMessage());
+            log.warn("StreamObserver Error onCompleted. {}", t.getMessage());
         }
     }
 
@@ -51,7 +51,7 @@ public class EventEmitter<T> {
         try {
             emitter.onError(t);
         } catch (Throwable t1) {
-            logger.warn("StreamObserver Error onError. {}", t1.getMessage());
+            log.warn("StreamObserver Error onError. {}", t1.getMessage());
         }
     }
 

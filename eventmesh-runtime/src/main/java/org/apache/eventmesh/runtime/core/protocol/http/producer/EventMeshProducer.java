@@ -27,16 +27,15 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshProducer {
 
     protected AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     protected AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public AtomicBoolean getInited() {
         return inited;
@@ -85,7 +84,7 @@ public class EventMeshProducer {
         mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
-        logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
 
 
@@ -96,7 +95,7 @@ public class EventMeshProducer {
 
         mqProducerWrapper.start();
         started.compareAndSet(false, true);
-        logger.info("EventMeshProducer [{}] started.............", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] started.............", producerGroupConfig.getGroupName());
     }
 
     public synchronized void shutdown() throws Exception {
@@ -110,7 +109,7 @@ public class EventMeshProducer {
         mqProducerWrapper.shutdown();
         inited.compareAndSet(true, false);
         started.compareAndSet(true, false);
-        logger.info("EventMeshProducer [{}] shutdown.............", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] shutdown.............", producerGroupConfig.getGroupName());
     }
 
     @Override

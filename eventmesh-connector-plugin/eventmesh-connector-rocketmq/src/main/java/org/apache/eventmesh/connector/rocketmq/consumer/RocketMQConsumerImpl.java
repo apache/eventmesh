@@ -29,9 +29,6 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Config(field = "clientConfiguration")
 public class RocketMQConsumerImpl implements Consumer {
-
-    public Logger messageLogger = LoggerFactory.getLogger("message");
 
     private PushConsumerImpl pushConsumer;
 

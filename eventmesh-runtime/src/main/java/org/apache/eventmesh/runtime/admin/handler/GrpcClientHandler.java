@@ -38,17 +38,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The client handler
  */
+@Slf4j
 @EventHttpHandler(path = "/client/grpc")
 public class GrpcClientHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TCPClientHandler.class);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -110,7 +110,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -176,7 +176,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

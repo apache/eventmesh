@@ -35,21 +35,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * The event handler
  */
+@Slf4j
 @EventHttpHandler(path = "/event")
 public class EventHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
@@ -62,7 +61,7 @@ public class EventHandler extends AbstractHttpHandler {
         try {
             admin.init(null);
         } catch (Exception ignored) {
-            logger.info("failed to initialize MQAdminWrapper");
+            log.info("failed to initialize MQAdminWrapper");
         }
     }
 
@@ -141,7 +140,7 @@ public class EventHandler extends AbstractHttpHandler {
                 httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
                 out.write(result.getBytes());
             } catch (IOException ioe) {
-                logger.warn("out close failed...", ioe);
+                log.warn("out close failed...", ioe);
             }
         }
     }
@@ -175,7 +174,7 @@ public class EventHandler extends AbstractHttpHandler {
                 httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
                 out.write(result.getBytes());
             } catch (IOException ioe) {
-                logger.warn("out close failed...", ioe);
+                log.warn("out close failed...", ioe);
             }
         }
     }

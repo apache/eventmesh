@@ -52,17 +52,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("restriction")
+@Slf4j
 public class ClientManageController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -102,7 +100,7 @@ public class ClientManageController {
         adminController.run(server);
 
         server.start();
-        logger.info("ClientManageController start success, port:{}", port);
+        log.info("ClientManageController start success, port:{}", port);
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,

@@ -24,21 +24,20 @@ import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class MQProducerWrapper extends MQWrapper {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class MQProducerWrapper extends MQWrapper {
 
     protected Producer meshMQProducer;
 
     public MQProducerWrapper(String connectorPluginType) {
         this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
         if (meshMQProducer == null) {
-            logger.error("can't load the meshMQProducer plugin, please check.");
+            log.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
     }
