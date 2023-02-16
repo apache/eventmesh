@@ -20,22 +20,25 @@ package org.apache.eventmesh.runtime.admin.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
 
+
+@Data
 public class GetRegistryResponse {
-    public String eventMeshClusterName;
-    public String eventMeshName;
-    public String endpoint;
-    public long lastUpdateTimestamp;
-    public String metadata;
+
+    private String eventMeshClusterName;
+    private String eventMeshName;
+    private String endpoint;
+    private long lastUpdateTimestamp;
+    private String metadata;
 
     @JsonCreator
     public GetRegistryResponse(
-            @JsonProperty("eventMeshClusterName") String eventMeshClusterName,
-            @JsonProperty("eventMeshName") String eventMeshName,
-            @JsonProperty("endpoint") String endpoint,
-            @JsonProperty("lastUpdateTimestamp") long lastUpdateTimestamp,
-            @JsonProperty("metadata") String metadata
-    ) {
+        @JsonProperty("eventMeshClusterName") String eventMeshClusterName,
+        @JsonProperty("eventMeshName") String eventMeshName,
+        @JsonProperty("endpoint") String endpoint,
+        @JsonProperty("lastUpdateTimestamp") long lastUpdateTimestamp,
+        @JsonProperty("metadata") String metadata) {
         super();
         this.eventMeshClusterName = eventMeshClusterName;
         this.eventMeshName = eventMeshName;
