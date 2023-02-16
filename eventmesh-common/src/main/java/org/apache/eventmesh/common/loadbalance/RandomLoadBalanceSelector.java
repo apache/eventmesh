@@ -22,8 +22,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This selector use random strategy.
@@ -31,9 +31,8 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> Target type
  */
+@Slf4j
 public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RandomLoadBalanceSelector.class);
 
     private final transient List<T> clusterGroup;
 
@@ -44,7 +43,7 @@ public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
     @Override
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
-            LOG.warn("No servers available");
+            log.warn("No servers available");
             return null;
         }
         return clusterGroup.get(ThreadLocalRandom.current().nextInt(clusterGroup.size()));

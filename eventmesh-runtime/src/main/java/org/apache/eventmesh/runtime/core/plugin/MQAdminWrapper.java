@@ -26,21 +26,20 @@ import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class MQAdminWrapper extends MQWrapper {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class MQAdminWrapper extends MQWrapper {
 
     protected Admin meshMQAdmin;
 
     public MQAdminWrapper(String connectorPluginType) {
         this.meshMQAdmin = ConnectorPluginFactory.getMeshMQAdmin(connectorPluginType);
         if (meshMQAdmin == null) {
-            logger.error("can't load the meshMQAdmin plugin, please check.");
+            log.error("can't load the meshMQAdmin plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQAdmin plugin, please check.");
         }
     }

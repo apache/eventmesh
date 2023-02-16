@@ -28,16 +28,15 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SuppressWarnings("restriction")
+@Slf4j
 @EventHttpHandler(path = "/webhook/insertWebHookConfig")
 public class InsertWebHookConfigHandler extends AbstractHttpHandler {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final WebHookConfigOperation operation;
 
@@ -59,7 +58,7 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
             String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("get WebHookConfigOperation implementation Failed.", e);
+            log.error("get WebHookConfigOperation implementation Failed.", e);
         }
     }
 }

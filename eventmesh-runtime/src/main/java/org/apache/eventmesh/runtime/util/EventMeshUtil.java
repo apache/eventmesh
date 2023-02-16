@@ -46,9 +46,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.v03.CloudEventV03;
@@ -59,10 +56,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventMeshUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshUtil.class);
 
     public static String buildPushMsgSeqNo() {
         return new StringBuilder()
@@ -182,8 +179,8 @@ public class EventMeshUtil {
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip
         final String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("networkInterface.priority: {}", priority);
+        if (log.isDebugEnabled()) {
+            log.debug("networkInterface.priority: {}", priority);
         }
 
         final List<String> preferList = new ArrayList<>();
@@ -211,14 +208,14 @@ public class EventMeshUtil {
             final ArrayList<String> ipv6Result = new ArrayList<>();
 
             if (preferNetworkInterface != null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("use preferNetworkInterface:{}", preferNetworkInterface);
+                if (log.isDebugEnabled()) {
+                    log.debug("use preferNetworkInterface:{}", preferNetworkInterface);
                 }
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("no preferNetworkInterface");
+                if (log.isDebugEnabled()) {
+                    log.debug("no preferNetworkInterface");
                 }
                 final Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
                 while (enumeration.hasMoreElements()) {
@@ -243,7 +240,7 @@ public class EventMeshUtil {
             //If failed to find,fall back to localhost
             return normalizeHostAddress(InetAddress.getLocalHost());
         } catch (SocketException | UnknownHostException e) {
-            LOGGER.error("failed to get local address", e);
+            log.error("failed to get local address", e);
         }
 
         return null;
@@ -292,8 +289,8 @@ public class EventMeshUtil {
     }
 
     public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
+        if (log.isInfoEnabled()) {
+            log.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
                     .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
                     .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
                     .getCompletedTaskCount());

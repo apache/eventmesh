@@ -41,17 +41,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The client handler
  */
+@Slf4j
 @EventHttpHandler(path = "/client/tcp")
 public class TCPClientHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TCPClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -118,7 +118,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -182,7 +182,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

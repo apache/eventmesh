@@ -51,13 +51,15 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Session {
 
     protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UserAgent client;
 
@@ -233,7 +235,7 @@ public class Session {
                     }
             );
         } catch (Exception e) {
-            LOGGER.error("exception while write2Client", e);
+            log.error("exception while write2Client", e);
         }
     }
 
@@ -280,7 +282,7 @@ public class Session {
         }
         return true;
     }
-    
+
     @Override
     public int hashCode() {
         int result = 1001;   //primeNumber
@@ -297,7 +299,7 @@ public class Session {
         }
         return result;
     }
-    
+
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
     }
@@ -352,12 +354,12 @@ public class Session {
 
     public boolean isAvailable(String topic) {
         if (SessionState.CLOSED == sessionState) {
-            LOGGER.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
+            log.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            LOGGER.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
+            log.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
             return false;
         }
 
@@ -366,7 +368,7 @@ public class Session {
 
     public boolean isRunning() {
         if (SessionState.RUNNING != sessionState) {
-            LOGGER.warn("session is not running, state:{} client:{}", sessionState, client);
+            log.warn("session is not running, state:{} client:{}", sessionState, client);
             return false;
         }
         return true;

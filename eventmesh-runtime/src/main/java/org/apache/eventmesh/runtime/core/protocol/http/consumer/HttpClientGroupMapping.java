@@ -45,11 +45,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public final class HttpClientGroupMapping {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientGroupMapping.class);
 
     private final transient Map<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
@@ -256,13 +256,13 @@ public final class HttpClientGroupMapping {
                 final ConsumerGroupTopicConf currentTopicConf = map.get(subTopic.getTopic());
                 if (!currentTopicConf.getUrls().add(url)) {
                     isChange = true;
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url,
+                    if (log.isInfoEnabled()) {
+                        log.info("add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url,
                                 subTopic.getTopic());
                     }
                 } else {
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn("The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url,
+                    if (log.isWarnEnabled()) {
+                        log.warn("The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url,
                                 subTopic.getTopic());
                     }
                 }
@@ -272,8 +272,8 @@ public final class HttpClientGroupMapping {
                     urls.add(url);
                     currentTopicConf.getIdcUrls().put(clientIdc, urls);
                     isChange = true;
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                    if (log.isInfoEnabled()) {
+                        log.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
                                 consumerGroup, url, subTopic.getTopic(), clientIdc);
                     }
                 } else {
@@ -281,13 +281,13 @@ public final class HttpClientGroupMapping {
                     if (!tmpSet.contains(url)) {
                         currentTopicConf.getIdcUrls().get(clientIdc).add(url);
                         isChange = true;
-                        if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                        if (log.isInfoEnabled()) {
+                            log.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
                                     consumerGroup, url, subTopic.getTopic(), clientIdc);
                         }
                     } else {
-                        if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}",
+                        if (log.isWarnEnabled()) {
+                            log.warn("The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}",
                                     consumerGroup, url, subTopic.getTopic(), clientIdc);
                         }
                     }
@@ -308,8 +308,8 @@ public final class HttpClientGroupMapping {
 
         final ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
         if (consumerGroupConf == null) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}",
+            if (log.isWarnEnabled()) {
+                log.warn("unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}",
                         consumerGroup, unSubscribeUrl);
             }
             return false;
@@ -317,8 +317,8 @@ public final class HttpClientGroupMapping {
 
         final ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(unSubTopic);
         if (consumerGroupTopicConf == null) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn(
+            if (log.isWarnEnabled()) {
+                log.warn(
                         "unsubscribe fail, the current mesh does not have group-topic subscriptionInfo, group:{}, topic:{}, url:{}",
                         consumerGroup, unSubTopic, unSubscribeUrl);
             }
@@ -327,12 +327,12 @@ public final class HttpClientGroupMapping {
 
         if (consumerGroupTopicConf.getUrls().remove(unSubscribeUrl)) {
             isChange = true;
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
+            if (log.isInfoEnabled()) {
+                log.info("remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
             }
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}",
+            if (log.isWarnEnabled()) {
+                log.warn("remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}",
                         consumerGroup, unSubTopic, unSubscribeUrl);
             }
         }
@@ -340,20 +340,20 @@ public final class HttpClientGroupMapping {
         if (consumerGroupTopicConf.getIdcUrls().containsKey(clientIdc)) {
             if (consumerGroupTopicConf.getIdcUrls().get(clientIdc).remove(unSubscribeUrl)) {
                 isChange = true;
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}",
+                if (log.isInfoEnabled()) {
+                    log.info("remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}",
                             consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
                 }
             } else {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn(
+                if (log.isWarnEnabled()) {
+                    log.warn(
                             "remove url from idcUrlMap fail,not exist subscrition of this url, group:{}, topic:{}, url:{}, clientIdc:{}",
                             consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
                 }
             }
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn(
+            if (log.isWarnEnabled()) {
+                log.warn(
                         "remove url from idcUrlMap fail,not exist subscrition of this idc , group:{}, topic:{}, url:{}, clientIdc:{}",
                         consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
             }
@@ -361,15 +361,15 @@ public final class HttpClientGroupMapping {
 
         if (isChange && CollectionUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
+            if (log.isInfoEnabled()) {
+                log.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
             }
         }
 
         if (isChange && MapUtils.isEmpty(consumerGroupConf.getConsumerGroupTopicConf())) {
             localConsumerGroupMapping.remove(consumerGroup);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("group unsubscribe success,group:{}", consumerGroup);
+            if (log.isInfoEnabled()) {
+                log.info("group unsubscribe success,group:{}", consumerGroup);
             }
         }
         return isChange;

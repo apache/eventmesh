@@ -25,15 +25,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicConf implements Serializable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerGroupTopicConf.class);
 
     private static final long serialVersionUID = 4548889791666411923L;
 

@@ -50,8 +50,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -67,9 +65,10 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
 import com.google.common.util.concurrent.RateLimiter;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventMeshTCPServer extends AbstractRemotingServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshTCPServer.class);
 
     private ClientSessionGroupMapping clientSessionGroupMapping;
 
@@ -183,14 +182,14 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             try {
                 int port = eventMeshTCPConfiguration.getEventMeshTcpServerPort();
                 ChannelFuture f = bootstrap.bind(port).sync();
-                LOGGER.info("EventMeshTCPServer[port={}] started.....", port);
+                log.info("EventMeshTCPServer[port={}] started.....", port);
                 f.channel().closeFuture().sync();
             } catch (Exception e) {
-                LOGGER.error("EventMeshTCPServer RemotingServer Start Err!", e);
+                log.error("EventMeshTCPServer RemotingServer Start Err!", e);
                 try {
                     shutdown();
                 } catch (Exception ex) {
-                    LOGGER.error("EventMeshTCPServer RemotingServer shutdown Err!", ex);
+                    log.error("EventMeshTCPServer RemotingServer shutdown Err!", ex);
                 }
             }
         };
@@ -200,8 +199,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     public void init() throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("==================EventMeshTCPServer Initialing==================");
+        if (log.isInfoEnabled()) {
+            log.info("==================EventMeshTCPServer Initialing==================");
         }
         initThreadPool();
 
@@ -235,8 +234,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             eventMeshRebalanceService.init();
         }
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshTCPServer Inited");
+        if (log.isInfoEnabled()) {
+            log.info("--------------------------EventMeshTCPServer Inited");
         }
     }
 
@@ -255,8 +254,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             eventMeshRebalanceService.start();
         }
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshTCPServer Started");
+        if (log.isInfoEnabled()) {
+            log.info("--------------------------EventMeshTCPServer Started");
         }
     }
 
@@ -264,7 +263,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     public void shutdown() throws Exception {
         if (this.getBossGroup() != null) {
             this.getBossGroup().shutdownGracefully();
-            LOGGER.info("shutdown bossGroup, no client is allowed to connect access server");
+            log.info("shutdown bossGroup, no client is allowed to connect access server");
         }
 
         if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
@@ -279,11 +278,11 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         if (this.getIoGroup() != null) {
             this.getIoGroup().shutdownGracefully();
-            LOGGER.info("shutdown ioGroup");
+            log.info("shutdown ioGroup");
         }
         if (this.getWorkerGroup() != null) {
             this.getWorkerGroup().shutdownGracefully();
-            LOGGER.info("shutdown workerGroup");
+            log.info("shutdown workerGroup");
         }
 
         eventMeshTcpRetryer.shutdown();
@@ -291,8 +290,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshTcpMonitor.shutdown();
 
         shutdownThreadPool();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------------------------EventMeshTCPServer Shutdown");
+        if (log.isInfoEnabled()) {
+            log.info("--------------------------EventMeshTCPServer Shutdown");
         }
     }
 
@@ -310,7 +309,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
             registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
-            LOGGER.error("eventMesh register to registry failed", e);
+            log.error("eventMesh register to registry failed", e);
         }
 
         return registerResult;

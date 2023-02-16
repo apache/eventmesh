@@ -48,9 +48,11 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-public class BatchPublishMessageProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class BatchPublishMessageProcessor {
 
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
@@ -87,7 +89,7 @@ public class BatchPublishMessageProcessor {
         // control flow rate limit
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
-            logger.error("Send message speed over limit.");
+            log.error("Send message speed over limit.");
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
@@ -113,14 +115,14 @@ public class BatchPublishMessageProcessor {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     long endTime = System.currentTimeMillis();
-                    logger.info("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    log.info("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
                     long endTime = System.currentTimeMillis();
-                    logger.error("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    log.error("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId, context.getException());
                 }
             });

@@ -60,9 +60,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MessageTransferTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageTransferTask.class);
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
@@ -91,7 +94,7 @@ public class MessageTransferTask extends AbstractTask {
                 ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
         } catch (Throwable ex) {
-            LOGGER.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
+            log.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
         }
 
         Command replyCmd = getReplyCmd(cmd);
@@ -142,7 +145,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
 
-                LOGGER.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getRateLimiter().getRate());
+                log.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getRateLimiter().getRate());
                 return;
             }
 
@@ -165,9 +168,9 @@ public class MessageTransferTask extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
-                session.getClient(),
-                e);
+            log.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
+                    session.getClient(),
+                    e);
 
             if (cmd != RESPONSE_TO_SERVER) {
                 msg.setHeader(

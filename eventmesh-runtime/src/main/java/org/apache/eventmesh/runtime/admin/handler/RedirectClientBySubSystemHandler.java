@@ -36,18 +36,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * redirect subsystem for subsys and dcn
  */
+@Slf4j
 @EventHttpHandler(path = "/clientManage/redirectClientBySubSystem")
 public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedirectClientBySubSystemHandler.class);
 
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
@@ -74,8 +73,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
+            if (log.isInfoEnabled()) {
+                log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
                         subSystem, destEventMeshIp, destEventMeshPort);
             }
 
@@ -94,7 +93,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
+                log.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
                         +
                         "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
 
@@ -113,7 +112,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                             sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
                     .getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            LOGGER.error("redirectClientBySubSystem fail...", e);
+            log.error("redirectClientBySubSystem fail...", e);
         }
     }
 }

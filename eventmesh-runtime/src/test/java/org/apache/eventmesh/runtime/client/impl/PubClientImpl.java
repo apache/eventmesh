@@ -32,16 +32,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class PubClientImpl extends TCPClient implements PubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PubClientImpl.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class PubClientImpl extends TCPClient implements PubClient {
 
     private final UserAgent userAgent;
 
@@ -61,8 +61,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("PubClientImpl|{}|started!", clientNo);
+        if (log.isInfoEnabled()) {
+            log.info("PubClientImpl|{}|started!", clientNo);
         }
     }
 
@@ -87,8 +87,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     PubClientImpl.this.reconnect();
                 }
                 Package msg = MessageUtils.heartBeat();
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
+                if (log.isDebugEnabled()) {
+                    log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
                             clientNo, msg.getHeader().getCommand(), msg);
                 }
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -118,8 +118,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
+        if (log.isInfoEnabled()) {
+            log.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
         }
         return dispatcher(msg, timeout);
     }
@@ -165,8 +165,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        if (log.isInfoEnabled()) {
+            log.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         }
         return dispatcher(msg, timeout);
     }
@@ -175,8 +175,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        if (log.isInfoEnabled()) {
+            log.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         }
         return dispatcher(msg, timeout);
     }
@@ -190,8 +190,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
     private class Handler extends SimpleChannelInboundHandler<Package> {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            if (log.isInfoEnabled()) {
+                log.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
             }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
@@ -209,11 +209,11 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     context.finish(msg);
                     return;
                 } else {
-                    LOGGER.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    log.error("msg ignored,context not found .|{}|{}", cmd, msg);
                     return;
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                LOGGER.error("server goodby request: ---------------------------" + msg);
+                log.error("server goodby request: ---------------------------" + msg);
                 close();
             } else {
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
@@ -222,7 +222,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     context.finish(msg);
                     return;
                 } else {
-                    LOGGER.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    log.error("msg ignored,context not found .|{}|{}", cmd, msg);
                     return;
                 }
             }

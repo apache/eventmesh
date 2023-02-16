@@ -49,10 +49,13 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SessionSender {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionSender.class);
 
     private final transient Session session;
 
@@ -146,12 +149,12 @@ public class SessionSender {
                         .getEventMesh2mqMsgNum()
                         .incrementAndGet();
             } else {
-                LOGGER.warn("send too fast,session flow control,session:{}", session.getClient());
+                log.warn("send too fast,session flow control,session:{}", session.getClient());
                 return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST,
                         EventMeshTcpSendStatus.SEND_TOO_FAST.name());
             }
         } catch (Exception e) {
-            LOGGER.warn("SessionSender send failed", e);
+            log.warn("SessionSender send failed", e);
             if (!(e instanceof InterruptedException)) {
                 upstreamBuff.release();
             }

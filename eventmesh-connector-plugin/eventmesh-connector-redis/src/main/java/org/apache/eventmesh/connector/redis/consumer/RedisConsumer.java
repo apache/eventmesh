@@ -29,16 +29,16 @@ import java.util.Properties;
 
 import org.redisson.Redisson;
 import org.redisson.api.listener.MessageListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 import com.google.common.base.Preconditions;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RedisConsumer implements Consumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedisConsumer.class);
 
     private Redisson redisson;
 
@@ -120,7 +120,7 @@ public class RedisConsumer implements Consumer {
             final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
-                    logger.info("channel: {} consumer event: {} finish action: {}",
+                    log.info("channel: {} consumer event: {} finish action: {}",
                         channel, msg.getId(), action);
                 }
             };
