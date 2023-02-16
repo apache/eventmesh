@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +47,8 @@ public class MetricsHandler extends AbstractHttpHandler {
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
-                          EventMeshTCPServer eventMeshTcpServer,
-                          HttpHandlerManager httpHandlerManager) {
+        EventMeshTCPServer eventMeshTcpServer,
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
@@ -66,8 +68,7 @@ public class MetricsHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /metrics
-     * Return a response that contains a summary of metrics
+     * GET /metrics Return a response that contains a summary of metrics
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -120,8 +121,9 @@ public class MetricsHandler extends AbstractHttpHandler {
                 tcpSummaryMetrics.getSubTopicNum()
             );
             String result = JsonUtils.toJSONString(getMetricsResponse);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            httpExchange.sendResponseHeaders(200, bytes.length);
+            out.write(bytes);
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -131,8 +133,9 @@ public class MetricsHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            httpExchange.sendResponseHeaders(500, bytes.length);
+            out.write(bytes);
         } finally {
             if (out != null) {
                 try {
