@@ -80,7 +80,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
-            String url = deleteGrpcClientRequest.url;
+            String url = deleteGrpcClientRequest.getUrl();
 
             ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
             Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
@@ -151,10 +151,10 @@ public class GrpcClientHandler extends AbstractHttpHandler {
             }
 
             getClientResponseList.sort((lhs, rhs) -> {
-                if (lhs.host.equals(rhs.host)) {
-                    return lhs.host.compareTo(rhs.host);
+                if (lhs.getHost().equals(rhs.getHost())) {
+                    return lhs.getHost().compareTo(rhs.getHost());
                 }
-                return Integer.compare(rhs.port, lhs.port);
+                return Integer.compare(rhs.getPort(), lhs.getPort());
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);
