@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
+import java.util.Objects;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -154,7 +155,7 @@ public class PushConsumerImpl {
         for (CloudEvent msg : cloudEvents) {
             if (msg != null) {
                 msgExtList.add(CloudEventUtils.msgConvertExt(
-                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+                    RocketMQMessageFactory.createWriter(Objects.requireNonNull(msg.getSubject())).writeBinary(msg)));
             }
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
