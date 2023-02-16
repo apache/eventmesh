@@ -39,7 +39,7 @@ public class EventMeshServer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(EventMeshServer.class);
 
-    private final Acl acl;
+    private Acl acl;
 
     private Registry registry;
 
@@ -57,36 +57,38 @@ public class EventMeshServer {
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
-    public EventMeshServer() throws Exception {
-        ConfigService configService = ConfigService.getInstance();
+    private static final ConfigService configService = ConfigService.getInstance();
+
+    public EventMeshServer() {
+
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
 
-        this.acl = new Acl();
+        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.registry = new Registry();
-        trace = new Trace(configuration.isEventMeshServerTraceEnable());
+
+        trace = new Trace(this.configuration.isEventMeshServerTraceEnable());
         this.connectorResource = new ConnectorResource();
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this, registry));
+                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
             }
             if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this, registry));
+                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
             }
             if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(registry));
+                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
             }
         }
-
-        init();
     }
 
-    private void init() throws Exception {
+    public void init() throws Exception {
         if (Objects.nonNull(configuration)) {
+
             connectorResource.init(configuration.getEventMeshConnectorPluginType());
             if (configuration.isEventMeshServerSecurityEnable()) {
-                acl.init(configuration.getEventMeshSecurityPluginType());
+                acl.init();
             }
             if (configuration.isEventMeshServerRegistryEnable()) {
                 registry.init(configuration.getEventMeshRegistryPluginType());
@@ -94,6 +96,7 @@ public class EventMeshServer {
             if (configuration.isEventMeshServerTraceEnable()) {
                 trace.init(configuration.getEventMeshTracePluginType());
             }
+
         }
 
         EventMeshTCPServer eventMeshTCPServer = null;
@@ -154,7 +157,6 @@ public class EventMeshServer {
             clientManageController.start();
         }
 
-
         serviceState = ServiceState.RUNNING;
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(SERVER_STATE_MSG, serviceState);
@@ -208,5 +210,9 @@ public class EventMeshServer {
 
     public void setRegistry(final Registry registry) {
         this.registry = registry;
+    }
+
+    public Acl getAcl() {
+        return acl;
     }
 }

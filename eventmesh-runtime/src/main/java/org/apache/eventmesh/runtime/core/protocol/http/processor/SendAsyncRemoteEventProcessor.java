@@ -70,8 +70,11 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public SendAsyncRemoteEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     @Override
@@ -211,7 +214,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             try {
-                Acl.doAclCheckInHttpSend(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+                this.acl.doAclCheckInHttpSend(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                         getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME),
                         getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD),
                         getExtension(event, ProtocolKey.ClientInstanceKey.SYS),

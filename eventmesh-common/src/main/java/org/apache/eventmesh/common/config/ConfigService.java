@@ -53,7 +53,7 @@ public class ConfigService {
         return INSTANCE;
     }
 
-    public ConfigService() {
+    private ConfigService() {
     }
 
     public ConfigService setConfigPath(String configPath) {
@@ -164,7 +164,7 @@ public class ConfigService {
         }
 
         Object configObject = this.getConfig(configInfo);
-        
+
         try {
             field.setAccessible(true);
             field.set(object, configObject);

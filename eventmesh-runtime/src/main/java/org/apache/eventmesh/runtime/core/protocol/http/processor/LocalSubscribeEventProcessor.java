@@ -53,8 +53,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
+    private final Acl acl;
+
     public LocalSubscribeEventProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     @Override
@@ -115,7 +118,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {
-                    Acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
+                    this.acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString(),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString(),
                             sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString(),

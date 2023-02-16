@@ -49,8 +49,12 @@ public class SubscribeStreamProcessor {
 
     private final GrpcType grpcType = GrpcType.STREAM;
 
-    public SubscribeStreamProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public SubscribeStreamProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
+
     }
 
     public void process(Subscription subscription, EventEmitter<SimpleMessage> emitter) throws Exception {
@@ -133,8 +137,7 @@ public class SubscribeStreamProcessor {
             String pass = header.getPassword();
             String subsystem = header.getSys();
             for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
-                    RequestCode.SUBSCRIBE.getRequestCode());
+                this.acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

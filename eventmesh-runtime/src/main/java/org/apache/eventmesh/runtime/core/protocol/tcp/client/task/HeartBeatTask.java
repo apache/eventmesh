@@ -39,8 +39,11 @@ public class HeartBeatTask extends AbstractTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatTask.class);
 
+    private final Acl acl;
+
     public HeartBeatTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -51,7 +54,7 @@ public class HeartBeatTask extends AbstractTask {
             //do acl check in heartbeat
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());
+                this.acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());
             }
 
             if (session != null) {

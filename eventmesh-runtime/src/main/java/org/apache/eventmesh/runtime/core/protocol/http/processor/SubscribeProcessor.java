@@ -56,8 +56,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public SubscribeProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     @Override
@@ -118,18 +121,15 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subTopicList) {
                 try {
-                    Acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                            subscribeRequestHeader.getUsername(),
-                            subscribeRequestHeader.getPasswd(),
-                            subscribeRequestHeader.getSys(), item.getTopic(),
-                            requestCode);
+                    this.acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+                        subscribeRequestHeader.getUsername(),
+                        subscribeRequestHeader.getPasswd(),
+                        subscribeRequestHeader.getSys(), item.getTopic(),
+                        requestCode);
                 } catch (Exception e) {
 
-                    responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                            subscribeResponseHeader,
-                            SendMessageResponseBody
-                                    .buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(),
-                                            e.getMessage()));
+                    responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(subscribeResponseHeader,
+                        SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
                     asyncContext.onComplete(responseEventMeshCommand);
 
                     if (LOGGER.isWarnEnabled()) {

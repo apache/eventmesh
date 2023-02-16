@@ -41,8 +41,11 @@ public class SubscribeTask extends AbstractTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeTask.class);
 
+    private final Acl acl;
+
     public SubscribeTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -60,8 +63,7 @@ public class SubscribeTask extends AbstractTask {
             subscriptionInfo.getTopicList().forEach(item -> {
                 //do acl check for receive msg
                 if (eventMeshServerSecurityEnable) {
-                    Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(),
-                            Command.SUBSCRIBE_REQUEST.getValue());
+                    this.acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.getValue());
                 }
 
                 subscriptionItems.add(item);
@@ -73,12 +75,10 @@ public class SubscribeTask extends AbstractTask {
                     LOGGER.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
                 }
             }
-            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
         } catch (Exception e) {
             LOGGER.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
-            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()
-                    .getSeq()));
+            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }
