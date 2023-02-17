@@ -147,7 +147,7 @@ public class ProducerImpl extends AbstractProducer {
     private Message supplySysProp(Message msg, CloudEvent cloudEvent) {
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
             String ceKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
-            if (cloudEvent.getExtension(ceKey) != null && StringUtils.isNotEmpty(cloudEvent.getExtension(ceKey).toString())) {
+            if (cloudEvent.getExtension(ceKey) != null && StringUtils.isNotEmpty(Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString())) {
                 MessageAccessor.putProperty(msg, sysPropKey, Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString());
                 msg.getProperties().remove(ceKey);
             }
