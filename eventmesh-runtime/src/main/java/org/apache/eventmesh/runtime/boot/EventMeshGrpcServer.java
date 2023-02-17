@@ -50,17 +50,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.assertj.core.util.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import com.google.common.util.concurrent.RateLimiter;
 
-public class EventMeshGrpcServer {
+import lombok.extern.slf4j.Slf4j;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+@Slf4j
+public class EventMeshGrpcServer {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
@@ -104,7 +103,7 @@ public class EventMeshGrpcServer {
     }
 
     public void init() throws Exception {
-        logger.info("==================EventMeshGRPCServer Initializing==================");
+        log.info("==================EventMeshGRPCServer Initializing==================");
 
         initThreadPool();
 
@@ -131,12 +130,12 @@ public class EventMeshGrpcServer {
 
         initMetricsMonitor();
 
-        logger.info("GRPCServer[port={}] started", serverPort);
-        logger.info("-----------------EventMeshGRPCServer initialized");
+        log.info("GRPCServer[port={}] started", serverPort);
+        log.info("-----------------EventMeshGRPCServer initialized");
     }
 
     public void start() throws Exception {
-        logger.info("---------------EventMeshGRPCServer starting-------------------");
+        log.info("---------------EventMeshGRPCServer starting-------------------");
 
         producerManager.start();
         consumerManager.start();
@@ -148,11 +147,11 @@ public class EventMeshGrpcServer {
         }
 
         eventMeshGrpcMonitor.start();
-        logger.info("---------------EventMeshGRPCServer running-------------------");
+        log.info("---------------EventMeshGRPCServer running-------------------");
     }
 
     public void shutdown() throws Exception {
-        logger.info("---------------EventMeshGRPCServer stopping-------------------");
+        log.info("---------------EventMeshGRPCServer stopping-------------------");
 
         producerManager.shutdown();
         consumerManager.shutdown();
@@ -168,7 +167,7 @@ public class EventMeshGrpcServer {
         }
 
         eventMeshGrpcMonitor.shutdown();
-        logger.info("---------------EventMeshGRPCServer stopped-------------------");
+        log.info("---------------EventMeshGRPCServer stopped-------------------");
     }
 
     public boolean register() {
@@ -184,7 +183,7 @@ public class EventMeshGrpcServer {
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
             registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
-            logger.warn("eventMesh register to registry failed", e);
+            log.warn("eventMesh register to registry failed", e);
         }
 
         return registerResult;

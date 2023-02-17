@@ -34,17 +34,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The topic handler
  */
+@Slf4j
 @EventHttpHandler(path = "/topic")
 public class TopicHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
@@ -57,7 +57,7 @@ public class TopicHandler extends AbstractHttpHandler {
         try {
             admin.init(null);
         } catch (Exception ignored) {
-            logger.info("failed to initialize MQAdminWrapper");
+            log.info("failed to initialize MQAdminWrapper");
         }
     }
 
@@ -104,7 +104,7 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -178,7 +178,7 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

@@ -34,15 +34,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/metrics")
 public class MetricsHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
     private final HttpSummaryMetrics httpSummaryMetrics;
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
@@ -141,7 +141,7 @@ public class MetricsHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

@@ -41,12 +41,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConsumerManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerManager.class);
 
     private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -67,15 +66,15 @@ public class ConsumerManager {
     }
 
     public void init() throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Grpc ConsumerManager initialized.");
+        if (log.isInfoEnabled()) {
+            log.info("Grpc ConsumerManager initialized.");
         }
     }
 
     public void start() throws Exception {
         startClientCheck();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Grpc ConsumerManager started.");
+        if (log.isInfoEnabled()) {
+            log.info("Grpc ConsumerManager started.");
         }
     }
 
@@ -84,8 +83,8 @@ public class ConsumerManager {
             consumer.shutdown();
         }
         scheduledExecutorService.shutdown();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Grpc ConsumerManager shutdown.");
+        if (log.isInfoEnabled()) {
+            log.info("Grpc ConsumerManager shutdown.");
         }
     }
 
@@ -211,8 +210,8 @@ public class ConsumerManager {
         final int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshSessionExpiredInMills();
         if (clientTimeout > 0) {
             scheduledExecutorService.scheduleAtFixedRate(() -> {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("grpc client info check");
+                if (log.isDebugEnabled()) {
+                    log.debug("grpc client info check");
                 }
 
                 final List<ConsumerGroupClient> clientList = new LinkedList<>();
@@ -220,8 +219,8 @@ public class ConsumerManager {
                     clientList.addAll(clients);
                 });
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("total number of ConsumerGroupClients: {}", clientList.size());
+                if (log.isDebugEnabled()) {
+                    log.debug("total number of ConsumerGroupClients: {}", clientList.size());
                 }
 
                 if (CollectionUtils.isEmpty(clientList)) {
@@ -231,8 +230,8 @@ public class ConsumerManager {
                 final Set<String> consumerGroupRestart = new HashSet<>();
                 clientList.forEach(client -> {
                     if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
-                        if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
+                        if (log.isWarnEnabled()) {
+                            log.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
                                     JsonUtils.toJSONString(client), client.getLastUpTime());
                         }
 
@@ -248,8 +247,8 @@ public class ConsumerManager {
                     try {
                         restartEventMeshConsumer(consumerGroup);
                     } catch (Exception e) {
-                        if (LOGGER.isErrorEnabled()) {
-                            LOGGER.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                        if (log.isErrorEnabled()) {
+                            log.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
                         }
                     }
                 });

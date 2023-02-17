@@ -36,17 +36,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The client handler
  */
+@Slf4j
 @EventHttpHandler(path = "/client/http")
 public class HTTPClientHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(HTTPClientHandler.class);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -102,7 +102,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -167,7 +167,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

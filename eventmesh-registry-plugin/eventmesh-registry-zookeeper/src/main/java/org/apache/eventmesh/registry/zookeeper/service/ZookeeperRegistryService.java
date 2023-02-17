@@ -46,13 +46,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ZookeeperRegistryService implements RegistryService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryService.class);
 
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
@@ -68,7 +66,7 @@ public class ZookeeperRegistryService implements RegistryService {
     public void init() throws RegistryException {
         boolean update = INIT_STATUS.compareAndSet(false, true);
         if (!update) {
-            logger.warn("[ZookeeperRegistryService] has been init");
+            log.warn("[ZookeeperRegistryService] has been init");
             return;
         }
         eventMeshRegisterInfoMap = new HashMap<>(ConfigurationContextUtil.KEYS.size());
@@ -89,7 +87,7 @@ public class ZookeeperRegistryService implements RegistryService {
     public void start() throws RegistryException {
         boolean update = START_STATUS.compareAndSet(false, true);
         if (!update) {
-            logger.warn("[ZookeeperRegistryService] has been start");
+            log.warn("[ZookeeperRegistryService] has been start");
             return;
         }
         try {
@@ -115,7 +113,7 @@ public class ZookeeperRegistryService implements RegistryService {
         } catch (Exception e) {
             throw new RegistryException("ZookeeperRegistry shutdown failed", e);
         }
-        logger.info("ZookeeperRegistryService closed");
+        log.info("ZookeeperRegistryService closed");
     }
 
     @Override
@@ -148,7 +146,7 @@ public class ZookeeperRegistryService implements RegistryService {
                             .storingStatIn(stat)
                             .forPath(instancePath);
                     } catch (Exception e) {
-                        logger.warn("[ZookeeperRegistryService][findEventMeshInfoByCluster] failed for path: {}", instancePath, e);
+                        log.warn("[ZookeeperRegistryService][findEventMeshInfoByCluster] failed for path: {}", instancePath, e);
                         continue;
                     }
 
@@ -197,7 +195,7 @@ public class ZookeeperRegistryService implements RegistryService {
                             .storingStatIn(stat)
                             .forPath(instancePath);
                     } catch (Exception e) {
-                        logger.warn("[ZookeeperRegistryService][findAllEventMeshInfo] failed for path: {}", instancePath, e);
+                        log.warn("[ZookeeperRegistryService][findAllEventMeshInfo] failed for path: {}", instancePath, e);
                         continue;
                     }
 
@@ -265,7 +263,7 @@ public class ZookeeperRegistryService implements RegistryService {
         } catch (Exception e) {
             throw new RegistryException("ZookeeperRegistry register failed", e);
         }
-        logger.info("EventMesh successfully registered to zookeeper");
+        log.info("EventMesh successfully registered to zookeeper");
         return true;
     }
 
@@ -282,7 +280,7 @@ public class ZookeeperRegistryService implements RegistryService {
         } catch (Exception e) {
             throw new RegistryException("ZookeeperRegistry unRegister failed", e);
         }
-        logger.info("EventMesh successfully logout to zookeeper");
+        log.info("EventMesh successfully logout to zookeeper");
         return true;
     }
 

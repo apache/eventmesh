@@ -26,5 +26,8 @@ dependencies {
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")    
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 }

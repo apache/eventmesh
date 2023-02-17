@@ -64,14 +64,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.assertj.core.util.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.RateLimiter;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshHTTPServer extends AbstractHTTPServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshHTTPServer.class);
 
     private final transient EventMeshServer eventMeshServer;
 
@@ -223,8 +224,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     }
 
     private void init() throws Exception {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("==================EventMeshHTTPServer Initialing==================");
+        if (log.isInfoEnabled()) {
+            log.info("==================EventMeshHTTPServer Initialing==================");
         }
         super.init("eventMesh-http");
 
@@ -268,8 +269,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
         this.initWebhook();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------EventMeshHTTPServer inited------------------");
+        if (log.isInfoEnabled()) {
+            log.info("--------EventMeshHTTPServer inited------------------");
         }
     }
 
@@ -284,8 +285,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
         }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("--------EventMeshHTTPServer started------------------");
+        if (log.isInfoEnabled()) {
+            log.info("--------EventMeshHTTPServer started------------------");
         }
     }
 
@@ -309,8 +310,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
             this.unRegister();
         }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("-------------EventMeshHTTPServer shutdown-------------");
+        if (log.isInfoEnabled()) {
+            log.info("-------------EventMeshHTTPServer shutdown-------------");
         }
     }
 
@@ -327,7 +328,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
             registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
-            LOGGER.error("eventMesh register to registry failed", e);
+            log.error("eventMesh register to registry failed", e);
         }
 
         return registerResult;

@@ -19,20 +19,20 @@ package org.apache.eventmesh.runtime.trace;
 
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp,
  * I override the 'LoggingSpanExporter'.
  */
+@Slf4j
 public class LogExporter implements SpanExporter {
-    private static final Logger logger = LoggerFactory.getLogger(LogExporter.class);
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
@@ -58,7 +58,7 @@ public class LogExporter implements SpanExporter {
                                     : instrumentationLibraryInfo.getVersion())
                     .append("] ")
                     .append(span.getAttributes());
-            logger.info(sb.toString());
+            log.info(sb.toString());
         }
         return CompletableResultCode.ofSuccess();
     }
