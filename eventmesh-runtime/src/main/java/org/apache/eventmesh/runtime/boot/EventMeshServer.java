@@ -65,7 +65,7 @@ public class EventMeshServer {
         this.registry = new Registry();
 
         trace = new Trace(this.configuration.isEventMeshServerTraceEnable());
-        this.connectorResource = new ConnectorResource();
+        this.connectorResource = ConnectorResource.getInstance(this.configuration.getEventMeshConnectorPluginType());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
@@ -84,7 +84,7 @@ public class EventMeshServer {
     public void init() throws Exception {
         if (Objects.nonNull(configuration)) {
 
-            connectorResource.init(configuration.getEventMeshConnectorPluginType());
+            connectorResource.init();
             if (configuration.isEventMeshServerSecurityEnable()) {
                 acl.init();
             }
