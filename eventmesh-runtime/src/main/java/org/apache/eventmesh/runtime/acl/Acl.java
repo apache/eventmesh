@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.acl;
 
+import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclPropertyKeys;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
@@ -105,15 +106,15 @@ public class Acl {
         aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
     }
 
-    private static Properties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
-        Properties aclProperties = new Properties();
-        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
-        aclProperties.put(AclPropertyKeys.USER, userAgent.getUsername());
-        aclProperties.put(AclPropertyKeys.PASSWORD, userAgent.getPassword());
-        aclProperties.put(AclPropertyKeys.SUBSYSTEM, userAgent.getSubsystem());
-        aclProperties.put(AclPropertyKeys.REQUEST_CODE, requestCode);
+    private static AclProperties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setUser(userAgent.getUsername());
+        aclProperties.setPwd(userAgent.getPassword());
+        aclProperties.setSubsystem(userAgent.getSubsystem());
+        aclProperties.setRequestCode(requestCode);
         if (StringUtils.isNotBlank(topic)) {
-            aclProperties.put(AclPropertyKeys.TOPIC, topic);
+            aclProperties.setTopic(topic);
         }
         return aclProperties;
     }
@@ -143,28 +144,28 @@ public class Acl {
         aclService.doAclCheckInHeartbeat(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
-    private Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode) {
-        Properties aclProperties = new Properties();
-        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
-        aclProperties.put(AclPropertyKeys.USER, user);
-        aclProperties.put(AclPropertyKeys.PASSWORD, pass);
-        aclProperties.put(AclPropertyKeys.SUBSYSTEM, subsystem);
-        aclProperties.put(AclPropertyKeys.REQUEST_CODE, requestCode);
+    private AclProperties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setUser(user);
+        aclProperties.setPwd(pass);
+        aclProperties.setSubsystem(subsystem);
+        aclProperties.setRequestCode(requestCode);
         if (StringUtils.isNotBlank(topic)) {
-            aclProperties.put(AclPropertyKeys.TOPIC, topic);
+            aclProperties.setTopic(topic);
         }
         return aclProperties;
     }
 
-    private Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, String requestURI) {
-        Properties aclProperties = new Properties();
-        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
-        aclProperties.put(AclPropertyKeys.USER, user);
-        aclProperties.put(AclPropertyKeys.PASSWORD, pass);
-        aclProperties.put(AclPropertyKeys.SUBSYSTEM, subsystem);
-        aclProperties.put(AclPropertyKeys.REQUEST_URI, requestURI);
+    private AclProperties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem, String topic, String requestURI) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setUser(user);
+        aclProperties.setPwd(pass);
+        aclProperties.setSubsystem(subsystem);
+        aclProperties.setRequestURI(requestURI);
         if (StringUtils.isNotBlank(topic)) {
-            aclProperties.put(AclPropertyKeys.TOPIC, topic);
+            aclProperties.setTopic(topic);
         }
         return aclProperties;
     }

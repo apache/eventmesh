@@ -18,4 +18,5 @@
 dependencies {
     implementation project(":eventmesh-runtime")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-kafka")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-pulsar")
 }

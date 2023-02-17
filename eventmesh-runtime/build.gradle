@@ -47,6 +47,7 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
 
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
