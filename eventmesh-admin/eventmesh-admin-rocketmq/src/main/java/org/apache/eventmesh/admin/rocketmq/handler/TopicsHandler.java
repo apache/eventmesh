@@ -34,14 +34,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class TopicsHandler implements HttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TopicsHandler.class);
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -55,7 +54,7 @@ public class TopicsHandler implements HttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         httpExchange.sendResponseHeaders(500, 0);
         String result = String.format("Please check your request url: %s", httpExchange.getRequestURI());
-        logger.error(result);
+        log.error(result);
         out.write(result.getBytes(Constants.DEFAULT_CHARSET));
     }
 
@@ -69,7 +68,7 @@ public class TopicsHandler implements HttpHandler {
 
             if (StringUtils.isBlank(topic)) {
                 result = "Create topic failed. Parameter topic not found.";
-                logger.error(result);
+                log.error(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
@@ -77,23 +76,23 @@ public class TopicsHandler implements HttpHandler {
             //TBD: A new rocketmq service will be implemented for creating topics
             TopicResponse topicResponse = null;
             if (topicResponse != null) {
-                logger.info("create a new topic: {}", topic);
+                log.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = JsonUtils.toJSONString(topicResponse);
-                logger.info(result);
+                log.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } else {
                 httpExchange.sendResponseHeaders(500, 0);
                 result = TOPIC_ERROR;
-                logger.error(result);
+                log.error(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             }
         } catch (Exception e) {
             httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
-            logger.error(result, e);
+            log.error(result, e);
         }
     }
 

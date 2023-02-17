@@ -25,16 +25,14 @@ import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This task used to clear the history message, the element in message queue can only be cleaned by this task.
  */
+@Slf4j
 public class HistoryMessageClearTask implements Runnable {
-
-
-    private final Logger logger = LoggerFactory.getLogger(HistoryMessageClearTask.class);
 
     private final ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
 
@@ -63,7 +61,7 @@ public class HistoryMessageClearTask implements Runnable {
             try {
                 ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                logger.error("Thread is interrupted, thread name: {}", Thread.currentThread().getName(), e);
+                log.error("Thread is interrupted, thread name: {}", Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();
             }
         }

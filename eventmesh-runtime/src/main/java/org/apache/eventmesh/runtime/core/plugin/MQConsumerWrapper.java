@@ -25,21 +25,20 @@ import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class MQConsumerWrapper extends MQWrapper {
 
-    public final Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class MQConsumerWrapper extends MQWrapper {
 
     protected Consumer meshMQPushConsumer;
 
     public MQConsumerWrapper(String connectorPluginType) {
         this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);
         if (meshMQPushConsumer == null) {
-            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            log.error("can't load the meshMQPushConsumer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
         }
     }

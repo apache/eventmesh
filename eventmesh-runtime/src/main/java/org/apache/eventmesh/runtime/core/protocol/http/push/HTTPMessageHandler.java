@@ -34,17 +34,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.opentelemetry.api.trace.Span;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class HTTPMessageHandler implements MessageHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(HTTPMessageHandler.class);
+@Slf4j
+public class HTTPMessageHandler implements MessageHandler {
 
     private transient EventMeshConsumer eventMeshConsumer;
 
@@ -79,7 +77,7 @@ public class HTTPMessageHandler implements MessageHandler {
     public boolean handle(final HandleMsgContext handleMsgContext) {
         if (MapUtils.getObject(waitingRequests, handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet()).size()
                 > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
-            LOGGER.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
+            log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
                             + "consumerGroup:{}, threshold:{}",
                     handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
             return false;
@@ -102,7 +100,7 @@ public class HTTPMessageHandler implements MessageHandler {
             });
             return true;
         } catch (RejectedExecutionException e) {
-            LOGGER.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
+            log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
                     handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }

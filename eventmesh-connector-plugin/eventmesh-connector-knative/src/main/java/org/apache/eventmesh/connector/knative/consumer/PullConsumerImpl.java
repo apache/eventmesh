@@ -36,17 +36,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PullConsumerImpl {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PullConsumerImpl.class);
-
     private final transient  DefaultConsumer defaultConsumer;
 
     // Topics to subscribe:
@@ -84,12 +82,12 @@ public class PullConsumerImpl {
                             subscriptionInner.put(item.getTopic(),
                                     defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
                         } catch (Exception e) {
-                            LOG.error("store received message error", e);
+                            log.error("store received message error", e);
                         }
                     }
             );
         } catch (Exception e) {
-            LOG.error("other error", e);
+            log.error("other error", e);
         }
     }
 
@@ -98,7 +96,7 @@ public class PullConsumerImpl {
             // Unsubscribe topic:
             topicList.remove(topic);
         } catch (Exception e) {
-            LOG.error("unsubscribe topic error", e);
+            log.error("unsubscribe topic error", e);
         }
     }
 

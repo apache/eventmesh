@@ -33,17 +33,16 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SuppressWarnings("restriction")
+@Slf4j
 @EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
 public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(QueryWebHookConfigByManufacturerHandler.class);
 
     private final transient WebHookConfigOperation operation;
 
@@ -76,7 +75,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
             out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            LOGGER.error("get WebHookConfigOperation implementation Failed.", e);
+            log.error("get WebHookConfigOperation implementation Failed.", e);
         }
     }
 }

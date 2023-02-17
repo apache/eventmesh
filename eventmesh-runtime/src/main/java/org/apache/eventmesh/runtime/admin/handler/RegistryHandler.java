@@ -33,15 +33,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/registry")
 public class RegistryHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
     private final Registry eventMeshRegistry;
 
     public RegistryHandler(Registry eventMeshRegistry,
@@ -110,7 +110,7 @@ public class RegistryHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

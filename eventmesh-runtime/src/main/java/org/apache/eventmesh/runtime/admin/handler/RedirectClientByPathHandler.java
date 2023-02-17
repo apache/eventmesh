@@ -35,18 +35,17 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * redirect subsystem for path
  */
+@Slf4j
 @EventHttpHandler(path = "/clientManage/redirectClientByPath")
 public class RedirectClientByPathHandler extends AbstractHttpHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(RedirectClientByPathHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -73,7 +72,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
+            log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
                     destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -90,7 +89,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
+                log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
                         +
                         "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
@@ -109,7 +108,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("redirectClientByPath fail...", e);
+            log.error("redirectClientByPath fail...", e);
         }
     }
 }

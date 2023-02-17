@@ -35,15 +35,14 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/clientManage/redirectClientByIpPort")
 public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(RedirectClientByIpPortHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -71,7 +70,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
+            log.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
                     port, destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -90,7 +89,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
+                log.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
                         +
                         "={}|destEventMeshPort={},errMsg={}", ip, port, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
@@ -111,7 +110,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("redirectClientByIpPort fail...", e);
+            log.error("redirectClientByIpPort fail...", e);
         }
 
     }

@@ -30,18 +30,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Config(field = "configurationHolder")
+
+@Slf4j
 public class RabbitmqConsumer implements Consumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(RabbitmqConsumer.class);
 
     private RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 
@@ -123,7 +124,7 @@ public class RabbitmqConsumer implements Consumer {
                     configurationHolder.getRoutingKey(), configurationHolder.getQueueName());
             rabbitmqConsumerHandler.stop();
         } catch (Exception ex) {
-            logger.error("[RabbitmqConsumer] unsubscribe happen exception.", ex);
+            log.error("[RabbitmqConsumer] unsubscribe happen exception.", ex);
         }
     }
 

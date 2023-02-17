@@ -32,14 +32,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventMeshServer {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(EventMeshServer.class);
-
-    private Acl acl;
+    private final Acl acl;
 
     private Registry registry;
 
@@ -127,14 +125,14 @@ public class EventMeshServer {
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("eventStore : {}", eventStore);
+        if (log.isInfoEnabled()) {
+            log.info("eventStore : {}", eventStore);
         }
 
         serviceState = ServiceState.INITED;
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
     }
 
@@ -158,16 +156,16 @@ public class EventMeshServer {
         }
 
         serviceState = ServiceState.RUNNING;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
 
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
@@ -191,8 +189,8 @@ public class EventMeshServer {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPED;
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
     }
 

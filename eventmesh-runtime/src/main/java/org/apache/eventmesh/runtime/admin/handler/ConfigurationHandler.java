@@ -31,17 +31,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The config handler
  */
+@Slf4j
 @EventHttpHandler(path = "/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;

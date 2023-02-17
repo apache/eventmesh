@@ -25,14 +25,13 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class AsyncPubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncPubClient.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class AsyncPubClient {
 
     public static void main(String[] args) throws Exception {
         try (PubClientImpl pubClient =
@@ -42,8 +41,8 @@ public class AsyncPubClient {
             pubClient.registerBusiHandler(new ReceiveMsgHook() {
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("server good by request: {}", msg);
+                    if (log.isInfoEnabled()) {
+                        log.info("server good by request: {}", msg);
                     }
                 }
             });

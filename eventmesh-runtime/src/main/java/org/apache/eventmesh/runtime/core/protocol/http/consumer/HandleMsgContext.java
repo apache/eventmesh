@@ -33,14 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class HandleMsgContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandleMsgContext.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class HandleMsgContext {
 
     private String msgRandomNo;
 
@@ -206,8 +205,8 @@ public class HandleMsgContext {
 
     public void finish() {
         if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("messageAcked|topic={}|event={}", topic, event);
+            if (log.isDebugEnabled()) {
+                log.debug("messageAcked|topic={}|event={}", topic, event);
             }
             eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
         }

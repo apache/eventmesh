@@ -26,11 +26,11 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Registry {
-    private static final Logger logger = LoggerFactory.getLogger(Registry.class);
 
     private volatile boolean inited = false;
 
@@ -42,7 +42,7 @@ public class Registry {
         if (!inited) {
             registryService = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
             if (registryService == null) {
-                logger.error("can't load the registryService plugin, please check.");
+                log.error("can't load the registryService plugin, please check.");
                 throw new RuntimeException("doesn't load the registryService plugin, please check.");
             }
             registryService.init();

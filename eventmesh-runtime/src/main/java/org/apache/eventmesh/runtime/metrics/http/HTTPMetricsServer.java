@@ -29,12 +29,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class HTTPMetricsServer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPMetricsServer.class);
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -60,16 +58,16 @@ public class HTTPMetricsServer {
 
     private void init() {
         metricsRegistries.forEach(MetricsRegistry::start);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("HTTPMetricsServer initialized.");
+        if (log.isInfoEnabled()) {
+            log.info("HTTPMetricsServer initialized.");
         }
     }
 
     public void start() {
         metricsRegistries.forEach(metricsRegistry -> {
             metricsRegistry.register(summaryMetrics);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Register httpMetrics to {}", metricsRegistry.getClass().getName());
+            if (log.isInfoEnabled()) {
+                log.info("Register httpMetrics to {}", metricsRegistry.getClass().getName());
             }
         });
 
@@ -80,7 +78,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.snapshotSendMsgTPS();
                 summaryMetrics.snapshotPushMsgTPS();
             } catch (Exception ex) {
-                LOGGER.error("eventMesh snapshot tps metrics err", ex);
+                log.error("eventMesh snapshot tps metrics err", ex);
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
@@ -88,20 +86,20 @@ public class HTTPMetricsServer {
             try {
                 logPrintServerMetrics(summaryMetrics, eventMeshHTTPServer);
             } catch (Exception ex) {
-                LOGGER.error("eventMesh print metrics err", ex);
+                log.error("eventMesh print metrics err", ex);
             }
         }, 1000, 30 * 1000, TimeUnit.MILLISECONDS);
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("HTTPMetricsServer started.");
+        if (log.isInfoEnabled()) {
+            log.info("HTTPMetricsServer started.");
         }
     }
 
     public void shutdown() {
         metricsSchedule.shutdown();
         metricsRegistries.forEach(MetricsRegistry::showdown);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("HTTPMetricsServer shutdown.");
+        if (log.isInfoEnabled()) {
+            log.info("HTTPMetricsServer shutdown.");
         }
     }
 
@@ -112,10 +110,10 @@ public class HTTPMetricsServer {
 
     private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
         final EventMeshHTTPServer eventMeshHTTPServer) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("===========================================SERVER METRICS==================================================");
+        if (log.isInfoEnabled()) {
+            log.info("===========================================SERVER METRICS==================================================");
 
-            LOGGER.info("maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
+            log.info("maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
                 summaryMetrics.maxHTTPTPS(),
                 summaryMetrics.avgHTTPTPS(),
                 summaryMetrics.maxHTTPCost(),
@@ -126,8 +124,8 @@ public class HTTPMetricsServer {
 
         summaryMetrics.httpStatInfoClear();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
+        if (log.isInfoEnabled()) {
+            log.info("maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
                 summaryMetrics.maxSendBatchMsgTPS(),
                 summaryMetrics.avgSendBatchMsgTPS(),
                 summaryMetrics.getSendBatchMsgNumSum(),
@@ -139,8 +137,8 @@ public class HTTPMetricsServer {
 
         summaryMetrics.cleanSendBatchStat();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
+        if (log.isInfoEnabled()) {
+            log.info("maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
                 summaryMetrics.maxSendMsgTPS(),
                 summaryMetrics.avgSendMsgTPS(),
                 summaryMetrics.getSendMsgNumSum(),
@@ -153,8 +151,8 @@ public class HTTPMetricsServer {
 
         summaryMetrics.cleanSendMsgStat();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(
+        if (log.isInfoEnabled()) {
+            log.info(
                 "maxPushMsgTPS: {}, avgPushMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, maxClientLatency: {}, avgClientLatency: {}",
                 summaryMetrics.maxPushMsgTPS(),
                 summaryMetrics.avgPushMsgTPS(),
@@ -168,16 +166,16 @@ public class HTTPMetricsServer {
 
         summaryMetrics.cleanHttpPushMsgStat();
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
+        if (log.isInfoEnabled()) {
+            log.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
                 eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getHttpRetryer().size());
         }
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
+        if (log.isInfoEnabled()) {
+            log.info("batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
                 summaryMetrics.avgBatchSendMsgCost(),
                 summaryMetrics.avgSendMsgCost(),
                 summaryMetrics.avgReplyMsgCost());

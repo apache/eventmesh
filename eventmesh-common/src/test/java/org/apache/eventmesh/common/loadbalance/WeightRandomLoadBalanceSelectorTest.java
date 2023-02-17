@@ -29,12 +29,12 @@ import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WeightRandomLoadBalanceSelectorTest {
-
-    private Logger logger = LoggerFactory.getLogger(WeightRandomLoadBalanceSelectorTest.class);
 
     @Test
     public void testSelect() throws Exception {
@@ -50,7 +50,7 @@ public class WeightRandomLoadBalanceSelectorTest {
                 .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
         addressToNum.forEach((key, value) -> {
-            logger.info("{}: {}", key, value);
+            log.info("{}: {}", key, value);
         });
         System.out.printf(addressToNum.toString());
         // the error less than 5%
@@ -78,7 +78,7 @@ public class WeightRandomLoadBalanceSelectorTest {
         Assert.assertTrue(sameWeightGroup);
 
         addressToNum.forEach((key, value) -> {
-            logger.info("{}: {}", key, value);
+            log.info("{}: {}", key, value);
         });
         // the error less than 5%
         Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.2")) < testRange / 20);
