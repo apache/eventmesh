@@ -88,7 +88,7 @@ Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.RequestRep
 - Start stream subscriber
 
 ```
-Run the main method of org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe
+Run the main method of org.apache.eventmesh.grpc.sub.EventMeshAsyncSubscribe
 ```
 
 ### 3.3 PUBLISH BATCH MESSAGE
