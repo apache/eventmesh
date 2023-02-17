@@ -97,21 +97,16 @@ public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {
 
     @Override
     public void close() throws EventMeshException {
-
-        if (this.eventMeshTCPPubClient != null) {
-            try {
-                this.eventMeshTCPPubClient.close();
-            } catch (Exception e) {
-                throw new EventMeshException(e);
-            }
+        try {
+            this.eventMeshTCPPubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
         }
 
-        if (this.eventMeshTCPSubClient != null) {
-            try {
-                this.eventMeshTCPSubClient.close();
-            } catch (Exception e) {
-                throw new EventMeshException(e);
-            }
+        try {
+            this.eventMeshTCPSubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
         }
     }
 
