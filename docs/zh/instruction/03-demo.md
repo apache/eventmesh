@@ -111,7 +111,7 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-examples**模块下
 - 启动 stream subscriber
 
 ```
-运行 org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe 的main方法
+运行 org.apache.eventmesh.grpc.sub.EventMeshAsyncSubscribe 的main方法
 ```
 
 <h4> 批量事件发布 </h4>
