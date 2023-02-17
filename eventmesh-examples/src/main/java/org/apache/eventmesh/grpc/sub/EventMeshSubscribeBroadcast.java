@@ -37,20 +37,21 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventmeshSubscribeReply extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
+public class EventMeshSubscribeBroadcast extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
 
     public static void main(String[] args) throws InterruptedException, IOException {
+
         SubscriptionItem subscriptionItem = new SubscriptionItem();
-        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC);
-        subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
-        subscriptionItem.setType(SubscriptionType.SYNC);
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC);
+        subscriptionItem.setMode(SubscriptionMode.BROADCASTING);
+        subscriptionItem.setType(SubscriptionType.ASYNC);
 
         try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
                 initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 
-            eventMeshGrpcConsumer.registerListener(new EventmeshSubscribeReply());
+            eventMeshGrpcConsumer.registerListener(new EventMeshSubscribeBroadcast());
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
@@ -62,13 +63,9 @@ public class EventmeshSubscribeReply extends GrpcAbstractDemo implements Receive
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
         if (log.isInfoEnabled()) {
-            log.info("receive request-reply msg: {}", msg);
+            log.info("receive async broadcast msg: {}", msg);
         }
-        if (msg != null) {
-            return Optional.of(msg);
-        } else {
-            return Optional.empty();
-        }
+        return Optional.empty();
     }
 
     @Override
