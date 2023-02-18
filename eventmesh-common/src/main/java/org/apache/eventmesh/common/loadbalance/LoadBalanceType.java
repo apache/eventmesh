@@ -24,8 +24,8 @@ public enum LoadBalanceType {
     WEIGHT_ROUND_ROBIN(1, "weight round robin load balance strategy"),
     WEIGHT_RANDOM(2, "weight random load balance strategy");
 
-    private int code;
-    private String desc;
+    private final int code;
+    private final String desc;
 
     LoadBalanceType(int code, String desc) {
         this.code = code;
@@ -36,16 +36,8 @@ public enum LoadBalanceType {
         return code;
     }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
-
     public String getDesc() {
         return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
     }
 
 }

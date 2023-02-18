@@ -27,7 +27,7 @@ public enum SubscriptionType {
      */
     ASYNC("ASYNC");
 
-    private String type;
+    private final String type;
 
     SubscriptionType(String type) {
         this.type = type;
@@ -37,7 +37,4 @@ public enum SubscriptionType {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 }
