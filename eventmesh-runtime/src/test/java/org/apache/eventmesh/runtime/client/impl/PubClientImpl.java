@@ -212,7 +212,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     log.error("msg ignored,context not found .|{}|{}", cmd, msg);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                log.error("server goodbye request: ---------------------------" + msg);
+                log.error("server goodbye request: ---------------------------{}", msg);
                 close();
             } else {
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
