@@ -57,23 +57,16 @@ public enum ClientRetCode {
         return ret;
     }
 
-    private Integer retCode;
+    private final Integer retCode;
 
-    private String errMsg;
+    private final String errMsg;
 
     public Integer getRetCode() {
         return retCode;
-    }
-
-    public void setRetCode(Integer retCode) {
-        this.retCode = retCode;
     }
 
     public String getErrMsg() {
         return errMsg;
     }
 
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
 }
