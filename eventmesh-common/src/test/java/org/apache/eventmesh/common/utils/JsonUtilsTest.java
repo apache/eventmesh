@@ -58,11 +58,14 @@ public class JsonUtilsTest {
         Map<String, String> map = JsonUtils.parseTypeReferenceObject(json, new TypeReference<Map<String, String>>() {
 
         });
+        Assert.assertNotNull(map);
         Assert.assertEquals("2", map.get("mxsm"));
         EventMesh mxsm = JsonUtils.parseObject(json, EventMesh.class);
+        Assert.assertNotNull(mxsm);
         Assert.assertEquals("2", mxsm.mxsm);
         Assert.assertEquals(new GregorianCalendar(2022, 1, 12, 21, 36, 01).getTime().getTime(), mxsm.date.getTime());
         EventMesh mxsm1 = JsonUtils.parseObject(json.getBytes(StandardCharsets.UTF_8), EventMesh.class);
+        Assert.assertNotNull(mxsm1);
         Assert.assertEquals("2", mxsm1.mxsm);
     }
 
@@ -71,6 +74,7 @@ public class JsonUtilsTest {
     public void getJsonNode() {
         String json = "{\"mxsm\":\"2\",\"date\":\"2022-02-12 21:36:01\"}";
         JsonNode jsonNode = JsonUtils.getJsonNode(json);
+        Assert.assertNotNull(jsonNode);
         Assert.assertEquals("2", jsonNode.findValue("mxsm").asText());
     }
 
