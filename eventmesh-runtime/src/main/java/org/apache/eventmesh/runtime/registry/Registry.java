@@ -17,14 +17,17 @@
 
 package org.apache.eventmesh.runtime.registry;
 
+import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -32,48 +35,70 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Registry {
 
-    private volatile boolean inited = false;
-
-    private volatile boolean started = false;
+    private static final Map<String, Registry> REGISTRY_CACHE = new HashMap<>(16);
 
     private RegistryService registryService;
 
-    public synchronized void init(String registryPluginType) throws Exception {
-        if (!inited) {
-            registryService = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
-            if (registryService == null) {
-                log.error("can't load the registryService plugin, please check.");
-                throw new RuntimeException("doesn't load the registryService plugin, please check.");
-            }
-            registryService.init();
-            inited = true;
-        }
+    private final AtomicBoolean inited = new AtomicBoolean(false);
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private final AtomicBoolean shutdown = new AtomicBoolean(false);
+
+    private Registry() {
+
     }
 
-    public synchronized void start() throws Exception {
-        if (!started) {
-            registryService.start();
-            started = true;
-        }
+    public static Registry getInstance(String registryPluginType) {
+        return REGISTRY_CACHE.computeIfAbsent(registryPluginType, key -> registryBuilder(key));
     }
 
-    public synchronized void shutdown() throws Exception {
-        if (started) {
-            registryService.shutdown();
-            started = false;
-            inited = false;
+    private static Registry registryBuilder(String registryPluginType) {
+        RegistryService registryServiceExt = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
+        if (registryServiceExt == null) {
+            String errorMsg = "can't load the registryService plugin, please check.";
+            log.error(errorMsg);
+            throw new RuntimeException(errorMsg);
         }
+        Registry registry = new Registry();
+        registry.registryService = registryServiceExt;
+
+        return registry;
     }
 
-    public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws Exception {
+    public void init() throws RegistryException {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
+        registryService.init();
+    }
+
+    public void start() throws RegistryException {
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
+        registryService.start();
+    }
+
+    public synchronized void shutdown() throws RegistryException {
+        inited.compareAndSet(true, false);
+        started.compareAndSet(true, false);
+        if (!shutdown.compareAndSet(false, true)) {
+            return;
+        }
+        registryService.shutdown();
+    }
+
+    public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException {
         return registryService.findEventMeshInfoByCluster(clusterName);
     }
 
-    public List<EventMeshDataInfo> findAllEventMeshInfo() throws Exception {
+    public List<EventMeshDataInfo> findAllEventMeshInfo() throws RegistryException {
         return registryService.findAllEventMeshInfo();
     }
 
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws Exception {
+    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
+        throws RegistryException {
         return registryService.findEventMeshClientDistributionData(clusterName, group, purpose);
     }
 
@@ -81,11 +106,11 @@ public class Registry {
         registryService.registerMetadata(metadata);
     }
 
-    public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws Exception {
+    public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         return registryService.register(eventMeshRegisterInfo);
     }
 
-    public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws Exception {
+    public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException {
         return registryService.unRegister(eventMeshUnRegisterInfo);
     }
 }
