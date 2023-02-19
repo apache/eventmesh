@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
@@ -59,11 +60,10 @@ public class EventMeshServer {
     private static final ConfigService configService = ConfigService.getInstance();
 
     public EventMeshServer() {
-
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
-
+        AssertUtils.notNull(this.configuration, "configuration is null");
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
-        this.registry = new Registry();
+        this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
 
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.connectorResource = ConnectorResource.getInstance(this.configuration.getEventMeshConnectorPluginType());
@@ -83,19 +83,15 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
-        if (Objects.nonNull(configuration)) {
-
-            connectorResource.init();
-            if (configuration.isEventMeshServerSecurityEnable()) {
-                acl.init();
-            }
-            if (configuration.isEventMeshServerRegistryEnable()) {
-                registry.init(configuration.getEventMeshRegistryPluginType());
-            }
-            if (configuration.isEventMeshServerTraceEnable()) {
-                trace.init();
-            }
-
+        connectorResource.init();
+        if (configuration.isEventMeshServerSecurityEnable()) {
+            acl.init();
+        }
+        if (configuration.isEventMeshServerRegistryEnable()) {
+            registry.init();
+        }
+        if (configuration.isEventMeshServerTraceEnable()) {
+            trace.init();
         }
 
         EventMeshTCPServer eventMeshTCPServer = null;
