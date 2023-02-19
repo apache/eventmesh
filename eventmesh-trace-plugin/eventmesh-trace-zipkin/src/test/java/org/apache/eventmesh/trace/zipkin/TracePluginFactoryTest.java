@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.is;
 
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
