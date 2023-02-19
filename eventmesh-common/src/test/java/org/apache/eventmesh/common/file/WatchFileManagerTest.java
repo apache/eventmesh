@@ -19,7 +19,11 @@ package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,9 +55,9 @@ public class WatchFileManagerTest {
         WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
 
         Path path = Paths.get(filePathString);
-        try(BufferedReader bufferedFileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
-            BufferedWriter bufferedFileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)
-        ){
+        try (BufferedReader bufferedFileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
+             BufferedWriter bufferedFileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)
+        ) {
             Properties properties = new Properties();
             properties.load(bufferedFileReader);
             properties.setProperty("eventMesh.server.newAdd", "newAdd");
