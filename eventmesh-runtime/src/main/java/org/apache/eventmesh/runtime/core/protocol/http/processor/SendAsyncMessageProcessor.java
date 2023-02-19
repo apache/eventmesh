@@ -60,8 +60,6 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 
-import lombok.RequiredArgsConstructor;
-
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
