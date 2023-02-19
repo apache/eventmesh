@@ -56,8 +56,7 @@ public class TopicResponse {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("TopicResponse {topic=").append(this.topic).append(",");
-        sb.append("created_time=").append(this.createdTime).append("}");
+        sb.append("TopicResponse {topic=").append(this.topic).append(",").append("created_time=").append(this.createdTime).append("}");
         return sb.toString();
     }
 
