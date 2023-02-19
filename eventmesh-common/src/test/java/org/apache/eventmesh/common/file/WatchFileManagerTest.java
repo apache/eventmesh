@@ -19,11 +19,11 @@ package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -33,9 +33,9 @@ import org.junit.Test;
 public class WatchFileManagerTest {
 
     @Test
-    public void testWatchFile() throws IOException, InterruptedException {
-        String file = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
+    public void testWatchFile() {
+        String filePathString = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
+        File f = new File(filePathString);
         final FileChangeListener fileChangeListener = new FileChangeListener() {
             @Override
             public void onChanged(FileChangeContext changeContext) {
@@ -50,11 +50,17 @@ public class WatchFileManagerTest {
         };
         WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
 
-        Properties properties = new Properties();
-        properties.load(new BufferedReader(new FileReader(file)));
-        properties.setProperty("eventMesh.server.newAdd", "newAdd");
-        FileWriter fw = new FileWriter(file);
-        properties.store(fw, "newAdd");
+        Path path = Paths.get(filePathString);
+        try(BufferedReader bufferedFileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
+            BufferedWriter bufferedFileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)
+        ){
+            Properties properties = new Properties();
+            properties.load(bufferedFileReader);
+            properties.setProperty("eventMesh.server.newAdd", "newAdd");
+            properties.store(bufferedFileWriter, "newAdd");
+        } catch (IOException e) {
+            Assert.fail("Test failed to read from or write to configuration.properties file");
+        }
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
     }
