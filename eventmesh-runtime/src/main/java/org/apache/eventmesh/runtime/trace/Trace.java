@@ -20,8 +20,10 @@ package org.apache.eventmesh.runtime.trace;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
@@ -36,22 +38,38 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Trace {
 
-    private final boolean useTrace;
+    private static final Map<String, Trace> TRACE_CACHE = new HashMap<>(16);
+
+    private final AtomicBoolean inited = new AtomicBoolean(false);
+
     private EventMeshTraceService eventMeshTraceService;
 
-    public Trace(boolean useTrace) {
-        this.useTrace = useTrace;
+    private boolean useTrace;
+
+    public static Trace getInstance(String tracePluginType, boolean useTrace) {
+        return TRACE_CACHE.computeIfAbsent(tracePluginType, key -> traceBuilder(tracePluginType, useTrace));
     }
 
-    public void init(String tracePluginType) throws Exception {
-        if (useTrace) {
-            eventMeshTraceService = TracePluginFactory.getEventMeshTraceService(tracePluginType);
-            eventMeshTraceService.init();
+    private static Trace traceBuilder(String tracePluginType, boolean useTrace) {
+        Trace trace = new Trace();
+        trace.useTrace = useTrace;
+        trace.eventMeshTraceService = TracePluginFactory.getEventMeshTraceService(tracePluginType);
+        return trace;
+    }
+
+    private Trace() {
+
+    }
+
+    public void init() throws Exception {
+        if (!inited.compareAndSet(false, true)) {
+            return;
         }
+        eventMeshTraceService.init();
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
-                           Context context, boolean isSpanFinishInOtherThread) {
+        Context context, boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
             return Span.getInvalid();
         }
@@ -60,7 +78,7 @@ public class Trace {
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
-                           boolean isSpanFinishInOtherThread) {
+        boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
             return Span.getInvalid();
         }
@@ -204,8 +222,7 @@ public class Trace {
         }
     }
 
-    public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode, String errMsg,
-                           Throwable throwable) {
+    public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode, String errMsg, Throwable throwable) {
         try {
             if (useTrace) {
                 Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
@@ -229,7 +246,7 @@ public class Trace {
     }
 
     public void shutdown() throws Exception {
-        if (useTrace) {
+        if (useTrace && inited.compareAndSet(true, false)) {
             eventMeshTraceService.shutdown();
         }
     }
