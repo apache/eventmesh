@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
-import java.util.Objects;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -47,6 +46,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
