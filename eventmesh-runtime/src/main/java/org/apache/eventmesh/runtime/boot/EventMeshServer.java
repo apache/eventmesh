@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -64,7 +65,7 @@ public class EventMeshServer {
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.registry = new Registry();
 
-        trace = new Trace(this.configuration.isEventMeshServerTraceEnable());
+        trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.connectorResource = ConnectorResource.getInstance(this.configuration.getEventMeshConnectorPluginType());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
@@ -92,7 +93,7 @@ public class EventMeshServer {
                 registry.init(configuration.getEventMeshRegistryPluginType());
             }
             if (configuration.isEventMeshServerTraceEnable()) {
-                trace.init(configuration.getEventMeshTracePluginType());
+                trace.init();
             }
 
         }
