@@ -20,12 +20,8 @@ package org.apache.eventmesh.common.file;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -37,7 +33,7 @@ import org.junit.Test;
 public class WatchFileManagerTest {
 
     @Test
-    public void testWatchFile() {
+    public void testWatchFile() throws IOException {
         String filePathString = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
         File f = new File(filePathString);
         final FileChangeListener fileChangeListener = new FileChangeListener() {
@@ -53,17 +49,24 @@ public class WatchFileManagerTest {
             }
         };
         WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
-
-        Path path = Paths.get(filePathString);
-        try (BufferedReader bufferedFileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
-             BufferedWriter bufferedFileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)
-        ) {
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
+        try {
+            reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8));
+            writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8));
             Properties properties = new Properties();
-            properties.load(bufferedFileReader);
+            properties.load(reader);
             properties.setProperty("eventMesh.server.newAdd", "newAdd");
-            properties.store(bufferedFileWriter, "newAdd");
+            properties.store(writer, "newAdd");
         } catch (IOException e) {
             Assert.fail("Test failed to read from or write to configuration.properties file");
+        } finally {
+            if (reader != null)
+                reader.close();
+            if (writer != null)
+                writer.close();
         }
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
