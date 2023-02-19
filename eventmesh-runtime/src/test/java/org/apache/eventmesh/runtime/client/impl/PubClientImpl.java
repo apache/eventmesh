@@ -89,11 +89,11 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 Package msg = MessageUtils.heartBeat();
                 if (log.isDebugEnabled()) {
                     log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                            clientNo, msg.getHeader().getCommand(), msg);
+                        clientNo, msg.getHeader().getCommand(), msg);
                 }
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-            } catch (Exception e) {
-                //ignore
+            } catch (Exception ignored) {
+                // ignore
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
@@ -188,6 +188,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
+
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             if (log.isInfoEnabled()) {
@@ -207,23 +208,19 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
-                    return;
                 } else {
                     log.error("msg ignored,context not found .|{}|{}", cmd, msg);
-                    return;
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                log.error("server goodby request: ---------------------------" + msg);
+                log.error("server goodbye request: ---------------------------{}", msg);
                 close();
             } else {
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
-                    return;
                 } else {
                     log.error("msg ignored,context not found .|{}|{}", cmd, msg);
-                    return;
                 }
             }
         }
