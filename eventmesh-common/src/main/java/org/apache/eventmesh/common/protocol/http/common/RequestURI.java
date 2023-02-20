@@ -34,9 +34,9 @@ public enum RequestURI {
     UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "SUBSCRIBE REMOTE");
 
 
-    private String requestURI;
+    private final String requestURI;
 
-    private String desc;
+    private final String desc;
 
     RequestURI(String requestURI, String desc) {
         this.requestURI = requestURI;
@@ -69,15 +69,8 @@ public enum RequestURI {
         return requestURI;
     }
 
-    public void setRequestURI(String requestURI) {
-        this.requestURI = requestURI;
-    }
-
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }
