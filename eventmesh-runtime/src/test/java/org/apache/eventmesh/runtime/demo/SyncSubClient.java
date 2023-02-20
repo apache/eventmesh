@@ -36,7 +36,7 @@ public class SyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
-                     new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
+            new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
@@ -45,7 +45,7 @@ public class SyncSubClient {
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
                         if ((log.isInfoEnabled())) {
-                            log.info("receive message -------------------------------" + msg);
+                            log.info("receive message: {}", msg);
                         }
                     }
                 }
