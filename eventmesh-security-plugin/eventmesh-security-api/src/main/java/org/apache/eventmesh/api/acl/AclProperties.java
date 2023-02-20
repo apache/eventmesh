@@ -27,7 +27,7 @@ public class AclProperties {
     private String subsystem;
     private String topic;
     private Integer requestCode;
-    private String requestUri;
+    private String requestURI;
     private String token;
     private ConcurrentHashMap<String, Object> extendedField;
 
@@ -79,12 +79,12 @@ public class AclProperties {
         this.requestCode = requestCode;
     }
 
-    public String getRequestUri() {
-        return requestUri;
+    public String getRequestURI() {
+        return requestURI;
     }
 
-    public void setRequestUri(String requestUri) {
-        this.requestUri = requestUri;
+    public void setRequestURI(String requestURI) {
+        this.requestURI = requestURI;
     }
 
     public String getToken() {

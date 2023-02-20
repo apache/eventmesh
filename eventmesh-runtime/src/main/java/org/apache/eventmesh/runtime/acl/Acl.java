@@ -18,8 +18,10 @@
 package org.apache.eventmesh.runtime.acl;
 
 import org.apache.eventmesh.api.acl.AclProperties;
+import org.apache.eventmesh.api.acl.AclPropertyKeys;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
@@ -27,7 +29,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
+import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,8 +60,7 @@ public class Acl {
     }
 
     private static Acl aclBuilder(String aclPluginType) {
-        AclService aclServiceExt =
-            EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
+        AclService aclServiceExt = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
         if (aclServiceExt == null) {
             log.error("can't load the aclService plugin, please check.");
             throw new RuntimeException("doesn't load the aclService plugin, please check.");
@@ -161,7 +167,7 @@ public class Acl {
         aclProperties.setUser(user);
         aclProperties.setPwd(pass);
         aclProperties.setSubsystem(subsystem);
-        aclProperties.setRequestUri(requestURI);
+        aclProperties.setRequestURI(requestURI);
         if (StringUtils.isNotBlank(topic)) {
             aclProperties.setTopic(topic);
         }
