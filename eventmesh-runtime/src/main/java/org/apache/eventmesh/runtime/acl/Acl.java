@@ -17,16 +17,19 @@
 
 package org.apache.eventmesh.runtime.acl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Acl {
@@ -158,7 +161,7 @@ public class Acl {
         aclProperties.setUser(user);
         aclProperties.setPwd(pass);
         aclProperties.setSubsystem(subsystem);
-        aclProperties.setRequestURI(requestURI);
+        aclProperties.setRequestUri(requestURI);
         if (StringUtils.isNotBlank(topic)) {
             aclProperties.setTopic(topic);
         }
