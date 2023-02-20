@@ -21,8 +21,6 @@ import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-import java.util.Properties;
-
 /**
  * AclService
  */
@@ -34,12 +32,12 @@ public interface AclService {
 
     void shutdown() throws AclException;
 
-    void doAclCheckInConnect(Properties aclProperties) throws AclException;
+    void doAclCheckInConnect(AclProperties aclProperties) throws AclException;
 
-    void doAclCheckInHeartbeat(Properties aclProperties) throws AclException;
+    void doAclCheckInHeartbeat(AclProperties aclProperties) throws AclException;
 
-    void doAclCheckInSend(Properties aclProperties) throws AclException;
+    void doAclCheckInSend(AclProperties aclProperties) throws AclException;
 
-    void doAclCheckInReceive(Properties aclProperties) throws AclException;
+    void doAclCheckInReceive(AclProperties aclProperties) throws AclException;
 
 }
