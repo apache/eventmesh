@@ -46,6 +46,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -154,7 +155,7 @@ public class PushConsumerImpl {
         for (CloudEvent msg : cloudEvents) {
             if (msg != null) {
                 msgExtList.add(CloudEventUtils.msgConvertExt(
-                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+                    RocketMQMessageFactory.createWriter(Objects.requireNonNull(msg.getSubject())).writeBinary(msg)));
             }
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
