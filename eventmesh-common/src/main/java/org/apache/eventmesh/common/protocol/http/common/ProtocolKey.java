@@ -45,6 +45,7 @@ public class ProtocolKey {
         public static final String UNIQUEID = "uniqueid";
         public static final String PRODUCERGROUP = "producergroup";
         public static final String CONSUMERGROUP = "consumergroup";
+        public static final String TOKEN = "token";
     }
 
 
