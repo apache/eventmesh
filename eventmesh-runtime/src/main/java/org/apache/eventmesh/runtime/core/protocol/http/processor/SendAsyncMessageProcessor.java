@@ -310,10 +310,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
                     @Override
                     public void onSuccess(SendResult sendResult) {
+                        StringBuilder sb = new StringBuilder();
                         HttpCommand succ = request.createHttpCommandResponse(
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
-                                EventMeshRetCode.SUCCESS.getErrMsg() + sendResult.toString()));
+                                EventMeshRetCode.SUCCESS.getErrMsg() + sb.append(sendResult.toString())));
                         asyncContext.onComplete(succ, handler);
                         long endTime = System.currentTimeMillis();
                         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
