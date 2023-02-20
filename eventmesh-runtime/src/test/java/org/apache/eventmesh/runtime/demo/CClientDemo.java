@@ -25,6 +25,8 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
+import java.util.Objects;
+
 import io.netty.channel.ChannelHandlerContext;
 
 
@@ -49,11 +51,10 @@ public class CClientDemo {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT
-                        || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-
+                if (Objects.equals(msg.getHeader().getCmd(), Command.ASYNC_MESSAGE_TO_CLIENT)
+                    || Objects.equals(msg.getHeader().getCmd(), Command.BROADCAST_MESSAGE_TO_CLIENT)) {
                     if (log.isInfoEnabled()) {
-                        log.info("receive message-------------------------------------" + msg);
+                        log.info("receive message: {}", msg);
                     }
                 }
             }
