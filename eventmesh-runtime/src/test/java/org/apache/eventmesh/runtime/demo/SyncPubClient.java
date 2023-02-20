@@ -30,7 +30,7 @@ public class SyncPubClient {
 
     public static void main(String[] args) throws Exception {
         try (PubClientImpl pubClient =
-                     new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
 
@@ -39,8 +39,7 @@ public class SyncPubClient {
                 if (rr.getBody() instanceof EventMeshMessage) {
                     String body = ((EventMeshMessage) rr.getBody()).getBody();
                     if (log.isInfoEnabled()) {
-                        log.info("rrMessage: " + body + "             "
-                                + "rr-reply-------------------------------------------------" + rr);
+                        log.info("rrMessage: {}, rr-reply: {}", body, rr);
                     }
                 }
             }
