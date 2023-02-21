@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.api.acl;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AclProperties {
@@ -29,7 +30,7 @@ public class AclProperties {
     private Integer requestCode;
     private String requestURI;
     private String token;
-    private ConcurrentHashMap<String, Object> extendedField;
+    private Map<String, Object> extendedFields = new ConcurrentHashMap<>();
 
     public String getClientIp() {
         return clientIp;
@@ -95,11 +96,11 @@ public class AclProperties {
         this.token = token;
     }
 
-    public ConcurrentHashMap<String, Object> getExtendedField() {
-        return extendedField;
+    public Object getExtendedField(String key) {
+        return extendedFields.get(key);
     }
 
-    public void setExtendedField(ConcurrentHashMap<String, Object> extendedField) {
-        this.extendedField = extendedField;
+    public void setExtendedField(String key, Object object) {
+        extendedFields.put(key, object);
     }
 }
