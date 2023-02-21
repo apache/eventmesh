@@ -27,16 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
+
     /**
      * PUSH URL
      * <p>
-     * Key: IDC
-     * Value: list of URls
+     * Key: IDC Value: list of URls
      */
     private final Map<String, List<String>> idcUrls = new ConcurrentHashMap<>();
 

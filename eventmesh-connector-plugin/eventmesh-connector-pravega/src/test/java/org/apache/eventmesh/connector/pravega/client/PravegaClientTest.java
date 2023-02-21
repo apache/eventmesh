@@ -48,9 +48,6 @@ import com.github.dockerjava.api.model.PortBinding;
 
 @Ignore
 public class PravegaClientTest {
-    private StreamManager streamManager;
-    private PravegaConnectorConfig config;
-    private URI controllerURI;
 
     @Rule
     public GenericContainer pravega =
@@ -59,6 +56,9 @@ public class PravegaClientTest {
             .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) createContainerCmd ->
                 createContainerCmd.getHostConfig()
                     .withPortBindings(PortBinding.parse("9090:9090"), PortBinding.parse("12345:12345")));
+    private StreamManager streamManager;
+    private PravegaConnectorConfig config;
+    private URI controllerURI;
 
     @Before
     public void setUp() {

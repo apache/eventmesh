@@ -67,19 +67,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HandlerService {
-    
+
     private final Logger httpLogger = LoggerFactory.getLogger("http");
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
-
+    public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
     @Setter
     private HTTPMetricsServer metrics;
-
     @Setter
     private HTTPTrace httpTrace;
-
-    public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
-
 
     public void init() {
         log.info("HandlerService start ");
@@ -191,7 +187,8 @@ public class HandlerService {
                     Optional
                         .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
-                            new TypeReference<Map<String, Object>>() {}
+                            new TypeReference<Map<String, Object>>() {
+                            }
                         ))
                         .ifPresent(bodyMap::putAll);
                 }
@@ -222,24 +219,28 @@ public class HandlerService {
         return httpEventWrapper;
     }
 
+    private static class ProcessorWrapper {
+
+        private ThreadPoolExecutor threadPoolExecutor;
+
+        private HttpProcessor httpProcessor;
+
+        private AsyncHttpProcessor async;
+
+        private boolean traceEnabled;
+    }
+
     @Getter
     @Setter
     class HandlerSpecific implements Runnable {
 
-        private TraceOperation traceOperation;
-
-        private ChannelHandlerContext ctx;
-
-        private HttpRequest request;
-
-        private HttpResponse response;
-
-        private AsyncContext<HttpEventWrapper> asyncContext;
-
-        private Throwable exception;
-
         long requestTime = System.currentTimeMillis();
-
+        private TraceOperation traceOperation;
+        private ChannelHandlerContext ctx;
+        private HttpRequest request;
+        private HttpResponse response;
+        private AsyncContext<HttpEventWrapper> asyncContext;
+        private Throwable exception;
         private Map<String, Object> traceMap;
 
         private CloudEvent ce;
@@ -332,7 +333,7 @@ public class HandlerService {
 
         // for error response
         public void sendErrorResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap,
-                                      Map<String, Object> traceMap) {
+            Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
                 responseBodyMap.put("retCode", retCode.getRetCode());
@@ -357,18 +358,6 @@ public class HandlerService {
             metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
         }
 
-    }
-
-
-    private static class ProcessorWrapper {
-
-        private ThreadPoolExecutor threadPoolExecutor;
-
-        private HttpProcessor httpProcessor;
-
-        private AsyncHttpProcessor async;
-
-        private boolean traceEnabled;
     }
 
 }

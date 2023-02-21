@@ -43,6 +43,16 @@ public class RegRequestBody extends Body {
 
     private List<SubscriptionItem> topics;
 
+    public static RegRequestBody buildBody(Map<String, Object> bodyParam) {
+        RegRequestBody body = new RegRequestBody();
+        body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
+        body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPICS),
+            new TypeReference<List<SubscriptionItem>>() {
+            }));
+        return body;
+    }
+
     public List<SubscriptionItem> getTopics() {
         return topics;
     }
@@ -67,16 +77,6 @@ public class RegRequestBody extends Body {
         this.endPoint = endPoint;
     }
 
-    public static RegRequestBody buildBody(Map<String, Object> bodyParam) {
-        RegRequestBody body = new RegRequestBody();
-        body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
-        body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
-        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPICS),
-                new TypeReference<List<SubscriptionItem>>() {
-                }));
-        return body;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -89,9 +89,9 @@ public class RegRequestBody extends Body {
     @Override
     public String toString() {
         return "regRequestBody{"
-                + "clientType='" + clientType + '\''
-                + ", endPoint='" + endPoint + '\''
-                + ", topics=" + topics
-                + '}';
+            + "clientType='" + clientType + '\''
+            + ", endPoint='" + endPoint + '\''
+            + ", topics=" + topics
+            + '}';
     }
 }

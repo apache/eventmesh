@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -125,8 +124,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /client/tcp
-     * Return a response that contains the list of clients
+     * GET /client/tcp Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();

@@ -58,6 +58,20 @@ public class PushMessageResponseHeader extends Header {
     //PASSWD of the requester
     private String passwd;
 
+    public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
+        String clientSysId, String clientPid, String clientIP) {
+        PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
+        pushMessageResponseHeader.setCode(requestCode);
+        pushMessageResponseHeader.setVersion(ProtocolVersion.V1);
+        pushMessageResponseHeader.setLanguage(Constants.LANGUAGE_JAVA);
+        pushMessageResponseHeader.setEnv(clientEnv);
+        pushMessageResponseHeader.setIdc(clientIDC);
+        pushMessageResponseHeader.setSys(clientSysId);
+        pushMessageResponseHeader.setPid(clientPid);
+        pushMessageResponseHeader.setIp(clientIP);
+        return pushMessageResponseHeader;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -138,34 +152,20 @@ public class PushMessageResponseHeader extends Header {
         this.ip = ip;
     }
 
-    public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
-                                                        String clientSysId, String clientPid, String clientIP) {
-        PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
-        pushMessageResponseHeader.setCode(requestCode);
-        pushMessageResponseHeader.setVersion(ProtocolVersion.V1);
-        pushMessageResponseHeader.setLanguage(Constants.LANGUAGE_JAVA);
-        pushMessageResponseHeader.setEnv(clientEnv);
-        pushMessageResponseHeader.setIdc(clientIDC);
-        pushMessageResponseHeader.setSys(clientSysId);
-        pushMessageResponseHeader.setPid(clientPid);
-        pushMessageResponseHeader.setIp(clientIP);
-        return pushMessageResponseHeader;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("language=").append(language).append(",")
-                .append("version=").append(version).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("pid=").append(pid).append(",")
-                .append("ip=").append(ip).append(",")
-                .append("username=").append(username).append(",")
-                .append("passwd=").append(passwd).append("}");
+            .append("code=").append(code).append(",")
+            .append("language=").append(language).append(",")
+            .append("version=").append(version).append(",")
+            .append("env=").append(env).append(",")
+            .append("idc=").append(idc).append(",")
+            .append("sys=").append(sys).append(",")
+            .append("pid=").append(pid).append(",")
+            .append("ip=").append(ip).append(",")
+            .append("username=").append(username).append(",")
+            .append("passwd=").append(passwd).append("}");
         return sb.toString();
     }
 

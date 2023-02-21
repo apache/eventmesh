@@ -32,14 +32,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Within EventMesh's JVM, there is no multi-connector server, and redisson itself is pooled management,
- * so a single instance is fine, and it can save resources and improve performance.
+ * Within EventMesh's JVM, there is no multi-connector server, and redisson itself is pooled management, so a single instance is fine, and it can save
+ * resources and improve performance.
  */
 public final class RedissonClient {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     public static final Redisson INSTANCE;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
         OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -68,8 +67,8 @@ public final class RedissonClient {
             serverType = properties.getServerType();
         } catch (IllegalArgumentException ie) {
             final String message = "Invalid Redis server type: " + properties.getServerType()
-                    + ", supported values are: "
-                    + Arrays.toString(RedisProperties.ServerType.values());
+                + ", supported values are: "
+                + Arrays.toString(RedisProperties.ServerType.values());
             throw new ConnectorRuntimeException(message, ie);
         }
 
@@ -88,24 +87,24 @@ public final class RedissonClient {
         switch (serverType) {
             case SINGLE:
                 config.useSingleServer()
-                        .setAddress(serverAddress)
-                        .setPassword(serverPassword);
+                    .setAddress(serverAddress)
+                    .setPassword(serverPassword);
                 break;
             case CLUSTER:
                 config.useClusterServers()
-                        .addNodeAddress(serverAddress.split(Constants.COMMA))
-                        .setPassword(serverPassword);
+                    .addNodeAddress(serverAddress.split(Constants.COMMA))
+                    .setPassword(serverPassword);
                 break;
             case SENTINEL:
                 config.useSentinelServers()
-                        .setMasterName(masterName)
-                        .addSentinelAddress(serverAddress)
-                        .setPassword(serverPassword);
+                    .setMasterName(masterName)
+                    .addSentinelAddress(serverAddress)
+                    .setPassword(serverPassword);
                 break;
             default:
                 final String message = "Invalid Redis server type: " + properties.getServerType()
-                        + ", supported values are: "
-                        + Arrays.toString(RedisProperties.ServerType.values());
+                    + ", supported values are: "
+                    + Arrays.toString(RedisProperties.ServerType.values());
                 throw new ConnectorRuntimeException(message);
         }
 

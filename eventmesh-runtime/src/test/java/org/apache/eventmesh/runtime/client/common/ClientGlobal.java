@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.client.common;
 
 import java.util.TimeZone;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,15 +30,14 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientGlobal {
 
     public static ClientGlobal INSTANCE = new ClientGlobal();
-
-    public static ClientGlobal getInstance() {
-        return INSTANCE;
-    }
-
     public static ObjectMapper jsonMapper;
 
     private ClientGlobal() {
         init();
+    }
+
+    public static ClientGlobal getInstance() {
+        return INSTANCE;
     }
 
     public void init() {

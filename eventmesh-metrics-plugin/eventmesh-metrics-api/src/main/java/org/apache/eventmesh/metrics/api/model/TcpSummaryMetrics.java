@@ -23,6 +23,7 @@ import lombok.Data;
 
 @Data
 public class TcpSummaryMetrics implements Metric {
+
     private AtomicInteger client2eventMeshMsgNum;
     private AtomicInteger eventMesh2mqMsgNum;
     private AtomicInteger mq2eventMeshMsgNum;
@@ -129,11 +130,11 @@ public class TcpSummaryMetrics implements Metric {
         this.allConnections = allConnections;
     }
 
-    public void setRetrySize(int retrySize) {
-        this.retrySize = retrySize;
-    }
-
     public int getRetrySize() {
         return retrySize;
+    }
+
+    public void setRetrySize(int retrySize) {
+        this.retrySize = retrySize;
     }
 }

@@ -36,31 +36,23 @@ import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DownStreamMsgContext extends RetryContext {
 
-    public Session session;
-
-    public AbstractContext consumeConcurrentlyContext;
-
-    public MQConsumerWrapper consumer;
-
-    public SubscriptionItem subscriptionItem;
-
-    public long lastPushTime;
-
     private final long createTime;
-
     private final long expireTime;
-
+    public Session session;
+    public AbstractContext consumeConcurrentlyContext;
+    public MQConsumerWrapper consumer;
+    public SubscriptionItem subscriptionItem;
+    public long lastPushTime;
     public boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
-                                AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
-                                SubscriptionItem subscriptionItem) {
+        AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
+        SubscriptionItem subscriptionItem) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.event = event;
         this.session = session;

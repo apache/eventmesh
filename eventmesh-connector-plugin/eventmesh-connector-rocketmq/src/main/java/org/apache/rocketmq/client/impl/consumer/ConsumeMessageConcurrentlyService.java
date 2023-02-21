@@ -53,23 +53,24 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class ConsumeMessageConcurrentlyService implements ConsumeMessageService {
+
     private static final InternalLogger log = ClientLogger.getLog();
+
+    static {
+        log.info("load custom ConsumeMessageConcurrentlyService class for eventMesh, because of updateOffset");
+    }
+
     private final DefaultMQPushConsumerImpl defaultMQPushConsumerImpl;
     private final DefaultMQPushConsumer defaultMQPushConsumer;
     private final MessageListenerConcurrently messageListener;
     private final BlockingQueue<Runnable> consumeRequestQueue;
     private final ThreadPoolExecutor consumeExecutor;
     private final String consumerGroup;
-
-    static {
-        log.info("load custom ConsumeMessageConcurrentlyService class for eventMesh, because of updateOffset");
-    }
-
     private final ScheduledExecutorService scheduledExecutorService;
     private final ScheduledExecutorService cleanExpireMsgExecutors;
 
     public ConsumeMessageConcurrentlyService(DefaultMQPushConsumerImpl defaultMQPushConsumerImpl,
-                                             MessageListenerConcurrently messageListener) {
+        MessageListenerConcurrently messageListener) {
         this.defaultMQPushConsumerImpl = defaultMQPushConsumerImpl;
         this.messageListener = messageListener;
 
@@ -378,6 +379,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     }
 
     class ConsumeRequest implements Runnable {
+
         private final List<MessageExt> msgs;
         private final ProcessQueue processQueue;
         private final MessageQueue messageQueue;

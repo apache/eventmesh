@@ -37,6 +37,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 public class MyX509TrustManager implements X509TrustManager {
+
     private transient X509TrustManager myTrustManager;
 
     public MyX509TrustManager() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
@@ -46,8 +47,8 @@ public class MyX509TrustManager implements X509TrustManager {
         final char[] filePass = StringUtils.isNotBlank(pass) ? pass.toCharArray() : new char[0];
 
         try (InputStream in = Files.newInputStream(
-                Paths.get(System.getProperty("confPath", System.getenv("confPath"))
-                        + File.separator + fileName), StandardOpenOption.READ)) {
+            Paths.get(System.getProperty("confPath", System.getenv("confPath"))
+                + File.separator + fileName), StandardOpenOption.READ)) {
             keyStore.load(in, filePass);
         }
 

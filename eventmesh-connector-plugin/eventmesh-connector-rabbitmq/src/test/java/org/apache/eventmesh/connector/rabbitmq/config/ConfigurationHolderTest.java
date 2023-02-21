@@ -31,7 +31,7 @@ public class ConfigurationHolderTest {
     @Test
     public void getConfigWhenRabbitmqConsumerInit() {
         RabbitmqConsumer consumer =
-                (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
+            (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
 
         ConfigurationHolder config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -40,7 +40,7 @@ public class ConfigurationHolderTest {
     @Test
     public void getConfigWhenRabbitmqProducerInit() {
         RabbitmqProducer producer =
-                (RabbitmqProducer) ConnectorPluginFactory.getMeshMQProducer("rabbitmq");
+            (RabbitmqProducer) ConnectorPluginFactory.getMeshMQProducer("rabbitmq");
 
         ConfigurationHolder config = producer.getClientConfiguration();
         assertConfig(config);

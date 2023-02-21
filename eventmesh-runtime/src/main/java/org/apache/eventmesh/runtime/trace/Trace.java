@@ -32,7 +32,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,6 +45,10 @@ public class Trace {
 
     private boolean useTrace;
 
+    private Trace() {
+
+    }
+
     public static Trace getInstance(String tracePluginType, boolean useTrace) {
         return TRACE_CACHE.computeIfAbsent(tracePluginType, key -> traceBuilder(tracePluginType, useTrace));
     }
@@ -55,10 +58,6 @@ public class Trace {
         trace.useTrace = useTrace;
         trace.eventMeshTraceService = TracePluginFactory.getEventMeshTraceService(tracePluginType);
         return trace;
-    }
-
-    private Trace() {
-
     }
 
     public void init() throws Exception {

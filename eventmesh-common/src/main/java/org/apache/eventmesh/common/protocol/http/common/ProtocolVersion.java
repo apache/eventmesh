@@ -38,10 +38,6 @@ public enum ProtocolVersion {
         }
     }
 
-    public String getVersion() {
-        return version;
-    }
-
     public static boolean contains(String version) {
         boolean flag = false;
         for (ProtocolVersion itr : ProtocolVersion.values()) {
@@ -51,5 +47,9 @@ public enum ProtocolVersion {
             }
         }
         return flag;
+    }
+
+    public String getVersion() {
+        return version;
     }
 }

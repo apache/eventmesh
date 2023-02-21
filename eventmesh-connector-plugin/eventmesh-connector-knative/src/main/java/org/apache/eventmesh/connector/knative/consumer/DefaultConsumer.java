@@ -40,12 +40,12 @@ public class DefaultConsumer {
 
     private transient EventMeshMessageListenerConcurrently messageListener;
 
-    public EventMeshMessageListenerConcurrently getMessageListener() {
-        return messageListener;
-    }
-
     public DefaultConsumer() throws Exception {
         this.asyncHttpClient = asyncHttpClient();
+    }
+
+    public EventMeshMessageListenerConcurrently getMessageListener() {
+        return messageListener;
     }
 
     public String pullMessage(String topic, String subscribeUrl) throws Exception {

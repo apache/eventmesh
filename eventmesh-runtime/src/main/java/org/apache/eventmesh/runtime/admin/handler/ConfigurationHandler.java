@@ -31,7 +31,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +72,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /config
-     * Return a response that contains the EventMesh configuration
+     * GET /config Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");

@@ -27,9 +27,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UnRegResponseBody extends Body {
+
     private Integer retCode;
     private String retMsg;
     private long resTime = System.currentTimeMillis();
+
+    public static UnRegResponseBody buildBody(Integer retCode, String retMsg) {
+        UnRegResponseBody regResponseBody = new UnRegResponseBody();
+        regResponseBody.setRetMsg(retMsg);
+        regResponseBody.setResTime(System.currentTimeMillis());
+        regResponseBody.setRetCode(retCode);
+        return regResponseBody;
+    }
 
     public Integer getRetCode() {
         return retCode;
@@ -55,21 +64,13 @@ public class UnRegResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static UnRegResponseBody buildBody(Integer retCode, String retMsg) {
-        UnRegResponseBody regResponseBody = new UnRegResponseBody();
-        regResponseBody.setRetMsg(retMsg);
-        regResponseBody.setResTime(System.currentTimeMillis());
-        regResponseBody.setRetCode(retCode);
-        return regResponseBody;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("regResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

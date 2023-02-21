@@ -57,11 +57,9 @@ import com.google.common.collect.Maps;
 @EventMeshTrace
 public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
-
-    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
-
     private final Acl acl;
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     public RemoteSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
@@ -89,7 +87,6 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
-
         Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
@@ -103,13 +100,13 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {}
+            new TypeReference<HashMap<String, Object>>() {
+            }
         )).orElseGet(Maps::newHashMap);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
@@ -122,11 +119,11 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
         String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-
         // SubscriptionItem
         List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             topic,
-            new TypeReference<List<SubscriptionItem>>() {}
+            new TypeReference<List<SubscriptionItem>>() {
+            }
         )).orElseGet(Collections::emptyList);
 
         //do acl check
@@ -193,7 +190,6 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
                 targetMesh = meshAddress;
             }
 
-
             CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
 
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
@@ -201,7 +197,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
             Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 remoteResult,
-                new TypeReference<Map<String, String>>() {}
+                new TypeReference<Map<String, String>>() {
+                }
             )).orElseGet(Maps::newHashMap);
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {

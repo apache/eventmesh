@@ -41,6 +41,18 @@ public class SendMessageBatchResponseHeader extends Header {
     //IDC of the EventMesh that processes the request
     private String eventMeshIdc;
 
+    public static SendMessageBatchResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
+        SendMessageBatchResponseHeader sendMessageBatchResponseHeader = new SendMessageBatchResponseHeader();
+        sendMessageBatchResponseHeader.setCode(requestCode);
+        sendMessageBatchResponseHeader.setEventMeshCluster(eventMeshCluster);
+        sendMessageBatchResponseHeader.setEventMeshEnv(eventMeshEnv);
+        sendMessageBatchResponseHeader.setEventMeshIdc(eventMeshIDC);
+        sendMessageBatchResponseHeader.setEventMeshIp(eventMeshIp);
+        return sendMessageBatchResponseHeader;
+    }
+
     public int getCode() {
         return code;
     }
@@ -81,27 +93,15 @@ public class SendMessageBatchResponseHeader extends Header {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public static SendMessageBatchResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                             String eventMeshIp, String eventMeshEnv,
-                                                             String eventMeshIDC) {
-        SendMessageBatchResponseHeader sendMessageBatchResponseHeader = new SendMessageBatchResponseHeader();
-        sendMessageBatchResponseHeader.setCode(requestCode);
-        sendMessageBatchResponseHeader.setEventMeshCluster(eventMeshCluster);
-        sendMessageBatchResponseHeader.setEventMeshEnv(eventMeshEnv);
-        sendMessageBatchResponseHeader.setEventMeshIdc(eventMeshIDC);
-        sendMessageBatchResponseHeader.setEventMeshIp(eventMeshIp);
-        return sendMessageBatchResponseHeader;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshIp=").append(eventMeshIp).append("}");
+            .append("code=").append(code).append(",")
+            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+            .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 

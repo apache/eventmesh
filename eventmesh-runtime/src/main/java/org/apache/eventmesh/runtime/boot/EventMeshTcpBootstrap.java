@@ -23,15 +23,12 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 
 public class EventMeshTcpBootstrap implements EventMeshBootstrap {
 
-    private EventMeshTCPServer eventMeshTcpServer;
-
     private final EventMeshTCPConfiguration eventMeshTcpConfiguration;
-
     private final EventMeshServer eventMeshServer;
+    private EventMeshTCPServer eventMeshTcpServer;
 
     public EventMeshTcpBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
-
 
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);

@@ -21,14 +21,14 @@ import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
 public class Server {
 
-    private transient EventMeshServer eventMeshServer;
-
     static {
         System.setProperty("proxy.home", "E:\\projects\\external-1\\proxy");
         System.setProperty("confPath", "E:\\projects\\external-1\\proxy\\conf");
         System.setProperty("log4j.configurationFile", "E:\\projects\\external-1\\proxy\\conf\\log4j2.xml");
         System.setProperty("proxy.log.home", "E:\\projects\\external-1\\proxy\\logs");
     }
+
+    private transient EventMeshServer eventMeshServer;
 
     public void startAccessServer() throws Exception {
         eventMeshServer = new EventMeshServer();

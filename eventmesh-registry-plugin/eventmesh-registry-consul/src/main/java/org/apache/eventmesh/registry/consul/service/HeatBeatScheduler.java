@@ -68,12 +68,9 @@ public class HeatBeatScheduler {
     class HeartBeat implements Runnable {
 
         private static final String CHECK_ID_PREFIX = "service:";
-
-        private String checkId;
-
         private final String aclToken;
-
         private final NewService instance;
+        private String checkId;
 
         public HeartBeat(NewService instance, String aclToken) {
             this.instance = instance;

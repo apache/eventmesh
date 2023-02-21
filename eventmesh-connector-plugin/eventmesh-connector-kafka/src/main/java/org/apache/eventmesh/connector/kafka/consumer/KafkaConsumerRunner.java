@@ -30,9 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import io.cloudevents.CloudEvent;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,7 +73,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case CommitMessage:
                                         // update offset
                                         log.info("message commit, topic: {}, current offset:{}", topicName,
-                                                rec.offset());
+                                            rec.offset());
                                         break;
                                     case ReconsumeLater:
                                         // don't update offset
@@ -83,7 +81,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case ManualAck:
                                         // update offset
                                         log
-                                                .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
                                     default:
                                 }

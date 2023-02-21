@@ -34,8 +34,6 @@ import java.util.Map;
 
 public abstract class Header {
 
-    public abstract Map<String, Object> toMap();
-
     public static Header buildHeader(String requestCode, Map<String, Object> originalMap) throws Exception {
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchRequestHeader.buildHeader(originalMap);
@@ -68,5 +66,7 @@ public abstract class Header {
             throw new Exception();
         }
     }
+
+    public abstract Map<String, Object> toMap();
 
 }

@@ -32,24 +32,17 @@ import java.util.Map;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SendMessageContext extends RetryContext {
 
-    private CloudEvent event;
-
-    private String bizSeqNo;
-
-    private EventMeshProducer eventMeshProducer;
-
-    private long createTime = System.currentTimeMillis();
-
-    private Map<String, String> props;
-
     public EventMeshHTTPServer eventMeshHTTPServer;
-
+    private CloudEvent event;
+    private String bizSeqNo;
+    private EventMeshProducer eventMeshProducer;
+    private long createTime = System.currentTimeMillis();
+    private Map<String, String> props;
     private List<CloudEvent> eventList;
 
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer, EventMeshHTTPServer eventMeshHTTPServer) {
@@ -114,11 +107,11 @@ public class SendMessageContext extends RetryContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
-                .append("bizSeqNo=").append(bizSeqNo)
-                .append(",retryTimes=").append(retryTimes)
-                .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
-                .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-                .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("bizSeqNo=").append(bizSeqNo)
+            .append(",retryTimes=").append(retryTimes)
+            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
+            .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

@@ -45,6 +45,27 @@ public class SendMessageBatchV2RequestBody extends Body {
 
     private String producerGroup;
 
+    public static SendMessageBatchV2RequestBody buildBody(final Map<String, Object> bodyParam) {
+        String bizSeqno = MapUtils.getString(bodyParam,
+            BIZSEQNO);
+        String topic = MapUtils.getString(bodyParam,
+            TOPIC);
+        String tag = MapUtils.getString(bodyParam,
+            TAG);
+        String msg = MapUtils.getString(bodyParam,
+            MSG);
+        String ttl = MapUtils.getString(bodyParam,
+            TTL);
+        SendMessageBatchV2RequestBody body = new SendMessageBatchV2RequestBody();
+        body.setBizSeqNo(bizSeqno);
+        body.setMsg(msg);
+        body.setTag(tag);
+        body.setTtl(ttl);
+        body.setTopic(topic);
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
+        return body;
+    }
+
     public String getBizSeqNo() {
         return bizSeqNo;
     }
@@ -93,27 +114,6 @@ public class SendMessageBatchV2RequestBody extends Body {
         this.producerGroup = producerGroup;
     }
 
-    public static SendMessageBatchV2RequestBody buildBody(final Map<String, Object> bodyParam) {
-        String bizSeqno = MapUtils.getString(bodyParam,
-                BIZSEQNO);
-        String topic = MapUtils.getString(bodyParam,
-                TOPIC);
-        String tag = MapUtils.getString(bodyParam,
-                TAG);
-        String msg = MapUtils.getString(bodyParam,
-                MSG);
-        String ttl = MapUtils.getString(bodyParam,
-                TTL);
-        SendMessageBatchV2RequestBody body = new SendMessageBatchV2RequestBody();
-        body.setBizSeqNo(bizSeqno);
-        body.setMsg(msg);
-        body.setTag(tag);
-        body.setTtl(ttl);
-        body.setTopic(topic);
-        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
-        return body;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -130,12 +130,12 @@ public class SendMessageBatchV2RequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("SendMessageBatchV2RequestBody={")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("tag=").append(tag).append(",")
-                .append("ttl=").append(ttl).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("msg=").append(msg).append("}");
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("tag=").append(tag).append(",")
+            .append("ttl=").append(ttl).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("msg=").append(msg).append("}");
         return sb.toString();
     }
 }

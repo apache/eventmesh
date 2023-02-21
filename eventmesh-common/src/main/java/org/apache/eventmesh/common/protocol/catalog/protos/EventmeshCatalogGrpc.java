@@ -22,18 +22,6 @@ package org.apache.eventmesh.common.protocol.catalog.protos;
 
 @SuppressWarnings({"all"})
 public final class EventmeshCatalogGrpc {
-    private EventmeshCatalogGrpc() {
-    }
-
-    public static void registerAllExtensions(
-        com.google.protobuf.ExtensionRegistryLite registry) {
-    }
-
-    public static void registerAllExtensions(
-        com.google.protobuf.ExtensionRegistry registry) {
-        registerAllExtensions(
-            (com.google.protobuf.ExtensionRegistryLite) registry);
-    }
 
     static final com.google.protobuf.Descriptors.Descriptor
         internal_static_eventmesh_catalog_api_protocol_RegistryRequest_descriptor;
@@ -60,12 +48,6 @@ public final class EventmeshCatalogGrpc {
     static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_fieldAccessorTable;
-
-    public static com.google.protobuf.Descriptors.FileDescriptor
-    getDescriptor() {
-        return descriptor;
-    }
-
     private static com.google.protobuf.Descriptors.FileDescriptor
         descriptor;
 
@@ -126,6 +108,23 @@ public final class EventmeshCatalogGrpc {
             com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_descriptor,
             new String[] {"Operations",});
+    }
+    private EventmeshCatalogGrpc() {
+    }
+
+    public static void registerAllExtensions(
+        com.google.protobuf.ExtensionRegistryLite registry) {
+    }
+
+    public static void registerAllExtensions(
+        com.google.protobuf.ExtensionRegistry registry) {
+        registerAllExtensions(
+            (com.google.protobuf.ExtensionRegistryLite) registry);
+    }
+
+    public static com.google.protobuf.Descriptors.FileDescriptor
+    getDescriptor() {
+        return descriptor;
     }
 
     // @@protoc_insertion_point(outer_class_scope)

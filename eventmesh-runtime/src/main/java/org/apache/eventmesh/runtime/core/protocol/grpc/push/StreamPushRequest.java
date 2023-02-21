@@ -34,7 +34,6 @@ import java.util.Set;
 
 import io.grpc.stub.StreamObserver;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -70,7 +69,7 @@ public class StreamPushRequest extends AbstractPushRequest {
             this.lastPushTime = System.currentTimeMillis();
 
             simpleMessage = SimpleMessage.newBuilder(simpleMessage)
-                    .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime)).build();
+                .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime)).build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
                 StreamObserver<SimpleMessage> emitter = eventEmitter.getEmitter();
@@ -80,13 +79,13 @@ public class StreamPushRequest extends AbstractPushRequest {
 
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.info("message|eventMesh2client|emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                        simpleMessage.getTopic(), simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
+                    simpleMessage.getTopic(), simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
                 complete();
             } catch (Throwable t) {
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                        t.getMessage(), simpleMessage.getTopic(), simpleMessage.getSeqNum(),
-                        simpleMessage.getUniqueId(), cost, t);
+                    t.getMessage(), simpleMessage.getTopic(), simpleMessage.getSeqNum(),
+                    simpleMessage.getUniqueId(), cost, t);
 
                 delayRetry();
             }
@@ -95,7 +94,7 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     private List<EventEmitter<SimpleMessage>> selectEmitter() {
         List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
-                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
+            eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             if (subscriptionMode == SubscriptionMode.CLUSTERING) {
                 return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));

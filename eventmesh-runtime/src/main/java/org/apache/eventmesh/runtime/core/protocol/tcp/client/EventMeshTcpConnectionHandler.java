@@ -27,7 +27,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,8 +61,8 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
         int c = connections.incrementAndGet();
         if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpClientMaxNum()) {
             log.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect "
-                    +
-                    "this eventMesh server");
+                +
+                "this eventMesh server");
             ctx.close();
             return;
         }

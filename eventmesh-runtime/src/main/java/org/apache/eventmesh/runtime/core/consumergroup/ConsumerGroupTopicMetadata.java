@@ -19,10 +19,10 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 
 import java.util.Set;
 
-
 import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicMetadata {
+
     /**
      * consumer group
      */

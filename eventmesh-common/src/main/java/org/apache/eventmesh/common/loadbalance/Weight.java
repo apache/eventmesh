@@ -21,11 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Weight<T> {
 
-    private T target;
-
     private final int value;
-
     private final AtomicInteger currentWeight;
+    private T target;
 
     public Weight(T target, int value) {
         this.target = target;
@@ -62,9 +60,9 @@ public class Weight<T> {
     @Override
     public String toString() {
         return "Wight{"
-                + "target=" + target
-                + ", value=" + value
-                + ", currentWeight=" + currentWeight
-                + '}';
+            + "target=" + target
+            + ", value=" + value
+            + ", currentWeight=" + currentWeight
+            + '}';
     }
 }

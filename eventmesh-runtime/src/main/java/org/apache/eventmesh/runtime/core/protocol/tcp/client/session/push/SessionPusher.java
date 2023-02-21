@@ -47,14 +47,13 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SessionPusher {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
-    
+
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
     private final AtomicLong deliverFailMsgsCount = new AtomicLong(0);

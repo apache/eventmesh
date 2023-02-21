@@ -27,29 +27,6 @@ import org.junit.Test;
 
 public class AuthServiceTest {
 
-    private static class DemoAuthService implements AuthService {
-
-        @Override
-        public void init() throws AuthException {
-
-        }
-
-        @Override
-        public void start() throws AuthException {
-
-        }
-
-        @Override
-        public void shutdown() throws AuthException {
-
-        }
-
-        @Override
-        public Map<String, String> getAuthParams() throws AuthException {
-            return null;
-        }
-    }
-
     private static AuthService service;
 
     @BeforeClass
@@ -91,6 +68,29 @@ public class AuthServiceTest {
             Assert.assertNull(authParams);
         } catch (AuthException e) {
             Assert.fail(e.getMessage());
+        }
+    }
+
+    private static class DemoAuthService implements AuthService {
+
+        @Override
+        public void init() throws AuthException {
+
+        }
+
+        @Override
+        public void start() throws AuthException {
+
+        }
+
+        @Override
+        public void shutdown() throws AuthException {
+
+        }
+
+        @Override
+        public Map<String, String> getAuthParams() throws AuthException {
+            return null;
         }
     }
 }

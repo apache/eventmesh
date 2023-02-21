@@ -29,21 +29,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Registry {
 
     private static final Map<String, Registry> REGISTRY_CACHE = new HashMap<>(16);
-
-    private RegistryService registryService;
-
     private final AtomicBoolean inited = new AtomicBoolean(false);
-
     private final AtomicBoolean started = new AtomicBoolean(false);
-
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
+    private RegistryService registryService;
 
     private Registry() {
 

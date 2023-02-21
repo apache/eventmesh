@@ -29,10 +29,37 @@ import com.google.protobuf.ByteString;
  */
 @SuppressWarnings({"all"})
 public final class BatchMessage extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.BatchMessage)
-        BatchMessageOrBuilder {
+    com.google.protobuf.GeneratedMessageV3 implements
+    // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.BatchMessage)
+    BatchMessageOrBuilder {
+
+    public static final int HEADER_FIELD_NUMBER = 1;
+    public static final int PRODUCERGROUP_FIELD_NUMBER = 2;
+    public static final int TOPIC_FIELD_NUMBER = 3;
+    public static final int MESSAGEITEM_FIELD_NUMBER = 4;
     private static final long serialVersionUID = -3876605571602481461L;
+    // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.BatchMessage)
+    private static final BatchMessage DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<BatchMessage>
+        PARSER = new com.google.protobuf.AbstractParser<BatchMessage>() {
+        public BatchMessage parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new BatchMessage(input, extensionRegistry);
+        }
+    };
+
+    static {
+        DEFAULT_INSTANCE = new BatchMessage();
+    }
+
+    private int bitField0_;
+    private RequestHeader header_;
+    private volatile String producerGroup_;
+    private volatile String topic_;
+    private java.util.List<MessageItem> messageItem_;
+    private byte memoizedIsInitialized = -1;
 
     // Use BatchMessage.newBuilder() to construct.
     private BatchMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -44,24 +71,17 @@ public final class BatchMessage extends
         topic_ = "";
         messageItem_ = java.util.Collections.emptyList();
     }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-        return this.unknownFields;
-    }
-
     private BatchMessage(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
         this();
         if (extensionRegistry == null) {
             throw new NullPointerException();
         }
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-                com.google.protobuf.UnknownFieldSet.newBuilder();
+            com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
             boolean done = false;
             while (!done) {
@@ -72,7 +92,7 @@ public final class BatchMessage extends
                         break;
                     default: {
                         if (!parseUnknownFieldProto3(
-                                input, unknownFields, extensionRegistry, tag)) {
+                            input, unknownFields, extensionRegistry, tag)) {
                             done = true;
                         }
                         break;
@@ -104,7 +124,7 @@ public final class BatchMessage extends
                             mutable_bitField0_ |= 0x00000008;
                         }
                         messageItem_.add(
-                                input.readMessage(MessageItem.parser(), extensionRegistry));
+                            input.readMessage(MessageItem.parser(), extensionRegistry));
                         break;
                     }
                 }
@@ -113,7 +133,7 @@ public final class BatchMessage extends
             throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
             throw new com.google.protobuf.InvalidProtocolBufferException(
-                    e).setUnfinishedMessage(this);
+                e).setUnfinishedMessage(this);
         } finally {
             if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 messageItem_ = java.util.Collections.unmodifiableList(messageItem_);
@@ -128,16 +148,320 @@ public final class BatchMessage extends
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor;
     }
 
+    public static BatchMessage parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static BatchMessage parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static BatchMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static BatchMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static BatchMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static BatchMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static BatchMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static BatchMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static BatchMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static BatchMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static BatchMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static BatchMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(BatchMessage prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static BatchMessage getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<BatchMessage> parser() {
+        return PARSER;
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+        return this.unknownFields;
+    }
+
     protected FieldAccessorTable
     internalGetFieldAccessorTable() {
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                        BatchMessage.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                BatchMessage.class, Builder.class);
+    }
+
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    public boolean hasHeader() {
+        return header_ != null;
+    }
+
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    public RequestHeader getHeader() {
+        return header_ == null ? RequestHeader.getDefaultInstance() : header_;
+    }
+
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    public RequestHeaderOrBuilder getHeaderOrBuilder() {
+        return getHeader();
+    }
+
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    public String getProducerGroup() {
+        return producerGroup_;
+    }
+
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+    getProducerGroupBytes() {
+        return ByteString.copyFromUtf8(producerGroup_);
+    }
+
+    /**
+     * <code>string topic = 3;</code>
+     */
+    public String getTopic() {
+        return topic_;
+    }
+
+    /**
+     * <code>string topic = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+    getTopicBytes() {
+        return ByteString.copyFromUtf8(topic_);
+    }
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    public java.util.List<MessageItem> getMessageItemList() {
+        return messageItem_;
+    }
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    public java.util.List<? extends MessageItemOrBuilder>
+    getMessageItemOrBuilderList() {
+        return messageItem_;
+    }
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    public int getMessageItemCount() {
+        return messageItem_.size();
+    }
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    public MessageItem getMessageItem(int index) {
+        return messageItem_.get(index);
+    }
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    public MessageItemOrBuilder getMessageItemOrBuilder(
+        int index) {
+        return messageItem_.get(index);
+    }
+
+    public final boolean isInitialized() {
+        if (memoizedIsInitialized == 1) {
+            return true;
+        }
+        if (memoizedIsInitialized == 0) {
+            return false;
+        }
+
+        memoizedIsInitialized = 1;
+        return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+        throws java.io.IOException {
+        if (header_ != null) {
+            output.writeMessage(1, getHeader());
+        }
+        if (!getProducerGroupBytes().isEmpty()) {
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 2, producerGroup_);
+        }
+        if (!getTopicBytes().isEmpty()) {
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topic_);
+        }
+        for (int i = 0; i < messageItem_.size(); i++) {
+            output.writeMessage(4, messageItem_.get(i));
+        }
+        unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+        int size;
+        if (memoizedSize != -1) {
+            return memoizedSize;
+        }
+        size = header_ != null ?
+            com.google.protobuf.CodedOutputStream.computeMessageSize(1, getHeader()) : 0;
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_);
+        size += messageItem_.stream()
+            .mapToInt(messageItem -> com.google.protobuf.CodedOutputStream.computeMessageSize(4, messageItem))
+            .sum();
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return memoizedSize;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof BatchMessage)) {
+            return super.equals(obj);
+        }
+        BatchMessage other = (BatchMessage) obj;
+
+        return (hasHeader() == other.hasHeader())
+            && (hasHeader() ? getHeader().equals(other.getHeader()) : true)
+            && getProducerGroup().equals(other.getProducerGroup())
+            && getTopic().equals(other.getTopic())
+            && getMessageItemList().equals(other.getMessageItemList())
+            && unknownFields.equals(other.unknownFields);
+    }
+
+    @Override
+    public int hashCode() {
+        if (memoizedHashCode != 0) {
+            return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasHeader()) {
+            hash = (37 * hash) + HEADER_FIELD_NUMBER;
+            hash = (53 * hash) + getHeader().hashCode();
+        }
+        hash = (37 * hash) + PRODUCERGROUP_FIELD_NUMBER;
+        hash = (53 * hash) + getProducerGroup().hashCode();
+        hash = (37 * hash) + TOPIC_FIELD_NUMBER;
+        hash = (53 * hash) + getTopic().hashCode();
+        if (getMessageItemCount() > 0) {
+            hash = (37 * hash) + MESSAGEITEM_FIELD_NUMBER;
+            hash = (53 * hash) + getMessageItemList().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+    }
+
+    public Builder newBuilderForType() {
+        return newBuilder();
+    }
+
+    public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @Override
+    protected Builder newBuilderForType(
+        BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<BatchMessage> getParserForType() {
+        return PARSER;
+    }
+
+    public BatchMessage getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
     }
 
     public interface MessageItemOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
-            com.google.protobuf.MessageOrBuilder {
+        // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
+        com.google.protobuf.MessageOrBuilder {
 
         /**
          * <code>string content = 1;</code>
@@ -203,7 +527,7 @@ public final class BatchMessage extends
          * <code>map&lt;string, string&gt; properties = 6;</code>
          */
         boolean containsProperties(
-                String key);
+            String key);
 
         /**
          * Use {@link #getPropertiesMap()} instead.
@@ -223,26 +547,57 @@ public final class BatchMessage extends
          */
 
         String getPropertiesOrDefault(
-                String key,
-                String defaultValue);
+            String key,
+            String defaultValue);
 
         /**
          * <code>map&lt;string, string&gt; properties = 6;</code>
          */
 
         String getPropertiesOrThrow(
-                String key);
+            String key);
     }
 
     /**
      * Protobuf type {@code eventmesh.common.protocol.grpc.BatchMessage.MessageItem}
      */
     public static final class MessageItem extends
-            com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
-            MessageItemOrBuilder {
-        private static final long serialVersionUID = -6677110210488831851L;
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
+        MessageItemOrBuilder {
 
+        public static final int CONTENT_FIELD_NUMBER = 1;
+        public static final int TTL_FIELD_NUMBER = 2;
+        public static final int UNIQUEID_FIELD_NUMBER = 3;
+        public static final int SEQNUM_FIELD_NUMBER = 4;
+        public static final int TAG_FIELD_NUMBER = 5;
+        public static final int PROPERTIES_FIELD_NUMBER = 6;
+        private static final long serialVersionUID = -6677110210488831851L;
+        // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
+        private static final MessageItem DEFAULT_INSTANCE;
+        private static final com.google.protobuf.Parser<MessageItem>
+            PARSER = new com.google.protobuf.AbstractParser<MessageItem>() {
+            public MessageItem parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+                return new MessageItem(input, extensionRegistry);
+            }
+        };
+
+        static {
+            DEFAULT_INSTANCE = new MessageItem();
+        }
+
+        private int bitField0_;
+        private volatile String content_;
+        private volatile String ttl_;
+        private volatile String uniqueId_;
+        private volatile String seqNum_;
+        private volatile String tag_;
+        private com.google.protobuf.MapField<
+            String, String> properties_;
+        private byte memoizedIsInitialized = -1;
         // Use MessageItem.newBuilder() to construct.
         private MessageItem(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
@@ -256,23 +611,17 @@ public final class BatchMessage extends
             tag_ = "";
         }
 
-        @Override
-        public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-            return this.unknownFields;
-        }
-
         private MessageItem(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
             this();
             if (extensionRegistry == null) {
                 throw new NullPointerException();
             }
             int mutable_bitField0_ = 0;
             com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-                    com.google.protobuf.UnknownFieldSet.newBuilder();
+                com.google.protobuf.UnknownFieldSet.newBuilder();
             try {
                 boolean done = false;
                 while (!done) {
@@ -283,7 +632,7 @@ public final class BatchMessage extends
                             break;
                         default: {
                             if (!parseUnknownFieldProto3(
-                                    input, unknownFields, extensionRegistry, tag)) {
+                                input, unknownFields, extensionRegistry, tag)) {
                                 done = true;
                             }
                             break;
@@ -311,14 +660,14 @@ public final class BatchMessage extends
                         case 50: {
                             if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
                                 properties_ = com.google.protobuf.MapField.newMapField(
-                                        PropertiesDefaultEntryHolder.defaultEntry);
+                                    PropertiesDefaultEntryHolder.defaultEntry);
                                 mutable_bitField0_ |= 0x00000020;
                             }
                             com.google.protobuf.MapEntry<String, String>
-                                    properties__ = input.readMessage(
-                                    PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                                properties__ = input.readMessage(
+                                PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
                             properties_.getMutableMap().put(
-                                    properties__.getKey(), properties__.getValue());
+                                properties__.getKey(), properties__.getValue());
                             break;
                         }
                     }
@@ -327,7 +676,7 @@ public final class BatchMessage extends
                 throw e.setUnfinishedMessage(this);
             } catch (java.io.IOException e) {
                 throw new com.google.protobuf.InvalidProtocolBufferException(
-                        e).setUnfinishedMessage(this);
+                    e).setUnfinishedMessage(this);
             } finally {
                 this.unknownFields = unknownFields.build();
                 makeExtensionsImmutable();
@@ -339,28 +688,127 @@ public final class BatchMessage extends
             return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor;
         }
 
+        public static MessageItem parseFrom(
+            java.nio.ByteBuffer data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static MessageItem parseFrom(
+            java.nio.ByteBuffer data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static MessageItem parseFrom(
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static MessageItem parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static MessageItem parseFrom(byte[] data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static MessageItem parseFrom(
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static MessageItem parseFrom(java.io.InputStream input)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseWithIOException(PARSER, input);
+        }
+
+        public static MessageItem parseFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static MessageItem parseDelimitedFrom(java.io.InputStream input)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseDelimitedWithIOException(PARSER, input);
+        }
+
+        public static MessageItem parseDelimitedFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static MessageItem parseFrom(
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseWithIOException(PARSER, input);
+        }
+
+        public static MessageItem parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static Builder newBuilder() {
+            return DEFAULT_INSTANCE.toBuilder();
+        }
+
+        public static Builder newBuilder(MessageItem prototype) {
+            return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+        }
+
+        public static MessageItem getDefaultInstance() {
+            return DEFAULT_INSTANCE;
+        }
+
+        public static com.google.protobuf.Parser<MessageItem> parser() {
+            return PARSER;
+        }
+
+        @Override
+        public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+            return this.unknownFields;
+        }
+
         @SuppressWarnings({"rawtypes"})
         protected com.google.protobuf.MapField internalGetMapField(
-                int number) {
+            int number) {
             switch (number) {
                 case 6:
                     return internalGetProperties();
                 default:
                     throw new RuntimeException(
-                            "Invalid map field number: " + number);
+                        "Invalid map field number: " + number);
             }
         }
 
         protected FieldAccessorTable
         internalGetFieldAccessorTable() {
             return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(
-                            MessageItem.class, Builder.class);
+                .ensureFieldAccessorsInitialized(
+                    MessageItem.class, Builder.class);
         }
-
-        private int bitField0_;
-        public static final int CONTENT_FIELD_NUMBER = 1;
-        private volatile String content_;
 
         /**
          * <code>string content = 1;</code>
@@ -377,9 +825,6 @@ public final class BatchMessage extends
             return ByteString.copyFromUtf8(content_);
         }
 
-        public static final int TTL_FIELD_NUMBER = 2;
-        private volatile String ttl_;
-
         /**
          * <code>string ttl = 2;</code>
          */
@@ -394,9 +839,6 @@ public final class BatchMessage extends
         getTtlBytes() {
             return ByteString.copyFromUtf8(ttl_);
         }
-
-        public static final int UNIQUEID_FIELD_NUMBER = 3;
-        private volatile String uniqueId_;
 
         /**
          * <code>string uniqueId = 3;</code>
@@ -413,9 +855,6 @@ public final class BatchMessage extends
             return ByteString.copyFromUtf8(uniqueId_);
         }
 
-        public static final int SEQNUM_FIELD_NUMBER = 4;
-        private volatile String seqNum_;
-
         /**
          * <code>string seqNum = 4;</code>
          */
@@ -430,9 +869,6 @@ public final class BatchMessage extends
         getSeqNumBytes() {
             return ByteString.copyFromUtf8(seqNum_);
         }
-
-        public static final int TAG_FIELD_NUMBER = 5;
-        private volatile String tag_;
 
         /**
          * <code>string tag = 5;</code>
@@ -449,28 +885,11 @@ public final class BatchMessage extends
             return ByteString.copyFromUtf8(tag_);
         }
 
-        public static final int PROPERTIES_FIELD_NUMBER = 6;
-
-        private static final class PropertiesDefaultEntryHolder {
-            static final com.google.protobuf.MapEntry<
-                    String, String> defaultEntry =
-                    com.google.protobuf.MapEntry
-                            .<String, String>newDefaultInstance(
-                                    EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_descriptor,
-                                    com.google.protobuf.WireFormat.FieldType.STRING,
-                                    "",
-                                    com.google.protobuf.WireFormat.FieldType.STRING,
-                                    "");
-        }
-
-        private com.google.protobuf.MapField<
-                String, String> properties_;
-
         private com.google.protobuf.MapField<String, String>
         internalGetProperties() {
             if (properties_ == null) {
                 return com.google.protobuf.MapField.emptyMapField(
-                        PropertiesDefaultEntryHolder.defaultEntry);
+                    PropertiesDefaultEntryHolder.defaultEntry);
             }
             return properties_;
         }
@@ -484,7 +903,7 @@ public final class BatchMessage extends
          */
 
         public boolean containsProperties(
-                String key) {
+            String key) {
             Objects.requireNonNull(key, "key can not be null");
 
             return internalGetProperties().getMap().containsKey(key);
@@ -511,14 +930,16 @@ public final class BatchMessage extends
          */
 
         public String getPropertiesOrDefault(
-                String key,
-                String defaultValue) {
+            String key,
+            String defaultValue) {
             Objects.requireNonNull(key, "key can not be null");
 
             java.util.Map<String, String> map =
-                    internalGetProperties().getMap();
+                internalGetProperties().getMap();
             String value = map.get(key);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                return defaultValue;
+            }
             return value;
         }
 
@@ -527,29 +948,31 @@ public final class BatchMessage extends
          */
 
         public String getPropertiesOrThrow(
-                String key) {
+            String key) {
             Objects.requireNonNull(key, "key can not be null");
 
             java.util.Map<String, String> map =
-                    internalGetProperties().getMap();
+                internalGetProperties().getMap();
             if (!map.containsKey(key)) {
                 throw new IllegalArgumentException();
             }
             return map.get(key);
         }
 
-        private byte memoizedIsInitialized = -1;
-
         public final boolean isInitialized() {
-            if (memoizedIsInitialized == 1) return true;
-            if (memoizedIsInitialized == 0) return false;
+            if (memoizedIsInitialized == 1) {
+                return true;
+            }
+            if (memoizedIsInitialized == 0) {
+                return false;
+            }
 
             memoizedIsInitialized = 1;
             return true;
         }
 
         public void writeTo(com.google.protobuf.CodedOutputStream output)
-                throws java.io.IOException {
+            throws java.io.IOException {
             if (!getContentBytes().isEmpty()) {
                 com.google.protobuf.GeneratedMessageV3.writeString(output, 1, content_);
             }
@@ -566,17 +989,19 @@ public final class BatchMessage extends
                 com.google.protobuf.GeneratedMessageV3.writeString(output, 5, tag_);
             }
             com.google.protobuf.GeneratedMessageV3
-                    .serializeStringMapTo(
-                            output,
-                            internalGetProperties(),
-                            PropertiesDefaultEntryHolder.defaultEntry,
-                            6);
+                .serializeStringMapTo(
+                    output,
+                    internalGetProperties(),
+                    PropertiesDefaultEntryHolder.defaultEntry,
+                    6);
             unknownFields.writeTo(output);
         }
 
         public int getSerializedSize() {
             int size = memoizedSize;
-            if (size != -1) return size;
+            if (size != -1) {
+                return size;
+            }
 
             size = 0;
             if (!getContentBytes().isEmpty()) {
@@ -595,14 +1020,14 @@ public final class BatchMessage extends
                 size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, tag_);
             }
             for (java.util.Map.Entry<String, String> entry
-                    : internalGetProperties().getMap().entrySet()) {
+                : internalGetProperties().getMap().entrySet()) {
                 com.google.protobuf.MapEntry<String, String>
-                        properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
-                        .setKey(entry.getKey())
-                        .setValue(entry.getValue())
-                        .build();
+                    properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
+                    .setKey(entry.getKey())
+                    .setValue(entry.getValue())
+                    .build();
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(6, properties__);
+                    .computeMessageSize(6, properties__);
             }
             size += unknownFields.getSerializedSize();
             memoizedSize = size;
@@ -620,18 +1045,18 @@ public final class BatchMessage extends
             MessageItem other = (MessageItem) obj;
 
             return getContent()
-                    .equals(other.getContent())
-                    && getTtl()
-                    .equals(other.getTtl())
-                    && getUniqueId()
-                    .equals(other.getUniqueId())
-                    && getSeqNum()
-                    .equals(other.getSeqNum())
-                    && getTag()
-                    .equals(other.getTag())
-                    && internalGetProperties().equals(
-                    other.internalGetProperties())
-                    && unknownFields.equals(other.unknownFields);
+                .equals(other.getContent())
+                && getTtl()
+                .equals(other.getTtl())
+                && getUniqueId()
+                .equals(other.getUniqueId())
+                && getSeqNum()
+                .equals(other.getSeqNum())
+                && getTag()
+                .equals(other.getTag())
+                && internalGetProperties().equals(
+                other.internalGetProperties())
+                && unknownFields.equals(other.unknownFields);
         }
 
         @Override
@@ -660,152 +1085,59 @@ public final class BatchMessage extends
             return hash;
         }
 
-        public static MessageItem parseFrom(
-                java.nio.ByteBuffer data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data);
-        }
-
-        public static MessageItem parseFrom(
-                java.nio.ByteBuffer data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data, extensionRegistry);
-        }
-
-        public static MessageItem parseFrom(
-                com.google.protobuf.ByteString data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data);
-        }
-
-        public static MessageItem parseFrom(
-                com.google.protobuf.ByteString data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data, extensionRegistry);
-        }
-
-        public static MessageItem parseFrom(byte[] data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data);
-        }
-
-        public static MessageItem parseFrom(
-                byte[] data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return PARSER.parseFrom(data, extensionRegistry);
-        }
-
-        public static MessageItem parseFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseWithIOException(PARSER, input);
-        }
-
-        public static MessageItem parseFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseWithIOException(PARSER, input, extensionRegistry);
-        }
-
-        public static MessageItem parseDelimitedFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseDelimitedWithIOException(PARSER, input);
-        }
-
-        public static MessageItem parseDelimitedFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-        }
-
-        public static MessageItem parseFrom(
-                com.google.protobuf.CodedInputStream input)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseWithIOException(PARSER, input);
-        }
-
-        public static MessageItem parseFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return com.google.protobuf.GeneratedMessageV3
-                    .parseWithIOException(PARSER, input, extensionRegistry);
-        }
-
         public Builder newBuilderForType() {
             return newBuilder();
         }
 
-        public static Builder newBuilder() {
-            return DEFAULT_INSTANCE.toBuilder();
-        }
-
-        public static Builder newBuilder(MessageItem prototype) {
-            return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-        }
-
         public Builder toBuilder() {
             return this == DEFAULT_INSTANCE
-                    ? new Builder() : new Builder().mergeFrom(this);
+                ? new Builder() : new Builder().mergeFrom(this);
         }
 
         @Override
         protected Builder newBuilderForType(
-                BuilderParent parent) {
+            BuilderParent parent) {
             return new Builder(parent);
+        }
+
+        @Override
+        public com.google.protobuf.Parser<MessageItem> getParserForType() {
+            return PARSER;
+        }
+
+        public MessageItem getDefaultInstanceForType() {
+            return DEFAULT_INSTANCE;
+        }
+
+        private static final class PropertiesDefaultEntryHolder {
+
+            static final com.google.protobuf.MapEntry<
+                String, String> defaultEntry =
+                com.google.protobuf.MapEntry
+                    .<String, String>newDefaultInstance(
+                        EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_descriptor,
+                        com.google.protobuf.WireFormat.FieldType.STRING,
+                        "",
+                        com.google.protobuf.WireFormat.FieldType.STRING,
+                        "");
         }
 
         /**
          * Protobuf type {@code eventmesh.common.protocol.grpc.BatchMessage.MessageItem}
          */
         public static final class Builder extends
-                com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
-                MessageItemOrBuilder {
-            public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-                return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor;
-            }
+            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+            // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
+            MessageItemOrBuilder {
 
-            @SuppressWarnings({"rawtypes"})
-            protected com.google.protobuf.MapField internalGetMapField(
-                    int number) {
-                switch (number) {
-                    case 6:
-                        return internalGetProperties();
-                    default:
-                        throw new RuntimeException(
-                                "Invalid map field number: " + number);
-                }
-            }
-
-            @SuppressWarnings({"rawtypes"})
-            protected com.google.protobuf.MapField internalGetMutableMapField(
-                    int number) {
-                switch (number) {
-                    case 6:
-                        return internalGetMutableProperties();
-                    default:
-                        throw new RuntimeException(
-                                "Invalid map field number: " + number);
-                }
-            }
-
-            protected FieldAccessorTable
-            internalGetFieldAccessorTable() {
-                return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_fieldAccessorTable
-                        .ensureFieldAccessorsInitialized(
-                                MessageItem.class, Builder.class);
-            }
+            private int bitField0_;
+            private String content_ = "";
+            private String ttl_ = "";
+            private String uniqueId_ = "";
+            private String seqNum_ = "";
+            private String tag_ = "";
+            private com.google.protobuf.MapField<
+                String, String> properties_;
 
             // Construct using org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem.newBuilder()
             private Builder() {
@@ -817,9 +1149,45 @@ public final class BatchMessage extends
                 maybeForceBuilderInitialization();
             }
 
+            public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+                return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor;
+            }
+
+            @SuppressWarnings({"rawtypes"})
+            protected com.google.protobuf.MapField internalGetMapField(
+                int number) {
+                switch (number) {
+                    case 6:
+                        return internalGetProperties();
+                    default:
+                        throw new RuntimeException(
+                            "Invalid map field number: " + number);
+                }
+            }
+
+            @SuppressWarnings({"rawtypes"})
+            protected com.google.protobuf.MapField internalGetMutableMapField(
+                int number) {
+                switch (number) {
+                    case 6:
+                        return internalGetMutableProperties();
+                    default:
+                        throw new RuntimeException(
+                            "Invalid map field number: " + number);
+                }
+            }
+
+            protected FieldAccessorTable
+            internalGetFieldAccessorTable() {
+                return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_fieldAccessorTable
+                    .ensureFieldAccessorsInitialized(
+                        MessageItem.class, Builder.class);
+            }
+
             private void maybeForceBuilderInitialization() {
                 if (com.google.protobuf.GeneratedMessageV3
-                        .alwaysUseFieldBuilders) {
+                    .alwaysUseFieldBuilders) {
                 }
             }
 
@@ -872,30 +1240,30 @@ public final class BatchMessage extends
             }
 
             public Builder setField(
-                    com.google.protobuf.Descriptors.FieldDescriptor field,
-                    Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                Object value) {
                 return (Builder) super.setField(field, value);
             }
 
             public Builder clearField(
-                    com.google.protobuf.Descriptors.FieldDescriptor field) {
+                com.google.protobuf.Descriptors.FieldDescriptor field) {
                 return (Builder) super.clearField(field);
             }
 
             public Builder clearOneof(
-                    com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
                 return (Builder) super.clearOneof(oneof);
             }
 
             public Builder setRepeatedField(
-                    com.google.protobuf.Descriptors.FieldDescriptor field,
-                    int index, Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                int index, Object value) {
                 return (Builder) super.setRepeatedField(field, index, value);
             }
 
             public Builder addRepeatedField(
-                    com.google.protobuf.Descriptors.FieldDescriptor field,
-                    Object value) {
+                com.google.protobuf.Descriptors.FieldDescriptor field,
+                Object value) {
                 return (Builder) super.addRepeatedField(field, value);
             }
 
@@ -909,7 +1277,9 @@ public final class BatchMessage extends
             }
 
             public Builder mergeFrom(MessageItem other) {
-                if (other == MessageItem.getDefaultInstance()) return this;
+                if (other == MessageItem.getDefaultInstance()) {
+                    return this;
+                }
                 if (!other.getContent().isEmpty()) {
                     content_ = other.content_;
                     onChanged();
@@ -931,7 +1301,7 @@ public final class BatchMessage extends
                     onChanged();
                 }
                 internalGetMutableProperties().mergeFrom(
-                        other.internalGetProperties());
+                    other.internalGetProperties());
                 this.mergeUnknownFields(other.unknownFields);
                 onChanged();
                 return this;
@@ -942,9 +1312,9 @@ public final class BatchMessage extends
             }
 
             public Builder mergeFrom(
-                    com.google.protobuf.CodedInputStream input,
-                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                    throws java.io.IOException {
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws java.io.IOException {
                 MessageItem parsedMessage = null;
                 try {
                     parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -959,15 +1329,23 @@ public final class BatchMessage extends
                 return this;
             }
 
-            private int bitField0_;
-
-            private String content_ = "";
-
             /**
              * <code>string content = 1;</code>
              */
             public String getContent() {
                 return content_;
+            }
+
+            /**
+             * <code>string content = 1;</code>
+             */
+            public Builder setContent(
+                String value) {
+                Objects.requireNonNull(value, "content can not be null");
+
+                content_ = value;
+                onChanged();
+                return this;
             }
 
             /**
@@ -981,11 +1359,12 @@ public final class BatchMessage extends
             /**
              * <code>string content = 1;</code>
              */
-            public Builder setContent(
-                    String value) {
-                Objects.requireNonNull(value, "content can not be null");
+            public Builder setContentBytes(
+                com.google.protobuf.ByteString value) {
+                Objects.requireNonNull(value, "ContentBytes can not be null");
+                checkByteStringIsUtf8(value);
 
-                content_ = value;
+                content_ = value.toStringUtf8();
                 onChanged();
                 return this;
             }
@@ -1001,25 +1380,22 @@ public final class BatchMessage extends
             }
 
             /**
-             * <code>string content = 1;</code>
-             */
-            public Builder setContentBytes(
-                    com.google.protobuf.ByteString value) {
-                Objects.requireNonNull(value, "ContentBytes can not be null");
-                checkByteStringIsUtf8(value);
-
-                content_ = value.toStringUtf8();
-                onChanged();
-                return this;
-            }
-
-            private String ttl_ = "";
-
-            /**
              * <code>string ttl = 2;</code>
              */
             public String getTtl() {
                 return ttl_;
+            }
+
+            /**
+             * <code>string ttl = 2;</code>
+             */
+            public Builder setTtl(
+                String value) {
+                Objects.requireNonNull(value, "ttl can not be null");
+
+                ttl_ = value;
+                onChanged();
+                return this;
             }
 
             /**
@@ -1033,11 +1409,12 @@ public final class BatchMessage extends
             /**
              * <code>string ttl = 2;</code>
              */
-            public Builder setTtl(
-                    String value) {
-                Objects.requireNonNull(value, "ttl can not be null");
+            public Builder setTtlBytes(
+                com.google.protobuf.ByteString value) {
+                Objects.requireNonNull(value, "TtlBytes can not be null");
+                checkByteStringIsUtf8(value);
 
-                ttl_ = value;
+                ttl_ = value.toStringUtf8();
                 onChanged();
                 return this;
             }
@@ -1053,25 +1430,22 @@ public final class BatchMessage extends
             }
 
             /**
-             * <code>string ttl = 2;</code>
-             */
-            public Builder setTtlBytes(
-                    com.google.protobuf.ByteString value) {
-                Objects.requireNonNull(value, "TtlBytes can not be null");
-                checkByteStringIsUtf8(value);
-
-                ttl_ = value.toStringUtf8();
-                onChanged();
-                return this;
-            }
-
-            private String uniqueId_ = "";
-
-            /**
              * <code>string uniqueId = 3;</code>
              */
             public String getUniqueId() {
                 return uniqueId_;
+            }
+
+            /**
+             * <code>string uniqueId = 3;</code>
+             */
+            public Builder setUniqueId(
+                String value) {
+                Objects.requireNonNull(value, "uniqueId_ can not be null");
+
+                uniqueId_ = value;
+                onChanged();
+                return this;
             }
 
             /**
@@ -1085,11 +1459,12 @@ public final class BatchMessage extends
             /**
              * <code>string uniqueId = 3;</code>
              */
-            public Builder setUniqueId(
-                    String value) {
-                Objects.requireNonNull(value, "uniqueId_ can not be null");
+            public Builder setUniqueIdBytes(
+                com.google.protobuf.ByteString value) {
+                Objects.requireNonNull(value, "UniqueIdBytes can not be null");
+                checkByteStringIsUtf8(value);
 
-                uniqueId_ = value;
+                uniqueId_ = value.toStringUtf8();
                 onChanged();
                 return this;
             }
@@ -1105,25 +1480,22 @@ public final class BatchMessage extends
             }
 
             /**
-             * <code>string uniqueId = 3;</code>
-             */
-            public Builder setUniqueIdBytes(
-                    com.google.protobuf.ByteString value) {
-                Objects.requireNonNull(value, "UniqueIdBytes can not be null");
-                checkByteStringIsUtf8(value);
-
-                uniqueId_ = value.toStringUtf8();
-                onChanged();
-                return this;
-            }
-
-            private String seqNum_ = "";
-
-            /**
              * <code>string seqNum = 4;</code>
              */
             public String getSeqNum() {
                 return seqNum_;
+            }
+
+            /**
+             * <code>string seqNum = 4;</code>
+             */
+            public Builder setSeqNum(
+                String value) {
+                Objects.requireNonNull(value, "SeqNum can not be null");
+
+                seqNum_ = value;
+                onChanged();
+                return this;
             }
 
             /**
@@ -1137,11 +1509,12 @@ public final class BatchMessage extends
             /**
              * <code>string seqNum = 4;</code>
              */
-            public Builder setSeqNum(
-                    String value) {
-                Objects.requireNonNull(value, "SeqNum can not be null");
+            public Builder setSeqNumBytes(
+                com.google.protobuf.ByteString value) {
+                Objects.requireNonNull(value, "SeqNumBytes can not be null");
+                checkByteStringIsUtf8(value);
 
-                seqNum_ = value;
+                seqNum_ = value.toStringUtf8();
                 onChanged();
                 return this;
             }
@@ -1157,25 +1530,22 @@ public final class BatchMessage extends
             }
 
             /**
-             * <code>string seqNum = 4;</code>
-             */
-            public Builder setSeqNumBytes(
-                    com.google.protobuf.ByteString value) {
-                Objects.requireNonNull(value, "SeqNumBytes can not be null");
-                checkByteStringIsUtf8(value);
-
-                seqNum_ = value.toStringUtf8();
-                onChanged();
-                return this;
-            }
-
-            private String tag_ = "";
-
-            /**
              * <code>string tag = 5;</code>
              */
             public String getTag() {
                 return tag_;
+            }
+
+            /**
+             * <code>string tag = 5;</code>
+             */
+            public Builder setTag(
+                String value) {
+                Objects.requireNonNull(value, "tag can not be null");
+
+                tag_ = value;
+                onChanged();
+                return this;
             }
 
             /**
@@ -1189,11 +1559,12 @@ public final class BatchMessage extends
             /**
              * <code>string tag = 5;</code>
              */
-            public Builder setTag(
-                    String value) {
-                Objects.requireNonNull(value, "tag can not be null");
+            public Builder setTagBytes(
+                com.google.protobuf.ByteString value) {
+                Objects.requireNonNull(value, "TagBytes can not be null");
+                checkByteStringIsUtf8(value);
 
-                tag_ = value;
+                tag_ = value.toStringUtf8();
                 onChanged();
                 return this;
             }
@@ -1208,27 +1579,11 @@ public final class BatchMessage extends
                 return this;
             }
 
-            /**
-             * <code>string tag = 5;</code>
-             */
-            public Builder setTagBytes(
-                    com.google.protobuf.ByteString value) {
-                Objects.requireNonNull(value, "TagBytes can not be null");
-                checkByteStringIsUtf8(value);
-
-                tag_ = value.toStringUtf8();
-                onChanged();
-                return this;
-            }
-
-            private com.google.protobuf.MapField<
-                    String, String> properties_;
-
             private com.google.protobuf.MapField<String, String>
             internalGetProperties() {
                 if (properties_ == null) {
                     return com.google.protobuf.MapField.emptyMapField(
-                            PropertiesDefaultEntryHolder.defaultEntry);
+                        PropertiesDefaultEntryHolder.defaultEntry);
                 }
                 return properties_;
             }
@@ -1239,7 +1594,7 @@ public final class BatchMessage extends
                 ;
                 if (properties_ == null) {
                     properties_ = com.google.protobuf.MapField.newMapField(
-                            PropertiesDefaultEntryHolder.defaultEntry);
+                        PropertiesDefaultEntryHolder.defaultEntry);
                 }
                 if (!properties_.isMutable()) {
                     properties_ = properties_.copy();
@@ -1256,7 +1611,7 @@ public final class BatchMessage extends
              */
 
             public boolean containsProperties(
-                    String key) {
+                String key) {
                 Objects.requireNonNull(key, "key can not be null");
 
                 return internalGetProperties().getMap().containsKey(key);
@@ -1283,14 +1638,16 @@ public final class BatchMessage extends
              */
 
             public String getPropertiesOrDefault(
-                    String key,
-                    String defaultValue) {
+                String key,
+                String defaultValue) {
                 Objects.requireNonNull(key, "key can not be null");
 
                 java.util.Map<String, String> map =
-                        internalGetProperties().getMap();
+                    internalGetProperties().getMap();
                 String value = map.get(key);
-                if (value == null) return defaultValue;
+                if (value == null) {
+                    return defaultValue;
+                }
                 return value;
             }
 
@@ -1299,11 +1656,11 @@ public final class BatchMessage extends
              */
 
             public String getPropertiesOrThrow(
-                    String key) {
+                String key) {
                 Objects.requireNonNull(key, "key can not be null");
 
                 java.util.Map<String, String> map =
-                        internalGetProperties().getMap();
+                    internalGetProperties().getMap();
                 if (!map.containsKey(key)) {
                     throw new IllegalArgumentException();
                 }
@@ -1312,7 +1669,7 @@ public final class BatchMessage extends
 
             public Builder clearProperties() {
                 internalGetMutableProperties().getMutableMap()
-                        .clear();
+                    .clear();
                 return this;
             }
 
@@ -1321,11 +1678,11 @@ public final class BatchMessage extends
              */
 
             public Builder removeProperties(
-                    String key) {
+                String key) {
                 Objects.requireNonNull(key, "key can not be null");
 
                 internalGetMutableProperties().getMutableMap()
-                        .remove(key);
+                    .remove(key);
                 return this;
             }
 
@@ -1342,13 +1699,13 @@ public final class BatchMessage extends
              * <code>map&lt;string, string&gt; properties = 6;</code>
              */
             public Builder putProperties(
-                    String key,
-                    String value) {
+                String key,
+                String value) {
                 Objects.requireNonNull(key, "key can not be null");
                 Objects.requireNonNull(value, "value can not be null");
 
                 internalGetMutableProperties().getMutableMap()
-                        .put(key, value);
+                    .put(key, value);
                 return this;
             }
 
@@ -1357,370 +1714,45 @@ public final class BatchMessage extends
              */
 
             public Builder putAllProperties(
-                    java.util.Map<String, String> values) {
+                java.util.Map<String, String> values) {
                 internalGetMutableProperties().getMutableMap()
-                        .putAll(values);
+                    .putAll(values);
                 return this;
             }
 
             public final Builder setUnknownFields(
-                    final com.google.protobuf.UnknownFieldSet unknownFields) {
+                final com.google.protobuf.UnknownFieldSet unknownFields) {
                 return super.setUnknownFieldsProto3(unknownFields);
             }
 
             public final Builder mergeUnknownFields(
-                    final com.google.protobuf.UnknownFieldSet unknownFields) {
+                final com.google.protobuf.UnknownFieldSet unknownFields) {
                 return super.mergeUnknownFields(unknownFields);
             }
-
 
             // @@protoc_insertion_point(builder_scope:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
         }
 
-        // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.BatchMessage.MessageItem)
-        private static final MessageItem DEFAULT_INSTANCE;
-
-        static {
-            DEFAULT_INSTANCE = new MessageItem();
-        }
-
-        public static MessageItem getDefaultInstance() {
-            return DEFAULT_INSTANCE;
-        }
-
-        private static final com.google.protobuf.Parser<MessageItem>
-                PARSER = new com.google.protobuf.AbstractParser<MessageItem>() {
-            public MessageItem parsePartialFrom(
-                    com.google.protobuf.CodedInputStream input,
-                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                    throws com.google.protobuf.InvalidProtocolBufferException {
-                return new MessageItem(input, extensionRegistry);
-            }
-        };
-
-        public static com.google.protobuf.Parser<MessageItem> parser() {
-            return PARSER;
-        }
-
-        @Override
-        public com.google.protobuf.Parser<MessageItem> getParserForType() {
-            return PARSER;
-        }
-
-        public MessageItem getDefaultInstanceForType() {
-            return DEFAULT_INSTANCE;
-        }
-
-    }
-
-    private int bitField0_;
-    public static final int HEADER_FIELD_NUMBER = 1;
-    private RequestHeader header_;
-
-    /**
-     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-     */
-    public boolean hasHeader() {
-        return header_ != null;
-    }
-
-    /**
-     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-     */
-    public RequestHeader getHeader() {
-        return header_ == null ? RequestHeader.getDefaultInstance() : header_;
-    }
-
-    /**
-     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-     */
-    public RequestHeaderOrBuilder getHeaderOrBuilder() {
-        return getHeader();
-    }
-
-    public static final int PRODUCERGROUP_FIELD_NUMBER = 2;
-    private volatile String producerGroup_;
-
-    /**
-     * <code>string producerGroup = 2;</code>
-     */
-    public String getProducerGroup() {
-        return producerGroup_;
-    }
-
-    /**
-     * <code>string producerGroup = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-    getProducerGroupBytes() {
-        return ByteString.copyFromUtf8(producerGroup_);
-    }
-
-    public static final int TOPIC_FIELD_NUMBER = 3;
-    private volatile String topic_;
-
-    /**
-     * <code>string topic = 3;</code>
-     */
-    public String getTopic() {
-        return topic_;
-    }
-
-    /**
-     * <code>string topic = 3;</code>
-     */
-    public com.google.protobuf.ByteString
-    getTopicBytes() {
-        return ByteString.copyFromUtf8(topic_);
-    }
-
-    public static final int MESSAGEITEM_FIELD_NUMBER = 4;
-    private java.util.List<MessageItem> messageItem_;
-
-    /**
-     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-     */
-    public java.util.List<MessageItem> getMessageItemList() {
-        return messageItem_;
-    }
-
-    /**
-     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-     */
-    public java.util.List<? extends MessageItemOrBuilder>
-    getMessageItemOrBuilderList() {
-        return messageItem_;
-    }
-
-    /**
-     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-     */
-    public int getMessageItemCount() {
-        return messageItem_.size();
-    }
-
-    /**
-     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-     */
-    public MessageItem getMessageItem(int index) {
-        return messageItem_.get(index);
-    }
-
-    /**
-     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-     */
-    public MessageItemOrBuilder getMessageItemOrBuilder(
-            int index) {
-        return messageItem_.get(index);
-    }
-
-    private byte memoizedIsInitialized = -1;
-
-    public final boolean isInitialized() {
-        if (memoizedIsInitialized == 1) return true;
-        if (memoizedIsInitialized == 0) return false;
-
-        memoizedIsInitialized = 1;
-        return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-            throws java.io.IOException {
-        if (header_ != null) {
-            output.writeMessage(1, getHeader());
-        }
-        if (!getProducerGroupBytes().isEmpty()) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 2, producerGroup_);
-        }
-        if (!getTopicBytes().isEmpty()) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topic_);
-        }
-        for (int i = 0; i < messageItem_.size(); i++) {
-            output.writeMessage(4, messageItem_.get(i));
-        }
-        unknownFields.writeTo(output);
-    }
-
-    public int getSerializedSize() {
-        int size;
-        if (memoizedSize != -1) return memoizedSize;
-        size = header_ != null ?
-                com.google.protobuf.CodedOutputStream.computeMessageSize(1, getHeader()) : 0;
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_);
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_);
-        size += messageItem_.stream()
-                .mapToInt(messageItem -> com.google.protobuf.CodedOutputStream.computeMessageSize(4, messageItem))
-                .sum();
-        size += unknownFields.getSerializedSize();
-        memoizedSize = size;
-        return memoizedSize;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof BatchMessage)) {
-            return super.equals(obj);
-        }
-        BatchMessage other = (BatchMessage) obj;
-
-        return (hasHeader() == other.hasHeader())
-                && (hasHeader() ? getHeader().equals(other.getHeader()) : true)
-                && getProducerGroup().equals(other.getProducerGroup())
-                && getTopic().equals(other.getTopic())
-                && getMessageItemList().equals(other.getMessageItemList())
-                && unknownFields.equals(other.unknownFields);
-    }
-
-    @Override
-    public int hashCode() {
-        if (memoizedHashCode != 0) {
-            return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        if (hasHeader()) {
-            hash = (37 * hash) + HEADER_FIELD_NUMBER;
-            hash = (53 * hash) + getHeader().hashCode();
-        }
-        hash = (37 * hash) + PRODUCERGROUP_FIELD_NUMBER;
-        hash = (53 * hash) + getProducerGroup().hashCode();
-        hash = (37 * hash) + TOPIC_FIELD_NUMBER;
-        hash = (53 * hash) + getTopic().hashCode();
-        if (getMessageItemCount() > 0) {
-            hash = (37 * hash) + MESSAGEITEM_FIELD_NUMBER;
-            hash = (53 * hash) + getMessageItemList().hashCode();
-        }
-        hash = (29 * hash) + unknownFields.hashCode();
-        memoizedHashCode = hash;
-        return hash;
-    }
-
-    public static BatchMessage parseFrom(
-            java.nio.ByteBuffer data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static BatchMessage parseFrom(
-            java.nio.ByteBuffer data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static BatchMessage parseFrom(
-            com.google.protobuf.ByteString data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static BatchMessage parseFrom(
-            com.google.protobuf.ByteString data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static BatchMessage parseFrom(byte[] data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static BatchMessage parseFrom(
-            byte[] data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static BatchMessage parseFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static BatchMessage parseFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static BatchMessage parseDelimitedFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input);
-    }
-
-    public static BatchMessage parseDelimitedFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static BatchMessage parseFrom(
-            com.google.protobuf.CodedInputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static BatchMessage parseFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public Builder newBuilderForType() {
-        return newBuilder();
-    }
-
-    public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-    }
-
-    public static Builder newBuilder(BatchMessage prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-
-    public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
-                ? new Builder() : new Builder().mergeFrom(this);
-    }
-
-    @Override
-    protected Builder newBuilderForType(
-            BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
     }
 
     /**
      * Protobuf type {@code eventmesh.common.protocol.grpc.BatchMessage}
      */
     public static final class Builder extends
-            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.BatchMessage)
-            BatchMessageOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor;
-        }
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.BatchMessage)
+        BatchMessageOrBuilder {
 
-        protected FieldAccessorTable
-        internalGetFieldAccessorTable() {
-            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(
-                            BatchMessage.class, Builder.class);
-        }
+        private int bitField0_;
+        private RequestHeader header_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder> headerBuilder_;
+        private String producerGroup_ = "";
+        private String topic_ = "";
+        private java.util.List<MessageItem> messageItem_ =
+            java.util.Collections.emptyList();
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            MessageItem, MessageItem.Builder, MessageItemOrBuilder> messageItemBuilder_;
 
         // Construct using org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.newBuilder()
         private Builder() {
@@ -1732,9 +1764,21 @@ public final class BatchMessage extends
             maybeForceBuilderInitialization();
         }
 
+        public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor;
+        }
+
+        protected FieldAccessorTable
+        internalGetFieldAccessorTable() {
+            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_BatchMessage_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    BatchMessage.class, Builder.class);
+        }
+
         private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
-                    .alwaysUseFieldBuilders) {
+                .alwaysUseFieldBuilders) {
                 getMessageItemFieldBuilder();
             }
         }
@@ -1807,30 +1851,30 @@ public final class BatchMessage extends
         }
 
         public Builder setField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return (Builder) super.setField(field, value);
         }
 
         public Builder clearField(
-                com.google.protobuf.Descriptors.FieldDescriptor field) {
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
             return (Builder) super.clearField(field);
         }
 
         public Builder clearOneof(
-                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
             return (Builder) super.clearOneof(oneof);
         }
 
         public Builder setRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                int index, Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
             return (Builder) super.setRepeatedField(field, index, value);
         }
 
         public Builder addRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return (Builder) super.addRepeatedField(field, value);
         }
 
@@ -1844,7 +1888,9 @@ public final class BatchMessage extends
         }
 
         public Builder mergeFrom(BatchMessage other) {
-            if (other == BatchMessage.getDefaultInstance()) return this;
+            if (other == BatchMessage.getDefaultInstance()) {
+                return this;
+            }
             if (other.hasHeader()) {
                 mergeHeader(other.getHeader());
             }
@@ -1875,8 +1921,8 @@ public final class BatchMessage extends
                         messageItem_ = other.messageItem_;
                         bitField0_ = (bitField0_ & ~0x00000008);
                         messageItemBuilder_ =
-                                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                                        getMessageItemFieldBuilder() : null;
+                            com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                                getMessageItemFieldBuilder() : null;
                     } else {
                         messageItemBuilder_.addAllMessages(other.messageItem_);
                     }
@@ -1892,9 +1938,9 @@ public final class BatchMessage extends
         }
 
         public Builder mergeFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
             BatchMessage parsedMessage = null;
             try {
                 parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -1908,12 +1954,6 @@ public final class BatchMessage extends
             }
             return this;
         }
-
-        private int bitField0_;
-
-        private RequestHeader header_ = null;
-        private com.google.protobuf.SingleFieldBuilderV3<
-                RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder> headerBuilder_;
 
         /**
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
@@ -1954,7 +1994,7 @@ public final class BatchMessage extends
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
          */
         public Builder setHeader(
-                RequestHeader.Builder builderForValue) {
+            RequestHeader.Builder builderForValue) {
             if (headerBuilder_ == null) {
                 header_ = builderForValue.build();
                 onChanged();
@@ -1972,7 +2012,7 @@ public final class BatchMessage extends
             if (headerBuilder_ == null) {
                 if (header_ != null) {
                     header_ =
-                            RequestHeader.newBuilder(header_).mergeFrom(value).buildPartial();
+                        RequestHeader.newBuilder(header_).mergeFrom(value).buildPartial();
                 } else {
                     header_ = value;
                 }
@@ -2016,7 +2056,7 @@ public final class BatchMessage extends
                 return headerBuilder_.getMessageOrBuilder();
             } else {
                 return header_ == null ?
-                        RequestHeader.getDefaultInstance() : header_;
+                    RequestHeader.getDefaultInstance() : header_;
             }
         }
 
@@ -2024,26 +2064,36 @@ public final class BatchMessage extends
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-                RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>
+            RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>
         getHeaderFieldBuilder() {
             if (headerBuilder_ == null) {
                 headerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                        RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>(
-                        getHeader(),
-                        getParentForChildren(),
-                        isClean());
+                    RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>(
+                    getHeader(),
+                    getParentForChildren(),
+                    isClean());
                 header_ = null;
             }
             return headerBuilder_;
         }
-
-        private String producerGroup_ = "";
 
         /**
          * <code>string producerGroup = 2;</code>
          */
         public String getProducerGroup() {
             return producerGroup_;
+        }
+
+        /**
+         * <code>string producerGroup = 2;</code>
+         */
+        public Builder setProducerGroup(
+            String value) {
+            Objects.requireNonNull(value, "ProducerGroup can not be null");
+
+            producerGroup_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -2057,11 +2107,12 @@ public final class BatchMessage extends
         /**
          * <code>string producerGroup = 2;</code>
          */
-        public Builder setProducerGroup(
-                String value) {
-            Objects.requireNonNull(value, "ProducerGroup can not be null");
+        public Builder setProducerGroupBytes(
+            com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "ProducerGroupBytes can not be null");
+            checkByteStringIsUtf8(value);
 
-            producerGroup_ = value;
+            producerGroup_ = value.toStringUtf8();
             onChanged();
             return this;
         }
@@ -2077,25 +2128,22 @@ public final class BatchMessage extends
         }
 
         /**
-         * <code>string producerGroup = 2;</code>
-         */
-        public Builder setProducerGroupBytes(
-                com.google.protobuf.ByteString value) {
-            Objects.requireNonNull(value, "ProducerGroupBytes can not be null");
-            checkByteStringIsUtf8(value);
-
-            producerGroup_ = value.toStringUtf8();
-            onChanged();
-            return this;
-        }
-
-        private String topic_ = "";
-
-        /**
          * <code>string topic = 3;</code>
          */
         public String getTopic() {
             return topic_;
+        }
+
+        /**
+         * <code>string topic = 3;</code>
+         */
+        public Builder setTopic(
+            String value) {
+            Objects.requireNonNull(value, "Topic can not be null");
+
+            topic_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -2109,11 +2157,12 @@ public final class BatchMessage extends
         /**
          * <code>string topic = 3;</code>
          */
-        public Builder setTopic(
-                String value) {
-            Objects.requireNonNull(value, "Topic can not be null");
+        public Builder setTopicBytes(
+            com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "TopicBytes can not be null");
+            checkByteStringIsUtf8(value);
 
-            topic_ = value;
+            topic_ = value.toStringUtf8();
             onChanged();
             return this;
         }
@@ -2128,31 +2177,12 @@ public final class BatchMessage extends
             return this;
         }
 
-        /**
-         * <code>string topic = 3;</code>
-         */
-        public Builder setTopicBytes(
-                com.google.protobuf.ByteString value) {
-            Objects.requireNonNull(value, "TopicBytes can not be null");
-            checkByteStringIsUtf8(value);
-
-            topic_ = value.toStringUtf8();
-            onChanged();
-            return this;
-        }
-
-        private java.util.List<MessageItem> messageItem_ =
-                java.util.Collections.emptyList();
-
         private void ensureMessageItemIsMutable() {
             if (!((bitField0_ & 0x00000008) == 0x00000008)) {
                 messageItem_ = new java.util.ArrayList<MessageItem>(messageItem_);
                 bitField0_ |= 0x00000008;
             }
         }
-
-        private com.google.protobuf.RepeatedFieldBuilderV3<
-                MessageItem, MessageItem.Builder, MessageItemOrBuilder> messageItemBuilder_;
 
         /**
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
@@ -2191,7 +2221,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder setMessageItem(
-                int index, MessageItem value) {
+            int index, MessageItem value) {
             if (messageItemBuilder_ == null) {
                 if (value == null) {
                     throw new NullPointerException();
@@ -2209,7 +2239,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder setMessageItem(
-                int index, MessageItem.Builder builderForValue) {
+            int index, MessageItem.Builder builderForValue) {
             if (messageItemBuilder_ == null) {
                 ensureMessageItemIsMutable();
                 messageItem_.set(index, builderForValue.build());
@@ -2241,7 +2271,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder addMessageItem(
-                int index, MessageItem value) {
+            int index, MessageItem value) {
             if (messageItemBuilder_ == null) {
                 if (value == null) {
                     throw new NullPointerException();
@@ -2259,7 +2289,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder addMessageItem(
-                MessageItem.Builder builderForValue) {
+            MessageItem.Builder builderForValue) {
             if (messageItemBuilder_ == null) {
                 ensureMessageItemIsMutable();
                 messageItem_.add(builderForValue.build());
@@ -2274,7 +2304,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder addMessageItem(
-                int index, MessageItem.Builder builderForValue) {
+            int index, MessageItem.Builder builderForValue) {
             if (messageItemBuilder_ == null) {
                 ensureMessageItemIsMutable();
                 messageItem_.add(index, builderForValue.build());
@@ -2289,11 +2319,11 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public Builder addAllMessageItem(
-                Iterable<? extends MessageItem> values) {
+            Iterable<? extends MessageItem> values) {
             if (messageItemBuilder_ == null) {
                 ensureMessageItemIsMutable();
                 com.google.protobuf.AbstractMessageLite.Builder.addAll(
-                        values, messageItem_);
+                    values, messageItem_);
                 onChanged();
             } else {
                 messageItemBuilder_.addAllMessages(values);
@@ -2333,7 +2363,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public MessageItem.Builder getMessageItemBuilder(
-                int index) {
+            int index) {
             return getMessageItemFieldBuilder().getBuilder(index);
         }
 
@@ -2341,7 +2371,7 @@ public final class BatchMessage extends
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public MessageItemOrBuilder getMessageItemOrBuilder(
-                int index) {
+            int index) {
             if (messageItemBuilder_ == null) {
                 return messageItem_.get(index);
             } else {
@@ -2366,16 +2396,16 @@ public final class BatchMessage extends
          */
         public MessageItem.Builder addMessageItemBuilder() {
             return getMessageItemFieldBuilder().addBuilder(
-                    MessageItem.getDefaultInstance());
+                MessageItem.getDefaultInstance());
         }
 
         /**
          * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
          */
         public MessageItem.Builder addMessageItemBuilder(
-                int index) {
+            int index) {
             return getMessageItemFieldBuilder().addBuilder(
-                    index, MessageItem.getDefaultInstance());
+                index, MessageItem.getDefaultInstance());
         }
 
         /**
@@ -2387,66 +2417,31 @@ public final class BatchMessage extends
         }
 
         private com.google.protobuf.RepeatedFieldBuilderV3<
-                MessageItem, MessageItem.Builder, MessageItemOrBuilder>
+            MessageItem, MessageItem.Builder, MessageItemOrBuilder>
         getMessageItemFieldBuilder() {
             if (messageItemBuilder_ == null) {
                 messageItemBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                        MessageItem, MessageItem.Builder, MessageItemOrBuilder>(
-                        messageItem_,
-                        ((bitField0_ & 0x00000008) == 0x00000008),
-                        getParentForChildren(),
-                        isClean());
+                    MessageItem, MessageItem.Builder, MessageItemOrBuilder>(
+                    messageItem_,
+                    ((bitField0_ & 0x00000008) == 0x00000008),
+                    getParentForChildren(),
+                    isClean());
                 messageItem_ = null;
             }
             return messageItemBuilder_;
         }
 
         public final Builder setUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.setUnknownFieldsProto3(unknownFields);
         }
 
         public final Builder mergeUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.common.protocol.grpc.BatchMessage)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.BatchMessage)
-    private static final BatchMessage DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new BatchMessage();
-    }
-
-    public static BatchMessage getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<BatchMessage>
-            PARSER = new com.google.protobuf.AbstractParser<BatchMessage>() {
-        public BatchMessage parsePartialFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return new BatchMessage(input, extensionRegistry);
-        }
-    };
-
-    public static com.google.protobuf.Parser<BatchMessage> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<BatchMessage> getParserForType() {
-        return PARSER;
-    }
-
-    public BatchMessage getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

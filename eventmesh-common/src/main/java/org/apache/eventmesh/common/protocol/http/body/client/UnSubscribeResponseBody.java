@@ -32,6 +32,14 @@ public class UnSubscribeResponseBody extends Body {
     private String retMsg;
     private long resTime = System.currentTimeMillis();
 
+    public static UnSubscribeResponseBody buildBody(Integer retCode, String retMsg) {
+        UnSubscribeResponseBody regResponseBody = new UnSubscribeResponseBody();
+        regResponseBody.setRetMsg(retMsg);
+        regResponseBody.setResTime(System.currentTimeMillis());
+        regResponseBody.setRetCode(retCode);
+        return regResponseBody;
+    }
+
     public Integer getRetCode() {
         return retCode;
     }
@@ -56,21 +64,13 @@ public class UnSubscribeResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static UnSubscribeResponseBody buildBody(Integer retCode, String retMsg) {
-        UnSubscribeResponseBody regResponseBody = new UnSubscribeResponseBody();
-        regResponseBody.setRetMsg(retMsg);
-        regResponseBody.setResTime(System.currentTimeMillis());
-        regResponseBody.setRetCode(retCode);
-        return regResponseBody;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("regResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

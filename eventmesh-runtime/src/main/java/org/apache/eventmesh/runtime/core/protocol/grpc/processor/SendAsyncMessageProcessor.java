@@ -47,12 +47,11 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SendAsyncMessageProcessor {
-    
+
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
@@ -95,7 +94,7 @@ public class SendAsyncMessageProcessor {
 
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
 
         String seqNum = message.getSeqNum();
@@ -107,7 +106,7 @@ public class SendAsyncMessageProcessor {
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent,
-                eventMeshProducer, eventMeshGrpcServer);
+            eventMeshProducer, eventMeshGrpcServer);
 
         eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();

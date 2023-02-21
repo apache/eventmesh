@@ -24,7 +24,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
-
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.Random;
@@ -59,23 +58,16 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class TcpClient implements Closeable {
 
     protected static final transient int CLIENTNO = (new Random()).nextInt(1000);
-
+    protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
+        new EventMeshThreadFactory("TCPClientScheduler", true));
     protected final transient ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
-
     protected final transient String host;
     protected final transient int port;
     protected final transient UserAgent userAgent;
-
     private final transient Bootstrap bootstrap = new Bootstrap();
-
     private final transient EventLoopGroup workers = new NioEventLoopGroup();
-
     private transient Channel channel;
-
     private transient ScheduledFuture<?> heartTask;
-
-    protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
-        new EventMeshThreadFactory("TCPClientScheduler", true));
 
     public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
@@ -108,7 +100,7 @@ public abstract class TcpClient implements Closeable {
         channel = f.channel();
         if (log.isInfoEnabled()) {
             log.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
-                    localAddress.getPort(), host + ":" + port);
+                localAddress.getPort(), host + ":" + port);
         }
     }
 
@@ -210,7 +202,7 @@ public abstract class TcpClient implements Closeable {
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                 if (log.isInfoEnabled()) {
                     log.info("exceptionCaught, close connection.|remote address={}",
-                            ctx.channel().remoteAddress(), cause);
+                        ctx.channel().remoteAddress(), cause);
                 }
                 ctx.close();
             }

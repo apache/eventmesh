@@ -47,21 +47,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractPushRequest extends RetryContext {
 
+    private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
     protected EventMeshGrpcServer eventMeshGrpcServer;
     protected long createTime = System.currentTimeMillis();
     protected long lastPushTime = System.currentTimeMillis();
-
     protected EventMeshConsumer eventMeshConsumer;
     protected EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
     protected GrpcRetryer grpcRetryer;
-
     protected Map<String, Set<AbstractPushRequest>> waitingRequests;
-
     protected HandleMsgContext handleMsgContext;
     //  protected CloudEvent event;
     protected SimpleMessage simpleMessage;
-
-    private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
     public AbstractPushRequest(HandleMsgContext handleMsgContext, Map<String, Set<AbstractPushRequest>> waitingRequests) {
         this.eventMeshGrpcServer = handleMsgContext.getEventMeshGrpcServer();

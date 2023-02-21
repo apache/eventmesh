@@ -25,7 +25,6 @@ import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -34,12 +33,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HistoryMessageClearTask implements Runnable {
 
-    private final ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
-
     /**
      * If the currentTimeMills - messageCreateTimeMills >= MESSAGE_STORE_WINDOW, then the message will be clear
      */
     private static final long MESSAGE_STORE_WINDOW = 60 * 60 * 1000;
+    private final ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
 
     public HistoryMessageClearTask(ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer) {
         this.messageContainer = messageContainer;

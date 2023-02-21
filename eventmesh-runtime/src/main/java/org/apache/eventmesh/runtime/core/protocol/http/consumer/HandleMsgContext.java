@@ -35,54 +35,40 @@ import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HandleMsgContext {
 
-    private String msgRandomNo;
-
-    private String consumerGroup;
-
-    private EventMeshConsumer eventMeshConsumer;
-
-    private String bizSeqNo;
-
-    private String uniqueId;
-
-    private String topic;
-
-    private SubscriptionItem subscriptionItem;
-
-    private CloudEvent event;
-
-    private int ttl;
-
-    private long createTime = System.currentTimeMillis();
-
-    private AbstractContext context;
-
-    private ConsumerGroupConf consumerGroupConfig;
-
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
-
+    private String msgRandomNo;
+    private String consumerGroup;
+    private EventMeshConsumer eventMeshConsumer;
+    private String bizSeqNo;
+    private String uniqueId;
+    private String topic;
+    private SubscriptionItem subscriptionItem;
+    private CloudEvent event;
+    private int ttl;
+    private long createTime = System.currentTimeMillis();
+    private AbstractContext context;
+    private ConsumerGroupConf consumerGroupConfig;
     private ConsumerGroupTopicConf consumeTopicConfig;
 
     private Map<String, String> props;
 
     public HandleMsgContext(final String msgRandomNo,
-                            final String consumerGroup,
-                            final EventMeshConsumer eventMeshConsumer,
-                            final String topic,
-                            final CloudEvent event,
-                            final SubscriptionItem subscriptionItem,
-                            final AbstractContext context,
-                            final ConsumerGroupConf consumerGroupConfig,
-                            final EventMeshHTTPServer eventMeshHTTPServer,
-                            final String bizSeqNo,
-                            final String uniqueId,
-                            final ConsumerGroupTopicConf consumeTopicConfig) {
+        final String consumerGroup,
+        final EventMeshConsumer eventMeshConsumer,
+        final String topic,
+        final CloudEvent event,
+        final SubscriptionItem subscriptionItem,
+        final AbstractContext context,
+        final ConsumerGroupConf consumerGroupConfig,
+        final EventMeshHTTPServer eventMeshHTTPServer,
+        final String bizSeqNo,
+        final String uniqueId,
+        final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
@@ -231,25 +217,25 @@ public class HandleMsgContext {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("handleMsgContext={")
-                .append("consumerGroup=")
-                .append(consumerGroup)
-                .append(",topic=")
-                .append(topic)
-                .append(",subscriptionItem=")
-                .append(subscriptionItem)
-                .append(",consumeTopicConfig=")
-                .append(consumeTopicConfig)
-                .append(",bizSeqNo=")
-                .append(bizSeqNo)
-                .append(",uniqueId=")
-                .append(uniqueId)
-                .append(",ttl=")
-                .append(ttl)
-                .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-                .append('}')
-                .toString();
+            .append("handleMsgContext={")
+            .append("consumerGroup=")
+            .append(consumerGroup)
+            .append(",topic=")
+            .append(topic)
+            .append(",subscriptionItem=")
+            .append(subscriptionItem)
+            .append(",consumeTopicConfig=")
+            .append(consumeTopicConfig)
+            .append(",bizSeqNo=")
+            .append(bizSeqNo)
+            .append(",uniqueId=")
+            .append(uniqueId)
+            .append(",ttl=")
+            .append(ttl)
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append('}')
+            .toString();
     }
 
 }

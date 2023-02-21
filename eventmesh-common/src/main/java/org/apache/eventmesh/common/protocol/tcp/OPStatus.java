@@ -24,14 +24,13 @@ public enum OPStatus {
     ACL_FAIL(2, "aclFail"),
     TPS_OVERLOAD(3, "tpsOverload");
 
+    private final Integer code;
+    private final String desc;
+
     OPStatus(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
-
-    private final Integer code;
-
-    private final String desc;
 
     public Integer getCode() {
         return code;

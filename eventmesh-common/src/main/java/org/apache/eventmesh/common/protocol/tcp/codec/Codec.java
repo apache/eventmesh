@@ -37,7 +37,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 
@@ -51,7 +50,65 @@ public class Codec {
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
+    private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
+        Command command = header.getCmd();
+        switch (command) {
+            case HELLO_REQUEST:
+            case RECOMMEND_REQUEST:
+                return JsonUtils.parseObject(bodyJsonString, UserAgent.class);
+            case SUBSCRIBE_REQUEST:
+            case UNSUBSCRIBE_REQUEST:
+                return JsonUtils.parseObject(bodyJsonString, Subscription.class);
+            case REQUEST_TO_SERVER:
+            case RESPONSE_TO_SERVER:
+            case ASYNC_MESSAGE_TO_SERVER:
+            case BROADCAST_MESSAGE_TO_SERVER:
+            case REQUEST_TO_CLIENT:
+            case RESPONSE_TO_CLIENT:
+            case ASYNC_MESSAGE_TO_CLIENT:
+            case BROADCAST_MESSAGE_TO_CLIENT:
+            case REQUEST_TO_CLIENT_ACK:
+            case RESPONSE_TO_CLIENT_ACK:
+            case ASYNC_MESSAGE_TO_CLIENT_ACK:
+            case BROADCAST_MESSAGE_TO_CLIENT_ACK:
+                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
+                // just a string.
+                return bodyJsonString;
+            case REDIRECT_TO_CLIENT:
+                return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
+            default:
+                if (log.isWarnEnabled()) {
+                    log.warn("Invalidate TCP command: {}", command);
+                }
+                return null;
+        }
+    }
+
+    /**
+     * Deserialize bytes to String.
+     *
+     * @param bytes
+     * @return
+     */
+    private static String deserializeBytes(byte[] bytes) {
+        return new String(bytes, Constants.DEFAULT_CHARSET);
+    }
+
+    /**
+     * Serialize String to bytes.
+     *
+     * @param str
+     * @return
+     */
+    private static byte[] serializeBytes(String str) {
+        if (str == null) {
+            return new byte[0];
+        }
+        return str.getBytes(Constants.DEFAULT_CHARSET);
+    }
+
     public static class Encoder extends MessageToByteEncoder<Package> {
+
         @Override
         public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
@@ -93,6 +150,7 @@ public class Codec {
     }
 
     public static class Decoder extends ReplayingDecoder<Package> {
+
         @Override
         public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
             try {
@@ -157,66 +215,9 @@ public class Codec {
         private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
             if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                 String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
-                        deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
                 throw new IllegalArgumentException(errorMsg);
             }
         }
-    }
-
-    private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
-        Command command = header.getCmd();
-        switch (command) {
-            case HELLO_REQUEST:
-            case RECOMMEND_REQUEST:
-                return JsonUtils.parseObject(bodyJsonString, UserAgent.class);
-            case SUBSCRIBE_REQUEST:
-            case UNSUBSCRIBE_REQUEST:
-                return JsonUtils.parseObject(bodyJsonString, Subscription.class);
-            case REQUEST_TO_SERVER:
-            case RESPONSE_TO_SERVER:
-            case ASYNC_MESSAGE_TO_SERVER:
-            case BROADCAST_MESSAGE_TO_SERVER:
-            case REQUEST_TO_CLIENT:
-            case RESPONSE_TO_CLIENT:
-            case ASYNC_MESSAGE_TO_CLIENT:
-            case BROADCAST_MESSAGE_TO_CLIENT:
-            case REQUEST_TO_CLIENT_ACK:
-            case RESPONSE_TO_CLIENT_ACK:
-            case ASYNC_MESSAGE_TO_CLIENT_ACK:
-            case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
-                // just a string.
-                return bodyJsonString;
-            case REDIRECT_TO_CLIENT:
-                return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
-            default:
-                if (log.isWarnEnabled()) {
-                    log.warn("Invalidate TCP command: {}", command);
-                }
-                return null;
-        }
-    }
-
-    /**
-     * Deserialize bytes to String.
-     *
-     * @param bytes
-     * @return
-     */
-    private static String deserializeBytes(byte[] bytes) {
-        return new String(bytes, Constants.DEFAULT_CHARSET);
-    }
-
-    /**
-     * Serialize String to bytes.
-     *
-     * @param str
-     * @return
-     */
-    private static byte[] serializeBytes(String str) {
-        if (str == null) {
-            return new byte[0];
-        }
-        return str.getBytes(Constants.DEFAULT_CHARSET);
     }
 }

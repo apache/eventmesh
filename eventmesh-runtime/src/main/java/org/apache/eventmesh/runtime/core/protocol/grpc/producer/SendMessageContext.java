@@ -34,19 +34,14 @@ import io.cloudevents.CloudEvent;
 public class SendMessageContext extends RetryContext {
 
     public static final Logger logger = LoggerFactory.getLogger("retry");
-
+    public EventMeshGrpcServer eventMeshGrpcServer;
     private CloudEvent event;
-
     private String bizSeqNo;
-
     private EventMeshProducer eventMeshProducer;
-
     private long createTime = System.currentTimeMillis();
 
-    public EventMeshGrpcServer eventMeshGrpcServer;
-
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
-                              EventMeshGrpcServer eventMeshGrpcServer) {
+        EventMeshGrpcServer eventMeshGrpcServer) {
         this.bizSeqNo = bizSeqNo;
         this.event = event;
         this.eventMeshProducer = eventMeshProducer;

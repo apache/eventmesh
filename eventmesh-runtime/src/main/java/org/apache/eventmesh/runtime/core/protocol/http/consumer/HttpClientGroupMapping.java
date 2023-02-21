@@ -45,29 +45,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class HttpClientGroupMapping {
 
+    private static final transient ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
     private final transient Map<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
         new ConcurrentHashMap<>();
-
     private final transient Map<String /**group@topic*/, List<Client>> localClientInfoMapping =
         new ConcurrentHashMap<>();
-
     private final transient Set<String> localTopicSet = new HashSet<String>(16);
-
-    private static final transient ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
 
     private HttpClientGroupMapping() {
 
-    }
-
-    private static class Singleton {
-
-        private static final HttpClientGroupMapping INSTANCE = new HttpClientGroupMapping();
     }
 
     public static HttpClientGroupMapping getInstance() {
@@ -454,6 +445,11 @@ public final class HttpClientGroupMapping {
             localClients.stream().filter(o -> StringUtils.equals(o.getUrl(), client.getUrl())).findFirst()
                 .ifPresent(o -> o.setLastUpTime(client.getLastUpTime()));
         }
+    }
+
+    private static class Singleton {
+
+        private static final HttpClientGroupMapping INSTANCE = new HttpClientGroupMapping();
     }
 }
 

@@ -25,7 +25,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,10 +50,10 @@ public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
 
         if (session != null) {
             EventMeshTcp2Client.goodBye2Client(eventMeshTCPServer, session, errMsg, OPStatus.FAIL.getCode(),
-                    eventMeshTCPServer.getClientSessionGroupMapping());
+                eventMeshTCPServer.getClientSessionGroupMapping());
         } else {
             EventMeshTcp2Client.goodBye2Client(ctx, errMsg, eventMeshTCPServer.getClientSessionGroupMapping(),
-                    eventMeshTCPServer.getEventMeshTcpMonitor());
+                eventMeshTCPServer.getEventMeshTcpMonitor());
         }
     }
 

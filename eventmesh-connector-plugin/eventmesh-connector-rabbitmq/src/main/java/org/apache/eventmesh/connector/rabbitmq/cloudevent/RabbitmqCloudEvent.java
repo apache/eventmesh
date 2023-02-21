@@ -46,6 +46,16 @@ public class RabbitmqCloudEvent implements Serializable {
     private String data;
     private Map<String, String> extensions = new HashMap<>();
 
+    public static byte[] toByteArray(RabbitmqCloudEvent rabbitmqCloudEvent) throws Exception {
+        Optional<byte[]> optionalBytes = ByteArrayUtils.objectToBytes(rabbitmqCloudEvent);
+        return optionalBytes.orElseGet(() -> new byte[] {});
+    }
+
+    public static RabbitmqCloudEvent getFromByteArray(byte[] body) {
+        return JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
+        });
+    }
+
     public CloudEvent convertToCloudEvent() {
         CloudEventBuilder builder;
         switch (version) {
@@ -59,23 +69,13 @@ public class RabbitmqCloudEvent implements Serializable {
                 throw new RabbitmqaConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(data.getBytes(StandardCharsets.UTF_8))
-                .withId(extensions.remove("id"))
-                .withSource(URI.create(extensions.remove("source")))
-                .withType(extensions.remove("type"))
-                .withDataContentType(extensions.remove("datacontenttype"))
-                .withSubject(extensions.remove("subject"));
+            .withId(extensions.remove("id"))
+            .withSource(URI.create(extensions.remove("source")))
+            .withType(extensions.remove("type"))
+            .withDataContentType(extensions.remove("datacontenttype"))
+            .withSubject(extensions.remove("subject"));
         extensions.forEach(builder::withExtension);
 
         return builder.build();
-    }
-
-    public static byte[] toByteArray(RabbitmqCloudEvent rabbitmqCloudEvent) throws Exception {
-        Optional<byte[]> optionalBytes = ByteArrayUtils.objectToBytes(rabbitmqCloudEvent);
-        return optionalBytes.orElseGet(() -> new byte[]{});
-    }
-
-    public static RabbitmqCloudEvent getFromByteArray(byte[] body) {
-        return JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
-        });
     }
 }

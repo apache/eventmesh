@@ -30,17 +30,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubscriptionManager {
 
     private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
-            new ConcurrentHashMap<>();
+        new ConcurrentHashMap<>();
 
     private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
-            new ConcurrentHashMap<>();
+        new ConcurrentHashMap<>();
 
     public ConcurrentHashMap<String, ConsumerGroupConf> getLocalConsumerGroupMapping() {
         return localConsumerGroupMapping;
@@ -51,7 +50,7 @@ public class SubscriptionManager {
     }
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
-                               final List<SubscriptionItem> subscriptionItems, final String url) {
+        final List<SubscriptionItem> subscriptionItems, final String url) {
         for (final SubscriptionItem subscription : subscriptionItems) {
             final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 
@@ -89,10 +88,10 @@ public class SubscriptionManager {
     }
 
     public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
-                                   String url, List<SubscriptionItem> subscriptionList) {
+        String url, List<SubscriptionItem> subscriptionList) {
         for (final SubscriptionItem subscription : subscriptionList) {
             final List<Client> groupTopicClients = localClientInfoMapping
-                    .get(consumerGroup + "@" + subscription.getTopic());
+                .get(consumerGroup + "@" + subscription.getTopic());
 
             if (CollectionUtils.isEmpty(groupTopicClients)) {
                 log.error("group {} topic {} clients is empty", consumerGroup, subscription);
@@ -109,7 +108,7 @@ public class SubscriptionManager {
             }
 
             ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf()
-                    .get(subscription.getTopic());
+                .get(subscription.getTopic());
             if (consumerGroupTopicConf == null) {
                 consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topic) -> {
                     ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();

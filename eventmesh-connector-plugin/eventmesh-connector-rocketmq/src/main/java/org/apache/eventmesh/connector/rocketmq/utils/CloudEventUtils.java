@@ -30,7 +30,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -110,7 +109,6 @@ public class CloudEventUtils {
             if (message.getBody() != null) {
                 rmqMessageExt.setBody(message.getBody());
             }
-
 
             //All destinations in RocketMQ use Topic
             rmqMessageExt.setTopic(message.getTopic());

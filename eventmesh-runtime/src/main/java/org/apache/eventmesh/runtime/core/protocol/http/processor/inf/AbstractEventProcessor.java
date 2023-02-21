@@ -73,177 +73,19 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
     }
 
     /**
-     * Add a topic with subscribers to the service's metadata.
-     */
-    protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
-            return;
-        }
-
-        try {
-
-            Map<String, String> metadata = new HashMap<>(1 << 4);
-            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
-                    eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
-
-                String consumerGroupKey = consumerGroupMap.getKey();
-                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
-
-                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
-                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
-
-                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                        new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                        consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
-                    final String topic = consumerGroupTopicConfEntry.getKey();
-                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
-                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
-                    consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
-                    consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
-                    consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
-
-                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
-                }
-
-                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
-            }
-
-            eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
-
-        } catch (Exception e) {
-            log.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
-        }
-    }
-
-
-    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
-            throws Exception {
-        // Currently only supports http
-        CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
-            return "";
-        }
-
-        String targetMesh = "";
-        Registry registry = eventMeshHTTPServer.getRegistry();
-        List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
-        String httpServiceName =
-                ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
-                        + "-" + ConfigurationContextUtil.HTTP;
-        for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
-            if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
-                continue;
-            }
-
-            if (httpConfiguration.getEventMeshCluster().equals(eventMeshDataInfo.getEventMeshClusterName())) {
-                continue;
-            }
-
-            Map<String, String> metadata = eventMeshDataInfo.getMetadata();
-            String topicMetadataJson = metadata.get(consumerGroup);
-            if (StringUtils.isBlank(topicMetadataJson)) {
-                continue;
-            }
-
-            ConsumerGroupMetadata consumerGroupMetadata =
-                    JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
-            Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                    Optional.ofNullable(consumerGroupMetadata)
-                            .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
-                            .orElseGet(Maps::newConcurrentMap);
-
-            for (SubscriptionItem subscriptionItem : subscriptionList) {
-                if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
-                    targetMesh = "http://" + eventMeshDataInfo.getEndpoint() + "/eventmesh/subscribe/local";
-                    break;
-                }
-            }
-            break;
-        }
-        return targetMesh;
-    }
-
-    /**
-     * builder response header map
-     * @param requestWrapper requestWrapper
-     * @return Map
-     */
-    protected Map<String, Object> builderResponseHeaderMap(HttpEventWrapper requestWrapper) {
-        Map<String, Object> responseHeaderMap = new HashMap<>();
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-            eventMeshHttpConfiguration.getEventMeshCluster());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
-            IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-            eventMeshHttpConfiguration.getEventMeshEnv());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-            eventMeshHttpConfiguration.getEventMeshIDC());
-        return responseHeaderMap;
-    }
-
-    /**
-     * validation sysHeaderMap is null
-     * @param sysHeaderMap sysHeaderMap
-     * @return Returns true if any is empty
-     */
-    protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
-        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
-    }
-
-    /**
-     * validation requestBodyMap key url topic consumerGroup is any null
-     * @param requestBodyMap requestBodyMap
-     * @return any null then true
-     */
-    protected boolean validatedRequestBodyMap(Map<String, Object> requestBodyMap) {
-        return requestBodyMap.get(EventMeshConstants.URL) == null
-            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
-            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
-
-    }
-
-    /**
-     * builder RemoteHeaderMap
-     * @param localAddress
-     * @return
-     */
-    protected Map<String, String> builderRemoteHeaderMap(String localAddress) {
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration = this.eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        String meshGroup = eventMeshHttpConfiguration.getMeshGroup();
-
-        Map<String, String> remoteHeaderMap = new HashMap<>();
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpConfiguration.getEventMeshEnv());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpConfiguration.getEventMeshIDC());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, localAddress);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpConfiguration.getSysID());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
-        return remoteHeaderMap;
-    }
-
-    /**
-     *  http post
-     * @param client client
-     * @param uri uri
-     * @param requestHeader requestHeader
-     * @param requestBody requestBody
+     * http post
+     *
+     * @param client          client
+     * @param uri             uri
+     * @param requestHeader   requestHeader
+     * @param requestBody     requestBody
      * @param responseHandler responseHandler
      * @return string
      * @throws IOException
      */
     public static String post(CloseableHttpClient client, String uri,
-                              Map<String, String> requestHeader, Map<String, Object> requestBody,
-                              ResponseHandler<String> responseHandler) throws IOException {
+        Map<String, String> requestHeader, Map<String, Object> requestBody,
+        ResponseHandler<String> responseHandler) throws IOException {
         AssertUtils.notNull(client, "client can't be null");
         AssertUtils.notBlack(uri, "uri can't be null");
         AssertUtils.notNull(requestHeader, "requestParam can't be null");
@@ -273,6 +115,168 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         httpPost.setConfig(configBuilder.build());
 
         return client.execute(httpPost, responseHandler);
+    }
+
+    /**
+     * Add a topic with subscribers to the service's metadata.
+     */
+    protected void updateMetadata() {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
+            return;
+        }
+
+        try {
+
+            Map<String, String> metadata = new HashMap<>(1 << 4);
+            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
+                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
+
+                String consumerGroupKey = consumerGroupMap.getKey();
+                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
+
+                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
+
+                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                    new HashMap<>(1 << 4);
+                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
+                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                    final String topic = consumerGroupTopicConfEntry.getKey();
+                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
+                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+                    consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
+                    consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
+                    consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
+
+                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
+                }
+
+                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
+                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
+            }
+
+            eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
+
+        } catch (Exception e) {
+            log.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
+        }
+    }
+
+    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
+        throws Exception {
+        // Currently only supports http
+        CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
+        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
+            return "";
+        }
+
+        String targetMesh = "";
+        Registry registry = eventMeshHTTPServer.getRegistry();
+        List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
+        String httpServiceName =
+            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
+                + "-" + ConfigurationContextUtil.HTTP;
+        for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
+            if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
+                continue;
+            }
+
+            if (httpConfiguration.getEventMeshCluster().equals(eventMeshDataInfo.getEventMeshClusterName())) {
+                continue;
+            }
+
+            Map<String, String> metadata = eventMeshDataInfo.getMetadata();
+            String topicMetadataJson = metadata.get(consumerGroup);
+            if (StringUtils.isBlank(topicMetadataJson)) {
+                continue;
+            }
+
+            ConsumerGroupMetadata consumerGroupMetadata =
+                JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
+            Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                Optional.ofNullable(consumerGroupMetadata)
+                    .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
+                    .orElseGet(Maps::newConcurrentMap);
+
+            for (SubscriptionItem subscriptionItem : subscriptionList) {
+                if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
+                    targetMesh = "http://" + eventMeshDataInfo.getEndpoint() + "/eventmesh/subscribe/local";
+                    break;
+                }
+            }
+            break;
+        }
+        return targetMesh;
+    }
+
+    /**
+     * builder response header map
+     *
+     * @param requestWrapper requestWrapper
+     * @return Map
+     */
+    protected Map<String, Object> builderResponseHeaderMap(HttpEventWrapper requestWrapper) {
+        Map<String, Object> responseHeaderMap = new HashMap<>();
+        EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
+        responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+            eventMeshHttpConfiguration.getEventMeshCluster());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
+            IPUtils.getLocalAddress());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+            eventMeshHttpConfiguration.getEventMeshEnv());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+            eventMeshHttpConfiguration.getEventMeshIDC());
+        return responseHeaderMap;
+    }
+
+    /**
+     * validation sysHeaderMap is null
+     *
+     * @param sysHeaderMap sysHeaderMap
+     * @return Returns true if any is empty
+     */
+    protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
+        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())
+            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+    }
+
+    /**
+     * validation requestBodyMap key url topic consumerGroup is any null
+     *
+     * @param requestBodyMap requestBodyMap
+     * @return any null then true
+     */
+    protected boolean validatedRequestBodyMap(Map<String, Object> requestBodyMap) {
+        return requestBodyMap.get(EventMeshConstants.URL) == null
+            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
+            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
+
+    }
+
+    /**
+     * builder RemoteHeaderMap
+     *
+     * @param localAddress
+     * @return
+     */
+    protected Map<String, String> builderRemoteHeaderMap(String localAddress) {
+        EventMeshHTTPConfiguration eventMeshHttpConfiguration = this.eventMeshHTTPServer.getEventMeshHttpConfiguration();
+        String meshGroup = eventMeshHttpConfiguration.getMeshGroup();
+
+        Map<String, String> remoteHeaderMap = new HashMap<>();
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpConfiguration.getEventMeshEnv());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpConfiguration.getEventMeshIDC());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, localAddress);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpConfiguration.getSysID());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
+        return remoteHeaderMap;
     }
 
 }

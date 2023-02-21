@@ -44,42 +44,33 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * one Client connects one ACCESS
- * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability,
- * The service is request-dependent. If the disconnection and reconnection capability is provided,
- * it will cause business insensitivity, that is, it will not follow the business reconnection logic.
+ * one Client connects one ACCESS Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability, The
+ * service is request-dependent. If the disconnection and reconnection capability is provided, it will cause business insensitivity, that is, it will
+ * not follow the business reconnection logic.
  */
 @Slf4j
 public abstract class TCPClient implements Closeable {
 
-    public int clientNo = (new Random()).nextInt(1000);
-
-    protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
-
-    protected String host = "10.255.34.120";
-
-    protected int port = 10000;
-
-    private Bootstrap bootstrap = new Bootstrap();
-
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
         new EventMeshThreadFactory("TCPClientScheduler", true));
-
-    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
-
+    public int clientNo = (new Random()).nextInt(1000);
     public Channel channel;
-
-    protected boolean isActive() {
-        return (channel != null) && (channel.isActive());
-    }
+    protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
+    protected String host = "10.255.34.120";
+    protected int port = 10000;
+    private Bootstrap bootstrap = new Bootstrap();
+    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
 
     public TCPClient(String host, int port) {
         this.host = host;
         this.port = port;
+    }
+
+    protected boolean isActive() {
+        return (channel != null) && (channel.isActive());
     }
 
     protected void send(Package msg) throws Exception {

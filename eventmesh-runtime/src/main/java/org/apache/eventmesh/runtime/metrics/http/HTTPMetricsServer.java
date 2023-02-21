@@ -28,16 +28,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HTTPMetricsServer {
 
+    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
+        new EventMeshThreadFactory("eventMesh-metrics", true));
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
-
     private final transient List<MetricsRegistry> metricsRegistries;
-
     private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
@@ -102,9 +101,6 @@ public class HTTPMetricsServer {
             log.info("HTTPMetricsServer shutdown.");
         }
     }
-
-    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
-        new EventMeshThreadFactory("eventMesh-metrics", true));
 
     // todo: move this into standalone metrics plugin
 

@@ -28,7 +28,28 @@ public final class QueryOperationsResponse extends
     com.google.protobuf.GeneratedMessageV3 implements
     // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.QueryOperationsResponse)
     QueryOperationsResponseOrBuilder {
+
+    public static final int OPERATIONS_FIELD_NUMBER = 1;
     private static final long serialVersionUID = 0L;
+    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.QueryOperationsResponse)
+    private static final QueryOperationsResponse DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<QueryOperationsResponse>
+        PARSER = new com.google.protobuf.AbstractParser<QueryOperationsResponse>() {
+        @Override
+        public QueryOperationsResponse parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new QueryOperationsResponse(input, extensionRegistry);
+        }
+    };
+
+    static {
+        DEFAULT_INSTANCE = new QueryOperationsResponse();
+    }
+
+    private java.util.List<Operation> operations_;
+    private byte memoizedIsInitialized = -1;
 
     // Use QueryOperationsResponse.newBuilder() to construct.
     private QueryOperationsResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -38,20 +59,6 @@ public final class QueryOperationsResponse extends
     private QueryOperationsResponse() {
         operations_ = java.util.Collections.emptyList();
     }
-
-    @Override
-    @SuppressWarnings({"unused"})
-    protected Object newInstance(
-        UnusedPrivateParameter unused) {
-        return new QueryOperationsResponse();
-    }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-        return this.unknownFields;
-    }
-
     private QueryOperationsResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -106,137 +113,6 @@ public final class QueryOperationsResponse extends
     public static final com.google.protobuf.Descriptors.Descriptor
     getDescriptor() {
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_descriptor;
-    }
-
-    @Override
-    protected FieldAccessorTable
-    internalGetFieldAccessorTable() {
-        return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                QueryOperationsResponse.class, Builder.class);
-    }
-
-    public static final int OPERATIONS_FIELD_NUMBER = 1;
-    private java.util.List<Operation> operations_;
-
-    /**
-     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
-     */
-    @Override
-    public java.util.List<Operation> getOperationsList() {
-        return operations_;
-    }
-
-    /**
-     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
-     */
-    @Override
-    public java.util.List<? extends OperationOrBuilder>
-    getOperationsOrBuilderList() {
-        return operations_;
-    }
-
-    /**
-     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
-     */
-    @Override
-    public int getOperationsCount() {
-        return operations_.size();
-    }
-
-    /**
-     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
-     */
-    @Override
-    public Operation getOperations(int index) {
-        return operations_.get(index);
-    }
-
-    /**
-     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
-     */
-    @Override
-    public OperationOrBuilder getOperationsOrBuilder(
-        int index) {
-        return operations_.get(index);
-    }
-
-    private byte memoizedIsInitialized = -1;
-
-    @Override
-    public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) {
-            return true;
-        }
-        if (isInitialized == 0) {
-            return false;
-        }
-
-        memoizedIsInitialized = 1;
-        return true;
-    }
-
-    @Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-        throws java.io.IOException {
-        for (Operation operation : operations_) {
-            output.writeMessage(1, operation);
-        }
-        unknownFields.writeTo(output);
-    }
-
-    @Override
-    public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) {
-            return size;
-        }
-
-        size = 0;
-        for (Operation operation : operations_) {
-            size += com.google.protobuf.CodedOutputStream
-                .computeMessageSize(1, operation);
-        }
-        size += unknownFields.getSerializedSize();
-        memoizedSize = size;
-        return size;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof QueryOperationsResponse)) {
-            return super.equals(obj);
-        }
-        QueryOperationsResponse other = (QueryOperationsResponse) obj;
-
-        if (!getOperationsList()
-            .equals(other.getOperationsList())) {
-            return false;
-        }
-        if (!unknownFields.equals(other.unknownFields)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        if (memoizedHashCode != 0) {
-            return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        if (getOperationsCount() > 0) {
-            hash = (37 * hash) + OPERATIONS_FIELD_NUMBER;
-            hash = (53 * hash) + getOperationsList().hashCode();
-        }
-        hash = (29 * hash) + unknownFields.hashCode();
-        memoizedHashCode = hash;
-        return hash;
     }
 
     public static QueryOperationsResponse parseFrom(
@@ -320,17 +196,164 @@ public final class QueryOperationsResponse extends
             .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
-    public Builder newBuilderForType() {
-        return newBuilder();
-    }
-
     public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
     }
 
     public static Builder newBuilder(QueryOperationsResponse prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static QueryOperationsResponse getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<QueryOperationsResponse> parser() {
+        return PARSER;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+        return new QueryOperationsResponse();
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+        return this.unknownFields;
+    }
+
+    @Override
+    protected FieldAccessorTable
+    internalGetFieldAccessorTable() {
+        return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                QueryOperationsResponse.class, Builder.class);
+    }
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    @Override
+    public java.util.List<Operation> getOperationsList() {
+        return operations_;
+    }
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    @Override
+    public java.util.List<? extends OperationOrBuilder>
+    getOperationsOrBuilderList() {
+        return operations_;
+    }
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    @Override
+    public int getOperationsCount() {
+        return operations_.size();
+    }
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    @Override
+    public Operation getOperations(int index) {
+        return operations_.get(index);
+    }
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    @Override
+    public OperationOrBuilder getOperationsOrBuilder(
+        int index) {
+        return operations_.get(index);
+    }
+
+    @Override
+    public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) {
+            return true;
+        }
+        if (isInitialized == 0) {
+            return false;
+        }
+
+        memoizedIsInitialized = 1;
+        return true;
+    }
+
+    @Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+        throws java.io.IOException {
+        for (Operation operation : operations_) {
+            output.writeMessage(1, operation);
+        }
+        unknownFields.writeTo(output);
+    }
+
+    @Override
+    public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) {
+            return size;
+        }
+
+        size = 0;
+        for (Operation operation : operations_) {
+            size += com.google.protobuf.CodedOutputStream
+                .computeMessageSize(1, operation);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof QueryOperationsResponse)) {
+            return super.equals(obj);
+        }
+        QueryOperationsResponse other = (QueryOperationsResponse) obj;
+
+        if (!getOperationsList()
+            .equals(other.getOperationsList())) {
+            return false;
+        }
+        if (!unknownFields.equals(other.unknownFields)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        if (memoizedHashCode != 0) {
+            return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (getOperationsCount() > 0) {
+            hash = (37 * hash) + OPERATIONS_FIELD_NUMBER;
+            hash = (53 * hash) + getOperationsList().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+    }
+
+    @Override
+    public Builder newBuilderForType() {
+        return newBuilder();
     }
 
     @Override
@@ -345,6 +368,16 @@ public final class QueryOperationsResponse extends
         return new Builder(parent);
     }
 
+    @Override
+    public com.google.protobuf.Parser<QueryOperationsResponse> getParserForType() {
+        return PARSER;
+    }
+
+    @Override
+    public QueryOperationsResponse getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+    }
+
     /**
      * Protobuf type {@code eventmesh.catalog.api.protocol.QueryOperationsResponse}
      */
@@ -352,6 +385,24 @@ public final class QueryOperationsResponse extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.QueryOperationsResponse)
         QueryOperationsResponseOrBuilder {
+
+        private int bitField0_;
+        private java.util.List<Operation> operations_ =
+            java.util.Collections.emptyList();
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            Operation, Operation.Builder, OperationOrBuilder> operationsBuilder_;
+
+        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsResponse.newBuilder()
+        private Builder() {
+            maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+        }
+
         public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_descriptor;
@@ -363,17 +414,6 @@ public final class QueryOperationsResponse extends
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsResponse_fieldAccessorTable
                 .ensureFieldAccessorsInitialized(
                     QueryOperationsResponse.class, Builder.class);
-        }
-
-        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsResponse.newBuilder()
-        private Builder() {
-            maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            BuilderParent parent) {
-            super(parent);
-            maybeForceBuilderInitialization();
         }
 
         private void maybeForceBuilderInitialization() {
@@ -539,20 +579,12 @@ public final class QueryOperationsResponse extends
             return this;
         }
 
-        private int bitField0_;
-
-        private java.util.List<Operation> operations_ =
-            java.util.Collections.emptyList();
-
         private void ensureOperationsIsMutable() {
             if (!((bitField0_ & 0x00000001) != 0)) {
                 operations_ = new java.util.ArrayList<Operation>(operations_);
                 bitField0_ |= 0x00000001;
             }
         }
-
-        private com.google.protobuf.RepeatedFieldBuilderV3<
-            Operation, Operation.Builder, OperationOrBuilder> operationsBuilder_;
 
         /**
          * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
@@ -813,44 +845,7 @@ public final class QueryOperationsResponse extends
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.catalog.api.protocol.QueryOperationsResponse)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.QueryOperationsResponse)
-    private static final QueryOperationsResponse DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new QueryOperationsResponse();
-    }
-
-    public static QueryOperationsResponse getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<QueryOperationsResponse>
-        PARSER = new com.google.protobuf.AbstractParser<QueryOperationsResponse>() {
-        @Override
-        public QueryOperationsResponse parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-            return new QueryOperationsResponse(input, extensionRegistry);
-        }
-    };
-
-    public static com.google.protobuf.Parser<QueryOperationsResponse> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<QueryOperationsResponse> getParserForType() {
-        return PARSER;
-    }
-
-    @Override
-    public QueryOperationsResponse getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

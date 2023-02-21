@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,11 +54,8 @@ public class ZookeeperRegistryService implements RegistryService {
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
     private static final AtomicBoolean START_STATUS = new AtomicBoolean(false);
-
-    private String serverAddr;
-
     public CuratorFramework zkClient = null;
-
+    private String serverAddr;
     private Map<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
     @Override

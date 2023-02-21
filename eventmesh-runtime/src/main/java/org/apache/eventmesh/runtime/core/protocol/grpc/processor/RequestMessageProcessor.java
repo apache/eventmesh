@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -28,6 +28,7 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
 public class EventMeshClientImpl implements EventMeshClient {
+
     protected UserAgent agent;
     private String accessHost;
     private int accessPort;
@@ -48,6 +49,17 @@ public class EventMeshClientImpl implements EventMeshClient {
         this.accessPort = accessPort;
         this.subClient = new SubClientImpl(accessHost, accessPort, UserAgentUtils.createSubUserAgent());
         this.pubClient = new PubClientImpl(accessHost, accessPort, UserAgentUtils.createPubUserAgent());
+    }
+
+    @Deprecated
+    public EventMeshClientImpl(String accessServer, String busiTag, String subSystem) {
+        //this.accessServer = accessServer;
+        //this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
+        //        (busiTag, subSystem));
+        //this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
+        //        (busiTag, subSystem));
     }
 
     public Package rr(Package msg, long timeout) throws Exception {
@@ -83,13 +95,13 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
-                                 SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justSubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justUnsubscribe(topic, subscriptionMode, subscriptionType);
     }
 
@@ -104,25 +116,14 @@ public class EventMeshClientImpl implements EventMeshClient {
     @Override
     public String toString() {
         return "AccessClientImpl{"
-                +
-                "accessHost='" + accessHost + '\''
-                +
-                ", accessPort=" + accessPort
-                +
-                ", agent=" + agent
-                +
-                '}';
-    }
-
-    @Deprecated
-    public EventMeshClientImpl(String accessServer, String busiTag, String subSystem) {
-        //this.accessServer = accessServer;
-        //this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
-        //        (busiTag, subSystem));
-        //this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
-        //        (busiTag, subSystem));
+            +
+            "accessHost='" + accessHost + '\''
+            +
+            ", accessPort=" + accessPort
+            +
+            ", agent=" + agent
+            +
+            '}';
     }
 
     //@Override

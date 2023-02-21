@@ -33,6 +33,6 @@ public class AdminWebHookConfigOperationManagerTest {
         adminWebHookConfigOperationManage.init();
 
         Assert.assertTrue(
-                adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
+            adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
     }
 }

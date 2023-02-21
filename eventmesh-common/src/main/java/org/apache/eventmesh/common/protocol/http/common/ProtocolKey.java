@@ -31,8 +31,13 @@ public class ProtocolKey {
     public static final String PROTOCOL_DESC = "protocoldesc";
 
     public static final String CONTENT_TYPE = "contenttype";
+    //return of CLIENT <-> EventMesh
+    public static final String RETCODE = "retCode";
+    public static final String RETMSG = "retMsg";
+    public static final String RESTIME = "resTime";
 
     public static class ClientInstanceKey {
+
         ////////////////////////////////////Protocol layer requester description///////////
         public static final String ENV = "env";
         public static final String IDC = "idc";
@@ -47,8 +52,8 @@ public class ProtocolKey {
         public static final String CONSUMERGROUP = "consumergroup";
     }
 
-
     public static class EventMeshInstanceKey {
+
         ///////////////////////////////////////////////Protocol layer EventMesh description
         public static final String EVENTMESHCLUSTER = "eventmeshcluster";
         public static final String EVENTMESHIP = "eventmeship";
@@ -57,15 +62,10 @@ public class ProtocolKey {
     }
 
     public static class CloudEventsKey {
+
         public static final String ID = "id";
         public static final String SOURCE = "source";
         public static final String SUBJECT = "subject";
         public static final String TYPE = "type";
     }
-
-
-    //return of CLIENT <-> EventMesh
-    public static final String RETCODE = "retCode";
-    public static final String RETMSG = "retMsg";
-    public static final String RESTIME = "resTime";
 }

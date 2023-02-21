@@ -25,6 +25,10 @@ import java.util.List;
 
 public class EventMeshUrlClassLoader extends URLClassLoader {
 
+    private EventMeshUrlClassLoader(URL[] urls, ClassLoader parent) {
+        super(urls, parent);
+    }
+
     public static EventMeshUrlClassLoader getInstance() {
         return EventMeshUrlClassLoaderHolder.INSTANCE;
     }
@@ -43,10 +47,6 @@ public class EventMeshUrlClassLoader extends URLClassLoader {
             return;
         }
         urls.forEach(this::addURL);
-    }
-
-    private EventMeshUrlClassLoader(URL[] urls, ClassLoader parent) {
-        super(urls, parent);
     }
 
     private static class EventMeshUrlClassLoaderHolder {

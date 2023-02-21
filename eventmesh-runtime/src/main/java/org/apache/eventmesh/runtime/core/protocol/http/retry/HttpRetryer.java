@@ -28,25 +28,21 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpRetryer {
 
     private final Logger retryLogger = LoggerFactory.getLogger("retry");
-    
+
     private final EventMeshHTTPServer eventMeshHTTPServer;
+    private final DelayQueue<DelayRetryable> failed = new DelayQueue<>();
+    private ThreadPoolExecutor pool;
+    private Thread dispatcher;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
-
-    private final DelayQueue<DelayRetryable> failed = new DelayQueue<>();
-
-    private ThreadPoolExecutor pool;
-
-    private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
         if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {

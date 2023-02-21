@@ -24,10 +24,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-
-    private EventMeshGrpcServer eventMeshGrpcServer;
-
     private final EventMeshServer eventMeshServer;
+    private EventMeshGrpcServer eventMeshGrpcServer;
 
     public EventMeshGrpcBootstrap(final EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;

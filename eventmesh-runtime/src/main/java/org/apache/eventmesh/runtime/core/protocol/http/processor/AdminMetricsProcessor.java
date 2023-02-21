@@ -24,7 +24,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequest
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

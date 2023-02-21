@@ -22,7 +22,6 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer {

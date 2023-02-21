@@ -31,7 +31,6 @@ import java.util.Arrays;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -50,13 +49,13 @@ public class GoodbyeTask extends AbstractTask {
                 log.info("client|address={}| has reject ", session.getContext().channel().remoteAddress());
             } else {
                 msg.setHeader(
-                        new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                                pkg.getHeader().getSeq()));
+                    new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                        pkg.getHeader().getSeq()));
             }
         } catch (Exception e) {
             log.error("GoodbyeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
         } finally {
             this.eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
@@ -67,6 +66,6 @@ public class GoodbyeTask extends AbstractTask {
             //session.write2Client(msg);
         }
         EventMeshTcp2Client
-                .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
+            .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }

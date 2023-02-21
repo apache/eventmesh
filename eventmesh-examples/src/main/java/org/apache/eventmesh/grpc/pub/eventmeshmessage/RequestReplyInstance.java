@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,14 +38,14 @@ public class RequestReplyInstance extends GrpcAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testRequestReplyMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.requestReply(buildEventMeshMessage(content),
-                        EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
             ThreadUtils.sleep(30, TimeUnit.SECONDS);

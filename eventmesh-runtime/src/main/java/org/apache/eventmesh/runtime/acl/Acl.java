@@ -30,21 +30,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Acl {
 
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
-
-    private AclService aclService;
-
     private final AtomicBoolean inited = new AtomicBoolean(false);
-
     private final AtomicBoolean started = new AtomicBoolean(false);
-
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
+    private AclService aclService;
 
     private Acl() {
 
@@ -64,6 +59,19 @@ public class Acl {
         acl.aclService = aclServiceExt;
 
         return acl;
+    }
+
+    private static Properties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
+        Properties aclProperties = new Properties();
+        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
+        aclProperties.put(AclPropertyKeys.USER, userAgent.getUsername());
+        aclProperties.put(AclPropertyKeys.PASSWORD, userAgent.getPassword());
+        aclProperties.put(AclPropertyKeys.SUBSYSTEM, userAgent.getSubsystem());
+        aclProperties.put(AclPropertyKeys.REQUEST_CODE, requestCode);
+        if (StringUtils.isNotBlank(topic)) {
+            aclProperties.put(AclPropertyKeys.TOPIC, topic);
+        }
+        return aclProperties;
     }
 
     public void init() throws AclException {
@@ -103,19 +111,6 @@ public class Acl {
 
     public void doAclCheckInTcpReceive(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
-    }
-
-    private static Properties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
-        Properties aclProperties = new Properties();
-        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
-        aclProperties.put(AclPropertyKeys.USER, userAgent.getUsername());
-        aclProperties.put(AclPropertyKeys.PASSWORD, userAgent.getPassword());
-        aclProperties.put(AclPropertyKeys.SUBSYSTEM, userAgent.getSubsystem());
-        aclProperties.put(AclPropertyKeys.REQUEST_CODE, requestCode);
-        if (StringUtils.isNotBlank(topic)) {
-            aclProperties.put(AclPropertyKeys.TOPIC, topic);
-        }
-        return aclProperties;
     }
 
     public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode)

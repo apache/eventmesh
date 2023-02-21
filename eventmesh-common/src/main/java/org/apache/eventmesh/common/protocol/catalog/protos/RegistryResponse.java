@@ -27,10 +27,29 @@ import java.util.Objects;
  */
 @SuppressWarnings({"all"})
 public final class RegistryResponse extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.RegistryResponse)
-        RegistryResponseOrBuilder {
+    com.google.protobuf.GeneratedMessageV3 implements
+    // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.RegistryResponse)
+    RegistryResponseOrBuilder {
+
     private static final long serialVersionUID = 5690543722366991453L;
+    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.RegistryResponse)
+    private static final RegistryResponse DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<RegistryResponse>
+        PARSER = new com.google.protobuf.AbstractParser<RegistryResponse>() {
+        @Override
+        public RegistryResponse parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new RegistryResponse(input, extensionRegistry);
+        }
+    };
+
+    static {
+        DEFAULT_INSTANCE = new RegistryResponse();
+    }
+
+    private byte memoizedIsInitialized = -1;
 
     // Use RegistryResponse.newBuilder() to construct.
     private RegistryResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -40,29 +59,16 @@ public final class RegistryResponse extends
     private RegistryResponse() {
     }
 
-    @Override
-    @SuppressWarnings({"unused"})
-    protected Object newInstance(
-            UnusedPrivateParameter unused) {
-        return new RegistryResponse();
-    }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-        return this.unknownFields;
-    }
-
     private RegistryResponse(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
         this();
         Objects.requireNonNull(input, "CodedInputStream can not be null");
         Objects.requireNonNull(extensionRegistry, "ExtensionRegistryLite can not be null");
 
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-                com.google.protobuf.UnknownFieldSet.newBuilder();
+            com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
             boolean done = false;
             while (!done) {
@@ -73,7 +79,7 @@ public final class RegistryResponse extends
                         break;
                     default: {
                         if (!parseUnknownField(
-                                input, unknownFields, extensionRegistry, tag)) {
+                            input, unknownFields, extensionRegistry, tag)) {
                             done = true;
                         }
                         break;
@@ -84,7 +90,7 @@ public final class RegistryResponse extends
             throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
             throw new com.google.protobuf.InvalidProtocolBufferException(
-                    e).setUnfinishedMessage(this);
+                e).setUnfinishedMessage(this);
         } finally {
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
@@ -96,15 +102,123 @@ public final class RegistryResponse extends
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryResponse_descriptor;
     }
 
+    public static RegistryResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static RegistryResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static RegistryResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static RegistryResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static RegistryResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static RegistryResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(RegistryResponse prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static RegistryResponse getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<RegistryResponse> parser() {
+        return PARSER;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+        return new RegistryResponse();
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+        return this.unknownFields;
+    }
+
     @Override
     protected FieldAccessorTable
     internalGetFieldAccessorTable() {
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryResponse_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                        RegistryResponse.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                RegistryResponse.class, Builder.class);
     }
-
-    private byte memoizedIsInitialized = -1;
 
     @Override
     public final boolean isInitialized() {
@@ -121,7 +235,7 @@ public final class RegistryResponse extends
 
     @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-            throws java.io.IOException {
+        throws java.io.IOException {
         unknownFields.writeTo(output);
     }
 
@@ -166,104 +280,15 @@ public final class RegistryResponse extends
         return hash;
     }
 
-    public static RegistryResponse parseFrom(
-            java.nio.ByteBuffer data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryResponse parseFrom(
-            java.nio.ByteBuffer data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryResponse parseFrom(
-            com.google.protobuf.ByteString data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryResponse parseFrom(
-            com.google.protobuf.ByteString data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryResponse parseFrom(byte[] data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryResponse parseFrom(
-            byte[] data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryResponse parseFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static RegistryResponse parseFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static RegistryResponse parseDelimitedFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input);
-    }
-
-    public static RegistryResponse parseDelimitedFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static RegistryResponse parseFrom(
-            com.google.protobuf.CodedInputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static RegistryResponse parseFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
     @Override
     public Builder newBuilderForType() {
         return newBuilder();
     }
 
-    public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-    }
-
-    public static Builder newBuilder(RegistryResponse prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-
     @Override
     public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
-                ? new Builder() : new Builder().mergeFrom(this);
+            ? new Builder() : new Builder().mergeFrom(this);
     }
 
     @Override
@@ -271,13 +296,35 @@ public final class RegistryResponse extends
         return new Builder(parent);
     }
 
+    @Override
+    public com.google.protobuf.Parser<RegistryResponse> getParserForType() {
+        return PARSER;
+    }
+
+    @Override
+    public RegistryResponse getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+    }
+
     /**
      * Protobuf type {@code eventmesh.catalog.api.protocol.RegistryResponse}
      */
     public static final class Builder extends
-            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.RegistryResponse)
-            RegistryResponseOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.RegistryResponse)
+        RegistryResponseOrBuilder {
+
+        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.RegistryResponse.newBuilder()
+        private Builder() {
+            maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+        }
+
         public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryResponse_descriptor;
@@ -287,24 +334,13 @@ public final class RegistryResponse extends
         protected FieldAccessorTable
         internalGetFieldAccessorTable() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryResponse_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(
-                            RegistryResponse.class, Builder.class);
-        }
-
-        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.RegistryResponse.newBuilder()
-        private Builder() {
-            maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-                BuilderParent parent) {
-            super(parent);
-            maybeForceBuilderInitialization();
+                .ensureFieldAccessorsInitialized(
+                    RegistryResponse.class, Builder.class);
         }
 
         private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
-                    .alwaysUseFieldBuilders) {
+                .alwaysUseFieldBuilders) {
             }
         }
 
@@ -348,34 +384,34 @@ public final class RegistryResponse extends
 
         @Override
         public Builder setField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return super.setField(field, value);
         }
 
         @Override
         public Builder clearField(
-                com.google.protobuf.Descriptors.FieldDescriptor field) {
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
             return super.clearField(field);
         }
 
         @Override
         public Builder clearOneof(
-                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
             return super.clearOneof(oneof);
         }
 
         @Override
         public Builder setRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                int index, Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
             return super.setRepeatedField(field, index, value);
         }
 
         @Override
         public Builder addRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return super.addRepeatedField(field, value);
         }
 
@@ -405,9 +441,9 @@ public final class RegistryResponse extends
 
         @Override
         public Builder mergeFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
             RegistryResponse parsedMessage = null;
             try {
                 parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -424,54 +460,17 @@ public final class RegistryResponse extends
 
         @Override
         public final Builder setUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.setUnknownFields(unknownFields);
         }
 
         @Override
         public final Builder mergeUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.catalog.api.protocol.RegistryResponse)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.RegistryResponse)
-    private static final RegistryResponse DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new RegistryResponse();
-    }
-
-    public static RegistryResponse getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<RegistryResponse>
-            PARSER = new com.google.protobuf.AbstractParser<RegistryResponse>() {
-        @Override
-        public RegistryResponse parsePartialFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return new RegistryResponse(input, extensionRegistry);
-        }
-    };
-
-    public static com.google.protobuf.Parser<RegistryResponse> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<RegistryResponse> getParserForType() {
-        return PARSER;
-    }
-
-    @Override
-    public RegistryResponse getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

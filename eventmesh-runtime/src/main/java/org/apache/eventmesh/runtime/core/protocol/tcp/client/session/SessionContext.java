@@ -26,13 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionContext {
 
-    private Session session;
-
     public ConcurrentHashMap<String, String> sendTopics = new ConcurrentHashMap<String, String>();
-
     public ConcurrentHashMap<String, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<String, SubscriptionItem>();
-
     public long createTime = System.currentTimeMillis();
+    private Session session;
 
     public SessionContext(Session session) {
         this.session = session;
@@ -41,7 +38,7 @@ public class SessionContext {
     @Override
     public String toString() {
         return "SessionContext{subscribeTopics=" + subscribeTopics
-                + ",sendTopics=" + sendTopics.keySet()
-                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
+            + ",sendTopics=" + sendTopics.keySet()
+            + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }
 }

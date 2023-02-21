@@ -37,6 +37,18 @@ public class RequestContext {
         this.latch = latch;
     }
 
+    public static RequestContext context(final Object key, final Package request, final CountDownLatch latch) throws Exception {
+        final RequestContext c = new RequestContext(key, request, latch);
+        if (log.isInfoEnabled()) {
+            log.info("_RequestContext|create|key={}", key);
+        }
+        return c;
+    }
+
+    public static Object key(final Package request) {
+        return request.getHeader().getSeq();
+    }
+
     public Object getKey() {
         return key;
     }
@@ -72,18 +84,5 @@ public class RequestContext {
     public void finish(final Package msg) {
         this.response = msg;
         latch.countDown();
-    }
-
-    public static RequestContext context(final Object key, final Package request, final CountDownLatch latch) throws Exception {
-        final RequestContext c = new RequestContext(key, request, latch);
-        if (log.isInfoEnabled()) {
-            log.info("_RequestContext|create|key={}", key);
-        }
-        return c;
-    }
-
-
-    public static Object key(final Package request) {
-        return request.getHeader().getSeq();
     }
 }

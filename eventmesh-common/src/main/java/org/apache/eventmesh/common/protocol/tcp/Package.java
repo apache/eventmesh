@@ -26,33 +26,33 @@ public class Package implements ProtocolTransportObject {
     private transient Header header;
     private Object body;
 
+    public Package() {
+
+    }
+
+    public Package(Header header) {
+        this.header = header;
+    }
+
+
+    public Package(Header header, Object body) {
+        this.header = header;
+        this.body = body;
+    }
+
     public Header getHeader() {
         return header;
+    }
+
+    public void setHeader(Header header) {
+        this.header = header;
     }
 
     public Object getBody() {
         return body;
     }
 
-
-    public void setHeader(Header header) {
-        this.header = header;
-    }
-
     public void setBody(Object body) {
-        this.body = body;
-    }
-
-    public Package() {
-
-    }
-    
-    public Package(Header header) {
-        this.header = header;
-    }
-
-    public Package(Header header, Object body) {
-        this.header = header;
         this.body = body;
     }
 

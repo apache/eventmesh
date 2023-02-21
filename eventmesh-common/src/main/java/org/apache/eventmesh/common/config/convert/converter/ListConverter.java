@@ -64,12 +64,12 @@ public class ListConverter implements ConvertValue<List<Object>> {
             }
 
             Type parameterizedType = ((ParameterizedType) convertInfo.getField()
-                    .getGenericType()).getActualTypeArguments()[0];
+                .getGenericType()).getActualTypeArguments()[0];
 
             ConvertValue<?> clazzConverter = ConverterMap.getClazzConverter((Class<?>) parameterizedType);
 
             List<String> values = Splitter.on(separator).omitEmptyStrings().trimResults()
-                    .splitToList((String) convertInfo.getValue());
+                .splitToList((String) convertInfo.getValue());
             for (String value : values) {
                 convertInfo.setValue(value);
                 list.add(clazzConverter.convert(convertInfo));
@@ -83,6 +83,7 @@ public class ListConverter implements ConvertValue<List<Object>> {
 
 
     public static class ListConverterSemi extends ListConverter {
+
         public String separator = ";";
 
         public String getSeparator() {

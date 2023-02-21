@@ -29,7 +29,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenRocketMQConsumerInit() {
         RocketMQConsumerImpl consumer =
-                (RocketMQConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("rocketmq");
+            (RocketMQConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("rocketmq");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -38,7 +38,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenRocketMQProducerInit() {
         RocketMQProducerImpl producer =
-                (RocketMQProducerImpl) ConnectorPluginFactory.getMeshMQProducer("rocketmq");
+            (RocketMQProducerImpl) ConnectorPluginFactory.getMeshMQProducer("rocketmq");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);

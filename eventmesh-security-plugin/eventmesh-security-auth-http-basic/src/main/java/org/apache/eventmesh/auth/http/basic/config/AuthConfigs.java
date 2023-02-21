@@ -26,9 +26,8 @@ import lombok.Data;
 @Config(prefix = "auth", path = "classPath://auth-http-basic.properties")
 public class AuthConfigs {
 
-    @ConfigFiled(field = "username")
-    private String username;
-
     @ConfigFiled(field = "password")
     public String password;
+    @ConfigFiled(field = "username")
+    private String username;
 }

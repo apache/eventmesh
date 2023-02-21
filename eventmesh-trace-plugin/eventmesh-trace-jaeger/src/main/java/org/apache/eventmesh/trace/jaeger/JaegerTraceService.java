@@ -88,28 +88,28 @@ public class JaegerTraceService implements EventMeshTraceService {
 
         final String httpEndpoint = String.format("http://%s:%s", eventMeshJaegerIp, eventMeshJaegerPort);
         final JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-                .setEndpoint(httpEndpoint)
-                .build();
+            .setEndpoint(httpEndpoint)
+            .build();
 
         final SpanProcessor spanProcessor = BatchSpanProcessor.builder(jaegerExporter)
-                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-                .build();
+            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+            .build();
 
         final Resource serviceNameResource =
-                Resource.create(Attributes.of(stringKey("service.name"), JaegerConstants.SERVICE_NAME));
+            Resource.create(Attributes.of(stringKey("service.name"), JaegerConstants.SERVICE_NAME));
 
         sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(spanProcessor)
-                .setResource(Resource.getDefault().merge(serviceNameResource))
-                .build();
+            .addSpanProcessor(spanProcessor)
+            .setResource(Resource.getDefault().merge(serviceNameResource))
+            .build();
 
         final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .setTracerProvider(sdkTracerProvider)
-                .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(sdkTracerProvider)
+            .build();
 
         tracer = openTelemetry.getTracer(JaegerConstants.SERVICE_NAME);
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
@@ -147,23 +147,23 @@ public class JaegerTraceService implements EventMeshTraceService {
 
     @Override
     public Span createSpan(final String spanName, final SpanKind spanKind, final long startTimestamp,
-                           final TimeUnit timeUnit, final Context context,
-                           final boolean isSpanFinishInOtherThread) throws TraceException {
+        final TimeUnit timeUnit, final Context context,
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(startTimestamp, timeUnit)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(startTimestamp, timeUnit)
+            .startSpan();
     }
 
     @Override
     public Span createSpan(final String spanName, final SpanKind spanKind, final Context context,
-                           final boolean isSpanFinishInOtherThread) throws TraceException {
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .startSpan();
     }
 
     @Override

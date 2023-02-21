@@ -27,18 +27,18 @@ public class BaseResponseHeader extends Header {
 
     private String code;
 
+    public static BaseResponseHeader buildHeader(String code) {
+        BaseResponseHeader baseResponseHeader = new BaseResponseHeader();
+        baseResponseHeader.setCode(code);
+        return baseResponseHeader;
+    }
+
     public String getCode() {
         return code;
     }
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public static BaseResponseHeader buildHeader(String code) {
-        BaseResponseHeader baseResponseHeader = new BaseResponseHeader();
-        baseResponseHeader.setCode(code);
-        return baseResponseHeader;
     }
 
     @Override

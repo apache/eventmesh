@@ -27,10 +27,48 @@ import java.util.Objects;
  */
 @SuppressWarnings({"all"})
 public final class SimpleMessage extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.SimpleMessage)
-        SimpleMessageOrBuilder {
+    com.google.protobuf.GeneratedMessageV3 implements
+    // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.SimpleMessage)
+    SimpleMessageOrBuilder {
+
+    public static final int HEADER_FIELD_NUMBER = 1;
+    public static final int PRODUCERGROUP_FIELD_NUMBER = 2;
+    public static final int TOPIC_FIELD_NUMBER = 3;
+    public static final int CONTENT_FIELD_NUMBER = 4;
+    public static final int TTL_FIELD_NUMBER = 5;
+    public static final int UNIQUEID_FIELD_NUMBER = 6;
+    public static final int SEQNUM_FIELD_NUMBER = 7;
+    public static final int TAG_FIELD_NUMBER = 8;
+    public static final int PROPERTIES_FIELD_NUMBER = 9;
     private static final long serialVersionUID = -6684279788270319330L;
+    // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.SimpleMessage)
+    private static final SimpleMessage DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<SimpleMessage> PARSER =
+        new com.google.protobuf.AbstractParser<SimpleMessage>() {
+            public SimpleMessage parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+                return new SimpleMessage(input, extensionRegistry);
+            }
+        };
+
+    static {
+        DEFAULT_INSTANCE = new SimpleMessage();
+    }
+
+    private int bitField0_;
+    private RequestHeader header_;
+    private volatile Object producerGroup_;
+    private volatile Object topic_;
+    private volatile Object content_;
+    private volatile Object ttl_;
+    private volatile Object uniqueId_;
+    private volatile Object seqNum_;
+    private volatile Object tag_;
+    private com.google.protobuf.MapField<
+        String, String> properties_;
+    private byte memoizedIsInitialized = -1;
 
     // Use SimpleMessage.newBuilder() to construct.
     private SimpleMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -47,21 +85,16 @@ public final class SimpleMessage extends
         tag_ = "";
     }
 
-    @Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-        return this.unknownFields;
-    }
-
     private SimpleMessage(com.google.protobuf.CodedInputStream input,
-                          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
         this();
         if (extensionRegistry == null) {
             throw new NullPointerException();
         }
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-                com.google.protobuf.UnknownFieldSet.newBuilder();
+            com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
             boolean done = false;
             while (!done) {
@@ -72,7 +105,7 @@ public final class SimpleMessage extends
                         break;
                     default: {
                         if (!parseUnknownFieldProto3(
-                                input, unknownFields, extensionRegistry, tag)) {
+                            input, unknownFields, extensionRegistry, tag)) {
                             done = true;
                         }
                         break;
@@ -121,14 +154,14 @@ public final class SimpleMessage extends
                     case 74: {
                         if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
                             properties_ = com.google.protobuf.MapField.newMapField(
-                                    PropertiesDefaultEntryHolder.defaultEntry);
+                                PropertiesDefaultEntryHolder.defaultEntry);
                             mutable_bitField0_ |= 0x00000100;
                         }
                         com.google.protobuf.MapEntry<String, String>
-                                properties__ = input.readMessage(
-                                PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                            properties__ = input.readMessage(
+                            PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
                         properties_.getMutableMap().put(
-                                properties__.getKey(), properties__.getValue());
+                            properties__.getKey(), properties__.getValue());
                         break;
                     }
                 }
@@ -137,7 +170,7 @@ public final class SimpleMessage extends
             throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
             throw new com.google.protobuf.InvalidProtocolBufferException(
-                    e).setUnfinishedMessage(this);
+                e).setUnfinishedMessage(this);
         } finally {
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
@@ -149,6 +182,108 @@ public final class SimpleMessage extends
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
     }
 
+    public static SimpleMessage parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static SimpleMessage parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static SimpleMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static SimpleMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static SimpleMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static SimpleMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static SimpleMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static SimpleMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static SimpleMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static SimpleMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static SimpleMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static SimpleMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(SimpleMessage prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static SimpleMessage getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<SimpleMessage> parser() {
+        return PARSER;
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+        return this.unknownFields;
+    }
+
     @SuppressWarnings({"rawtypes"})
     protected com.google.protobuf.MapField internalGetMapField(int number) {
         switch (number) {
@@ -156,19 +291,15 @@ public final class SimpleMessage extends
                 return internalGetProperties();
             default:
                 throw new RuntimeException(
-                        "Invalid map field number: " + number);
+                    "Invalid map field number: " + number);
         }
     }
 
     protected FieldAccessorTable internalGetFieldAccessorTable() {
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                        SimpleMessage.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                SimpleMessage.class, Builder.class);
     }
-
-    private int bitField0_;
-    public static final int HEADER_FIELD_NUMBER = 1;
-    private RequestHeader header_;
 
     /**
      * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
@@ -191,9 +322,6 @@ public final class SimpleMessage extends
         return getHeader();
     }
 
-    public static final int PRODUCERGROUP_FIELD_NUMBER = 2;
-    private volatile Object producerGroup_;
-
     /**
      * <code>string producerGroup = 2;</code>
      */
@@ -203,7 +331,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             producerGroup_ = s;
             return s;
@@ -218,17 +346,14 @@ public final class SimpleMessage extends
         Object ref = producerGroup_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             producerGroup_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int TOPIC_FIELD_NUMBER = 3;
-    private volatile Object topic_;
 
     /**
      * <code>string topic = 3;</code>
@@ -239,7 +364,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             topic_ = s;
             return s;
@@ -254,17 +379,14 @@ public final class SimpleMessage extends
         Object ref = topic_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             topic_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int CONTENT_FIELD_NUMBER = 4;
-    private volatile Object content_;
 
     /**
      * <code>string content = 4;</code>
@@ -275,7 +397,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             content_ = s;
             return s;
@@ -290,17 +412,14 @@ public final class SimpleMessage extends
         Object ref = content_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             content_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int TTL_FIELD_NUMBER = 5;
-    private volatile Object ttl_;
 
     /**
      * <code>string ttl = 5;</code>
@@ -311,7 +430,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             ttl_ = s;
             return s;
@@ -326,17 +445,14 @@ public final class SimpleMessage extends
         Object ref = ttl_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             ttl_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int UNIQUEID_FIELD_NUMBER = 6;
-    private volatile Object uniqueId_;
 
     /**
      * <code>string uniqueId = 6;</code>
@@ -347,7 +463,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             uniqueId_ = s;
             return s;
@@ -362,17 +478,14 @@ public final class SimpleMessage extends
         Object ref = uniqueId_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             uniqueId_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int SEQNUM_FIELD_NUMBER = 7;
-    private volatile Object seqNum_;
 
     /**
      * <code>string seqNum = 7;</code>
@@ -383,7 +496,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             seqNum_ = s;
             return s;
@@ -398,17 +511,14 @@ public final class SimpleMessage extends
         Object ref = seqNum_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             seqNum_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    public static final int TAG_FIELD_NUMBER = 8;
-    private volatile Object tag_;
 
     /**
      * <code>string tag = 8;</code>
@@ -419,7 +529,7 @@ public final class SimpleMessage extends
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs =
-                    (com.google.protobuf.ByteString) ref;
+                (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
             tag_ = s;
             return s;
@@ -434,8 +544,8 @@ public final class SimpleMessage extends
         Object ref = tag_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b =
-                    com.google.protobuf.ByteString.copyFromUtf8(
-                            (String) ref);
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (String) ref);
             tag_ = b;
             return b;
         } else {
@@ -443,28 +553,11 @@ public final class SimpleMessage extends
         }
     }
 
-    public static final int PROPERTIES_FIELD_NUMBER = 9;
-
-    private static final class PropertiesDefaultEntryHolder {
-        static final com.google.protobuf.MapEntry<
-                String, String> defaultEntry =
-                com.google.protobuf.MapEntry
-                        .<String, String>newDefaultInstance(
-                                EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_PropertiesEntry_descriptor,
-                                com.google.protobuf.WireFormat.FieldType.STRING,
-                                "",
-                                com.google.protobuf.WireFormat.FieldType.STRING,
-                                "");
-    }
-
-    private com.google.protobuf.MapField<
-            String, String> properties_;
-
     private com.google.protobuf.MapField<String, String>
     internalGetProperties() {
         if (properties_ == null) {
             return com.google.protobuf.MapField.emptyMapField(
-                    PropertiesDefaultEntryHolder.defaultEntry);
+                PropertiesDefaultEntryHolder.defaultEntry);
         }
         return properties_;
     }
@@ -503,14 +596,16 @@ public final class SimpleMessage extends
      */
 
     public String getPropertiesOrDefault(
-            String key,
-            String defaultValue) {
+        String key,
+        String defaultValue) {
         Objects.requireNonNull(key, "key can not be null");
 
         java.util.Map<String, String> map =
-                internalGetProperties().getMap();
+            internalGetProperties().getMap();
         String value = map.get(key);
-        if (value == null) return defaultValue;
+        if (value == null) {
+            return defaultValue;
+        }
         return value;
     }
 
@@ -519,7 +614,7 @@ public final class SimpleMessage extends
      */
 
     public String getPropertiesOrThrow(
-            String key) {
+        String key) {
         Objects.requireNonNull(key, "key can not be null");
 
         java.util.Map<String, String> map = internalGetProperties().getMap();
@@ -530,18 +625,20 @@ public final class SimpleMessage extends
         return map.get(key);
     }
 
-    private byte memoizedIsInitialized = -1;
-
     public final boolean isInitialized() {
-        if (memoizedIsInitialized == 1) return true;
-        if (memoizedIsInitialized == 0) return false;
+        if (memoizedIsInitialized == 1) {
+            return true;
+        }
+        if (memoizedIsInitialized == 0) {
+            return false;
+        }
 
         memoizedIsInitialized = 1;
         return true;
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-            throws java.io.IOException {
+        throws java.io.IOException {
         if (header_ != null) {
             output.writeMessage(1, getHeader());
         }
@@ -567,22 +664,24 @@ public final class SimpleMessage extends
             com.google.protobuf.GeneratedMessageV3.writeString(output, 8, tag_);
         }
         com.google.protobuf.GeneratedMessageV3
-                .serializeStringMapTo(
-                        output,
-                        internalGetProperties(),
-                        PropertiesDefaultEntryHolder.defaultEntry,
-                        9);
+            .serializeStringMapTo(
+                output,
+                internalGetProperties(),
+                PropertiesDefaultEntryHolder.defaultEntry,
+                9);
         unknownFields.writeTo(output);
     }
 
     public int getSerializedSize() {
         int size = memoizedSize;
-        if (size != -1) return size;
+        if (size != -1) {
+            return size;
+        }
 
         size = 0;
         if (header_ != null) {
             size += com.google.protobuf.CodedOutputStream
-                    .computeMessageSize(1, getHeader());
+                .computeMessageSize(1, getHeader());
         }
         if (!getProducerGroupBytes().isEmpty()) {
             size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_);
@@ -606,14 +705,14 @@ public final class SimpleMessage extends
             size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, tag_);
         }
         for (java.util.Map.Entry<String, String> entry
-                : internalGetProperties().getMap().entrySet()) {
+            : internalGetProperties().getMap().entrySet()) {
             com.google.protobuf.MapEntry<String, String>
-                    properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
-                    .setKey(entry.getKey())
-                    .setValue(entry.getValue())
-                    .build();
+                properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
+                .setKey(entry.getKey())
+                .setValue(entry.getValue())
+                .build();
             size += com.google.protobuf.CodedOutputStream
-                    .computeMessageSize(9, properties__);
+                .computeMessageSize(9, properties__);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -632,15 +731,15 @@ public final class SimpleMessage extends
 
         SimpleMessage other = (SimpleMessage) obj;
         return (hasHeader() ? other.hasHeader() && getHeader().equals(other.getHeader()) : !other.hasHeader())
-                && getProducerGroup().equals(other.getProducerGroup())
-                && getTopic().equals(other.getTopic())
-                && getContent().equals(other.getContent())
-                && getTtl().equals(other.getTtl())
-                && getUniqueId().equals(other.getUniqueId())
-                && getSeqNum().equals(other.getSeqNum())
-                && getTag().equals(other.getTag())
-                && internalGetProperties().equals(other.internalGetProperties())
-                && unknownFields.equals(other.unknownFields);
+            && getProducerGroup().equals(other.getProducerGroup())
+            && getTopic().equals(other.getTopic())
+            && getContent().equals(other.getContent())
+            && getTtl().equals(other.getTtl())
+            && getUniqueId().equals(other.getUniqueId())
+            && getSeqNum().equals(other.getSeqNum())
+            && getTag().equals(other.getTag())
+            && internalGetProperties().equals(other.internalGetProperties())
+            && unknownFields.equals(other.unknownFields);
     }
 
     @Override
@@ -677,152 +776,64 @@ public final class SimpleMessage extends
         return hash;
     }
 
-    public static SimpleMessage parseFrom(
-            java.nio.ByteBuffer data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static SimpleMessage parseFrom(
-            java.nio.ByteBuffer data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static SimpleMessage parseFrom(
-            com.google.protobuf.ByteString data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static SimpleMessage parseFrom(
-            com.google.protobuf.ByteString data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static SimpleMessage parseFrom(byte[] data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static SimpleMessage parseFrom(
-            byte[] data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static SimpleMessage parseFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static SimpleMessage parseFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static SimpleMessage parseDelimitedFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input);
-    }
-
-    public static SimpleMessage parseDelimitedFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static SimpleMessage parseFrom(
-            com.google.protobuf.CodedInputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static SimpleMessage parseFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
     public Builder newBuilderForType() {
         return newBuilder();
     }
 
-    public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-    }
-
-    public static Builder newBuilder(SimpleMessage prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-
     public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
-                ? new Builder() : new Builder().mergeFrom(this);
+            ? new Builder() : new Builder().mergeFrom(this);
     }
 
     @Override
     protected Builder newBuilderForType(
-            BuilderParent parent) {
+        BuilderParent parent) {
         return new Builder(parent);
+    }
+
+    @Override
+    public com.google.protobuf.Parser<SimpleMessage> getParserForType() {
+        return PARSER;
+    }
+
+    public SimpleMessage getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+    }
+
+    private static final class PropertiesDefaultEntryHolder {
+
+        static final com.google.protobuf.MapEntry<
+            String, String> defaultEntry =
+            com.google.protobuf.MapEntry
+                .<String, String>newDefaultInstance(
+                    EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_PropertiesEntry_descriptor,
+                    com.google.protobuf.WireFormat.FieldType.STRING,
+                    "",
+                    com.google.protobuf.WireFormat.FieldType.STRING,
+                    "");
     }
 
     /**
      * Protobuf type {@code eventmesh.common.protocol.grpc.SimpleMessage}
      */
     public static final class Builder extends
-            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.SimpleMessage)
-            SimpleMessageOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
-        }
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.SimpleMessage)
+        SimpleMessageOrBuilder {
 
-        @SuppressWarnings({"rawtypes"})
-        protected com.google.protobuf.MapField internalGetMapField(
-                int number) {
-            switch (number) {
-                case 9:
-                    return internalGetProperties();
-                default:
-                    throw new RuntimeException(
-                            "Invalid map field number: " + number);
-            }
-        }
-
-        @SuppressWarnings({"rawtypes"})
-        protected com.google.protobuf.MapField internalGetMutableMapField(
-                int number) {
-            switch (number) {
-                case 9:
-                    return internalGetMutableProperties();
-                default:
-                    throw new RuntimeException(
-                            "Invalid map field number: " + number);
-            }
-        }
-
-        protected FieldAccessorTable
-        internalGetFieldAccessorTable() {
-            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(
-                            SimpleMessage.class, Builder.class);
-        }
+        private int bitField0_;
+        private RequestHeader header_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder> headerBuilder_;
+        private Object producerGroup_ = "";
+        private Object topic_ = "";
+        private Object content_ = "";
+        private Object ttl_ = "";
+        private Object uniqueId_ = "";
+        private Object seqNum_ = "";
+        private Object tag_ = "";
+        private com.google.protobuf.MapField<
+            String, String> properties_;
 
         // Construct using org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage.newBuilder()
         private Builder() {
@@ -830,14 +841,50 @@ public final class SimpleMessage extends
         }
 
         private Builder(
-                BuilderParent parent) {
+            BuilderParent parent) {
             super(parent);
             maybeForceBuilderInitialization();
         }
 
+        public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
+        }
+
+        @SuppressWarnings({"rawtypes"})
+        protected com.google.protobuf.MapField internalGetMapField(
+            int number) {
+            switch (number) {
+                case 9:
+                    return internalGetProperties();
+                default:
+                    throw new RuntimeException(
+                        "Invalid map field number: " + number);
+            }
+        }
+
+        @SuppressWarnings({"rawtypes"})
+        protected com.google.protobuf.MapField internalGetMutableMapField(
+            int number) {
+            switch (number) {
+                case 9:
+                    return internalGetMutableProperties();
+                default:
+                    throw new RuntimeException(
+                        "Invalid map field number: " + number);
+            }
+        }
+
+        protected FieldAccessorTable
+        internalGetFieldAccessorTable() {
+            return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    SimpleMessage.class, Builder.class);
+        }
+
         private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
-                    .alwaysUseFieldBuilders) {
+                .alwaysUseFieldBuilders) {
             }
         }
 
@@ -912,30 +959,30 @@ public final class SimpleMessage extends
         }
 
         public Builder setField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return (Builder) super.setField(field, value);
         }
 
         public Builder clearField(
-                com.google.protobuf.Descriptors.FieldDescriptor field) {
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
             return (Builder) super.clearField(field);
         }
 
         public Builder clearOneof(
-                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
             return (Builder) super.clearOneof(oneof);
         }
 
         public Builder setRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                int index, Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
             return (Builder) super.setRepeatedField(field, index, value);
         }
 
         public Builder addRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return (Builder) super.addRepeatedField(field, value);
         }
 
@@ -949,7 +996,9 @@ public final class SimpleMessage extends
         }
 
         public Builder mergeFrom(SimpleMessage other) {
-            if (other == SimpleMessage.getDefaultInstance()) return this;
+            if (other == SimpleMessage.getDefaultInstance()) {
+                return this;
+            }
             if (other.hasHeader()) {
                 mergeHeader(other.getHeader());
             }
@@ -982,7 +1031,7 @@ public final class SimpleMessage extends
                 onChanged();
             }
             internalGetMutableProperties().mergeFrom(
-                    other.internalGetProperties());
+                other.internalGetProperties());
             this.mergeUnknownFields(other.unknownFields);
             onChanged();
             return this;
@@ -993,9 +1042,9 @@ public final class SimpleMessage extends
         }
 
         public Builder mergeFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
             SimpleMessage parsedMessage = null;
             try {
                 parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -1009,12 +1058,6 @@ public final class SimpleMessage extends
             }
             return this;
         }
-
-        private int bitField0_;
-
-        private RequestHeader header_ = null;
-        private com.google.protobuf.SingleFieldBuilderV3<
-                RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder> headerBuilder_;
 
         /**
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
@@ -1053,7 +1096,7 @@ public final class SimpleMessage extends
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
          */
         public Builder setHeader(
-                RequestHeader.Builder builderForValue) {
+            RequestHeader.Builder builderForValue) {
             if (headerBuilder_ == null) {
                 header_ = builderForValue.build();
                 onChanged();
@@ -1113,7 +1156,7 @@ public final class SimpleMessage extends
                 return headerBuilder_.getMessageOrBuilder();
             } else {
                 return header_ == null ?
-                        RequestHeader.getDefaultInstance() : header_;
+                    RequestHeader.getDefaultInstance() : header_;
             }
         }
 
@@ -1121,20 +1164,18 @@ public final class SimpleMessage extends
          * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-                RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>
+            RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>
         getHeaderFieldBuilder() {
             if (headerBuilder_ == null) {
                 headerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                        RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>(
-                        getHeader(),
-                        getParentForChildren(),
-                        isClean());
+                    RequestHeader, RequestHeader.Builder, RequestHeaderOrBuilder>(
+                    getHeader(),
+                    getParentForChildren(),
+                    isClean());
                 header_ = null;
             }
             return headerBuilder_;
         }
-
-        private Object producerGroup_ = "";
 
         /**
          * <code>string producerGroup = 2;</code>
@@ -1143,7 +1184,7 @@ public final class SimpleMessage extends
             Object ref = producerGroup_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 producerGroup_ = s;
                 return s;
@@ -1155,13 +1196,25 @@ public final class SimpleMessage extends
         /**
          * <code>string producerGroup = 2;</code>
          */
+        public Builder setProducerGroup(
+            String value) {
+            Objects.requireNonNull(value, "ProducerGroup can not be null");
+
+            producerGroup_ = value;
+            onChanged();
+            return this;
+        }
+
+        /**
+         * <code>string producerGroup = 2;</code>
+         */
         public com.google.protobuf.ByteString
         getProducerGroupBytes() {
             Object ref = producerGroup_;
             if (ref instanceof String) {
                 com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
                 producerGroup_ = b;
                 return b;
             } else {
@@ -1172,9 +1225,11 @@ public final class SimpleMessage extends
         /**
          * <code>string producerGroup = 2;</code>
          */
-        public Builder setProducerGroup(
-                String value) {
-            Objects.requireNonNull(value, "ProducerGroup can not be null");
+        public Builder setProducerGroupBytes(
+            com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "ProducerGroupBytes can not be null");
+
+            checkByteStringIsUtf8(value);
 
             producerGroup_ = value;
             onChanged();
@@ -1192,51 +1247,18 @@ public final class SimpleMessage extends
         }
 
         /**
-         * <code>string producerGroup = 2;</code>
-         */
-        public Builder setProducerGroupBytes(
-                com.google.protobuf.ByteString value) {
-            Objects.requireNonNull(value, "ProducerGroupBytes can not be null");
-
-            checkByteStringIsUtf8(value);
-
-            producerGroup_ = value;
-            onChanged();
-            return this;
-        }
-
-        private Object topic_ = "";
-
-        /**
          * <code>string topic = 3;</code>
          */
         public String getTopic() {
             Object ref = topic_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 topic_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string topic = 3;</code>
-         */
-        public com.google.protobuf.ByteString
-        getTopicBytes() {
-            Object ref = topic_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                topic_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1254,11 +1276,18 @@ public final class SimpleMessage extends
         /**
          * <code>string topic = 3;</code>
          */
-        public Builder clearTopic() {
-
-            topic_ = getDefaultInstance().getTopic();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString
+        getTopicBytes() {
+            Object ref = topic_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                topic_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
@@ -1273,7 +1302,15 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private Object content_ = "";
+        /**
+         * <code>string topic = 3;</code>
+         */
+        public Builder clearTopic() {
+
+            topic_ = getDefaultInstance().getTopic();
+            onChanged();
+            return this;
+        }
 
         /**
          * <code>string content = 4;</code>
@@ -1282,29 +1319,12 @@ public final class SimpleMessage extends
             Object ref = content_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 content_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string content = 4;</code>
-         */
-        public com.google.protobuf.ByteString
-        getContentBytes() {
-            Object ref = content_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                content_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1322,18 +1342,25 @@ public final class SimpleMessage extends
         /**
          * <code>string content = 4;</code>
          */
-        public Builder clearContent() {
-
-            content_ = getDefaultInstance().getContent();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString
+        getContentBytes() {
+            Object ref = content_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                content_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
          * <code>string content = 4;</code>
          */
         public Builder setContentBytes(
-                com.google.protobuf.ByteString value) {
+            com.google.protobuf.ByteString value) {
             Objects.requireNonNull(value, "ContentBytes can not be null");
 
             checkByteStringIsUtf8(value);
@@ -1343,7 +1370,15 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private Object ttl_ = "";
+        /**
+         * <code>string content = 4;</code>
+         */
+        public Builder clearContent() {
+
+            content_ = getDefaultInstance().getContent();
+            onChanged();
+            return this;
+        }
 
         /**
          * <code>string ttl = 5;</code>
@@ -1352,29 +1387,12 @@ public final class SimpleMessage extends
             Object ref = ttl_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 ttl_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string ttl = 5;</code>
-         */
-        public com.google.protobuf.ByteString
-        getTtlBytes() {
-            Object ref = ttl_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                ttl_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1392,17 +1410,25 @@ public final class SimpleMessage extends
         /**
          * <code>string ttl = 5;</code>
          */
-        public Builder clearTtl() {
-            ttl_ = getDefaultInstance().getTtl();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString
+        getTtlBytes() {
+            Object ref = ttl_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                ttl_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
          * <code>string ttl = 5;</code>
          */
         public Builder setTtlBytes(
-                com.google.protobuf.ByteString value) {
+            com.google.protobuf.ByteString value) {
             Objects.requireNonNull(value, "TtlBytes can not be null");
 
             checkByteStringIsUtf8(value);
@@ -1412,7 +1438,14 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private Object uniqueId_ = "";
+        /**
+         * <code>string ttl = 5;</code>
+         */
+        public Builder clearTtl() {
+            ttl_ = getDefaultInstance().getTtl();
+            onChanged();
+            return this;
+        }
 
         /**
          * <code>string uniqueId = 6;</code>
@@ -1421,29 +1454,12 @@ public final class SimpleMessage extends
             Object ref = uniqueId_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 uniqueId_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string uniqueId = 6;</code>
-         */
-        public com.google.protobuf.ByteString
-        getUniqueIdBytes() {
-            Object ref = uniqueId_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                uniqueId_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1461,11 +1477,18 @@ public final class SimpleMessage extends
         /**
          * <code>string uniqueId = 6;</code>
          */
-        public Builder clearUniqueId() {
-
-            uniqueId_ = getDefaultInstance().getUniqueId();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString
+        getUniqueIdBytes() {
+            Object ref = uniqueId_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                uniqueId_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
@@ -1481,7 +1504,15 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private Object seqNum_ = "";
+        /**
+         * <code>string uniqueId = 6;</code>
+         */
+        public Builder clearUniqueId() {
+
+            uniqueId_ = getDefaultInstance().getUniqueId();
+            onChanged();
+            return this;
+        }
 
         /**
          * <code>string seqNum = 7;</code>
@@ -1490,29 +1521,12 @@ public final class SimpleMessage extends
             Object ref = seqNum_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 seqNum_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string seqNum = 7;</code>
-         */
-        public com.google.protobuf.ByteString
-        getSeqNumBytes() {
-            Object ref = seqNum_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                seqNum_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1530,10 +1544,18 @@ public final class SimpleMessage extends
         /**
          * <code>string seqNum = 7;</code>
          */
-        public Builder clearSeqNum() {
-            seqNum_ = getDefaultInstance().getSeqNum();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString
+        getSeqNumBytes() {
+            Object ref = seqNum_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                seqNum_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
@@ -1548,7 +1570,14 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private Object tag_ = "";
+        /**
+         * <code>string seqNum = 7;</code>
+         */
+        public Builder clearSeqNum() {
+            seqNum_ = getDefaultInstance().getSeqNum();
+            onChanged();
+            return this;
+        }
 
         /**
          * <code>string tag = 8;</code>
@@ -1557,28 +1586,12 @@ public final class SimpleMessage extends
             Object ref = tag_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
+                    (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
                 tag_ = s;
                 return s;
             } else {
                 return (String) ref;
-            }
-        }
-
-        /**
-         * <code>string tag = 8;</code>
-         */
-        public com.google.protobuf.ByteString getTagBytes() {
-            Object ref = tag_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (String) ref);
-                tag_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
             }
         }
 
@@ -1596,17 +1609,24 @@ public final class SimpleMessage extends
         /**
          * <code>string tag = 8;</code>
          */
-        public Builder clearTag() {
-            tag_ = getDefaultInstance().getTag();
-            onChanged();
-            return this;
+        public com.google.protobuf.ByteString getTagBytes() {
+            Object ref = tag_;
+            if (ref instanceof String) {
+                com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                        (String) ref);
+                tag_ = b;
+                return b;
+            } else {
+                return (com.google.protobuf.ByteString) ref;
+            }
         }
 
         /**
          * <code>string tag = 8;</code>
          */
         public Builder setTagBytes(
-                com.google.protobuf.ByteString value) {
+            com.google.protobuf.ByteString value) {
             Objects.requireNonNull(value, "TagBytes can not be null");
             checkByteStringIsUtf8(value);
 
@@ -1615,14 +1635,20 @@ public final class SimpleMessage extends
             return this;
         }
 
-        private com.google.protobuf.MapField<
-                String, String> properties_;
+        /**
+         * <code>string tag = 8;</code>
+         */
+        public Builder clearTag() {
+            tag_ = getDefaultInstance().getTag();
+            onChanged();
+            return this;
+        }
 
         private com.google.protobuf.MapField<String, String>
         internalGetProperties() {
             if (properties_ == null) {
                 return com.google.protobuf.MapField.emptyMapField(
-                        PropertiesDefaultEntryHolder.defaultEntry);
+                    PropertiesDefaultEntryHolder.defaultEntry);
             }
             return properties_;
         }
@@ -1633,7 +1659,7 @@ public final class SimpleMessage extends
             ;
             if (properties_ == null) {
                 properties_ = com.google.protobuf.MapField.newMapField(
-                        PropertiesDefaultEntryHolder.defaultEntry);
+                    PropertiesDefaultEntryHolder.defaultEntry);
             }
             if (!properties_.isMutable()) {
                 properties_ = properties_.copy();
@@ -1650,7 +1676,7 @@ public final class SimpleMessage extends
          */
 
         public boolean containsProperties(
-                String key) {
+            String key) {
             Objects.requireNonNull(key, "key can not be null");
 
             return internalGetProperties().getMap().containsKey(key);
@@ -1677,14 +1703,16 @@ public final class SimpleMessage extends
          */
 
         public String getPropertiesOrDefault(
-                String key,
-                String defaultValue) {
+            String key,
+            String defaultValue) {
             Objects.requireNonNull(key, "key can not be null");
 
             java.util.Map<String, String> map =
-                    internalGetProperties().getMap();
+                internalGetProperties().getMap();
             String value = map.get(key);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                return defaultValue;
+            }
             return value;
         }
 
@@ -1696,7 +1724,7 @@ public final class SimpleMessage extends
             Objects.requireNonNull(key, "key can not be null");
 
             java.util.Map<String, String> map =
-                    internalGetProperties().getMap();
+                internalGetProperties().getMap();
             if (!map.containsKey(key)) {
                 throw new IllegalArgumentException();
             }
@@ -1731,8 +1759,8 @@ public final class SimpleMessage extends
          * <code>map&lt;string, string&gt; properties = 9;</code>
          */
         public Builder putProperties(
-                String key,
-                String value) {
+            String key,
+            String value) {
             if (key == null) {
                 throw new NullPointerException();
             }
@@ -1740,7 +1768,7 @@ public final class SimpleMessage extends
                 throw new NullPointerException();
             }
             internalGetMutableProperties().getMutableMap()
-                    .put(key, value);
+                .put(key, value);
             return this;
         }
 
@@ -1761,42 +1789,7 @@ public final class SimpleMessage extends
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.common.protocol.grpc.SimpleMessage)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.SimpleMessage)
-    private static final SimpleMessage DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new SimpleMessage();
-    }
-
-    public static SimpleMessage getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<SimpleMessage> PARSER =
-            new com.google.protobuf.AbstractParser<SimpleMessage>() {
-                public SimpleMessage parsePartialFrom(
-                        com.google.protobuf.CodedInputStream input,
-                        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                        throws com.google.protobuf.InvalidProtocolBufferException {
-                    return new SimpleMessage(input, extensionRegistry);
-                }
-            };
-
-    public static com.google.protobuf.Parser<SimpleMessage> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<SimpleMessage> getParserForType() {
-        return PARSER;
-    }
-
-    public SimpleMessage getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

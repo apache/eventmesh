@@ -32,22 +32,17 @@ public class ConfigInfo {
 
     public static final String HUMP_SPOT = "spot";
     public static final String HUMP_ROD = "rod";
-
+    Field objectField;
+    Object instance;
     private String path;
     private String field;
     private String prefix;
     private String hump;
     private boolean monitor;
     private boolean removePrefix;
-
     private Class<?> clazz;
     private Object object;
     private String filePath;
-
     private String reloadMethodName;
-
-    Field objectField;
-    Object instance;
-
     private String resourceUrl;
 }

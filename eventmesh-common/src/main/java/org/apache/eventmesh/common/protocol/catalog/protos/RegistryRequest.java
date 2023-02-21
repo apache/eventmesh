@@ -29,11 +29,33 @@ import com.google.protobuf.ByteString;
  */
 @SuppressWarnings({"all"})
 public final class RegistryRequest extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.RegistryRequest)
-        RegistryRequestOrBuilder {
-    private static final long serialVersionUID = 3745623108415722309L;
+    com.google.protobuf.GeneratedMessageV3 implements
+    // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.RegistryRequest)
+    RegistryRequestOrBuilder {
 
+    public static final int FILE_NAME_FIELD_NUMBER = 1;
+    public static final int DEFINITION_FIELD_NUMBER = 2;
+    private static final long serialVersionUID = 3745623108415722309L;
+    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.RegistryRequest)
+    private static final RegistryRequest DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<RegistryRequest>
+        PARSER = new com.google.protobuf.AbstractParser<RegistryRequest>() {
+        @Override
+        public RegistryRequest parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new RegistryRequest(input, extensionRegistry);
+        }
+    };
+
+    static {
+        DEFAULT_INSTANCE = new RegistryRequest();
+    }
+
+    private volatile String fileName_;
+    private volatile String definition_;
+    private byte memoizedIsInitialized = -1;
     // Use RegistryRequest.newBuilder() to construct.
     private RegistryRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
@@ -44,29 +66,16 @@ public final class RegistryRequest extends
         definition_ = "";
     }
 
-    @Override
-    @SuppressWarnings({"unused"})
-    protected Object newInstance(
-            UnusedPrivateParameter unused) {
-        return new RegistryRequest();
-    }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-        return this.unknownFields;
-    }
-
     private RegistryRequest(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
         this();
         Objects.requireNonNull(input, "CodedInputStream can not be null");
         Objects.requireNonNull(extensionRegistry, "ExtensionRegistryLite can not be null");
 
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-                com.google.protobuf.UnknownFieldSet.newBuilder();
+            com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
             boolean done = false;
             while (!done) {
@@ -85,7 +94,7 @@ public final class RegistryRequest extends
                     }
                     default: {
                         if (!parseUnknownField(
-                                input, unknownFields, extensionRegistry, tag)) {
+                            input, unknownFields, extensionRegistry, tag)) {
                             done = true;
                         }
                         break;
@@ -96,7 +105,7 @@ public final class RegistryRequest extends
             throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
             throw new com.google.protobuf.InvalidProtocolBufferException(
-                    e).setUnfinishedMessage(this);
+                e).setUnfinishedMessage(this);
         } finally {
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
@@ -108,16 +117,123 @@ public final class RegistryRequest extends
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_descriptor;
     }
 
+    public static RegistryRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static RegistryRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static RegistryRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static RegistryRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static RegistryRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static RegistryRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static RegistryRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static RegistryRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(RegistryRequest prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static RegistryRequest getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<RegistryRequest> parser() {
+        return PARSER;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+        return new RegistryRequest();
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+        return this.unknownFields;
+    }
+
     @Override
     protected FieldAccessorTable
     internalGetFieldAccessorTable() {
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                        RegistryRequest.class, Builder.class);
+            .ensureFieldAccessorsInitialized(
+                RegistryRequest.class, Builder.class);
     }
-
-    public static final int FILE_NAME_FIELD_NUMBER = 1;
-    private volatile String fileName_;
 
     /**
      * <code>string file_name = 1;</code>
@@ -138,9 +254,6 @@ public final class RegistryRequest extends
     public com.google.protobuf.ByteString getFileNameBytes() {
         return ByteString.copyFromUtf8(fileName_);
     }
-
-    public static final int DEFINITION_FIELD_NUMBER = 2;
-    private volatile String definition_;
 
     /**
      * <code>string definition = 2;</code>
@@ -163,8 +276,6 @@ public final class RegistryRequest extends
         return ByteString.copyFromUtf8(definition_);
     }
 
-    private byte memoizedIsInitialized = -1;
-
     @Override
     public final boolean isInitialized() {
         if (memoizedIsInitialized == 1) {
@@ -180,7 +291,7 @@ public final class RegistryRequest extends
 
     @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-            throws java.io.IOException {
+        throws java.io.IOException {
         if (!getFileNameBytes().isEmpty()) {
             com.google.protobuf.GeneratedMessageV3.writeString(output, 1, fileName_);
         }
@@ -220,10 +331,10 @@ public final class RegistryRequest extends
         RegistryRequest other = (RegistryRequest) obj;
 
         if (!getFileName()
-                .equals(other.getFileName())
-                || !getDefinition()
-                .equals(other.getDefinition())
-                || !unknownFields.equals(other.unknownFields)) {
+            .equals(other.getFileName())
+            || !getDefinition()
+            .equals(other.getDefinition())
+            || !unknownFields.equals(other.unknownFields)) {
             return false;
         }
 
@@ -246,132 +357,44 @@ public final class RegistryRequest extends
         return hash;
     }
 
-    public static RegistryRequest parseFrom(
-            java.nio.ByteBuffer data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryRequest parseFrom(
-            java.nio.ByteBuffer data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryRequest parseFrom(
-            com.google.protobuf.ByteString data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryRequest parseFrom(
-            com.google.protobuf.ByteString data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryRequest parseFrom(byte[] data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static RegistryRequest parseFrom(
-            byte[] data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static RegistryRequest parseFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static RegistryRequest parseFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static RegistryRequest parseDelimitedFrom(java.io.InputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input);
-    }
-
-    public static RegistryRequest parseDelimitedFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static RegistryRequest parseFrom(
-            com.google.protobuf.CodedInputStream input)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input);
-    }
-
-    public static RegistryRequest parseFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-                .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
     @Override
     public Builder newBuilderForType() {
         return newBuilder();
     }
 
-    public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-    }
-
-    public static Builder newBuilder(RegistryRequest prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-
     @Override
     public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
-                ? new Builder() : new Builder().mergeFrom(this);
+            ? new Builder() : new Builder().mergeFrom(this);
     }
 
     @Override
     protected Builder newBuilderForType(
-            BuilderParent parent) {
+        BuilderParent parent) {
         Builder builder = new Builder(parent);
         return builder;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<RegistryRequest> getParserForType() {
+        return PARSER;
+    }
+
+    @Override
+    public RegistryRequest getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
     }
 
     /**
      * Protobuf type {@code eventmesh.catalog.api.protocol.RegistryRequest}
      */
     public static final class Builder extends
-            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.RegistryRequest)
-            RegistryRequestOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-            return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_descriptor;
-        }
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.RegistryRequest)
+        RegistryRequestOrBuilder {
 
-        @Override
-        protected FieldAccessorTable
-        internalGetFieldAccessorTable() {
-            return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(
-                            RegistryRequest.class, Builder.class);
-        }
+        private String fileName_ = "";
+        private String definition_ = "";
 
         // Construct using org.apache.eventmesh.common.protocol.catalog.protos.RegistryRequest.newBuilder()
         private Builder() {
@@ -383,9 +406,22 @@ public final class RegistryRequest extends
             maybeForceBuilderInitialization();
         }
 
+        public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+            return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_descriptor;
+        }
+
+        @Override
+        protected FieldAccessorTable
+        internalGetFieldAccessorTable() {
+            return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_RegistryRequest_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    RegistryRequest.class, Builder.class);
+        }
+
         private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
-                    .alwaysUseFieldBuilders) {
+                .alwaysUseFieldBuilders) {
             }
         }
 
@@ -435,34 +471,34 @@ public final class RegistryRequest extends
 
         @Override
         public Builder setField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return super.setField(field, value);
         }
 
         @Override
         public Builder clearField(
-                com.google.protobuf.Descriptors.FieldDescriptor field) {
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
             return super.clearField(field);
         }
 
         @Override
         public Builder clearOneof(
-                com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
             return super.clearOneof(oneof);
         }
 
         @Override
         public Builder setRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                int index, Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
             return super.setRepeatedField(field, index, value);
         }
 
         @Override
         public Builder addRepeatedField(
-                com.google.protobuf.Descriptors.FieldDescriptor field,
-                Object value) {
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
             return super.addRepeatedField(field, value);
         }
 
@@ -500,9 +536,9 @@ public final class RegistryRequest extends
 
         @Override
         public Builder mergeFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
             RegistryRequest parsedMessage = null;
             try {
                 parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -517,8 +553,6 @@ public final class RegistryRequest extends
             return this;
         }
 
-        private String fileName_ = "";
-
         /**
          * <code>string file_name = 1;</code>
          *
@@ -526,6 +560,21 @@ public final class RegistryRequest extends
          */
         public String getFileName() {
             return fileName_;
+        }
+
+        /**
+         * <code>string file_name = 1;</code>
+         *
+         * @param value The fileName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setFileName(
+            String value) {
+            Objects.requireNonNull(value, "FileName can not be null");
+
+            fileName_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -541,14 +590,15 @@ public final class RegistryRequest extends
         /**
          * <code>string file_name = 1;</code>
          *
-         * @param value The fileName to set.
+         * @param value The bytes for fileName to set.
          * @return This builder for chaining.
          */
-        public Builder setFileName(
-                String value) {
-            Objects.requireNonNull(value, "FileName can not be null");
+        public Builder setFileNameBytes(
+            com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "FileNameBytes can not be null");
+            checkByteStringIsUtf8(value);
 
-            fileName_ = value;
+            fileName_ = value.toStringUtf8();
             onChanged();
             return this;
         }
@@ -566,30 +616,27 @@ public final class RegistryRequest extends
         }
 
         /**
-         * <code>string file_name = 1;</code>
-         *
-         * @param value The bytes for fileName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setFileNameBytes(
-                com.google.protobuf.ByteString value) {
-            Objects.requireNonNull(value, "FileNameBytes can not be null");
-            checkByteStringIsUtf8(value);
-
-            fileName_ = value.toStringUtf8();
-            onChanged();
-            return this;
-        }
-
-        private String definition_ = "";
-
-        /**
          * <code>string definition = 2;</code>
          *
          * @return The definition.
          */
         public String getDefinition() {
             return definition_;
+        }
+
+        /**
+         * <code>string definition = 2;</code>
+         *
+         * @param value The definition to set.
+         * @return This builder for chaining.
+         */
+        public Builder setDefinition(
+            String value) {
+            Objects.requireNonNull(value, "Definition can not be null");
+
+            definition_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -605,14 +652,15 @@ public final class RegistryRequest extends
         /**
          * <code>string definition = 2;</code>
          *
-         * @param value The definition to set.
+         * @param value The bytes for definition to set.
          * @return This builder for chaining.
          */
-        public Builder setDefinition(
-                String value) {
-            Objects.requireNonNull(value, "Definition can not be null");
+        public Builder setDefinitionBytes(
+            com.google.protobuf.ByteString value) {
+            Objects.requireNonNull(value, "DefinitionBytes can not be null");
+            checkByteStringIsUtf8(value);
 
-            definition_ = value;
+            definition_ = value.toStringUtf8();
             onChanged();
             return this;
         }
@@ -629,72 +677,19 @@ public final class RegistryRequest extends
             return this;
         }
 
-        /**
-         * <code>string definition = 2;</code>
-         *
-         * @param value The bytes for definition to set.
-         * @return This builder for chaining.
-         */
-        public Builder setDefinitionBytes(
-                com.google.protobuf.ByteString value) {
-            Objects.requireNonNull(value, "DefinitionBytes can not be null");
-            checkByteStringIsUtf8(value);
-
-            definition_ = value.toStringUtf8();
-            onChanged();
-            return this;
-        }
-
         @Override
         public final Builder setUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.setUnknownFields(unknownFields);
         }
 
         @Override
         public final Builder mergeUnknownFields(
-                final com.google.protobuf.UnknownFieldSet unknownFields) {
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.catalog.api.protocol.RegistryRequest)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.RegistryRequest)
-    private static final RegistryRequest DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new RegistryRequest();
-    }
-
-    public static RegistryRequest getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<RegistryRequest>
-            PARSER = new com.google.protobuf.AbstractParser<RegistryRequest>() {
-        @Override
-        public RegistryRequest parsePartialFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return new RegistryRequest(input, extensionRegistry);
-        }
-    };
-
-    public static com.google.protobuf.Parser<RegistryRequest> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<RegistryRequest> getParserForType() {
-        return PARSER;
-    }
-
-    @Override
-    public RegistryRequest getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

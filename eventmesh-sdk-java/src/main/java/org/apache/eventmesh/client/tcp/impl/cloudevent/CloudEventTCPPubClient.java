@@ -49,9 +49,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<CloudEvent> {
 
-    private ReceiveMsgHook<CloudEvent> callback;
-
     private final ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
+    private ReceiveMsgHook<CloudEvent> callback;
 
     public CloudEventTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
@@ -105,7 +104,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
-                    CLIENTNO, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                CLIENTNO, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -117,7 +116,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", CLIENTNO, msg.getHeader().getCmd(),
-                    msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
             throw new EventMeshException("Broadcast message error", ex);
@@ -148,7 +147,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(cloudEvent)
-                        .ifPresent(responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
+                    .ifPresent(responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 
@@ -156,7 +155,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         public CloudEvent getMessage(Package tcpPackage) {
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions.checkNotNull(eventFormat,
-                    String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
+                String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
             return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
         }
 

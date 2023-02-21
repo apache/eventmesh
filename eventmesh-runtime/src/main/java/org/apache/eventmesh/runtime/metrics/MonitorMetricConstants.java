@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.metrics;
 
 public class MonitorMetricConstants {
+
     public static final String EVENTMESH_MONITOR_FORMAT_COMMON = "{\"protocol\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
 
     public static final String EVENTMESH_TCP_MONITOR_FORMAT_THREADPOOL = "{\"threadPoolName\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";

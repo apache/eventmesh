@@ -51,7 +51,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -60,36 +59,30 @@ public class Session {
     protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
-
-    private UserAgent client;
-
-    private InetSocketAddress remoteAddress;
-
     protected ChannelHandlerContext context;
-
+    protected SessionState sessionState = SessionState.CREATED;
+    private UserAgent client;
+    private InetSocketAddress remoteAddress;
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
-
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-
     private SessionPusher pusher;
-
     private SessionSender sender;
-
     private long createTime = System.currentTimeMillis();
-
     private long lastHeartbeatTime = System.currentTimeMillis();
-
     private long isolateTime = 0;
-
     private SessionContext sessionContext = new SessionContext(this);
-
     private boolean listenRspSend = false;
-
     private ReentrantLock listenRspLock = new ReentrantLock();
-
     private String listenRequestSeq = null;
 
-    protected SessionState sessionState = SessionState.CREATED;
+    public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+        this.client = client;
+        this.context = context;
+        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
+        this.sender = new SessionSender(this);
+        this.pusher = new SessionPusher(this);
+    }
 
     public InetSocketAddress getRemoteAddress() {
         return remoteAddress;
@@ -103,6 +96,10 @@ public class Session {
         return lastHeartbeatTime;
     }
 
+    public void setLastHeartbeatTime(long lastHeartbeatTime) {
+        this.lastHeartbeatTime = lastHeartbeatTime;
+    }
+
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
     }
@@ -113,10 +110,6 @@ public class Session {
 
     public void setSessionState(SessionState sessionState) {
         this.sessionState = sessionState;
-    }
-
-    public void setClient(UserAgent client) {
-        this.client = client;
     }
 
     public SessionPusher getPusher() {
@@ -133,10 +126,6 @@ public class Session {
 
     public void setSender(SessionSender sender) {
         this.sender = sender;
-    }
-
-    public void setLastHeartbeatTime(long lastHeartbeatTime) {
-        this.lastHeartbeatTime = lastHeartbeatTime;
     }
 
     public SessionContext getSessionContext() {
@@ -159,6 +148,10 @@ public class Session {
         return client;
     }
 
+    public void setClient(UserAgent client) {
+        this.client = client;
+    }
+
     public String getListenRequestSeq() {
         return listenRequestSeq;
     }
@@ -173,7 +166,7 @@ public class Session {
             Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
             Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
-                    .checkTopicExist(item.getTopic());
+                .checkTopicExist(item.getTopic());
 
             Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
@@ -193,7 +186,7 @@ public class Session {
     }
 
     public EventMeshTcpSendResult upstreamMsg(Header header, CloudEvent event, SendCallback sendCallback,
-                                              long startTime, long taskExecuteTime) {
+        long startTime, long taskExecuteTime) {
         String topic = event.getSubject();
         sessionContext.sendTopics.putIfAbsent(topic, topic);
         return sender.send(header, event, sendCallback, startTime, taskExecuteTime);
@@ -202,7 +195,7 @@ public class Session {
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
         trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
-                getListenRequestSeq()), currTime, currTime);
+            getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
     }
@@ -219,20 +212,20 @@ public class Session {
             }
 
             context.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            } else {
-                                Objects.requireNonNull(clientGroupWrapper.get())
-                                        .getEventMeshTcpMonitor()
-                                        .getTcpSummaryMetrics()
-                                        .getEventMesh2clientMsgNum()
-                                        .incrementAndGet();
-                            }
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                        } else {
+                            Objects.requireNonNull(clientGroupWrapper.get())
+                                .getEventMeshTcpMonitor()
+                                .getTcpSummaryMetrics()
+                                .getEventMesh2clientMsgNum()
+                                .incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
             log.error("exception while write2Client", e);
@@ -242,24 +235,24 @@ public class Session {
     @Override
     public String toString() {
         return "Session{"
-                +
-                "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-                +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-                +
-                ",client=" + client
-                +
-                ",sessionState=" + sessionState
-                +
-                ",sessionContext=" + sessionContext
-                +
-                ",pusher=" + pusher
-                +
-                ",sender=" + sender
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+            +
+            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+            +
+            ",client=" + client
+            +
+            ",sessionState=" + sessionState
+            +
+            ",sessionContext=" + sessionContext
+            +
+            ",pusher=" + pusher
+            +
+            ",sender=" + sender
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -306,15 +299,6 @@ public class Session {
 
     public void setClientGroupWrapper(WeakReference<ClientGroupWrapper> clientGroupWrapper) {
         this.clientGroupWrapper = clientGroupWrapper;
-    }
-
-    public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.client = client;
-        this.context = context;
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
-        this.sender = new SessionSender(this);
-        this.pusher = new SessionPusher(this);
     }
 
     public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {

@@ -28,7 +28,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;

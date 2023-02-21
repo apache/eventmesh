@@ -55,6 +55,24 @@ public class SendMessageRequestBody extends Body {
 
     private String producerGroup;
 
+    public static SendMessageRequestBody buildBody(Map<String, Object> bodyParam) {
+        SendMessageRequestBody body = new SendMessageRequestBody();
+        body.setTopic(MapUtils.getString(bodyParam, TOPIC));
+        body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
+        body.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
+        body.setTtl(MapUtils.getString(bodyParam, TTL));
+        body.setTag(MapUtils.getString(bodyParam, TAG, ""));
+        body.setContent(MapUtils.getString(bodyParam, CONTENT));
+        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
+        if (StringUtils.isNotBlank(extFields)) {
+            body.setExtFields(
+                JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
+        }
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
+        return body;
+    }
+
     public String getTopic() {
         return topic;
     }
@@ -119,24 +137,6 @@ public class SendMessageRequestBody extends Body {
         this.producerGroup = producerGroup;
     }
 
-    public static SendMessageRequestBody buildBody(Map<String, Object> bodyParam) {
-        SendMessageRequestBody body = new SendMessageRequestBody();
-        body.setTopic(MapUtils.getString(bodyParam, TOPIC));
-        body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
-        body.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
-        body.setTtl(MapUtils.getString(bodyParam, TTL));
-        body.setTag(MapUtils.getString(bodyParam, TAG, ""));
-        body.setContent(MapUtils.getString(bodyParam, CONTENT));
-        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
-        if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(
-                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
-        }
-        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
-        return body;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -155,14 +155,14 @@ public class SendMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageRequestBody={")
-                .append("topic=").append(topic).append(",")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("content=").append(content).append(",")
-                .append("ttl=").append(ttl).append(",")
-                .append("tag=").append(tag).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("topic=").append(topic).append(",")
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("content=").append(content).append(",")
+            .append("ttl=").append(ttl).append(",")
+            .append("tag=").append(tag).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 

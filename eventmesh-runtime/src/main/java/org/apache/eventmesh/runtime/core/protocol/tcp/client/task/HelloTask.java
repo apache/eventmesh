@@ -43,7 +43,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -79,25 +78,25 @@ public class HelloTask extends AbstractTask {
             validateUserAgent(user);
             session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
-                    .getHeader().getSeq()));
+                .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
-                            } else {
-                                Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
-                            }
-                            log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
-                            eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
+                        } else {
+                            Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                         }
+                        log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
+                        eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                     }
+                }
             );
         }
     }
@@ -112,7 +111,7 @@ public class HelloTask extends AbstractTask {
         }
 
         if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
-                EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
+            EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
 
             throw new Exception("client purpose config is error");
         }

@@ -38,7 +38,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,7 +54,7 @@ public class Utils {
      * @param session
      */
     public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
-                                     Session session) {
+        Session session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
             if (session != null && session.getSessionState() == SessionState.CLOSED) {
@@ -91,21 +90,21 @@ public class Utils {
      * @param startTime
      */
     public static void logFailedMessageFlow(ChannelFuture future, Package pkg, UserAgent user, long startTime,
-                                            long taskExecuteTime) {
+        long taskExecuteTime) {
         logFailedMessageFlow(pkg, user, startTime, taskExecuteTime, future.cause());
     }
 
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
-                                             Throwable e) {
+        Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                    pkg.getHeader().getCmd(),
-                    EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
-                    System.currentTimeMillis() - startTime, e);
+                pkg.getHeader().getCmd(),
+                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                System.currentTimeMillis() - startTime, e);
         } else {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                    pkg.getHeader().getCmd(),
-                    pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
+                pkg.getHeader().getCmd(),
+                pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         }
     }
 
@@ -119,12 +118,12 @@ public class Utils {
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                    EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
-                    System.currentTimeMillis() - startTime);
+                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                System.currentTimeMillis() - startTime);
         } else {
             MESSAGE_LOGGER
-                    .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
-                            user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+                .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
+                    user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
 
         }
     }

@@ -25,7 +25,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseRequestHeader extends Header {
+
     private String code;
+
+    public static BaseRequestHeader buildHeader(Map<String, Object> headerParam) {
+        BaseRequestHeader header = new BaseRequestHeader();
+        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
+        return header;
+    }
 
     public String getCode() {
         return code;
@@ -33,12 +40,6 @@ public class BaseRequestHeader extends Header {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public static BaseRequestHeader buildHeader(Map<String, Object> headerParam) {
-        BaseRequestHeader header = new BaseRequestHeader();
-        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
-        return header;
     }
 
     @Override
@@ -52,7 +53,7 @@ public class BaseRequestHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("baseRequestHeader={code=")
-                .append(code).append("}");
+            .append(code).append("}");
         return sb.toString();
     }
 }

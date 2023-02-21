@@ -49,6 +49,22 @@ public class ReplyMessageRequestBody extends Body {
 
     private String producerGroup;
 
+    public static ReplyMessageRequestBody buildBody(Map<String, Object> bodyParam) {
+        ReplyMessageRequestBody body = new ReplyMessageRequestBody();
+        body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
+        body.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
+        body.setContent(MapUtils.getString(bodyParam, CONTENT));
+        body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
+        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
+        if (StringUtils.isNotBlank(extFields)) {
+            body.setExtFields(
+                JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
+        }
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
+        return body;
+    }
+
     public String getOrigTopic() {
         return origTopic;
     }
@@ -97,32 +113,16 @@ public class ReplyMessageRequestBody extends Body {
         this.producerGroup = producerGroup;
     }
 
-    public static ReplyMessageRequestBody buildBody(Map<String, Object> bodyParam) {
-        ReplyMessageRequestBody body = new ReplyMessageRequestBody();
-        body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
-        body.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
-        body.setContent(MapUtils.getString(bodyParam, CONTENT));
-        body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
-        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
-        if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(
-                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
-        }
-        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
-        return body;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("replyMessageRequestBody={")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("origTopic=").append(origTopic).append(",")
-                .append("content=").append(content).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("origTopic=").append(origTopic).append(",")
+            .append("content=").append(content).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 

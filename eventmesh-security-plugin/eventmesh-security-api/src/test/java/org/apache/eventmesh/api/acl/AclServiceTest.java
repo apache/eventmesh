@@ -27,44 +27,6 @@ import org.junit.Test;
 
 public class AclServiceTest {
 
-    private static class DemoAclService implements AclService {
-
-        @Override
-        public void init() throws AclException {
-
-        }
-
-        @Override
-        public void start() throws AclException {
-
-        }
-
-        @Override
-        public void shutdown() throws AclException {
-
-        }
-
-        @Override
-        public void doAclCheckInConnect(Properties aclProperties) throws AclException {
-
-        }
-
-        @Override
-        public void doAclCheckInHeartbeat(Properties aclProperties) throws AclException {
-
-        }
-
-        @Override
-        public void doAclCheckInSend(Properties aclProperties) throws AclException {
-
-        }
-
-        @Override
-        public void doAclCheckInReceive(Properties aclProperties) throws AclException {
-
-        }
-    }
-
     private static AclService service;
 
     @BeforeClass
@@ -132,6 +94,44 @@ public class AclServiceTest {
             service.doAclCheckInReceive(new Properties());
         } catch (AclException e) {
             Assert.fail(e.getMessage());
+        }
+    }
+
+    private static class DemoAclService implements AclService {
+
+        @Override
+        public void init() throws AclException {
+
+        }
+
+        @Override
+        public void start() throws AclException {
+
+        }
+
+        @Override
+        public void shutdown() throws AclException {
+
+        }
+
+        @Override
+        public void doAclCheckInConnect(Properties aclProperties) throws AclException {
+
+        }
+
+        @Override
+        public void doAclCheckInHeartbeat(Properties aclProperties) throws AclException {
+
+        }
+
+        @Override
+        public void doAclCheckInSend(Properties aclProperties) throws AclException {
+
+        }
+
+        @Override
+        public void doAclCheckInReceive(Properties aclProperties) throws AclException {
+
         }
     }
 

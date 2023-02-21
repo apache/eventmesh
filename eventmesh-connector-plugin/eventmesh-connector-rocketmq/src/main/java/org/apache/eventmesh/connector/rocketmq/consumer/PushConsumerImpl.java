@@ -54,11 +54,12 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class PushConsumerImpl {
+
     private final DefaultMQPushConsumer rocketmqPushConsumer;
     private final Properties properties;
+    private final ClientConfig clientConfig;
     private AtomicBoolean started = new AtomicBoolean(false);
     private EventListener eventListener;
-    private final ClientConfig clientConfig;
 
     public PushConsumerImpl(final Properties properties) {
         this.rocketmqPushConsumer = new DefaultMQPushConsumer();
@@ -162,12 +163,15 @@ public class PushConsumerImpl {
             .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }
 
+    public void registerEventListener(EventListener listener) {
+        this.eventListener = listener;
+    }
 
     private class BroadCastingMessageListener extends EventMeshMessageListenerConcurrently {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -238,7 +242,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -303,9 +307,5 @@ public class PushConsumerImpl {
             return EventMeshConsumeConcurrentlyStatus.valueOf(
                 contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
-    }
-
-    public void registerEventListener(EventListener listener) {
-        this.eventListener = listener;
     }
 }

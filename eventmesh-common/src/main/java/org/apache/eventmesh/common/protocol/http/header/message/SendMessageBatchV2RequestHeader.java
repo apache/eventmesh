@@ -69,6 +69,27 @@ public class SendMessageBatchV2RequestHeader extends Header {
     //PASSWD of the requester
     private String passwd;
 
+    public static SendMessageBatchV2RequestHeader buildHeader(final Map<String, Object> headerParam) {
+        SendMessageBatchV2RequestHeader header = new SendMessageBatchV2RequestHeader();
+        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
+        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+        header.setProtocolType(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_TYPE));
+        header.setProtocolVersion(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_VERSION));
+        header.setProtocolDesc(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_DESC));
+
+        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
+            ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+        header.setLanguage(lan);
+        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
+        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
+        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
+        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
+        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
+        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
+        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
+        return header;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -173,27 +194,6 @@ public class SendMessageBatchV2RequestHeader extends Header {
         this.protocolDesc = protocolDesc;
     }
 
-    public static SendMessageBatchV2RequestHeader buildHeader(final Map<String, Object> headerParam) {
-        SendMessageBatchV2RequestHeader header = new SendMessageBatchV2RequestHeader();
-        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
-        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        header.setProtocolType(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_TYPE));
-        header.setProtocolVersion(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_VERSION));
-        header.setProtocolDesc(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_DESC));
-
-        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-                ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
-        header.setLanguage(lan);
-        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
-        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
-        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
-        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
-        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
-        return header;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -214,16 +214,16 @@ public class SendMessageBatchV2RequestHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchV2RequestHeader={")
-                .append("code=").append(code).append(",")
-                .append("language=").append(language).append(",")
-                .append("version=").append(version).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("pid=").append(pid).append(",")
-                .append("ip=").append(ip).append(",")
-                .append("username=").append(username).append(",")
-                .append("passwd=").append(passwd).append("}");
+            .append("code=").append(code).append(",")
+            .append("language=").append(language).append(",")
+            .append("version=").append(version).append(",")
+            .append("env=").append(env).append(",")
+            .append("idc=").append(idc).append(",")
+            .append("sys=").append(sys).append(",")
+            .append("pid=").append(pid).append(",")
+            .append("ip=").append(ip).append(",")
+            .append("username=").append(username).append(",")
+            .append("passwd=").append(passwd).append("}");
         return sb.toString();
     }
 }

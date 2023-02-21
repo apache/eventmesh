@@ -43,6 +43,16 @@ public class SubscribeRequestBody extends Body {
 
     private String consumerGroup;
 
+    public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
+        SubscribeRequestBody body = new SubscribeRequestBody();
+        body.setUrl(MapUtils.getString(bodyParam, URL));
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPIC),
+            new TypeReference<List<SubscriptionItem>>() {
+            }));
+        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
+        return body;
+    }
+
     public String getConsumerGroup() {
         return consumerGroup;
     }
@@ -67,16 +77,6 @@ public class SubscribeRequestBody extends Body {
         this.url = url;
     }
 
-    public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
-        SubscribeRequestBody body = new SubscribeRequestBody();
-        body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPIC),
-                new TypeReference<List<SubscriptionItem>>() {
-                }));
-        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
-        return body;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -89,9 +89,9 @@ public class SubscribeRequestBody extends Body {
     @Override
     public String toString() {
         return "subscribeBody{"
-                + "consumerGroup='" + consumerGroup + '\''
-                + ", url='" + url + '\''
-                + ", topics=" + topics
-                + '}';
+            + "consumerGroup='" + consumerGroup + '\''
+            + ", url='" + url + '\''
+            + ", topics=" + topics
+            + '}';
     }
 }

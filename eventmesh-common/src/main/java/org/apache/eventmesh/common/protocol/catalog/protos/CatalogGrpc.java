@@ -29,14 +29,18 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 @SuppressWarnings({"all"})
 public final class CatalogGrpc {
 
-    private CatalogGrpc() {
-    }
-
     public static final String SERVICE_NAME = "eventmesh.catalog.api.protocol.Catalog";
-
+    private static final int METHODID_REGISTRY = 0;
+    private static final int METHODID_QUERY_OPERATIONS = 1;
     // Static method descriptors that strictly reflect the proto.
     private static volatile io.grpc.MethodDescriptor<RegistryRequest,
         RegistryResponse> getRegistryMethod;
+    private static volatile io.grpc.MethodDescriptor<QueryOperationsRequest,
+        QueryOperationsResponse> getQueryOperationsMethod;
+    private static volatile io.grpc.ServiceDescriptor serviceDescriptor;
+
+    private CatalogGrpc() {
+    }
 
     @io.grpc.stub.annotations.RpcMethod(
         fullMethodName = SERVICE_NAME + '/' + "Registry",
@@ -65,9 +69,6 @@ public final class CatalogGrpc {
         }
         return getRegistryMethod;
     }
-
-    private static volatile io.grpc.MethodDescriptor<QueryOperationsRequest,
-        QueryOperationsResponse> getQueryOperationsMethod;
 
     @io.grpc.stub.annotations.RpcMethod(
         fullMethodName = SERVICE_NAME + '/' + "QueryOperations",
@@ -141,6 +142,23 @@ public final class CatalogGrpc {
         return CatalogFutureStub.newStub(factory, channel);
     }
 
+    public static io.grpc.ServiceDescriptor getServiceDescriptor() {
+        io.grpc.ServiceDescriptor result = serviceDescriptor;
+        if (result == null) {
+            synchronized (CatalogGrpc.class) {
+                result = serviceDescriptor;
+                if (result == null) {
+                    serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
+                        .setSchemaDescriptor(new CatalogFileDescriptorSupplier())
+                        .addMethod(getRegistryMethod())
+                        .addMethod(getQueryOperationsMethod())
+                        .build();
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      *
      */
@@ -150,7 +168,7 @@ public final class CatalogGrpc {
          *
          */
         public void registry(RegistryRequest request,
-                             io.grpc.stub.StreamObserver<RegistryResponse> responseObserver) {
+            io.grpc.stub.StreamObserver<RegistryResponse> responseObserver) {
             io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRegistryMethod(), responseObserver);
         }
 
@@ -158,7 +176,7 @@ public final class CatalogGrpc {
          *
          */
         public void queryOperations(QueryOperationsRequest request,
-                                    io.grpc.stub.StreamObserver<QueryOperationsResponse> responseObserver) {
+            io.grpc.stub.StreamObserver<QueryOperationsResponse> responseObserver) {
             io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getQueryOperationsMethod(), responseObserver);
         }
 
@@ -187,6 +205,7 @@ public final class CatalogGrpc {
      *
      */
     public static final class CatalogStub extends io.grpc.stub.AbstractAsyncStub<CatalogStub> {
+
         private CatalogStub(
             io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             super(channel, callOptions);
@@ -202,7 +221,7 @@ public final class CatalogGrpc {
          *
          */
         public void registry(RegistryRequest request,
-                             io.grpc.stub.StreamObserver<RegistryResponse> responseObserver) {
+            io.grpc.stub.StreamObserver<RegistryResponse> responseObserver) {
             io.grpc.stub.ClientCalls.asyncUnaryCall(
                 getChannel().newCall(getRegistryMethod(), getCallOptions()), request, responseObserver);
         }
@@ -211,7 +230,7 @@ public final class CatalogGrpc {
          *
          */
         public void queryOperations(QueryOperationsRequest request,
-                                    io.grpc.stub.StreamObserver<QueryOperationsResponse> responseObserver) {
+            io.grpc.stub.StreamObserver<QueryOperationsResponse> responseObserver) {
             io.grpc.stub.ClientCalls.asyncUnaryCall(
                 getChannel().newCall(getQueryOperationsMethod(), getCallOptions()), request, responseObserver);
         }
@@ -221,6 +240,7 @@ public final class CatalogGrpc {
      *
      */
     public static final class CatalogBlockingStub extends io.grpc.stub.AbstractBlockingStub<CatalogBlockingStub> {
+
         private CatalogBlockingStub(
             io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             super(channel, callOptions);
@@ -253,6 +273,7 @@ public final class CatalogGrpc {
      *
      */
     public static final class CatalogFutureStub extends io.grpc.stub.AbstractFutureStub<CatalogFutureStub> {
+
         private CatalogFutureStub(
             io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             super(channel, callOptions);
@@ -283,14 +304,12 @@ public final class CatalogGrpc {
         }
     }
 
-    private static final int METHODID_REGISTRY = 0;
-    private static final int METHODID_QUERY_OPERATIONS = 1;
-
     private static final class MethodHandlers<Req, Resp> implements
         io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
         io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
         io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
         io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
+
         private final CatalogImplBase serviceImpl;
         private final int methodId;
 
@@ -329,6 +348,7 @@ public final class CatalogGrpc {
 
     private static abstract class CatalogBaseDescriptorSupplier
         implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
+
         CatalogBaseDescriptorSupplier() {
         }
 
@@ -345,6 +365,7 @@ public final class CatalogGrpc {
 
     private static final class CatalogFileDescriptorSupplier
         extends CatalogBaseDescriptorSupplier {
+
         CatalogFileDescriptorSupplier() {
         }
     }
@@ -352,6 +373,7 @@ public final class CatalogGrpc {
     private static final class CatalogMethodDescriptorSupplier
         extends CatalogBaseDescriptorSupplier
         implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
+
         private final String methodName;
 
         CatalogMethodDescriptorSupplier(String methodName) {
@@ -362,24 +384,5 @@ public final class CatalogGrpc {
         public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
             return getServiceDescriptor().findMethodByName(methodName);
         }
-    }
-
-    private static volatile io.grpc.ServiceDescriptor serviceDescriptor;
-
-    public static io.grpc.ServiceDescriptor getServiceDescriptor() {
-        io.grpc.ServiceDescriptor result = serviceDescriptor;
-        if (result == null) {
-            synchronized (CatalogGrpc.class) {
-                result = serviceDescriptor;
-                if (result == null) {
-                    serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
-                        .setSchemaDescriptor(new CatalogFileDescriptorSupplier())
-                        .addMethod(getRegistryMethod())
-                        .addMethod(getQueryOperationsMethod())
-                        .build();
-                }
-            }
-        }
-        return result;
     }
 }

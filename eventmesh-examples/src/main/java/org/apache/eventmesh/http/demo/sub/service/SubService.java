@@ -53,13 +53,11 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SubService implements InitializingBean {
 
-    private transient EventMeshHttpConsumer eventMeshHttpConsumer;
-
-    private transient Properties properties;
-
     private final transient List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
+    private transient EventMeshHttpConsumer eventMeshHttpConsumer;
+    private transient Properties properties;
     private transient String testURL;
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
@@ -76,13 +74,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(ENV)
-                .idc(IDC)
-                .ip(IPUtils.getLocalAddress())
-                .sys(SUB_SYS)
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .liteEventMeshAddr(eventMeshIPPort)
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV)
+            .idc(IDC)
+            .ip(IPUtils.getLocalAddress())
+            .sys(SUB_SYS)
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, testURL);

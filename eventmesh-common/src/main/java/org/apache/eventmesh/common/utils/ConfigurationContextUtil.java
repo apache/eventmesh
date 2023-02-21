@@ -30,14 +30,11 @@ import com.google.common.collect.Lists;
  */
 public class ConfigurationContextUtil {
 
-    private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
-
     public static final String HTTP = "HTTP";
     public static final String TCP = "TCP";
     public static final String GRPC = "GRPC";
-
     public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC);
-
+    private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
     /**
      * Save http, tcp, grpc configuration at startup for global use.

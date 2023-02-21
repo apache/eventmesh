@@ -49,31 +49,27 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SubService implements InitializingBean {
 
-    private EventMeshGrpcConsumer eventMeshGrpcConsumer;
-
-    private Properties properties;
-
     private final SubscriptionItem subscriptionItem = new SubscriptionItem();
-
     private final String localIp = IPUtils.getLocalAddress();
-    private final String localPort = properties.getProperty(SERVER_PORT);
-    private final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-    private final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-    private final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
+    private EventMeshGrpcConsumer eventMeshGrpcConsumer;
+    private Properties properties;
+    private final String localPort = properties.getProperty(SERVER_PORT);
+    private final String url = "http://" + localIp + ":" + localPort + "/sub/test";
+    private final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+    private final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
     @Override
     public void afterPropertiesSet() throws Exception {
 
         final EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(ENV).idc(IDC)
-                .sys(SUB_SYS)
-                .build();
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV).idc(IDC)
+            .sys(SUB_SYS)
+            .build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
@@ -85,7 +81,6 @@ public class SubService implements InitializingBean {
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
         properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-
 
         // Wait for all messaged to be consumed
         final Thread stopThread = new Thread(() -> {

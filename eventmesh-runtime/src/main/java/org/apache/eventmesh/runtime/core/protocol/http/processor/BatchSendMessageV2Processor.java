@@ -58,20 +58,16 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
-
     private final EventMeshHTTPServer eventMeshHTTPServer;
-
     private final Acl acl;
+    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
     public BatchSendMessageV2Processor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.acl = eventMeshHTTPServer.getAcl();
     }
-
-    public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext)
@@ -98,9 +94,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
             SendMessageBatchV2ResponseHeader.buildHeader(
                 requestCode,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
             );
 
         // todo: use validate processor to check

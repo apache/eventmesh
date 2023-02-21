@@ -60,7 +60,7 @@ public class ConfigServiceTest {
     public void getConfigByFilePath() throws Exception {
         ConfigService configService = ConfigService.getInstance();
         String rootPath = new File(this.getClass().getResource("/" + configFileName)
-                .getPath()).getParent();
+            .getPath()).getParent();
 
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setPath(FILE_PATH_PREFIX + rootPath + "/" + configFileName);
@@ -75,7 +75,7 @@ public class ConfigServiceTest {
     public void getConfigByConfigPath() throws Exception {
         ConfigService configService = ConfigService.getInstance();
         String configPath = new File(this.getClass().getResource("/" + configFileName)
-                .getPath()).getParent();
+            .getPath()).getParent();
 
         configService.setConfigPath(configPath);
         ConfigInfo configInfo = new ConfigInfo();

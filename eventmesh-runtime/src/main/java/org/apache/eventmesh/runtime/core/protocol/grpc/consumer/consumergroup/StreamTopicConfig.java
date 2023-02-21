@@ -38,14 +38,12 @@ import lombok.extern.slf4j.Slf4j;
 public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
     /**
-     * Key: IDC
-     * Value: list of emitters with Client_IP:port
+     * Key: IDC Value: list of emitters with Client_IP:port
      */
     private final transient Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap = new ConcurrentHashMap<>();
 
     /**
-     * Key: IDC
-     * Value: list of emitters
+     * Key: IDC Value: list of emitters
      */
     private transient Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters = new ConcurrentHashMap<>();
 
@@ -55,6 +53,22 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
     }
 
+    private static Map<String, List<EventEmitter<SimpleMessage>>> buildIdcEmitter(
+        final Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap) {
+        final Map<String, List<EventEmitter<SimpleMessage>>> result = new HashMap<>();
+        idcEmitterMap.forEach((k, v) -> {
+            result.put(k, new LinkedList<EventEmitter<SimpleMessage>>(v.values()));
+        });
+        return result;
+    }
+
+    private static List<EventEmitter<SimpleMessage>> buildTotalEmitter(
+        final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters) {
+        final List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>();
+        idcEmitters.values().forEach(emitterList::addAll);
+        return emitterList;
+    }
+
     @Override
     public synchronized void registerClient(final ConsumerGroupClient client) {
         Objects.requireNonNull(client, "ConsumerGroupClient can not be null");
@@ -62,13 +76,13 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         if (client.getGrpcType() != grpcType) {
             if (log.isWarnEnabled()) {
                 log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
-                        client.getGrpcType(), grpcType, client);
+                    client.getGrpcType(), grpcType, client);
             }
             return;
         }
 
         idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
-                .put(client.getIp() + ":" + client.getPid(), client.getEventEmitter());
+            .put(client.getIp() + ":" + client.getPid(), client.getEventEmitter());
 
         idcEmitters = buildIdcEmitter(idcEmitterMap);
         totalEmitters = buildTotalEmitter(idcEmitters);
@@ -102,8 +116,8 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     @Override
     public String toString() {
         return "StreamConsumeTopicConfig={consumerGroup=" + consumerGroup
-                + ",grpcType=" + grpcType
-                + ",topic=" + topic + "}";
+            + ",grpcType=" + grpcType
+            + ",topic=" + topic + "}";
     }
 
     public Map<String, List<EventEmitter<SimpleMessage>>> getIdcEmitters() {
@@ -112,21 +126,5 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
     public List<EventEmitter<SimpleMessage>> getTotalEmitters() {
         return totalEmitters;
-    }
-
-    private static Map<String, List<EventEmitter<SimpleMessage>>> buildIdcEmitter(
-            final Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap) {
-        final Map<String, List<EventEmitter<SimpleMessage>>> result = new HashMap<>();
-        idcEmitterMap.forEach((k, v) -> {
-            result.put(k, new LinkedList<EventEmitter<SimpleMessage>>(v.values()));
-        });
-        return result;
-    }
-
-    private static List<EventEmitter<SimpleMessage>> buildTotalEmitter(
-            final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters) {
-        final List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>();
-        idcEmitters.values().forEach(emitterList::addAll);
-        return emitterList;
     }
 }

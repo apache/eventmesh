@@ -25,60 +25,68 @@ public interface BatchMessageOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.BatchMessage)
     com.google.protobuf.MessageOrBuilder {
 
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  boolean hasHeader();
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  RequestHeader getHeader();
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  RequestHeaderOrBuilder getHeaderOrBuilder();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    boolean hasHeader();
 
-  /**
-   * <code>string producerGroup = 2;</code>
-   */
-  String getProducerGroup();
-  /**
-   * <code>string producerGroup = 2;</code>
-   */
-  com.google.protobuf.ByteString
-      getProducerGroupBytes();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    RequestHeader getHeader();
 
-  /**
-   * <code>string topic = 3;</code>
-   */
-  String getTopic();
-  /**
-   * <code>string topic = 3;</code>
-   */
-  com.google.protobuf.ByteString
-      getTopicBytes();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    RequestHeaderOrBuilder getHeaderOrBuilder();
 
-  /**
-   * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-   */
-  java.util.List<BatchMessage.MessageItem>
-      getMessageItemList();
-  /**
-   * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-   */
-  BatchMessage.MessageItem getMessageItem(int index);
-  /**
-   * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-   */
-  int getMessageItemCount();
-  /**
-   * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-   */
-  java.util.List<? extends BatchMessage.MessageItemOrBuilder>
-      getMessageItemOrBuilderList();
-  /**
-   * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
-   */
-  BatchMessage.MessageItemOrBuilder getMessageItemOrBuilder(
-      int index);
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    String getProducerGroup();
+
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    com.google.protobuf.ByteString
+    getProducerGroupBytes();
+
+    /**
+     * <code>string topic = 3;</code>
+     */
+    String getTopic();
+
+    /**
+     * <code>string topic = 3;</code>
+     */
+    com.google.protobuf.ByteString
+    getTopicBytes();
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    java.util.List<BatchMessage.MessageItem>
+    getMessageItemList();
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    BatchMessage.MessageItem getMessageItem(int index);
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    int getMessageItemCount();
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    java.util.List<? extends BatchMessage.MessageItemOrBuilder>
+    getMessageItemOrBuilderList();
+
+    /**
+     * <code>repeated .eventmesh.common.protocol.grpc.BatchMessage.MessageItem messageItem = 4;</code>
+     */
+    BatchMessage.MessageItemOrBuilder getMessageItemOrBuilder(
+        int index);
 }

@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -117,8 +116,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /client/grpc
-     * Return a response that contains the list of clients
+     * GET /client/grpc Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();

@@ -37,10 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 public class RequestParam {
 
-    private Map<String, String[]> queryParams;
-
     private final HttpMethod httpMethod;
-
+    private Map<String, String[]> queryParams;
     private Map<String, String> body;
 
     private Map<String, String> headers;
@@ -86,11 +84,11 @@ public class RequestParam {
             for (final Map.Entry<String, String[]> query : queryParams.entrySet()) {
                 for (final String val : query.getValue()) {
                     stringBuilder.append(Constants.AND)
-                            .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
+                        .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
 
                     if (val != null && !val.isEmpty()) {
                         stringBuilder.append("=")
-                                .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
+                            .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
                     }
                 }
             }
@@ -111,7 +109,7 @@ public class RequestParam {
             queryParams = new HashMap<>();
         }
         if (!queryParams.containsKey(key)) {
-            queryParams.put(key, new String[]{value});
+            queryParams.put(key, new String[] {value});
         } else {
             queryParams.put(key, (String[]) Arrays.asList(queryParams.get(key), value).toArray());
         }

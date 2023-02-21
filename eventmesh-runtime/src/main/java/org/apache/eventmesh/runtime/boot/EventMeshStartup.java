@@ -22,7 +22,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.File;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

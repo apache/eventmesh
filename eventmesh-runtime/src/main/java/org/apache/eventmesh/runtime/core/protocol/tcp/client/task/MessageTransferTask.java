@@ -60,7 +60,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -169,8 +168,8 @@ public class MessageTransferTask extends AbstractTask {
             }
         } catch (Exception e) {
             log.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
-                    session.getClient(),
-                    e);
+                session.getClient(),
+                e);
 
             if (cmd != RESPONSE_TO_SERVER) {
                 msg.setHeader(

@@ -29,7 +29,6 @@ import org.asynchttpclient.AsyncHttpClient;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

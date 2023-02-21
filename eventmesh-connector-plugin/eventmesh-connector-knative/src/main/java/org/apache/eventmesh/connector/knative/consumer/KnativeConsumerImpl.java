@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Config(field = "clientConfiguration")

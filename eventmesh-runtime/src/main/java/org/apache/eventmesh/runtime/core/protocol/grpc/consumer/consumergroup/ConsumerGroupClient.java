@@ -39,25 +39,15 @@ public class ConsumerGroupClient {
     public final String consumerGroup;
 
     public final String topic;
-
-    private final GrpcType grpcType;
-
-    public String url;
-
-    private EventEmitter<SimpleMessage> eventEmitter;
-
-    private final SubscriptionMode subscriptionMode;
-
     public final String sys;
-
     public final String ip;
-
     public final String pid;
-
     public final String hostname;
-
     public final String apiVersion;
-
+    private final GrpcType grpcType;
+    private final SubscriptionMode subscriptionMode;
+    public String url;
+    private EventEmitter<SimpleMessage> eventEmitter;
     private Date lastUpTime;
 
     public void setUrl(String url) {

@@ -24,10 +24,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
-    public EventMeshHTTPServer eventMeshHttpServer;
-
     private final EventMeshServer eventMeshServer;
+    public EventMeshHTTPServer eventMeshHttpServer;
 
     public EventMeshHttpBootstrap(final EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;

@@ -47,6 +47,26 @@ public class SendMessageBatchRequestBody extends Body {
     public SendMessageBatchRequestBody() {
     }
 
+    public static SendMessageBatchRequestBody buildBody(final Map<String, Object> bodyParam) {
+        String batchId = MapUtils.getString(bodyParam,
+            BATCHID);
+        String size = StringUtils.isBlank(MapUtils.getString(bodyParam,
+            SIZE)) ? "1" : MapUtils.getString(bodyParam,
+            SIZE);
+        String contents = MapUtils.getString(bodyParam,
+            CONTENTS, null);
+        SendMessageBatchRequestBody body = new SendMessageBatchRequestBody();
+        body.setBatchId(batchId);
+        if (StringUtils.isNotBlank(contents)) {
+            body.setContents(
+                JsonUtils.parseTypeReferenceObject(contents, new TypeReference<List<BatchMessageEntity>>() {
+                }));
+        }
+        body.setSize(size);
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
+        return body;
+    }
+
     public String getBatchId() {
         return batchId;
     }
@@ -83,51 +103,11 @@ public class SendMessageBatchRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchRequestBody={")
-                .append("batchId=").append(batchId).append(",")
-                .append("size=").append(size).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("contents=").append(JsonUtils.toJSONString(contents)).append("}");
+            .append("batchId=").append(batchId).append(",")
+            .append("size=").append(size).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("contents=").append(JsonUtils.toJSONString(contents)).append("}");
         return sb.toString();
-    }
-
-    public static class BatchMessageEntity {
-        public String bizSeqNo;
-        public String topic;
-        public String msg;
-        public String tag;
-        public String ttl;
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("batchMessageEntity={")
-                    .append("bizSeqNo=").append(bizSeqNo).append(",")
-                    .append("topic=").append(topic).append(",")
-                    .append("msg=").append(msg).append(",")
-                    .append("ttl=").append(ttl).append(",")
-                    .append("tag=").append(tag).append("}");
-            return sb.toString();
-        }
-    }
-
-    public static SendMessageBatchRequestBody buildBody(final Map<String, Object> bodyParam) {
-        String batchId = MapUtils.getString(bodyParam,
-                BATCHID);
-        String size = StringUtils.isBlank(MapUtils.getString(bodyParam,
-                SIZE)) ? "1" : MapUtils.getString(bodyParam,
-                SIZE);
-        String contents = MapUtils.getString(bodyParam,
-                CONTENTS, null);
-        SendMessageBatchRequestBody body = new SendMessageBatchRequestBody();
-        body.setBatchId(batchId);
-        if (StringUtils.isNotBlank(contents)) {
-            body.setContents(
-                    JsonUtils.parseTypeReferenceObject(contents, new TypeReference<List<BatchMessageEntity>>() {
-                    }));
-        }
-        body.setSize(size);
-        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
-        return body;
     }
 
     @Override
@@ -138,6 +118,27 @@ public class SendMessageBatchRequestBody extends Body {
         map.put(CONTENTS, contents);
         map.put(PRODUCERGROUP, producerGroup);
         return map;
+    }
+
+    public static class BatchMessageEntity {
+
+        public String bizSeqNo;
+        public String topic;
+        public String msg;
+        public String tag;
+        public String ttl;
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("batchMessageEntity={")
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("msg=").append(msg).append(",")
+                .append("ttl=").append(ttl).append(",")
+                .append("tag=").append(tag).append("}");
+            return sb.toString();
+        }
     }
 
 }

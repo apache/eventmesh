@@ -44,7 +44,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -197,6 +196,11 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return response;
     }
 
+    @Override
+    public String toString() {
+        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
+    }
+
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
 
@@ -247,10 +251,5 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 }
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 }

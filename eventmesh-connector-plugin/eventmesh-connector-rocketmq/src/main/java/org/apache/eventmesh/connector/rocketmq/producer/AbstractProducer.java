@@ -42,9 +42,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractProducer {
 
     static final InternalLogger log = ClientLogger.getLog();
+    protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
     final DefaultMQProducer rocketmqProducer;
-    protected final AtomicBoolean started = new AtomicBoolean(false);
     //    private boolean started = false;
     private final ClientConfig clientConfig;
 

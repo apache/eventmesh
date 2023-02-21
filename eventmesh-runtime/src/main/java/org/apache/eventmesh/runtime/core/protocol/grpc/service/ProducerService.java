@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import io.grpc.stub.StreamObserver;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,7 +47,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     private final ThreadPoolExecutor threadPoolExecutor;
 
     public ProducerService(EventMeshGrpcServer eventMeshGrpcServer,
-                           ThreadPoolExecutor threadPoolExecutor) {
+        ThreadPoolExecutor threadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.threadPoolExecutor = threadPoolExecutor;
     }

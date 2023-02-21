@@ -34,6 +34,14 @@ public class PushMessageResponseBody extends Body {
 
     private long resTime = System.currentTimeMillis();
 
+    public static PushMessageResponseBody buildBody(Integer retCode, String retMsg) {
+        PushMessageResponseBody pushMessageResponseBody = new PushMessageResponseBody();
+        pushMessageResponseBody.setResTime(System.currentTimeMillis());
+        pushMessageResponseBody.setRetCode(retCode);
+        pushMessageResponseBody.setRetMsg(retMsg);
+        return pushMessageResponseBody;
+    }
+
     public Integer getRetCode() {
         return retCode;
     }
@@ -58,21 +66,13 @@ public class PushMessageResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static PushMessageResponseBody buildBody(Integer retCode, String retMsg) {
-        PushMessageResponseBody pushMessageResponseBody = new PushMessageResponseBody();
-        pushMessageResponseBody.setResTime(System.currentTimeMillis());
-        pushMessageResponseBody.setRetCode(retCode);
-        pushMessageResponseBody.setRetMsg(retMsg);
-        return pushMessageResponseBody;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

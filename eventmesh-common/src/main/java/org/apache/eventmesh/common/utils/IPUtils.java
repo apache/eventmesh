@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 
 import io.netty.channel.Channel;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
@@ -137,7 +136,7 @@ public class IPUtils {
     }
 
     private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
+        Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {

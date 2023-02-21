@@ -26,7 +26,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 

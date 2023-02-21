@@ -20,8 +20,8 @@ package org.apache.eventmesh.common.protocol.http.common;
 public enum ClientRetCode {
 
     /**
-     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send
-     * next, try again several times to achieve grayscale, reserve
+     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send next, try again several times to
+     * achieve grayscale, reserve
      */
 
     REMOTE_OK(0, "REMOTE Process OK"),
@@ -29,6 +29,9 @@ public enum ClientRetCode {
     RETRY(2, "RETRY. SDK returns. Retry at most max(default, config) times."),
     FAIL(3, "FAIL. SDK returns."),
     NOLISTEN(5, "NOLISTEN. SDK returns. It can be used for grayscale publishing. Need to try all URLs in this case.");
+
+    private final Integer retCode;
+    private final String errMsg;
 
     ClientRetCode(Integer retCode, String errMsg) {
         this.retCode = retCode;
@@ -56,10 +59,6 @@ public enum ClientRetCode {
         }
         return ret;
     }
-
-    private final Integer retCode;
-
-    private final String errMsg;
 
     public Integer getRetCode() {
         return retCode;

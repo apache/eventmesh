@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,7 +38,7 @@ public class WatchFileManager {
     }
 
     public static void registerFileChangeListener(String directoryPath,
-                                                  FileChangeListener listener) {
+        FileChangeListener listener) {
         WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
         if (task == null) {
             task = new WatchFileTask(directoryPath);

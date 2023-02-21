@@ -37,22 +37,25 @@ import lombok.Data;
 @Config(prefix = "eventmesh.trace.pinpoint", path = "classPath://pinpoint.properties")
 public final class PinpointConfiguration {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     @ConfigFiled(field = "agentId", reload = true)
     private String agentId;
-
     @ConfigFiled(field = "agentName", reload = true)
     private String agentName;
-
     @ConfigFiled(field = "applicationName", findEnv = true, notNull = true)
     private String applicationName;
-
     @ConfigFiled(field = "", reload = true)
     private Properties grpcTransportProperties;
-
     private GrpcTransportConfig grpcTransportConfig;
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
+        try {
+            return OBJECT_MAPPER.convertValue(fromValue, toValueType);
+        } catch (IllegalArgumentException e) {
+            throw new JsonException("convertValue fromValue to toValueType instance error", e);
+        }
+    }
 
     public void reload() {
         if (StringUtils.isBlank(agentName)) {
@@ -62,19 +65,11 @@ public final class PinpointConfiguration {
         if (StringUtils.isBlank(agentId)) {
             // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
             agentId = StringUtils.substring(agentName, 0, 15)
-                    + Constants.HYPHEN
-                    + RandomStringUtils.generateNum(8);
+                + Constants.HYPHEN
+                + RandomStringUtils.generateNum(8);
         }
 
         // Map to Pinpoint property configuration.
         grpcTransportConfig = convertValue(grpcTransportProperties, GrpcTransportConfig.class);
-    }
-
-    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
-        try {
-            return OBJECT_MAPPER.convertValue(fromValue, toValueType);
-        } catch (IllegalArgumentException e) {
-            throw new JsonException("convertValue fromValue to toValueType instance error", e);
-        }
     }
 }

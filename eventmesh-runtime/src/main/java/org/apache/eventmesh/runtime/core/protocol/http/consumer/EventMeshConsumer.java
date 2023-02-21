@@ -59,7 +59,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -74,14 +73,11 @@ public class EventMeshConsumer {
     private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
-
-    public Logger messageLogger = LoggerFactory.getLogger("message");
-
-    private ConsumerGroupConf consumerGroupConf;
-
     private final MQConsumerWrapper persistentMqConsumer;
-
     private final MQConsumerWrapper broadcastMqConsumer;
+    public Logger messageLogger = LoggerFactory.getLogger("message");
+    private ConsumerGroupConf consumerGroupConf;
+    private MessageHandler httpMessageHandler;
 
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -91,8 +87,6 @@ public class EventMeshConsumer {
         this.broadcastMqConsumer = new MQConsumerWrapper(
             eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshConnectorPluginType());
     }
-
-    private MessageHandler httpMessageHandler;
 
     public synchronized void init() throws Exception {
         httpMessageHandler = new HTTPMessageHandler(this);
@@ -291,7 +285,7 @@ public class EventMeshConsumer {
     }
 
     public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<CloudEvent> events,
-                             AbstractContext context) {
+        AbstractContext context) {
         if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {

@@ -90,10 +90,6 @@ public enum Command {
         this.value = (byte) value;
     }
 
-    public byte getValue() {
-        return this.value;
-    }
-
     public static Command valueOf(int value) {
         for (Command t : Command.values()) {
             if (t.value == value) {
@@ -101,5 +97,9 @@ public enum Command {
             }
         }
         throw new IllegalArgumentException("No enum constant value=" + value);
+    }
+
+    public byte getValue() {
+        return this.value;
     }
 }

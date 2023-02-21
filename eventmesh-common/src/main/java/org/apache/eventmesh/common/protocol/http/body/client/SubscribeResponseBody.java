@@ -27,9 +27,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SubscribeResponseBody extends Body {
+
     private Integer retCode;
     private String retMsg;
     private long resTime = System.currentTimeMillis();
+
+    public static SubscribeResponseBody buildBody(Integer retCode, String retMsg) {
+        SubscribeResponseBody regResponseBody = new SubscribeResponseBody();
+        regResponseBody.setRetMsg(retMsg);
+        regResponseBody.setResTime(System.currentTimeMillis());
+        regResponseBody.setRetCode(retCode);
+        return regResponseBody;
+    }
 
     public Integer getRetCode() {
         return retCode;
@@ -53,14 +62,6 @@ public class SubscribeResponseBody extends Body {
 
     public void setResTime(long resTime) {
         this.resTime = resTime;
-    }
-
-    public static SubscribeResponseBody buildBody(Integer retCode, String retMsg) {
-        SubscribeResponseBody regResponseBody = new SubscribeResponseBody();
-        regResponseBody.setRetMsg(retMsg);
-        regResponseBody.setResTime(System.currentTimeMillis());
-        regResponseBody.setRetCode(retCode);
-        return regResponseBody;
     }
 
     @Override

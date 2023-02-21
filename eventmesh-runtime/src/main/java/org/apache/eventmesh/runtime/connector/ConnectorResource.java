@@ -20,11 +20,9 @@ package org.apache.eventmesh.runtime.connector;
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,12 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ConnectorResource {
 
     private static final Map<String, ConnectorResource> CONNECTOR_RESOURCE_CACHE = new HashMap<>(16);
-
-    private ConnectorResourceService connectorResourceService;
-
     private final AtomicBoolean inited = new AtomicBoolean(false);
-
     private final AtomicBoolean released = new AtomicBoolean(false);
+    private ConnectorResourceService connectorResourceService;
 
     private ConnectorResource() {
 

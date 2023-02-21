@@ -25,51 +25,63 @@ public interface ExecuteRequestOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.workflow.api.protocol.ExecuteRequest)
     com.google.protobuf.MessageOrBuilder {
 
-  /**
-   * <code>string id = 1;</code>
-   * @return The id.
-   */
-  String getId();
-  /**
-   * <code>string id = 1;</code>
-   * @return The bytes for id.
-   */
-  com.google.protobuf.ByteString
-      getIdBytes();
+    /**
+     * <code>string id = 1;</code>
+     *
+     * @return The id.
+     */
+    String getId();
 
-  /**
-   * <code>string instance_id = 2;</code>
-   * @return The instanceId.
-   */
-  String getInstanceId();
-  /**
-   * <code>string instance_id = 2;</code>
-   * @return The bytes for instanceId.
-   */
-  com.google.protobuf.ByteString
-      getInstanceIdBytes();
+    /**
+     * <code>string id = 1;</code>
+     *
+     * @return The bytes for id.
+     */
+    com.google.protobuf.ByteString
+    getIdBytes();
 
-  /**
-   * <code>string task_instance_id = 3;</code>
-   * @return The taskInstanceId.
-   */
-  String getTaskInstanceId();
-  /**
-   * <code>string task_instance_id = 3;</code>
-   * @return The bytes for taskInstanceId.
-   */
-  com.google.protobuf.ByteString
-      getTaskInstanceIdBytes();
+    /**
+     * <code>string instance_id = 2;</code>
+     *
+     * @return The instanceId.
+     */
+    String getInstanceId();
 
-  /**
-   * <code>string input = 4;</code>
-   * @return The input.
-   */
-  String getInput();
-  /**
-   * <code>string input = 4;</code>
-   * @return The bytes for input.
-   */
-  com.google.protobuf.ByteString
-      getInputBytes();
+    /**
+     * <code>string instance_id = 2;</code>
+     *
+     * @return The bytes for instanceId.
+     */
+    com.google.protobuf.ByteString
+    getInstanceIdBytes();
+
+    /**
+     * <code>string task_instance_id = 3;</code>
+     *
+     * @return The taskInstanceId.
+     */
+    String getTaskInstanceId();
+
+    /**
+     * <code>string task_instance_id = 3;</code>
+     *
+     * @return The bytes for taskInstanceId.
+     */
+    com.google.protobuf.ByteString
+    getTaskInstanceIdBytes();
+
+    /**
+     * <code>string input = 4;</code>
+     *
+     * @return The input.
+     */
+    String getInput();
+
+    /**
+     * <code>string input = 4;</code>
+     *
+     * @return The bytes for input.
+     */
+    com.google.protobuf.ByteString
+    getInputBytes();
 }

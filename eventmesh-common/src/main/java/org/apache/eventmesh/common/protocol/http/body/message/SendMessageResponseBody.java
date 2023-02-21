@@ -37,6 +37,14 @@ public class SendMessageResponseBody extends Body {
 
     private long resTime = System.currentTimeMillis();
 
+    public static SendMessageResponseBody buildBody(Integer retCode, String retMsg) {
+        SendMessageResponseBody sendMessageResponseBody = new SendMessageResponseBody();
+        sendMessageResponseBody.setRetMsg(retMsg);
+        sendMessageResponseBody.setResTime(System.currentTimeMillis());
+        sendMessageResponseBody.setRetCode(retCode);
+        return sendMessageResponseBody;
+    }
+
     public Integer getRetCode() {
         return retCode;
     }
@@ -61,21 +69,13 @@ public class SendMessageResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static SendMessageResponseBody buildBody(Integer retCode, String retMsg) {
-        SendMessageResponseBody sendMessageResponseBody = new SendMessageResponseBody();
-        sendMessageResponseBody.setRetMsg(retMsg);
-        sendMessageResponseBody.setResTime(System.currentTimeMillis());
-        sendMessageResponseBody.setRetCode(retCode);
-        return sendMessageResponseBody;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
@@ -91,6 +91,7 @@ public class SendMessageResponseBody extends Body {
     @Data
     @Builder
     public static class ReplyMessage {
+
         public String topic;
         public String body;
         public Map<String, String> properties;

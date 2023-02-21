@@ -32,16 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 public class GrpcRetryer {
 
     private final EventMeshGrpcConfiguration grpcConfiguration;
+    private final DelayQueue<DelayRetryable> failed = new DelayQueue<DelayRetryable>();
+    private ThreadPoolExecutor pool;
+    private Thread dispatcher;
 
     public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
         this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
     }
-
-    private final DelayQueue<DelayRetryable> failed = new DelayQueue<DelayRetryable>();
-
-    private ThreadPoolExecutor pool;
-
-    private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
         if (failed.size() >= grpcConfiguration.getEventMeshServerRetryBlockQueueSize()) {

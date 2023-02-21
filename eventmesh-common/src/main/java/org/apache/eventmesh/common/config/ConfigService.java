@@ -32,28 +32,23 @@ import lombok.Getter;
 
 public class ConfigService {
 
-    private static final ConfigService INSTANCE = new ConfigService();
-
     public static final String CLASS_PATH_PREFIX = "classPath://";
     public static final String FILE_PATH_PREFIX = "file://";
-
+    private static final ConfigService INSTANCE = new ConfigService();
+    private static final ConfigMonitorService configMonitorService = new ConfigMonitorService();
     /**
      * Unified configuration Properties corresponding to eventmesh.properties
      */
     private Properties properties = new Properties();
-
     @Getter
     private String rootPath;
-
-    private static final ConfigMonitorService configMonitorService = new ConfigMonitorService();
-
     private String configPath;
+
+    private ConfigService() {
+    }
 
     public static ConfigService getInstance() {
         return INSTANCE;
-    }
-
-    private ConfigService() {
     }
 
     public ConfigService setConfigPath(String configPath) {
@@ -61,15 +56,15 @@ public class ConfigService {
         return this;
     }
 
+    public Properties getRootConfig() {
+        return this.properties;
+    }
+
     public void setRootConfig(String path) throws Exception {
         ConfigInfo configInfo = new ConfigInfo();
         rootPath = path;
         configInfo.setPath(rootPath);
         properties = this.getConfig(configInfo);
-    }
-
-    public Properties getRootConfig() {
-        return this.properties;
     }
 
     public <T> T buildConfigInstance(Class<?> clazz) {

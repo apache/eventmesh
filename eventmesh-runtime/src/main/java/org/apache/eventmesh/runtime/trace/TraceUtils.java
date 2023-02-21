@@ -29,14 +29,13 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TraceUtils {
 
     public static Span prepareClientSpan(Map<String, Object> map, String spanName,
-                                         boolean isSpanFinishInOtherThread) {
+        boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
             span = EventMeshServer.getTrace().createSpan(
@@ -49,7 +48,7 @@ public class TraceUtils {
     }
 
     public static Span prepareServerSpan(Map<String, Object> map, String spanName,
-                                         boolean isSpanFinishInOtherThread) {
+        boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
@@ -62,7 +61,7 @@ public class TraceUtils {
     }
 
     public static Span prepareServerSpan(Map<String, Object> map, String spanName, long startTime,
-                                         TimeUnit timeUnit, boolean isSpanFinishInOtherThread) {
+        TimeUnit timeUnit, boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
@@ -104,7 +103,7 @@ public class TraceUtils {
     }
 
     public static void finishSpanWithException(ChannelHandlerContext ctx, CloudEvent event,
-                                               String errMsg, Throwable e) {
+        String errMsg, Throwable e) {
         try {
             log.debug("finishSpanWithException with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
@@ -115,7 +114,7 @@ public class TraceUtils {
     }
 
     public static void finishSpanWithException(Span span, Map<String, Object> map, String errMsg,
-                                               Throwable e) {
+        Throwable e) {
         try {
             log.debug("finishSpanWithException with map:{}", map);
             EventMeshServer.getTrace().addTraceInfoToSpan(span, map);

@@ -27,7 +27,6 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,6 +35,9 @@ public class EventMeshProducer {
     protected AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     protected AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
+    protected ProducerGroupConf producerGroupConfig;
+    protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+    protected MQProducerWrapper mqProducerWrapper;
 
     public AtomicBoolean getInited() {
         return inited;
@@ -45,16 +47,12 @@ public class EventMeshProducer {
         return started;
     }
 
-    protected ProducerGroupConf producerGroupConfig;
-
-    protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
         mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
     }
 
     public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
-            throws Exception {
+        throws Exception {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
@@ -63,21 +61,19 @@ public class EventMeshProducer {
         return true;
     }
 
-    protected MQProducerWrapper mqProducerWrapper;
-
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
     }
 
     public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.getEventMeshCluster()));
+            eventMeshHttpConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
@@ -116,9 +112,9 @@ public class EventMeshProducer {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("eventMeshProducer={")
-                .append("inited=").append(inited.get()).append(",")
-                .append("started=").append(started.get()).append(",")
-                .append("producerGroupConfig=").append(producerGroupConfig).append("}");
+            .append("inited=").append(inited.get()).append(",")
+            .append("started=").append(started.get()).append(",")
+            .append("producerGroupConfig=").append(producerGroupConfig).append("}");
         return sb.toString();
     }
 }

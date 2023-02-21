@@ -34,8 +34,6 @@ import java.util.Map;
 
 public abstract class Body {
 
-    public abstract Map<String, Object> toMap();
-
     public static Body buildBody(String requestCode, Map<String, Object> originalMap) throws Exception {
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchRequestBody.buildBody(originalMap);
@@ -68,4 +66,6 @@ public abstract class Body {
             throw new Exception();
         }
     }
+
+    public abstract Map<String, Object> toMap();
 }

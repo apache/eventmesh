@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -46,13 +45,13 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
     }
 
+    public static MetaInfExtensionClassLoader getInstance() {
+        return INSTANCE;
+    }
+
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
         return extensionClassCache.computeIfAbsent(extensionType, this::doLoadExtensionClass);
-    }
-
-    public static MetaInfExtensionClassLoader getInstance() {
-        return INSTANCE;
     }
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {

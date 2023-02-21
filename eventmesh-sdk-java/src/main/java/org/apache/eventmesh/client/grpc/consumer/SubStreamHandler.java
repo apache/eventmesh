@@ -39,13 +39,11 @@ public class SubStreamHandler<T> extends Thread {
     private final transient ConsumerServiceStub consumerAsyncClient;
 
     private final transient EventMeshGrpcClientConfig clientConfig;
-
+    private final transient ReceiveMsgHook<T> listener;
     private transient StreamObserver<Subscription> sender;
 
-    private final transient ReceiveMsgHook<T> listener;
-
     public SubStreamHandler(final ConsumerServiceStub consumerAsyncClient, final EventMeshGrpcClientConfig clientConfig,
-                            final ReceiveMsgHook<T> listener) {
+        final ReceiveMsgHook<T> listener) {
         this.consumerAsyncClient = consumerAsyncClient;
         this.clientConfig = clientConfig;
         this.listener = listener;
@@ -73,7 +71,7 @@ public class SubStreamHandler<T> extends Thread {
                 } else {
                     if (log.isInfoEnabled()) {
                         log.info("Received message from Server.|seq={}|uniqueId={}|", message.getSeqNum(),
-                                message.getUniqueId());
+                            message.getUniqueId());
                     }
                     Subscription streamReply = null;
                     try {
@@ -84,14 +82,14 @@ public class SubStreamHandler<T> extends Thread {
                     } catch (Exception e) {
                         if (log.isErrorEnabled()) {
                             log.error("Error in handling reply message.|seq={}|uniqueId={}|",
-                                    message.getSeqNum(), message.getUniqueId(), e);
+                                message.getSeqNum(), message.getUniqueId(), e);
                         }
                     }
                     if (streamReply != null) {
                         if (log.isInfoEnabled()) {
                             log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
-                                    streamReply.getReply().getSeqNum(),
-                                    streamReply.getReply().getUniqueId());
+                                streamReply.getReply().getSeqNum(),
+                                streamReply.getReply().getUniqueId());
                         }
                         senderOnNext(streamReply);
                     }
@@ -118,22 +116,22 @@ public class SubStreamHandler<T> extends Thread {
 
     private Subscription buildReplyMessage(final SimpleMessage reqMessage, final T replyMessage) {
         final SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage,
-                clientConfig, listener.getProtocolType());
+            clientConfig, listener.getProtocolType());
 
         final Subscription.Reply reply = Subscription.Reply.newBuilder()
-                .setProducerGroup(clientConfig.getConsumerGroup())
-                .setTopic(simpleMessage.getTopic())
-                .setContent(simpleMessage.getContent())
-                .setSeqNum(simpleMessage.getSeqNum())
-                .setUniqueId(simpleMessage.getUniqueId())
-                .setTtl(simpleMessage.getTtl())
-                .putAllProperties(reqMessage.getPropertiesMap())
-                .putAllProperties(simpleMessage.getPropertiesMap())
-                .build();
+            .setProducerGroup(clientConfig.getConsumerGroup())
+            .setTopic(simpleMessage.getTopic())
+            .setContent(simpleMessage.getContent())
+            .setSeqNum(simpleMessage.getSeqNum())
+            .setUniqueId(simpleMessage.getUniqueId())
+            .setTtl(simpleMessage.getTtl())
+            .putAllProperties(reqMessage.getPropertiesMap())
+            .putAllProperties(simpleMessage.getPropertiesMap())
+            .build();
 
         return Subscription.newBuilder()
-                .setHeader(simpleMessage.getHeader())
-                .setReply(reply).build();
+            .setHeader(simpleMessage.getHeader())
+            .setReply(reply).build();
     }
 
     @Override

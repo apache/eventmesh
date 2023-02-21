@@ -30,18 +30,13 @@ import lombok.Data;
 @Data
 public class EventMeshMessage {
 
-    private String bizSeqNo;
-
-    private String uniqueId;
-
-    private String topic;
-
-    private String content;
-
-    private Map<String, String> prop;
-
     @Builder.Default
     private final long createTime = System.currentTimeMillis();
+    private String bizSeqNo;
+    private String uniqueId;
+    private String topic;
+    private String content;
+    private Map<String, String> prop;
 
     public EventMeshMessage addProp(String key, String val) {
         if (prop == null) {

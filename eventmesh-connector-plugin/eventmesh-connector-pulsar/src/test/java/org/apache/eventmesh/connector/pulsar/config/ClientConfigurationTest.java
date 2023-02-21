@@ -29,7 +29,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenPulsarConsumerInit() {
         PulsarConsumerImpl consumer =
-                (PulsarConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pulsar");
+            (PulsarConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pulsar");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -38,7 +38,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenPulsarProducerInit() {
         PulsarProducerImpl producer =
-                (PulsarProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pulsar");
+            (PulsarProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pulsar");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);

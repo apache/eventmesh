@@ -30,7 +30,7 @@ public class UrlMappingPattern {
     private static final String URL_PARAMETER_REGEX = "\\{(\\w*?)\\}";
 
     private static final String URL_PARAMETER_MATCH_REGEX =
-            "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
+        "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
 
     private static final Pattern URL_PARAMETER_PATTERN = Pattern.compile(URL_PARAMETER_REGEX);
 
@@ -60,6 +60,10 @@ public class UrlMappingPattern {
         return urlMappingPattern;
     }
 
+    private void setUrlMappingPattern(String pattern) {
+        this.urlMappingPattern = pattern;
+    }
+
     public Map<String, String> extractPathParameterValues(String url) {
         Matcher matcher = compiledUrlMappingPattern.matcher(url);
         if (matcher.matches()) {
@@ -75,7 +79,7 @@ public class UrlMappingPattern {
     public void compile() {
         acquireParamNames();
         String parsedPattern =
-                getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
+            getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
         parsedPattern = parsedPattern.replaceAll(URL_PARAMETER_REGEX, URL_PARAMETER_MATCH_REGEX);
         this.compiledUrlMappingPattern = Pattern.compile(parsedPattern + URL_QUERY_STRING_REGEX);
     }
@@ -97,10 +101,6 @@ public class UrlMappingPattern {
             }
         }
         return values;
-    }
-
-    private void setUrlMappingPattern(String pattern) {
-        this.urlMappingPattern = pattern;
     }
 
     public List<String> getParamNames() {

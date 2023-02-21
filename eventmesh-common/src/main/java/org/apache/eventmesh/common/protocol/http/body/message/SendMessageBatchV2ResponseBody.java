@@ -37,6 +37,14 @@ public class SendMessageBatchV2ResponseBody extends Body {
     //response time
     private long resTime = System.currentTimeMillis();
 
+    public static SendMessageBatchV2ResponseBody buildBody(Integer retCode, String retMsg) {
+        SendMessageBatchV2ResponseBody sendMessageBatchV2ResponseBody = new SendMessageBatchV2ResponseBody();
+        sendMessageBatchV2ResponseBody.setRetMsg(retMsg);
+        sendMessageBatchV2ResponseBody.setRetCode(retCode);
+        sendMessageBatchV2ResponseBody.setResTime(System.currentTimeMillis());
+        return sendMessageBatchV2ResponseBody;
+    }
+
     public Integer getRetCode() {
         return retCode;
     }
@@ -61,21 +69,13 @@ public class SendMessageBatchV2ResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static SendMessageBatchV2ResponseBody buildBody(Integer retCode, String retMsg) {
-        SendMessageBatchV2ResponseBody sendMessageBatchV2ResponseBody = new SendMessageBatchV2ResponseBody();
-        sendMessageBatchV2ResponseBody.setRetMsg(retMsg);
-        sendMessageBatchV2ResponseBody.setRetCode(retCode);
-        sendMessageBatchV2ResponseBody.setResTime(System.currentTimeMillis());
-        return sendMessageBatchV2ResponseBody;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchV2ResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

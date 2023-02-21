@@ -24,4 +24,5 @@ package org.apache.eventmesh.common.protocol.catalog.protos;
 public interface RegistryResponseOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.catalog.api.protocol.RegistryResponse)
     com.google.protobuf.MessageOrBuilder {
+
 }

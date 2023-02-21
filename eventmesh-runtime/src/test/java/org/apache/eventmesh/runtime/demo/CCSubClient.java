@@ -28,7 +28,6 @@ import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,7 +35,7 @@ public class CCSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl subClient =
-                     new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             subClient.init();
             subClient.heartbeat();
             subClient.listen();

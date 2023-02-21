@@ -62,6 +62,23 @@ public class HeartbeatRequestHeader extends Header {
     //PASSWD of the requester
     private String passwd = "user@123";
 
+    public static HeartbeatRequestHeader buildHeader(Map<String, Object> headerParam) {
+        HeartbeatRequestHeader header = new HeartbeatRequestHeader();
+        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
+        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
+            ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+        header.setLanguage(lan);
+        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
+        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
+        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
+        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
+        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
+        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
+        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
+        return header;
+    }
+
     public String getCode() {
         return code;
     }
@@ -162,33 +179,16 @@ public class HeartbeatRequestHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("heartbeatRequestHeader={")
-                .append("code=").append(code).append(",")
-                .append("language=").append(language).append(",")
-                .append("version=").append(version).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("pid=").append(pid).append(",")
-                .append("ip=").append(ip).append(",")
-                .append("username=").append(username).append(",")
-                .append("passwd=").append(passwd).append("}");
+            .append("code=").append(code).append(",")
+            .append("language=").append(language).append(",")
+            .append("version=").append(version).append(",")
+            .append("env=").append(env).append(",")
+            .append("idc=").append(idc).append(",")
+            .append("sys=").append(sys).append(",")
+            .append("pid=").append(pid).append(",")
+            .append("ip=").append(ip).append(",")
+            .append("username=").append(username).append(",")
+            .append("passwd=").append(passwd).append("}");
         return sb.toString();
-    }
-
-    public static HeartbeatRequestHeader buildHeader(Map<String, Object> headerParam) {
-        HeartbeatRequestHeader header = new HeartbeatRequestHeader();
-        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
-        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-                ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
-        header.setLanguage(lan);
-        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
-        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
-        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
-        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
-        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
-        return header;
     }
 }

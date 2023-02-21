@@ -49,6 +49,23 @@ public class PushMessageRequestBody extends Body {
 
     private Map<String, String> extFields;
 
+    public static PushMessageRequestBody buildBody(final Map<String, Object> bodyParam) {
+        PushMessageRequestBody pushMessageRequestBody = new PushMessageRequestBody();
+        pushMessageRequestBody.setContent(MapUtils.getString(bodyParam, CONTENT));
+        pushMessageRequestBody.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
+        pushMessageRequestBody.setTopic(MapUtils.getString(bodyParam, TOPIC));
+        pushMessageRequestBody.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
+        pushMessageRequestBody.setRandomNo(MapUtils.getString(bodyParam, RANDOMNO));
+        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
+
+        if (StringUtils.isNotBlank(extFields)) {
+            pushMessageRequestBody.setExtFields(
+                JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
+        }
+        return pushMessageRequestBody;
+    }
+
     public String getTopic() {
         return topic;
     }
@@ -97,23 +114,6 @@ public class PushMessageRequestBody extends Body {
         this.extFields = extFields;
     }
 
-    public static PushMessageRequestBody buildBody(final Map<String, Object> bodyParam) {
-        PushMessageRequestBody pushMessageRequestBody = new PushMessageRequestBody();
-        pushMessageRequestBody.setContent(MapUtils.getString(bodyParam, CONTENT));
-        pushMessageRequestBody.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
-        pushMessageRequestBody.setTopic(MapUtils.getString(bodyParam, TOPIC));
-        pushMessageRequestBody.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
-        pushMessageRequestBody.setRandomNo(MapUtils.getString(bodyParam, RANDOMNO));
-        String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
-
-        if (StringUtils.isNotBlank(extFields)) {
-            pushMessageRequestBody.setExtFields(
-                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
-        }
-        return pushMessageRequestBody;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -131,12 +131,12 @@ public class PushMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestBody={")
-                .append("randomNo=").append(randomNo).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("content=").append(content).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("randomNo=").append(randomNo).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("content=").append(content).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 }

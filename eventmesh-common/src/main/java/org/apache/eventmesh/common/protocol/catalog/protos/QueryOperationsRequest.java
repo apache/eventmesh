@@ -28,8 +28,30 @@ public final class QueryOperationsRequest extends
     com.google.protobuf.GeneratedMessageV3 implements
     // @@protoc_insertion_point(message_implements:eventmesh.catalog.api.protocol.QueryOperationsRequest)
     QueryOperationsRequestOrBuilder {
-    private static final long serialVersionUID = 0L;
 
+    public static final int SERVICE_NAME_FIELD_NUMBER = 1;
+    public static final int OPERATION_ID_FIELD_NUMBER = 2;
+    private static final long serialVersionUID = 0L;
+    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.QueryOperationsRequest)
+    private static final QueryOperationsRequest DEFAULT_INSTANCE;
+    private static final com.google.protobuf.Parser<QueryOperationsRequest>
+        PARSER = new com.google.protobuf.AbstractParser<QueryOperationsRequest>() {
+        @Override
+        public QueryOperationsRequest parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new QueryOperationsRequest(input, extensionRegistry);
+        }
+    };
+
+    static {
+        DEFAULT_INSTANCE = new QueryOperationsRequest();
+    }
+
+    private volatile Object serviceName_;
+    private volatile Object operationId_;
+    private byte memoizedIsInitialized = -1;
     // Use QueryOperationsRequest.newBuilder() to construct.
     private QueryOperationsRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
@@ -38,19 +60,6 @@ public final class QueryOperationsRequest extends
     private QueryOperationsRequest() {
         serviceName_ = "";
         operationId_ = "";
-    }
-
-    @Override
-    @SuppressWarnings({"unused"})
-    protected Object newInstance(
-        UnusedPrivateParameter unused) {
-        return new QueryOperationsRequest();
-    }
-
-    @Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-        return this.unknownFields;
     }
 
     private QueryOperationsRequest(
@@ -108,6 +117,116 @@ public final class QueryOperationsRequest extends
         return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsRequest_descriptor;
     }
 
+    public static QueryOperationsRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static QueryOperationsRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+    }
+
+    public static QueryOperationsRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static QueryOperationsRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static QueryOperationsRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+    }
+
+    public static QueryOperationsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+    }
+
+    public static Builder newBuilder(QueryOperationsRequest prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+
+    public static QueryOperationsRequest getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static com.google.protobuf.Parser<QueryOperationsRequest> parser() {
+        return PARSER;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+        return new QueryOperationsRequest();
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+        return this.unknownFields;
+    }
+
     @Override
     protected FieldAccessorTable
     internalGetFieldAccessorTable() {
@@ -115,9 +234,6 @@ public final class QueryOperationsRequest extends
             .ensureFieldAccessorsInitialized(
                 QueryOperationsRequest.class, Builder.class);
     }
-
-    public static final int SERVICE_NAME_FIELD_NUMBER = 1;
-    private volatile Object serviceName_;
 
     /**
      * <code>string service_name = 1;</code>
@@ -158,9 +274,6 @@ public final class QueryOperationsRequest extends
         }
     }
 
-    public static final int OPERATION_ID_FIELD_NUMBER = 2;
-    private volatile Object operationId_;
-
     /**
      * <code>string operation_id = 2;</code>
      *
@@ -199,8 +312,6 @@ public final class QueryOperationsRequest extends
             return (com.google.protobuf.ByteString) ref;
         }
     }
-
-    private byte memoizedIsInitialized = -1;
 
     @Override
     public final boolean isInitialized() {
@@ -287,98 +398,9 @@ public final class QueryOperationsRequest extends
         return hash;
     }
 
-    public static QueryOperationsRequest parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static QueryOperationsRequest parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-    }
-
-    public static QueryOperationsRequest parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static QueryOperationsRequest parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
-    }
-
-    public static QueryOperationsRequest parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-    }
-
-    public static QueryOperationsRequest parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
     @Override
     public Builder newBuilderForType() {
         return newBuilder();
-    }
-
-    public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-    }
-
-    public static Builder newBuilder(QueryOperationsRequest prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
     @Override
@@ -393,6 +415,16 @@ public final class QueryOperationsRequest extends
         return new Builder(parent);
     }
 
+    @Override
+    public com.google.protobuf.Parser<QueryOperationsRequest> getParserForType() {
+        return PARSER;
+    }
+
+    @Override
+    public QueryOperationsRequest getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+    }
+
     /**
      * Protobuf type {@code eventmesh.catalog.api.protocol.QueryOperationsRequest}
      */
@@ -400,6 +432,21 @@ public final class QueryOperationsRequest extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:eventmesh.catalog.api.protocol.QueryOperationsRequest)
         QueryOperationsRequestOrBuilder {
+
+        private Object serviceName_ = "";
+        private Object operationId_ = "";
+
+        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsRequest.newBuilder()
+        private Builder() {
+            maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+        }
+
         public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsRequest_descriptor;
@@ -411,17 +458,6 @@ public final class QueryOperationsRequest extends
             return EventmeshCatalogGrpc.internal_static_eventmesh_catalog_api_protocol_QueryOperationsRequest_fieldAccessorTable
                 .ensureFieldAccessorsInitialized(
                     QueryOperationsRequest.class, Builder.class);
-        }
-
-        // Construct using org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsRequest.newBuilder()
-        private Builder() {
-            maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            BuilderParent parent) {
-            super(parent);
-            maybeForceBuilderInitialization();
         }
 
         private void maybeForceBuilderInitialization() {
@@ -558,8 +594,6 @@ public final class QueryOperationsRequest extends
             return this;
         }
 
-        private Object serviceName_ = "";
-
         /**
          * <code>string service_name = 1;</code>
          *
@@ -576,6 +610,23 @@ public final class QueryOperationsRequest extends
             } else {
                 return (String) ref;
             }
+        }
+
+        /**
+         * <code>string service_name = 1;</code>
+         *
+         * @param value The serviceName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setServiceName(
+            String value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+
+            serviceName_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -600,14 +651,15 @@ public final class QueryOperationsRequest extends
         /**
          * <code>string service_name = 1;</code>
          *
-         * @param value The serviceName to set.
+         * @param value The bytes for serviceName to set.
          * @return This builder for chaining.
          */
-        public Builder setServiceName(
-            String value) {
+        public Builder setServiceNameBytes(
+            com.google.protobuf.ByteString value) {
             if (value == null) {
                 throw new NullPointerException();
             }
+            checkByteStringIsUtf8(value);
 
             serviceName_ = value;
             onChanged();
@@ -627,26 +679,6 @@ public final class QueryOperationsRequest extends
         }
 
         /**
-         * <code>string service_name = 1;</code>
-         *
-         * @param value The bytes for serviceName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setServiceNameBytes(
-            com.google.protobuf.ByteString value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
-            checkByteStringIsUtf8(value);
-
-            serviceName_ = value;
-            onChanged();
-            return this;
-        }
-
-        private Object operationId_ = "";
-
-        /**
          * <code>string operation_id = 2;</code>
          *
          * @return The operationId.
@@ -662,6 +694,23 @@ public final class QueryOperationsRequest extends
             } else {
                 return (String) ref;
             }
+        }
+
+        /**
+         * <code>string operation_id = 2;</code>
+         *
+         * @param value The operationId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setOperationId(
+            String value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+
+            operationId_ = value;
+            onChanged();
+            return this;
         }
 
         /**
@@ -686,14 +735,15 @@ public final class QueryOperationsRequest extends
         /**
          * <code>string operation_id = 2;</code>
          *
-         * @param value The operationId to set.
+         * @param value The bytes for operationId to set.
          * @return This builder for chaining.
          */
-        public Builder setOperationId(
-            String value) {
+        public Builder setOperationIdBytes(
+            com.google.protobuf.ByteString value) {
             if (value == null) {
                 throw new NullPointerException();
             }
+            checkByteStringIsUtf8(value);
 
             operationId_ = value;
             onChanged();
@@ -712,24 +762,6 @@ public final class QueryOperationsRequest extends
             return this;
         }
 
-        /**
-         * <code>string operation_id = 2;</code>
-         *
-         * @param value The bytes for operationId to set.
-         * @return This builder for chaining.
-         */
-        public Builder setOperationIdBytes(
-            com.google.protobuf.ByteString value) {
-            if (value == null) {
-                throw new NullPointerException();
-            }
-            checkByteStringIsUtf8(value);
-
-            operationId_ = value;
-            onChanged();
-            return this;
-        }
-
         @Override
         public final Builder setUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -742,44 +774,7 @@ public final class QueryOperationsRequest extends
             return super.mergeUnknownFields(unknownFields);
         }
 
-
         // @@protoc_insertion_point(builder_scope:eventmesh.catalog.api.protocol.QueryOperationsRequest)
-    }
-
-    // @@protoc_insertion_point(class_scope:eventmesh.catalog.api.protocol.QueryOperationsRequest)
-    private static final QueryOperationsRequest DEFAULT_INSTANCE;
-
-    static {
-        DEFAULT_INSTANCE = new QueryOperationsRequest();
-    }
-
-    public static QueryOperationsRequest getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<QueryOperationsRequest>
-        PARSER = new com.google.protobuf.AbstractParser<QueryOperationsRequest>() {
-        @Override
-        public QueryOperationsRequest parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-            return new QueryOperationsRequest(input, extensionRegistry);
-        }
-    };
-
-    public static com.google.protobuf.Parser<QueryOperationsRequest> parser() {
-        return PARSER;
-    }
-
-    @Override
-    public com.google.protobuf.Parser<QueryOperationsRequest> getParserForType() {
-        return PARSER;
-    }
-
-    @Override
-    public QueryOperationsRequest getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
     }
 
 }

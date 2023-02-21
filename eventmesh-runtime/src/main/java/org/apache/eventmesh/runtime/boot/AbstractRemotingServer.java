@@ -25,50 +25,44 @@ import java.util.concurrent.TimeUnit;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractRemotingServer {
 
     private static final int DEFAULT_SLEEP_SECONDS = 30;
-
-    private EventLoopGroup bossGroup;
-
-    private EventLoopGroup ioGroup;
-
-    private EventLoopGroup workerGroup;
-
-    private int port;
-
     private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup ioGroup;
+    private EventLoopGroup workerGroup;
+    private int port;
 
     public EventLoopGroup getBossGroup() {
         return bossGroup;
-    }
-
-    public EventLoopGroup getIoGroup() {
-        return ioGroup;
-    }
-
-    public EventLoopGroup getWorkerGroup() {
-        return workerGroup;
-    }
-
-    public int getPort() {
-        return port;
     }
 
     public void setBossGroup(final EventLoopGroup bossGroup) {
         this.bossGroup = bossGroup;
     }
 
+    public EventLoopGroup getIoGroup() {
+        return ioGroup;
+    }
+
     public void setIoGroup(final EventLoopGroup ioGroup) {
         this.ioGroup = ioGroup;
     }
 
+    public EventLoopGroup getWorkerGroup() {
+        return workerGroup;
+    }
+
     public void setWorkerGroup(final EventLoopGroup workerGroup) {
         this.workerGroup = workerGroup;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public void setPort(final int port) {

@@ -22,15 +22,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ServerGlobal {
 
-    private static class SerGlobalHolder {
-        private static final ServerGlobal singleton = new ServerGlobal();
-    }
+    private AtomicLong msgCounter = new AtomicLong();
 
     public static ServerGlobal getInstance() {
         return SerGlobalHolder.singleton;
     }
-
-    private AtomicLong msgCounter = new AtomicLong();
 
     public AtomicLong getMsgCounter() {
         return msgCounter;
@@ -38,5 +34,10 @@ public class ServerGlobal {
 
     public void setMsgCounter(AtomicLong msgCounter) {
         this.msgCounter = msgCounter;
+    }
+
+    private static class SerGlobalHolder {
+
+        private static final ServerGlobal singleton = new ServerGlobal();
     }
 }

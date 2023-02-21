@@ -25,120 +25,134 @@ public interface SimpleMessageOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.SimpleMessage)
     com.google.protobuf.MessageOrBuilder {
 
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  boolean hasHeader();
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  RequestHeader getHeader();
-  /**
-   * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
-   */
-  RequestHeaderOrBuilder getHeaderOrBuilder();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    boolean hasHeader();
 
-  /**
-   * <code>string producerGroup = 2;</code>
-   */
-  String getProducerGroup();
-  /**
-   * <code>string producerGroup = 2;</code>
-   */
-  com.google.protobuf.ByteString
-      getProducerGroupBytes();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    RequestHeader getHeader();
 
-  /**
-   * <code>string topic = 3;</code>
-   */
-  String getTopic();
-  /**
-   * <code>string topic = 3;</code>
-   */
-  com.google.protobuf.ByteString
-      getTopicBytes();
+    /**
+     * <code>.eventmesh.common.protocol.grpc.RequestHeader header = 1;</code>
+     */
+    RequestHeaderOrBuilder getHeaderOrBuilder();
 
-  /**
-   * <code>string content = 4;</code>
-   */
-  String getContent();
-  /**
-   * <code>string content = 4;</code>
-   */
-  com.google.protobuf.ByteString
-      getContentBytes();
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    String getProducerGroup();
 
-  /**
-   * <code>string ttl = 5;</code>
-   */
-  String getTtl();
-  /**
-   * <code>string ttl = 5;</code>
-   */
-  com.google.protobuf.ByteString
-      getTtlBytes();
+    /**
+     * <code>string producerGroup = 2;</code>
+     */
+    com.google.protobuf.ByteString
+    getProducerGroupBytes();
 
-  /**
-   * <code>string uniqueId = 6;</code>
-   */
-  String getUniqueId();
-  /**
-   * <code>string uniqueId = 6;</code>
-   */
-  com.google.protobuf.ByteString
-      getUniqueIdBytes();
+    /**
+     * <code>string topic = 3;</code>
+     */
+    String getTopic();
 
-  /**
-   * <code>string seqNum = 7;</code>
-   */
-  String getSeqNum();
-  /**
-   * <code>string seqNum = 7;</code>
-   */
-  com.google.protobuf.ByteString
-      getSeqNumBytes();
+    /**
+     * <code>string topic = 3;</code>
+     */
+    com.google.protobuf.ByteString
+    getTopicBytes();
 
-  /**
-   * <code>string tag = 8;</code>
-   */
-  String getTag();
-  /**
-   * <code>string tag = 8;</code>
-   */
-  com.google.protobuf.ByteString
-      getTagBytes();
+    /**
+     * <code>string content = 4;</code>
+     */
+    String getContent();
 
-  /**
-   * <code>map&lt;string, string&gt; properties = 9;</code>
-   */
-  int getPropertiesCount();
-  /**
-   * <code>map&lt;string, string&gt; properties = 9;</code>
-   */
-  boolean containsProperties(
-      String key);
-  /**
-   * Use {@link #getPropertiesMap()} instead.
-   */
-  @Deprecated
-  java.util.Map<String, String>
-  getProperties();
-  /**
-   * <code>map&lt;string, string&gt; properties = 9;</code>
-   */
-  java.util.Map<String, String>
-  getPropertiesMap();
-  /**
-   * <code>map&lt;string, string&gt; properties = 9;</code>
-   */
+    /**
+     * <code>string content = 4;</code>
+     */
+    com.google.protobuf.ByteString
+    getContentBytes();
 
-  String getPropertiesOrDefault(
-      String key,
-      String defaultValue);
-  /**
-   * <code>map&lt;string, string&gt; properties = 9;</code>
-   */
+    /**
+     * <code>string ttl = 5;</code>
+     */
+    String getTtl();
 
-  String getPropertiesOrThrow(
-      String key);
+    /**
+     * <code>string ttl = 5;</code>
+     */
+    com.google.protobuf.ByteString
+    getTtlBytes();
+
+    /**
+     * <code>string uniqueId = 6;</code>
+     */
+    String getUniqueId();
+
+    /**
+     * <code>string uniqueId = 6;</code>
+     */
+    com.google.protobuf.ByteString
+    getUniqueIdBytes();
+
+    /**
+     * <code>string seqNum = 7;</code>
+     */
+    String getSeqNum();
+
+    /**
+     * <code>string seqNum = 7;</code>
+     */
+    com.google.protobuf.ByteString
+    getSeqNumBytes();
+
+    /**
+     * <code>string tag = 8;</code>
+     */
+    String getTag();
+
+    /**
+     * <code>string tag = 8;</code>
+     */
+    com.google.protobuf.ByteString
+    getTagBytes();
+
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+    int getPropertiesCount();
+
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+    boolean containsProperties(
+        String key);
+
+    /**
+     * Use {@link #getPropertiesMap()} instead.
+     */
+    @Deprecated
+    java.util.Map<String, String>
+    getProperties();
+
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+    java.util.Map<String, String>
+    getPropertiesMap();
+
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    String getPropertiesOrDefault(
+        String key,
+        String defaultValue);
+
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    String getPropertiesOrThrow(
+        String key);
 }
