@@ -76,7 +76,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
             task.cancel(false);
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("cancel close error", e);
         }
     }
 
@@ -88,8 +88,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 }
                 Package msg = MessageUtils.heartBeat();
                 if (log.isDebugEnabled()) {
-                    log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                        clientNo, msg.getHeader().getCommand(), msg);
+                    log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
                 }
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {
@@ -212,7 +211,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     log.error("msg ignored,context not found .|{}|{}", cmd, msg);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                log.error("server goodbye request: ---------------------------{}", msg);
+                log.error("server goodbye request: {}", msg);
                 close();
             } else {
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
