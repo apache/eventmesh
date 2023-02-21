@@ -82,8 +82,8 @@ public class EventMeshGrpcConsumerTest {
                 @Override
                 public void onNext(Subscription value) {
                     receiver.onNext(
-                            SimpleMessage.newBuilder().setUniqueId("uniqueId").setSeqNum("1").setContent("mockContent")
-                                    .setTopic("mockTopic").build());
+                        SimpleMessage.newBuilder().setUniqueId("uniqueId").setSeqNum("1").setContent("mockContent")
+                            .setTopic("mockTopic").build());
                     receiver.onCompleted();
                 }
 
@@ -102,11 +102,11 @@ public class EventMeshGrpcConsumerTest {
     @Test
     public void testSubscribeWithUrl() {
         assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()),
-                "customUrl")).isEqualTo(Response.getDefaultInstance());
+            "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).subscribe(any());
         verify(heartbeatClient, Mockito.after(20_000L).times(1)).heartbeat(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()),
-                "customUrl")).isEqualTo(Response.getDefaultInstance());
+            "customUrl")).isEqualTo(Response.getDefaultInstance());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -135,12 +135,12 @@ public class EventMeshGrpcConsumerTest {
         assertThat(eventMeshGrpcConsumer.getSubscriptionMap().size()).isEqualTo(1);
 
         assertThat(result).hasSize(1).first().isInstanceOf(EventMeshMessage.class)
-                .hasFieldOrPropertyWithValue("bizSeqNo", "1").hasFieldOrPropertyWithValue("uniqueId", "uniqueId")
-                .hasFieldOrPropertyWithValue("topic", "mockTopic")
-                .hasFieldOrPropertyWithValue("content", "mockContent");
+            .hasFieldOrPropertyWithValue("bizSeqNo", "1").hasFieldOrPropertyWithValue("uniqueId", "uniqueId")
+            .hasFieldOrPropertyWithValue("topic", "mockTopic")
+            .hasFieldOrPropertyWithValue("content", "mockContent");
         verify(consumerAsyncClient, times(1)).subscribeStream(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()))).isEqualTo(
-                Response.getDefaultInstance());
+            Response.getDefaultInstance());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 

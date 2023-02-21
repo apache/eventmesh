@@ -108,7 +108,7 @@ public abstract class TcpClient implements Closeable {
         channel = f.channel();
         if (log.isInfoEnabled()) {
             log.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
-                    localAddress.getPort(), host + ":" + port);
+                localAddress.getPort(), host + ":" + port);
         }
     }
 
@@ -210,7 +210,7 @@ public abstract class TcpClient implements Closeable {
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                 if (log.isInfoEnabled()) {
                     log.info("exceptionCaught, close connection.|remote address={}",
-                            ctx.channel().remoteAddress(), cause);
+                        ctx.channel().remoteAddress(), cause);
                 }
                 ctx.close();
             }
