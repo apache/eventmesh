@@ -29,7 +29,7 @@ public class JaegerConfigurationTest {
     @Test
     public void testGetConfiguration() {
         JaegerTraceService jaegerTrace =
-                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
+            (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
 
         JaegerConfiguration config = jaegerTrace.getClientConfiguration();
         assertClientConfig(config);
