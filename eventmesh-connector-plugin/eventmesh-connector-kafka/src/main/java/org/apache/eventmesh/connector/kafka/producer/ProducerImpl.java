@@ -19,7 +19,9 @@ package org.apache.eventmesh.connector.kafka.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -27,13 +29,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventSerializer;
@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SuppressWarnings("deprecation")
 public class ProducerImpl {
-    private Logger logger = LoggerFactory.getLogger(ProducerImpl.class);
     private KafkaProducer<String, CloudEvent> producer;
     Properties properties;
 
@@ -81,11 +80,8 @@ public class ProducerImpl {
     }
 
     public void send(CloudEvent cloudEvent) {
-        // ProducerRecord<Void, byte[]> msg =
-        //    KafkaMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject()))
-        //    .writeBinary(cloudEvent);
         try {
-            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent));
+            this.producer.send(new ProducerRecord<>(Objects.requireNonNull(cloudEvent.getSubject()), cloudEvent));
         } catch (Exception e) {
             log.error(String.format("Send message oneway Exception, %s", cloudEvent), e);
         }
@@ -114,7 +110,20 @@ public class ProducerImpl {
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         try {
-            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent));
+            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent), (metadata, exception) -> {
+                if (exception != null) {
+                    ConnectorRuntimeException onsEx = new ConnectorRuntimeException(exception.getMessage(), exception);
+                    OnExceptionContext context = new OnExceptionContext();
+                    context.setTopic(cloudEvent.getSubject());
+                    context.setException(onsEx);
+                    sendCallback.onException(context);
+                } else {
+                    SendResult sendResult = new SendResult();
+                    sendResult.setTopic(cloudEvent.getSubject());
+                    sendResult.setMessageId(cloudEvent.getId());
+                    sendCallback.onSuccess(sendResult);
+                }
+            });
         } catch (Exception e) {
             log.error(String.format("Send message oneway Exception, %s", cloudEvent), e);
         }

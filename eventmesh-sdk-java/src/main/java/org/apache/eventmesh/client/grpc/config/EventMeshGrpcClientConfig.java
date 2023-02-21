@@ -25,10 +25,10 @@ import lombok.Data;
 public class EventMeshGrpcClientConfig {
 
     @Builder.Default
-    private String serverAddr = "127.0.0.1";
+    private String serverAddr = "localhost";
 
     @Builder.Default
-    private int serverPort = 10205;
+    private int serverPort = 10_205;
 
     @Builder.Default
     private String env = "env";
@@ -55,22 +55,29 @@ public class EventMeshGrpcClientConfig {
     private String language = "JAVA";
 
     @Builder.Default
-    private boolean useTls = false;
+    private boolean useTls;
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ClientConfig={")
-                .append("ServerAddr=").append(serverAddr).append(",")
-                .append("ServerPort=").append(serverPort).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("userName=").append(userName).append(",")
-                .append("password=").append("***").append(",")
-                .append("useTls=").append(useTls).append("}");
-        return sb.toString();
+        return "ClientConfig={ServerAddr="
+                + serverAddr
+                + ",ServerPort="
+                + serverPort
+                + ",env="
+                + env
+                + ",idc="
+                + idc
+                + ",producerGroup="
+                + producerGroup
+                + ",consumerGroup="
+                + consumerGroup
+                + ",sys="
+                + sys
+                + ",userName="
+                + userName
+                + ",password=***"
+                + ",useTls="
+                + useTls
+                + "}";
     }
 }

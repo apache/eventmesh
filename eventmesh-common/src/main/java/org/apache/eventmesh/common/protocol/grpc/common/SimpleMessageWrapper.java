@@ -22,6 +22,8 @@ import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
 public class SimpleMessageWrapper implements ProtocolTransportObject {
 
+    private static final long serialVersionUID = 4562321593749195797L;
+
     private final SimpleMessage simpleMessage;
 
     public SimpleMessageWrapper(SimpleMessage simpleMessage) {

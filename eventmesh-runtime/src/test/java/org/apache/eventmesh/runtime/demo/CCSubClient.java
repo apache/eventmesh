@@ -26,30 +26,33 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class CCSubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(CCSubClient.class);
-
     public static void main(String[] args) throws Exception {
-        SubClientImpl subClient = new SubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        subClient.init();
-        subClient.heartbeat();
-        subClient.listen();
-        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
-        subClient.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                logger.error("Received message: -----------------------------------------" + msg.toString());
-                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    Package rrResponse = MessageUtils.rrResponse(msg);
-                    ctx.writeAndFlush(rrResponse);
+        try (SubClientImpl subClient =
+                     new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            subClient.init();
+            subClient.heartbeat();
+            subClient.listen();
+            subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            subClient.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (log.isInfoEnabled()) {
+                        log.info("Received message: {}", msg);
+                    }
+                    if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                        Package rrResponse = MessageUtils.rrResponse(msg);
+                        ctx.writeAndFlush(rrResponse);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

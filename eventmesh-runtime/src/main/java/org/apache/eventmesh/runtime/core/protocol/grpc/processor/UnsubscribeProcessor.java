@@ -32,12 +32,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class UnsubscribeProcessor {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -100,10 +99,10 @@ public class UnsubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            logger.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+            log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
         ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "unsubscribe success", emitter);

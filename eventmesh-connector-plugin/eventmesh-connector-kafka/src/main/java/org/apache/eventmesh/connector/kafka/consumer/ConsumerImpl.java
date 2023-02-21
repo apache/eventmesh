@@ -38,6 +38,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventDeserializer;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConsumerImpl {
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
@@ -102,6 +106,7 @@ public class ConsumerImpl {
             List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
+            log.error("Error while subscribing the Kafka consumer to topic: ", e);
             throw new ConnectorRuntimeException(
                 String.format("Kafka consumer can't attach to %s.", topic));
         }
@@ -115,6 +120,7 @@ public class ConsumerImpl {
             List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
+            log.error("Error while unsubscribing the Kafka consumer: ", e);
             throw new ConnectorRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
         }
     }

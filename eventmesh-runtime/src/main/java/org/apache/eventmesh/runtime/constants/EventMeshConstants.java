@@ -35,7 +35,9 @@ public class EventMeshConstants {
 
     public static final String IP_PORT_SEPARATOR = ":";
 
-    public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+    public static final String CONF_ENV = "confPath";
+
+    public static final String EVENTMESH_CONF_HOME = System.getProperty(CONF_ENV, System.getenv(CONF_ENV));
 
     public static final String EVENTMESH_CONF_FILE = "eventmesh.properties";
 
@@ -135,5 +137,23 @@ public class EventMeshConstants {
     public static final String INSTANCE_NAME = "instanceName";
     public static final String EVENT_MESH_IDC = "eventMeshIDC";
     public static final String IS_BROADCAST = "isBroadcast";
+
+    public static final String RESP_CODE = "respCode";
+    public static final String RESP_MSG = "respMsg";
+    public static final String BLANK_SPACE = " ";
+
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String APPLICATION_JSON = "application/json";
+
+    public static final String URL = "url";
+    public static final String RET_CODE = "retCode";
+    public static final String RET_MSG = "retMsg";
+    public static final String USER_NAME = "eventmesh";
+    public static final String PASSWD = "pass";
+    public static final String MESSAGE = "message";
+    public static final String CMD = "cmd";
+    public static final String ACL = "acl";
+    public static final String MSG_TYPE = "msgtype";
+    public static final String PERSISTENT = "persistent";
 
 }

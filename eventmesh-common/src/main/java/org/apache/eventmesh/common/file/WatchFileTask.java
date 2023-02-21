@@ -28,22 +28,21 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WatchFileTask extends Thread {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WatchFileTask.class);
 
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
 
-    private final WatchService watchService;
+    private final transient WatchService watchService;
 
-    private final List<FileChangeListener> fileChangeListeners = new ArrayList<>();
+    private final transient List<FileChangeListener> fileChangeListeners = new ArrayList<>();
 
-    private volatile boolean watch = true;
+    private transient volatile boolean watch = true;
 
-    private final String directoryPath;
+    private final transient String directoryPath;
 
     public WatchFileTask(String directoryPath) {
         this.directoryPath = directoryPath;
@@ -55,12 +54,11 @@ public class WatchFileTask extends Thread {
             throw new IllegalArgumentException("must be a file directory : " + directoryPath);
         }
 
-        try {
-            WatchService service = FILE_SYSTEM.newWatchService();
-            path.register(service, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
+        try (WatchService watchService = FILE_SYSTEM.newWatchService()) {
+            this.watchService = watchService;
+            path.register(this.watchService, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
                     StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-            this.watchService = service;
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             throw new UnsupportedOperationException("WatchService registry fail", ex);
         }
     }
@@ -90,7 +88,9 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        LOGGER.warn("[WatchFileTask] file overflow: " + event.context());
+                        if (log.isWarnEnabled()) {
+                            log.warn("[WatchFileTask] file overflow: {}", event.context());
+                        }
                         continue;
                     }
                     precessWatchEvent(event);
@@ -98,12 +98,12 @@ public class WatchFileTask extends Thread {
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
                 if (interrupted) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("[WatchFileTask] file watch is interrupted");
+                    if (log.isDebugEnabled()) {
+                        log.debug("[WatchFileTask] file watch is interrupted");
                     }
                 }
-            } catch (Throwable ex) {
-                LOGGER.error("[WatchFileTask] an exception occurred during file listening : ", ex);
+            } catch (Exception ex) {
+                log.error("[WatchFileTask] an exception occurred during file listening : ", ex);
             }
         }
     }
@@ -119,8 +119,8 @@ public class WatchFileTask extends Thread {
                     fileChangeListener.onChanged(context);
                 }
             }
-        } catch (Throwable ex) {
-            LOGGER.error("[WatchFileTask] file change event callback error : ", ex);
+        } catch (Exception ex) {
+            log.error("[WatchFileTask] file change event callback error : ", ex);
         }
     }
 }

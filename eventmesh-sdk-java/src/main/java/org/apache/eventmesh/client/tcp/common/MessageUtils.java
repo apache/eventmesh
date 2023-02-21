@@ -28,9 +28,11 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 
 import org.assertj.core.util.Preconditions;
 
@@ -40,64 +42,65 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.openmessaging.api.Message;
 
 public class MessageUtils {
-    private static final int seqLength = 10;
+    private static final int SEQ_LENGTH = 10;
 
     public static Package hello(UserAgent user) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, null, generateRandomString()));
         msg.setBody(user);
         return msg;
     }
 
     public static Package heartBeat() {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.HEARTBEAT_REQUEST, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(Command.HEARTBEAT_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package goodbye() {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.CLIENT_GOODBYE_REQUEST, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(Command.CLIENT_GOODBYE_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package listen() {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.LISTEN_REQUEST, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(Command.LISTEN_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
                                     SubscriptionType subscriptionType) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString()));
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
         return msg;
     }
 
     public static Package unsubscribe() {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString()));
         return msg;
     }
 
     public static Package asyncMessageAck(Package in) {
-        Package msg = new Package();
+        final Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
         msg.setBody(in.getBody());
         return msg;
     }
 
     public static Package buildPackage(Object message, Command command) {
-        Package msg = new Package();
-        msg.setHeader(new Header(command, 0, null, generateRandomString(seqLength)));
+        final Package msg = new Package();
+        msg.setHeader(new Header(command, 0, null, generateRandomString()));
         if (message instanceof CloudEvent) {
-            CloudEvent cloudEvent = (CloudEvent) message;
+            final CloudEvent cloudEvent = (CloudEvent) message;
             Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
-            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+
+            final byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
                     .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
@@ -118,7 +121,7 @@ public class MessageUtils {
     }
 
     public static Package broadcastMessageAck(Package in) {
-        Package msg = new Package();
+        final Package msg = new Package();
         msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
         msg.setBody(in.getBody());
         return msg;
@@ -132,7 +135,7 @@ public class MessageUtils {
     }
 
     public static Package responseToClientAck(Package in) {
-        Package msg = new Package();
+        final Package msg = new Package();
         msg.setHeader(new Header(Command.RESPONSE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
         msg.setBody(in.getBody());
         return msg;
@@ -174,18 +177,17 @@ public class MessageUtils {
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
                                                      SubscriptionType subscriptionType) {
-        Subscription subscription = new Subscription();
-        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        final Subscription subscription = new Subscription();
+        final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         subscription.setTopicList(subscriptionItems);
         return subscription;
     }
 
-    private static String generateRandomString(int length) {
-        StringBuilder builder = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            builder.append((char) ThreadLocalRandom.current().nextInt(48, 57));
-        }
+    private static String generateRandomString() {
+        final StringBuilder builder = new StringBuilder(MessageUtils.SEQ_LENGTH);
+        IntStream.range(0, MessageUtils.SEQ_LENGTH).forEach(i -> builder.append((char) ThreadLocalRandom.current().nextInt(48, 57)));
+
         return builder.toString();
     }
 }

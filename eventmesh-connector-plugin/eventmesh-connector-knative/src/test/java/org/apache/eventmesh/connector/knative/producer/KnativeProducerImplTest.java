@@ -20,11 +20,13 @@ package org.apache.eventmesh.connector.knative.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
 
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class KnativeProducerImplTest {
@@ -41,18 +43,24 @@ public class KnativeProducerImplTest {
         properties.put("data", "Hello Knative from EventMesh!");
 
         // Create a Knative producer:
-        KnativeProducerImpl knativehProducer = new KnativeProducerImpl();
-        knativehProducer.init(properties);
+        KnativeProducerImpl knativehProducer =
+                (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
 
-        // Publish an event message:
-        knativehProducer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
-            @Override
-            public void onSuccess(SendResult sendResult) {
-            }
+        try {
+            knativehProducer.init(properties);
 
-            @Override
-            public void onException(OnExceptionContext context) {
-            }
-        });
+            // Publish an event message:
+            knativehProducer.publish(KnativeMessageFactory.createWriter(properties).getMessage(), new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                }
+
+                @Override
+                public void onException(OnExceptionContext context) {
+                }
+            });
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }

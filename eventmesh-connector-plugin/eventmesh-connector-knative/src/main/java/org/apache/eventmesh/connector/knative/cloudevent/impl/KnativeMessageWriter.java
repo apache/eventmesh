@@ -33,17 +33,21 @@ import io.cloudevents.rw.CloudEventWriter;
 
 public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<String>, String>, CloudEventWriter<String> {
 
-    public CloudEvent message;
+    private transient CloudEvent message;
+
+    public CloudEvent getMessage() {
+        return this.message;
+    }
 
     public KnativeMessageWriter(Properties properties) {
         String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
         this.message = new CloudEventBuilder()
-            .withId(properties.getProperty(KnativeHeaders.CE_ID))
-            .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
-            .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
-            .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
-            .withData(s.getBytes(StandardCharsets.UTF_8))
-            .build();
+                .withId(properties.getProperty(KnativeHeaders.CE_ID))
+                .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
+                .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
+                .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
+                .withData(s.getBytes(StandardCharsets.UTF_8))
+                .build();
     }
 
     @Override
@@ -53,7 +57,10 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
 
     @Override
     public String end() throws CloudEventRWException {
-        return message.getData().toString();
+        if (message != null && message.getData() != null) {
+            return message.getData().toString();
+        }
+        throw CloudEventRWException.newOther(new IllegalArgumentException("message data is null"));
     }
 
     @Override

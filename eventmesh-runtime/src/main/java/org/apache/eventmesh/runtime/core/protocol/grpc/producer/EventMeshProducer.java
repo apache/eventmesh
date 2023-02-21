@@ -28,12 +28,10 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventMeshProducer {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerGroupConf producerGroupConfig;
 
@@ -62,35 +60,35 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
-            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.eventMeshCluster));
+            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-            eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
+                eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
-        logger.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void start() throws Exception {
-        if (serviceState == null || ServiceState.RUNNING.equals(serviceState)) {
+        if (serviceState == null || ServiceState.RUNNING == serviceState) {
             return;
         }
 
         mqProducerWrapper.start();
         serviceState = ServiceState.RUNNING;
-        logger.info("EventMeshProducer [{}] started..........", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] started..........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void shutdown() throws Exception {
-        if (serviceState == null || ServiceState.INITED.equals(serviceState)) {
+        if (serviceState == null || ServiceState.INITED == serviceState) {
             return;
         }
 
         mqProducerWrapper.shutdown();
         serviceState = ServiceState.STOPED;
-        logger.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
     }
 
     public ServiceState getStatus() {

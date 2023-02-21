@@ -28,16 +28,14 @@ import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import com.google.common.base.Preconditions;
 
-public class StandaloneProducer {
+import lombok.extern.slf4j.Slf4j;
 
-    private Logger logger = LoggerFactory.getLogger(StandaloneProducer.class);
+@Slf4j
+public class StandaloneProducer {
 
     private StandaloneBroker standaloneBroker;
 
@@ -77,9 +75,9 @@ public class StandaloneProducer {
             sendResult.setMessageId(String.valueOf(messageEntity.getOffset()));
             return sendResult;
         } catch (Exception e) {
-            logger.error("send message error, topic: {}", cloudEvent.getSubject(), e);
+            log.error("send message error, topic: {}", cloudEvent.getSubject(), e);
             throw new ConnectorRuntimeException(
-                    String.format("Send message error, topic: %s", cloudEvent.getSubject()));
+                String.format("Send message error, topic: %s", cloudEvent.getSubject()));
         }
     }
 
@@ -92,10 +90,10 @@ public class StandaloneProducer {
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
-                    .messageId(cloudEvent.getId())
-                    .topic(cloudEvent.getSubject())
-                    .exception(new ConnectorRuntimeException(ex))
-                    .build();
+                .messageId(cloudEvent.getId())
+                .topic(cloudEvent.getSubject())
+                .exception(new ConnectorRuntimeException(ex))
+                .build();
             sendCallback.onException(onExceptionContext);
         }
     }
@@ -113,10 +111,10 @@ public class StandaloneProducer {
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
-                    .messageId(cloudEvent.getId())
-                    .topic(cloudEvent.getSubject())
-                    .exception(new ConnectorRuntimeException(ex))
-                    .build();
+                .messageId(cloudEvent.getId())
+                .topic(cloudEvent.getSubject())
+                .exception(new ConnectorRuntimeException(ex))
+                .build();
             sendCallback.onException(onExceptionContext);
         }
     }

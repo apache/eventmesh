@@ -24,6 +24,9 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public final class KnativeMessageFactory {
 
     private KnativeMessageFactory() {
@@ -31,10 +34,14 @@ public final class KnativeMessageFactory {
     }
 
     public static String createReader(final CloudEvent message) {
+        if (message.getData() == null) {
+            log.warn("CloudEvent message's data is null.");
+            return "";
+        }
         return new String(message.getData().toBytes(), StandardCharsets.UTF_8);
     }
 
-    public static CloudEvent createWriter(Properties properties) {
-        return new KnativeMessageWriter(properties).message;
+    public static KnativeMessageWriter createWriter(final Properties properties) {
+        return new KnativeMessageWriter(properties);
     }
 }

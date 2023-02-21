@@ -35,26 +35,25 @@ import org.apache.eventmesh.runtime.util.Utils;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshTcp2Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshTcp2Client.class);
-
-    public static InetSocketAddress serverGoodby2Client(EventMeshTCPServer eventMeshTCPServer, Session session,
+    public static InetSocketAddress serverGoodby2Client(EventMeshTCPServer eventMeshTCPServer,
+                                                        Session session,
                                                         ClientSessionGroupMapping mapping) {
-        logger.info("serverGoodby2Client client[{}]", session.getClient());
+        log.info("serverGoodby2Client client[{}]", session.getClient());
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
-            msg.setHeader(
-                    new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
-                            null));
+            msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(),
+                    "graceful normal quit from eventmesh", null));
 
             eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
@@ -68,15 +67,13 @@ public class EventMeshTcp2Client {
             closeSessionIfTimeout(eventMeshTCPServer, session, mapping);
             return address;
         } catch (Exception e) {
-            logger.error("exception occur while serverGoodby2Client", e);
+            log.error("exception occur while serverGoodby2Client", e);
             return null;
         }
     }
 
-    public static InetSocketAddress goodBye2Client(EventMeshTCPServer eventMeshTCPServer,
-                                                   Session session,
-                                                   String errMsg,
-                                                   int eventMeshStatus,
+    public static InetSocketAddress goodBye2Client(EventMeshTCPServer eventMeshTCPServer, Session session,
+                                                   String errMsg, int eventMeshStatus,
                                                    ClientSessionGroupMapping mapping) {
         try {
             long startTime = System.currentTimeMillis();
@@ -94,38 +91,34 @@ public class EventMeshTcp2Client {
 
             return session.getRemoteAddress();
         } catch (Exception e) {
-            logger.error("exception occur while goodbye2client", e);
+            log.error("exception occur while goodbye2client", e);
             return null;
         }
     }
 
-    public static void goodBye2Client(ChannelHandlerContext ctx,
-                                      String errMsg,
-                                      ClientSessionGroupMapping mapping,
+    public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, ClientSessionGroupMapping mapping,
                                       EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
         eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
-        logger.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-        ctx.writeAndFlush(pkg).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
-                        try {
-                            mapping.closeSession(ctx);
-                        } catch (Exception e) {
-                            logger.warn("close session failed!", e);
-                        }
-                    }
+        log.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+        ctx.writeAndFlush(pkg).addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
+                try {
+                    mapping.closeSession(ctx);
+                } catch (Exception e) {
+                    log.warn("close session failed!", e);
                 }
-        );
+            }
+        });
     }
 
     public static String redirectClient2NewEventMesh(EventMeshTCPServer eventMeshTCPServer, String newEventMeshIp,
                                                      int port, Session session, ClientSessionGroupMapping mapping) {
-        logger.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(),
-                newEventMeshIp + ":" + port);
+        log.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(), newEventMeshIp + ":"
+                + port);
         try {
             long startTime = System.currentTimeMillis();
 
@@ -142,7 +135,7 @@ public class EventMeshTcp2Client {
             closeSessionIfTimeout(eventMeshTCPServer, session, mapping);
             return session.getRemoteAddress() + "--->" + newEventMeshIp + ":" + port;
         } catch (Exception e) {
-            logger.error("exception occur while redirectClient2NewEventMesh", e);
+            log.error("exception occur while redirectClient2NewEventMesh", e);
             return null;
         }
     }
@@ -153,12 +146,12 @@ public class EventMeshTcp2Client {
             @Override
             public void run() {
                 try {
-                    if (!session.getSessionState().equals(SessionState.CLOSED)) {
+                    if (session.getSessionState() != SessionState.CLOSED) {
                         mapping.closeSession(session.getContext());
-                        logger.info("closeSessionIfTimeout success, session[{}]", session.getClient());
+                        log.info("closeSessionIfTimeout success, session[{}]", session.getClient());
                     }
                 } catch (Exception e) {
-                    logger.error("close session failed", e);
+                    log.error("close session failed", e);
                 }
             }
         }, 30 * 1000, TimeUnit.MILLISECONDS);

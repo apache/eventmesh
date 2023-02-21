@@ -29,15 +29,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class MessageHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+@Slf4j
+public class MessageHandler {
 
     private static final ScheduledExecutorService SCHEDULER = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
 
@@ -64,16 +63,16 @@ public class MessageHandler {
 
     public boolean handle(HandleMsgContext handleMsgContext) {
         Set<AbstractPushRequest> waitingRequests4Group = MapUtils.getObject(waitingRequests,
-            handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
+                handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
         if (waitingRequests4Group.size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
-            logger.warn("waitingRequests is too many, so reject, this message will be send back to MQ, consumerGroup:{}, threshold:{}",
-                handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
+            log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, consumerGroup:{}, threshold:{}",
+                    handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
             return false;
         }
 
         try {
             pushExecutor.submit(() -> {
-                AbstractPushRequest pushRequest = createHttpPushRequest(handleMsgContext);
+                AbstractPushRequest pushRequest = createGrpcPushRequest(handleMsgContext);
                 pushRequest.tryPushRequest();
             });
             return true;
@@ -82,9 +81,9 @@ public class MessageHandler {
         }
     }
 
-    private AbstractPushRequest createHttpPushRequest(HandleMsgContext handleMsgContext) {
+    private AbstractPushRequest createGrpcPushRequest(HandleMsgContext handleMsgContext) {
         GrpcType grpcType = handleMsgContext.getGrpcType();
-        if (GrpcType.WEBHOOK.equals(grpcType)) {
+        if (GrpcType.WEBHOOK == grpcType) {
             return new WebhookPushRequest(handleMsgContext, waitingRequests);
         } else {
             return new StreamPushRequest(handleMsgContext, waitingRequests);

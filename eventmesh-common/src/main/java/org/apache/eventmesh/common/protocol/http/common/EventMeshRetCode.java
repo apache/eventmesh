@@ -43,9 +43,9 @@ public enum EventMeshRetCode {
     EVENTMESH_ACL_ERR(22, "eventMesh acl err"),
     EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR(23, "eventMesh http msg send over the limit, ");
 
-    private Integer retCode;
+    private final Integer retCode;
 
-    private String errMsg;
+    private final String errMsg;
 
     EventMeshRetCode(Integer retCode, String errMsg) {
         this.retCode = retCode;
@@ -56,15 +56,8 @@ public enum EventMeshRetCode {
         return retCode;
     }
 
-    public void setRetCode(Integer retCode) {
-        this.retCode = retCode;
-    }
-
     public String getErrMsg() {
         return errMsg;
     }
 
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
 }

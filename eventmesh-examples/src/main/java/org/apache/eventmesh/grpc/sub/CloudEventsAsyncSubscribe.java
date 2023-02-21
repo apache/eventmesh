@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.grpc.sub;
 
-import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
@@ -25,53 +24,46 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.util.Utils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
+public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements ReceiveMsgHook<CloudEvent> {
 
-    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
-
-    public static void main(String[] args) throws InterruptedException {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-
-        EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
-
-        org.apache.eventmesh.common.protocol.SubscriptionItem subscriptionItem = new SubscriptionItem();
+    public static void main(String[] args) throws InterruptedException, IOException {
+        final SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
-        EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
-        eventMeshGrpcConsumer.init();
+            eventMeshGrpcConsumer.init();
 
-        eventMeshGrpcConsumer.registerListener(handler);
+            eventMeshGrpcConsumer.registerListener(new CloudEventsAsyncSubscribe());
 
-        eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
+            eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-        Thread.sleep(60000);
-        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+            ThreadUtils.sleep(1, TimeUnit.MINUTES);
+            eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+        }
     }
 
     @Override
-    public Optional<CloudEvent> handle(CloudEvent msg) {
-        log.info("receive async msg: {}", msg);
+    public Optional<CloudEvent> handle(final CloudEvent msg) {
+        if (log.isInfoEnabled()) {
+            log.info("receive async msg: {}", msg);
+        }
         return Optional.empty();
     }
 

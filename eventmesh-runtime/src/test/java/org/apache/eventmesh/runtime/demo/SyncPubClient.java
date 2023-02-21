@@ -23,23 +23,25 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SyncPubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SyncPubClient.class);
-
     public static void main(String[] args) throws Exception {
-        PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        pubClient.init();
-        pubClient.heartbeat();
+        try (PubClientImpl pubClient =
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            pubClient.init();
+            pubClient.heartbeat();
 
-        for (int i = 0; i < 100; i++) {
-            Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
-            if (rr.getBody() instanceof EventMeshMessage) {
-                String body = ((EventMeshMessage) rr.getBody()).getBody();
-                logger.error("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr);
+            for (int i = 0; i < 100; i++) {
+                Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
+                if (rr.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) rr.getBody()).getBody();
+                    if (log.isInfoEnabled()) {
+                        log.info("rrMessage: {}, rr-reply: {}", body, rr);
+                    }
+                }
             }
         }
     }

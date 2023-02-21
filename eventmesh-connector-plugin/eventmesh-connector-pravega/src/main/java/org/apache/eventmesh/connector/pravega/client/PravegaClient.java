@@ -57,6 +57,18 @@ public class PravegaClient {
 
     private static PravegaClient instance;
 
+    public static PravegaClient getInstance() {
+        return instance;
+    }
+
+    public static PravegaClient getInstance(PravegaConnectorConfig config) {
+        if (instance == null) {
+            instance = new PravegaClient(config);
+        }
+
+        return instance;
+    }
+
     private PravegaClient(PravegaConnectorConfig config) {
         this.config = config;
         streamManager = StreamManager.create(config.getControllerURI());
@@ -72,22 +84,15 @@ public class PravegaClient {
         readerGroupManager = ReaderGroupManager.withScope(config.getScope(), clientConfig);
     }
 
-    public static PravegaClient getInstance() {
-        if (instance == null) {
-            instance = new PravegaClient(PravegaConnectorConfig.getInstance());
-        }
-        return instance;
-    }
-
     protected static PravegaClient getNewInstance(PravegaConnectorConfig config) {
         return new PravegaClient(config);
     }
 
     public void start() {
         if (createScope()) {
-            log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
+            log.info("Create Pravega scope[{}] success.", config.getScope());
         } else {
-            log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
+            log.info("Pravega scope[{}] has already been created.", config.getScope());
         }
     }
 
@@ -120,6 +125,7 @@ public class PravegaClient {
         try {
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            log.error(String.format("Write topic[%s] fail.", topic), e);
             throw new PravegaConnectorException(String.format("Write topic[%s] fail.", topic));
         }
         SendResult sendResult = new SendResult();
@@ -152,7 +158,6 @@ public class PravegaClient {
             deleteReaderGroup(buildReaderGroupName(false, consumerGroup, topic));
         }
         subscribeTaskMap.remove(topic).stopRead();
-        writerMap.remove(topic).close();
         return true;
     }
 

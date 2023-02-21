@@ -19,6 +19,11 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -37,93 +42,101 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PreDestroy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class SubService implements InitializingBean {
 
-    public static Logger logger = LoggerFactory.getLogger(SubService.class);
+    private transient EventMeshHttpConsumer eventMeshHttpConsumer;
 
-    private EventMeshHttpConsumer eventMeshHttpConsumer;
+    private transient Properties properties;
 
-    final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-
-    final List<SubscriptionItem> topicList = Lists.newArrayList(
+    private final transient List<SubscriptionItem> topicList = Lists.newArrayList(
             new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
-    final String localIp = IPUtils.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
-    final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-    final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-    final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
+    private transient String testURL;
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
+    private transient CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String localIP = IPUtils.getLocalAddress();
+        final String localPort = properties.getProperty(SERVER_PORT);
+        final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventmeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
+        final String testURL = "http://" + localIP + ":" + localPort + "/sub/test";
 
-        final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+        final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
+        final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
                 .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(env)
-                .idc(idc)
+                .env(ENV)
+                .idc(IDC)
                 .ip(IPUtils.getLocalAddress())
-                .sys(subsys)
+                .sys(SUB_SYS)
                 .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
-        eventMeshHttpConsumer.heartBeat(topicList, url);
-        eventMeshHttpConsumer.subscribe(topicList, url);
+        eventMeshHttpConsumer.heartBeat(topicList, testURL);
+        eventMeshHttpConsumer.subscribe(topicList, testURL);
 
         // Wait for all messaged to be consumed
-        Thread stopThread = new Thread(() -> {
+        final Thread stopThread = new Thread(() -> {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("interrupted exception", e);
             }
-            logger.info("stopThread start....");
-            throw new RuntimeException();
+            if (log.isInfoEnabled()) {
+                log.info("stopThread start....");
+            }
         });
         stopThread.start();
     }
 
     @PreDestroy
     public void cleanup() {
-        logger.info("start destory ....");
+        if (log.isInfoEnabled()) {
+            log.info("start destory ....");
+        }
+
         try {
-            List<String> unSubList = new ArrayList<>();
-            for (SubscriptionItem item : topicList) {
+            final List<String> unSubList = new ArrayList<>();
+            for (final SubscriptionItem item : topicList) {
                 unSubList.add(item.getTopic());
             }
-            eventMeshHttpConsumer.unsubscribe(unSubList, url);
+            eventMeshHttpConsumer.unsubscribe(unSubList, testURL);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("unsubscribe exception", e);
         }
-        try (final EventMeshHttpConsumer ignore = eventMeshHttpConsumer) {
-            // close consumer
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        if (eventMeshHttpConsumer != null) {
+            eventMeshHttpConsumer.close();
         }
-        logger.info("end destory.");
+
+        if (log.isInfoEnabled()) {
+            log.info("end destory.");
+        }
     }
 
     /**
      * Count the message already consumed
      */
-    public void consumeMessage(String msg) {
-        logger.info("consume message: {}", msg);
+    public void consumeMessage(final String msg) {
+        if (log.isInfoEnabled()) {
+            log.info("consume message: {}", msg);
+        }
         countDownLatch.countDown();
-        logger.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
+        if (log.isInfoEnabled()) {
+            log.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
+        }
     }
 }

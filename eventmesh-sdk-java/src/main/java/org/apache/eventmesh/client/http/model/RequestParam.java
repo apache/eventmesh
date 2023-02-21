@@ -19,17 +19,22 @@ package org.apache.eventmesh.client.http.model;
 
 import org.apache.eventmesh.common.Constants;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import io.netty.handler.codec.http.HttpMethod;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Data
 public class RequestParam {
 
     private Map<String, String[]> queryParams;
@@ -42,7 +47,7 @@ public class RequestParam {
 
     private long timeout = Constants.DEFAULT_HTTP_TIME_OUT;
 
-    public RequestParam(HttpMethod httpMethod) {
+    public RequestParam(final HttpMethod httpMethod) {
         this.httpMethod = httpMethod;
     }
 
@@ -54,7 +59,7 @@ public class RequestParam {
         return headers;
     }
 
-    public RequestParam setHeaders(Map<String, String> headers) {
+    public RequestParam setHeaders(final Map<String, String> headers) {
         this.headers = headers;
         return this;
     }
@@ -63,7 +68,7 @@ public class RequestParam {
         return body;
     }
 
-    public RequestParam setBody(Map<String, String> body) {
+    public RequestParam setBody(final Map<String, String> body) {
         this.body = body;
         return this;
     }
@@ -73,19 +78,19 @@ public class RequestParam {
     }
 
     public String getQueryParams() {
-        if (queryParams == null || queryParams.size() == 0) {
+        if (MapUtils.isEmpty(queryParams)) {
             return "";
         }
-        StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder();
         try {
-            for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
-                for (String val : query.getValue()) {
-                    stringBuilder.append("&")
-                            .append(URLEncoder.encode(query.getKey(), "UTF-8"));
+            for (final Map.Entry<String, String[]> query : queryParams.entrySet()) {
+                for (final String val : query.getValue()) {
+                    stringBuilder.append(Constants.AND)
+                            .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
 
                     if (val != null && !val.isEmpty()) {
                         stringBuilder.append("=")
-                                .append(URLEncoder.encode(val, "UTF-8"));
+                                .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
                     }
                 }
             }
@@ -96,12 +101,12 @@ public class RequestParam {
         return stringBuilder.substring(1);
     }
 
-    public RequestParam setQueryParams(Map<String, String[]> queryParams) {
+    public RequestParam setQueryParams(final Map<String, String[]> queryParams) {
         this.queryParams = queryParams;
         return this;
     }
 
-    public RequestParam addQueryParam(String key, String value) {
+    public RequestParam addQueryParam(final String key, final String value) {
         if (queryParams == null) {
             queryParams = new HashMap<>();
         }
@@ -113,7 +118,7 @@ public class RequestParam {
         return this;
     }
 
-    public RequestParam addHeader(String key, Object value) {
+    public RequestParam addHeader(final String key, final Object value) {
         if (headers == null) {
             headers = new HashMap<>();
         }
@@ -121,7 +126,7 @@ public class RequestParam {
         return this;
     }
 
-    public RequestParam addBody(String key, String value) {
+    public RequestParam addBody(final String key, final String value) {
         if (body == null) {
             body = new HashMap<>();
         }
@@ -133,7 +138,7 @@ public class RequestParam {
         return timeout;
     }
 
-    public RequestParam setTimeout(long timeout) {
+    public RequestParam setTimeout(final long timeout) {
         this.timeout = timeout;
         return this;
     }

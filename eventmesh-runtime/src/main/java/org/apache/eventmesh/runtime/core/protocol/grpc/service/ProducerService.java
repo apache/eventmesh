@@ -35,9 +35,11 @@ import org.slf4j.LoggerFactory;
 
 import io.grpc.stub.StreamObserver;
 
-public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBase {
 
-    private final Logger logger = LoggerFactory.getLogger(ProducerService.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBase {
 
     private final Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
@@ -54,16 +56,16 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void publish(SimpleMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
-        
+
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(eventMeshGrpcServer);
             try {
                 sendAsyncMessageProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
             }
@@ -73,7 +75,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void requestReply(SimpleMessage request, StreamObserver<SimpleMessage> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
@@ -82,7 +84,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             try {
                 requestMessageProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getRetCode(),
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getErrMsg(), e);
                 ServiceUtils.sendStreamRespAndDone(request.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, e.getMessage(), emitter);
             }
@@ -92,7 +94,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     public void batchPublish(BatchMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "BatchPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient(request.getMessageItemCount());
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
@@ -101,7 +103,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             try {
                 batchPublishMessageProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getRetCode(),
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getRetCode(),
                     StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getErrMsg(), e);
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
             }

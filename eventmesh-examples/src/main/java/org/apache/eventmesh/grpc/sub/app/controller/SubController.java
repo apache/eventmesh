@@ -36,10 +36,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @RestController
@@ -47,28 +48,38 @@ import lombok.extern.slf4j.Slf4j;
 public class SubController {
 
     @Autowired
-    private SubService subService;
+    private transient SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(HttpServletRequest request) {
-        String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
-        String content = request.getParameter("content");
-        log.info("=======receive message======= {}", content);
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
-            String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
+    public String subTest(final HttpServletRequest request) {
+        final String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
+        final String content = request.getParameter("content");
 
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(contentType)
-                .deserialize(content.getBytes(StandardCharsets.UTF_8));
-            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("=======receive data======= {}", data);
+        if (log.isInfoEnabled()) {
+            log.info("=======receive message======= {}", content);
+        }
+
+        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
+            final String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
+
+            final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
+            if (eventFormat != null) {
+                final CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                final CloudEventData cloudEventData = event.getData();
+                if (cloudEventData != null) {
+                    final String data = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+                    if (log.isInfoEnabled()) {
+                        log.info("=======receive data======= {}", data);
+                    }
+                }
+            }
         }
 
         subService.consumeMessage(content);
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
-        return JsonUtils.serialize(map);
+        return JsonUtils.toJSONString(map);
     }
 
 }

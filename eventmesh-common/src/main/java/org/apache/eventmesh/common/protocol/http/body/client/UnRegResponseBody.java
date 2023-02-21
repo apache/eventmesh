@@ -55,7 +55,7 @@ public class UnRegResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static UnRegResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static UnRegResponseBody buildBody(Integer retCode, String retMsg) {
         UnRegResponseBody regResponseBody = new UnRegResponseBody();
         regResponseBody.setRetMsg(retMsg);
         regResponseBody.setResTime(System.currentTimeMillis());
@@ -69,7 +69,7 @@ public class UnRegResponseBody extends Body {
         sb.append("regResponseBody={")
                 .append("retCode=").append(retCode).append(",")
                 .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

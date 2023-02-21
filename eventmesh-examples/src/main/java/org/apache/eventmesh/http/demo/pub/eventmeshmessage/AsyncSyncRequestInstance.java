@@ -17,53 +17,26 @@
 
 package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.util.Utils;
+import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.concurrent.TimeUnit;
 
-import java.util.Properties;
-
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class AsyncSyncRequestInstance {
 
+@Slf4j
+public class AsyncSyncRequestInstance extends HttpAbstractDemo {
     public static void main(String[] args) throws Exception {
 
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        Preconditions.checkNotNull(properties, ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-
-        EventMeshHttpProducer eventMeshHttpProducer = null;
-        try {
-            String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-            if (StringUtils.isBlank(eventMeshIPPort)) {
-                // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
-            }
-
-            EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                    .liteEventMeshAddr(eventMeshIPPort)
-                    .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-                    .env("env")
-                    .idc("idc")
-                    .ip(IPUtils.getLocalAddress())
-                    .sys("1234")
-                    .pid(String.valueOf(ThreadUtils.getPID())).build();
-
-            eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
-
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .bizSeqNo(RandomStringUtils.generateNum(30))
@@ -73,27 +46,26 @@ public class AsyncSyncRequestInstance {
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
-                public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
-                            System.currentTimeMillis() - startTime);
+                public void onSuccess(final EventMeshMessage o) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
+                                System.currentTimeMillis() - startTime);
+                    }
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    log.debug("send msg failed", e);
+                    if (log.isDebugEnabled()) {
+                        log.debug("send msg failed", e);
+                    }
                 }
-            }, 3000);
+            }, 3_000);
 
-            Thread.sleep(2000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
-            log.warn("async send msg failed", e);
+            log.error("async send msg failed", e);
         }
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
 
-        Thread.sleep(30000);
-        try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
-            // close producer
-        } catch (Exception e1) {
-            log.warn("producer shutdown exception", e1);
-        }
     }
 }

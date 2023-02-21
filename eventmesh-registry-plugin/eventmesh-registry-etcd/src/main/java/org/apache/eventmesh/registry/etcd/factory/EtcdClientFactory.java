@@ -28,18 +28,16 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
 import io.etcd.jetcd.options.LeaseOption;
 
 
-public class EtcdClientFactory {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(EtcdClientFactory.class);
+@Slf4j
+public class EtcdClientFactory {
 
     private static final Map<String, EtcdLeaseId> etcdLeaseIdMap = new ConcurrentHashMap<>();
 
@@ -82,7 +80,7 @@ public class EtcdClientFactory {
 
             etcdLeaseIdMap.put(serverAddr, etcdLeaseId);
         } catch (Throwable e) {
-            logger.error("createClient failed, address: {}", serverAddr, e);
+            log.error("createClient failed, address: {}", serverAddr, e);
             throw new RegistryException("createClient failed", e);
         }
         return etcdLeaseId.getClientWrapper();
@@ -90,7 +88,7 @@ public class EtcdClientFactory {
 
 
     public static void renewalLeaseId(EtcdLeaseId etcdLeaseId) {
-        logger.info("renewal of contract. server url: {}", etcdLeaseId.getUrl());
+        log.info("renewal of contract. server url: {}", etcdLeaseId.getUrl());
         Client client = etcdLeaseId.getClientWrapper();
         try {
             long ttl = client.getLeaseClient().timeToLive(etcdLeaseId.getLeaseId(), LeaseOption.DEFAULT).get().getTTl();
@@ -100,7 +98,7 @@ public class EtcdClientFactory {
                 etcdLeaseId.setLeaseId(leaseId);
             }
         } catch (Throwable e) {
-            logger.error("renewal error, server url: {}", etcdLeaseId.getUrl(), e);
+            log.error("renewal error, server url: {}", etcdLeaseId.getUrl(), e);
             client.getLeaseClient().keepAlive(System.currentTimeMillis(), etcdLeaseId.getEtcdStreamObserver());
         }
     }

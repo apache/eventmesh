@@ -21,23 +21,27 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+@Config(field = "clientConfiguration")
 public class KnativeProducerImpl implements Producer {
 
-    private ProducerImpl producer;
+    private transient ProducerImpl producer;
+
+    /**
+     * Unified configuration class corresponding to knative-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
         // Load parameters from properties file:
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-
-        properties.put("url", clientConfiguration.serviceAddr);
+        properties.put("url", clientConfiguration.getServiceAddr());
         producer = new ProducerImpl(properties);
     }
 
@@ -89,5 +93,9 @@ public class KnativeProducerImpl implements Producer {
     @Override
     public void setExtFields() {
         throw new ConnectorRuntimeException("SetExtFields is not supported");
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
     }
 }

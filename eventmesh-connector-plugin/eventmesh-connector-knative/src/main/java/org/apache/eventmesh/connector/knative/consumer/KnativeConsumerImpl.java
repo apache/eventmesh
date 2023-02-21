@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.knative.consumer;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 
 import java.util.List;
@@ -27,17 +28,26 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Config(field = "clientConfiguration")
+@Slf4j
 public class KnativeConsumerImpl implements Consumer {
 
-    private PullConsumerImpl pullConsumer;
+    private transient PullConsumerImpl pullConsumer;
+
+
+    /**
+     * Unified configuration class corresponding to knative-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
         // Load parameters from properties file:
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-        properties.put("emUrl", clientConfiguration.emurl);
-        properties.put("serviceAddr", clientConfiguration.serviceAddr);
+        properties.put("emUrl", clientConfiguration.getEmurl());
+        properties.put("serviceAddr", clientConfiguration.getServiceAddr());
 
         pullConsumer = new PullConsumerImpl(properties);
     }
@@ -52,7 +62,7 @@ public class KnativeConsumerImpl implements Consumer {
         try {
             pullConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("unsubscribe error", e);
         }
     }
 
@@ -84,5 +94,9 @@ public class KnativeConsumerImpl implements Consumer {
     @Override
     public void shutdown() {
         pullConsumer.shutdown();
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
     }
 }

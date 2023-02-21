@@ -37,35 +37,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
-        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, EventMeshMessage.class)) {
+
+        try {
+            final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                    eventMeshTcpClientConfig, EventMeshMessage.class);
+
             client.init();
 
-            client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
-            client.registerSubBusiHandler(handler);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, SubscriptionMode.BROADCASTING,
+                    SubscriptionType.ASYNC);
+            client.registerSubBusiHandler(new AsyncSubscribeBroadcast());
 
             client.listen();
 
         } catch (Exception e) {
-            log.warn("AsyncSubscribeBroadcast failed", e);
+            log.error("AsyncSubscribeBroadcast failed", e);
         }
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive broadcast msg: {}", msg);
+    public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
+        if (log.isInfoEnabled()) {
+            log.info("receive broadcast msg: {}", msg);
+        }
         return Optional.empty();
     }
 

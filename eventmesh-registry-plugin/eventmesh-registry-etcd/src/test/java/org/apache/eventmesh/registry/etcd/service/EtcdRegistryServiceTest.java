@@ -48,8 +48,8 @@ public class EtcdRegistryServiceTest {
     @Before
     public void setUp() {
         etcdRegistryService = new EtcdRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
-        configuration.namesrvAddr = "127.0.0.1:2379";
+        CommonConfiguration configuration = new CommonConfiguration();
+        configuration.setNamesrvAddr("127.0.0.1:2379");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
         // Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");

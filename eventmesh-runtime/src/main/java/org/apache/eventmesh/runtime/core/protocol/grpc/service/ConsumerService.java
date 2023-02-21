@@ -31,14 +31,12 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProc
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.grpc.stub.StreamObserver;
 
-public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
+import lombok.extern.slf4j.Slf4j;
 
-    private final Logger logger = LoggerFactory.getLogger(ConsumerService.class);
+@Slf4j
+public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -55,9 +53,9 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void subscribe(Subscription request, StreamObserver<Response> responseObserver) {
-        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+        log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribe", EventMeshConstants.PROTOCOL_GRPC,
-            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
@@ -66,7 +64,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             try {
                 subscribeProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg(), e);
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
@@ -80,16 +78,16 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             @Override
             public void onNext(Subscription subscription) {
                 if (!subscription.getSubscriptionItemsList().isEmpty()) {
-                    logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+                    log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                         "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
-                        subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+                        subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
                     eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
                     handleSubscriptionStream(subscription, emitter);
                 } else {
-                    logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+                    log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                         "reply-to-server", EventMeshConstants.PROTOCOL_GRPC,
-                        subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+                        subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
                     handleSubscribeReply(subscription, emitter);
                 }
@@ -97,13 +95,13 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
             @Override
             public void onError(Throwable t) {
-                logger.error("Receive error from client: " + t.getMessage());
+                log.error("Receive error from client: {}", t.getMessage());
                 emitter.onCompleted();
             }
 
             @Override
             public void onCompleted() {
-                logger.info("Client finish sending messages");
+                log.info("Client finish sending messages");
                 emitter.onCompleted();
             }
         };
@@ -115,7 +113,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             try {
                 streamProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
                 ServiceUtils.sendStreamRespAndDone(request.getHeader(), StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
@@ -127,7 +125,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             try {
                 replyMessageProcessor.process(buildSimpleMessage(subscription), emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
                 ServiceUtils.sendStreamRespAndDone(subscription.getHeader(), StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
@@ -148,9 +146,9 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void unsubscribe(Subscription request, StreamObserver<Response> responseObserver) {
-        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+        log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
-            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
@@ -159,7 +157,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             try {
                 unsubscribeProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
+                log.error("Error code {}, error message {}", StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
                     StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg(), e);
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_UNSUBSCRIBE_ERR, e.getMessage(), emitter);
             }

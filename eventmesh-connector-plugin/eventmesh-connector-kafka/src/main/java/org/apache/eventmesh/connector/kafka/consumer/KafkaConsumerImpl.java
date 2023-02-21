@@ -20,30 +20,32 @@ package org.apache.eventmesh.connector.kafka.consumer;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.connector.kafka.config.ClientConfiguration;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
+@Config(field = "clientConfiguration")
 public class KafkaConsumerImpl implements Consumer {
-    public Logger messageLogger = LoggerFactory.getLogger("message");
-
     private ConsumerImpl consumer;
+
+    /**
+     * Unified configuration class corresponding to kafka-client.properties
+     */
+    private ClientConfiguration clientConfiguration;
 
     @Override
     public synchronized void init(Properties props) throws Exception {
+        String namesrvAddr = clientConfiguration.namesrvAddr;
         String consumerGroup = props.getProperty("consumerGroup");
-        String bootstrapServers = props.getProperty("bootstrapServers");
-        // Other config props
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
+        // Other config props
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, namesrvAddr);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         consumer = new ConsumerImpl(props);
     }
@@ -88,4 +90,7 @@ public class KafkaConsumerImpl implements Consumer {
         consumer.shutdown();
     }
 
+    public ClientConfiguration getClientConfiguration() {
+        return this.clientConfiguration;
+    }
 }

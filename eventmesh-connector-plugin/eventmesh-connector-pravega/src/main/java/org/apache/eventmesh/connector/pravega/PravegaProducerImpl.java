@@ -23,7 +23,9 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.pravega.client.PravegaClient;
+import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Properties;
@@ -34,13 +36,19 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Config(field = "pravegaConnectorConfig")
 public class PravegaProducerImpl implements Producer {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private PravegaClient client;
 
+    /**
+     * Unified configuration class corresponding to pravega-connector.properties
+     */
+    private PravegaConnectorConfig pravegaConnectorConfig;
+
     @Override
     public void init(Properties properties) throws Exception {
-        client = PravegaClient.getInstance();
+        client = PravegaClient.getInstance(pravegaConnectorConfig);
     }
 
     @Override
@@ -104,5 +112,9 @@ public class PravegaProducerImpl implements Producer {
     @Override
     public void setExtFields() {
 
+    }
+
+    public PravegaConnectorConfig getClientConfiguration() {
+        return this.pravegaConnectorConfig;
     }
 }
