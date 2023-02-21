@@ -157,6 +157,7 @@ public class StandaloneBroker {
     }
 
     private static class StandaloneBrokerInstanceHolder {
+
         private static final StandaloneBroker instance = new StandaloneBroker();
     }
 }
