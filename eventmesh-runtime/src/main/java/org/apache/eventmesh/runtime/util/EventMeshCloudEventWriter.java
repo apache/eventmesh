@@ -24,6 +24,7 @@ import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 
 public class EventMeshCloudEventWriter implements CloudEventContextWriter {
+
     private Map<String, Object> extensionMap = null;
 
     public EventMeshCloudEventWriter() {

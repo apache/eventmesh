@@ -54,7 +54,7 @@ public class EventMeshProducer {
     }
 
     public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
-            throws Exception {
+        throws Exception {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
@@ -70,14 +70,14 @@ public class EventMeshProducer {
     }
 
     public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.getEventMeshCluster()));
+            eventMeshHttpConfiguration.getEventMeshCluster()));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
@@ -116,9 +116,9 @@ public class EventMeshProducer {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("eventMeshProducer={")
-                .append("inited=").append(inited.get()).append(",")
-                .append("started=").append(started.get()).append(",")
-                .append("producerGroupConfig=").append(producerGroupConfig).append("}");
+            .append("inited=").append(inited.get()).append(",")
+            .append("started=").append(started.get()).append(",")
+            .append("producerGroupConfig=").append(producerGroupConfig).append("}");
         return sb.toString();
     }
 }

@@ -95,8 +95,7 @@ public class EventHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /event
-     * Return the list of event
+     * GET /event Return the list of event
      */
     void get(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
@@ -146,8 +145,7 @@ public class EventHandler extends AbstractHttpHandler {
     }
 
     /**
-     * POST /event
-     * Create an event
+     * POST /event Create an event
      */
     void post(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");

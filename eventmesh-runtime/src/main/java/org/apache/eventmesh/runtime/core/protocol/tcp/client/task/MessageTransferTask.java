@@ -169,8 +169,8 @@ public class MessageTransferTask extends AbstractTask {
             }
         } catch (Exception e) {
             log.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
-                    session.getClient(),
-                    e);
+                session.getClient(),
+                e);
 
             if (cmd != RESPONSE_TO_SERVER) {
                 msg.setHeader(

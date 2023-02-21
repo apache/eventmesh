@@ -125,8 +125,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /client/tcp
-     * Return a response that contains the list of clients
+     * GET /client/tcp Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
