@@ -26,8 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This selector use random strategy.
- * Each selection will randomly give one from the given list
+ * This selector use random strategy. Each selection will randomly give one from the given list
  *
  * @param <T> Target type
  */

@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Config field conversion class for String
  */
-public class StringConverter  implements ConvertValue<String> {
+public class StringConverter implements ConvertValue<String> {
 
     @Override
     public String convert(ConvertInfo convertInfo) {

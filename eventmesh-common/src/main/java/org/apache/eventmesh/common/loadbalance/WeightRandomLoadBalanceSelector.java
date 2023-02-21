@@ -25,9 +25,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * This selector use the weighted random strategy to select from list.
- * If all the weights are same, it will randomly select one from list.
- * If the weights are different, it will select one by using RandomUtils.nextInt(0, w0 + w1 ... + wn)
+ * This selector use the weighted random strategy to select from list. If all the weights are same, it will randomly select one from list. If the
+ * weights are different, it will select one by using RandomUtils.nextInt(0, w0 + w1 ... + wn)
  *
  * @param <T> Target type
  */
