@@ -44,16 +44,21 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-public class RequestMessageProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class RequestMessageProcessor {
 
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public RequestMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public RequestMessageProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(SimpleMessage message, EventEmitter<SimpleMessage> emitter) throws Exception {
@@ -80,7 +85,7 @@ public class RequestMessageProcessor {
         // control flow rate limit
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
-            logger.error("Send message speed over limit.");
+            log.error("Send message speed over limit.");
             ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
@@ -113,7 +118,7 @@ public class RequestMessageProcessor {
                     emitter.onCompleted();
 
                     long endTime = System.currentTimeMillis();
-                    logger.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    log.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
                     eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
                 } catch (Exception e) {
@@ -121,7 +126,7 @@ public class RequestMessageProcessor {
                         EventMeshUtil.stackTrace(e, 2), emitter);
 
                     long endTime = System.currentTimeMillis();
-                    logger.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    log.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId, e);
                 }
             }
@@ -131,7 +136,7 @@ public class RequestMessageProcessor {
                 ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
                     EventMeshUtil.stackTrace(e, 2), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                log.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId, e);
             }
         }, ttl);
@@ -139,13 +144,13 @@ public class RequestMessageProcessor {
 
     private void doAclCheck(SimpleMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = requestHeader.getIp();
             String user = requestHeader.getUsername();
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            this.acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         }
     }
 }

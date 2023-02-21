@@ -22,15 +22,15 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshTcpExceptionHandler(EventMeshTCPServer eventMeshTCPServer) {
@@ -41,7 +41,7 @@ public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         UserAgent client = session == null ? null : session.getClient();
-        logger.error("exceptionCaught, push goodbye to client|user={},errMsg={}", client, cause.fillInStackTrace());
+        log.error("exceptionCaught, push goodbye to client|user={},errMsg={}", client, cause.fillInStackTrace());
         String errMsg;
         if (cause.toString().contains("value not one of declared Enum instance names")) {
             errMsg = "Unknown Command type";

@@ -21,8 +21,8 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This selector use the weighted round robin strategy to select from list.
@@ -30,18 +30,17 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> Target type
  */
+@Slf4j
 public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
-    private final Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalanceSelector.class);
+    private final transient List<Weight<T>> clusterGroup;
 
-    private final List<Weight<T>> clusterGroup;
-
-    private final int totalWeight;
+    private final transient int totalWeight;
 
     public WeightRoundRobinLoadBalanceSelector(List<Weight<T>> clusterGroup) {
         int totalWeight = 0;
         for (Weight<T> weight : clusterGroup) {
-            totalWeight += weight.getWeight();
+            totalWeight += weight.getValue();
         }
         this.clusterGroup = clusterGroup;
         this.totalWeight = totalWeight;
@@ -52,7 +51,7 @@ public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelect
     @SuppressWarnings("ConstantConditions")
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
-            logger.warn("No servers available");
+            log.warn("No servers available");
             return null;
         }
         Weight<T> targetWeight = null;

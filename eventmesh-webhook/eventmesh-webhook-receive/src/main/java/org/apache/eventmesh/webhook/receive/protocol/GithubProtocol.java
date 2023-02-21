@@ -24,36 +24,48 @@ import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
 
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GithubProtocol implements ManufacturerProtocol {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String MANU_FACTURER_NAME = "github";
+
+    private static final String FROM_SIGNATURE = "x-hub-signature-256";
+
+    private static final String MANU_FACTURER_EVENT_ID = "x-github-delivery";
+
+    private static final String HASH = "sha256=";
+
+    private static final String H_MAC_SHA = "HmacSHA256";
+
+    private static final char ZERO_CHAR = '0';
 
     @Override
     public String getManufacturerName() {
-        return "github";
+        return MANU_FACTURER_NAME;
     }
 
     @Override
-    public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
+    public void execute(final WebHookRequest webHookRequest, final WebHookConfig webHookConfig,
+                        final Map<String, String> header) throws Exception {
 
-        String fromSignature = header.get("x-hub-signature-256");
+        final String fromSignature = header.get(FROM_SIGNATURE);
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
         try {
-            webHookRequest.setManufacturerEventId(header.get("x-github-delivery"));
+            webHookRequest.setManufacturerEventId(header.get(MANU_FACTURER_EVENT_ID));
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
             webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {
-            throw new Exception("webhook-GithubProtocol parse failed");
+            throw new Exception("webhook-GithubProtocol parse failed", e);
         }
     }
 
@@ -66,15 +78,15 @@ public class GithubProtocol implements ManufacturerProtocol {
      * @return Authentication result
      */
     private Boolean isValid(String fromSignature, byte[] data, String secret) {
-        String hash = "sha256=";
+        String hash = HASH;
         try {
-            Mac sha = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), "HmacSHA256");
+            Mac sha = Mac.getInstance(H_MAC_SHA);
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), H_MAC_SHA);
             sha.init(secretKey);
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
-            logger.error("Error HmacSHA256", e);
+            log.error("Error HmacSHA256", e);
         }
         return hash.equals(fromSignature);
     }
@@ -86,15 +98,20 @@ public class GithubProtocol implements ManufacturerProtocol {
      * @return hexadecimal character string
      */
     private String byteArrayToHexString(byte[] b) {
-        StringBuilder hs = new StringBuilder();
-        String stmp;
-        for (int n = 0; b != null && n < b.length; n++) {
-            stmp = Integer.toHexString(b[n] & 0XFF);
+        if (b == null) {
+            return "";
+        }
+
+        final StringBuilder hs = new StringBuilder();
+
+        IntStream.range(0, b.length).forEach(i -> {
+            String stmp = Integer.toHexString(b[i] & 0XFF);
             if (stmp.length() == 1) {
-                hs.append('0');
+                hs.append(ZERO_CHAR);
             }
             hs.append(stmp);
-        }
+        });
+
         return hs.toString().toLowerCase();
     }
 }

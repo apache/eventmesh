@@ -50,12 +50,24 @@ public interface ExecuteRequestOrBuilder extends
       getInstanceIdBytes();
 
   /**
-   * <code>string input = 3;</code>
+   * <code>string task_instance_id = 3;</code>
+   * @return The taskInstanceId.
+   */
+  String getTaskInstanceId();
+  /**
+   * <code>string task_instance_id = 3;</code>
+   * @return The bytes for taskInstanceId.
+   */
+  com.google.protobuf.ByteString
+      getTaskInstanceIdBytes();
+
+  /**
+   * <code>string input = 4;</code>
    * @return The input.
    */
   String getInput();
   /**
-   * <code>string input = 3;</code>
+   * <code>string input = 4;</code>
    * @return The bytes for input.
    */
   com.google.protobuf.ByteString

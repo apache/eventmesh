@@ -71,7 +71,7 @@ public class RegRequestBody extends Body {
         RegRequestBody body = new RegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPICS),
                 new TypeReference<List<SubscriptionItem>>() {
                 }));
         return body;
@@ -82,7 +82,7 @@ public class RegRequestBody extends Body {
         Map<String, Object> map = new HashMap<>();
         map.put(CLIENTTYPE, clientType);
         map.put(ENDPOINT, endPoint);
-        map.put(TOPICS, JsonUtils.serialize(topics));
+        map.put(TOPICS, JsonUtils.toJSONString(topics));
         return map;
     }
 

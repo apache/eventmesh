@@ -26,9 +26,11 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcesso
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 import org.apache.eventmesh.webhook.receive.WebHookMQProducer;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,23 +53,23 @@ import io.netty.handler.codec.http.HttpVersion;
 public class WebHookProcessorTest {
 
     @Mock
-    private HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManager hookConfigOperationManager;
     @Mock
-    private WebHookMQProducer webHookMQProducer;
+    private transient WebHookMQProducer webHookMQProducer;
 
-    private WebHookController controller = new WebHookController();
+    private transient WebHookController controller = new WebHookController();
 
-    private ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
+    private transient ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
 
     @Before
     public void init() throws Exception {
-        hookConfigOperationManage = Mockito.mock(HookConfigOperationManage.class);
-        Mockito.when(hookConfigOperationManage.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
+        hookConfigOperationManager = Mockito.mock(HookConfigOperationManager.class);
+        Mockito.when(hookConfigOperationManager.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
         webHookMQProducer = Mockito.mock(WebHookMQProducer.class);
         Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
 
-        Whitebox.setInternalState(controller, HookConfigOperationManage.class, hookConfigOperationManage);
+        Whitebox.setInternalState(controller, HookConfigOperationManager.class, hookConfigOperationManager);
         Whitebox.setInternalState(controller, WebHookMQProducer.class, webHookMQProducer);
         Whitebox.setInternalState(controller, ProtocolAdaptor.class, protocolAdaptor);
     }
@@ -84,7 +86,7 @@ public class WebHookProcessorTest {
             Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
             Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
             Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
-            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes()), msgSendToMq.getData());
+            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -92,7 +94,7 @@ public class WebHookProcessorTest {
 
     private HttpRequest buildMockWebhookRequest() {
         ByteBuf buffer = Unpooled.buffer();
-        buffer.writeBytes("\"mock_data\":0".getBytes());
+        buffer.writeBytes("\"mock_data\":0".getBytes(StandardCharsets.UTF_8));
 
         FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/webhook/github/eventmesh/all", buffer);
         request.headers().set("content-type", "application/json");

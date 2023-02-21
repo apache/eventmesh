@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.config.ConfigService;
+
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -34,10 +36,25 @@ public class PropertiesUtilsTest {
         from.put(PREFIX + "b", 1.0);
         from.put(PREFIX + "c.d", "inner d");
         from.put(PREFIX + "c.f", "inner f");
-        Properties to = new Properties();
-        PropertiesUtils.getPropertiesByPrefix(from, to, PREFIX);
+        Properties to = PropertiesUtils.getPropertiesByPrefix(from, PREFIX);
 
         Assert.assertEquals(3, to.size());
         Assert.assertEquals(2, ((Properties) to.get("c")).size());
+    }
+
+    @Test
+    public void testLoadPropertiesWhenFileExist() throws Exception {
+        Properties properties = new Properties();
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+        properties = configService.getRootConfig();
+        String path = configService.getRootPath();
+        try {
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, path);
+            Assert.assertEquals(properties.get("eventMesh.server.env").toString(), "env-succeed!!!");
+            Assert.assertEquals(properties.get("eventMesh.server.idc").toString(), "idc-succeed!!!");
+        } catch (Exception e) {
+            Assert.fail();
+        }
     }
 }

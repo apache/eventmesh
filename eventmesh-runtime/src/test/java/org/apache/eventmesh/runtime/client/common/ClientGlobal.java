@@ -19,18 +19,16 @@ package org.apache.eventmesh.runtime.client.common;
 
 import java.util.TimeZone;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ClientGlobal {
-
-    private static Logger logger = LoggerFactory.getLogger(ClientGlobal.class);
 
     public static ClientGlobal INSTANCE = new ClientGlobal();
 
@@ -51,6 +49,6 @@ public class ClientGlobal {
         jsonMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         jsonMapper.setTimeZone(TimeZone.getDefault());
         this.jsonMapper = jsonMapper;
-        logger.info("ClientGlobal init success");
+        log.info("ClientGlobal init success");
     }
 }

@@ -117,6 +117,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
+        Preconditions.checkNotNull(cloudEvent, "cloudEvent cannot be null");
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
         if (StringUtils.equals("http", protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();

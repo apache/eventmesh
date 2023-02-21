@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -28,23 +28,22 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshTcpRetryer {
-
-    public static Logger logger = LoggerFactory.getLogger(EventMeshTcpRetryer.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
 
     private DelayQueue<RetryContext> retrys = new DelayQueue<RetryContext>();
 
     private ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
-            3,
-            60000,
-            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
-            new EventMeshThreadFactoryImpl("eventMesh-tcp-retry", true),
-            new ThreadPoolExecutor.AbortPolicy());
+        3,
+        60000,
+        TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
+        new EventMeshThreadFactory("eventMesh-tcp-retry", true),
+        new ThreadPoolExecutor.AbortPolicy());
 
     private Thread dispatcher;
 
@@ -61,30 +60,30 @@ public class EventMeshTcpRetryer {
     }
 
     public void pushRetry(RetryContext retryContext) {
-        if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryQueueSize) {
-            logger.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryQueueSize, retryContext.retryTimes,
-                    retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
+        if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
+            log.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
+                retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
         }
 
-        int maxRetryTimes = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
+        int maxRetryTimes = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgAsyncRetryTimes();
         if (retryContext instanceof DownStreamMsgContext) {
             DownStreamMsgContext downStreamMsgContext = (DownStreamMsgContext) retryContext;
-            maxRetryTimes = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
-                    ? eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgSyncRetryTimes :
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
+            maxRetryTimes = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
+                ? eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgSyncRetryTimes() :
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgAsyncRetryTimes();
         }
 
         if (retryContext.retryTimes >= maxRetryTimes) {
-            logger.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes,
-                    retryContext.retryTimes, retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
+            log.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes,
+                retryContext.retryTimes, retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
         }
 
         retrys.offer(retryContext);
-        logger.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", retryContext.seq, retryContext.retryTimes,
-                EventMeshUtil.getMessageBizSeq(retryContext.event));
+        log.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", retryContext.seq, retryContext.retryTimes,
+            EventMeshUtil.getMessageBizSeq(retryContext.event));
     }
 
     public void init() {
@@ -95,21 +94,21 @@ public class EventMeshTcpRetryer {
                     pool.execute(retryContext::retry);
                 }
             } catch (Exception e) {
-                logger.error("retry-dispatcher error!", e);
+                log.error("retry-dispatcher error!", e);
             }
         }, "retry-dispatcher");
         dispatcher.setDaemon(true);
-        logger.info("EventMeshTcpRetryer inited......");
+        log.info("EventMeshTcpRetryer inited......");
     }
 
     public void start() throws Exception {
         dispatcher.start();
-        logger.info("EventMeshTcpRetryer started......");
+        log.info("EventMeshTcpRetryer started......");
     }
 
     public void shutdown() {
         pool.shutdown();
-        logger.info("EventMeshTcpRetryer shutdown......");
+        log.info("EventMeshTcpRetryer shutdown......");
     }
 
     public int getRetrySize() {

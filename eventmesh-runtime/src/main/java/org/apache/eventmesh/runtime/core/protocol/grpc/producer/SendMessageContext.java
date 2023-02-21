@@ -33,7 +33,7 @@ import io.cloudevents.CloudEvent;
 
 public class SendMessageContext extends RetryContext {
 
-    public static Logger logger = LoggerFactory.getLogger("retry");
+    public static final Logger logger = LoggerFactory.getLogger("retry");
 
     private CloudEvent event;
 
@@ -94,9 +94,9 @@ public class SendMessageContext extends RetryContext {
             .append(",producer=")
             .append(eventMeshProducer != null ? eventMeshProducer : null)
             .append(",executeTime=")
-            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
+            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",createTime=")
-            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

@@ -41,36 +41,48 @@ import org.mockito.Mockito;
 public class WebhookUtilTest {
 
     @Test
-    public void testObtainDeliveryAgreement() throws Exception {
+    public void testObtainDeliveryAgreement() {
         // normal case
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
-        Mockito.when(response.getLastHeader("WebHook-Allowed-Origin")).thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
-        Mockito.when(httpClient.execute(any())).thenReturn(response);
-        Assert.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+        try (CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+             CloseableHttpClient httpClient2 = mock(CloseableHttpClient.class)) {
 
-        // abnormal case
-        CloseableHttpClient httpClient2 = Mockito.mock(CloseableHttpClient.class);
-        Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
-        Assert.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"));
+            Mockito.when(response.getLastHeader("WebHook-Allowed-Origin"))
+                    .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
+            Mockito.when(httpClient.execute(any())).thenReturn(response);
+            Assert.assertTrue("match logic must return true",
+                    WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+
+            // abnormal case
+            Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
+            try {
+                Assert.assertTrue("when throw exception ,default return true",
+                        WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"));
+            } catch (RuntimeException e) {
+                Assert.fail(e.getMessage());
+            }
+
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
     public void testSetWebhookHeaders() {
-        String authType = "auth-http-basic";
-        AuthService authService = mock(AuthService.class);
+        final String authType = "auth-http-basic";
+        final AuthService authService = mock(AuthService.class);
         doNothing().when(authService).init();
-        Map<String, String> authParams = new HashMap<>();
-        String key = "Authorization";
-        String value = "Basic ****";
+        final Map<String, String> authParams = new HashMap<>();
+        final String key = "Authorization";
+        final String value = "Basic ****";
         authParams.put(key, value);
         Mockito.when(authService.getAuthParams()).thenReturn(authParams);
 
         try (MockedStatic<EventMeshExtensionFactory> dummyStatic = Mockito.mockStatic(EventMeshExtensionFactory.class)) {
             dummyStatic.when(() -> EventMeshExtensionFactory.getExtension(AuthService.class, authType)).thenReturn(authService);
-            HttpPost post = new HttpPost();
+            final HttpPost post = new HttpPost();
             WebhookUtil.setWebhookHeaders(post, "application/json", "eventmesh.FT", authType);
-            Assert.assertEquals(post.getLastHeader(key).getValue(), value);
+            Assert.assertEquals("match expect value", post.getLastHeader(key).getValue(), value);
         }
     }
 }

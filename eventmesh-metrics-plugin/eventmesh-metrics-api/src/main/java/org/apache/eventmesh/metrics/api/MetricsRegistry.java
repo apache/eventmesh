@@ -27,7 +27,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
  *
  * @since 1.4.0
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.METRICS)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.METRICS)
 public interface MetricsRegistry {
 
     /**

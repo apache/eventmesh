@@ -26,17 +26,18 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.asynchttpclient.AsyncHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public abstract class AbstractProducer implements Producer {
 
-    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
-    protected final AtomicBoolean started = new AtomicBoolean(false);
-    final Properties properties;
-    AsyncHttpClient asyncHttpClient;
+    protected final transient AtomicBoolean started = new AtomicBoolean(false);
+    protected final transient Properties properties;
+    private transient AsyncHttpClient asyncHttpClient;
 
     AbstractProducer(final Properties properties) {
         this.properties = properties;
@@ -50,10 +51,12 @@ public abstract class AbstractProducer implements Producer {
         return new ConnectorRuntimeException(String.format("Unknown connector runtime exception.", e));
     }
 
+    @Override
     public boolean isStarted() {
         return started.get();
     }
 
+    @Override
     public boolean isClosed() {
         return !this.isStarted();
     }

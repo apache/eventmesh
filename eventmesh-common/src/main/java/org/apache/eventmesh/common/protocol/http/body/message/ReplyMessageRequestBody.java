@@ -45,7 +45,7 @@ public class ReplyMessageRequestBody extends Body {
 
     private String origTopic;
 
-    private HashMap<String, String> extFields;
+    private Map<String, String> extFields;
 
     private String producerGroup;
 
@@ -81,11 +81,11 @@ public class ReplyMessageRequestBody extends Body {
         this.content = content;
     }
 
-    public HashMap<String, String> getExtFields() {
+    public Map<String, String> getExtFields() {
         return extFields;
     }
 
-    public void setExtFields(HashMap<String, String> extFields) {
+    public void setExtFields(Map<String, String> extFields) {
         this.extFields = extFields;
     }
 
@@ -106,7 +106,7 @@ public class ReplyMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
@@ -133,7 +133,7 @@ public class ReplyMessageRequestBody extends Body {
         map.put(ORIGTOPIC, origTopic);
         map.put(UNIQUEID, uniqueId);
         map.put(CONTENT, content);
-        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
+        map.put(EXTFIELDS, JsonUtils.toJSONString(extFields));
         map.put(PRODUCERGROUP, producerGroup);
         return map;
     }

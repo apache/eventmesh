@@ -21,14 +21,9 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
 public abstract class AbstractTask implements Runnable {
-
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected Package pkg;
     protected ChannelHandlerContext ctx;
@@ -36,7 +31,7 @@ public abstract class AbstractTask implements Runnable {
     protected long startTime;
     protected EventMeshTCPServer eventMeshTCPServer;
 
-    public AbstractTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+    public AbstractTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.pkg = pkg;
         this.ctx = ctx;

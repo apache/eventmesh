@@ -47,7 +47,7 @@ public class PushMessageRequestBody extends Body {
 
     private String uniqueId;
 
-    private HashMap<String, String> extFields;
+    private Map<String, String> extFields;
 
     public String getTopic() {
         return topic;
@@ -89,11 +89,11 @@ public class PushMessageRequestBody extends Body {
         this.content = content;
     }
 
-    public HashMap<String, String> getExtFields() {
+    public Map<String, String> getExtFields() {
         return extFields;
     }
 
-    public void setExtFields(HashMap<String, String> extFields) {
+    public void setExtFields(Map<String, String> extFields) {
         this.extFields = extFields;
     }
 
@@ -108,7 +108,7 @@ public class PushMessageRequestBody extends Body {
 
         if (StringUtils.isNotBlank(extFields)) {
             pushMessageRequestBody.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
                     }));
         }
         return pushMessageRequestBody;
@@ -122,7 +122,7 @@ public class PushMessageRequestBody extends Body {
         map.put(CONTENT, content);
         map.put(BIZSEQNO, bizSeqNo);
         map.put(UNIQUEID, uniqueId);
-        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
+        map.put(EXTFIELDS, JsonUtils.toJSONString(extFields));
 
         return map;
     }

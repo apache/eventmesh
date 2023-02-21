@@ -30,17 +30,17 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Codec {
 
-    private static final Logger logger = LoggerFactory.getLogger(Codec.class);
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
     private static final Charset UTF8 = Charset.forName(EventMeshConstants.DEFAULT_CHARSET);
     private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
@@ -58,7 +58,7 @@ public class Codec {
             headerData = headerJson == null ? null : headerJson.getBytes(UTF8);
             bodyData = bodyJson == null ? null : bodyJson.getBytes(UTF8);
 
-            logger.debug("headerJson={}|bodyJson={}", headerJson, bodyJson);
+            log.debug("headerJson={}|bodyJson={}", headerJson, bodyJson);
 
             int headerLength = headerData == null ? 0 : headerData.length;
             int bodyLength = bodyData == null ? 0 : bodyData.length;
@@ -126,12 +126,12 @@ public class Codec {
                     body = parseFromJson(header.getCommand(), new String(bodyData, UTF8));
                 }
 
-                logger.debug("headerJson={}|bodyJson={}", new String(headerData, UTF8), new String(bodyData, UTF8));
+                log.debug("headerJson={}|bodyJson={}", new String(headerData, UTF8), new String(bodyData, UTF8));
 
                 Package pkg = new Package(header, body);
                 out.add(pkg);
             } catch (Exception e) {
-                logger.error("decode|length={}|headerLength={}|bodyLength={}|header={}|body={}.", length,
+                log.error("decode|length={}|headerLength={}|bodyLength={}|header={}|body={}.", length,
                         headerLength, bodyLength, header, body);
                 throw e;
             }

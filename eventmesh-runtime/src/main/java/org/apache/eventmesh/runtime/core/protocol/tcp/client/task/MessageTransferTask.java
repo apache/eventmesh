@@ -46,6 +46,7 @@ import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -59,15 +60,21 @@ import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MessageTransferTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
-    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime,
-                               EventMeshTCPServer eventMeshTCPServer) {
+    private final Acl acl;
+
+    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -76,7 +83,8 @@ public class MessageTransferTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCmd();
 
         try {
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && !RESPONSE_TO_SERVER.equals(cmd)) {
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
+                && RESPONSE_TO_SERVER != cmd) {
                 //attach the span to the server context
                 Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
@@ -86,9 +94,8 @@ public class MessageTransferTask extends AbstractTask {
                 ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
         } catch (Throwable ex) {
-            logger.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
+            log.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
         }
-
 
         Command replyCmd = getReplyCmd(cmd);
         Package msg = new Package();
@@ -110,25 +117,22 @@ public class MessageTransferTask extends AbstractTask {
                 throw new Exception("event is null");
             }
 
-            String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            if (content.length() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize) {
-                throw new Exception("event size exceeds the limit: "
-                    + eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize);
+            String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
+            int eventMeshEventSize = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshEventSize();
+            if (content.length() > eventMeshEventSize) {
+                throw new Exception("event size exceeds the limit: " + eventMeshEventSize);
             }
 
             //do acl check in sending msg
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable) {
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(),
-                    cmd.value());
+                this.acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(), cmd.getValue());
             }
 
             if (!eventMeshTCPServer.getRateLimiter()
                 .tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
 
-                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(),
-                    "Tps overload, global flow control",
-                    pkg.getHeader().getSeq()));
+                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
                     new ChannelFutureListener() {
                         @Override
@@ -139,12 +143,9 @@ public class MessageTransferTask extends AbstractTask {
                     }
                 );
 
-                TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control",
-                    null);
+                TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
 
-                logger.warn(
-                    "======Tps overload, global flow control, rate:{}! PLEASE CHECK!========",
-                    eventMeshTCPServer.getRateLimiter().getRate());
+                log.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getRateLimiter().getRate());
                 return;
             }
 
@@ -159,7 +160,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(),
                     sendStatus.getSendStatus().name())) {
-                    messageLogger.info("pkg|eventMesh2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms",
+                    MESSAGE_LOGGER.info("pkg|eventMesh2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms",
                         cmd, event,
                         session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
@@ -167,11 +168,11 @@ public class MessageTransferTask extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            logger.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
-                session.getClient(),
-                e);
+            log.error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event,
+                    session.getClient(),
+                    e);
 
-            if (!cmd.equals(RESPONSE_TO_SERVER)) {
+            if (cmd != RESPONSE_TO_SERVER) {
                 msg.setHeader(
                     new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(),
                         pkg.getHeader()
@@ -186,14 +187,14 @@ public class MessageTransferTask extends AbstractTask {
     }
 
     private CloudEvent addTimestamp(CloudEvent event, Command cmd, long sendTime) {
-        if (cmd.equals(RESPONSE_TO_SERVER)) {
+        if (cmd == RESPONSE_TO_SERVER) {
             event = CloudEventBuilder.from(event)
                 .withExtension(EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP,
                     String.valueOf(startTime))
                 .withExtension(EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP,
                     String.valueOf(sendTime))
                 .withExtension(EventMeshConstants.RSP_SEND_EVENTMESH_IP,
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)
+                    eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
                 .build();
         } else {
             event = CloudEventBuilder.from(event)
@@ -202,7 +203,7 @@ public class MessageTransferTask extends AbstractTask {
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
                     String.valueOf(sendTime))
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)
+                    eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
                 .build();
         }
         return event;
@@ -222,7 +223,7 @@ public class MessageTransferTask extends AbstractTask {
     }
 
     protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime,
-                                              CloudEvent event) {
+        CloudEvent event) {
         final long createTime = System.currentTimeMillis();
         Package msg = new Package();
 
@@ -230,11 +231,11 @@ public class MessageTransferTask extends AbstractTask {
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
-                messageLogger.info("upstreamMsg message success|user={}|callback cost={}",
+                MESSAGE_LOGGER.info("upstreamMsg message success|user={}|callback cost={}",
                     session.getClient(),
                     System.currentTimeMillis() - createTime);
-                if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK)
-                    || replyCmd.equals(Command.ASYNC_MESSAGE_TO_SERVER_ACK)) {
+                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK
+                    || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(
                         new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                             pkg.getHeader().getSeq()));
@@ -255,11 +256,12 @@ public class MessageTransferTask extends AbstractTask {
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
-                session.getClientGroupWrapper().get().getEventMeshTcpRetryer()
+                Objects.requireNonNull(
+                        session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
-                messageLogger
+                MESSAGE_LOGGER
                     .error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}",
                         session.getClient(),
                         (System.currentTimeMillis() - createTime),
@@ -271,7 +273,7 @@ public class MessageTransferTask extends AbstractTask {
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
 
                 //both rr request and async request need finish span when reqeust fail
-                if (!replyCmd.equals(RESPONSE_TO_SERVER)) {
+                if (replyCmd != RESPONSE_TO_SERVER) {
                     //upload trace
                     TraceUtils.finishSpanWithException(ctx, event,
                         "upload trace fail in MessageTransferTask.createSendCallback.onException",

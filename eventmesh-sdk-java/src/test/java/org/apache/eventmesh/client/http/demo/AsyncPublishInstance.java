@@ -25,6 +25,9 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import java.util.concurrent.TimeUnit;
+
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,9 +58,9 @@ public class AsyncPublishInstance {
                     .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
             eventMeshHttpProducer.publish(eventMeshMessage);
-            Thread.sleep(1000);
+            ThreadUtils.sleep(1, TimeUnit.SECONDS);
         }
-        Thread.sleep(30000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
         try (EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // ignore
         }

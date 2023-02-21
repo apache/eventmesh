@@ -48,9 +48,9 @@ public class ConsulRegistryServiceTest {
     @Before
     public void registryTest() {
         consulRegistryService = new ConsulRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
+        CommonConfiguration configuration = new CommonConfiguration();
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
-        configuration.namesrvAddr = "127.0.0.1:8500";
+        configuration.setNamesrvAddr("127.0.0.1:8500");
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
         Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8500");

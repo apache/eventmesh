@@ -17,38 +17,39 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HttpRetryer {
 
-    private Logger retryLogger = LoggerFactory.getLogger("retry");
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final Logger retryLogger = LoggerFactory.getLogger("retry");
+    
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    private DelayQueue<DelayRetryable> failed = new DelayQueue<>();
+    private final DelayQueue<DelayRetryable> failed = new DelayQueue<>();
 
     private ThreadPoolExecutor pool;
 
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize) {
+        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -56,23 +57,13 @@ public class HttpRetryer {
     }
 
     public void init() {
-        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
-                60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
-                new ThreadFactory() {
-                    private AtomicInteger count = new AtomicInteger();
-
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r, "http-retry-" + count.incrementAndGet());
-                        thread.setPriority(Thread.NORM_PRIORITY);
-                        thread.setDaemon(true);
-                        return thread;
-                    }
-                },
-                new ThreadPoolExecutor.AbortPolicy());
+        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
+            60000,
+            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
+            new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
+            new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {
@@ -95,7 +86,7 @@ public class HttpRetryer {
             }
         }, "http-retry-dispatcher");
         dispatcher.setDaemon(true);
-        logger.info("HttpRetryer inited......");
+        log.info("HttpRetryer inited......");
     }
 
     public int size() {
@@ -112,11 +103,11 @@ public class HttpRetryer {
     public void shutdown() {
         dispatcher.interrupt();
         pool.shutdown();
-        logger.info("HttpRetryer shutdown......");
+        log.info("HttpRetryer shutdown......");
     }
 
     public void start() throws Exception {
         dispatcher.start();
-        logger.info("HttpRetryer started......");
+        log.info("HttpRetryer started......");
     }
 }

@@ -43,18 +43,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 
-public class EtcdRegistryService implements RegistryService {
 
-    private static final Logger logger = LoggerFactory.getLogger(EtcdRegistryService.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class EtcdRegistryService implements RegistryService {
 
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
@@ -87,12 +86,12 @@ public class EtcdRegistryService implements RegistryService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.namesrvAddr)) {
+            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.namesrvAddr;
-            this.username = commonConfiguration.eventMeshRegistryPluginUsername;
-            this.password = commonConfiguration.eventMeshRegistryPluginPassword;
+            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.username = commonConfiguration.getEventMeshRegistryPluginUsername();
+            this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
             break;
         }
         etcdRegistryMonitorExecutorService = ThreadPoolFactory.createSingleScheduledExecutor(
@@ -116,7 +115,7 @@ public class EtcdRegistryService implements RegistryService {
             etcdRegistryMonitorExecutorService.scheduleAtFixedRate(new EventMeshEtcdRegisterMonitor(),
                     15000L, 15000L, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][start] error", e);
+            log.error("[EtcdRegistryService][start] error", e);
             throw new RegistryException(e.getMessage());
         }
     }
@@ -133,10 +132,10 @@ public class EtcdRegistryService implements RegistryService {
                 etcdRegistryMonitorExecutorService.shutdown();
             }
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][shutdown] error", e);
+            log.error("[EtcdRegistryService][shutdown] error", e);
             throw new RegistryException(e.getMessage());
         }
-        logger.info("EtcdRegistryService closed");
+        log.info("EtcdRegistryService closed");
     }
 
     @Override
@@ -152,12 +151,12 @@ public class EtcdRegistryService implements RegistryService {
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
                     EventMeshDataInfo eventMeshDataInfo =
-                        JsonUtils.deserialize(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshDataInfo.class);
+                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshDataInfo.class);
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             }
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][findEventMeshInfoByCluster] error, clusterName: {}", clusterName, e);
+            log.error("[EtcdRegistryService][findEventMeshInfoByCluster] error, clusterName: {}", clusterName, e);
             throw new RegistryException(e.getMessage());
         }
         return eventMeshDataInfoList;
@@ -168,7 +167,7 @@ public class EtcdRegistryService implements RegistryService {
         try {
             return findEventMeshInfoByCluster(null);
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][findEventMeshInfoByCluster] error", e);
+            log.error("[EtcdRegistryService][findEventMeshInfoByCluster] error", e);
             throw new RegistryException(e.getMessage());
         }
     }
@@ -199,15 +198,15 @@ public class EtcdRegistryService implements RegistryService {
             EventMeshDataInfo eventMeshDataInfo =
                     new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                             endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
-            ByteSequence etcdValue = ByteSequence.from(JsonUtils.serialize(eventMeshDataInfo).getBytes(Constants.DEFAULT_CHARSET));
+            ByteSequence etcdValue = ByteSequence.from(JsonUtils.toJSONString(eventMeshDataInfo).getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 
-            logger.info("EventMesh successfully registered to etcd, eventMeshClusterName: {}, eventMeshName: {}",
+            log.info("EventMesh successfully registered to etcd, eventMeshClusterName: {}, eventMeshName: {}",
                     eventMeshClusterName, eventMeshName);
             return true;
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][register] error, eventMeshClusterName: {}, eventMeshName: {}",
+            log.error("[EtcdRegistryService][register] error, eventMeshClusterName: {}, eventMeshName: {}",
                     eventMeshClusterName, eventMeshName, e);
             throw new RegistryException(e.getMessage());
         }
@@ -222,11 +221,11 @@ public class EtcdRegistryService implements RegistryService {
                     eventMeshUnRegisterInfo.getEndPoint());
             etcdClient.getKVClient().delete(etcdKey);
             eventMeshRegisterInfoMap.remove(eventMeshName);
-            logger.info("EventMesh successfully logout to etcd, eventMeshClusterName: {}, eventMeshName: {}",
+            log.info("EventMesh successfully logout to etcd, eventMeshClusterName: {}, eventMeshName: {}",
                     eventMeshClusterName, eventMeshName);
             return true;
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][unRegister] error, eventMeshClusterName: {}, eventMeshName: {}",
+            log.error("[EtcdRegistryService][unRegister] error, eventMeshClusterName: {}, eventMeshName: {}",
                     eventMeshClusterName, eventMeshName, e);
             throw new RegistryException(e.getMessage());
         }
@@ -267,10 +266,10 @@ public class EtcdRegistryService implements RegistryService {
                     try {
                         keyValues = etcdClient.getKVClient().get(etcdKey).get().getKvs();
                     } catch (InterruptedException | ExecutionException e) {
-                        logger.error("get etcdKey[{}] failed", etcdKey, e);
+                        log.error("get etcdKey[{}] failed", etcdKey, e);
                     }
                     if (CollectionUtils.isEmpty(keyValues)) {
-                        logger.warn("eventMeshRegisterInfo [{}] is not matched in Etcd , try to register again",
+                        log.warn("eventMeshRegisterInfo [{}] is not matched in Etcd , try to register again",
                                 eventMeshRegisterInfo.getEventMeshName());
                         EtcdClientFactory.renewalLeaseId(EtcdClientFactory.getEtcdLeaseId(serverAddr));
                         register(eventMeshRegisterInfo);

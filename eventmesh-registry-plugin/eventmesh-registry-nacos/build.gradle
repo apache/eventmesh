@@ -16,8 +16,11 @@
  */
 
 dependencies {
-    implementation "com.alibaba.nacos:nacos-client:2.0.4"
+    implementation "com.alibaba.nacos:nacos-client"
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-common")
     testImplementation "org.mockito:mockito-core"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

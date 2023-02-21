@@ -27,7 +27,7 @@ public class ExampleConstants {
     public static final String EVENTMESH_TCP_PORT = "eventmesh.tcp.port";
     public static final String EVENTMESH_GRPC_PORT = "eventmesh.grpc.port";
 
-    public static final String DEFAULT_EVENTMESH_IP = "127.0.0.1";
+    public static final String DEFAULT_EVENTMESH_IP = "localhost";
     public static final String DEFAULT_EVENTMESH_IP_PORT = "127.0.0.1:10105";
 
     public static final String EVENTMESH_GRPC_ASYNC_TEST_TOPIC = "TEST-TOPIC-GRPC-ASYNC";
@@ -42,4 +42,18 @@ public class ExampleConstants {
     public static final String DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP = "EventMeshTest-producerGroup";
     public static final String DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP = "EventMeshTest-consumerGroup";
 
+    public static final String SERVER_NAME = "server.name";
+
+    public static final String EVENTMESH_CATALOG_NAME = "eventmesh.catalog.name";
+
+    public static final String EVENTMESH_WORKFLOW_NAME = "eventmesh.workflow.name";
+
+    public static final String EVENTMESH_SELECTOR_NACOS_ADDRESS = "eventmesh.selector.nacos.address";
+
+    public static final String EVENTMESH_SELECTOR_TYPE = "eventmesh.selector.type";
+
+    public static final String ENV = "P";
+    public static final String IDC = "FT";
+    public static final String SUB_SYS = "1234";
+    public static final String SERVER_PORT = "server.port";
 }

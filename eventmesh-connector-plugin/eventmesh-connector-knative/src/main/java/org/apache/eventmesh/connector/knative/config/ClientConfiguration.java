@@ -17,28 +17,35 @@
 
 package org.apache.eventmesh.connector.knative.config;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.convert.converter.ListConverter.ListConverterSemi;
 
-import com.google.common.base.Preconditions;
+import java.util.List;
 
+import lombok.Data;
+
+@Data
+@Config(prefix = "eventMesh.server.knative", path = "classPath://knative-client.properties")
 public class ClientConfiguration {
 
+    @ConfigFiled(field = "service", converter = ListConverterSemi.class)
+    public List<String> service;
+
+    /**
+     * In keeping with the old way of configuration parsing, the value is taken from the service field [0]
+     */
+    @ConfigFiled(reload = true)
     public String emurl = "";
+
+    /**
+     * In keeping with the old way of configuration parsing, the value is taken from the service field [1]
+     */
+    @ConfigFiled(reload = true)
     public String serviceAddr = "";
 
-    public void init() {
-        String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-            String.format("%s error", ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR));
-        serviceAddr = StringUtils.trim(serviceAddrStr);
-        String[] temp = serviceAddr.split(";");
-        emurl = temp[0];
-        serviceAddr = temp[1];
-    }
-
-    static class ConfKeys {
-
-        public static final String KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR = "eventMesh.server.knative.service";
-
+    public void reload() {
+        emurl = this.service.get(0);
+        serviceAddr = this.service.get(1);
     }
 }

@@ -21,18 +21,26 @@ package org.apache.eventmesh.runtime.admin.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
+import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
+import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
+import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -42,24 +50,51 @@ import com.sun.net.httpserver.HttpServer;
 public class ClientManageControllerTest {
 
     @Test
-    public void testStart() throws IOException {
-        EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
+    public void testStart() throws Exception {
         AdminController adminController = mock(AdminController.class);
-        EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
-        doNothing().when(tcpConfiguration).init();
-        when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
-        ClientManageController controller = new ClientManageController(eventMeshTCPServer);
 
-        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManage.class);
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+        EventMeshTCPConfiguration tcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
+
+        EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
+        when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
+
+        HttpSummaryMetrics httpSummaryMetrics = mock(HttpSummaryMetrics.class);
+        HTTPMetricsServer metrics = mock(HTTPMetricsServer.class);
+
+        EventMeshHTTPServer eventMeshHTTPServer = mock(EventMeshHTTPServer.class);
+        when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);
+        when(eventMeshHTTPServer.getMetrics().getSummaryMetrics()).thenReturn(httpSummaryMetrics);
+
+
+        EventMeshTcpMonitor eventMeshTcpMonitor = mock(EventMeshTcpMonitor.class);
+        TcpSummaryMetrics tcpSummaryMetrics = mock(TcpSummaryMetrics.class);
+        when(eventMeshTCPServer.getEventMeshTcpMonitor()).thenReturn(eventMeshTcpMonitor);
+        when(eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()).thenReturn(tcpSummaryMetrics);
+
+        AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManager.class);
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
+
+        EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
+        Registry registry = mock(Registry.class);
+        ClientManageController controller = new ClientManageController(eventMeshTCPServer,
+            eventMeshHTTPServer, eventMeshGrpcServer, registry);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
+
+        eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshConnectorPluginType("standalone");
 
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);
-            Mockito.doNothing().when(adminController).run(server);
-            controller.start();
+            try {
+                Mockito.doNothing().when(adminController).run(server);
+                controller.start();
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+            }
+
         }
     }
 }

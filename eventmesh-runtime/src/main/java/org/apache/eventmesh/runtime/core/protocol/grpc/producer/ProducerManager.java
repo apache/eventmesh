@@ -23,27 +23,26 @@ import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ProducerManager {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
-    private ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
 
     public ProducerManager(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
     public void init() throws Exception {
-        logger.info("Grpc ProducerManager inited......");
+        log.info("Grpc ProducerManager inited......");
     }
 
     public void start() throws Exception {
-        logger.info("Grpc ProducerManager started......");
+        log.info("Grpc ProducerManager started......");
     }
 
     public EventMeshProducer getEventMeshProducer(String producerGroup) throws Exception {
@@ -60,7 +59,7 @@ public class ProducerManager {
 
         eventMeshProducer = producerTable.get(producerGroup);
 
-        if (!ServiceState.RUNNING.equals(eventMeshProducer.getStatus())) {
+        if (ServiceState.RUNNING != eventMeshProducer.getStatus()) {
             eventMeshProducer.start();
         }
 
@@ -84,9 +83,9 @@ public class ProducerManager {
             try {
                 eventMeshProducer.shutdown();
             } catch (Exception ex) {
-                logger.error("shutdown eventMeshProducer[{}] err", eventMeshProducer, ex);
+                log.error("shutdown eventMeshProducer[{}] err", eventMeshProducer, ex);
             }
         }
-        logger.info("producerManager shutdown......");
+        log.info("producerManager shutdown......");
     }
 }

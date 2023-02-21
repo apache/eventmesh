@@ -24,9 +24,6 @@ import org.apache.eventmesh.api.consumer.Consumer;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 public class StandaloneConsumerAdaptor implements Consumer {

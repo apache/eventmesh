@@ -29,9 +29,9 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +46,7 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpEventWrapper implements ProtocolTransportObject {
 
+    public static final long serialVersionUID = -8547334421415366981L;
 
     private Map<String, Object> headerMap = new HashMap<>();
 
@@ -83,7 +84,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         HttpEventWrapper response = new HttpEventWrapper(this.httpMethod, this.httpVersion, this.requestURI);
         response.setReqTime(this.reqTime);
         response.setHeaderMap(responseHeaderMap);
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -100,7 +101,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         Map<String, Object> responseBodyMap = new HashMap<>();
         responseBodyMap.put("retCode", eventMeshRetCode.getRetCode());
         responseBodyMap.put("retMessage", eventMeshRetCode.getErrMsg());
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -162,16 +163,25 @@ public class HttpEventWrapper implements ProtocolTransportObject {
     }
 
     public byte[] getBody() {
-        return body;
+        int len = body.length;
+        byte[] b = new byte[len];
+        System.arraycopy(body, 0, b, 0, len);
+        return b;
     }
 
-    public void setBody(byte[] body) {
-        this.body = body;
+    public void setBody(byte[] newBody) {
+        if (newBody == null || newBody.length == 0) {
+            return;
+        }
+
+        int len = newBody.length;
+        this.body = new byte[len];
+        System.arraycopy(newBody, 0, this.body, 0, len);
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(this.body));
+            Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());

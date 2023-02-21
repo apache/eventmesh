@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
@@ -47,17 +48,18 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
             .withType(protocol.getEventType())
             .withData(protocol.getBody())
             .withExtension(Constants.PROTOCOL_TYPE, "webhook")
+            .withExtension("bizseqno", RandomStringUtils.generateNum(30))
+            .withExtension("uniqueid", RandomStringUtils.generateNum(30))
             .build();
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(WebhookProtocolTransportObject protocol) throws ProtocolHandleException {
-        List<CloudEvent> cloudEventList = new ArrayList<CloudEvent>();
-        return cloudEventList;
+    public List<CloudEvent> toBatchCloudEvent(WebhookProtocolTransportObject protocol) {
+        return new ArrayList<>();
     }
 
     @Override
-    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) {
         final HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
         Map<String, Object> sysHeaderMap = new HashMap<>();
         // ce attributes
@@ -75,7 +77,9 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
         sysHeaderMap.put("cloudEventSource", cloudEvent.getSource().toString());
         sysHeaderMap.put("type", cloudEvent.getType());
         httpEventWrapper.setSysHeaderMap(sysHeaderMap);
-        httpEventWrapper.setBody(cloudEvent.getData().toBytes());
+        if (cloudEvent.getData() != null) {
+            httpEventWrapper.setBody(cloudEvent.getData().toBytes());
+        }
         return httpEventWrapper;
     }
 

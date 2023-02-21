@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -62,14 +63,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class HandlerService {
+    
+    private final Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
-
-    private Logger httpLogger = LoggerFactory.getLogger("http");
-
-    private Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
+    private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
     @Setter
     private HTTPMetricsServer metrics;
@@ -81,7 +82,7 @@ public class HandlerService {
 
 
     public void init() {
-        httpServerLogger.info("HandlerService start ");
+        log.info("HandlerService start ");
     }
 
     public void register(HttpProcessor httpProcessor, ThreadPoolExecutor threadPoolExecutor) {
@@ -104,7 +105,7 @@ public class HandlerService {
         processorWrapper.httpProcessor = httpProcessor;
         processorWrapper.traceEnabled = httpProcessor.getClass().getAnnotation(EventMeshTrace.class).isEnable();
         httpProcessorMap.put(path, processorWrapper);
-        httpServerLogger.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
+        log.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
     }
 
     public boolean isProcessorWrapper(HttpRequest httpRequest) {
@@ -140,7 +141,7 @@ public class HandlerService {
             handlerSpecific.asyncContext = new AsyncContext<>(new HttpEventWrapper(), null, asyncContextCompleteHandler);
             processorWrapper.threadPoolExecutor.execute(handlerSpecific);
         } catch (Exception e) {
-            httpServerLogger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             this.sendResponse(ctx, httpRequest, HttpResponseUtils.createInternalServerError());
         }
     }
@@ -187,8 +188,12 @@ public class HandlerService {
                 if (length > 0) {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<Map<String, Object>>() {
-                    }).forEach(bodyMap::put);
+                    Optional
+                        .ofNullable(JsonUtils.parseTypeReferenceObject(
+                            new String(body, Constants.DEFAULT_CHARSET),
+                            new TypeReference<Map<String, Object>>() {}
+                        ))
+                        .ifPresent(bodyMap::putAll);
                 }
             } else {
                 HttpPostRequestDecoder decoder =
@@ -206,7 +211,10 @@ public class HandlerService {
             throw new RuntimeException("UnSupported Method " + fullHttpRequest.method());
         }
 
-        byte[] requestBody = JsonUtils.serialize(bodyMap).getBytes(StandardCharsets.UTF_8);
+        byte[] requestBody = Optional.ofNullable(JsonUtils.toJSONString(bodyMap))
+            .map(s -> s.getBytes(StandardCharsets.UTF_8))
+            .orElse(new byte[0]);
+
         httpEventWrapper.setBody(requestBody);
 
         metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
@@ -286,7 +294,7 @@ public class HandlerService {
         }
 
         private void error() {
-            httpServerLogger.error(this.exception.getMessage(), this.exception);
+            log.error(this.exception.getMessage(), this.exception);
             this.traceOperation.exceptionTrace(this.exception, this.traceMap);
             metrics.getSummaryMetrics().recordHTTPDiscard();
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);

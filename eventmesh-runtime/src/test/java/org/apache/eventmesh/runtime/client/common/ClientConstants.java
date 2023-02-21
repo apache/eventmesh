@@ -20,16 +20,16 @@ package org.apache.eventmesh.runtime.client.common;
 /**
  * ClientConstants
  */
-public interface ClientConstants {
+public class ClientConstants {
 
     /**
      * CLIENT HEART BEAT TIME
      */
-    int HEARTBEAT = 1000 * 60;
+    public static final int HEARTBEAT = 1000 * 60;
 
-    long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+    public static final long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
 
-    String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
-    String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
-    String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
+    public static final String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    public static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    public static final String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 }

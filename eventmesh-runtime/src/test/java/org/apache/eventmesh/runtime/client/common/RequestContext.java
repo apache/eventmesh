@@ -21,12 +21,11 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RequestContext {
-
-    private static Logger logger = LoggerFactory.getLogger(RequestContext.class);
 
     private Object key;
     private Package request;
@@ -78,11 +77,13 @@ public class RequestContext {
 
     public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
-        logger.info("_RequestContext|create|key=" + key);
+        if (log.isInfoEnabled()) {
+            log.info("_RequestContext|create|key={}", key);
+        }
         return c;
     }
 
-    public static Object key(Package request) {
+    public static Object getHeaderSeq(Package request) {
         return request.getHeader().getSeq();
     }
 }

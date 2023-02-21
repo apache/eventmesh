@@ -15,4 +15,7 @@
 
 package constants
 
-const NormalStatus = 1
+const (
+	NormalStatus  = 1
+	InvalidStatus = -1
+)
