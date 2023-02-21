@@ -44,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HookConfigOperationManager implements WebHookConfigOperation {
+
     /**
      * webhook config pool -> key is CallbackPath
      */
@@ -60,7 +61,7 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
      * @param receiveConfiguration receiveConfiguration
      */
     public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration)
-            throws FileNotFoundException, NacosException {
+        throws FileNotFoundException, NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
@@ -82,8 +83,8 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
         } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
             try {
                 final String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName()
-                                + DATA_ID_EXTENSION,
-                        GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                        + DATA_ID_EXTENSION,
+                    GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
                 return JsonUtils.parseObject(content, WebHookConfig.class);
             } catch (NacosException e) {
                 log.error("queryWebHookConfigById failed", e);
@@ -94,8 +95,8 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
-                                                                final Integer pageNum,
-                                                                final Integer pageSize) {
+        final Integer pageNum,
+        final Integer pageSize) {
         return new ArrayList<WebHookConfig>();
     }
 
