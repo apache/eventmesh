@@ -1535,7 +1535,7 @@ public final class BatchMessage extends
         if (!getTopicBytes().isEmpty()) {
             com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topic_);
         }
-        for(int item : messageItem_){
+        for(MessageItem item : messageItem_){
             output.writeMessage(4, item);
         }
         unknownFields.writeTo(output);
