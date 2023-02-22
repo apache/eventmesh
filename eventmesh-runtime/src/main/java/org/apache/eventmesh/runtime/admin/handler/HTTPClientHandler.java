@@ -178,7 +178,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
         if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (."GET"equals(httpExchange.getRequestMethod())) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             list(httpExchange);
         }
         if ("DELETE".equals(httpExchange.getRequestMethod())) {
