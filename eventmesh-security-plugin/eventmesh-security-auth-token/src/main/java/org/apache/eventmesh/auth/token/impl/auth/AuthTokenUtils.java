@@ -21,7 +21,6 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 public class AuthTokenUtils {
-
     public static void authTokenByPublicKey(AclProperties aclProperties) {
         String publicKeyUrl = "";
         for (String key : ConfigurationContextUtil.KEYS) {
