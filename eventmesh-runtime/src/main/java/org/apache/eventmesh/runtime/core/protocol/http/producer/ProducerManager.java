@@ -65,6 +65,27 @@ public class ProducerManager {
         return eventMeshProducer;
     }
 
+    public EventMeshProducer getEventMeshProducer(String producerGroup, String token) throws Exception {
+        EventMeshProducer eventMeshProducer = null;
+        if (!producerTable.containsKey(producerGroup)) {
+            synchronized (producerTable) {
+                if (!producerTable.containsKey(producerGroup)) {
+                    ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup, token);
+                    eventMeshProducer = createEventMeshProducer(producerGroupConfig);
+                    eventMeshProducer.start();
+                }
+            }
+        }
+
+        eventMeshProducer = producerTable.get(producerGroup);
+
+        if (!eventMeshProducer.getStarted().get()) {
+            eventMeshProducer.start();
+        }
+
+        return eventMeshProducer;
+    }
+
     public synchronized EventMeshProducer createEventMeshProducer(ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());

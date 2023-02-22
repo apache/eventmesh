@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.acl;
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
@@ -27,8 +28,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -128,6 +131,10 @@ public class Acl {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
+    public void doAclCheckInHttpSend(String remoteAddr, String requestURI, CloudEvent event) throws AclException {
+        aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, requestURI, event));
+    }
+
     public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
         int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
@@ -161,6 +168,31 @@ public class Acl {
         aclProperties.setClientIp(remoteAddr);
         aclProperties.setUser(user);
         aclProperties.setPwd(pass);
+        aclProperties.setSubsystem(subsystem);
+        aclProperties.setRequestURI(requestURI);
+        if (StringUtils.isNotBlank(topic)) {
+            aclProperties.setTopic(topic);
+        }
+        return aclProperties;
+    }
+
+    private static AclProperties buildHttpAclProperties(String remoteAddr, String requestURI, CloudEvent event) {
+        AclProperties aclProperties = new AclProperties();
+        final String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
+        final String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
+        final String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
+        final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
+        final String topic = event.getSubject();
+        aclProperties.setClientIp(remoteAddr);
+        if (StringUtils.isNotBlank(token)) {
+            aclProperties.setToken(token);
+        }
+        if (StringUtils.isNotBlank(user)) {
+            aclProperties.setUser(user);
+        }
+        if (StringUtils.isNotBlank(pass)) {
+            aclProperties.setPwd(pass);
+        }
         aclProperties.setSubsystem(subsystem);
         aclProperties.setRequestURI(requestURI);
         if (StringUtils.isNotBlank(topic)) {

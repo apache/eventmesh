@@ -22,8 +22,15 @@ import java.util.Objects;
 public class ProducerGroupConf {
     private String groupName;
 
+    private String token;
+
     public ProducerGroupConf(String groupName) {
         this.groupName = groupName;
+    }
+
+    public ProducerGroupConf(String groupName, String token) {
+        this.groupName = groupName;
+        this.token = token;
     }
 
     public String getGroupName() {
