@@ -86,7 +86,7 @@ public abstract class TCPClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    log.warn("send msg failed", future.isSuccess(), future.cause());
+                    log.warn("send msg failed: {}, {}", future.isSuccess(), future.cause());
                 }
             });
         } else {
