@@ -175,13 +175,13 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             list(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
     }
