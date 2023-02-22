@@ -104,7 +104,7 @@ public class EventHandler extends AbstractHttpHandler {
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
-            if (queryString == null || queryString.equals("")) {
+            if (queryString == null || "".equals(queryString)) {
                 httpExchange.sendResponseHeaders(401, 0);
                 out.close();
                 return;
@@ -181,13 +181,13 @@ public class EventHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("POST")) {
+        if ("POST".equals(httpExchange.getRequestMethod())) {
             post(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }
