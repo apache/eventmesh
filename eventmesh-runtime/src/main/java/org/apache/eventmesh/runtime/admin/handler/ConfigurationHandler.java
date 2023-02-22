@@ -103,8 +103,9 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 );
 
                 String result = JsonUtils.toJSONString(getConfigurationResponse);
-                httpExchange.sendResponseHeaders(200, result.getBytes().length);
-                out.write(result.getBytes());
+                byte bytes[] = result.getBytes(Constants.DEFAULT_CHARSET);
+                httpExchange.sendResponseHeaders(200, bytes.length);
+                out.write(bytes);
             } catch (Exception e) {
                 StringWriter writer = new StringWriter();
                 PrintWriter printWriter = new PrintWriter(writer);
@@ -114,8 +115,9 @@ public class ConfigurationHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, result.getBytes().length);
-                out.write(result.getBytes());
+                byte bytes[] = result.getBytes(Constants.DEFAULT_CHARSET);
+                httpExchange.sendResponseHeaders(500, bytes.length);
+                out.write(bytes);
             }
         }
     }
