@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaConnectorResourceServiceImpl implements ConnectorResourceService {
+
     @Override
     public void init() throws Exception {
         PravegaClient.getInstance().start();

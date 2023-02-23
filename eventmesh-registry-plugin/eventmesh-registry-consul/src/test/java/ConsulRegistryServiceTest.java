@@ -93,7 +93,6 @@ public class ConsulRegistryServiceTest {
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(consulRegistryService);
 
-
         Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }

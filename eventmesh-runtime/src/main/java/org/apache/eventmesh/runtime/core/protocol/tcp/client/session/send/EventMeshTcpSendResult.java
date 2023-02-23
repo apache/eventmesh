@@ -46,7 +46,7 @@ public class EventMeshTcpSendResult {
     @Override
     public String toString() {
         return "EventMeshTcpSendResult{seq=" + seq
-                + ",sendStatus=" + sendStatus
-                + ",detail=" + detail + "}";
+            + ",sendStatus=" + sendStatus
+            + ",detail=" + detail + "}";
     }
 }

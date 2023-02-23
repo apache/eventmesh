@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubscribeTask extends Thread {
+
     private final EventStreamReader<byte[]> reader;
     private final EventListener listener;
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -70,6 +71,7 @@ public class SubscribeTask extends Thread {
     }
 
     private class PravegaEventMeshAsyncConsumeContext extends EventMeshAsyncConsumeContext {
+
         @Override
         public void commit(EventMeshAction action) {
             switch (action) {

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.knative.patch;
 
 public class EventMeshConsumeConcurrentlyContext {
+
     private boolean manualAck = true;
 
     public boolean isManualAck() {

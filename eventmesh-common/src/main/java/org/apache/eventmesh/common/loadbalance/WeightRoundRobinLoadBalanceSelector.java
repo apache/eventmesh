@@ -25,8 +25,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This selector use the weighted round robin strategy to select from list.
- * If the weight is greater, the probability of being selected is larger.
+ * This selector use the weighted round robin strategy to select from list. If the weight is greater, the probability of being selected is larger.
  *
  * @param <T> Target type
  */

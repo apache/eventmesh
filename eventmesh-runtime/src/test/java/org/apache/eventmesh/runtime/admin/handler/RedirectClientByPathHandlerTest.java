@@ -101,7 +101,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                        any())).thenReturn("redirectResult");
+                    any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
@@ -122,7 +122,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                        any())).thenThrow(new RuntimeException());
+                    any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString();
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));

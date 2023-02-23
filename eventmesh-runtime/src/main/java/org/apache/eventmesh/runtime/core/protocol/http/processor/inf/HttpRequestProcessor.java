@@ -28,7 +28,7 @@ import io.netty.channel.ChannelHandlerContext;
 public interface HttpRequestProcessor {
 
     void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
-            throws Exception;
+        throws Exception;
 
     boolean rejectRequest();
 

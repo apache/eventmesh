@@ -67,7 +67,6 @@ public class ClientManageControllerTest {
         when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);
         when(eventMeshHTTPServer.getMetrics().getSummaryMetrics()).thenReturn(httpSummaryMetrics);
 
-
         EventMeshTcpMonitor eventMeshTcpMonitor = mock(EventMeshTcpMonitor.class);
         TcpSummaryMetrics tcpSummaryMetrics = mock(TcpSummaryMetrics.class);
         when(eventMeshTCPServer.getEventMeshTcpMonitor()).thenReturn(eventMeshTcpMonitor);

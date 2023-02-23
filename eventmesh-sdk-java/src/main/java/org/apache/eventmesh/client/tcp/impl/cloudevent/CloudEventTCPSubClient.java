@@ -96,7 +96,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException {
+        throws EventMeshException {
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
@@ -144,7 +144,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
-                ConcurrentHashMap<Object, RequestContext> contexts) {
+            ConcurrentHashMap<Object, RequestContext> contexts) {
             super(contexts);
         }
 
@@ -152,7 +152,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         public CloudEvent getProtocolMessage(Package tcpPackage) {
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions.checkNotNull(eventFormat,
-                    String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
+                String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
             return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
         }
 
@@ -160,7 +160,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(cloudEvent).ifPresent(
-                        responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
+                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
                 );
             }
         }

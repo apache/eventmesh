@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Before;
 
 public class RabbitmqServer {
+
     protected RabbitmqConsumer rabbitmqConsumer;
     protected RabbitmqProducer rabbitmqProducer;
 
@@ -35,7 +36,7 @@ public class RabbitmqServer {
         RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
 
         rabbitmqConsumer =
-                (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
+            (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
         rabbitmqConsumer.setRabbitmqConnectionFactory(rabbitmqMockConnectionFactory);
         rabbitmqConsumer.init(new Properties());
         rabbitmqConsumer.start();

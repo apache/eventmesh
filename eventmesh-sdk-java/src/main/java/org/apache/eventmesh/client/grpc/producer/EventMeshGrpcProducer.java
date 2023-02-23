@@ -56,7 +56,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
-                .usePlaintext().build();
+            .usePlaintext().build();
         publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
 
         cloudEventProducer = new CloudEventProducer(clientConfig, publisherClient);
@@ -127,7 +127,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, PROTOCOL_TYPE);
         try {
             SimpleMessage reply = publisherClient.withDeadlineAfter(timeout, TimeUnit.MILLISECONDS)
-                    .requestReply(simpleMessage);
+                .requestReply(simpleMessage);
             if (log.isInfoEnabled()) {
                 log.info("Received reply message:{}", reply);
             }

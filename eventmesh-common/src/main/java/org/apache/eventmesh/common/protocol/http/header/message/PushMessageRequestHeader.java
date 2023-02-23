@@ -132,13 +132,13 @@ public class PushMessageRequestHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestHeader={")
-                .append("code=").append(code).append(",")
-                .append("language=").append(language).append(",")
-                .append("version=").append(version.getVersion()).append(",")
-                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshIp=").append(eventMeshIp).append("}");
+            .append("code=").append(code).append(",")
+            .append("language=").append(language).append(",")
+            .append("version=").append(version.getVersion()).append(",")
+            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+            .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 
