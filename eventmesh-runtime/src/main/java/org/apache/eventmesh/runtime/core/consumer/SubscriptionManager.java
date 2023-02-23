@@ -36,11 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscriptionManager {
 
-    private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
-        new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
-        new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
     public ConcurrentHashMap<String, ConsumerGroupConf> getLocalConsumerGroupMapping() {
         return localConsumerGroupMapping;
