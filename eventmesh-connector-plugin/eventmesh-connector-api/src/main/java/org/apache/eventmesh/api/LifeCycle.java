@@ -21,8 +21,7 @@ import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.producer.Producer;
 
 /**
- * The {@code LifeCycle} defines a lifecycle interface for a OMS related service endpoint,
- * like {@link Producer}, {@link Consumer}, and so on.
+ * The {@code LifeCycle} defines a lifecycle interface for a OMS related service endpoint, like {@link Producer}, {@link Consumer}, and so on.
  */
 public interface LifeCycle {
 

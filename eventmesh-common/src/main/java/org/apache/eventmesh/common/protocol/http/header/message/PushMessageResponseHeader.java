@@ -139,7 +139,7 @@ public class PushMessageResponseHeader extends Header {
     }
 
     public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
-                                                        String clientSysId, String clientPid, String clientIP) {
+        String clientSysId, String clientPid, String clientIP) {
         PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
         pushMessageResponseHeader.setCode(requestCode);
         pushMessageResponseHeader.setVersion(ProtocolVersion.V1);
@@ -156,16 +156,16 @@ public class PushMessageResponseHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("language=").append(language).append(",")
-                .append("version=").append(version).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("pid=").append(pid).append(",")
-                .append("ip=").append(ip).append(",")
-                .append("username=").append(username).append(",")
-                .append("passwd=").append(passwd).append("}");
+            .append("code=").append(code).append(",")
+            .append("language=").append(language).append(",")
+            .append("version=").append(version).append(",")
+            .append("env=").append(env).append(",")
+            .append("idc=").append(idc).append(",")
+            .append("sys=").append(sys).append(",")
+            .append("pid=").append(pid).append(",")
+            .append("ip=").append(ip).append(",")
+            .append("username=").append(username).append(",")
+            .append("passwd=").append(passwd).append("}");
         return sb.toString();
     }
 

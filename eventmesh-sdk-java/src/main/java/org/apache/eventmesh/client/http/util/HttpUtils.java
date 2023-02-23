@@ -51,13 +51,13 @@ import lombok.extern.slf4j.Slf4j;
 public final class HttpUtils {
 
     public static String post(final CloseableHttpClient client,
-                              final String uri,
-                              final RequestParam requestParam) throws IOException {
+        final String uri,
+        final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, null, uri, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
+                EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -75,14 +75,14 @@ public final class HttpUtils {
     }
 
     public static String post(final CloseableHttpClient client,
-                              final HttpHost forwardAgent,
-                              final String uri,
-                              final RequestParam requestParam) throws IOException {
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, forwardAgent, uri, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
+                EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -100,10 +100,10 @@ public final class HttpUtils {
     }
 
     public static void post(final CloseableHttpClient client,
-                            final HttpHost forwardAgent,
-                            final String uri,
-                            final RequestParam requestParam,
-                            final ResponseHandler<String> responseHandler) throws IOException {
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam,
+        final ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
@@ -131,8 +131,8 @@ public final class HttpUtils {
         //ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -148,10 +148,10 @@ public final class HttpUtils {
     }
 
     public static void get(final CloseableHttpClient client,
-                           final HttpHost forwardAgent,
-                           final String uri,
-                           final RequestParam requestParam,
-                           final ResponseHandler<String> responseHandler) throws IOException {
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam,
+        final ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
@@ -169,8 +169,8 @@ public final class HttpUtils {
         //ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -186,13 +186,13 @@ public final class HttpUtils {
     }
 
     public static String get(final CloseableHttpClient client,
-                             final String url,
-                             final RequestParam requestParam) throws IOException {
+        final String url,
+        final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, null, url, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
+                EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -210,14 +210,14 @@ public final class HttpUtils {
     }
 
     public static String get(final CloseableHttpClient client,
-                             final HttpHost forwardAgent,
-                             final String url,
-                             final RequestParam requestParam) throws IOException {
+        final HttpHost forwardAgent,
+        final String url,
+        final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, forwardAgent, url, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
+                EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -236,6 +236,7 @@ public final class HttpUtils {
 
     @Data
     public static class ResponseHolder {
+
         public String response;
 
     }

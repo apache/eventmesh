@@ -36,7 +36,7 @@ public class CCSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl subClient =
-                     new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             subClient.init();
             subClient.heartbeat();
             subClient.listen();

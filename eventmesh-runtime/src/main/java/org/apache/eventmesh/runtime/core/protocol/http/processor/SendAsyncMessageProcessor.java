@@ -96,14 +96,14 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
-                    eventMeshHttpConfiguration.getEventMeshCluster(),
+                eventMeshHttpConfiguration.getEventMeshCluster(),
                 localAddress, eventMeshHttpConfiguration.getEventMeshEnv(),
-                    eventMeshHttpConfiguration.getEventMeshIDC());
+                eventMeshHttpConfiguration.getEventMeshIDC());
 
         String protocolType = sendMessageRequestHeader.getProtocolType();
         String protocolVersin = sendMessageRequestHeader.getProtocolVersion();
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(request);
 
         Span span = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
@@ -255,7 +255,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, request.reqTime)
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                        eventMeshHttpConfiguration.getEventMeshServerIp())
+                    eventMeshHttpConfiguration.getEventMeshServerIp())
                 .build();
 
             if (messageLogger.isDebugEnabled()) {
@@ -295,7 +295,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 //ignore
             }
         };
-
 
         try {
             event = CloudEventBuilder.from(sendMessageContext.getEvent())

@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Config(field = "pravegaConnectorConfig")
 public class PravegaConsumerImpl implements Consumer {
+
     private static final AtomicBoolean started = new AtomicBoolean(false);
 
     /**

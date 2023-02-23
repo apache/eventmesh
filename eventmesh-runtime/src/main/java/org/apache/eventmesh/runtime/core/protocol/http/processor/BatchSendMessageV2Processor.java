@@ -98,9 +98,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
             SendMessageBatchV2ResponseHeader.buildHeader(
                 requestCode,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
             );
 
         // todo: use validate processor to check

@@ -52,6 +52,7 @@ public class Codec {
     private static final byte[] VERSION = serializeBytes("0000");
 
     public static class Encoder extends MessageToByteEncoder<Package> {
+
         @Override
         public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
@@ -93,6 +94,7 @@ public class Codec {
     }
 
     public static class Decoder extends ReplayingDecoder<Package> {
+
         @Override
         public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
             try {
@@ -157,7 +159,7 @@ public class Codec {
         private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
             if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                 String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
-                        deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
                 throw new IllegalArgumentException(errorMsg);
             }
         }

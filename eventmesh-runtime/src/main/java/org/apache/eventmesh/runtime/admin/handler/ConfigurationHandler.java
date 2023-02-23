@@ -73,8 +73,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /config
-     * Return a response that contains the EventMesh configuration
+     * GET /config Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");

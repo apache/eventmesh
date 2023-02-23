@@ -48,10 +48,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * one Client connects one ACCESS
- * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability,
- * The service is request-dependent. If the disconnection and reconnection capability is provided,
- * it will cause business insensitivity, that is, it will not follow the business reconnection logic.
+ * one Client connects one ACCESS Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability, The
+ * service is request-dependent. If the disconnection and reconnection capability is provided, it will cause business insensitivity, that is, it will
+ * not follow the business reconnection logic.
  */
 @Slf4j
 public abstract class TCPClient implements Closeable {

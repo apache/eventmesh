@@ -34,7 +34,7 @@ public class KnativeConsumerImplTest {
 
         // Create a Knative consumer:
         KnativeConsumerImpl knativeConsumer =
-                (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
+            (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
 
         try {
             knativeConsumer.init(properties);
