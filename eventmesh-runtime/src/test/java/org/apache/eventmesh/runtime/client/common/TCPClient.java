@@ -64,12 +64,12 @@ public abstract class TCPClient implements Closeable {
 
     protected int port = 10000;
 
-    private Bootstrap bootstrap = new Bootstrap();
+    private final Bootstrap bootstrap = new Bootstrap();
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
         new EventMeshThreadFactory("TCPClientScheduler", true));
 
-    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
+    private final NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
 
     public Channel channel;
 
