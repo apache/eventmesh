@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
@@ -102,8 +103,14 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 );
 
                 String result = JsonUtils.toJSONString(getConfigurationResponse);
+<<<<<<< Updated upstream
                 httpExchange.sendResponseHeaders(200, result.getBytes().length);
                 out.write(result.getBytes());
+=======
+                byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+                httpExchange.sendResponseHeaders(200, bytes.length);
+                out.write(bytes);
+>>>>>>> Stashed changes
             } catch (Exception e) {
                 StringWriter writer = new StringWriter();
                 PrintWriter printWriter = new PrintWriter(writer);
@@ -113,8 +120,14 @@ public class ConfigurationHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
+<<<<<<< Updated upstream
                 httpExchange.sendResponseHeaders(500, result.getBytes().length);
                 out.write(result.getBytes());
+=======
+                byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+                httpExchange.sendResponseHeaders(500, bytes.length);
+                out.write(bytes);
+>>>>>>> Stashed changes
             }
         }
     }
