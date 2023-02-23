@@ -85,7 +85,7 @@ public abstract class TCPClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    log.warn("send msg failed", future.isSuccess(), future.cause());
+                    log.warn("send msg failed: {}, {}", future.isSuccess(), future.cause());
                 }
             });
         } else {
@@ -119,7 +119,7 @@ public abstract class TCPClient implements Closeable {
         bootstrap.group(workers);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
-            .option(ChannelOption.SO_KEEPALIVE, false)
+            .option(ChannelOption.SO_KEEPALIVE, Boolean.FALSE)
             .option(ChannelOption.SO_SNDBUF, 64 * 1024)
             .option(ChannelOption.SO_RCVBUF, 64 * 1024)
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
