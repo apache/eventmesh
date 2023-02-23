@@ -44,7 +44,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -92,7 +91,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
             task.cancel(false);
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("cancel close err", e);
         }
     }
 
