@@ -31,9 +31,9 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.3"
-        classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
-        classpath "com.github.jk1:gradle-license-report:1.17"
+        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.13"
+        classpath "io.spring.gradle:dependency-management-plugin:1.1.0"
+        classpath "com.github.jk1:gradle-license-report:2.1"
     }
 }
 
@@ -193,9 +193,9 @@ subprojects {
 
     jacocoTestReport {
         reports {
-            xml.enabled true
-            csv.enabled false
-            html.enabled false
+            xml.required = true
+            csv.required = false
+            html.required = false
         }
     }
 
@@ -336,12 +336,12 @@ subprojects {
 
     task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
         from project.javadoc.destinationDir
-        classifier = 'javadoc'
+        destinationDirectory.set(file("$buildDir/docs"))
     }
 
     task packageSources(type: Jar) {
         from project.sourceSets.main.allSource
-        classifier = 'sources'  // either here or in artifacts block
+        destinationDirectory.set(file("$buildDir/sources"))
     }
 
     artifacts {
