@@ -137,7 +137,7 @@ public class CloudEventProducer {
         final CloudEventBuilder builder = CloudEventBuilder.from(cloudEvent)
             .withExtension(ProtocolKey.ENV, clientConfig.getEnv())
             .withExtension(ProtocolKey.IDC, clientConfig.getIdc())
-            .withExtension(ProtocolKey.IP, IPUtils.getLocalAddress())
+            .withExtension(ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()))
             .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
             .withExtension(ProtocolKey.SYS, clientConfig.getSys())
             .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
