@@ -111,7 +111,7 @@ public class RedirectClientByPathHandlerTest {
             outputStream = new ByteArrayOutputStream();
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
-                dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
+                dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(Boolean.TRUE);
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertEquals("params illegal!", response);
