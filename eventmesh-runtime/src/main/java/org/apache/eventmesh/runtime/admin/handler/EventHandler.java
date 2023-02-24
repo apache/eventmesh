@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
@@ -33,9 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
@@ -43,12 +41,14 @@ import io.cloudevents.jackson.JsonFormat;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * The event handler
  */
+@Slf4j
 @EventHttpHandler(path = "/event")
 public class EventHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
@@ -61,7 +61,7 @@ public class EventHandler extends AbstractHttpHandler {
         try {
             admin.init(null);
         } catch (Exception ignored) {
-            logger.info("failed to initialize MQAdminWrapper");
+            log.info("failed to initialize MQAdminWrapper");
         }
     }
 
@@ -95,17 +95,15 @@ public class EventHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /event
-     * Return the list of event
+     * GET /event Return the list of event
      */
-    void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
+    void get(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
-            if (queryString == null || queryString.equals("")) {
+            if (queryString == null || "".equals(queryString)) {
                 httpExchange.sendResponseHeaders(401, 0);
                 out.close();
                 return;
@@ -119,85 +117,75 @@ public class EventHandler extends AbstractHttpHandler {
 
             List<String> eventJsonList = new ArrayList<>();
             for (CloudEvent event : eventList) {
-                byte[] serializedEvent = EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE)
+                byte[] serializedEvent = Objects.requireNonNull(EventFormatProvider
+                        .getInstance()
+                        .resolveFormat(JsonFormat.CONTENT_TYPE))
                     .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
-            String result = JsonUtils.toJson(eventJsonList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            String result = JsonUtils.toJSONString(eventJsonList);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
+                out.write(result.getBytes());
+            } catch (IOException ioe) {
+                log.warn("out close failed...", ioe);
             }
         }
     }
 
     /**
-     * POST /event
-     * Create an event
+     * POST /event Create an event
      */
-    void post(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
+    void post(HttpExchange httpExchange) {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
-            CloudEvent event = EventFormatProvider
+            CloudEvent event = Objects.requireNonNull(EventFormatProvider
                 .getInstance()
-                .resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(rawRequest);
+                .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
             admin.publish(event);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
+                out.write(result.getBytes());
+            } catch (IOException ioe) {
+                log.warn("out close failed...", ioe);
             }
         }
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("POST")) {
+        if ("POST".equals(httpExchange.getRequestMethod())) {
             post(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }

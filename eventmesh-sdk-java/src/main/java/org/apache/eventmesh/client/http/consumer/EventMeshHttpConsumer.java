@@ -66,8 +66,8 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
     }
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
-                                 final ThreadPoolExecutor customExecutor)
-            throws EventMeshException {
+        final ThreadPoolExecutor customExecutor)
+        throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
             () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
@@ -89,15 +89,15 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         Objects.requireNonNull(subscribeUrl, "SubscribeUrl cannot be null");
 
         final RequestParam subscribeParam = buildCommonRequestParam()
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
-                .addBody(SubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
-                .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
-                .addBody(SubscribeRequestBody.URL, subscribeUrl);
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
+            .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(topicList))
+            .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
+            .addBody(SubscribeRequestBody.URL, subscribeUrl);
 
         final String target = selectEventMesh();
         try {
             final String subRes = HttpUtils.post(httpClient, target, subscribeParam);
-            final EventMeshRetObj ret = JsonUtils.deserialize(subRes, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(subRes, EventMeshRetObj.class);
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
@@ -115,7 +115,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem
-                        -> {
+                    -> {
                     final HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
                     heartbeatEntity.topic = subscriptionItem.getTopic();
                     heartbeatEntity.url = subscribeUrl;
@@ -123,12 +123,12 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
                 }).collect(Collectors.toList());
 
                 final RequestParam requestParam = buildCommonRequestParam()
-                        .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
-                        .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
-                        .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
+                    .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
+                    .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
+                    .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.toJSONString(heartbeatEntities));
                 final String target = selectEventMesh();
                 final String res = HttpUtils.post(httpClient, target, requestParam);
-                final EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
+                final EventMeshRetObj ret = JsonUtils.parseObject(res, EventMeshRetObj.class);
                 if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
                     throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                 }
@@ -148,14 +148,14 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         Objects.requireNonNull(unSubscribeUrl, "unSubscribeUrl cannot be null");
 
         final RequestParam unSubscribeParam = buildCommonRequestParam()
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
-                .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
-                .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
+            .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.toJSONString(topicList))
+            .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
 
         final String target = selectEventMesh();
         try {
             final String unSubRes = HttpUtils.post(httpClient, target, unSubscribeParam);
-            final EventMeshRetObj ret = JsonUtils.deserialize(unSubRes, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(unSubRes, EventMeshRetObj.class);
 
             if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());

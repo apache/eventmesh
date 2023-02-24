@@ -28,12 +28,11 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WatchFileTask extends Thread {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WatchFileTask.class);
 
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
 
@@ -58,7 +57,7 @@ public class WatchFileTask extends Thread {
         try (WatchService watchService = FILE_SYSTEM.newWatchService()) {
             this.watchService = watchService;
             path.register(this.watchService, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
-                    StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
         } catch (Exception ex) {
             throw new UnsupportedOperationException("WatchService registry fail", ex);
         }
@@ -89,8 +88,8 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        if (LOGGER.isWarnEnabled()) {
-                            LOGGER.warn("[WatchFileTask] file overflow: {}", event.context());
+                        if (log.isWarnEnabled()) {
+                            log.warn("[WatchFileTask] file overflow: {}", event.context());
                         }
                         continue;
                     }
@@ -99,12 +98,12 @@ public class WatchFileTask extends Thread {
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
                 if (interrupted) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("[WatchFileTask] file watch is interrupted");
+                    if (log.isDebugEnabled()) {
+                        log.debug("[WatchFileTask] file watch is interrupted");
                     }
                 }
             } catch (Exception ex) {
-                LOGGER.error("[WatchFileTask] an exception occurred during file listening : ", ex);
+                log.error("[WatchFileTask] an exception occurred during file listening : ", ex);
             }
         }
     }
@@ -121,7 +120,7 @@ public class WatchFileTask extends Thread {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error("[WatchFileTask] file change event callback error : ", ex);
+            log.error("[WatchFileTask] file change event callback error : ", ex);
         }
     }
 }

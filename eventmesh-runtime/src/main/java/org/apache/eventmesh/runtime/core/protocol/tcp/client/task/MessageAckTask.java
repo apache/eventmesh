@@ -27,9 +27,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class MessageAckTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageAckTask.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class MessageAckTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
@@ -44,7 +46,7 @@ public class MessageAckTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCmd();
 
         if (seq == null) {
-            LOGGER.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
+            log.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
             return;
         }
         DownStreamMsgContext downStreamMsgContext = session.getPusher().getUnAckMsg().get(seq);
@@ -54,11 +56,11 @@ public class MessageAckTask extends AbstractTask {
             session.getPusher().getUnAckMsg().remove(seq);
         } else {
             if (cmd != Command.RESPONSE_TO_CLIENT_ACK) {
-                LOGGER.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}",
-                        seq, session.getClient());
+                log.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}",
+                    seq, session.getClient());
             }
         }
         MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
-                taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+            taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
     }
 }

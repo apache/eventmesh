@@ -46,6 +46,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +54,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class PushConsumerImpl {
+
     private final DefaultMQPushConsumer rocketmqPushConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
@@ -154,7 +156,7 @@ public class PushConsumerImpl {
         for (CloudEvent msg : cloudEvents) {
             if (msg != null) {
                 msgExtList.add(CloudEventUtils.msgConvertExt(
-                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+                    RocketMQMessageFactory.createWriter(Objects.requireNonNull(msg.getSubject())).writeBinary(msg)));
             }
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
@@ -166,7 +168,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -237,7 +239,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }

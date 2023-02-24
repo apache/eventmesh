@@ -50,36 +50,36 @@ public class EventMeshTestUtils {
     // generate pub-client
     public static UserAgent generateClient1() {
         final UserAgent agent = UserAgent.builder()
-                .env(UtilsConstants.ENV)
-                .host(UtilsConstants.HOST)
-                .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
-                .username(UtilsConstants.USER_NAME)
-                .group(UtilsConstants.GROUP)
-                .path(UtilsConstants.PATH)
-                .port(UtilsConstants.PORT_1)
-                .subsystem(UtilsConstants.SUB_SYSTEM_1)
-                .pid(UtilsConstants.PID_1)
-                .version(UtilsConstants.VERSION)
-                .idc(UtilsConstants.IDC)
-                .build();
+            .env(UtilsConstants.ENV)
+            .host(UtilsConstants.HOST)
+            .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
+            .username(UtilsConstants.USER_NAME)
+            .group(UtilsConstants.GROUP)
+            .path(UtilsConstants.PATH)
+            .port(UtilsConstants.PORT_1)
+            .subsystem(UtilsConstants.SUB_SYSTEM_1)
+            .pid(UtilsConstants.PID_1)
+            .version(UtilsConstants.VERSION)
+            .idc(UtilsConstants.IDC)
+            .build();
         return MessageUtils.generatePubClient(agent);
     }
 
     // generate sub-client
     public static UserAgent generateClient2() {
         final UserAgent agent = UserAgent.builder()
-                .env(UtilsConstants.ENV)
-                .host(UtilsConstants.HOST)
-                .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
-                .username(UtilsConstants.USER_NAME)
-                .group(UtilsConstants.GROUP)
-                .path(UtilsConstants.PATH)
-                .port(UtilsConstants.PORT_2)
-                .subsystem(UtilsConstants.SUB_SYSTEM_2)
-                .pid(UtilsConstants.PID_2)
-                .version(UtilsConstants.VERSION)
-                .idc(UtilsConstants.IDC)
-                .build();
+            .env(UtilsConstants.ENV)
+            .host(UtilsConstants.HOST)
+            .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
+            .username(UtilsConstants.USER_NAME)
+            .group(UtilsConstants.GROUP)
+            .path(UtilsConstants.PATH)
+            .port(UtilsConstants.PORT_2)
+            .subsystem(UtilsConstants.SUB_SYSTEM_2)
+            .pid(UtilsConstants.PID_2)
+            .version(UtilsConstants.VERSION)
+            .idc(UtilsConstants.IDC)
+            .build();
         return MessageUtils.generateSubClient(agent);
     }
 
@@ -172,14 +172,14 @@ public class EventMeshTestUtils {
         content.put(UtilsConstants.CONTENT, ASYNC_MSG_BODY);
 
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
+            .withSource(URI.create("/"))
+            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
+            .build();
     }
 
     public static CloudEvent generateCloudEventV1SyncRR() {
@@ -187,15 +187,15 @@ public class EventMeshTestUtils {
         content.put(UtilsConstants.CONTENT, "testSyncRR");
 
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
-                .withExtension(UtilsConstants.MSG_TYPE, "persistent")
-                .withExtension(UtilsConstants.KEYS, generateRandomString(16))
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
+            .withSource(URI.create("/"))
+            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
+            .withExtension(UtilsConstants.MSG_TYPE, "persistent")
+            .withExtension(UtilsConstants.KEYS, generateRandomString(16))
+            .build();
     }
 }

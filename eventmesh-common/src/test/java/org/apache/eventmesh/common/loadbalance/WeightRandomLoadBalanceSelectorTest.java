@@ -29,12 +29,12 @@ import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WeightRandomLoadBalanceSelectorTest {
-
-    private Logger logger = LoggerFactory.getLogger(WeightRandomLoadBalanceSelectorTest.class);
 
     @Test
     public void testSelect() throws Exception {
@@ -46,13 +46,13 @@ public class WeightRandomLoadBalanceSelectorTest {
         Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRandomLoadBalanceSelector.getType());
         int testRange = 100_000;
         Map<String, Integer> addressToNum = IntStream.range(0, testRange)
-                .mapToObj(i -> weightRandomLoadBalanceSelector.select())
-                .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
+            .mapToObj(i -> weightRandomLoadBalanceSelector.select())
+            .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
         addressToNum.forEach((key, value) -> {
-            logger.info("{}: {}", key, value);
+            log.info("{}: {}", key, value);
         });
-        System.out.printf(addressToNum.toString());
+        log.info("addressToNum: {}", addressToNum);
         // the error less than 5%
         Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.2") * 2) < testRange / 20);
         Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.1") * 4) < testRange / 20);
@@ -69,8 +69,8 @@ public class WeightRandomLoadBalanceSelectorTest {
 
         int testRange = 100_000;
         Map<String, Integer> addressToNum = IntStream.range(0, testRange)
-                .mapToObj(i -> weightRandomLoadBalanceSelector.select())
-                .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
+            .mapToObj(i -> weightRandomLoadBalanceSelector.select())
+            .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
         Field field = WeightRandomLoadBalanceSelector.class.getDeclaredField("sameWeightGroup");
         field.setAccessible(true);
@@ -78,7 +78,7 @@ public class WeightRandomLoadBalanceSelectorTest {
         Assert.assertTrue(sameWeightGroup);
 
         addressToNum.forEach((key, value) -> {
-            logger.info("{}: {}", key, value);
+            log.info("{}: {}", key, value);
         });
         // the error less than 5%
         Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.2")) < testRange / 20);

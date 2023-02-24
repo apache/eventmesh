@@ -77,7 +77,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
                     for (SubscriptionItem item : subscriptionItems) {
                         Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
                         this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                    }                 
+                    }
                 }
             }
             listen();
@@ -133,13 +133,14 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
     }
 
     private class EventMeshMessageTCPSubHandler extends AbstractEventMeshTCPSubHandler<EventMeshMessage> {
+
         public EventMeshMessageTCPSubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
             super(contexts);
         }
 
         @Override
         public EventMeshMessage getProtocolMessage(Package tcpPackage) {
-            return JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class);
+            return JsonUtils.parseObject(tcpPackage.getBody().toString(), EventMeshMessage.class);
         }
 
         @Override

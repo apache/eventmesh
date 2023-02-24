@@ -45,7 +45,7 @@ public class WebHookMQProducer {
     }
 
     public void request(final CloudEvent cloudEvent, final RequestReplyCallback rrCallback, final long timeout)
-            throws Exception {
+        throws Exception {
         Objects.requireNonNull(cloudEvent, "cloudEvent can not be null");
 
         hookMQProducer.request(cloudEvent, rrCallback, timeout);

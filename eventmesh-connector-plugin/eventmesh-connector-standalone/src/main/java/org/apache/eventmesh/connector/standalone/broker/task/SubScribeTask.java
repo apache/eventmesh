@@ -20,15 +20,18 @@ package org.apache.eventmesh.connector.standalone.broker.task;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SubScribeTask implements Runnable {
 
     private String topicName;
@@ -38,11 +41,9 @@ public class SubScribeTask implements Runnable {
 
     private AtomicInteger offset;
 
-    private final Logger logger = LoggerFactory.getLogger(SubScribeTask.class);
-
     public SubScribeTask(String topicName,
-                         StandaloneBroker standaloneBroker,
-                         EventListener listener) {
+        StandaloneBroker standaloneBroker,
+        EventListener listener) {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;
@@ -53,7 +54,7 @@ public class SubScribeTask implements Runnable {
     public void run() {
         while (isRunning) {
             try {
-                logger.debug("execute subscribe task, topic: {}, offset: {}", topicName, offset);
+                log.debug("execute subscribe task, topic: {}, offset: {}", topicName, offset);
                 if (offset == null) {
                     CloudEvent message = standaloneBroker.getMessage(topicName);
                     if (message != null) {
@@ -75,7 +76,7 @@ public class SubScribeTask implements Runnable {
                                 switch (action) {
                                     case CommitMessage:
                                         // update offset
-                                        logger.info("message commit, topic: {}, current offset:{}", topicName,
+                                        log.info("message commit, topic: {}, current offset:{}", topicName,
                                             offset.get());
                                         break;
                                     case ReconsumeLater:
@@ -84,7 +85,7 @@ public class SubScribeTask implements Runnable {
                                     case ManualAck:
                                         // update offset
                                         offset.incrementAndGet();
-                                        logger
+                                        log
                                             .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
                                         break;
                                     default:
@@ -97,13 +98,13 @@ public class SubScribeTask implements Runnable {
                 }
 
             } catch (Exception ex) {
-                logger.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(),
+                log.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(),
                     ex);
             }
             try {
-                Thread.sleep(1000);
+                ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                logger.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
+                log.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
                     topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();
             }

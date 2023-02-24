@@ -34,18 +34,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * query client subscription by topic
  */
+@Slf4j
 @EventHttpHandler(path = "/clientManage/showListenClientByTopic")
 public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
-
-    private final Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -63,7 +62,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
             String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
 
             String newLine = System.getProperty("line.separator");
-            logger.info("showListeningClientByTopic,topic:{}=================", topic);
+            log.info("showListeningClientByTopic,topic:{}=================", topic);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
             if (!clientGroupMap.isEmpty()) {
@@ -75,7 +74,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
                             UserAgent userAgent = session.getClient();
                             result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
                                     .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))
-                                    .append(newLine);
+                                .append(newLine);
                         }
                     }
                 }
@@ -83,7 +82,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("ShowListenClientByTopicHandler fail...", e);
+            log.error("ShowListenClientByTopicHandler fail...", e);
         }
     }
 }

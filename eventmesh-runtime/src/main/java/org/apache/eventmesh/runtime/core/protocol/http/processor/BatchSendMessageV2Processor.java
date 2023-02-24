@@ -64,8 +64,11 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
+    private final Acl acl;
+
     public BatchSendMessageV2Processor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
     }
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
@@ -95,9 +98,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
             SendMessageBatchV2ResponseHeader.buildHeader(
                 requestCode,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC()
             );
 
         // todo: use validate processor to check
@@ -178,7 +181,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
             String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
             try {
-                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,

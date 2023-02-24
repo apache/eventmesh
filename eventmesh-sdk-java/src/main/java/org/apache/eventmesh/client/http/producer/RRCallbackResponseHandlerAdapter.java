@@ -50,13 +50,13 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
     private final transient long timeout;
 
     public RRCallbackResponseHandlerAdapter(final ProtocolMessage protocolMessage, final RRCallback<ProtocolMessage> rrCallback,
-                                            final long timeout) {
+        final long timeout) {
         Objects.requireNonNull(rrCallback, "rrCallback invalid");
         Objects.requireNonNull(protocolMessage, "message invalid");
 
         if (!(protocolMessage instanceof EventMeshMessage)
-                && !(protocolMessage instanceof CloudEvent)
-                && !(protocolMessage instanceof Message)) {
+            && !(protocolMessage instanceof CloudEvent)
+            && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
         this.protocolMessage = protocolMessage;
@@ -81,7 +81,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         }
 
         final String res = EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-        final EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
+        final EventMeshRetObj ret = JsonUtils.parseObject(res, EventMeshRetObj.class);
         Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
@@ -99,15 +99,15 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
     private ProtocolMessage transformToProtocolMessage(final EventMeshRetObj ret) {
         Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
 
-        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
-                SendMessageResponseBody.ReplyMessage.class);
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(ret.getRetMsg(),
+            SendMessageResponseBody.ReplyMessage.class);
         Objects.requireNonNull(replyMessage, "ReplyMessage must not be null");
         if (protocolMessage instanceof EventMeshMessage) {
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .content(replyMessage.body)
-                    .prop(replyMessage.properties)
-                    .topic(replyMessage.topic)
-                    .build();
+                .content(replyMessage.body)
+                .prop(replyMessage.properties)
+                .topic(replyMessage.topic)
+                .build();
 
             return (ProtocolMessage) eventMeshMessage;
         }

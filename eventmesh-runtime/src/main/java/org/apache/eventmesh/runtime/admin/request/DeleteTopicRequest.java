@@ -22,13 +22,15 @@ package org.apache.eventmesh.runtime.admin.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class DeleteTopicRequest {
-    public String name;
+
+    private String name;
 
     @JsonCreator
-    public DeleteTopicRequest(
-            @JsonProperty("name") String name
-    ) {
+    public DeleteTopicRequest(@JsonProperty("name") String name) {
         super();
         this.name = name;
     }

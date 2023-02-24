@@ -47,9 +47,9 @@ public enum RequestCode {
 
     ADMIN_SHUTDOWN(601, "ADMIN SHUTDOWN");
 
-    private Integer requestCode;
+    private final Integer requestCode;
 
-    private String desc;
+    private final String desc;
 
     RequestCode(Integer requestCode, String desc) {
         this.requestCode = requestCode;
@@ -82,15 +82,8 @@ public enum RequestCode {
         return requestCode;
     }
 
-    public void setRequestCode(Integer requestCode) {
-        this.requestCode = requestCode;
-    }
-
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }

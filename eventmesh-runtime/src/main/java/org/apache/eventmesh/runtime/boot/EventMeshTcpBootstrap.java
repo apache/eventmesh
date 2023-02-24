@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.boot;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.registry.Registry;
 
 public class EventMeshTcpBootstrap implements EventMeshBootstrap {
 
@@ -30,11 +29,8 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
 
     private final EventMeshServer eventMeshServer;
 
-    private final Registry registry;
-
-    public EventMeshTcpBootstrap(EventMeshServer eventMeshServer, Registry registry) {
+    public EventMeshTcpBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
-        this.registry = registry;
 
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
@@ -46,7 +42,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
     public void init() throws Exception {
         // server init
         if (eventMeshTcpConfiguration != null) {
-            eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration, registry);
+            eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration);
             eventMeshTcpServer.init();
         }
     }

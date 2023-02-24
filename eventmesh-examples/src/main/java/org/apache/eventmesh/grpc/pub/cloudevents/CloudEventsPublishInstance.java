@@ -19,10 +19,13 @@ package org.apache.eventmesh.grpc.pub.cloudevents;
 
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,17 +38,17 @@ public class CloudEventsPublishInstance extends GrpcAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.publish(buildCloudEvent(content));
-                Thread.sleep(1_000);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
 
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

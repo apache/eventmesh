@@ -24,10 +24,13 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,12 +44,12 @@ public class AsyncPublish {
         try {
             final UserAgent userAgent = EventMeshTestUtils.generateClient1();
             final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                    .host(eventMeshIp)
-                    .port(eventMeshTcpPort)
-                    .userAgent(userAgent)
-                    .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
             final EventMeshTCPClient<EventMeshMessage> client =
-                    EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             for (int i = 0; i < 5; i++) {
@@ -57,9 +60,9 @@ public class AsyncPublish {
                 }
                 client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-                Thread.sleep(1_000);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
-            Thread.sleep(2_000);
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("AsyncPublish failed", e);
         }

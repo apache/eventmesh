@@ -29,7 +29,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenKnativeConsumerInit() {
         KnativeConsumerImpl consumer =
-                (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
+            (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -38,7 +38,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenKnativeProducerInit() {
         KnativeProducerImpl producer =
-                (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
+            (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);

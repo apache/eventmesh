@@ -28,4 +28,5 @@ import java.io.Serializable;
  * </ul>
  */
 public interface ProtocolTransportObject extends Serializable {
+
 }

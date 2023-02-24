@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.consumer;
 
 public class ClientInfo {
+
     private String env;
 
     private String idc;

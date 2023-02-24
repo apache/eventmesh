@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
@@ -36,22 +36,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The client handler
  */
+@Slf4j
 @EventHttpHandler(path = "/client/http")
 public class HTTPClientHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(HTTPClientHandler.class);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-            EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
+        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
     ) {
         super(httpHandlerManager);
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -77,8 +77,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.toObject(request, DeleteHTTPClientRequest.class);
-            String url = deleteHTTPClientRequest.url;
+            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
+            String url = deleteHTTPClientRequest.getUrl();
 
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
@@ -94,7 +94,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -102,15 +102,14 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
     }
 
     /**
-     * GET /client/http
-     * Return a response that contains the list of clients
+     * GET /client/http Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -124,17 +123,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
-                            "0",
-                            Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
-                            0,
-                            Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
-                            "",
-                            "HTTP"
+                        Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
+                        "0",
+                        Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
+                        0,
+                        Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
+                        "",
+                        "HTTP"
 
                     );
                     getClientResponseList.add(getClientResponse);
@@ -142,13 +141,13 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             }
 
             getClientResponseList.sort((lhs, rhs) -> {
-                if (lhs.host.equals(rhs.host)) {
-                    return lhs.host.compareTo(rhs.host);
+                if (lhs.getHost().equals(rhs.getHost())) {
+                    return lhs.getHost().compareTo(rhs.getHost());
                 }
-                return Integer.compare(rhs.port, lhs.port);
+                return Integer.compare(rhs.getPort(), lhs.getPort());
             });
 
-            String result = JsonUtils.toJson(getClientResponseList);
+            String result = JsonUtils.toJSONString(getClientResponseList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -159,7 +158,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -167,7 +166,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -175,13 +174,13 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             list(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
     }

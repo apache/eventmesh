@@ -19,12 +19,12 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
@@ -34,17 +34,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The topic handler
  */
+@Slf4j
 @EventHttpHandler(path = "/topic")
 public class TopicHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final MQAdminWrapper admin;
 
@@ -57,7 +57,7 @@ public class TopicHandler extends AbstractHttpHandler {
         try {
             admin.init(null);
         } catch (Exception ignored) {
-            logger.info("failed to initialize MQAdminWrapper");
+            log.info("failed to initialize MQAdminWrapper");
         }
     }
 
@@ -75,8 +75,7 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /topic
-     * Return a response that contains the list of topics
+     * GET /topic Return a response that contains the list of topics
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -85,7 +84,7 @@ public class TopicHandler extends AbstractHttpHandler {
 
         try {
             List<TopicProperties> topicList = admin.getTopic();
-            String result = JsonUtils.toJson(topicList);
+            String result = JsonUtils.toJSONString(topicList);
             httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
@@ -96,7 +95,7 @@ public class TopicHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
@@ -104,15 +103,14 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
     }
 
     /**
-     * POST /topic
-     * Create a topic if it doesn't exist
+     * POST /topic Create a topic if it doesn't exist
      */
     void post(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -121,8 +119,8 @@ public class TopicHandler extends AbstractHttpHandler {
 
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            CreateTopicRequest createTopicRequest = JsonUtils.toObject(request, CreateTopicRequest.class);
-            String topicName = createTopicRequest.name;
+            CreateTopicRequest createTopicRequest = JsonUtils.parseObject(request, CreateTopicRequest.class);
+            String topicName = createTopicRequest.getName();
             admin.createTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -133,7 +131,7 @@ public class TopicHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
@@ -141,15 +139,14 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
     }
 
     /**
-     * DELETE /topic
-     * Delete a topic if it exists
+     * DELETE /topic Delete a topic if it exists
      */
     void delete(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -158,8 +155,8 @@ public class TopicHandler extends AbstractHttpHandler {
 
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            DeleteTopicRequest deleteTopicRequest = JsonUtils.toObject(request, DeleteTopicRequest.class);
-            String topicName = deleteTopicRequest.name;
+            DeleteTopicRequest deleteTopicRequest = JsonUtils.parseObject(request, DeleteTopicRequest.class);
+            String topicName = deleteTopicRequest.getName();
             admin.deleteTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -170,7 +167,7 @@ public class TopicHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
@@ -178,7 +175,7 @@ public class TopicHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -186,16 +183,16 @@ public class TopicHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("POST")) {
+        if ("POST".equals(httpExchange.getRequestMethod())) {
             post(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }

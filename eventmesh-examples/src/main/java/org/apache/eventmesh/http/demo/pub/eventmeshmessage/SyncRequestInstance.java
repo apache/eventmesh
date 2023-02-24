@@ -21,7 +21,11 @@ import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
+
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,26 +37,26 @@ public class SyncRequestInstance extends HttpAbstractDemo {
         final String topic = ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC;
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content("contentStr with special protocal")
-                    .topic(topic)
-                    .uniqueId(RandomStringUtils.generateNum(30))
-                    .build();
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .content("contentStr with special protocal")
+                .topic(topic)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .build();
 
             final EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10_000);
             if (log.isDebugEnabled()) {
                 log.debug("send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
-                        System.currentTimeMillis() - startTime);
+                    System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
             log.error("send msg failed, ", e);
         }
 
-        Thread.sleep(30_000);
+        ThreadUtils.sleep(30, TimeUnit.SECONDS);
 
     }
 }

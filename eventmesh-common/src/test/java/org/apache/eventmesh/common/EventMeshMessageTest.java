@@ -67,8 +67,6 @@ public class EventMeshMessageTest {
         Map<String, String> prop = new HashMap<>();
         prop.put("key1", "value1");
         prop.put("key2", "value2");
-        return EventMeshMessage.builder()
-                .prop(prop)
-                .build();
+        return EventMeshMessage.builder().prop(prop).build();
     }
 }

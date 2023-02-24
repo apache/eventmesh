@@ -44,35 +44,35 @@ public class GrpcAbstractDemo {
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         return EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .producerGroup(groupName)
-                .env("env")
-                .idc("idc")
-                .sys("1234")
-                .build();
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
+            .producerGroup(groupName)
+            .env("env")
+            .idc("idc")
+            .sys("1234")
+            .build();
     }
 
     protected static CloudEvent buildCloudEvent(final Map<String, String> content) {
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+            .withSource(URI.create("/"))
+            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+            .build();
 
     }
 
     protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content) {
         return EventMeshMessage.builder()
-                .content(JsonUtils.serialize(content))
-                .topic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC)
-                .uniqueId(RandomStringUtils.generateNum(30))
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .build()
-                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
+            .content(JsonUtils.toJSONString(content))
+            .topic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC)
+            .uniqueId(RandomStringUtils.generateNum(30))
+            .bizSeqNo(RandomStringUtils.generateNum(30))
+            .build()
+            .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
     }
 }

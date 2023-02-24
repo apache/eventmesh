@@ -26,11 +26,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshRebalanceService {
-    protected final Logger logger = LoggerFactory.getLogger(EventMeshRebalanceService.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
 
@@ -43,12 +43,12 @@ public class EventMeshRebalanceService {
     public EventMeshRebalanceService(EventMeshTCPServer eventMeshTCPServer, EventMeshRebalanceStrategy rebalanceStrategy) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.rebalanceStrategy = rebalanceStrategy;
-        this.rebalanceIntervalMills = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpRebalanceIntervalInMills;
+        this.rebalanceIntervalMills = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpRebalanceIntervalInMills();
     }
 
     public void init() {
         this.serviceRebalanceScheduler = ThreadPoolFactory.createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
-        logger.info("rebalance service inited ......");
+        log.info("rebalance service inited ......");
     }
 
     public void start() throws Exception {
@@ -57,15 +57,15 @@ public class EventMeshRebalanceService {
             try {
                 rebalanceStrategy.doRebalance();
             } catch (Exception ex) {
-                logger.error("RebalanceByService failed", ex);
+                log.error("RebalanceByService failed", ex);
             }
         }, rebalanceIntervalMills, rebalanceIntervalMills, TimeUnit.MILLISECONDS);
-        logger.info("rebalance service started......");
+        log.info("rebalance service started......");
     }
 
     public void shutdown() {
         this.serviceRebalanceScheduler.shutdown();
-        logger.info("rebalance service shutdown......");
+        log.info("rebalance service shutdown......");
     }
 
     public void printRebalanceThreadPoolState() {

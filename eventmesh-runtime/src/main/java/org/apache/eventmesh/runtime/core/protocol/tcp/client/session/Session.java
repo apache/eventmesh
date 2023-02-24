@@ -51,13 +51,15 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Session {
 
     protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UserAgent client;
 
@@ -171,7 +173,7 @@ public class Session {
             Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
             Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
-                    .checkTopicExist(item.getTopic());
+                .checkTopicExist(item.getTopic());
 
             Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
@@ -191,7 +193,7 @@ public class Session {
     }
 
     public EventMeshTcpSendResult upstreamMsg(Header header, CloudEvent event, SendCallback sendCallback,
-                                              long startTime, long taskExecuteTime) {
+        long startTime, long taskExecuteTime) {
         String topic = event.getSubject();
         sessionContext.sendTopics.putIfAbsent(topic, topic);
         return sender.send(header, event, sendCallback, startTime, taskExecuteTime);
@@ -200,7 +202,7 @@ public class Session {
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
         trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
-                getListenRequestSeq()), currTime, currTime);
+            getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
     }
@@ -217,47 +219,47 @@ public class Session {
             }
 
             context.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            } else {
-                                Objects.requireNonNull(clientGroupWrapper.get())
-                                        .getEventMeshTcpMonitor()
-                                        .getTcpSummaryMetrics()
-                                        .getEventMesh2clientMsgNum()
-                                        .incrementAndGet();
-                            }
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                        } else {
+                            Objects.requireNonNull(clientGroupWrapper.get())
+                                .getEventMeshTcpMonitor()
+                                .getTcpSummaryMetrics()
+                                .getEventMesh2clientMsgNum()
+                                .incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
-            LOGGER.error("exception while write2Client", e);
+            log.error("exception while write2Client", e);
         }
     }
 
     @Override
     public String toString() {
         return "Session{"
-                +
-                "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-                +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-                +
-                ",client=" + client
-                +
-                ",sessionState=" + sessionState
-                +
-                ",sessionContext=" + sessionContext
-                +
-                ",pusher=" + pusher
-                +
-                ",sender=" + sender
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+            +
+            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+            +
+            ",client=" + client
+            +
+            ",sessionState=" + sessionState
+            +
+            ",sessionContext=" + sessionContext
+            +
+            ",pusher=" + pusher
+            +
+            ",sender=" + sender
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -280,7 +282,7 @@ public class Session {
         }
         return true;
     }
-    
+
     @Override
     public int hashCode() {
         int result = 1001;   //primeNumber
@@ -297,7 +299,7 @@ public class Session {
         }
         return result;
     }
-    
+
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
         return clientGroupWrapper;
     }
@@ -352,12 +354,12 @@ public class Session {
 
     public boolean isAvailable(String topic) {
         if (SessionState.CLOSED == sessionState) {
-            LOGGER.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
+            log.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            LOGGER.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
+            log.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
             return false;
         }
 
@@ -366,7 +368,7 @@ public class Session {
 
     public boolean isRunning() {
         if (SessionState.RUNNING != sessionState) {
-            LOGGER.warn("session is not running, state:{} client:{}", sessionState, client);
+            log.warn("session is not running, state:{} client:{}", sessionState, client);
             return false;
         }
         return true;

@@ -21,4 +21,5 @@ package org.apache.eventmesh.metrics.api.model;
  * Top-level metric, all metrics should implement this interface.
  */
 public interface Metric {
+
 }

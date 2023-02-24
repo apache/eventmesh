@@ -52,17 +52,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("restriction")
+@Slf4j
 public class ClientManageController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -76,9 +74,9 @@ public class ClientManageController {
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
-                                  EventMeshHTTPServer eventMeshHTTPServer,
-                                  EventMeshGrpcServer eventMeshGrpcServer,
-                                  Registry eventMeshRegistry) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        Registry eventMeshRegistry) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -88,7 +86,7 @@ public class ClientManageController {
 
 
     public void start() throws IOException {
-        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
+        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
@@ -102,14 +100,14 @@ public class ClientManageController {
         adminController.run(server);
 
         server.start();
-        logger.info("ClientManageController start success, port:{}", port);
+        log.info("ClientManageController start success, port:{}", port);
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
-                                   EventMeshHTTPServer eventMeshHTTPServer,
-                                   EventMeshGrpcServer eventMeshGrpcServer,
-                                   Registry eventMeshRegistry,
-                                   HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        Registry eventMeshRegistry,
+        HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
         new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);

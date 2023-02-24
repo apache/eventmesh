@@ -25,16 +25,19 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventmeshSubscribeBroadcast extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
+public class EventMeshSubscribeBroadcast extends GrpcAbstractDemo implements ReceiveMsgHook<EventMeshMessage> {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
@@ -44,15 +47,15 @@ public class EventmeshSubscribeBroadcast extends GrpcAbstractDemo implements Rec
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
         try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 
-            eventMeshGrpcConsumer.registerListener(new EventmeshSubscribeBroadcast());
+            eventMeshGrpcConsumer.registerListener(new EventMeshSubscribeBroadcast());
 
             eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-            Thread.sleep(60_000);
+            ThreadUtils.sleep(1, TimeUnit.MINUTES);
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
         }
     }

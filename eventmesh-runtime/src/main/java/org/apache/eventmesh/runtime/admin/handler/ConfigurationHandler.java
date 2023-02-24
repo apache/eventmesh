@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -31,17 +31,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The config handler
  */
+@Slf4j
 @EventHttpHandler(path = "/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
@@ -73,8 +73,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /config
-     * Return a response that contains the EventMesh configuration
+     * GET /config Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
@@ -93,7 +92,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
                     eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
                     // TCP Configuration
-                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                    eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
                     // HTTP Configuration
                     eventMeshHTTPConfiguration.getHttpServerPort(),
                     eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
@@ -102,7 +101,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshGrpcConfiguration.isEventMeshServerUseTls()
                 );
 
-                String result = JsonUtils.toJson(getConfigurationResponse);
+                String result = JsonUtils.toJSONString(getConfigurationResponse);
                 httpExchange.sendResponseHeaders(200, result.getBytes().length);
                 out.write(result.getBytes());
             } catch (Exception e) {
@@ -113,7 +112,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 String stackTrace = writer.toString();
 
                 Error error = new Error(e.toString(), stackTrace);
-                String result = JsonUtils.toJson(error);
+                String result = JsonUtils.toJSONString(error);
                 httpExchange.sendResponseHeaders(500, result.getBytes().length);
                 out.write(result.getBytes());
             }

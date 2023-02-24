@@ -28,7 +28,7 @@ public enum SubscriptionMode {
      */
     CLUSTERING("CLUSTERING");
 
-    private String mode;
+    private final String mode;
 
     SubscriptionMode(String mode) {
         this.mode = mode;
@@ -36,10 +36,6 @@ public enum SubscriptionMode {
 
     public String getMode() {
         return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
     }
 
 }

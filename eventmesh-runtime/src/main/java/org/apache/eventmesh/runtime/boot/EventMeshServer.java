@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
@@ -32,12 +33,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshServer {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(EventMeshServer.class);
 
     private final Acl acl;
 
@@ -57,44 +57,41 @@ public class EventMeshServer {
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
-    public EventMeshServer() throws Exception {
-        ConfigService configService = ConfigService.getInstance();
-        this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
+    private static final ConfigService configService = ConfigService.getInstance();
 
-        this.acl = new Acl();
-        this.registry = new Registry();
-        trace = new Trace(configuration.isEventMeshServerTraceEnable());
-        this.connectorResource = new ConnectorResource();
-        trace = new Trace(configuration.isEventMeshServerTraceEnable());
+    public EventMeshServer() {
+        this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
+        AssertUtils.notNull(this.configuration, "configuration is null");
+        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
+        this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
+
+        trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
+        this.connectorResource = ConnectorResource.getInstance(this.configuration.getEventMeshConnectorPluginType());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
             if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this, registry));
+                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
             }
             if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this, registry));
+                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
             }
             if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(registry));
+                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
             }
         }
-
-        init();
     }
 
-    private void init() throws Exception {
-        if (Objects.nonNull(configuration)) {
-            connectorResource.init(configuration.getEventMeshConnectorPluginType());
-            if (configuration.isEventMeshServerSecurityEnable()) {
-                acl.init(configuration.getEventMeshSecurityPluginType());
-            }
-            if (configuration.isEventMeshServerRegistryEnable()) {
-                registry.init(configuration.getEventMeshRegistryPluginType());
-            }
-            if (configuration.isEventMeshServerTraceEnable()) {
-                trace.init(configuration.getEventMeshTracePluginType());
-            }
+    public void init() throws Exception {
+        connectorResource.init();
+        if (configuration.isEventMeshServerSecurityEnable()) {
+            acl.init();
+        }
+        if (configuration.isEventMeshServerRegistryEnable()) {
+            registry.init();
+        }
+        if (configuration.isEventMeshServerTraceEnable()) {
+            trace.init();
         }
 
         EventMeshTCPServer eventMeshTCPServer = null;
@@ -117,26 +114,22 @@ public class EventMeshServer {
             }
         }
 
-        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer)
-            && Objects.nonNull(eventMeshGrpcServer)) {
-            clientManageController = new ClientManageController(eventMeshTCPServer,
-                eventMeshHTTPServer, eventMeshGrpcServer, registry);
+        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
 
+            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, registry);
             clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
-
         }
 
-        final String eventStore = System
-                .getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+        final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("eventStore : {}", eventStore);
+        if (log.isInfoEnabled()) {
+            log.info("eventStore : {}", eventStore);
         }
 
         serviceState = ServiceState.INITED;
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
     }
 
@@ -159,26 +152,24 @@ public class EventMeshServer {
             clientManageController.start();
         }
 
-
         serviceState = ServiceState.RUNNING;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
 
     }
 
     public void shutdown() throws Exception {
-        serviceState = ServiceState.STOPING;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        serviceState = ServiceState.STOPPING;
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
         }
 
-        if (configuration != null
-                && configuration.isEventMeshServerRegistryEnable()) {
+        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
             registry.shutdown();
         }
 
@@ -193,10 +184,10 @@ public class EventMeshServer {
         }
 
         ConfigurationContextUtil.clear();
-        serviceState = ServiceState.STOPED;
+        serviceState = ServiceState.STOPPED;
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(SERVER_STATE_MSG, serviceState);
+        if (log.isInfoEnabled()) {
+            log.info(SERVER_STATE_MSG, serviceState);
         }
     }
 
@@ -214,5 +205,9 @@ public class EventMeshServer {
 
     public void setRegistry(final Registry registry) {
         this.registry = registry;
+    }
+
+    public Acl getAcl() {
+        return acl;
     }
 }

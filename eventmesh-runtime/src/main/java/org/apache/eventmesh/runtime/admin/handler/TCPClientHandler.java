@@ -18,12 +18,12 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -41,17 +41,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The client handler
  */
+@Slf4j
 @EventHttpHandler(path = "/client/tcp")
 public class TCPClientHandler extends AbstractHttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TCPClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -82,9 +82,9 @@ public class TCPClientHandler extends AbstractHttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.toObject(request, DeleteTCPClientRequest.class);
-            String host = deleteTCPClientRequest.host;
-            int port = deleteTCPClientRequest.port;
+            DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.parseObject(request, DeleteTCPClientRequest.class);
+            String host = deleteTCPClientRequest.getHost();
+            int port = deleteTCPClientRequest.getPort();
 
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -110,7 +110,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -118,15 +118,14 @@ public class TCPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
     }
 
     /**
-     * GET /client/tcp
-     * Return a response that contains the list of clients
+     * GET /client/tcp Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -157,13 +156,13 @@ public class TCPClientHandler extends AbstractHttpHandler {
             }
 
             getClientResponseList.sort((lhs, rhs) -> {
-                if (lhs.host.equals(rhs.host)) {
-                    return lhs.host.compareTo(rhs.host);
+                if (lhs.getHost().equals(rhs.getHost())) {
+                    return lhs.getHost().compareTo(rhs.getHost());
                 }
-                return Integer.compare(rhs.port, lhs.port);
+                return Integer.compare(rhs.getPort(), lhs.getPort());
             });
 
-            String result = JsonUtils.toJson(getClientResponseList);
+            String result = JsonUtils.toJSONString(getClientResponseList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -174,7 +173,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -182,7 +181,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -190,13 +189,13 @@ public class TCPClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             list(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
     }

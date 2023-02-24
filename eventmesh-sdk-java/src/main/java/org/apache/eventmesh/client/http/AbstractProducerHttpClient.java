@@ -38,7 +38,7 @@ import java.util.Objects;
 public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient implements EventMeshProtocolProducer<T> {
 
     public AbstractProducerHttpClient(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
-            throws EventMeshException {
+        throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
@@ -48,7 +48,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         final String target = selectEventMesh();
         try {
             final String response = HttpUtils.post(httpClient, target, builderPublishRequestParam(t));
-            final EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(response, EventMeshRetObj.class);
             if (Objects.requireNonNull(ret).getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
@@ -63,7 +63,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         final String target = selectEventMesh();
         try {
             final String response = HttpUtils.post(httpClient, target, builderRequestParam(message, timeout));
-            final EventMeshRetObj ret = JsonUtils.deserialize(response, EventMeshRetObj.class);
+            final EventMeshRetObj ret = JsonUtils.parseObject(response, EventMeshRetObj.class);
             if (Objects.requireNonNull(ret).getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
                 return transformMessage(ret);
             }
@@ -78,7 +78,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         validateMessage(message);
         final String target = selectEventMesh();
         final RRCallbackResponseHandlerAdapter<T> adapter = new RRCallbackResponseHandlerAdapter<>(
-                message, rrCallback, timeout);
+            message, rrCallback, timeout);
         try {
             HttpUtils.post(httpClient, null, target, builderRequestParam(message, timeout), adapter);
         } catch (IOException e) {

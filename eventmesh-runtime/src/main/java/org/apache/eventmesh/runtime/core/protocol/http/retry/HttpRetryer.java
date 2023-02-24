@@ -28,19 +28,21 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HttpRetryer {
 
-    private Logger retryLogger = LoggerFactory.getLogger("retry");
+    private final Logger retryLogger = LoggerFactory.getLogger("retry");
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    private DelayQueue<DelayRetryable> failed = new DelayQueue<>();
+    private final DelayQueue<DelayRetryable> failed = new DelayQueue<>();
 
     private ThreadPoolExecutor pool;
 
@@ -84,7 +86,7 @@ public class HttpRetryer {
             }
         }, "http-retry-dispatcher");
         dispatcher.setDaemon(true);
-        logger.info("HttpRetryer inited......");
+        log.info("HttpRetryer inited......");
     }
 
     public int size() {
@@ -101,11 +103,11 @@ public class HttpRetryer {
     public void shutdown() {
         dispatcher.interrupt();
         pool.shutdown();
-        logger.info("HttpRetryer shutdown......");
+        log.info("HttpRetryer shutdown......");
     }
 
     public void start() throws Exception {
         dispatcher.start();
-        logger.info("HttpRetryer started......");
+        log.info("HttpRetryer started......");
     }
 }

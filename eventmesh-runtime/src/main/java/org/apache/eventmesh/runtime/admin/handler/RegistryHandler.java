@@ -18,10 +18,10 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.registry.Registry;
 
@@ -33,19 +33,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/registry")
 public class RegistryHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
     private final Registry eventMeshRegistry;
 
     public RegistryHandler(Registry eventMeshRegistry,
-                           HttpHandlerManager httpHandlerManager) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshRegistry = eventMeshRegistry;
     }
@@ -63,8 +63,7 @@ public class RegistryHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /registry
-     * Return a response that contains the list of EventMesh clusters
+     * GET /registry Return a response that contains the list of EventMesh clusters
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -84,14 +83,14 @@ public class RegistryHandler extends AbstractHttpHandler {
                 );
                 getRegistryResponseList.add(getRegistryResponse);
             }
-            getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.eventMeshClusterName));
+            getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.getEventMeshClusterName()));
 
-            String result = JsonUtils.toJson(getRegistryResponseList);
+            String result = JsonUtils.toJSONString(getRegistryResponseList);
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
-            String result = JsonUtils.toJson(new ArrayList<>());
+            String result = JsonUtils.toJSONString(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
@@ -102,7 +101,7 @@ public class RegistryHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
+            String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
         } finally {
@@ -110,7 +109,7 @@ public class RegistryHandler extends AbstractHttpHandler {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }

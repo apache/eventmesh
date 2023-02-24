@@ -25,6 +25,7 @@ import lombok.ToString;
 @Builder
 @ToString
 public class EventMeshWorkflowClientConfig {
+
     @Builder.Default
     private String serverName = "eventmesh-workflow";
 

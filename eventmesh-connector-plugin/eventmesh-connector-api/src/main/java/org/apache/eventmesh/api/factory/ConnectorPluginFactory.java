@@ -28,6 +28,7 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
  * The factory to get connector {@link Admin}, {@link Producer} and {@link Consumer}
  */
 public class ConnectorPluginFactory {
+
     /**
      * Get MeshMQAdmin instance by plugin name
      *

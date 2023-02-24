@@ -30,17 +30,19 @@ import org.apache.eventmesh.runtime.util.Utils;
 
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HeartBeatTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatTask.class);
+    private final Acl acl;
 
     public HeartBeatTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
@@ -51,18 +53,18 @@ public class HeartBeatTask extends AbstractTask {
             //do acl check in heartbeat
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                Acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());
+                this.acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());
             }
 
             if (session != null) {
                 session.notifyHeartbeat(startTime);
             }
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
         } catch (Exception e) {
-            LOGGER.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
+            log.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                    + "heartbeating", pkg.getHeader().getSeq()));
+                + "heartbeating", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(res, startTime, taskExecuteTime, Objects.requireNonNull(session).getContext(), session);
         }

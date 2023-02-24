@@ -30,16 +30,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SubscriptionManager {
-    private static final Logger logger = LoggerFactory.getLogger(SubscriptionManager.class);
-    private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
-            new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
+
+    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
     public ConcurrentHashMap<String, ConsumerGroupConf> getLocalConsumerGroupMapping() {
         return localConsumerGroupMapping;
@@ -50,7 +49,7 @@ public class SubscriptionManager {
     }
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
-                               final List<SubscriptionItem> subscriptionItems, final String url) {
+        final List<SubscriptionItem> subscriptionItems, final String url) {
         for (final SubscriptionItem subscription : subscriptionItems) {
             final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 
@@ -88,13 +87,13 @@ public class SubscriptionManager {
     }
 
     public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
-                                   String url, List<SubscriptionItem> subscriptionList) {
+        String url, List<SubscriptionItem> subscriptionList) {
         for (final SubscriptionItem subscription : subscriptionList) {
             final List<Client> groupTopicClients = localClientInfoMapping
-                    .get(consumerGroup + "@" + subscription.getTopic());
+                .get(consumerGroup + "@" + subscription.getTopic());
 
             if (CollectionUtils.isEmpty(groupTopicClients)) {
-                logger.error("group {} topic {} clients is empty", consumerGroup, subscription);
+                log.error("group {} topic {} clients is empty", consumerGroup, subscription);
             }
 
             ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
@@ -102,20 +101,20 @@ public class SubscriptionManager {
                 // new subscription
                 ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup, new ConsumerGroupConf(consumerGroup));
                 if (prev == null) {
-                    logger.info("add new subscription, consumer group: {}", consumerGroup);
+                    log.info("add new subscription, consumer group: {}", consumerGroup);
                 }
                 consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
             }
 
             ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf()
-                    .get(subscription.getTopic());
+                .get(subscription.getTopic());
             if (consumerGroupTopicConf == null) {
                 consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topic) -> {
                     ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
                     newTopicConf.setConsumerGroup(consumerGroup);
                     newTopicConf.setTopic(topic);
                     newTopicConf.setSubscriptionItem(subscription);
-                    logger.info("add new {}", newTopicConf);
+                    log.info("add new {}", newTopicConf);
                     return newTopicConf;
                 });
                 consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(subscription.getTopic());

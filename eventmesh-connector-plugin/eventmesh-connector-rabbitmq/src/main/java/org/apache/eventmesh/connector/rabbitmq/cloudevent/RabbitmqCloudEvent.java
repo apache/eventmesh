@@ -59,11 +59,11 @@ public class RabbitmqCloudEvent implements Serializable {
                 throw new RabbitmqaConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(data.getBytes(StandardCharsets.UTF_8))
-                .withId(extensions.remove("id"))
-                .withSource(URI.create(extensions.remove("source")))
-                .withType(extensions.remove("type"))
-                .withDataContentType(extensions.remove("datacontenttype"))
-                .withSubject(extensions.remove("subject"));
+            .withId(extensions.remove("id"))
+            .withSource(URI.create(extensions.remove("source")))
+            .withType(extensions.remove("type"))
+            .withDataContentType(extensions.remove("datacontenttype"))
+            .withSubject(extensions.remove("subject"));
         extensions.forEach(builder::withExtension);
 
         return builder.build();
@@ -75,7 +75,7 @@ public class RabbitmqCloudEvent implements Serializable {
     }
 
     public static RabbitmqCloudEvent getFromByteArray(byte[] body) {
-        return JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
+        return JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<RabbitmqCloudEvent>() {
         });
     }
 }

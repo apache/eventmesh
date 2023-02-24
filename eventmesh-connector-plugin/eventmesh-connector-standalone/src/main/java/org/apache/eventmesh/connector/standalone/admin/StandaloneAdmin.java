@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 
 public class StandaloneAdmin implements Admin {
+
     private final AtomicBoolean isStarted;
 
     private final StandaloneBroker standaloneBroker;

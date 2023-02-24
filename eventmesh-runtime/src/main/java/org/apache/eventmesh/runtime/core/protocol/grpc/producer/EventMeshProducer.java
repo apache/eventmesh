@@ -28,12 +28,10 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventMeshProducer {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerGroupConf producerGroupConfig;
 
@@ -56,7 +54,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();
@@ -67,10 +65,10 @@ public class EventMeshProducer {
         //TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-                eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
+            eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
-        logger.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void start() throws Exception {
@@ -80,7 +78,7 @@ public class EventMeshProducer {
 
         mqProducerWrapper.start();
         serviceState = ServiceState.RUNNING;
-        logger.info("EventMeshProducer [{}] started..........", producerGroupConfig.getGroupName());
+        log.info("EventMeshProducer [{}] started..........", producerGroupConfig.getGroupName());
     }
 
     public synchronized void shutdown() throws Exception {
@@ -89,8 +87,8 @@ public class EventMeshProducer {
         }
 
         mqProducerWrapper.shutdown();
-        serviceState = ServiceState.STOPED;
-        logger.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
+        serviceState = ServiceState.STOPPED;
+        log.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
     }
 
     public ServiceState getStatus() {

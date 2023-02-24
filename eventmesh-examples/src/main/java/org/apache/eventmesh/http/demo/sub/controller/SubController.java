@@ -57,8 +57,7 @@ public class SubController {
         if (log.isInfoEnabled()) {
             log.info("receive message: {}", content);
         }
-        @SuppressWarnings("unchecked")
-        final Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
+        @SuppressWarnings("unchecked") final Map<String, String> contentMap = JsonUtils.parseObject(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (eventFormat != null) {
@@ -77,7 +76,7 @@ public class SubController {
 
         final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
-        return JsonUtils.serialize(map);
+        return JsonUtils.toJSONString(map);
     }
 
 }

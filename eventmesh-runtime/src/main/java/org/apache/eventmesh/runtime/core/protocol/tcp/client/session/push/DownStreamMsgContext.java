@@ -34,14 +34,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class DownStreamMsgContext extends RetryContext {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class DownStreamMsgContext extends RetryContext {
 
     public Session session;
 
@@ -60,8 +59,8 @@ public class DownStreamMsgContext extends RetryContext {
     public boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
-                                AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
-                                SubscriptionItem subscriptionItem) {
+        AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
+        SubscriptionItem subscriptionItem) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.event = event;
         this.session = session;
@@ -86,10 +85,10 @@ public class DownStreamMsgContext extends RetryContext {
             List<CloudEvent> events = new ArrayList<>();
             events.add(event);
             consumer.updateOffset(events, consumeConcurrentlyContext);
-            logger.info("ackMsg seq:{}, topic:{}, bizSeq:{}", seq, events.get(0).getSubject(),
+            log.info("ackMsg seq:{}, topic:{}, bizSeq:{}", seq, events.get(0).getSubject(),
                 events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         } else {
-            logger.warn("ackMsg seq:{} failed,consumer is null:{}, context is null:{} , msgs is null:{}", seq,
+            log.warn("ackMsg seq:{} failed,consumer is null:{}, context is null:{} , msgs is null:{}", seq,
                 consumer == null, consumeConcurrentlyContext == null, event == null);
         }
     }
@@ -122,7 +121,7 @@ public class DownStreamMsgContext extends RetryContext {
     @Override
     public void retry() {
         try {
-            logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
+            log.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
                 EventMeshUtil.getMessageBizSeq(this.event));
 
             if (isRetryMsgTimeout(this)) {
@@ -142,16 +141,16 @@ public class DownStreamMsgContext extends RetryContext {
             }
 
             if (rechoosen == null) {
-                logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", this.seq,
+                log.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", this.seq,
                     this.retryTimes, EventMeshUtil.getMessageBizSeq(this.event));
             } else {
                 this.session = rechoosen;
                 rechoosen.downstreamMsg(this);
-                logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
+                log.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
                     EventMeshUtil.getMessageBizSeq(this.event));
             }
         } catch (Exception e) {
-            logger.error("retry-dispatcher error!", e);
+            log.error("retry-dispatcher error!", e);
         }
     }
 
@@ -171,7 +170,7 @@ public class DownStreamMsgContext extends RetryContext {
 
         double elapseTime = brokerCost + accessCost;
         if (elapseTime >= ttl) {
-            logger.warn("discard the retry because timeout, seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+            log.warn("discard the retry because timeout, seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
                 downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
             flag = true;
             eventMeshAckMsg(downStreamMsgContext);
@@ -187,7 +186,7 @@ public class DownStreamMsgContext extends RetryContext {
     private void eventMeshAckMsg(DownStreamMsgContext downStreamMsgContext) {
         List<CloudEvent> msgExts = new ArrayList<>();
         msgExts.add(downStreamMsgContext.event);
-        logger.warn("eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}", downStreamMsgContext.event.getSubject(),
+        log.warn("eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}", downStreamMsgContext.event.getSubject(),
             downStreamMsgContext.seq, downStreamMsgContext.event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
     }

@@ -29,9 +29,9 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -84,7 +84,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         HttpEventWrapper response = new HttpEventWrapper(this.httpMethod, this.httpVersion, this.requestURI);
         response.setReqTime(this.reqTime);
         response.setHeaderMap(responseHeaderMap);
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -101,7 +101,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         Map<String, Object> responseBodyMap = new HashMap<>();
         responseBodyMap.put("retCode", eventMeshRetCode.getRetCode());
         responseBodyMap.put("retMessage", eventMeshRetCode.getErrMsg());
-        response.setBody(JsonUtils.serialize(responseBodyMap).getBytes(StandardCharsets.UTF_8));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -181,7 +181,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(this.body));
+            Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -200,9 +200,9 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         sysHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh"));
         sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PASSWD, "pass"));
         sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP,
-                headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, "em-http-producer"));
+            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, "em-http-producer"));
         sysHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP,
-                headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
+            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
         sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
         sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
     }

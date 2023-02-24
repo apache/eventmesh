@@ -51,19 +51,19 @@ public class EventMeshClientUtil {
 
     public static RequestHeader buildHeader(EventMeshGrpcClientConfig clientConfig, String protocolType) {
         return RequestHeader.newBuilder()
-                .setEnv(clientConfig.getEnv())
-                .setIdc(clientConfig.getIdc())
-                .setIp(IPUtils.getLocalAddress())
-                .setPid(Long.toString(ThreadUtils.getPID()))
-                .setSys(clientConfig.getSys())
-                .setLanguage(clientConfig.getLanguage())
-                .setUsername(clientConfig.getUserName())
-                .setPassword(clientConfig.getPassword())
-                .setProtocolType(protocolType)
-                .setProtocolDesc(Constants.PROTOCOL_GRPC)
-                // default CloudEvents version is V1
-                .setProtocolVersion(SpecVersion.V1.toString())
-                .build();
+            .setEnv(clientConfig.getEnv())
+            .setIdc(clientConfig.getIdc())
+            .setIp(IPUtils.getLocalAddress())
+            .setPid(Long.toString(ThreadUtils.getPID()))
+            .setSys(clientConfig.getSys())
+            .setLanguage(clientConfig.getLanguage())
+            .setUsername(clientConfig.getUserName())
+            .setPassword(clientConfig.getPassword())
+            .setProtocolType(protocolType)
+            .setProtocolDesc(Constants.PROTOCOL_GRPC)
+            // default CloudEvents version is V1
+            .setProtocolVersion(SpecVersion.V1.toString())
+            .build();
     }
 
     @SuppressWarnings("unchecked")
@@ -74,66 +74,66 @@ public class EventMeshClientUtil {
 
         // This is GRPC response message
         if (StringUtils.isEmpty(message.getSeqNum()) && StringUtils.isEmpty(message.getUniqueId())) {
-            return (T) JsonUtils.deserialize(content,
-                    new TypeReference<HashMap<String, String>>() {
-                    });
+            return (T) JsonUtils.parseTypeReferenceObject(content,
+                new TypeReference<HashMap<String, String>>() {
+                });
         }
 
         if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
             final String contentType = message.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
             final CloudEvent cloudEvent = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(contentType))
-                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
+                .deserialize(content.getBytes(StandardCharsets.UTF_8));
 
             final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(cloudEvent)
-                    .withSubject(message.getTopic())
-                    .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
-                    .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId());
+                .withSubject(message.getTopic())
+                .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
+                .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId());
 
             message.getPropertiesMap().forEach(cloudEventBuilder::withExtension);
 
             return (T) cloudEventBuilder.build();
         } else {
             return (T) EventMeshMessage.builder()
-                    .content(content)
-                    .topic(message.getTopic())
-                    .bizSeqNo(seq)
-                    .uniqueId(uniqueId)
-                    .prop(message.getPropertiesMap())
-                    .build();
+                .content(content)
+                .topic(message.getTopic())
+                .bizSeqNo(seq)
+                .uniqueId(uniqueId)
+                .prop(message.getPropertiesMap())
+                .build();
         }
     }
 
     public static <T> SimpleMessage buildSimpleMessage(final T message, final EventMeshGrpcClientConfig clientConfig,
-                                                       final String protocolType) {
+        final String protocolType) {
         if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
             final CloudEvent cloudEvent = (CloudEvent) message;
             final String contentType = StringUtils.isEmpty(cloudEvent.getDataContentType())
-                    ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
-                    : cloudEvent.getDataContentType();
+                ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
+                : cloudEvent.getDataContentType();
             final byte[] bodyByte = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(contentType))
-                    .serialize(cloudEvent);
+                .serialize(cloudEvent);
             final String content = new String(bodyByte, StandardCharsets.UTF_8);
             final String ttl = cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-                    ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
-                    : Objects.requireNonNull(cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL)).toString();
+                ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                : Objects.requireNonNull(cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL)).toString();
 
             final String seqNum = cloudEvent.getExtension(ProtocolKey.SEQ_NUM) == null
-                    ? RandomStringUtils.generateNum(30)
-                    : Objects.requireNonNull(cloudEvent.getExtension(ProtocolKey.SEQ_NUM)).toString();
+                ? RandomStringUtils.generateNum(30)
+                : Objects.requireNonNull(cloudEvent.getExtension(ProtocolKey.SEQ_NUM)).toString();
 
             final String uniqueId = cloudEvent.getExtension(ProtocolKey.UNIQUE_ID) == null
-                    ? RandomStringUtils.generateNum(30)
-                    : Objects.requireNonNull(cloudEvent.getExtension(ProtocolKey.UNIQUE_ID)).toString();
+                ? RandomStringUtils.generateNum(30)
+                : Objects.requireNonNull(cloudEvent.getExtension(ProtocolKey.UNIQUE_ID)).toString();
 
             final SimpleMessage.Builder builder = SimpleMessage.newBuilder()
-                    .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
-                    .setProducerGroup(clientConfig.getProducerGroup())
-                    .setTopic(cloudEvent.getSubject())
-                    .setTtl(ttl)
-                    .setSeqNum(seqNum)
-                    .setUniqueId(uniqueId)
-                    .setContent(content)
-                    .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
+                .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+                .setProducerGroup(clientConfig.getProducerGroup())
+                .setTopic(cloudEvent.getSubject())
+                .setTtl(ttl)
+                .setSeqNum(seqNum)
+                .setUniqueId(uniqueId)
+                .setContent(content)
+                .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
 
             cloudEvent.getExtensionNames().forEach(extName -> {
                 builder.putProperties(extName, Objects.requireNonNull(cloudEvent.getExtension(extName)).toString());
@@ -144,61 +144,61 @@ public class EventMeshClientUtil {
             final EventMeshMessage eventMeshMessage = (EventMeshMessage) message;
 
             final String ttl = eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-                    ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
-                    : eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
+                ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                : eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
             final Map<String, String> props = eventMeshMessage.getProp() == null
-                    ? new HashMap<>() : eventMeshMessage.getProp();
+                ? new HashMap<>() : eventMeshMessage.getProp();
 
             final String seqNum = eventMeshMessage.getBizSeqNo() == null ? RandomStringUtils.generateNum(30)
-                    : eventMeshMessage.getBizSeqNo();
+                : eventMeshMessage.getBizSeqNo();
 
             final String uniqueId = eventMeshMessage.getUniqueId() == null ? RandomStringUtils.generateNum(30)
-                    : eventMeshMessage.getUniqueId();
+                : eventMeshMessage.getUniqueId();
 
             return SimpleMessage.newBuilder()
-                    .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
-                    .setProducerGroup(clientConfig.getProducerGroup())
-                    .setTopic(eventMeshMessage.getTopic())
-                    .setContent(eventMeshMessage.getContent())
-                    .setSeqNum(seqNum)
-                    .setUniqueId(uniqueId)
-                    .setTtl(ttl)
-                    .putAllProperties(props)
-                    .build();
+                .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+                .setProducerGroup(clientConfig.getProducerGroup())
+                .setTopic(eventMeshMessage.getTopic())
+                .setContent(eventMeshMessage.getContent())
+                .setSeqNum(seqNum)
+                .setUniqueId(uniqueId)
+                .setTtl(ttl)
+                .putAllProperties(props)
+                .build();
         }
     }
 
     @SuppressWarnings("unchecked")
     public static <T> BatchMessage buildBatchMessages(final List<T> messageList,
-                                                      final EventMeshGrpcClientConfig clientConfig,
-                                                      final String protocolType) {
+        final EventMeshGrpcClientConfig clientConfig,
+        final String protocolType) {
         if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
             List<CloudEvent> events = (List<CloudEvent>) messageList;
             BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
-                    .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
-                    .setProducerGroup(clientConfig.getProducerGroup())
-                    .setTopic(events.get(0).getSubject());
+                .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+                .setProducerGroup(clientConfig.getProducerGroup())
+                .setTopic(events.get(0).getSubject());
 
             events.forEach(event -> {
                 final String contentType = StringUtils.isEmpty(event.getDataContentType())
-                        ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
-                        : event.getDataContentType();
+                    ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
+                    : event.getDataContentType();
 
                 final byte[] bodyByte = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(contentType))
-                        .serialize(event);
+                    .serialize(event);
                 final String content = new String(bodyByte, StandardCharsets.UTF_8);
 
                 final String ttl = event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-                        ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
-                        : Objects.requireNonNull(event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL)).toString();
+                    ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                    : Objects.requireNonNull(event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL)).toString();
 
                 BatchMessage.MessageItem messageItem = BatchMessage.MessageItem.newBuilder()
-                        .setContent(content)
-                        .setTtl(ttl)
-                        .setSeqNum(Objects.requireNonNull(event.getExtension(ProtocolKey.SEQ_NUM)).toString())
-                        .setUniqueId(Objects.requireNonNull(event.getExtension(ProtocolKey.UNIQUE_ID)).toString())
-                        .putProperties(ProtocolKey.CONTENT_TYPE, contentType)
-                        .build();
+                    .setContent(content)
+                    .setTtl(ttl)
+                    .setSeqNum(Objects.requireNonNull(event.getExtension(ProtocolKey.SEQ_NUM)).toString())
+                    .setUniqueId(Objects.requireNonNull(event.getExtension(ProtocolKey.UNIQUE_ID)).toString())
+                    .putProperties(ProtocolKey.CONTENT_TYPE, contentType)
+                    .build();
 
                 messageBuilder.addMessageItem(messageItem);
             });
@@ -206,19 +206,19 @@ public class EventMeshClientUtil {
         } else {
             final List<EventMeshMessage> eventMeshMessages = (List<EventMeshMessage>) messageList;
             final BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
-                    .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
-                    .setProducerGroup(clientConfig.getProducerGroup())
-                    .setTopic(eventMeshMessages.get(0).getTopic());
+                .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+                .setProducerGroup(clientConfig.getProducerGroup())
+                .setTopic(eventMeshMessages.get(0).getTopic());
 
             eventMeshMessages.forEach(message -> {
                 BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
-                        .setContent(message.getContent())
-                        .setUniqueId(message.getUniqueId())
-                        .setSeqNum(message.getBizSeqNo())
-                        .setTtl(Optional.ofNullable(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
-                                .orElseGet(() -> Constants.DEFAULT_EVENTMESH_MESSAGE_TTL))
-                        .putAllProperties(message.getProp())
-                        .build();
+                    .setContent(message.getContent())
+                    .setUniqueId(message.getUniqueId())
+                    .setSeqNum(message.getBizSeqNo())
+                    .setTtl(Optional.ofNullable(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+                        .orElseGet(() -> Constants.DEFAULT_EVENTMESH_MESSAGE_TTL))
+                    .putAllProperties(message.getProp())
+                    .build();
                 messageBuilder.addMessageItem(item);
             });
 

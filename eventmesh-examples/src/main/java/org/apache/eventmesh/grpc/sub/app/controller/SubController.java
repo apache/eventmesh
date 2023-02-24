@@ -79,7 +79,7 @@ public class SubController {
 
         final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
-        return JsonUtils.serialize(map);
+        return JsonUtils.toJSONString(map);
     }
 
 }

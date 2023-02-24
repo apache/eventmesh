@@ -20,10 +20,13 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,17 +39,17 @@ public class RequestReplyInstance extends GrpcAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testRequestReplyMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.requestReply(buildEventMeshMessage(content),
-                        EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                Thread.sleep(1_000);
+                    EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
-            Thread.sleep(30_000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
 
         }
     }

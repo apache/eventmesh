@@ -47,12 +47,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HTTPClientPool {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(HTTPClientPool.class);
 
     private final transient List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
 
@@ -100,34 +99,33 @@ public class HTTPClientPool {
             innerSSLContext = innerSSLContext == null ? SSLContexts.custom().loadTrustMaterial(new TheTrustStrategy()).build() : innerSSLContext;
 
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-            LOGGER.error("Get sslContext error", e);
+            log.error("Get sslContext error", e);
             return HttpClients.createDefault();
         }
-
 
         if (connectionManager == null) {
             final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(innerSSLContext, NoopHostnameVerifier.INSTANCE);
             final Registry<ConnectionSocketFactory> socketFactoryRegistry
-                    = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", sslsf)
-                    .build();
+                = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslsf)
+                .build();
             connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
             connectionManager.setDefaultMaxPerRoute(maxTotal);
             connectionManager.setMaxTotal(maxTotal);
         }
 
-
         return HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
-                .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
-                .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
-                .setRetryHandler(new DefaultHttpRequestRetryHandler())
-                .build();
+            .setConnectionManager(connectionManager)
+            .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
+            .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
+            .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
+            .setRetryHandler(new DefaultHttpRequestRetryHandler())
+            .build();
     }
 
     private static class TheTrustStrategy implements TrustStrategy {
+
         @Override
         public boolean isTrusted(final X509Certificate[] chain, final String authType) {
             return true;

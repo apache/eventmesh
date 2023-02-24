@@ -31,30 +31,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * The extension fetching factory, all extension plugins should be fetched by this factory.
- * And all the extension plugins defined in eventmesh should have {@link EventMeshSPI} annotation.
+ * The extension fetching factory, all extension plugins should be fetched by this factory. And all the extension plugins defined in eventmesh should
+ * have {@link EventMeshSPI} annotation.
  */
+@Slf4j
 public class EventMeshExtensionFactory {
+
+    private static final List<ExtensionClassLoader> EXTENSION_CLASS_LOADERS = new ArrayList<>();
+
+    private static final ConcurrentHashMap<String, Object> EXTENSION_INSTANCE_CACHE = new ConcurrentHashMap<>(16);
+
+    static {
+        EXTENSION_CLASS_LOADERS.add(MetaInfExtensionClassLoader.getInstance());
+        EXTENSION_CLASS_LOADERS.add(JarExtensionClassLoader.getInstance());
+    }
+
 
     private EventMeshExtensionFactory() {
 
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
-
-    private static final List<ExtensionClassLoader> extensionClassLoaders = new ArrayList<>();
-
-    static {
-        extensionClassLoaders.add(new MetaInfExtensionClassLoader());
-        extensionClassLoaders.add(new JarExtensionClassLoader());
-    }
-
-    private static final ConcurrentHashMap<String, Object> EXTENSION_INSTANCE_CACHE =
-        new ConcurrentHashMap<>(16);
 
     /**
      * @param extensionType extension plugin class type
@@ -83,21 +82,21 @@ public class EventMeshExtensionFactory {
     private static <T> T getSingletonExtension(Class<T> extensionType, String extensionInstanceName) {
         return (T) EXTENSION_INSTANCE_CACHE.computeIfAbsent(extensionInstanceName, name -> {
             Class<T> extensionInstanceClass = getExtensionInstanceClass(extensionType, extensionInstanceName);
+            if (extensionInstanceClass == null) {
+                return null;
+            }
             try {
-                if (extensionInstanceClass == null) {
-                    return null;
-                }
                 T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
                 ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
-                logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
-                        extensionType, extensionInstanceName);
+                log.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
+                    extensionType, extensionInstanceName);
                 return extensionInstance;
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ExtensionException("Extension initialize error", e);
             } catch (NoSuchFieldException | IOException e) {
-                logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
-                        extensionType, extensionInstanceName, e);
+                log.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+                    extensionType, extensionInstanceName, e);
                 throw new ExtensionException("Extension initialize error", e);
             }
         });
@@ -105,28 +104,28 @@ public class EventMeshExtensionFactory {
 
     private static <T> T getPrototypeExtension(Class<T> extensionType, String extensionInstanceName) {
         Class<T> extensionInstanceClass = getExtensionInstanceClass(extensionType, extensionInstanceName);
+        if (extensionInstanceClass == null) {
+            return null;
+        }
         try {
-            if (extensionInstanceClass == null) {
-                return null;
-            }
             T extensionInstance = extensionInstanceClass.getDeclaredConstructor().newInstance();
             ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
-            logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
-                    extensionType, extensionInstanceName);
+            log.info("initialize extension instance success, extensionType: {}, extensionName: {}",
+                extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ExtensionException("Extension initialize error", e);
         } catch (NoSuchFieldException | IOException e) {
-            logger.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
-                    extensionType, extensionInstanceName, e);
+            log.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
+                extensionType, extensionInstanceName, e);
             throw new ExtensionException("Extension initialize error", e);
         }
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getExtensionInstanceClass(Class<T> extensionType, String extensionInstanceName) {
-        for (ExtensionClassLoader extensionClassLoader : extensionClassLoaders) {
+        for (ExtensionClassLoader extensionClassLoader : EXTENSION_CLASS_LOADERS) {
             Map<String, Class<?>> extensionInstanceClassMap = extensionClassLoader.loadExtensionClass(extensionType, extensionInstanceName);
             Class<?> instanceClass = extensionInstanceClassMap.get(extensionInstanceName);
             if (instanceClass != null) {

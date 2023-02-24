@@ -44,9 +44,9 @@ public enum StatusCode {
     EVENTMESH_REQUEST_REPLY_MSG_ERR("22", "eventMesh request reply msg err, "),
     CLIENT_RESUBSCRIBE("30", "client needs to resubscribe.");
 
-    private String retCode;
+    private final String retCode;
 
-    private String errMsg;
+    private final String errMsg;
 
     StatusCode(String retCode, String errMsg) {
         this.retCode = retCode;
@@ -57,15 +57,8 @@ public enum StatusCode {
         return retCode;
     }
 
-    public void setRetCode(String retCode) {
-        this.retCode = retCode;
-    }
-
     public String getErrMsg() {
         return errMsg;
     }
 
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
 }

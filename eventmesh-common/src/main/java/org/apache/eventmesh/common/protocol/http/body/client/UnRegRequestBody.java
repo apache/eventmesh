@@ -57,9 +57,9 @@ public class UnRegRequestBody extends Body {
     public static UnRegRequestBody buildBody(Map<String, Object> bodyParam) {
         UnRegRequestBody body = new UnRegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
-                new TypeReference<List<UnRegTopicEntity>>() {
-                }));
+        body.setTopics(JsonUtils.parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPICS),
+            new TypeReference<List<UnRegTopicEntity>>() {
+            }));
         return body;
     }
 
@@ -67,7 +67,7 @@ public class UnRegRequestBody extends Body {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put(CLIENTTYPE, clientType);
-        map.put(TOPICS, JsonUtils.serialize(topics));
+        map.put(TOPICS, JsonUtils.toJSONString(topics));
         return map;
     }
 
@@ -75,13 +75,14 @@ public class UnRegRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("regRequestBody={")
-                .append("clientType=").append(clientType)
-                .append("topics=").append(topics)
-                .append("}");
+            .append("clientType=").append(clientType)
+            .append("topics=").append(topics)
+            .append("}");
         return sb.toString();
     }
 
     public static class UnRegTopicEntity {
+
         public String topic;
         public String serviceId;
         public String instanceId;
@@ -90,9 +91,9 @@ public class UnRegRequestBody extends Body {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("unRegTopicEntity={")
-                    .append("topic=").append(topic).append(",")
-                    .append("serviceId=").append(serviceId).append(",")
-                    .append("instanceId=").append(instanceId).append("}");
+                .append("topic=").append(topic).append(",")
+                .append("serviceId=").append(serviceId).append(",")
+                .append("instanceId=").append(instanceId).append("}");
             return sb.toString();
         }
     }

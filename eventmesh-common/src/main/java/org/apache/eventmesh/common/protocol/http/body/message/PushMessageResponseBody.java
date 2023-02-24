@@ -70,9 +70,9 @@ public class PushMessageResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

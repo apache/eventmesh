@@ -27,14 +27,14 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 public interface ConnectorResourceService {
 
     /**
-     * Resource initialization in connector,such as,some public threadpool if exist
+     * Resource initialization in connector,such as,some public thread pool if exist
      *
      * @throws Exception
      */
     void init() throws Exception;
 
     /**
-     * Resource release in connector,such as,some public threadpool if exist
+     * Resource release in connector,such as,some public thread pool if exist
      *
      * @throws Exception
      */
