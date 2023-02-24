@@ -55,7 +55,7 @@ public class EventMeshGrpcClientConfig {
     private String language = "JAVA";
 
     @Builder.Default
-    private boolean useTls;
+    private boolean useTls = false;
 
     @Override
     public String toString() {
