@@ -23,6 +23,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -31,6 +32,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Sharable
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
     public static final AtomicInteger connections = new AtomicInteger(0);
@@ -59,11 +61,8 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         log.info("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "");
 
-        int c = connections.incrementAndGet();
-        if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpClientMaxNum()) {
-            log.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect "
-                +
-                "this eventMesh server");
+        if (connections.incrementAndGet() > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpClientMaxNum()) {
+            log.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect this eventMesh server");
             ctx.close();
             return;
         }
