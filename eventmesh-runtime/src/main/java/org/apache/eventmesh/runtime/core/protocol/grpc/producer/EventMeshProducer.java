@@ -87,7 +87,7 @@ public class EventMeshProducer {
         }
 
         mqProducerWrapper.shutdown();
-        serviceState = ServiceState.STOPED;
+        serviceState = ServiceState.STOPPED;
         log.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
     }
 

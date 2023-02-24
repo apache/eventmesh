@@ -58,10 +58,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+
 
 import com.google.common.util.concurrent.RateLimiter;
 
@@ -82,6 +84,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private transient GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
+    private EventMeshTcpConnectionHandler eventMeshTcpConnectionHandler;
+
     private transient ScheduledExecutorService scheduler;
 
     private transient ExecutorService taskHandleExecutorService;
@@ -97,6 +101,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private transient AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     private transient RateLimiter rateLimiter;
+
 
     public void setClientSessionGroupMapping(final ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
@@ -140,19 +145,18 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private void startServer() {
-        Runnable r = () -> {
+        Runnable runnable = () -> {
             ServerBootstrap bootstrap = new ServerBootstrap();
             ChannelInitializer channelInitializer = new ChannelInitializer() {
                 @Override
                 public void initChannel(final Channel ch) throws Exception {
                     ch.pipeline()
-                        .addLast(new Codec.Encoder())
-                        .addLast(new Codec.Decoder())
-                        .addLast("global-traffic-shaping", globalTrafficShapingHandler)
-                        .addLast("channel-traffic-shaping", newCTSHandler(eventMeshTCPConfiguration.getCtc().getReadLimit()))
-                        .addLast(new EventMeshTcpConnectionHandler(EventMeshTCPServer.this))
-                        .addLast(
-                            getWorkerGroup(),
+                        .addLast(getWorkerGroup(), new Codec.Encoder())
+                        .addLast(getWorkerGroup(), new Codec.Decoder())
+                        .addLast(getWorkerGroup(), "global-traffic-shaping", globalTrafficShapingHandler)
+                        .addLast(getWorkerGroup(), "channel-traffic-shaping", newCTSHandler(eventMeshTCPConfiguration.getCtc().getReadLimit()))
+                        .addLast(getWorkerGroup(), eventMeshTcpConnectionHandler)
+                        .addLast(getWorkerGroup(),
                             new IdleStateHandler(
                                 eventMeshTCPConfiguration.getEventMeshTcpIdleReadSeconds(),
                                 eventMeshTCPConfiguration.getEventMeshTcpIdleWriteSeconds(),
@@ -164,7 +168,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             };
 
             bootstrap.group(this.getBossGroup(), this.getIoGroup())
-                .channel(NioServerSocketChannel.class)
+                .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
@@ -194,8 +198,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             }
         };
 
-        Thread t = new Thread(r, "eventMesh-tcp-server");
-        t.start();
+        Thread thread = new Thread(runnable, "eventMesh-tcp-server");
+        thread.start();
     }
 
     public void init() throws Exception {
@@ -207,6 +211,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.getEventMeshTcpMsgReqnumPerSecond());
 
         globalTrafficShapingHandler = newGTSHandler(scheduler, eventMeshTCPConfiguration.getGtc().getReadLimit());
+
+        eventMeshTcpConnectionHandler = new EventMeshTcpConnectionHandler(this);
 
         adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
         adminWebHookConfigOperationManage.init();

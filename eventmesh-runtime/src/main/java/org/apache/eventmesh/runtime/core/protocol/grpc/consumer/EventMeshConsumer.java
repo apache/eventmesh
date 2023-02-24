@@ -191,7 +191,7 @@ public class EventMeshConsumer {
         persistentMqConsumer.shutdown();
         broadcastMqConsumer.shutdown();
 
-        serviceState = ServiceState.STOPED;
+        serviceState = ServiceState.STOPPED;
         if (log.isInfoEnabled()) {
             log.info("EventMeshConsumer [{}] shutdown.........", consumerGroup);
         }

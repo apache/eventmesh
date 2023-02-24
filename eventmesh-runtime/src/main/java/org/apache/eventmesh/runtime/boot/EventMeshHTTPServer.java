@@ -116,30 +116,14 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
-    public EventMeshHTTPServer(final EventMeshServer eventMeshServer,
-        final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.getHttpServerPort(),
-            eventMeshHttpConfiguration.isEventMeshServerUseTls(), eventMeshHttpConfiguration);
+    public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
+
+        super(eventMeshHttpConfiguration.getHttpServerPort(), eventMeshHttpConfiguration.isEventMeshServerUseTls(), eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
         this.acl = eventMeshServer.getAcl();
 
-    }
-
-    public EventMeshServer getEventMeshServer() {
-        return eventMeshServer;
-    }
-
-
-    public void shutdownThreadPool() {
-        batchMsgExecutor.shutdown();
-        adminExecutor.shutdown();
-        clientManageExecutor.shutdown();
-        sendMsgExecutor.shutdown();
-        remoteMsgExecutor.shutdown();
-        pushMsgExecutor.shutdown();
-        replyMsgExecutor.shutdown();
     }
 
     private void initThreadPool() {
@@ -187,40 +171,28 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             "eventMesh-replyMsg", true);
     }
 
-    public ThreadPoolExecutor getBatchMsgExecutor() {
-        return batchMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getSendMsgExecutor() {
-        return sendMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getReplyMsgExecutor() {
-        return replyMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getPushMsgExecutor() {
-        return pushMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getClientManageExecutor() {
-        return clientManageExecutor;
-    }
-
-    public ThreadPoolExecutor getAdminExecutor() {
-        return adminExecutor;
-    }
-
-    public RateLimiter getMsgRateLimiter() {
-        return msgRateLimiter;
-    }
-
-    public RateLimiter getBatchRateLimiter() {
-        return batchRateLimiter;
-    }
-
-    public Registry getRegistry() {
-        return registry;
+    public void shutdownThreadPool() {
+        if (batchMsgExecutor != null) {
+            batchMsgExecutor.shutdown();
+        }
+        if (adminExecutor != null) {
+            adminExecutor.shutdown();
+        }
+        if (clientManageExecutor != null) {
+            clientManageExecutor.shutdown();
+        }
+        if (sendMsgExecutor != null) {
+            sendMsgExecutor.shutdown();
+        }
+        if (remoteMsgExecutor != null) {
+            remoteMsgExecutor.shutdown();
+        }
+        if (pushMsgExecutor != null) {
+            pushMsgExecutor.shutdown();
+        }
+        if (replyMsgExecutor != null) {
+            replyMsgExecutor.shutdown();
+        }
     }
 
     private void init() throws Exception {
@@ -269,7 +241,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerHTTPRequestProcessor();
         this.initWebhook();
         if (log.isInfoEnabled()) {
-            log.info("--------EventMeshHTTPServer inited------------------");
+            log.info("==================EventMeshHTTPServer initialized==================");
         }
     }
 
@@ -285,7 +257,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.register();
         }
         if (log.isInfoEnabled()) {
-            log.info("--------EventMeshHTTPServer started------------------");
+            log.info("==================EventMeshHTTPServer started==================");
         }
     }
 
@@ -310,7 +282,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.unRegister();
         }
         if (log.isInfoEnabled()) {
-            log.info("-------------EventMeshHTTPServer shutdown-------------");
+            log.info("==================EventMeshHTTPServer shutdown==================");
         }
     }
 
@@ -440,5 +412,45 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public Acl getAcl() {
         return acl;
+    }
+
+    public EventMeshServer getEventMeshServer() {
+        return eventMeshServer;
+    }
+
+    public ThreadPoolExecutor getBatchMsgExecutor() {
+        return batchMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getSendMsgExecutor() {
+        return sendMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getReplyMsgExecutor() {
+        return replyMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getPushMsgExecutor() {
+        return pushMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getClientManageExecutor() {
+        return clientManageExecutor;
+    }
+
+    public ThreadPoolExecutor getAdminExecutor() {
+        return adminExecutor;
+    }
+
+    public RateLimiter getMsgRateLimiter() {
+        return msgRateLimiter;
+    }
+
+    public RateLimiter getBatchRateLimiter() {
+        return batchRateLimiter;
+    }
+
+    public Registry getRegistry() {
+        return registry;
     }
 }

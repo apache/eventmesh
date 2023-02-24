@@ -64,11 +64,13 @@ import javax.net.ssl.SSLEngine;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -135,6 +137,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     protected final transient Map<String/* request uri */, Pair<EventProcessor, ThreadPoolExecutor>>
         eventProcessorTable = new ConcurrentHashMap<>(64);
 
+    private HttpConnectionHandler httpConnectionHandler;
+
+    private HTTPHandler httpHandler;
+
     public AbstractHTTPServer(final int port, final boolean useTLS,
         final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         super();
@@ -195,20 +201,22 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     @Override
     public void start() throws Exception {
-        final Runnable r = () -> {
-            final ServerBootstrap b = new ServerBootstrap();
+
+        initSharableHandlers();
+
+        final Runnable runnable = () -> {
+            final ServerBootstrap bootstrap = new ServerBootstrap();
             try {
-                b.group(this.getBossGroup(), this.getWorkerGroup())
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpsServerInitializer(
-                        useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
+                bootstrap.group(this.getBossGroup(), this.getIoGroup())
+                    .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                    .childHandler(new HttpsServerInitializer(useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
                 if (log.isInfoEnabled()) {
                     log.info("HTTPServer[port={}] started.", this.getPort());
                 }
 
-                b.bind(this.getPort())
+                bootstrap.bind(this.getPort())
                     .channel()
                     .closeFuture()
                     .sync();
@@ -222,9 +230,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         };
 
-        final Thread t = new Thread(r, "EventMesh-http-server");
-        t.setDaemon(true);
-        t.start();
+        final Thread thread = new Thread(runnable, "EventMesh-http-server");
+        thread.setDaemon(true);
+        thread.start();
         started.compareAndSet(false, true);
     }
 
@@ -310,8 +318,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 .parameters()
                 .forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
         } else if (HttpMethod.POST.equals(httpRequest.method())) {
-            final HttpPostRequestDecoder decoder =
-                new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
+            final HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
             for (final InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
                 if (InterfaceHttpData.HttpDataType.Attribute == parm.getHttpDataType()) {
                     final Attribute data = (Attribute) parm;
@@ -324,12 +331,18 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return httpRequestBody;
     }
 
-    private class HTTPHandler extends ChannelInboundHandlerAdapter {
+    @Sharable
+    private class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
+        /**
+         * Is called for each message of type {@link HttpRequest}.
+         *
+         * @param ctx         the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler} belongs to
+         * @param httpRequest the message to handle
+         * @throws Exception is thrown if an error occurred
+         */
         @Override
-        public void channelRead(final ChannelHandlerContext ctx, final Object message) {
-            final HttpRequest httpRequest = (HttpRequest) message;
-
+        protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
             if (httpRequest == null) {
                 return;
             }
@@ -433,7 +446,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (Exception ex) {
                 log.error("AbrstractHTTPServer.HTTPHandler.channelRead error", ex);
             } finally {
-                ReferenceCountUtil.release(message);
+                ReferenceCountUtil.release(httpRequest);
             }
         }
 
@@ -502,7 +515,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         }
 
         public void processEventMeshRequest(final ChannelHandlerContext ctx,
-            final AsyncContext<HttpCommand> asyncContext) {
+                                            final AsyncContext<HttpCommand> asyncContext) {
             final HttpCommand request = asyncContext.getRequest();
             final Pair<HttpRequestProcessor, ThreadPoolExecutor> choosed = processorTable.get(request.getRequestCode());
             try {
@@ -644,6 +657,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return httpEventWrapper;
     }
 
+    private void initSharableHandlers() {
+        httpConnectionHandler = new HttpConnectionHandler();
+        httpHandler = new HTTPHandler();
+    }
+
+    @Sharable
     private class HttpConnectionHandler extends ChannelDuplexHandler {
 
         public final transient AtomicInteger connections = new AtomicInteger(0);
@@ -658,7 +677,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 ctx.close();
                 return;
             }
-
             super.channelActive(ctx);
         }
 
@@ -701,14 +719,15 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             if (sslContext != null && useTLS) {
                 final SSLEngine sslEngine = sslContext.createSSLEngine();
                 sslEngine.setUseClientMode(false);
-                pipeline.addFirst("ssl", new SslHandler(sslEngine));
+                pipeline.addFirst(getWorkerGroup(), "ssl", new SslHandler(sslEngine));
             }
 
-            pipeline.addLast(new HttpRequestDecoder(),
+            pipeline.addLast(getWorkerGroup(),
+                new HttpRequestDecoder(),
                 new HttpResponseEncoder(),
-                new HttpConnectionHandler(),
+                httpConnectionHandler,
                 new HttpObjectAggregator(Integer.MAX_VALUE),
-                new HTTPHandler());
+                httpHandler);
         }
     }
 
