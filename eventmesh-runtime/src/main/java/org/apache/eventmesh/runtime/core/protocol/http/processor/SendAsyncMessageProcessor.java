@@ -211,7 +211,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
-        if (!eventMeshProducer.getStarted().get()) {
+        if (!eventMeshProducer.isStarted()) {
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(),

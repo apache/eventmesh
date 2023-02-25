@@ -211,7 +211,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         EventMeshProducer batchEventMeshProducer =
             eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
-        if (!batchEventMeshProducer.getStarted().get()) {
+        if (!batchEventMeshProducer.isStarted()) {
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageBatchV2ResponseHeader,
                 SendMessageBatchV2ResponseBody
