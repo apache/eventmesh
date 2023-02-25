@@ -205,7 +205,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 
-        if (!batchEventMeshProducer.getStarted().get()) {
+        if (!batchEventMeshProducer.isStarted()) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageBatchResponseHeader,
                 SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR.getRetCode(),

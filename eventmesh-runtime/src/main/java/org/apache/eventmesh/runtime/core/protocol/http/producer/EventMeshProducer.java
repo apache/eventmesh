@@ -41,13 +41,15 @@ public class EventMeshProducer {
         return inited;
     }
 
-    public AtomicBoolean getStarted() {
-        return started;
+    public boolean isStarted() {
+        return started.get();
     }
 
     protected ProducerGroupConf producerGroupConfig;
 
     protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+
+    protected MQProducerWrapper mqProducerWrapper;
 
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
         mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
@@ -63,14 +65,15 @@ public class EventMeshProducer {
         return true;
     }
 
-    protected MQProducerWrapper mqProducerWrapper;
-
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
     }
 
-    public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-        ProducerGroupConf producerGroupConfig) throws Exception {
+    public void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
+                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
         this.producerGroupConfig = producerGroupConfig;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
 
@@ -83,32 +86,27 @@ public class EventMeshProducer {
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
-        inited.compareAndSet(false, true);
         log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
 
 
-    public synchronized void start() throws Exception {
-        if (started.get()) {
+    public void start() throws Exception {
+
+        if (!started.compareAndSet(false, true)) {
             return;
         }
-
         mqProducerWrapper.start();
-        started.compareAndSet(false, true);
         log.info("EventMeshProducer [{}] started.............", producerGroupConfig.getGroupName());
     }
 
-    public synchronized void shutdown() throws Exception {
-        if (!inited.get()) {
+    public void shutdown() throws Exception {
+        if (!inited.compareAndSet(true, false)) {
             return;
         }
-
-        if (!started.get()) {
+        if (!started.compareAndSet(true, false)) {
             return;
         }
         mqProducerWrapper.shutdown();
-        inited.compareAndSet(true, false);
-        started.compareAndSet(true, false);
         log.info("EventMeshProducer [{}] shutdown.............", producerGroupConfig.getGroupName());
     }
 
