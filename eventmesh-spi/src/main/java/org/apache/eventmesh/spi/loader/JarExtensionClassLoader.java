@@ -66,15 +66,15 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
-        return extensionClassCache.computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
+        return extensionClassCache.computeIfAbsent(extensionType, t -> doLoadExtensionClass(t));
     }
 
-    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
+    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {
         Map<String, Class<?>> extensionMap = new HashMap<>(16);
         EventMeshSPI eventMeshSpiAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
-        String pluginDir = Paths.get(EVENTMESH_EXTENSION_PLUGIN_DIR, eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName(),
-            extensionInstanceName).toString();
+        String pluginDir = Paths.get(EVENTMESH_EXTENSION_PLUGIN_DIR, eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName())
+            .toString();
 
         String extensionFileName = EventMeshExtensionConstant.EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
