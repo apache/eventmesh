@@ -168,7 +168,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
-        if (!eventMeshProducer.getStarted().get()) {
+        if (!eventMeshProducer.isStarted()) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 replyMessageResponseHeader,
                 ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(),
