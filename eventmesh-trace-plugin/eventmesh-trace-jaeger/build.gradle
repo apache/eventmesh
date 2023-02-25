@@ -31,11 +31,11 @@ dependencies {
     implementation "io.grpc:grpc-netty"
     implementation "io.grpc:grpc-netty-shaded"
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
 }
