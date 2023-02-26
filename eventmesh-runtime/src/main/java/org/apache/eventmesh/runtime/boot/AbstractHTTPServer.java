@@ -95,7 +95,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
@@ -444,9 +443,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
             } catch (Exception ex) {
-                log.error("AbrstractHTTPServer.HTTPHandler.channelRead error", ex);
-            } finally {
-                ReferenceCountUtil.release(httpRequest);
+                log.error("execute AbstractHTTPServer.HTTPHandler.channelRead0 error", ex);
             }
         }
 
