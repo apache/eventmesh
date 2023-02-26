@@ -28,10 +28,14 @@ import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -183,7 +187,14 @@ public abstract class TcpClient implements Closeable {
             }
         }
         send(msg);
-        return context.getResponse(timeout);
+        Supplier<Package> supplier = () -> {
+            try {
+                return context.getResponse(timeout);
+            } catch (ExecutionException | InterruptedException | TimeoutException exception) {
+                throw new RuntimeException(exception);
+            }
+        };
+        return CompletableFuture.supplyAsync(supplier).get();
     }
 
     // todo: remove hello
