@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
@@ -167,16 +168,12 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        String tokenTmp = null;
+        String token = null;
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             final String requestURI = requestWrapper.getRequestURI();
             try {
-                if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshSecurityValidateTypeToken()) {
-                    final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
-                    tokenTmp = token;
-                }
                 this.acl.doAclCheckInHttpSend(remoteAddr, requestURI, event);
             } catch (Exception e) {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
@@ -197,8 +194,9 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         }
 
         final EventMeshProducer eventMeshProducer;
-        if (StringUtils.isNotBlank(tokenTmp)) {
-            eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup, tokenTmp);
+        token = event.getExtension(ClientInstanceKey.TOKEN).toString();
+        if (StringUtils.isNotBlank(token)) {
+            eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup, token);
         } else {
             eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
         }
