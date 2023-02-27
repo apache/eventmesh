@@ -159,9 +159,7 @@ public class SubStreamHandler<T> extends Thread {
 
     private void senderOnNext(final Subscription subscription) {
         try {
-            synchronized (sender) {
-                sender.onNext(subscription);
-            }
+            sender.onNext(subscription);
         } catch (Exception e) {
             log.error("StreamObserver Error onNext", e);
         }
@@ -169,9 +167,7 @@ public class SubStreamHandler<T> extends Thread {
 
     private void senderOnComplete() {
         try {
-            synchronized (sender) {
-                sender.onCompleted();
-            }
+            sender.onCompleted();
         } catch (Exception e) {
             log.error("StreamObserver Error onComplete", e);
         }
