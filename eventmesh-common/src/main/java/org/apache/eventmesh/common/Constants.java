@@ -104,6 +104,8 @@ public class Constants {
 
     public static final String PRODUCER_GROUP = "producerGroup";
 
+    public static final String PRODUCER_TOKEN = "producerToken";
+
     public static final String INSTANCE_NAME = "instanceName";
 
     public static final String ACCESS_POINTS = "ACCESS_POINTS";

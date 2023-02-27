@@ -19,6 +19,7 @@ package org.apache.eventmesh.registry.etcd.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -229,6 +230,11 @@ public class EtcdRegistryService implements RegistryService {
                     eventMeshClusterName, eventMeshName, e);
             throw new RegistryException(e.getMessage());
         }
+    }
+
+    @Override
+    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
+        return null;
     }
 
     public Client getEtcdClient() {

@@ -20,8 +20,12 @@ package org.apache.eventmesh.runtime.acl;
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
@@ -38,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Acl {
 
+    private EventMeshServer eventMeshServer;
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;
@@ -52,17 +58,22 @@ public class Acl {
 
     }
 
-    public static Acl getInstance(String aclPluginType) {
-        return ACL_CACHE.computeIfAbsent(aclPluginType, key -> aclBuilder(key));
+    private Acl(EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
     }
 
-    private static Acl aclBuilder(String aclPluginType) {
+    public static Acl getInstance(String aclPluginType, EventMeshServer eventMeshServer) {
+        return ACL_CACHE.computeIfAbsent(aclPluginType, key -> aclBuilder(key, eventMeshServer));
+    }
+
+    private static Acl aclBuilder(String aclPluginType, EventMeshServer eventMeshServer) {
         AclService aclServiceExt = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
         if (aclServiceExt == null) {
             log.error("can't load the aclService plugin, please check.");
             throw new RuntimeException("doesn't load the aclService plugin, please check.");
         }
-        Acl acl = new Acl();
+        Acl acl = new Acl(eventMeshServer);
+
         acl.aclService = aclServiceExt;
 
         return acl;
@@ -132,6 +143,30 @@ public class Acl {
     }
 
     public void doAclCheckInHttpSend(String remoteAddr, String requestURI, CloudEvent event) throws AclException {
+        String producerGroup = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP)).toString();
+        String topic = event.getSubject();
+        boolean eventMeshSecurityValidateTypeToken = false;
+        for (String key : ConfigurationContextUtil.KEYS) {
+            CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
+            if (null == commonConfiguration) {
+                continue;
+            }
+            eventMeshSecurityValidateTypeToken = commonConfiguration.isEventMeshSecurityValidateTypeToken();
+        }
+        if (eventMeshSecurityValidateTypeToken) {
+            EventMeshServicePubTopicInfo eventMeshServicePubTopicInfo = eventMeshServer.getProducerTopicManager()
+                .getEventMeshServicePubTopicInfo(producerGroup);
+
+            Set<String> topics = eventMeshServicePubTopicInfo.getTopics();
+            String groupToken = eventMeshServicePubTopicInfo.getToken();
+            final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
+            if (!topics.contains(topic)) {
+                throw new AclException("you did not publish the topic:" + topic);
+            }
+            if (!groupToken.equals(token)) {
+                throw new AclException("the current token dose not match the producergroup :" + producerGroup);
+            }
+        }
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, requestURI, event));
     }
 
