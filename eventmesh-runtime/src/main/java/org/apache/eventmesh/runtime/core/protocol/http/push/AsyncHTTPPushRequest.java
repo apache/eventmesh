@@ -44,7 +44,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
@@ -200,67 +199,63 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         }
 
         try {
-            eventMeshHTTPServer.httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
-                @Override
-                public Object handleResponse(HttpResponse response) {
-                    removeWaitingMap(AsyncHTTPPushRequest.this);
-                    long cost = System.currentTimeMillis() - lastPushTime;
-                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPPushTimeCost(cost);
+            eventMeshHTTPServer.getHttpClientPool().getClient().execute(builder, response -> {
+                removeWaitingMap(AsyncHTTPPushRequest.this);
+                long cost = System.currentTimeMillis() - lastPushTime;
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPPushTimeCost(cost);
 
-                    if (processResponseStatus(response.getStatusLine().getStatusCode(), response)) {
-                        // this is successful response, process response payload
-                        String res = "";
-                        try {
-                            res = EntityUtils.toString(response.getEntity(),
-                                Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
-                        } catch (IOException e) {
+                if (processResponseStatus(response.getStatusLine().getStatusCode(), response)) {
+                    // this is successful response, process response payload
+                    String res;
+                    try {
+                        res = EntityUtils.toString(response.getEntity(), Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
+                    } catch (IOException e) {
+                        handleMsgContext.finish();
+                        return new Object();
+                    }
+                    ClientRetCode result = processResponseContent(res);
+                    if (MESSAGE_LOGGER.isInfoEnabled()) {
+                        MESSAGE_LOGGER.info(
+                            "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}",
+                            result, currPushUrl, handleMsgContext.getTopic(),
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    }
+                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
+                        complete();
+                        if (isComplete()) {
                             handleMsgContext.finish();
-                            return new Object();
                         }
-                        ClientRetCode result = processResponseContent(res);
-                        if (MESSAGE_LOGGER.isInfoEnabled()) {
-                            MESSAGE_LOGGER.info(
-                                "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                                    + "|uniqueId={}|cost={}",
-                                result, currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    } else if (result == ClientRetCode.RETRY) {
+                        delayRetry();
+                        if (isComplete()) {
+                            handleMsgContext.finish();
                         }
-                        if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
-                            complete();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.RETRY) {
-                            delayRetry();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.NOLISTEN) {
-                            delayRetry();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.FAIL) {
-                            complete();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
+                    } else if (result == ClientRetCode.NOLISTEN) {
+                        delayRetry();
+                        if (isComplete()) {
+                            handleMsgContext.finish();
                         }
-                    } else {
-                        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
-                        if (MESSAGE_LOGGER.isInfoEnabled()) {
-                            MESSAGE_LOGGER.info(
-                                "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                    + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                        }
-
+                    } else if (result == ClientRetCode.FAIL) {
+                        complete();
                         if (isComplete()) {
                             handleMsgContext.finish();
                         }
                     }
-                    return new Object();
+                } else {
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
+                    if (MESSAGE_LOGGER.isInfoEnabled()) {
+                        MESSAGE_LOGGER.info(
+                            "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    }
+
+                    if (isComplete()) {
+                        handleMsgContext.finish();
+                    }
                 }
+                return new Object();
             });
 
             if (MESSAGE_LOGGER.isDebugEnabled()) {

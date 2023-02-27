@@ -163,7 +163,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // obtain webhook delivery agreement for Abuse Protection
-        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
+        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.getHttpClientPool().getClient(),
             url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
 
         if (!isWebhookAllowed) {
@@ -192,7 +192,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
                 targetMesh = meshAddress;
             }
 
-            CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
+            CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
 
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));

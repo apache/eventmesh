@@ -159,7 +159,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // obtain webhook delivery agreement for Abuse Protection
-        if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
+        if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.getHttpClientPool().getClient(),
             url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
             if (log.isErrorEnabled()) {
                 log.error("subscriber url {} is not allowed by the target system", url);
