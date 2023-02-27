@@ -43,7 +43,7 @@ public class EventMeshTCPClientFactory {
      */
     @SuppressWarnings("unchecked")
     public static <ProtocolMessage> EventMeshTCPClient<ProtocolMessage> createEventMeshTCPClient(
-            EventMeshTCPClientConfig eventMeshTcpClientConfig, Class<ProtocolMessage> protocolMessageClass) {
+        EventMeshTCPClientConfig eventMeshTcpClientConfig, Class<ProtocolMessage> protocolMessageClass) {
         Preconditions.checkNotNull(protocolMessageClass, "ProtocolMessage type cannot be null");
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
 
@@ -57,6 +57,6 @@ public class EventMeshTCPClientFactory {
             return (EventMeshTCPClient<ProtocolMessage>) new OpenMessageTCPClient(eventMeshTcpClientConfig);
         }
         throw new IllegalArgumentException(
-                String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
+            String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
     }
 }

@@ -23,6 +23,7 @@ import java.util.Map;
  * EventMeshDataInfo
  */
 public class EventMeshDataInfo {
+
     private String eventMeshClusterName;
     private String eventMeshName;
     private String endpoint;
@@ -31,11 +32,11 @@ public class EventMeshDataInfo {
     private Map<String, String> metadata;
 
     public EventMeshDataInfo() {
-        
+
     }
 
     public EventMeshDataInfo(String eventMeshClusterName, String eventMeshName, String endpoint, long lastUpdateTimestamp,
-                             Map<String, String> metadata) {
+        Map<String, String> metadata) {
         this.eventMeshClusterName = eventMeshClusterName;
         this.eventMeshName = eventMeshName;
         this.endpoint = endpoint;

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SelectorFactory {
+
     private static final Map<String, Selector> SELECTOR_MAP = new HashMap<>();
 
     public static Selector get(final String type) {

@@ -82,7 +82,7 @@ public class RegResponseHeader extends Header {
     }
 
     public static RegResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
         RegResponseHeader regResponseHeader = new RegResponseHeader();
         regResponseHeader.setCode(requestCode);
         regResponseHeader.setEventMeshCluster(eventMeshCluster);
@@ -96,11 +96,11 @@ public class RegResponseHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("regResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshIp=").append(eventMeshIp).append("}");
+            .append("code=").append(code).append(",")
+            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+            .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 

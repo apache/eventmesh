@@ -32,9 +32,9 @@ public class HttpSummaryMetrics implements Metric {
     private static final int STATIC_PERIOD = 30 * 1000;
 
     public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
-                              final ThreadPoolExecutor sendMsgExecutor,
-                              final ThreadPoolExecutor pushMsgExecutor,
-                              final DelayQueue<?> httpFailedQueue) {
+        final ThreadPoolExecutor sendMsgExecutor,
+        final ThreadPoolExecutor pushMsgExecutor,
+        final DelayQueue<?> httpFailedQueue) {
         this.batchMsgExecutor = batchMsgExecutor;
         this.sendMsgExecutor = sendMsgExecutor;
         this.pushMsgExecutor = pushMsgExecutor;
@@ -119,7 +119,7 @@ public class HttpSummaryMetrics implements Metric {
     public float avgHTTPBodyDecodeCost() {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
-    
+
     private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
 
     private AtomicLong sendBatchMsgNumSum = new AtomicLong(0);
@@ -181,7 +181,7 @@ public class HttpSummaryMetrics implements Metric {
     public long getSendBatchMsgDiscardNumSum() {
         return sendBatchMsgDiscardNumSum.longValue();
     }
-    
+
     private AtomicLong sendMsgNumSum = new AtomicLong(0);
 
     private AtomicLong sendMsgFailNumSum = new AtomicLong(0);
@@ -254,7 +254,7 @@ public class HttpSummaryMetrics implements Metric {
         sendMsgFailNumSum.set(0L);
         replyMsgFailNumSum.set(0L);
     }
-    
+
     private float wholePushCost = 0f;
 
     private AtomicLong wholePushRequestNum = new AtomicLong(0);
@@ -330,7 +330,7 @@ public class HttpSummaryMetrics implements Metric {
         wholeCost = 0f;
         maxCost.set(0L);
     }
-    
+
     private float batchSend2MQWholeCost = 0f;
 
     private AtomicLong batchSend2MQNum = new AtomicLong(0);

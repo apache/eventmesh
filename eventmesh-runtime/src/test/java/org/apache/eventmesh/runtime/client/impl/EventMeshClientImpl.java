@@ -28,6 +28,7 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
 public class EventMeshClientImpl implements EventMeshClient {
+
     protected UserAgent agent;
     private String accessHost;
     private int accessPort;
@@ -83,13 +84,13 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
-                                 SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justSubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justUnsubscribe(topic, subscriptionMode, subscriptionType);
     }
 
@@ -104,14 +105,14 @@ public class EventMeshClientImpl implements EventMeshClient {
     @Override
     public String toString() {
         return "AccessClientImpl{"
-                +
-                "accessHost='" + accessHost + '\''
-                +
-                ", accessPort=" + accessPort
-                +
-                ", agent=" + agent
-                +
-                '}';
+            +
+            "accessHost='" + accessHost + '\''
+            +
+            ", accessPort=" + accessPort
+            +
+            ", agent=" + agent
+            +
+            '}';
     }
 
     @Deprecated

@@ -74,7 +74,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
                             UserAgent userAgent = session.getClient();
                             result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
                                     .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))
-                                    .append(newLine);
+                                .append(newLine);
                         }
                     }
                 }

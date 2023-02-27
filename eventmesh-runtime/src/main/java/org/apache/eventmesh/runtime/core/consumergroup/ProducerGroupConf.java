@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 import java.util.Objects;
 
 public class ProducerGroupConf {
+
     private String groupName;
 
     public ProducerGroupConf(String groupName) {
@@ -34,7 +35,7 @@ public class ProducerGroupConf {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("producerGroupConfig={")
-                .append("groupName=").append(groupName).append("}");
+            .append("groupName=").append(groupName).append("}");
         return sb.toString();
     }
 

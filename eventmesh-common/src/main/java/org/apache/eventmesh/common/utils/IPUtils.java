@@ -136,8 +136,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
+    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result, Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {

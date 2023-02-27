@@ -31,7 +31,7 @@ public class RocketMQBinaryMessageReader
     private final Map<String, String> headers;
 
     public RocketMQBinaryMessageReader(SpecVersion version, Map<String, String> headers,
-                                       byte[] payload) {
+        byte[] payload) {
         super(version,
             payload != null && payload.length > 0 ? BytesCloudEventData.wrap(payload) : null);
 
