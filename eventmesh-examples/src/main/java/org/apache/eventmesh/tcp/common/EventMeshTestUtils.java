@@ -177,7 +177,7 @@ public class EventMeshTestUtils {
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .build();
     }
@@ -192,7 +192,7 @@ public class EventMeshTestUtils {
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .withExtension(UtilsConstants.MSG_TYPE, "persistent")
             .withExtension(UtilsConstants.KEYS, generateRandomString(16))
