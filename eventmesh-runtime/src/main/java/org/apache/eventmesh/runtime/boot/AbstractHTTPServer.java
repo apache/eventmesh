@@ -66,10 +66,10 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -95,6 +95,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
@@ -331,20 +332,22 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     @Sharable
-    private class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
+    private class HTTPHandler extends ChannelInboundHandlerAdapter {
 
         /**
          * Is called for each message of type {@link HttpRequest}.
          *
-         * @param ctx         the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler} belongs to
-         * @param httpRequest the message to handle
+         * @param ctx the {@link ChannelHandlerContext} which this {@link ChannelInboundHandlerAdapter} belongs to
+         * @param msg the message to handle
          * @throws Exception is thrown if an error occurred
          */
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
-            if (httpRequest == null) {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            if (!(msg instanceof HttpRequest)) {
                 return;
             }
+
+            HttpRequest httpRequest = (HttpRequest) msg;
 
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
                 handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);
@@ -443,7 +446,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
             } catch (Exception ex) {
-                log.error("execute AbstractHTTPServer.HTTPHandler.channelRead0 error", ex);
+                log.error("AbstractHTTPServer.HTTPHandler.channelRead error", ex);
+            } finally {
+                ReferenceCountUtil.release(httpRequest);
             }
         }
 
