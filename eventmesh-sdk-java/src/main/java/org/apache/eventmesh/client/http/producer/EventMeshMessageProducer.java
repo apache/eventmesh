@@ -98,7 +98,7 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
         final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
             SendMessageResponseBody.ReplyMessage.class);
         return EventMeshMessage.builder()
-            .content(Objects.requireNonNUll(replyMessage, "ReplyMessage must not be null").body)
+            .content(Objects.requireNonNull(replyMessage, "ReplyMessage must not be null").body)
             .prop(replyMessage.properties)
             .topic(replyMessage.topic).build();
     }
