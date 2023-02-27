@@ -20,5 +20,6 @@ package org.apache.eventmesh.connector.knative.patch;
 import io.cloudevents.CloudEvent;
 
 public abstract class EventMeshMessageListenerConcurrently {
+
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(CloudEvent cloudEvent, EventMeshConsumeConcurrentlyContext context);
 }

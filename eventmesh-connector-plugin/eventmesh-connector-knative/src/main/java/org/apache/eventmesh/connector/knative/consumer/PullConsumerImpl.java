@@ -45,7 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PullConsumerImpl {
-    private final transient  DefaultConsumer defaultConsumer;
+
+    private final transient DefaultConsumer defaultConsumer;
 
     // Topics to subscribe:
     private transient List<SubscriptionItem> topicList = null;
@@ -56,7 +57,6 @@ public class PullConsumerImpl {
     // Store received message:
     private transient ConcurrentMap<String /* topic */, String /* responseBody */> subscriptionInner;
     private transient EventListener eventListener;
-
 
 
     public PullConsumerImpl(final Properties properties) throws Exception {
@@ -77,14 +77,14 @@ public class PullConsumerImpl {
             topicList.add(new SubscriptionItem(topic, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
             // Pull event messages iteratively:
             topicList.forEach(
-                    item -> {
-                        try {
-                            subscriptionInner.put(item.getTopic(),
-                                    defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
-                        } catch (Exception e) {
-                            log.error("store received message error", e);
-                        }
+                item -> {
+                    try {
+                        subscriptionInner.put(item.getTopic(),
+                            defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
+                    } catch (Exception e) {
+                        log.error("store received message error", e);
                     }
+                }
             );
         } catch (Exception e) {
             log.error("other error", e);
@@ -103,7 +103,7 @@ public class PullConsumerImpl {
     // todo: offset
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         cloudEvents.forEach(cloudEvent -> this.updateOffset(
-                cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
+            cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
         );
     }
 
@@ -136,6 +136,7 @@ public class PullConsumerImpl {
 
     // todo: load balancer cluser and broadcast
     private class ClusteringMessageListener extends EventMeshMessageListenerConcurrently {
+
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(CloudEvent cloudEvent, EventMeshConsumeConcurrentlyContext context) {
             final Properties contextProperties = new Properties();
@@ -147,15 +148,15 @@ public class PullConsumerImpl {
                     switch (action) {
                         case CommitMessage:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                             break;
                         case ReconsumeLater:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
                             break;
                         case ManualAck:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
                             break;
                         default:
                             break;
@@ -169,7 +170,7 @@ public class PullConsumerImpl {
             eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
-                    contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
     }
 }

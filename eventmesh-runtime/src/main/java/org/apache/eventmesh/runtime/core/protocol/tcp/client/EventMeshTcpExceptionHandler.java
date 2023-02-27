@@ -51,10 +51,10 @@ public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
 
         if (session != null) {
             EventMeshTcp2Client.goodBye2Client(eventMeshTCPServer, session, errMsg, OPStatus.FAIL.getCode(),
-                    eventMeshTCPServer.getClientSessionGroupMapping());
+                eventMeshTCPServer.getClientSessionGroupMapping());
         } else {
             EventMeshTcp2Client.goodBye2Client(ctx, errMsg, eventMeshTCPServer.getClientSessionGroupMapping(),
-                    eventMeshTCPServer.getEventMeshTcpMonitor());
+                eventMeshTCPServer.getEventMeshTcpMonitor());
         }
     }
 

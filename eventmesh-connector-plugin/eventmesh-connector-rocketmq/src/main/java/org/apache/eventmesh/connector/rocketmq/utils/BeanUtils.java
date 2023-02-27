@@ -63,22 +63,18 @@ public final class BeanUtils {
 
     /**
      * <p>Populate the JavaBeans properties of the specified bean, based on
-     * the specified name/value pairs.  This method uses Java reflection APIs
-     * to identify corresponding "property setter" method names, and deals
-     * with setter arguments of type <Code>String</Code>, <Code>boolean</Code>,
+     * the specified name/value pairs.  This method uses Java reflection APIs to identify corresponding "property setter" method names, and deals with
+     * setter arguments of type <Code>String</Code>, <Code>boolean</Code>,
      * <Code>int</Code>, <Code>long</Code>, <Code>float</Code>, and
      * <Code>double</Code>.</p>
      *
      * <p>The particular setter method to be called for each property is
-     * determined using the usual JavaBeans introspection mechanisms.  Thus,
-     * you may identify custom setter methods using a BeanInfo class that is
-     * associated with the class of the bean itself.  If no such BeanInfo
-     * class is available, the standard method name conversion ("set" plus
-     * the capitalized name of the property in question) is used.</p>
+     * determined using the usual JavaBeans introspection mechanisms.  Thus, you may identify custom setter methods using a BeanInfo class that is
+     * associated with the class of the bean itself.  If no such BeanInfo class is available, the standard method name conversion ("set" plus the
+     * capitalized name of the property in question) is used.</p>
      *
      * <p><strong>NOTE</strong>:  It is contrary to the JavaBeans Specification
-     * to have more than one setter method (with different argument
-     * signatures) for the same property.</p>
+     * to have more than one setter method (with different argument signatures) for the same property.</p>
      *
      * @param clazz      JavaBean class whose properties are being populated
      * @param properties Map keyed by property name, with the corresponding (String or String[]) value(s) to be set
@@ -132,7 +128,7 @@ public final class BeanUtils {
     }
 
     public static void setProperties(Class<?> clazz, Object obj, String methodName,
-                                     Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> parameterClass = getMethodClass(clazz, methodName);
         Method setterMethod = clazz.getMethod(methodName, parameterClass);
         if (parameterClass == Boolean.TYPE) {

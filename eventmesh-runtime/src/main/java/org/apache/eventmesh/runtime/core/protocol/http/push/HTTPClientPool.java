@@ -103,30 +103,29 @@ public class HTTPClientPool {
             return HttpClients.createDefault();
         }
 
-
         if (connectionManager == null) {
             final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(innerSSLContext, NoopHostnameVerifier.INSTANCE);
             final Registry<ConnectionSocketFactory> socketFactoryRegistry
-                    = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", sslsf)
-                    .build();
+                = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslsf)
+                .build();
             connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
             connectionManager.setDefaultMaxPerRoute(maxTotal);
             connectionManager.setMaxTotal(maxTotal);
         }
 
-
         return HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
-                .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
-                .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
-                .setRetryHandler(new DefaultHttpRequestRetryHandler())
-                .build();
+            .setConnectionManager(connectionManager)
+            .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
+            .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
+            .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
+            .setRetryHandler(new DefaultHttpRequestRetryHandler())
+            .build();
     }
 
     private static class TheTrustStrategy implements TrustStrategy {
+
         @Override
         public boolean isTrusted(final X509Certificate[] chain, final String authType) {
             return true;

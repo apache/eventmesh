@@ -23,6 +23,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicMetadata {
+
     /**
      * consumer group
      */

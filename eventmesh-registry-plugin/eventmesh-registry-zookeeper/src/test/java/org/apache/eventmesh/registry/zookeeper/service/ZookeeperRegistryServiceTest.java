@@ -72,7 +72,6 @@ public class ZookeeperRegistryServiceTest {
         metaData.put("test", "a");
         Mockito.when(eventMeshRegisterInfo.getMetadata()).thenReturn(metaData);
 
-
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
         Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");

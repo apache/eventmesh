@@ -48,10 +48,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * one Client connects one ACCESS
- * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability,
- * The service is request-dependent. If the disconnection and reconnection capability is provided,
- * it will cause business insensitivity, that is, it will not follow the business reconnection logic.
+ * one Client connects one ACCESS Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability, The
+ * service is request-dependent. If the disconnection and reconnection capability is provided, it will cause business insensitivity, that is, it will
+ * not follow the business reconnection logic.
  */
 @Slf4j
 public abstract class TCPClient implements Closeable {
@@ -64,12 +63,12 @@ public abstract class TCPClient implements Closeable {
 
     protected int port = 10000;
 
-    private Bootstrap bootstrap = new Bootstrap();
+    private final Bootstrap bootstrap = new Bootstrap();
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
         new EventMeshThreadFactory("TCPClientScheduler", true));
 
-    private NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
+    private final NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
 
     public Channel channel;
 
@@ -86,7 +85,7 @@ public abstract class TCPClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    log.warn("send msg failed", future.isSuccess(), future.cause());
+                    log.warn("send msg failed: {}, {}", future.isSuccess(), future.cause());
                 }
             });
         } else {
@@ -120,7 +119,7 @@ public abstract class TCPClient implements Closeable {
         bootstrap.group(workers);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
-            .option(ChannelOption.SO_KEEPALIVE, false)
+            .option(ChannelOption.SO_KEEPALIVE, Boolean.FALSE)
             .option(ChannelOption.SO_SNDBUF, 64 * 1024)
             .option(ChannelOption.SO_RCVBUF, 64 * 1024)
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))

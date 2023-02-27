@@ -46,7 +46,7 @@ public class Package implements ProtocolTransportObject {
     public Package() {
 
     }
-    
+
     public Package(Header header) {
         this.header = header;
     }

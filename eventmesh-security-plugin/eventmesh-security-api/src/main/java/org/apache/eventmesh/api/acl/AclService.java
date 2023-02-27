@@ -27,6 +27,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
  */
 @EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.SECURITY)
 public interface AclService {
+
     void init() throws AclException;
 
     void start() throws AclException;

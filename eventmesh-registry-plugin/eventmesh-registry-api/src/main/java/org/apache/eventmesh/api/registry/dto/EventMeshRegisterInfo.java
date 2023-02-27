@@ -23,6 +23,7 @@ import java.util.Map;
  * EventMeshRegisterInfo
  */
 public class EventMeshRegisterInfo {
+
     private String eventMeshClusterName;
     private String eventMeshName;
     private String endPoint;
