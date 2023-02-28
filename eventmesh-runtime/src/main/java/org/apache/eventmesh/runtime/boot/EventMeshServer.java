@@ -65,7 +65,7 @@ public class EventMeshServer {
     public EventMeshServer() {
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
         AssertUtils.notNull(this.configuration, "configuration is null");
-        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType(), this);
+        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
 
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
