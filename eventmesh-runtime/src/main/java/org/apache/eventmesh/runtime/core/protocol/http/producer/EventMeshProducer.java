@@ -41,6 +41,10 @@ public class EventMeshProducer {
         return inited;
     }
 
+    public AtomicBoolean getStarted() {
+        return started;
+    }
+
     public boolean isStarted() {
         return started.get();
     }
