@@ -116,10 +116,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
-    public EventMeshHTTPServer(final EventMeshServer eventMeshServer,
-                               final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.getHttpServerPort(),
-                eventMeshHttpConfiguration.isEventMeshServerUseTls(), eventMeshHttpConfiguration);
+    public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
+
+        super(eventMeshHttpConfiguration.getHttpServerPort(), eventMeshHttpConfiguration.isEventMeshServerUseTls(), eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
@@ -127,100 +126,73 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     }
 
-    public EventMeshServer getEventMeshServer() {
-        return eventMeshServer;
-    }
-
-
-    public void shutdownThreadPool() {
-        batchMsgExecutor.shutdown();
-        adminExecutor.shutdown();
-        clientManageExecutor.shutdown();
-        sendMsgExecutor.shutdown();
-        remoteMsgExecutor.shutdown();
-        pushMsgExecutor.shutdown();
-        replyMsgExecutor.shutdown();
-    }
-
     private void initThreadPool() {
 
         batchMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
-                new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerBatchBlockQSize()),
-                "eventMesh-batchMsg", true);
+            eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerBatchMsgThreadNum(),
+            new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerBatchBlockQSize()),
+            "eventMesh-batchMsg", true);
 
         sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
-                new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerSendMsgBlockQSize()),
-                "eventMesh-sendMsg", true);
+            eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerSendMsgThreadNum(),
+            new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerSendMsgBlockQSize()),
+            "eventMesh-sendMsg", true);
 
         remoteMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
-                new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerRemoteMsgBlockQSize()),
-                "eventMesh-remoteMsg", true);
+            eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerRemoteMsgThreadNum(),
+            new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerRemoteMsgBlockQSize()),
+            "eventMesh-remoteMsg", true);
 
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
-                new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerPushMsgBlockQSize()),
-                "eventMesh-pushMsg", true);
+            eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerPushMsgThreadNum(),
+            new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerPushMsgBlockQSize()),
+            "eventMesh-pushMsg", true);
 
         clientManageExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
-                new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
-                "eventMesh-clientManage", true);
+            eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerClientManageThreadNum(),
+            new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
+            "eventMesh-clientManage", true);
 
         adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
-                new LinkedBlockingQueue<>(50), "eventMesh-admin",
-                true);
+            eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
+            new LinkedBlockingQueue<>(50), "eventMesh-admin",
+            true);
 
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
-                new LinkedBlockingQueue<>(100),
-                "eventMesh-replyMsg", true);
+            eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
+            new LinkedBlockingQueue<>(100),
+            "eventMesh-replyMsg", true);
     }
 
-    public ThreadPoolExecutor getBatchMsgExecutor() {
-        return batchMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getSendMsgExecutor() {
-        return sendMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getReplyMsgExecutor() {
-        return replyMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getPushMsgExecutor() {
-        return pushMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getClientManageExecutor() {
-        return clientManageExecutor;
-    }
-
-    public ThreadPoolExecutor getAdminExecutor() {
-        return adminExecutor;
-    }
-
-    public RateLimiter getMsgRateLimiter() {
-        return msgRateLimiter;
-    }
-
-    public RateLimiter getBatchRateLimiter() {
-        return batchRateLimiter;
-    }
-
-    public Registry getRegistry() {
-        return registry;
+    public void shutdownThreadPool() {
+        if (batchMsgExecutor != null) {
+            batchMsgExecutor.shutdown();
+        }
+        if (adminExecutor != null) {
+            adminExecutor.shutdown();
+        }
+        if (clientManageExecutor != null) {
+            clientManageExecutor.shutdown();
+        }
+        if (sendMsgExecutor != null) {
+            sendMsgExecutor.shutdown();
+        }
+        if (remoteMsgExecutor != null) {
+            remoteMsgExecutor.shutdown();
+        }
+        if (pushMsgExecutor != null) {
+            pushMsgExecutor.shutdown();
+        }
+        if (replyMsgExecutor != null) {
+            replyMsgExecutor.shutdown();
+        }
     }
 
     private void init() throws Exception {
@@ -237,9 +209,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
         Optional.ofNullable(eventMeshHttpConfiguration.getEventMeshMetricsPluginType())
-                .ifPresent(
-                        metricsPlugins -> metricsPlugins.forEach(
-                                pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+            .ifPresent(
+                metricsPlugins -> metricsPlugins.forEach(
+                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         httpRetryer = new HttpRetryer(this);
         httpRetryer.init();
@@ -257,10 +229,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.setHandlerService(new HandlerService());
         this.getHandlerService().setMetrics(this.getMetrics());
 
-
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
-                && eventMeshHttpConfiguration.isEventMeshServerTraceEnable()) {
+            && eventMeshHttpConfiguration.isEventMeshServerTraceEnable()) {
 
             this.setUseTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable());
         }
@@ -270,7 +241,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerHTTPRequestProcessor();
         this.initWebhook();
         if (log.isInfoEnabled()) {
-            log.info("--------EventMeshHTTPServer inited------------------");
+            log.info("==================EventMeshHTTPServer initialized==================");
         }
     }
 
@@ -286,7 +257,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.register();
         }
         if (log.isInfoEnabled()) {
-            log.info("--------EventMeshHTTPServer started------------------");
+            log.info("==================EventMeshHTTPServer started==================");
         }
     }
 
@@ -311,7 +282,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             this.unRegister();
         }
         if (log.isInfoEnabled()) {
-            log.info("-------------EventMeshHTTPServer shutdown-------------");
+            log.info("==================EventMeshHTTPServer shutdown==================");
         }
     }
 
@@ -319,11 +290,11 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         boolean registerResult = false;
         try {
             final String endPoints = IPUtils.getLocalAddress()
-                    + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
+                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
             final EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName()
-                    + "-" + ConfigurationContextUtil.HTTP);
+                + "-" + ConfigurationContextUtil.HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
             registerResult = registry.register(eventMeshRegisterInfo);
@@ -336,7 +307,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private void unRegister() throws Exception {
         final String endPoints = IPUtils.getLocalAddress()
-                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
+            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.getHttpServerPort();
         final EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
@@ -354,7 +325,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         final BatchSendMessageV2Processor batchSendMessageV2Processor = new BatchSendMessageV2Processor(this);
         registerProcessor(RequestCode.MSG_BATCH_SEND_V2.getRequestCode(), batchSendMessageV2Processor,
-                batchMsgExecutor);
+            batchMsgExecutor);
 
         final SendSyncMessageProcessor sendSyncMessageProcessor = new SendSyncMessageProcessor(this);
         registerProcessor(RequestCode.MSG_SEND_SYNC.getRequestCode(), sendSyncMessageProcessor, sendMsgExecutor);
@@ -400,9 +371,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private void initWebhook() throws Exception {
 
         webhookExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
-                eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
-                new LinkedBlockingQueue<>(100), "eventMesh-webhook", true);
+            eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
+            eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
+            new LinkedBlockingQueue<>(100), "eventMesh-webhook", true);
         final WebHookProcessor webHookProcessor = new WebHookProcessor();
 
         final WebHookController webHookController = new WebHookController();
@@ -441,5 +412,45 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public Acl getAcl() {
         return acl;
+    }
+
+    public EventMeshServer getEventMeshServer() {
+        return eventMeshServer;
+    }
+
+    public ThreadPoolExecutor getBatchMsgExecutor() {
+        return batchMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getSendMsgExecutor() {
+        return sendMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getReplyMsgExecutor() {
+        return replyMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getPushMsgExecutor() {
+        return pushMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getClientManageExecutor() {
+        return clientManageExecutor;
+    }
+
+    public ThreadPoolExecutor getAdminExecutor() {
+        return adminExecutor;
+    }
+
+    public RateLimiter getMsgRateLimiter() {
+        return msgRateLimiter;
+    }
+
+    public RateLimiter getBatchRateLimiter() {
+        return batchRateLimiter;
+    }
+
+    public Registry getRegistry() {
+        return registry;
     }
 }

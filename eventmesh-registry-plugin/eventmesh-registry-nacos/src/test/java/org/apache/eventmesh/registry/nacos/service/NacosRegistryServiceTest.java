@@ -98,7 +98,6 @@ public class NacosRegistryServiceTest {
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(nacosRegistryService);
 
-
         Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }

@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 import io.cloudevents.CloudEvent;
 
 public class SendMessageBatchProtocolResolver {
+
     public static CloudEvent buildEvent(Header header, Body body) {
         return null;
     }

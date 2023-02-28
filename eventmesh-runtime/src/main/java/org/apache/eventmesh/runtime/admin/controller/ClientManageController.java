@@ -74,9 +74,9 @@ public class ClientManageController {
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
-                                  EventMeshHTTPServer eventMeshHTTPServer,
-                                  EventMeshGrpcServer eventMeshGrpcServer,
-                                  Registry eventMeshRegistry) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        Registry eventMeshRegistry) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -104,10 +104,10 @@ public class ClientManageController {
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
-                                   EventMeshHTTPServer eventMeshHTTPServer,
-                                   EventMeshGrpcServer eventMeshGrpcServer,
-                                   Registry eventMeshRegistry,
-                                   HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        Registry eventMeshRegistry,
+        HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
         new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);

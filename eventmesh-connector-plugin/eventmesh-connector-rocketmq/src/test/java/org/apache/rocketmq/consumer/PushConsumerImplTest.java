@@ -38,6 +38,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
+
     private PushConsumerImpl consumer;
 
     @Mock
@@ -58,7 +59,6 @@ public class PushConsumerImplTest {
         consumerProp.put("CONSUMER_ID", "TestGroup");
         consumer = new PushConsumerImpl(consumerProp);
 
-
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
         DefaultMQPushConsumer innerConsumer = (DefaultMQPushConsumer) field.get(consumer);
@@ -76,7 +76,7 @@ public class PushConsumerImplTest {
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[] {'a', 'b'};
+        final byte[] testBody = new byte[]{'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");

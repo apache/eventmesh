@@ -32,13 +32,14 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
 public class NacosSelector implements Selector {
+
     private transient NamingService namingService;
 
     public void init() throws SelectorException {
         try {
             final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
             namingService = NamingFactory.createNamingService(
-                    properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
+                properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
         } catch (NacosException | IOException e) {
             throw new SelectorException("NamingService create error", e);
         }

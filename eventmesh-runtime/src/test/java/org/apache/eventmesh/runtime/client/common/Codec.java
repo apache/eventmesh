@@ -47,6 +47,7 @@ public class Codec {
     private static final byte[] VERSION = "0000".getBytes(UTF8);
 
     public static class Encoder extends MessageToByteEncoder<Package> {
+
         @Override
         public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
             byte[] headerData;
@@ -83,6 +84,7 @@ public class Codec {
     }
 
     public static class Decoder extends ReplayingDecoder {
+
         @Override
         public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
             Header header = null;
@@ -104,9 +106,9 @@ public class Codec {
                 in.readBytes(versionBytes);
                 if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                     String errorMsg = String.format("invalid magic flag or "
-                                    +
-                                    "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
-                            new String(versionBytes, UTF8), ctx.channel().remoteAddress());
+                            +
+                            "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
+                        new String(versionBytes, UTF8), ctx.channel().remoteAddress());
                     throw new Exception(errorMsg);
                 }
 
@@ -132,7 +134,7 @@ public class Codec {
                 out.add(pkg);
             } catch (Exception e) {
                 log.error("decode|length={}|headerLength={}|bodyLength={}|header={}|body={}.", length,
-                        headerLength, bodyLength, header, body);
+                    headerLength, bodyLength, header, body);
                 throw e;
             }
         }
@@ -142,20 +144,20 @@ public class Codec {
         if (cmd == Command.HELLO_REQUEST || cmd == Command.RECOMMEND_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, UserAgent.class);
         } else if (cmd == Command.SUBSCRIBE_REQUEST
-                || cmd == Command.UNSUBSCRIBE_REQUEST) {
+            || cmd == Command.UNSUBSCRIBE_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, Subscription.class);
         } else if (cmd == Command.REQUEST_TO_SERVER
-                || cmd == Command.REQUEST_TO_CLIENT
-                || cmd == Command.RESPONSE_TO_SERVER
-                || cmd == Command.RESPONSE_TO_CLIENT
-                || cmd == Command.ASYNC_MESSAGE_TO_SERVER
-                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT
-                || cmd == Command.BROADCAST_MESSAGE_TO_SERVER
-                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT
-                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT_ACK
-                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK
-                || cmd == Command.REQUEST_TO_CLIENT_ACK
-                || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
+            || cmd == Command.REQUEST_TO_CLIENT
+            || cmd == Command.RESPONSE_TO_SERVER
+            || cmd == Command.RESPONSE_TO_CLIENT
+            || cmd == Command.ASYNC_MESSAGE_TO_SERVER
+            || cmd == Command.ASYNC_MESSAGE_TO_CLIENT
+            || cmd == Command.BROADCAST_MESSAGE_TO_SERVER
+            || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT
+            || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT_ACK
+            || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK
+            || cmd == Command.REQUEST_TO_CLIENT_ACK
+            || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
             return ClientGlobal.jsonMapper.readValue(data, EventMeshMessage.class);
         } else if (cmd == Command.REDIRECT_TO_CLIENT) {
             return ClientGlobal.jsonMapper.readValue(data, RedirectInfo.class);

@@ -24,6 +24,7 @@ import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
 import org.apache.rocketmq.common.message.MessageQueue;
 
 public class EventMeshConsumeConcurrentlyContext extends ConsumeConcurrentlyContext implements AbstractContext {
+
     private final ProcessQueue processQueue;
     private boolean manualAck = true;
 

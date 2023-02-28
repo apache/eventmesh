@@ -77,8 +77,8 @@ public class HeartbeatResponseHeader extends Header {
     }
 
     public static HeartbeatResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                      String eventMeshIp, String eventMeshEnv,
-                                                      String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         HeartbeatResponseHeader heartbeatResponseHeader = new HeartbeatResponseHeader();
         heartbeatResponseHeader.setCode(requestCode);
         heartbeatResponseHeader.setEventMeshCluster(eventMeshCluster);
@@ -92,11 +92,11 @@ public class HeartbeatResponseHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("heartbeatResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshIp=").append(eventMeshIp).append("}");
+            .append("code=").append(code).append(",")
+            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+            .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 

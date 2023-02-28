@@ -49,7 +49,7 @@ class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException {
+        throws EventMeshException {
 
     }
 

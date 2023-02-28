@@ -32,7 +32,7 @@ import java.util.Objects;
 public class HttpTinyClient {
 
     public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
-                                     String encoding, long readTimeoutMs) throws IOException {
+        String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
 
@@ -62,7 +62,7 @@ public class HttpTinyClient {
     }
 
     private static String encodingParams(List<String> paramValues, String encoding)
-            throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
             return null;
@@ -94,7 +94,7 @@ public class HttpTinyClient {
      * @return the http response of given http post request
      */
     public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues,
-                                      String encoding, long readTimeoutMs) throws IOException {
+        String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
 
         HttpURLConnection conn = null;
@@ -111,7 +111,7 @@ public class HttpTinyClient {
 
             int respCode = conn.getResponseCode();
             String resp = HttpURLConnection.HTTP_OK == respCode ? IOUtils.toString(conn.getInputStream(), encoding)
-                    : IOUtils.toString(conn.getErrorStream(), encoding);
+                : IOUtils.toString(conn.getErrorStream(), encoding);
 
             return new HttpResult(respCode, resp);
         } finally {
@@ -122,6 +122,7 @@ public class HttpTinyClient {
     }
 
     public static class HttpResult {
+
         private final transient int code;
         private final transient String content;
 

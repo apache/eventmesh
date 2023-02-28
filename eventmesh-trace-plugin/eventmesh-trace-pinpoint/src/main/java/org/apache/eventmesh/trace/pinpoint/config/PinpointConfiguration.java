@@ -52,7 +52,7 @@ public final class PinpointConfiguration {
     private GrpcTransportConfig grpcTransportConfig;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     public void reload() {
         if (StringUtils.isBlank(agentName)) {
@@ -62,8 +62,8 @@ public final class PinpointConfiguration {
         if (StringUtils.isBlank(agentId)) {
             // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
             agentId = StringUtils.substring(agentName, 0, 15)
-                    + Constants.HYPHEN
-                    + RandomStringUtils.generateNum(8);
+                + Constants.HYPHEN
+                + RandomStringUtils.generateNum(8);
         }
 
         // Map to Pinpoint property configuration.

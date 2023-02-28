@@ -60,6 +60,7 @@ import lombok.Data;
 @Config(field = "exporterConfiguration")
 @Data
 public class ZipkinTraceService implements EventMeshTraceService {
+
     private transient SdkTracerProvider sdkTracerProvider;
     private transient SpanProcessor spanProcessor;
 
@@ -95,27 +96,27 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
         final String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
         zipkinExporter =
-                ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
+            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
         spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
-                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-                .build();
+            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+            .build();
 
         //set the trace service's name
         final Resource serviceNameResource =
-                Resource.create(Attributes.of(stringKey("service.name"), ZipkinConstants.SERVICE_NAME));
+            Resource.create(Attributes.of(stringKey("service.name"), ZipkinConstants.SERVICE_NAME));
 
         sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(spanProcessor)
-                .setResource(Resource.getDefault().merge(serviceNameResource))
-                .build();
+            .addSpanProcessor(spanProcessor)
+            .setResource(Resource.getDefault().merge(serviceNameResource))
+            .build();
 
         final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .setTracerProvider(sdkTracerProvider)
-                .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(sdkTracerProvider)
+            .build();
 
         //TODO serviceName???
         tracer = openTelemetry.getTracer(ZipkinConstants.SERVICE_NAME);
@@ -153,23 +154,23 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
     @Override
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
-                           Context context, boolean isSpanFinishInOtherThread)
-            throws TraceException {
+        Context context, boolean isSpanFinishInOtherThread)
+        throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(startTime, timeUnit)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(startTime, timeUnit)
+            .startSpan();
     }
 
     @Override
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
-                           boolean isSpanFinishInOtherThread) throws TraceException {
+        boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .startSpan();
     }
 
     @Override

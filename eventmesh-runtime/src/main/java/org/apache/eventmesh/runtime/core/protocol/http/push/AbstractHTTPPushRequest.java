@@ -86,7 +86,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay(retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
+            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
             retryer.pushRetry(this);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
@@ -95,7 +95,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public String getUrl() {
         List<String> localIDCUrl = MapUtils.getObject(urls,
-                eventMeshHttpConfiguration.getEventMeshIDC(), null);
+            eventMeshHttpConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
             return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
         }

@@ -75,8 +75,7 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /topic
-     * Return a response that contains the list of topics
+     * GET /topic Return a response that contains the list of topics
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -111,8 +110,7 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * POST /topic
-     * Create a topic if it doesn't exist
+     * POST /topic Create a topic if it doesn't exist
      */
     void post(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -148,8 +146,7 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * DELETE /topic
-     * Delete a topic if it exists
+     * DELETE /topic Delete a topic if it exists
      */
     void delete(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -186,16 +183,16 @@ public class TopicHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("POST")) {
+        if ("POST".equals(httpExchange.getRequestMethod())) {
             post(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }

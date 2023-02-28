@@ -87,18 +87,18 @@ public class SubscribeProcessor {
         final List<ConsumerGroupClient> newClients = new LinkedList<>();
         for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
             final ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                    .env(header.getEnv())
-                    .idc(header.getIdc())
-                    .sys(header.getSys())
-                    .ip(header.getIp())
-                    .pid(header.getPid())
-                    .consumerGroup(consumerGroup)
-                    .topic(item.getTopic())
-                    .grpcType(grpcType)
-                    .subscriptionMode(item.getMode())
-                    .url(subscription.getUrl())
-                    .lastUpTime(new Date())
-                    .build();
+                .env(header.getEnv())
+                .idc(header.getIdc())
+                .sys(header.getSys())
+                .ip(header.getIp())
+                .pid(header.getPid())
+                .consumerGroup(consumerGroup)
+                .topic(item.getTopic())
+                .grpcType(grpcType)
+                .subscriptionMode(item.getMode())
+                .url(subscription.getUrl())
+                .lastUpTime(new Date())
+                .build();
             newClients.add(newClient);
         }
 
@@ -135,7 +135,7 @@ public class SubscribeProcessor {
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
                 this.acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
-                        header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
+                    header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }
