@@ -78,8 +78,7 @@ public class WebHookConfig {
     private String cloudEventName;
 
     /**
-     * roll out data format -> CloudEvent serialization mode
-     * If HTTP protocol is used, the request header contentType needs to be marked
+     * roll out data format -> CloudEvent serialization mode If HTTP protocol is used, the request header contentType needs to be marked
      */
     private String dataContentType = "application/json";
 

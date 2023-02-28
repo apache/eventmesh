@@ -57,10 +57,10 @@ public class MessageAckTask extends AbstractTask {
         } else {
             if (cmd != Command.RESPONSE_TO_CLIENT_ACK) {
                 log.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}",
-                        seq, session.getClient());
+                    seq, session.getClient());
             }
         }
         MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
-                taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+            taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
     }
 }

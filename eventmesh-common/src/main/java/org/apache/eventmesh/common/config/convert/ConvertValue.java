@@ -58,7 +58,7 @@ public interface ConvertValue<T> {
         String fieldName = configFiled.field();
 
         if (StringUtils.isBlank(value) && !StringUtils.isBlank(fieldName) && findEnv) {
-            value = Optional.ofNullable(System.getProperty(fieldName)).orElseGet(() -> System.getenv(fieldName));
+            value = Optional.ofNullable(System.getProperty(fieldName)).orElse(System.getenv(fieldName));
         }
 
         if (StringUtils.isBlank(value) && configFiled.notEmpty()) {

@@ -44,7 +44,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -92,7 +91,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
             task.cancel(false);
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("cancel close err", e);
         }
     }
 
@@ -106,10 +105,11 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     }
                     Package msg = MessageUtils.heartBeat();
                     if (log.isDebugEnabled()) {
-                        log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+                        log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                                msg.getHeader().getCommand(), msg);
                     }
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-                } catch (Exception ignored) {
+                } catch (Exception e) {
                     //ignore
                 }
             }
@@ -127,7 +127,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws Exception {
+            throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -150,7 +150,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     //}
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubscriptionType subscriptionType) throws Exception {
+                                   SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -199,12 +199,12 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
-
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             if (log.isInfoEnabled()) {
-                log.info("{}|receive|command={}|msg={}", SubClientImpl.class.getSimpleName(), msg.getHeader().getCommand(), msg);
+                log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
+                        msg.getHeader().getCommand(), msg);
             }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
@@ -234,7 +234,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     log.error("send broadcast request to client ack failed", e);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                log.info("server goodbye request:{}", msg);
+                log.info("server goodby request: ---------------------------" + msg);
                 close();
             } else {
                 //control instruction set

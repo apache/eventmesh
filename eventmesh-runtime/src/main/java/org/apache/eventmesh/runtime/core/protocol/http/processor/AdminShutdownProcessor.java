@@ -47,9 +47,9 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
         HttpCommand responseEventMeshCommand;
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+            RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+            EventMeshConstants.PROTOCOL_HTTP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 

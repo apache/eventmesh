@@ -36,7 +36,7 @@ public class AsyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
-            new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
+                     new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
@@ -46,7 +46,7 @@ public class AsyncSubClient {
                     if (msg.getBody() instanceof EventMeshMessage) {
                         String body = ((EventMeshMessage) msg.getBody()).getBody();
                         if (log.isInfoEnabled()) {
-                            log.info("receive message: {}", body);
+                            log.info("receive message -------------------------------" + body);
                         }
                     }
                 }

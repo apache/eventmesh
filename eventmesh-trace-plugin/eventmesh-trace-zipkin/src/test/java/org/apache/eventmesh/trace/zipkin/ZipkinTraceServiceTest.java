@@ -34,7 +34,7 @@ public class ZipkinTraceServiceTest {
     @Test
     public void testInit() {
         ZipkinTraceService zipkinTraceService =
-                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
 
         Assert.assertNotNull(zipkinTraceService.getSdkTracerProvider());
@@ -42,7 +42,7 @@ public class ZipkinTraceServiceTest {
 
         IllegalArgumentException illegalArgumentException =
             assertThrows(IllegalArgumentException.class,
-                    () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
+                () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
@@ -51,7 +51,7 @@ public class ZipkinTraceServiceTest {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
 
         ZipkinTraceService zipkinTraceService =
-                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
         Field sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

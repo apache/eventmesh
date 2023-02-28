@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 
 public class RocketMQAdmin implements Admin {
+
     private final AtomicBoolean isStarted;
 
     protected DefaultMQAdminExt adminExt;

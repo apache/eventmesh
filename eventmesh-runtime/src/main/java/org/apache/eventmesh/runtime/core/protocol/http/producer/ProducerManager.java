@@ -58,7 +58,7 @@ public class ProducerManager {
 
         eventMeshProducer = producerTable.get(producerGroup);
 
-        if (!eventMeshProducer.getStarted().get()) {
+        if (!eventMeshProducer.isStarted()) {
             eventMeshProducer.start();
         }
 

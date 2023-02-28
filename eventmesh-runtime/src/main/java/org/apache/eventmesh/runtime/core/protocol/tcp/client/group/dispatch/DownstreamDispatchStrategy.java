@@ -26,6 +26,7 @@ import java.util.Set;
  * DownstreamDispatchStrategy
  */
 public interface DownstreamDispatchStrategy {
+
     /**
      * select a SESSION
      *

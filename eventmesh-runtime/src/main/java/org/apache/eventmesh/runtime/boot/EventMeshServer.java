@@ -164,7 +164,7 @@ public class EventMeshServer {
     }
 
     public void shutdown() throws Exception {
-        serviceState = ServiceState.STOPING;
+        serviceState = ServiceState.STOPPING;
         if (log.isInfoEnabled()) {
             log.info(SERVER_STATE_MSG, serviceState);
         }
@@ -188,7 +188,7 @@ public class EventMeshServer {
         }
         producerTopicManager.shutdown();
         ConfigurationContextUtil.clear();
-        serviceState = ServiceState.STOPED;
+        serviceState = ServiceState.STOPPED;
 
         if (log.isInfoEnabled()) {
             log.info(SERVER_STATE_MSG, serviceState);

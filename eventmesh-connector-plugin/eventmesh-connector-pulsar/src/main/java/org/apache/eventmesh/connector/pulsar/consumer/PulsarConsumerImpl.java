@@ -80,7 +80,7 @@ public class PulsarConsumerImpl implements Consumer {
             this.pulsarClient = clientBuilder.build();
         } catch (Exception ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
+                String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
         }
     }
 
@@ -94,7 +94,7 @@ public class PulsarConsumerImpl implements Consumer {
 
         if (pulsarClient == null) {
             throw new ConnectorRuntimeException(
-                 String.format("Cann't find the pulsar client for topic: %s", topic));
+                String.format("Cann't find the pulsar client for topic: %s", topic));
         }
 
         EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
@@ -108,21 +108,21 @@ public class PulsarConsumerImpl implements Consumer {
             .topic(topic)
             .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
             .messageListener(
-              (MessageListener<byte[]>) (ackConsumer, msg) -> {
-                  CloudEvent cloudEvent = EventFormatProvider
-                      .getInstance()
-                      .resolveFormat(JsonFormat.CONTENT_TYPE)
-                      .deserialize(msg.getData());
-                  eventListener.consume(cloudEvent, consumeContext);
-                  try {
-                      ackConsumer.acknowledge(msg);
-                  } catch (PulsarClientException ex) {
-                      throw new ConnectorRuntimeException(
-                        String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
-                  } catch (EventDeserializationException ex) {
-                      log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
-                  }
-              }).subscribe();
+                (MessageListener<byte[]>) (ackConsumer, msg) -> {
+                    CloudEvent cloudEvent = EventFormatProvider
+                        .getInstance()
+                        .resolveFormat(JsonFormat.CONTENT_TYPE)
+                        .deserialize(msg.getData());
+                    eventListener.consume(cloudEvent, consumeContext);
+                    try {
+                        ackConsumer.acknowledge(msg);
+                    } catch (PulsarClientException ex) {
+                        throw new ConnectorRuntimeException(
+                            String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
+                    } catch (EventDeserializationException ex) {
+                        log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
+                    }
+                }).subscribe();
     }
 
     @Override
@@ -131,7 +131,7 @@ public class PulsarConsumerImpl implements Consumer {
             consumer.unsubscribe();
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
+                String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
         }
     }
 
@@ -162,7 +162,7 @@ public class PulsarConsumerImpl implements Consumer {
             this.pulsarClient.close();
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));
+                String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));
         }
     }
 

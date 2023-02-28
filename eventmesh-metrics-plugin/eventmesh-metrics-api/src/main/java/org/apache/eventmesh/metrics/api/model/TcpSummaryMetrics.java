@@ -23,6 +23,7 @@ import lombok.Data;
 
 @Data
 public class TcpSummaryMetrics implements Metric {
+
     private AtomicInteger client2eventMeshMsgNum;
     private AtomicInteger eventMesh2mqMsgNum;
     private AtomicInteger mq2eventMeshMsgNum;
