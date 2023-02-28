@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.auth.token.impl.auth;
 
+
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.config.CommonConfiguration;
@@ -32,29 +33,34 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Set;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 public class AuthTokenUtils {
+
     public static void authTokenByPublicKey(AclProperties aclProperties) {
-        String publicKeyUrl = "";
-        for (String key : ConfigurationContextUtil.KEYS) {
-            CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-            if (null == commonConfiguration) {
-                continue;
-            }
-            if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
 
-                throw new AclException("publicKeyUrl cannot be null");
-
-            }
-            publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
-        }
-        String token = aclProperties.getToken();
+        String token =  aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
+            if (!authAccess(aclProperties)) {
+                throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
+                    + aclProperties.getTopic());
+            }
+            String publicKeyUrl = null;
             token = token.replace("Bearer ", "");
+            for (String key : ConfigurationContextUtil.KEYS) {
+                CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
+                if (null == commonConfiguration) {
+                    continue;
+                }
+                if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
+                    throw new AclException("publicKeyUrl cannot be null");
+                }
+                publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
+            }
             byte[] validationKeyBytes = new byte[0];
             try {
                 validationKeyBytes = Files.readAllBytes(Paths.get(publicKeyUrl));
@@ -72,7 +78,26 @@ public class AuthTokenUtils {
             } catch (JwtException e) {
                 throw new AclException("invalid token!", e);
             }
+
+        } else {
+            throw new AclException("invalid token!");
         }
+    }
+
+    public static boolean authAccess(AclProperties aclProperties) {
+
+        String topic = aclProperties.getTopic();
+        String token = aclProperties.getToken();
+
+        Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
+        String groupToken = aclProperties.getExtendedField("token").toString();
+
+        if (groupTopics.contains(topic) && groupToken.equals(token)) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
 }
