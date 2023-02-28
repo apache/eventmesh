@@ -98,12 +98,13 @@ public class BatchPublishMessageProcessor {
 
         for (CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
-            String uniqueId = event.getExtension(ProtocolKey.UNIQUE_ID).toString();
+            String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) ? "" : event.getExtension(ProtocolKey.UNIQUE_ID).toString();
             ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
             EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
             SendMessageContext sendMessageContext = new SendMessageContext(seqNum, event, eventMeshProducer, eventMeshGrpcServer);
 
+            eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
             long startTime = System.currentTimeMillis();
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
                 @Override
@@ -126,7 +127,7 @@ public class BatchPublishMessageProcessor {
 
     private void doAclCheck(BatchMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = requestHeader.getIp();
             String user = requestHeader.getUsername();
             String pass = requestHeader.getPassword();

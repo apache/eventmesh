@@ -18,18 +18,15 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.runtime.trace.TraceUtils;
+import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
@@ -47,23 +44,10 @@ public class HTTPTrace {
 
     public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel, boolean traceEnabled) {
 
-        final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
+        final Map<String, Object> headerMap = Utils.parseHttpHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
             false);
         return new TraceOperation(span, null, traceEnabled);
-    }
-
-    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
-        Map<String, Object> headerParam = new HashMap<>();
-        for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
-                continue;
-            }
-            headerParam.put(key, fullReq.headers().get(key));
-        }
-        return headerParam;
     }
 
     @AllArgsConstructor

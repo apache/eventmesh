@@ -17,52 +17,66 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
+
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 @SuppressWarnings("restriction")
-public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
+@EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
+public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final Logger LOGGER = LoggerFactory.getLogger(QueryWebHookConfigByManufacturerHandler.class);
 
-    private WebHookConfigOperation operation;
+    private final transient WebHookConfigOperation operation;
 
-    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
+                                                   HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.operation = operation;
+        Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");
+        Objects.requireNonNull(httpHandlerManager, "HttpHandlerManager can not be null");
+
     }
 
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(200, 0);
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+        Objects.requireNonNull(httpExchange, "httpExchange can not be null");
+
+        NetUtils.sendSuccessResponseHeaders(httpExchange);
+        httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
         // get requestBody and resolve to WebHookConfig
-        String requestBody = NetUtils.parsePostBody(httpExchange);
-        JsonNode node = JsonUtils.getJsonNode(requestBody);
-        WebHookConfig webHookConfig = JsonUtils.toObject(node.get("webHookConfig").toString(), WebHookConfig.class);
-        Integer pageNum = Integer.parseInt(node.get("pageNum").toString());
-        Integer pageSize = Integer.parseInt(node.get("pageSize").toString());
+        JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
+        Objects.requireNonNull(node, "JsonNode can not be null");
+
+        WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
+        Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
+        Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(JsonUtils.toJson(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("get WebHookConfigOperation implementation Failed.", e);
+            LOGGER.error("get WebHookConfigOperation implementation Failed.", e);
         }
     }
 }

@@ -61,7 +61,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             open(new EventMeshMessageTCPSubHandler(contexts));
             hello();
             heartbeat();
-            log.info("SimpleSubClientImpl|{}|started!", clientNo);
+            log.info("SimpleSubClientImpl|{}|started!", CLIENTNO);
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTcpSubClient error", ex);
         }
@@ -73,9 +73,11 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             super.reconnect();
             hello();
             if (!CollectionUtils.isEmpty(subscriptionItems)) {
-                for (SubscriptionItem item : subscriptionItems) {
-                    Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
-                    this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                synchronized (subscriptionItems) {
+                    for (SubscriptionItem item : subscriptionItems) {
+                        Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
+                        this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    }                 
                 }
             }
             listen();
@@ -86,7 +88,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException {
+        throws EventMeshException {
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
@@ -126,7 +128,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         try {
             super.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("exception occurred when close.", ex);
         }
     }
 
@@ -144,7 +146,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                        responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
+                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
                 );
             }
         }

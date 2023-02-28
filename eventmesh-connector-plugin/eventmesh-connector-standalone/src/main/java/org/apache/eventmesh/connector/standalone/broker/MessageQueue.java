@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.standalone.broker;
 
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -188,7 +189,7 @@ public class MessageQueue {
             if (takeIndex == items.length) {
                 takeIndex = 0;
             }
-            notFull.signal();
+            notFull.signalAll();
         } finally {
             lock.unlock();
         }
@@ -209,7 +210,7 @@ public class MessageQueue {
             putIndex = 0;
         }
         count++;
-        notEmpty.signal();
+        notEmpty.signalAll();
     }
 
     private MessageEntity dequeue() {
@@ -217,8 +218,15 @@ public class MessageQueue {
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
-        notFull.signal();
+        notFull.signalAll();
         return item;
     }
 
+    public int getTakeIndex() {
+        return takeIndex;
+    }
+
+    public int getPutIndex() {
+        return putIndex;
+    }
 }

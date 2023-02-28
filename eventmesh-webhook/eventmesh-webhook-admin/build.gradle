@@ -1,4 +1,4 @@
-/*
+    /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,16 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
 
     implementation 'org.slf4j:slf4j-api'
-    implementation "com.alibaba.nacos:nacos-client:2.0.4"
+    implementation "com.alibaba.nacos:nacos-client"
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")
 

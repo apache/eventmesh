@@ -9,6 +9,7 @@ logs
 *.iws
 *.class
 *.log
+*.log.*
 .idea
 build
 .classpath

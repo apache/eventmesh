@@ -33,10 +33,11 @@ import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer implements Producer {
 
-    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
-    protected final AtomicBoolean started = new AtomicBoolean(false);
-    final Properties properties;
-    AsyncHttpClient asyncHttpClient;
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractProducer.class);
+
+    protected final transient AtomicBoolean started = new AtomicBoolean(false);
+    protected final transient Properties properties;
+    private transient AsyncHttpClient asyncHttpClient;
 
     AbstractProducer(final Properties properties) {
         this.properties = properties;
@@ -50,10 +51,12 @@ public abstract class AbstractProducer implements Producer {
         return new ConnectorRuntimeException(String.format("Unknown connector runtime exception.", e));
     }
 
+    @Override
     public boolean isStarted() {
         return started.get();
     }
 
+    @Override
     public boolean isClosed() {
         return !this.isStarted();
     }

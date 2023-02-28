@@ -1,0 +1,89 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+server:
+  grpc:
+    port: 10010
+    tls:
+      enable-secure: false
+      ca: ""
+      certfile: ""
+      keyfile: ""
+    pprof:
+      port: 10011
+    send-pool-size: 10
+    subscribe-pool-size: 10
+    retry-pool-size: 10
+    push-message-pool-size: 10
+    reply-pool-size: 10
+    msg-req-num-per-second: 5
+    cluster: "test"
+    env: "env"
+    idc: "idc1"
+    session-expired-in-mills: 5s
+    send-message-timeout: 5s
+  http:
+    port: 10010
+    tls:
+      enable-secure: false
+      ca: ""
+      certfile: ""
+      keyfile: ""
+    pprof:
+      port: 10011
+  tcp:
+    port: 10010
+    tls:
+      enable-secure: false
+      ca: ""
+      certfile: ""
+      keyfile: ""
+    pprof:
+      port: 10011
+active-plugins:
+  registry: nacos
+  connector: standalone
+  log: default
+plugins:
+  registry:
+    nacos:
+      address_list: your-nacos-addr
+      cache-dir: your-nacos-cache-dir
+  connector:
+    standalone:
+    rocketmq:
+      access_points: your-nameserver-addr
+      namespace: grpcnamespace
+      instance_name: grpcinstance
+      group_name: grpcgroupname
+      send_msg_timeout: 5000
+      producer_retry_times: 3
+      compress_msg_body_threshold: 1024
+      consumer_group: grpcconsumergroup
+      max_reconsume_times: 3
+      message_model: CLUSTERING
+  log:
+    default:                                      
+      - writer: console                           
+        level: debug                              
+      - writer: file                              
+        level: info                               
+        writer_config:
+          filename: ./eventmesh.log
+          max_size: 10                            
+          max_backups: 10                         
+          max_age: 7                              
+          compress: false

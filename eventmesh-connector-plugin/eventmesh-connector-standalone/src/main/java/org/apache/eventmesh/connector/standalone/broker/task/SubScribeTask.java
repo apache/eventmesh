@@ -57,8 +57,9 @@ public class SubScribeTask implements Runnable {
                 if (offset == null) {
                     CloudEvent message = standaloneBroker.getMessage(topicName);
                     if (message != null) {
-                        if (message.getExtension("offset") != null) {
-                            offset = new AtomicInteger((int) message.getExtension("offset"));
+                        Object tmpOffset = message.getExtension("offset");
+                        if (tmpOffset instanceof Integer) {
+                            offset = new AtomicInteger(Integer.parseInt(tmpOffset.toString()));
                         } else {
                             offset = new AtomicInteger(0);
                         }
@@ -75,7 +76,7 @@ public class SubScribeTask implements Runnable {
                                     case CommitMessage:
                                         // update offset
                                         logger.info("message commit, topic: {}, current offset:{}", topicName,
-                                                offset.get());
+                                            offset.get());
                                         break;
                                     case ReconsumeLater:
                                         // don't update offset
@@ -84,7 +85,7 @@ public class SubScribeTask implements Runnable {
                                         // update offset
                                         offset.incrementAndGet();
                                         logger
-                                                .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
+                                            .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
                                         break;
                                     default:
 
@@ -97,13 +98,13 @@ public class SubScribeTask implements Runnable {
 
             } catch (Exception ex) {
                 logger.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(),
-                        ex);
+                    ex);
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 logger.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
-                        topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
+                    topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();
             }
         }

@@ -86,7 +86,7 @@ If you choose standalone mode, you could skip this file and go to the next step:
 Download and extract the executable binaries of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
 
 ```console
-wget https://github.com/apache/incubator-eventmesh/releases/download/v1.4.0/apache-eventmesh-1.4.0-incubating-bin.tar.gz
+wget https://dlcdn.apache.org/incubator/eventmesh/1.5.0-incubating/apache-eventmesh-1.5.0-incubating-bin.tar.gz
 
 tar -xvzf apache-eventmesh-1.5.0-incubating-bin.tar.gz
 ```

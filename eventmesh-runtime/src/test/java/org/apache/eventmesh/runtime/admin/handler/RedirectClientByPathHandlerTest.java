@@ -27,20 +27,21 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +59,7 @@ import com.sun.net.httpserver.HttpExchange;
 public class RedirectClientByPathHandlerTest {
 
     @Mock
-    private EventMeshTCPServer eventMeshTCPServer;
+    private static transient EventMeshTCPServer eventMeshTCPServer;
 
     @Before
     public void init() {
@@ -67,12 +68,13 @@ public class RedirectClientByPathHandlerTest {
 
     @Test
     public void testHandle() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final HttpExchange mockExchange = mock(HttpExchange.class);
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
-        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer);
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);
 
         // mock session map
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = new ConcurrentHashMap<>();
@@ -91,7 +93,7 @@ public class RedirectClientByPathHandlerTest {
         try (MockedStatic<NetUtils> netUtilsMockedStatic = Mockito.mockStatic(NetUtils.class)) {
             Map<String, String> queryStringInfo = new HashMap<>();
             queryStringInfo.put(EventMeshConstants.MANAGE_PATH, EventMeshConstants.MANAGE_PATH);
-            queryStringInfo.put(EventMeshConstants.MANAGE_DEST_IP, "127.0.0.1");
+            queryStringInfo.put(EventMeshConstants.MANAGE_DEST_IP, "localhost");
             queryStringInfo.put(EventMeshConstants.MANAGE_DEST_PORT, "8080");
             netUtilsMockedStatic.when(() -> NetUtils.formData2Dic(anyString())).thenReturn(queryStringInfo);
 
@@ -99,9 +101,9 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                    any())).thenReturn("redirectResult");
+                        any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
             }
 
@@ -111,7 +113,7 @@ public class RedirectClientByPathHandlerTest {
             try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
                 dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertEquals("params illegal!", response);
             }
 
@@ -120,7 +122,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                    any())).thenThrow(new RuntimeException());
+                        any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString();
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));

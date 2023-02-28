@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -65,11 +66,11 @@ import lombok.Setter;
 
 public class HandlerService {
 
-    private Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
+    private final Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
 
-    private Logger httpLogger = LoggerFactory.getLogger("http");
+    private final Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
+    private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
     @Setter
     private HTTPMetricsServer metrics;
@@ -187,8 +188,12 @@ public class HandlerService {
                 if (length > 0) {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<Map<String, Object>>() {
-                    }).forEach(bodyMap::put);
+                    Optional
+                        .ofNullable(JsonUtils.deserialize(
+                            new String(body, Constants.DEFAULT_CHARSET),
+                            new TypeReference<Map<String, Object>>() {}
+                        ))
+                        .ifPresent(bodyMap::putAll);
                 }
             } else {
                 HttpPostRequestDecoder decoder =
@@ -206,7 +211,10 @@ public class HandlerService {
             throw new RuntimeException("UnSupported Method " + fullHttpRequest.method());
         }
 
-        byte[] requestBody = JsonUtils.serialize(bodyMap).getBytes(StandardCharsets.UTF_8);
+        byte[] requestBody = Optional.ofNullable(JsonUtils.serialize(bodyMap))
+            .map(s -> s.getBytes(StandardCharsets.UTF_8))
+            .orElse(new byte[0]);
+
         httpEventWrapper.setBody(requestBody);
 
         metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);

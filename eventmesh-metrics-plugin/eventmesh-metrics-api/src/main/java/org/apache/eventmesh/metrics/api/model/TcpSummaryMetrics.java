@@ -23,10 +23,10 @@ import lombok.Data;
 
 @Data
 public class TcpSummaryMetrics implements Metric {
-    private final AtomicInteger client2eventMeshMsgNum;
-    private final AtomicInteger eventMesh2mqMsgNum;
-    private final AtomicInteger mq2eventMeshMsgNum;
-    private final AtomicInteger eventMesh2clientMsgNum;
+    private AtomicInteger client2eventMeshMsgNum;
+    private AtomicInteger eventMesh2mqMsgNum;
+    private AtomicInteger mq2eventMeshMsgNum;
+    private AtomicInteger eventMesh2clientMsgNum;
 
     private int client2eventMeshTPS;
     private int eventMesh2clientTPS;
@@ -59,6 +59,22 @@ public class TcpSummaryMetrics implements Metric {
 
     public int eventMesh2clientMsgNum() {
         return eventMesh2clientMsgNum.get();
+    }
+
+    public void resetClient2EventMeshMsgNum() {
+        this.client2eventMeshMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetEventMesh2mqMsgNum() {
+        this.eventMesh2mqMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetMq2eventMeshMsgNum() {
+        this.mq2eventMeshMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetEventMesh2ClientMsgNum() {
+        this.eventMesh2clientMsgNum = new AtomicInteger(0);
     }
 
     public int getClient2eventMeshTPS() {

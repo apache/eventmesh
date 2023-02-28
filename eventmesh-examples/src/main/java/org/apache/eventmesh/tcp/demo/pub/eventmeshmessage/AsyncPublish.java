@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public class AsyncPublish {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
+    public static final Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 

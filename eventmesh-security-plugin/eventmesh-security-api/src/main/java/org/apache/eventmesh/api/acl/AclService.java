@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * AclService
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.SECURITY)
 public interface AclService {
     void init() throws AclException;
 

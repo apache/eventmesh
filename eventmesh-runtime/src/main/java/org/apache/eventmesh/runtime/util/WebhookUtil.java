@@ -27,84 +27,82 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
  *
  * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md">CloudEvents Http Webhook</a>
  */
+@Slf4j
 public class WebhookUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebhookUtil.class.getName());
-
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
     private static final String ALLOWED_ORIGIN_HEADER = "WebHook-Allowed-Origin";
 
-    private static final Map<String, AuthService> authServices = new ConcurrentHashMap<>();
+    private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
-    public static boolean obtainDeliveryAgreement(CloseableHttpClient httpClient, String targetUrl, String requestOrigin) {
-        logger.info("obtain webhook delivery agreement for url: {}", targetUrl);
-        HttpOptions builder = new HttpOptions(targetUrl);
+    public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
+                                                  final String targetUrl,
+                                                  final String requestOrigin) {
+        
+        if (log.isInfoEnabled()) {
+            log.info("obtain webhook delivery agreement for url: {}", targetUrl);
+        }
+
+        final HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
-            String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
+            final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             return StringUtils.isEmpty(allowedOrigin)
-                    || allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
+                    || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
-            logger.warn("HTTP Options Method is not supported at the Delivery Target: {},"
-                    + " unable to obtain the webhook delivery agreement.", targetUrl);
+            if (log.isErrorEnabled()) {
+                log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
+                        + "unable to obtain the webhook delivery agreement.", targetUrl);
+            }
         }
         return true;
     }
 
-    public static void setWebhookHeaders(HttpPost builder, String contentType, String requestOrigin, String urlAuthType) {
+    public static void setWebhookHeaders(final HttpPost builder,
+                                         final String contentType,
+                                         final String requestOrigin,
+                                         final String urlAuthType) {
         builder.setHeader(CONTENT_TYPE_HEADER, contentType);
         builder.setHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
-        Map<String, String> authParam = getHttpAuthParam(urlAuthType);
+        final Map<String, String> authParam = getHttpAuthParam(urlAuthType);
         if (authParam != null) {
             authParam.forEach((k, v) -> builder.addHeader(new BasicHeader(k, v)));
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, String> getHttpAuthParam(String authType) {
+    private static Map<String, String> getHttpAuthParam(final String authType) {
         if (StringUtils.isEmpty(authType)) {
-            return null;
+            return new HashMap<String, String>();
         }
-        AuthService authService = getHttpAuthPlugin(authType);
-        if (authService != null) {
-            return authService.getAuthParams();
-        } else {
-            return null;
-        }
+
+        final AuthService authService = getHttpAuthPlugin(authType);
+        return authService != null ? authService.getAuthParams() : null;
     }
 
-    private static AuthService getHttpAuthPlugin(String pluginType) {
-        if (authServices.containsKey(pluginType)) {
-            return authServices.get(pluginType);
+    private static AuthService getHttpAuthPlugin(final String pluginType) {
+        if (AUTH_SERVICES_MAP.containsKey(pluginType)) {
+            return AUTH_SERVICES_MAP.get(pluginType);
         }
 
-        AuthService authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
-
-        if (authService == null) {
-            logger.error("can't load the authService plugin, please check.");
-            throw new RuntimeException("doesn't load the authService plugin, please check.");
-        }
-        try {
-            authService.init();
-            authServices.put(pluginType, authService);
-            return authService;
-        } catch (Exception e) {
-            logger.error("Error in initializing authService", e);
-        }
-        return null;
+        final AuthService authService = EventMeshExtensionFactory.getExtension(AuthService.class, pluginType);
+        Objects.requireNonNull(authService, "authService can not be null");
+        authService.init();
+        AUTH_SERVICES_MAP.put(pluginType, authService);
+        return authService;
     }
 }

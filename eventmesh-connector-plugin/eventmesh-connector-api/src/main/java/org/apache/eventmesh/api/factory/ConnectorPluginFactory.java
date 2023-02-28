@@ -19,14 +19,24 @@
 
 package org.apache.eventmesh.api.factory;
 
+import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 /**
- * The factory to get connector {@link Producer} and {@link Consumer}
+ * The factory to get connector {@link Admin}, {@link Producer} and {@link Consumer}
  */
 public class ConnectorPluginFactory {
+    /**
+     * Get MeshMQAdmin instance by plugin name
+     *
+     * @param connectorPluginName plugin name
+     * @return MeshMQAdmin instance
+     */
+    public static Admin getMeshMQAdmin(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(Admin.class, connectorPluginName);
+    }
 
     /**
      * Get MeshMQProducer instance by plugin name

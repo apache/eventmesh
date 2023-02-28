@@ -24,10 +24,10 @@ import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
-import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.NetUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,11 +61,10 @@ public class TopicsHandler implements HttpHandler {
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
         String result;
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
-                JsonUtils.toObject(params, TopicCreateRequest.class);
+                JsonUtils.deserialize(params, TopicCreateRequest.class);
             String topic = topicCreateRequest.getName();
 
             if (StringUtils.isBlank(topic)) {
@@ -80,8 +79,8 @@ public class TopicsHandler implements HttpHandler {
             if (topicResponse != null) {
                 logger.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-                httpExchange.sendResponseHeaders(200, 0);
-                result = JsonUtils.toJson(topicResponse);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
+                result = JsonUtils.serialize(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } else {
@@ -94,16 +93,7 @@ public class TopicsHandler implements HttpHandler {
             httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
-            logger.error(result);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            logger.error(result, e);
         }
     }
 

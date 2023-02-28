@@ -64,7 +64,7 @@ public class PravegaEvent implements Serializable {
             default:
                 throw new PravegaConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
-        builder.withData(data.getBytes())
+        builder.withData(data.getBytes(StandardCharsets.UTF_8))
             .withId(extensions.remove("id"))
             .withSource(URI.create(extensions.remove("source")))
             .withType(extensions.remove("type"))

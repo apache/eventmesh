@@ -256,9 +256,8 @@ public class ConsumerManager {
     /**
      * get consumer
      */
-    public ConsumerGroupManager getConsumer(String consumerGroup) throws Exception {
-        ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
-        return cgm;
+    public ConsumerGroupManager getConsumer(String consumerGroup) {
+        return consumerTable.get(consumerGroup);
     }
 
     /**
@@ -311,7 +310,6 @@ public class ConsumerManager {
                     return;
                 }
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.topic);
-                return;
             }
         } catch (Exception ex) {
             logger.error("onChange event:{} err", event, ex);
@@ -339,5 +337,9 @@ public class ConsumerManager {
         } catch (Exception ex) {
             logger.error("onChange event:{} err", event, ex);
         }
+    }
+
+    public ConcurrentHashMap<String, ConsumerGroupManager> getClientTable() {
+        return consumerTable;
     }
 }

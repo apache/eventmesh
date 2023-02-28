@@ -16,16 +16,19 @@
 package utils
 
 import (
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
+const seqLength = 10
+
 func BuildPackage(message interface{}, command tcp.Command) tcp.Package {
-	// FIXME Support random sequence
-	header := tcp.NewHeader(command, 0, "", "22222")
+	header := tcp.NewHeader(command, 0, "", utils.RandomNumberStr(seqLength))
 	pkg := tcp.NewPackage(header)
 
 	if _, ok := message.(cloudevents.Event); ok {
@@ -37,7 +40,7 @@ func BuildPackage(message interface{}, command tcp.Command) tcp.Package {
 
 		pkg.Header.PutProperty(gcommon.Constants.PROTOCOL_TYPE, common.EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
 		pkg.Header.PutProperty(gcommon.Constants.PROTOCOL_VERSION, event.SpecVersion())
-		pkg.Header.PutProperty(gcommon.Constants.PROTOCOL_DESC, "tcp")
+		pkg.Header.PutProperty(gcommon.Constants.PROTOCOL_DESC, utils.RandomStr(seqLength))
 		pkg.Body = eventBytes
 	}
 
@@ -45,16 +48,14 @@ func BuildPackage(message interface{}, command tcp.Command) tcp.Package {
 }
 
 func BuildHelloPackage(agent tcp.UserAgent) tcp.Package {
-	// FIXME Support random sequence
-	header := tcp.NewHeader(tcp.DefaultCommand.HELLO_REQUEST, 0, "", "22222")
+	header := tcp.NewHeader(tcp.DefaultCommand.HELLO_REQUEST, 0, "", utils.RandomNumberStr(seqLength))
 	msg := tcp.NewPackage(header)
 	msg.Body = agent
 	return msg
 }
 
 func BuildHeartBeatPackage() tcp.Package {
-	// FIXME Support random sequence
-	header := tcp.NewHeader(tcp.DefaultCommand.HEARTBEAT_REQUEST, 0, "", "22222")
+	header := tcp.NewHeader(tcp.DefaultCommand.HEARTBEAT_REQUEST, 0, "", utils.RandomNumberStr(seqLength))
 	msg := tcp.NewPackage(header)
 	return msg
 }

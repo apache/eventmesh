@@ -17,24 +17,23 @@
 
 package org.apache.eventmesh.connector.pulsar.config;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-import com.google.common.base.Preconditions;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Config(prefix = "eventMesh.server.pulsar", path = "classPath://pulsar-client.properties")
 public class ClientConfiguration {
 
-    public String serviceAddr = "";
+    @ConfigFiled(field = "service")
+    private String serviceAddr;
 
-    public void init() {
-        String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
-        serviceAddr = StringUtils.trim(serviceAddrStr);
-        String[] temp = serviceAddr.split(";");
-        serviceAddr = temp[1];
-    }
+    @ConfigFiled(field = "authPlugin")
+    private String authPlugin;
 
-    static class ConfKeys {
-        public static final String KEYS_EVENTMESH_PULSAR_SERVICE_ADDR = "eventMesh.server.pulsar.service";
-    }
+    @ConfigFiled(field = "authParams")
+    private String authParams;
 }

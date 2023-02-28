@@ -20,7 +20,9 @@ package org.apache.eventmesh.connector.pravega;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.pravega.client.PravegaClient;
+import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.List;
@@ -32,17 +34,28 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Config(field = "pravegaConnectorConfig")
 public class PravegaConsumerImpl implements Consumer {
     private static final AtomicBoolean started = new AtomicBoolean(false);
 
+    /**
+     * Unified configuration class corresponding to pravega-connector.properties
+     */
+    private PravegaConnectorConfig pravegaConnectorConfig;
+
+    private boolean isBroadcast;
+    private String instanceName;
     private String consumerGroup;
     private PravegaClient client;
     private EventListener eventListener;
 
     @Override
     public void init(Properties keyValue) throws Exception {
-        consumerGroup = keyValue.getProperty("consumerGroup");
-        client = PravegaClient.getInstance();
+        isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast", "false"));
+        instanceName = keyValue.getProperty("instanceName", "");
+        consumerGroup = keyValue.getProperty("consumerGroup", "");
+
+        client = PravegaClient.getInstance(pravegaConnectorConfig);
     }
 
     @Override
@@ -72,14 +85,14 @@ public class PravegaConsumerImpl implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-        if (!client.subscribe(topic, consumerGroup, eventListener)) {
+        if (!client.subscribe(topic, isBroadcast, consumerGroup, instanceName, eventListener)) {
             throw new PravegaConnectorException(String.format("subscribe topic[%s] fail.", topic));
         }
     }
 
     @Override
     public void unsubscribe(String topic) {
-        if (!client.unsubscribe(topic, consumerGroup)) {
+        if (!client.unsubscribe(topic, isBroadcast, consumerGroup)) {
             throw new PravegaConnectorException(String.format("unsubscribe topic[%s] fail.", topic));
         }
     }
@@ -87,5 +100,9 @@ public class PravegaConsumerImpl implements Consumer {
     @Override
     public void registerEventListener(EventListener listener) {
         this.eventListener = listener;
+    }
+
+    public PravegaConnectorConfig getClientConfiguration() {
+        return this.pravegaConnectorConfig;
     }
 }

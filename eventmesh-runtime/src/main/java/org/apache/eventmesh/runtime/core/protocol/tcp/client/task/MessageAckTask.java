@@ -29,7 +29,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class MessageAckTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageAckTask.class);
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public MessageAckTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -42,7 +44,7 @@ public class MessageAckTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCmd();
 
         if (seq == null) {
-            logger.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
+            LOGGER.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
             return;
         }
         DownStreamMsgContext downStreamMsgContext = session.getPusher().getUnAckMsg().get(seq);
@@ -51,12 +53,12 @@ public class MessageAckTask extends AbstractTask {
             downStreamMsgContext.ackMsg();
             session.getPusher().getUnAckMsg().remove(seq);
         } else {
-            if (!cmd.equals(Command.RESPONSE_TO_CLIENT_ACK)) {
-                logger.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}",
+            if (cmd != Command.RESPONSE_TO_CLIENT_ACK) {
+                LOGGER.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}",
                         seq, session.getClient());
             }
         }
-        messageLogger.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
+        MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
                 taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
     }
 }

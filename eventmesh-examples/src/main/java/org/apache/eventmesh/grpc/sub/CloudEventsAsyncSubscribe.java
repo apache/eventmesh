@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
-    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
+    public static final CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
 
     public static void main(String[] args) throws InterruptedException {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
@@ -46,27 +46,28 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .env("env").idc("idc")
+                .sys("1234").build();
 
         org.apache.eventmesh.common.protocol.SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
-        EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig)) {
 
-        eventMeshGrpcConsumer.init();
+            eventMeshGrpcConsumer.init();
 
-        eventMeshGrpcConsumer.registerListener(handler);
+            eventMeshGrpcConsumer.registerListener(handler);
 
-        eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
+            eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-        Thread.sleep(60000);
-        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+            Thread.sleep(60000);
+            eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+        }
     }
 
     @Override

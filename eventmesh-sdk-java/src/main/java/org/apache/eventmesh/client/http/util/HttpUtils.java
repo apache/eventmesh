@@ -34,7 +34,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,11 +48,11 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HttpUtils {
+public abstract class HttpUtils {
 
-    public static String post(CloseableHttpClient client,
-                              String uri,
-                              RequestParam requestParam) throws Exception {
+    public static String post(final CloseableHttpClient client,
+                              final String uri,
+                              final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, null, uri, requestParam, response -> {
@@ -75,10 +74,10 @@ public class HttpUtils {
         return responseHolder.response;
     }
 
-    public static String post(CloseableHttpClient client,
-                              HttpHost forwardAgent,
-                              String uri,
-                              RequestParam requestParam) throws Exception {
+    public static String post(final CloseableHttpClient client,
+                              final HttpHost forwardAgent,
+                              final String uri,
+                              final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, forwardAgent, uri, requestParam, response -> {
@@ -100,37 +99,37 @@ public class HttpUtils {
         return responseHolder.response;
     }
 
-    public static void post(CloseableHttpClient client,
-                            HttpHost forwardAgent,
-                            String uri,
-                            RequestParam requestParam,
-                            ResponseHandler<String> responseHandler) throws IOException {
+    public static void post(final CloseableHttpClient client,
+                            final HttpHost forwardAgent,
+                            final String uri,
+                            final RequestParam requestParam,
+                            final ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
         Preconditions.checkState(responseHandler != null, "responseHandler can't be null");
-        Preconditions.checkState(requestParam.getHttpMethod() == HttpMethod.POST, "invalid requestParam httpMethod");
+        Preconditions.checkState(requestParam.getHttpMethod().equals(HttpMethod.POST), "invalid requestParam httpMethod");
 
-        HttpPost httpPost = new HttpPost(uri);
+        final HttpPost httpPost = new HttpPost(uri);
 
         //header
         if (MapUtils.isNotEmpty(requestParam.getHeaders())) {
-            for (Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
+            for (final Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
                 httpPost.addHeader(entry.getKey(), entry.getValue());
             }
         }
 
         //body
         if (MapUtils.isNotEmpty(requestParam.getBody())) {
-            List<NameValuePair> pairs = new ArrayList<>();
-            for (Map.Entry<String, String> entry : requestParam.getBody().entrySet()) {
+            final List<NameValuePair> pairs = new ArrayList<>();
+            for (final Map.Entry<String, String> entry : requestParam.getBody().entrySet()) {
                 pairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
             httpPost.setEntity(new UrlEncodedFormEntity(pairs, Constants.DEFAULT_CHARSET));
         }
 
         //ttl
-        RequestConfig.Builder configBuilder = RequestConfig.custom();
+        final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
@@ -148,32 +147,27 @@ public class HttpUtils {
         client.execute(httpPost, responseHandler);
     }
 
-    public static void get(CloseableHttpClient client,
-                           HttpHost forwardAgent,
-                           String uri,
-                           RequestParam requestParam,
-                           ResponseHandler<String> responseHandler) throws Exception {
+    public static void get(final CloseableHttpClient client,
+                           final HttpHost forwardAgent,
+                           final String uri,
+                           final RequestParam requestParam,
+                           final ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
-        Preconditions.checkState(requestParam.getHttpMethod() == HttpMethod.GET, "invalid requestParam httpMethod");
+        Preconditions.checkState(requestParam.getHttpMethod().equals(HttpMethod.GET), "invalid requestParam httpMethod");
 
-        //body
-        if (MapUtils.isNotEmpty(requestParam.getQueryParamsMap())) {
-            uri = uri + "?" + requestParam.getQueryParams();
-        }
-
-        HttpGet httpGet = new HttpGet(uri);
+        final HttpGet httpGet = new HttpGet(MapUtils.isNotEmpty(requestParam.getQueryParamsMap()) ? uri + "?" + requestParam.getQueryParams() : uri);
 
         //header
         if (MapUtils.isNotEmpty(requestParam.getHeaders())) {
-            for (Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
+            for (final Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
                 httpGet.addHeader(entry.getKey(), entry.getValue());
             }
         }
 
         //ttl
-        RequestConfig.Builder configBuilder = RequestConfig.custom();
+        final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
@@ -191,9 +185,9 @@ public class HttpUtils {
         client.execute(httpGet, responseHandler);
     }
 
-    public static String get(CloseableHttpClient client,
-                             String url,
-                             RequestParam requestParam) throws Exception {
+    public static String get(final CloseableHttpClient client,
+                             final String url,
+                             final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, null, url, requestParam, response -> {
@@ -215,10 +209,10 @@ public class HttpUtils {
         return responseHolder.response;
     }
 
-    public static String get(CloseableHttpClient client,
-                             HttpHost forwardAgent,
-                             String url,
-                             RequestParam requestParam) throws Exception {
+    public static String get(final CloseableHttpClient client,
+                             final HttpHost forwardAgent,
+                             final String url,
+                             final RequestParam requestParam) throws IOException {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, forwardAgent, url, requestParam, response -> {

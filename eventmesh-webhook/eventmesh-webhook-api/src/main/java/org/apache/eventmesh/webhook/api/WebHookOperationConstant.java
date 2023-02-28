@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.webhook.api;
 
+import org.apache.eventmesh.common.Constants;
+
 import java.io.File;
 
 public class WebHookOperationConstant {
@@ -35,15 +37,17 @@ public class WebHookOperationConstant {
 
     public static final long TIMEOUT_MS = 3 * 1000L;
 
-    public static final String ADMIN_START_CONFIG_NAME = "eventMesh.webHook.admin.start";
+    public static final String OPERATION_MODE_FILE = "file";
 
-    public static final String OPERATION_MODE_CONFIG_NAME = "eventMesh.webHook.operationMode";
+    public static final String OPERATION_MODE_NACOS = "nacos";
 
-    public static final String getFilePath(String filePath) {
-        if (filePath.startsWith("#{eventMeshHome}")) {
-            String configPath = System.getProperty("confPath", System.getenv("confPath"));
+    public static final String EVENTMESH_HOME = "#{eventMeshHome}";
 
-            filePath = filePath.replace("#{eventMeshHome}", configPath.substring(0, configPath.lastIndexOf(FILE_SEPARATOR)));
+    public static String getFilePath(String filePath) {
+        if (filePath.startsWith(EVENTMESH_HOME)) {
+            String configPath = Constants.EVENTMESH_CONF_HOME;
+
+            filePath = filePath.replace(EVENTMESH_HOME, configPath.substring(0, configPath.lastIndexOf(FILE_SEPARATOR)));
         }
         return filePath;
     }

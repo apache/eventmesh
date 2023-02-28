@@ -19,11 +19,13 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,15 +37,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class ShowClientBySystemHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/showClientBySystem")
+public class ShowClientBySystemHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -55,38 +58,31 @@ public class ShowClientBySystemHandler implements HttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        StringBuilder result = new StringBuilder();
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            logger.info("showClientBySubsys,subsys:{}=================", subSystem);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("showClientBySubsys,subsys:{}", subSystem);
+            }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            if (!sessionMap.isEmpty()) {
+            if (sessionMap != null && !sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
-                        result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
-                                .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
+                        result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
+                                        userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                                        userAgent.getPath(), userAgent.getPurpose()))
+                                .append(newLine);
                     }
                 }
             }
-            httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            logger.error("ShowClientBySystemAndHandler fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
+            out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         }
     }
 

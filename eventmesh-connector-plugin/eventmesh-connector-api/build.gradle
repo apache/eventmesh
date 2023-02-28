@@ -26,14 +26,14 @@ dependencies {
     
     implementation 'io.cloudevents:cloudevents-json-jackson:2.4.0'
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
 	implementation "org.mockito:mockito-core"
     implementation "org.powermock:powermock-module-junit4"
     implementation "org.powermock:powermock-api-mockito2"
 	
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
 }

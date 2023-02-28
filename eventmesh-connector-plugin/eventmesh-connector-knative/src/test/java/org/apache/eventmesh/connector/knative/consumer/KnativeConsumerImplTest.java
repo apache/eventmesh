@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.connector.knative.consumer;
 
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class KnativeConsumerImplTest {
@@ -30,10 +33,16 @@ public class KnativeConsumerImplTest {
         properties.put("topic", topic);
 
         // Create a Knative consumer:
-        KnativeConsumerImpl knativeConsumer = new KnativeConsumerImpl();
-        knativeConsumer.init(properties);
+        KnativeConsumerImpl knativeConsumer =
+                (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
 
-        // Subscribe:
-        knativeConsumer.subscribe(properties.getProperty("topic"));
+        try {
+            knativeConsumer.init(properties);
+
+            // Subscribe:
+            knativeConsumer.subscribe(properties.getProperty("topic"));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }

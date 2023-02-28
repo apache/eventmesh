@@ -31,7 +31,7 @@ public class CloudEventCodec extends BaseCodec {
 
     public static final CloudEventCodec INSTANCE = new CloudEventCodec();
 
-    private static final JsonFormat jsonFormat = new JsonFormat(Boolean.FALSE, Boolean.TRUE);
+    private static final JsonFormat jsonFormat = new JsonFormat(false, true);
 
     private static final Encoder encoder = in -> {
         ByteBuf out = ByteBufAllocator.DEFAULT.buffer();

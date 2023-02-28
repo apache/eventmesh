@@ -19,14 +19,15 @@ package org.apache.eventmesh.webhook.receive.storage;
 
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_EXTENSION;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATION_MODE_FILE;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATION_MODE_NACOS;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.apache.eventmesh.webhook.api.utils.StringUtils;
+import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -43,7 +44,6 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
-
     /**
      * webhook config pool -> key is CallbackPath
      */
@@ -58,16 +58,16 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     /**
      * Initialize according to operationMode
      *
-     * @param configurationWrapper
+     * @param receiveConfiguration receiveConfiguration
      */
-    public HookConfigOperationManage(ConfigurationWrapper configurationWrapper) throws FileNotFoundException, NacosException {
+    public HookConfigOperationManage(ReceiveConfiguration receiveConfiguration) throws FileNotFoundException, NacosException {
 
-        this.operationMode = configurationWrapper.getProp(WebHookOperationConstant.OPERATION_MODE_CONFIG_NAME);
+        this.operationMode = receiveConfiguration.getOperationMode();
 
-        if ("file".equals(operationMode)) {
-            new WebhookFileListener(configurationWrapper.getProp("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
-        } else if ("nacos".equals(operationMode)) {
-            nacosModeInit(configurationWrapper.getPropertiesByConfig("eventMesh.webHook.nacosMode", true));
+        if (OPERATION_MODE_FILE.equals(operationMode)) {
+            new WebhookFileListener(receiveConfiguration.getFilePath(), cacheWebHookConfig);
+        } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
+            nacosModeInit(receiveConfiguration.getOperationProperties());
         }
     }
 
@@ -77,9 +77,9 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-        if ("file".equals(operationMode)) {
+        if (OPERATION_MODE_FILE.equals(operationMode)) {
             return cacheWebHookConfig.get(StringUtils.getFileName(webHookConfig.getCallbackPath()));
-        } else if ("nacos".equals(operationMode)) {
+        } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
             try {
                 String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
                     GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
