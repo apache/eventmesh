@@ -84,25 +84,25 @@ public class PinpointTraceService implements EventMeshTraceService {
         final int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         spanProcessor = BatchSpanProcessor.builder(
-                        new PinpointSpanExporter(
-                                pinpointConfiguration.getAgentId(),
-                                pinpointConfiguration.getAgentName(),
-                                pinpointConfiguration.getApplicationName(),
-                                pinpointConfiguration.getGrpcTransportConfig()))
-                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-                .build();
+                new PinpointSpanExporter(
+                    pinpointConfiguration.getAgentId(),
+                    pinpointConfiguration.getAgentName(),
+                    pinpointConfiguration.getApplicationName(),
+                    pinpointConfiguration.getGrpcTransportConfig()))
+            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+            .build();
 
         sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(spanProcessor)
-                .build();
+            .addSpanProcessor(spanProcessor)
+            .build();
 
         final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .setTracerProvider(sdkTracerProvider)
-                .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(sdkTracerProvider)
+            .build();
 
         tracer = openTelemetry.getTracer(PinpointConstants.SERVICE_NAME);
 
@@ -141,26 +141,26 @@ public class PinpointTraceService implements EventMeshTraceService {
 
     @Override
     public Span createSpan(final String spanName,
-                           final SpanKind spanKind,
-                           final long startTimestamp,
-                           final TimeUnit timeUnit,
-                           final Context context,
-                           final boolean isSpanFinishInOtherThread) throws TraceException {
+        final SpanKind spanKind,
+        final long startTimestamp,
+        final TimeUnit timeUnit,
+        final Context context,
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(startTimestamp, timeUnit)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(startTimestamp, timeUnit)
+            .startSpan();
     }
 
     @Override
     public Span createSpan(final String spanName, final SpanKind spanKind, final Context context,
-                           final boolean isSpanFinishInOtherThread) throws TraceException {
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .startSpan();
     }
 
     @Override

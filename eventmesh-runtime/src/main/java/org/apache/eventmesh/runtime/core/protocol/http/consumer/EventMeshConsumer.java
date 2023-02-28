@@ -291,7 +291,7 @@ public class EventMeshConsumer {
     }
 
     public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<CloudEvent> events,
-                             AbstractContext context) {
+        AbstractContext context) {
         if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {

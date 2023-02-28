@@ -60,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public class EventMeshGrpcConsumer implements AutoCloseable {
+
     private static final transient String SDK_STREAM_URL = "grpc_stream";
     private transient ManagedChannel channel;
     private final transient EventMeshGrpcClientConfig clientConfig;
@@ -203,8 +204,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
 
         final Subscription.Builder builder = Subscription.newBuilder()
-                .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
-                .setConsumerGroup(clientConfig.getConsumerGroup());
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
+            .setConsumerGroup(clientConfig.getConsumerGroup());
 
         if (StringUtils.isNotEmpty(url)) {
             builder.setUrl(url);
@@ -232,10 +233,10 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                 type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;
             }
             final Subscription.SubscriptionItem item = Subscription.SubscriptionItem.newBuilder()
-                    .setTopic(subscriptionItem.getTopic())
-                    .setMode(mode)
-                    .setType(type)
-                    .build();
+                .setTopic(subscriptionItem.getTopic())
+                .setMode(mode)
+                .setType(type)
+                .build();
             builder.addSubscriptionItems(item);
         }
 
@@ -250,7 +251,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private void heartBeat() {
         final RequestHeader header = EventMeshClientUtil.buildHeader(
-                clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
+            clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
 
         scheduler.scheduleAtFixedRate(() -> {
             if (MapUtils.isEmpty(subscriptionMap)) {
@@ -258,16 +259,16 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
 
             final Heartbeat.Builder heartbeatBuilder = Heartbeat.newBuilder()
-                    .setHeader(header)
-                    .setConsumerGroup(clientConfig.getConsumerGroup())
-                    .setClientType(Heartbeat.ClientType.SUB);
+                .setHeader(header)
+                .setConsumerGroup(clientConfig.getConsumerGroup())
+                .setClientType(Heartbeat.ClientType.SUB);
 
             subscriptionMap.forEach((topic, subscriptionInfo) -> {
                 Heartbeat.HeartbeatItem heartbeatItem = Heartbeat.HeartbeatItem
-                        .newBuilder()
-                        .setTopic(topic)
-                        .setUrl(subscriptionInfo.getUrl())
-                        .build();
+                    .newBuilder()
+                    .setTopic(topic)
+                    .setUrl(subscriptionInfo.getUrl())
+                    .build();
                 heartbeatBuilder.addHeartbeatItems(heartbeatItem);
             });
 
@@ -298,9 +299,9 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
 
         final Map<String, List<SubscriptionItem>> subscriptionGroup =
-                subscriptionMap.values().stream()
-                        .collect(Collectors.groupingBy(SubscriptionInfo::getUrl,
-                                mapping(SubscriptionInfo::getSubscriptionItem, toList())));
+            subscriptionMap.values().stream()
+                .collect(Collectors.groupingBy(SubscriptionInfo::getUrl,
+                    mapping(SubscriptionInfo::getSubscriptionItem, toList())));
 
         subscriptionGroup.forEach((url, items) -> {
             Subscription subscription = buildSubscription(items, url);
@@ -324,6 +325,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     private static class SubscriptionInfo {
+
         private transient SubscriptionItem subscriptionItem;
         private transient String url;
 

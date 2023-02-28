@@ -67,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HandlerService {
-    
+
     private final Logger httpLogger = LoggerFactory.getLogger("http");
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
@@ -191,7 +191,8 @@ public class HandlerService {
                     Optional
                         .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
-                            new TypeReference<Map<String, Object>>() {}
+                            new TypeReference<Map<String, Object>>() {
+                            }
                         ))
                         .ifPresent(bodyMap::putAll);
                 }
@@ -332,7 +333,7 @@ public class HandlerService {
 
         // for error response
         public void sendErrorResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap,
-                                      Map<String, Object> traceMap) {
+            Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
                 responseBodyMap.put("retCode", retCode.getRetCode());

@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConsumerImpl {
+
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);

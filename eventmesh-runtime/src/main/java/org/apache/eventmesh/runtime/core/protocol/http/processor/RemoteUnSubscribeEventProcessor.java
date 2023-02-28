@@ -87,13 +87,11 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
-
         Map<String, Object> responseHeaderMap = builderResponseHeaderMap(requestWrapper);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
         Map<String, Object> responseBodyMap = new HashMap<>();
-
 
         //validate header
         if (validateSysHeader(sysHeaderMap)) {
@@ -107,7 +105,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
         Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {}
+            new TypeReference<HashMap<String, Object>>() {
+            }
         )).orElseGet(Maps::newHashMap);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
@@ -130,8 +129,6 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             String sysId = eventMeshHttpConfiguration.getSysID();
             String meshGroup = String.join("-", env, idc, cluster, sysId);
 
-
-
             // local unSubscription url
             String unsubscribeUrl = "http://" + localAddress + ":"
                 + eventMeshHttpConfiguration.getHttpServerPort()
@@ -144,7 +141,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
             List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
-                new TypeReference<List<String>>() {}
+                new TypeReference<List<String>>() {
+                }
             )).orElseGet(Collections::emptyList);
 
             String targetMesh = "";
@@ -170,7 +168,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
             Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 remoteResult,
-                new TypeReference<Map<String, String>>() {}
+                new TypeReference<Map<String, String>>() {
+                }
             )).orElseGet(Maps::newHashMap);
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
@@ -194,9 +193,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
+        return new String[]{RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
     }
-
 
 
 }

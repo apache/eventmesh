@@ -75,7 +75,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case CommitMessage:
                                         // update offset
                                         log.info("message commit, topic: {}, current offset:{}", topicName,
-                                                rec.offset());
+                                            rec.offset());
                                         break;
                                     case ReconsumeLater:
                                         // don't update offset
@@ -83,7 +83,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case ManualAck:
                                         // update offset
                                         log
-                                                .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
                                     default:
                                 }

@@ -48,6 +48,7 @@ import com.github.dockerjava.api.model.PortBinding;
 
 @Ignore
 public class PravegaClientTest {
+
     private StreamManager streamManager;
     private PravegaConnectorConfig config;
     private URI controllerURI;

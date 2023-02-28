@@ -32,6 +32,7 @@ import io.cloudevents.CloudEvent;
 
 @Config(field = "clientConfiguration")
 public class KafkaConsumerImpl implements Consumer {
+
     private ConsumerImpl consumer;
 
     /**

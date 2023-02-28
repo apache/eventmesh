@@ -48,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaClient {
+
     private final PravegaConnectorConfig config;
     private final StreamManager streamManager;
     private final EventStreamClientFactory clientFactory;
@@ -107,9 +108,9 @@ public class PravegaClient {
     }
 
     /**
-     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1
-     * since {@link EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture}
-     * with {@link Void} which couldn't get messageId.
+     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1 since {@link
+     * EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture} with {@link Void} which couldn't get
+     * messageId.
      *
      * @param topic      topic
      * @param cloudEvent cloudEvent
