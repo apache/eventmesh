@@ -63,7 +63,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
             if (log.isErrorEnabled()) {
                 log.error("webhookConfig callback path must start with {}",
-                        WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+                    WebHookOperationConstant.CALLBACK_PATH_PREFIX);
             }
             return 0;
         }
@@ -122,8 +122,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
-                                                                final Integer pageNum,
-                                                                final Integer pageSize) {
+        final Integer pageNum,
+        final Integer pageSize) {
         final String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         final File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
@@ -154,7 +154,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final StringBuilder fileContent = new StringBuilder();
 
         try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
-                StandardCharsets.UTF_8)) {
+            StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {
                 fileContent.append(line);
@@ -171,7 +171,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
         try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
-             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
             // lock this file, and will auto release after fos close
             fos.getChannel().lock();
             bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
@@ -190,8 +190,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private File getWebhookConfigFile(final WebHookConfig webHookConfig) {
         final String webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig)
-                + WebHookOperationConstant.FILE_SEPARATOR
-                + ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath());
+            + WebHookOperationConstant.FILE_SEPARATOR
+            + ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath());
 
         return new File(webhookConfigFilePath);
     }

@@ -21,6 +21,7 @@ package org.apache.eventmesh.connector.rocketmq.domain;
  * NonStandardKeys
  */
 public interface NonStandardKeys {
+
     String CONSUMER_GROUP = "rmq.consumer.group";
     String MAX_REDELIVERY_TIMES = "rmq.max.redelivery.times";
     String MESSAGE_CONSUME_TIMEOUT = "rmq.message.consume.timeout";

@@ -23,10 +23,12 @@ import org.apache.eventmesh.common.config.ConfigFiled;
 import org.apache.eventmesh.common.utils.IPUtils;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Config(prefix = "eventMesh.server")
 public class EventMeshGrpcConfiguration extends CommonConfiguration {
 

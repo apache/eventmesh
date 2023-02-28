@@ -38,7 +38,7 @@ import com.google.common.base.Preconditions;
 public class TcpMessageProtocolResolver {
 
     public static CloudEvent buildEvent(Header header, String cloudEventJson)
-            throws ProtocolHandleException {
+        throws ProtocolHandleException {
         CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
@@ -46,11 +46,11 @@ public class TcpMessageProtocolResolver {
         String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.isBlank(protocolType)
-                || StringUtils.isBlank(protocolVersion)
-                || StringUtils.isBlank(protocolDesc)) {
+            || StringUtils.isBlank(protocolVersion)
+            || StringUtils.isBlank(protocolDesc)) {
             throw new ProtocolHandleException(
-                    String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
-                            protocolType, protocolVersion, protocolDesc));
+                String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
+                    protocolType, protocolVersion, protocolDesc));
         }
 
         if (StringUtils.isBlank(cloudEventJson)) {
@@ -66,7 +66,7 @@ public class TcpMessageProtocolResolver {
             // todo:resolve different format
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions
-                    .checkNotNull(eventFormat, String.format("EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE));
+                .checkNotNull(eventFormat, String.format("EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE));
             CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v1(event);
             for (String propKey : header.getProperties().keySet()) {
@@ -78,7 +78,7 @@ public class TcpMessageProtocolResolver {
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
             // todo:resolve different format
             CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
+                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v03(event);
 
             for (String propKey : header.getProperties().keySet()) {

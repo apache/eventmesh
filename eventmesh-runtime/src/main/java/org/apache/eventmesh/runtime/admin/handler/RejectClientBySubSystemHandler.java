@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @EventHttpHandler(path = "/clientManage/rejectClientBySubSystem")
 @Slf4j
 public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
-    
+
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
     public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
@@ -93,7 +93,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session,
-                                    clientSessionGroupMapping);
+                                clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -103,16 +103,16 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
-                                +
-                                "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
-                        subSystem, e.getMessage());
+                        +
+                        "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
+                    subSystem, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
-                    +
-                    "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
+                +
+                "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

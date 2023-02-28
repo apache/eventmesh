@@ -23,9 +23,11 @@ import org.apache.eventmesh.common.config.ConfigFiled;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Config(prefix = "eventMesh.server")
 public class EventMeshTCPConfiguration extends CommonConfiguration {
@@ -117,6 +119,7 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TrafficShapingConfig {
+
         private long writeLimit = 0;
         private long readLimit = 1000;
         private long checkInterval = 1000;

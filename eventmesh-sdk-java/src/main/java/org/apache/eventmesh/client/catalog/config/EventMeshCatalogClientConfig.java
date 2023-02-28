@@ -26,6 +26,7 @@ import lombok.Data;
 @Data
 @Builder
 public class EventMeshCatalogClientConfig {
+
     @Builder.Default
     private String serverName = "eventmesh-catalog";
 

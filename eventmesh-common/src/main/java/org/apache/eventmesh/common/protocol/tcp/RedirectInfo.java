@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.protocol.tcp;
 
 public class RedirectInfo {
+
     private String ip;
     private int port;
 
@@ -48,9 +49,9 @@ public class RedirectInfo {
     @Override
     public String toString() {
         return "RedirectInfo{"
-                + "ip='" + ip
-                + '\''
-                + ", port=" + port
-                + '}';
+            + "ip='" + ip
+            + '\''
+            + ", port=" + port
+            + '}';
     }
 }

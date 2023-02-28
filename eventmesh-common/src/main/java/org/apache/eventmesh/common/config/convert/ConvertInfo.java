@@ -29,6 +29,7 @@ import lombok.Data;
  */
 @Data
 public class ConvertInfo {
+
     char hump;
     String key;
     Field field;

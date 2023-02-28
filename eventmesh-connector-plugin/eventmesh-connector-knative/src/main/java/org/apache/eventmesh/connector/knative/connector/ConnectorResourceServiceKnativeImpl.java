@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.knative.connector;
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 
 public class ConnectorResourceServiceKnativeImpl implements ConnectorResourceService {
+
     @Override
     public void init() throws Exception {
 
