@@ -33,7 +33,7 @@ public class ValueComparatorTest {
     public void testSerializeOrderedCollection() {
         Map<Map.Entry<String, Integer>, Integer> map = new TreeMap<>(new ValueComparator());
         try (OutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+            ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(map);
         } catch (IOException e) {
             Assert.fail();

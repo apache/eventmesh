@@ -18,6 +18,7 @@
 package org.apache.eventmesh.api;
 
 public class SendResult {
+
     private String messageId;
 
     private String topic;

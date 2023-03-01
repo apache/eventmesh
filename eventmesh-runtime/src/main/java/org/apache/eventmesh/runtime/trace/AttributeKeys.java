@@ -24,6 +24,7 @@ import io.opentelemetry.context.Context;
  * keys.
  */
 public final class AttributeKeys {
+
     public static final AttributeKey<Context> WRITE_CONTEXT =
         AttributeKey.valueOf(AttributeKeys.class, "passed-context");
 

@@ -28,9 +28,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class BeanUtilsTest {
+
     private Properties properties = new Properties();
 
     public static class CustomizedConfig extends ClientConfig {
+
         static final String STRING_TEST = "string.test";
         String stringTest = "foobar";
 

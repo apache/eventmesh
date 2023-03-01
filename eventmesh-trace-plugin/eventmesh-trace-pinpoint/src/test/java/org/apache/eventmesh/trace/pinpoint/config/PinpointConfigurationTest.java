@@ -32,7 +32,7 @@ public class PinpointConfigurationTest {
     @Test
     public void getConfigWhenPinpointTraceInit() {
         PinpointTraceService pinpointTrace =
-                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
 
         PinpointConfiguration config = pinpointTrace.getClientConfiguration();
         assertClientConfig(config);

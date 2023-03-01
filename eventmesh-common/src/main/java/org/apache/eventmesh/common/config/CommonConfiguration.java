@@ -34,6 +34,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Config(prefix = "eventMesh")
 public class CommonConfiguration {
+
     @ConfigFiled(field = "sysid", beNumber = true, notEmpty = true)
     private String sysID = "5477";
 

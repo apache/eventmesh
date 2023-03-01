@@ -238,7 +238,7 @@ public class ZookeeperRegistryService implements RegistryService {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
             String ip = ipPort[0];
-            Integer port = Integer.valueOf(ipPort[1]);
+            int port = Integer.parseInt(ipPort[1]);
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
             String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
             Map<String, Map<String, Integer>> instanceNumMap = eventMeshRegisterInfo.getEventMeshInstanceNumMap();

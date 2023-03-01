@@ -32,7 +32,6 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
     public EventMeshTcpBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
 
-
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 

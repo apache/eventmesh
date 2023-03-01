@@ -48,7 +48,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     private final ThreadPoolExecutor threadPoolExecutor;
 
     public ProducerService(EventMeshGrpcServer eventMeshGrpcServer,
-                           ThreadPoolExecutor threadPoolExecutor) {
+        ThreadPoolExecutor threadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.threadPoolExecutor = threadPoolExecutor;
     }

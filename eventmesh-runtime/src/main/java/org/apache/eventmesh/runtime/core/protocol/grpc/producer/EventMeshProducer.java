@@ -54,7 +54,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();
@@ -65,7 +65,7 @@ public class EventMeshProducer {
         //TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-                eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
+            eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
@@ -87,7 +87,7 @@ public class EventMeshProducer {
         }
 
         mqProducerWrapper.shutdown();
-        serviceState = ServiceState.STOPED;
+        serviceState = ServiceState.STOPPED;
         log.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
     }
 

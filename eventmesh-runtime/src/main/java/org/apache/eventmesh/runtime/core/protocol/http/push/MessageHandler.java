@@ -23,5 +23,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext
  * MessageHandler
  */
 public interface MessageHandler {
+
     boolean handle(HandleMsgContext handleMsgContext);
 }

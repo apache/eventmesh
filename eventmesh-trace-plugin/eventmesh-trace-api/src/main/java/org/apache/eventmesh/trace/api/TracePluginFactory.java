@@ -28,6 +28,7 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class TracePluginFactory {
+
     /**
      * to get TraceService
      *
@@ -38,8 +39,8 @@ public class TracePluginFactory {
         Objects.requireNonNull(traceServiceType, "traceServiceType cannot be null");
 
         EventMeshTraceService eventMeshTraceService = EventMeshExtensionFactory.getExtension(EventMeshTraceService.class,
-                traceServiceType);
+            traceServiceType);
         return Objects.requireNonNull(eventMeshTraceService,
-                "traceServiceType: " + traceServiceType + " is not supported");
+            "traceServiceType: " + traceServiceType + " is not supported");
     }
 }

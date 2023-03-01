@@ -111,7 +111,6 @@ public class CloudEventUtils {
                 rmqMessageExt.setBody(message.getBody());
             }
 
-
             //All destinations in RocketMQ use Topic
             rmqMessageExt.setTopic(message.getTopic());
 

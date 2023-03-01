@@ -20,7 +20,9 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 import java.util.concurrent.Delayed;
 
 /**
+ *
  */
 public interface DelayRetryable extends Delayed {
+
     boolean retry() throws Exception;
 }

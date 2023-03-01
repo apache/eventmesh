@@ -47,7 +47,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
     private final transient WebHookConfigOperation operation;
 
     public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
-                                                   HttpHandlerManager httpHandlerManager) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
         Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");

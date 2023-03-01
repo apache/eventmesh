@@ -47,15 +47,15 @@ public class SyncRequest {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient1();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
 
         try {
 
             final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                    eventMeshTcpClientConfig, CloudEvent.class);
+                eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
@@ -73,7 +73,7 @@ public class SyncRequest {
             }
 
             final CloudEvent replyEvent = eventFormat
-                    .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
+                .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
 
             // check-NPE CloudEventData
             final CloudEventData cloudEventData = replyEvent.getData();

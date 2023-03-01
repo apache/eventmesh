@@ -51,7 +51,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HTTPClientHandler(
-            EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
+        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
     ) {
         super(httpHandlerManager);
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -109,8 +109,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /client/http
-     * Return a response that contains the list of clients
+     * GET /client/http Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -124,17 +123,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
-                            "0",
-                            Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
-                            0,
-                            Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
-                            Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
-                            "",
-                            "HTTP"
+                        Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
+                        "0",
+                        Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
+                        0,
+                        Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
+                        "",
+                        "HTTP"
 
                     );
                     getClientResponseList.add(getClientResponse);
@@ -175,13 +174,13 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             list(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("DELETE")) {
+        if ("DELETE".equals(httpExchange.getRequestMethod())) {
             delete(httpExchange);
         }
     }

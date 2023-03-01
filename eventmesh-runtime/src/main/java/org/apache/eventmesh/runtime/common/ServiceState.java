@@ -23,7 +23,7 @@ public enum ServiceState {
 
     RUNNING,
 
-    STOPING,
+    STOPPING,
 
-    STOPED;
+    STOPPED;
 }
