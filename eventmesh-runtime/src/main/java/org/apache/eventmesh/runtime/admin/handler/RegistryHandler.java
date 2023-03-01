@@ -45,7 +45,7 @@ public class RegistryHandler extends AbstractHttpHandler {
     private final Registry eventMeshRegistry;
 
     public RegistryHandler(Registry eventMeshRegistry,
-                           HttpHandlerManager httpHandlerManager) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshRegistry = eventMeshRegistry;
     }
@@ -63,8 +63,7 @@ public class RegistryHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /registry
-     * Return a response that contains the list of EventMesh clusters
+     * GET /registry Return a response that contains the list of EventMesh clusters
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();

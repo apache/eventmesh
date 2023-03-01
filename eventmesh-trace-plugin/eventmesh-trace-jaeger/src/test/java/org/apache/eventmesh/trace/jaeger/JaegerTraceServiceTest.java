@@ -34,15 +34,15 @@ public class JaegerTraceServiceTest {
     @Test
     public void testInit() {
         JaegerTraceService jaegerTraceService =
-                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
+            (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
 
         Assert.assertNotNull(jaegerTraceService.getSdkTracerProvider());
         Assert.assertNotNull(jaegerTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () ->
-                        Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
+            assertThrows(IllegalArgumentException.class, () ->
+                Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
@@ -50,7 +50,7 @@ public class JaegerTraceServiceTest {
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         JaegerTraceService jaegerTraceService =
-                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
+            (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
         Field sdkTracerProviderField = JaegerTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

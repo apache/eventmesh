@@ -38,8 +38,7 @@ public class WatchFileManager {
         }));
     }
 
-    public static void registerFileChangeListener(String directoryPath,
-                                                  FileChangeListener listener) {
+    public static void registerFileChangeListener(String directoryPath, FileChangeListener listener) {
         WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
         if (task == null) {
             task = new WatchFileTask(directoryPath);

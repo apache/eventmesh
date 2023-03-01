@@ -38,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Config(field = "pravegaConnectorConfig")
 public class PravegaProducerImpl implements Producer {
+
     private final AtomicBoolean started = new AtomicBoolean(false);
     private PravegaClient client;
 

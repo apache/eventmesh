@@ -27,6 +27,7 @@ import lombok.Data;
 @Data
 @Config(prefix = "eventMesh.webHook")
 public class ReceiveConfiguration {
+
     @ConfigFiled(field = "producer.connector")
     private String connectorPluginType;
 

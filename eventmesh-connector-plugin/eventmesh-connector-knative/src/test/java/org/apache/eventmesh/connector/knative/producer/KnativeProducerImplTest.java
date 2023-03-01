@@ -44,7 +44,7 @@ public class KnativeProducerImplTest {
 
         // Create a Knative producer:
         KnativeProducerImpl knativehProducer =
-                (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
+            (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
 
         try {
             knativehProducer.init(properties);

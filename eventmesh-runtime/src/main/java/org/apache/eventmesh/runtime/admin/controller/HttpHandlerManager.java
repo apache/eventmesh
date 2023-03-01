@@ -43,6 +43,6 @@ public class HttpHandlerManager {
             EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
             server.createContext(eventHttpHandler.path(), httpHandler);
         });
-        
+
     }
 }

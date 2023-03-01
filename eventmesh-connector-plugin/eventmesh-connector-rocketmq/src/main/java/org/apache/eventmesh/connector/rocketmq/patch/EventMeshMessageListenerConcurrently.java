@@ -32,7 +32,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(final List<MessageExt> msgs,
-                                                    final ConsumeConcurrentlyContext context) {
+        final ConsumeConcurrentlyContext context) {
         ConsumeConcurrentlyStatus status = null;
 
         if (CollectionUtils.isEmpty(msgs)) {

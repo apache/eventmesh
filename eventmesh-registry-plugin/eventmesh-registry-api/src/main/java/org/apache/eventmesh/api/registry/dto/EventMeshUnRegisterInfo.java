@@ -21,6 +21,7 @@ package org.apache.eventmesh.api.registry.dto;
  * EventMeshUnRegisterInfo
  */
 public class EventMeshUnRegisterInfo {
+
     private String eventMeshClusterName;
     private String eventMeshName;
 

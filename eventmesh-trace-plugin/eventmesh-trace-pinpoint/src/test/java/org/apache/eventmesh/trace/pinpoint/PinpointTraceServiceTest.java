@@ -34,7 +34,7 @@ public class PinpointTraceServiceTest {
     @Test
     public void testInit() {
         PinpointTraceService pinpointTraceService =
-                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
 
         IllegalArgumentException illegalArgumentException =
@@ -48,7 +48,7 @@ public class PinpointTraceServiceTest {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
 
         PinpointTraceService pinpointTraceService =
-                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
         Field sdkTracerProviderField = PinpointTraceService.class.getDeclaredField("sdkTracerProvider");
         sdkTracerProviderField.setAccessible(true);

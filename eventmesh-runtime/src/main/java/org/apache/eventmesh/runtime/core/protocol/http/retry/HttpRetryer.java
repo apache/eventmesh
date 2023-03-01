@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HttpRetryer {
 
     private final Logger retryLogger = LoggerFactory.getLogger("retry");
-    
+
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SubscribeResponseBody extends Body {
+
     private Integer retCode;
     private String retMsg;
     private long resTime = System.currentTimeMillis();

@@ -77,7 +77,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer,
-                                    entry.getValue(), clientSessionGroupMapping);
+                                entry.getValue(), clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -87,14 +87,14 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={},errMsg={}", ip, port, e);
                 result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
-                        port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
+                    port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
-                    NetUtils.addressToString(successRemoteAddrs));
+                NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

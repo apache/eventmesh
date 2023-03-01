@@ -55,29 +55,29 @@ public class EventMeshGrpcClientConfig {
     private String language = "JAVA";
 
     @Builder.Default
-    private boolean useTls;
+    private boolean useTls = false;
 
     @Override
     public String toString() {
         return "ClientConfig={ServerAddr="
-                + serverAddr
-                + ",ServerPort="
-                + serverPort
-                + ",env="
-                + env
-                + ",idc="
-                + idc
-                + ",producerGroup="
-                + producerGroup
-                + ",consumerGroup="
-                + consumerGroup
-                + ",sys="
-                + sys
-                + ",userName="
-                + userName
-                + ",password=***"
-                + ",useTls="
-                + useTls
-                + "}";
+            + serverAddr
+            + ",ServerPort="
+            + serverPort
+            + ",env="
+            + env
+            + ",idc="
+            + idc
+            + ",producerGroup="
+            + producerGroup
+            + ",consumerGroup="
+            + consumerGroup
+            + ",sys="
+            + sys
+            + ",userName="
+            + userName
+            + ",password=***"
+            + ",useTls="
+            + useTls
+            + "}";
     }
 }

@@ -54,6 +54,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class PushConsumerImpl {
+
     private final DefaultMQPushConsumer rocketmqPushConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
@@ -167,7 +168,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -238,7 +239,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
