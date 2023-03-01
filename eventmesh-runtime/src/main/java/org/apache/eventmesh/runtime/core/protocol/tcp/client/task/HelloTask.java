@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_REQUEST;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -66,9 +67,15 @@ public class HelloTask extends AbstractTask {
         UserAgent user = (UserAgent) pkg.getBody();
         try {
             //do acl check in connect
+            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            String group = user.getGroup();
+            String token = user.getToken();
+            String subsystem = user.getSubsystem();
+            String topic = "ddd/dnamespace/dtopic";
+            EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                this.acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.getValue());
+                this.acl.doAclCheckInTcpConnect(remoteAddr, token, subsystem, topic, null, eventMeshAppSubTopicInfo);
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
