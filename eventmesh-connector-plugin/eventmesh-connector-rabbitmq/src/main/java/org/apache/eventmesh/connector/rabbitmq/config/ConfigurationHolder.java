@@ -29,32 +29,32 @@ import lombok.Data;
 public class ConfigurationHolder {
 
     @ConfigFiled(field = "host")
-    public String host;
+    private String host;
 
     @ConfigFiled(field = "port")
-    public int port;
+    private int port;
 
     @ConfigFiled(field = "username")
-    public String username;
+    private String username;
 
     @ConfigFiled(field = "passwd")
-    public String passwd;
+    private String passwd;
 
     @ConfigFiled(field = "virtualHost")
-    public String virtualHost;
+    private String virtualHost;
 
     @ConfigFiled(field = "exchangeType")
-    public BuiltinExchangeType exchangeType;
+    private BuiltinExchangeType exchangeType;
 
     @ConfigFiled(field = "exchangeName")
-    public String exchangeName;
+    private String exchangeName;
 
     @ConfigFiled(field = "routingKey")
-    public String routingKey;
+    private String routingKey;
 
     @ConfigFiled(field = "queueName")
-    public String queueName;
+    private String queueName;
 
     @ConfigFiled(field = "autoAck")
-    public boolean autoAck;
+    private boolean autoAck;
 }
