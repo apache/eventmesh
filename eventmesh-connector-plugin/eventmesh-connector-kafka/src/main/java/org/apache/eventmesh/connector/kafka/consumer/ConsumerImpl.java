@@ -83,14 +83,8 @@ public class ConsumerImpl {
     public synchronized void shutdown() {
         if (this.started.compareAndSet(true, false)) {
             // Shutdown the executor and interrupt any running tasks
-            List<Runnable> tasks = executorService.shutdownNow();
-
-            // Call a shutdown on each thread
-            for (Runnable task : tasks) {
-                if (task instanceof KafkaConsumerRunner) {
-                    ((KafkaConsumerRunner) task).shutdown();
-                }
-            }
+            kafkaConsumerRunner.shutdown();
+            executorService.shutdown();
         }
     }
 
