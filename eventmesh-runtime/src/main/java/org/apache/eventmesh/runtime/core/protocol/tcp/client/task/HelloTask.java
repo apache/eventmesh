@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_REQUEST;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
