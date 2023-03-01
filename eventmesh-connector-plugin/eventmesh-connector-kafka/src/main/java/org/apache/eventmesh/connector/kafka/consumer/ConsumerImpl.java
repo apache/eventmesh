@@ -53,7 +53,7 @@ public class ConsumerImpl {
     private Set<String> topicsSet;
 
     public ConsumerImpl(final Properties properties) {
-        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        final ClassLoader original = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(null);
         Properties props = new Properties();
 
