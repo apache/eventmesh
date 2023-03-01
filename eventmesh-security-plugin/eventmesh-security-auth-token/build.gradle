@@ -15,28 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.config;
 
-import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+def jwtVersion = '0.11.1'
 
-import lombok.Getter;
-import lombok.Setter;
+dependencies {
 
-@Getter
-@Setter
-@Config(prefix = "eventMesh.server.pulsar")
-public class ClientConfiguration {
+    implementation project(":eventmesh-common")
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
 
-    @ConfigFiled(field = "service")
-    private String serviceAddr;
+    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
 
-    @ConfigFiled(field = "authPlugin")
-    private String authPlugin;
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 
-    @ConfigFiled(field = "authParams")
-    private String authParams;
 
-    @ConfigFiled(field = "topicPrefix")
-    private String topicPrefix;
 }

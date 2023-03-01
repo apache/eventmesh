@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
+import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -59,10 +61,19 @@ public class SubscribeTask extends AbstractTask {
             final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
             final boolean eventMeshServerSecurityEnable = eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable();
             final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+
+            String group = session.getClient().getGroup();
+            String token = session.getClient().getToken();
+            String subsystem = session.getClient().getSubsystem();
+
+            EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
             subscriptionInfo.getTopicList().forEach(item -> {
-                //do acl check for receive msg
                 if (eventMeshServerSecurityEnable) {
-                    this.acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.getValue());
+                    try {
+                        this.acl.doAclCheckInTcpReceive(remoteAddr, token, subsystem, item.getTopic(), null, eventMeshAppSubTopicInfo);
+                    } catch (Exception e) {
+                        throw new AclException("group:" + session.getClient().getGroup() + " has no auth to sub the topic:" + item.getTopic());
+                    }
                 }
 
                 subscriptionItems.add(item);
