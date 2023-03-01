@@ -65,6 +65,7 @@ public class HelloTask extends AbstractTask {
         Session session = null;
         UserAgent user = (UserAgent) pkg.getBody();
         try {
+
             //do acl check in connect
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String group = user.getGroup();
