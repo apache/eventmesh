@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.common.config;
 
+import java.io.FileNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.convert.Convert;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +63,7 @@ public interface FileLoad {
 
     <T> T getConfig(ConfigInfo configInfo) throws IOException;
 
+    @Slf4j
     class PropertiesFileLoad implements FileLoad {
 
         private final Convert convert = new Convert();
@@ -68,9 +72,28 @@ public interface FileLoad {
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             final Properties properties = new Properties();
             if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {
-                properties.load(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(configInfo.getResourceUrl()))));
+                try (InputStreamReader reader = new InputStreamReader(
+                    Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET)) {
+                    properties.load(new BufferedReader(reader));
+                }
             } else {
-                properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
+                FileReader reader = null;
+                try {
+                    reader = new FileReader(configInfo.getFilePath());
+                    properties.load(new BufferedReader(reader));
+                } catch (FileNotFoundException ex) {
+                    log.error("[FileLoad] unable to find file at {} : ", configInfo.getFilePath());
+                } catch (Exception ex) {
+                    log.error("[FileLoad] an exception occurred during file load : ", ex);
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException ex) {
+                            log.warn("[FileLoad] an exception occurred during file close : ", ex);
+                        }
+                    }
+                }
             }
 
             if (Objects.isNull(configInfo.getClazz())) {
