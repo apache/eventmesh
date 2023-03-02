@@ -20,12 +20,16 @@ package org.apache.eventmesh.connector.rocketmq.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Config(prefix = "eventMesh.server.rocketmq", path = "classPath://rocketmq-client.properties")
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClientConfiguration {
 
     @ConfigFiled(field = "namesrvAddr", notEmpty = true)
