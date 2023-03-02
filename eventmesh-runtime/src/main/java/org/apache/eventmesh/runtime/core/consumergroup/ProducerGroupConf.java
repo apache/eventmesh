@@ -38,6 +38,10 @@ public class ProducerGroupConf {
         return groupName;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
