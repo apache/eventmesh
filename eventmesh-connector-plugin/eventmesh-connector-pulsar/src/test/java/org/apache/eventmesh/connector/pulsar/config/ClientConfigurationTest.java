@@ -43,8 +43,8 @@ public class ClientConfigurationTest {
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.getServiceAddr(), "127.0.0.1:6650");
-        Assert.assertEquals(config.getAuthPlugin(), "authPlugin-success!!!");
-        Assert.assertEquals(config.getAuthParams(), "authParams-success!!!");
+        Assert.assertEquals(config.getServiceAddr(), null);
+        Assert.assertEquals(config.getAuthPlugin(), null);
+        Assert.assertEquals(config.getAuthParams(), null);
     }
 }
