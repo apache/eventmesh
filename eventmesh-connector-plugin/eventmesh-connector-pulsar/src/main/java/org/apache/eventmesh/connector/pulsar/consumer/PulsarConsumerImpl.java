@@ -69,7 +69,6 @@ public class PulsarConsumerImpl implements Consumer {
     @Override
     public void init(Properties properties) throws Exception {
         this.properties = properties;
-
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
                 .serviceUrl(clientConfiguration.getServiceAddr());
