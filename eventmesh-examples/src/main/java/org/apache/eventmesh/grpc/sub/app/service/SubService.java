@@ -68,12 +68,12 @@ public class SubService implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
         final EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(ENV).idc(IDC)
-                .sys(SUB_SYS)
-                .build();
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV).idc(IDC)
+            .sys(SUB_SYS)
+            .build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
@@ -85,7 +85,6 @@ public class SubService implements InitializingBean {
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
         properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-
 
         // Wait for all messaged to be consumed
         final Thread stopThread = new Thread(() -> {

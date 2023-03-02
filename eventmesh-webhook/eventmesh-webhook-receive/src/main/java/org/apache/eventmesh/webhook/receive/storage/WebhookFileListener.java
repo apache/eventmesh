@@ -97,7 +97,7 @@ public class WebhookFileListener {
     private void cacheInit(final File webhookConfigFile) {
         final StringBuilder fileContent = new StringBuilder();
         try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
-                StandardCharsets.UTF_8)) {
+            StandardCharsets.UTF_8)) {
             while (br.ready()) {
                 fileContent.append(br.readLine());
             }

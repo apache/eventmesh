@@ -25,11 +25,13 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import inet.ipaddr.IPAddress;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Config(prefix = "eventMesh.server")
 public class EventMeshHTTPConfiguration extends CommonConfiguration {

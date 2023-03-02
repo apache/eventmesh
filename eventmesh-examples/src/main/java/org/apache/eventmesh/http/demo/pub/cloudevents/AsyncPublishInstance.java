@@ -31,12 +31,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AsyncPublishInstance extends HttpAbstractDemo {
+
     public static final int MESSAGE_SIZE = 1;
 
     public static void main(String[] args) throws Exception {
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 Map<String, String> content = new HashMap<>();
                 content.put("content", "testAsyncMessage");

@@ -114,22 +114,22 @@ public class ClientAckContext {
             log.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
         } else {
             log.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
-                    consumer == null, context == null, events == null);
+                consumer == null, context == null, events == null);
         }
     }
 
     @Override
     public String toString() {
         return "ClientAckContext{"
-                +
-                ",seq=" + seq
-                +
-                //TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
-                //               ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            ",seq=" + seq
+            +
+            //TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
+            //               ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
+            ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

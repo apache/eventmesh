@@ -72,17 +72,17 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(final String msgRandomNo,
-                            final String consumerGroup,
-                            final EventMeshConsumer eventMeshConsumer,
-                            final String topic,
-                            final CloudEvent event,
-                            final SubscriptionItem subscriptionItem,
-                            final AbstractContext context,
-                            final ConsumerGroupConf consumerGroupConfig,
-                            final EventMeshHTTPServer eventMeshHTTPServer,
-                            final String bizSeqNo,
-                            final String uniqueId,
-                            final ConsumerGroupTopicConf consumeTopicConfig) {
+        final String consumerGroup,
+        final EventMeshConsumer eventMeshConsumer,
+        final String topic,
+        final CloudEvent event,
+        final SubscriptionItem subscriptionItem,
+        final AbstractContext context,
+        final ConsumerGroupConf consumerGroupConfig,
+        final EventMeshHTTPServer eventMeshHTTPServer,
+        final String bizSeqNo,
+        final String uniqueId,
+        final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
@@ -231,25 +231,25 @@ public class HandleMsgContext {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("handleMsgContext={")
-                .append("consumerGroup=")
-                .append(consumerGroup)
-                .append(",topic=")
-                .append(topic)
-                .append(",subscriptionItem=")
-                .append(subscriptionItem)
-                .append(",consumeTopicConfig=")
-                .append(consumeTopicConfig)
-                .append(",bizSeqNo=")
-                .append(bizSeqNo)
-                .append(",uniqueId=")
-                .append(uniqueId)
-                .append(",ttl=")
-                .append(ttl)
-                .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-                .append('}')
-                .toString();
+            .append("handleMsgContext={")
+            .append("consumerGroup=")
+            .append(consumerGroup)
+            .append(",topic=")
+            .append(topic)
+            .append(",subscriptionItem=")
+            .append(subscriptionItem)
+            .append(",consumeTopicConfig=")
+            .append(consumeTopicConfig)
+            .append(",bizSeqNo=")
+            .append(bizSeqNo)
+            .append(",uniqueId=")
+            .append(uniqueId)
+            .append(",ttl=")
+            .append(ttl)
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append('}')
+            .toString();
     }
 
 }
