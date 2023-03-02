@@ -82,7 +82,9 @@ public class ConsumerImpl {
 
     public synchronized void shutdown() {
         if (this.started.compareAndSet(true, false)) {
-            this.kafkaConsumer.close();
+            // Shutdown the executor and interrupt any running tasks
+            kafkaConsumerRunner.shutdown();
+            executorService.shutdown();
         }
     }
 
