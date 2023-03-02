@@ -30,8 +30,7 @@ public interface ManufacturerProtocol {
 
 
     /**
-     * - 1.authentication
-     * - 2.parse webhook content to WebHookRequest
+     * - 1.authentication - 2.parse webhook content to WebHookRequest
      *
      * @param webHookRequest formatted data
      * @param webHookConfig  webhook config

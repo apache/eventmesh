@@ -31,7 +31,7 @@ public class PravegaConnectorConfigTest {
     @Test
     public void getConfigWhenPravegaConsumerInit() {
         PravegaConsumerImpl consumer =
-                (PravegaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pravega");
+            (PravegaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pravega");
 
         PravegaConnectorConfig config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -40,7 +40,7 @@ public class PravegaConnectorConfigTest {
     @Test
     public void getConfigWhenPravegaProducerInit() {
         PravegaProducerImpl producer =
-                (PravegaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pravega");
+            (PravegaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pravega");
 
         PravegaConnectorConfig config = producer.getClientConfiguration();
         assertConfig(config);

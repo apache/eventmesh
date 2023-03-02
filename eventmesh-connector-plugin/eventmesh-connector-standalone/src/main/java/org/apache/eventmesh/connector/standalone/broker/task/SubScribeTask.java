@@ -42,8 +42,8 @@ public class SubScribeTask implements Runnable {
     private AtomicInteger offset;
 
     public SubScribeTask(String topicName,
-                         StandaloneBroker standaloneBroker,
-                         EventListener listener) {
+        StandaloneBroker standaloneBroker,
+        EventListener listener) {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;

@@ -74,8 +74,7 @@ public class WebHookController {
     }
 
     /**
-     * 1. get webhookConfig from path 2. get ManufacturerProtocol and execute 3.
-     * convert to cloudEvent obj 4. send cloudEvent
+     * 1. get webhookConfig from path 2. get ManufacturerProtocol and execute 3. convert to cloudEvent obj 4. send cloudEvent
      *
      * @param path   CallbackPath
      * @param header map of webhook request header
@@ -93,7 +92,7 @@ public class WebHookController {
 
         if (!Objects.equals(webHookConfig.getContentType(), header.get(CONTENT_TYPE))) {
             throw new Exception(
-                    "http request header content-type value is mismatch. current value " + header.get(CONTENT_TYPE));
+                "http request header content-type value is mismatch. current value " + header.get(CONTENT_TYPE));
         }
 
         // 2. get ManufacturerProtocol and execute
@@ -109,13 +108,13 @@ public class WebHookController {
 
         // 3. convert to cloudEvent obj
         String cloudEventId = UUID_GENERATE_MODE.equals(webHookConfig.getCloudEventIdGenerateMode()) ? UUID.randomUUID().toString()
-                : webHookRequest.getManufacturerEventId();
+            : webHookRequest.getManufacturerEventId();
         String eventType = manufacturerName + DOT + webHookConfig.getManufacturerEventName();
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
-                .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
-                .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
-                .dataContentType(webHookConfig.getDataContentType()).body(body).build();
+            .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
+            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+            .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {

@@ -48,6 +48,7 @@ public @interface Config {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @interface Configs {
+
         Config[] value();
     }
 }

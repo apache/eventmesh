@@ -22,8 +22,11 @@ import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -37,73 +40,38 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 import com.google.common.base.Preconditions;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class HttpUtils {
 
     public static String post(final CloseableHttpClient client,
-                              final String uri,
-                              final RequestParam requestParam) throws IOException {
-        final ResponseHolder responseHolder = new ResponseHolder();
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        post(client, null, uri, requestParam, response -> {
-            responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-            countDownLatch.countDown();
-            if (log.isDebugEnabled()) {
-                log.debug("{}", responseHolder);
-            }
-            return responseHolder.response;
-        });
+        final String uri,
+        final RequestParam requestParam) throws IOException {
 
-        try {
-            countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
-            //ignore
-        }
-
-        return responseHolder.response;
+        return post(client, null, uri, requestParam);
     }
 
     public static String post(final CloseableHttpClient client,
-                              final HttpHost forwardAgent,
-                              final String uri,
-                              final RequestParam requestParam) throws IOException {
-        final ResponseHolder responseHolder = new ResponseHolder();
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        post(client, forwardAgent, uri, requestParam, response -> {
-            responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-            countDownLatch.countDown();
-            if (log.isDebugEnabled()) {
-                log.debug("{}", responseHolder);
-            }
-            return responseHolder.response;
-        });
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam) throws IOException {
 
-        try {
-            countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
-            // ignore
-        }
+        return post(client, forwardAgent, uri, requestParam, new EventMeshResponseHandler());
 
-        return responseHolder.response;
     }
 
-    public static void post(final CloseableHttpClient client,
-                            final HttpHost forwardAgent,
-                            final String uri,
-                            final RequestParam requestParam,
-                            final ResponseHandler<String> responseHandler) throws IOException {
+    public static String post(final CloseableHttpClient client,
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam,
+        final ResponseHandler<String> responseHandler) throws IOException {
+
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
@@ -131,8 +99,8 @@ public final class HttpUtils {
         //ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -144,14 +112,30 @@ public final class HttpUtils {
             log.debug("{}", httpPost);
         }
 
-        client.execute(httpPost, responseHandler);
+        return client.execute(httpPost, responseHandler);
     }
 
-    public static void get(final CloseableHttpClient client,
-                           final HttpHost forwardAgent,
-                           final String uri,
-                           final RequestParam requestParam,
-                           final ResponseHandler<String> responseHandler) throws IOException {
+    public static String get(final CloseableHttpClient client,
+        final String url,
+        final RequestParam requestParam) throws IOException {
+
+        return get(client, null, url, requestParam, new EventMeshResponseHandler());
+    }
+
+    public static String get(final CloseableHttpClient client,
+        final HttpHost forwardAgent,
+        final String url,
+        final RequestParam requestParam) throws IOException {
+
+        return get(client, forwardAgent, url, requestParam, new EventMeshResponseHandler());
+    }
+
+    public static String get(final CloseableHttpClient client,
+        final HttpHost forwardAgent,
+        final String uri,
+        final RequestParam requestParam,
+        final ResponseHandler<String> responseHandler) throws IOException {
+
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestParam != null, "requestParam can't be null");
@@ -169,8 +153,8 @@ public final class HttpUtils {
         //ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -182,61 +166,31 @@ public final class HttpUtils {
             log.debug("{}", httpGet);
         }
 
-        client.execute(httpGet, responseHandler);
+        return client.execute(httpGet, responseHandler);
     }
 
-    public static String get(final CloseableHttpClient client,
-                             final String url,
-                             final RequestParam requestParam) throws IOException {
-        final ResponseHolder responseHolder = new ResponseHolder();
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        get(client, null, url, requestParam, response -> {
-            responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-            countDownLatch.countDown();
-            if (log.isDebugEnabled()) {
-                log.debug("{}", responseHolder);
+    private static class EventMeshResponseHandler implements ResponseHandler<String> {
+
+        /**
+         * Processes an {@link HttpResponse} and returns some value corresponding to that response.
+         *
+         * @param response The response to process
+         * @return A value determined by the response
+         * @throws ClientProtocolException in case of an http protocol error
+         * @throws IOException             in case of a problem or the connection was aborted
+         */
+        @Override
+        public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            //Successful responses (200-299)
+            if (statusCode >= 200 && statusCode < 300) {
+                HttpEntity entity = response.getEntity();
+                return entity != null ? EntityUtils.toString(entity, Constants.DEFAULT_CHARSET) : null;
+            } else {
+                throw new ClientProtocolException("Unexpected response statusCode: " + statusCode);
             }
-            return responseHolder.response;
-        });
-
-        try {
-            countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
-            //ignore
         }
-
-        return responseHolder.response;
     }
 
-    public static String get(final CloseableHttpClient client,
-                             final HttpHost forwardAgent,
-                             final String url,
-                             final RequestParam requestParam) throws IOException {
-        final ResponseHolder responseHolder = new ResponseHolder();
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        get(client, forwardAgent, url, requestParam, response -> {
-            responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
-            countDownLatch.countDown();
-            if (log.isDebugEnabled()) {
-                log.debug("{}", responseHolder);
-            }
-            return responseHolder.response;
-        });
-
-        try {
-            countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
-            //ignore
-        }
-
-        return responseHolder.response;
-    }
-
-    @Data
-    public static class ResponseHolder {
-        public String response;
-
-    }
 }

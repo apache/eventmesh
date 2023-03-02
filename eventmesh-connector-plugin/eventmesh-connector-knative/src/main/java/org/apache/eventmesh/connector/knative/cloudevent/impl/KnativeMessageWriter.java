@@ -42,12 +42,12 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
     public KnativeMessageWriter(Properties properties) {
         String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
         this.message = new CloudEventBuilder()
-                .withId(properties.getProperty(KnativeHeaders.CE_ID))
-                .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
-                .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
-                .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
-                .withData(s.getBytes(StandardCharsets.UTF_8))
-                .build();
+            .withId(properties.getProperty(KnativeHeaders.CE_ID))
+            .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
+            .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
+            .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
+            .withData(s.getBytes(StandardCharsets.UTF_8))
+            .build();
     }
 
     @Override

@@ -49,14 +49,15 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
     @Override
     public void start() throws Exception {
         // server start
-        if (eventMeshHttpConfiguration != null) {
+        if (eventMeshHttpServer != null) {
             eventMeshHttpServer.start();
         }
     }
 
     @Override
     public void shutdown() throws Exception {
-        if (eventMeshHttpConfiguration != null) {
+        //server shutdown
+        if (eventMeshHttpServer != null) {
             eventMeshHttpServer.shutdown();
         }
     }

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.logging.log4j.util.ProcessIdUtil;
-
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -73,7 +71,7 @@ public class ThreadUtils {
         if (currentPID == -1) {
             synchronized (ThreadUtils.class) {
                 if (currentPID == -1) {
-                    currentPID = Long.parseLong(ProcessIdUtil.getProcessId());
+                    currentPID = Long.parseLong(SystemUtils.getProcessId());
                 }
             }
         }

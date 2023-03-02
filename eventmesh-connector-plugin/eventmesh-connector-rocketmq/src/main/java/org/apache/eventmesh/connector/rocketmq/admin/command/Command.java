@@ -31,6 +31,7 @@ import lombok.Data;
 
 @Data
 public abstract class Command {
+
     protected DefaultMQAdminExt adminExt;
 
     protected String nameServerAddr;

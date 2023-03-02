@@ -22,8 +22,8 @@ import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
 /**
- * The top-level interface of metrics registry, used to register different metrics.
- * It should have multiple sub implementation, e.g. JVM, Prometheus, i.g.
+ * The top-level interface of metrics registry, used to register different metrics. It should have multiple sub implementation, e.g. JVM, Prometheus,
+ * i.g.
  *
  * @since 1.4.0
  */

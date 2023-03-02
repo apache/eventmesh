@@ -82,8 +82,8 @@ public class SendMessageBatchResponseHeader extends Header {
     }
 
     public static SendMessageBatchResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                             String eventMeshIp, String eventMeshEnv,
-                                                             String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader = new SendMessageBatchResponseHeader();
         sendMessageBatchResponseHeader.setCode(requestCode);
         sendMessageBatchResponseHeader.setEventMeshCluster(eventMeshCluster);
@@ -97,11 +97,11 @@ public class SendMessageBatchResponseHeader extends Header {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchResponseHeader={")
-                .append("code=").append(code).append(",")
-                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshIp=").append(eventMeshIp).append("}");
+            .append("code=").append(code).append(",")
+            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+            .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 

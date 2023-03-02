@@ -46,7 +46,7 @@ public class PulsarClientWrapper {
     private PulsarClient pulsarClient;
     private Map<String, Producer<byte[]>> producerMap = new HashMap<>();
 
-    public PulsarClientWrapper(ClientConfiguration config)  {
+    public PulsarClientWrapper(ClientConfiguration config) {
         this.config = config;
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
@@ -64,7 +64,7 @@ public class PulsarClientWrapper {
             this.pulsarClient = clientBuilder.build();
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
+                String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
         }
     }
 
@@ -78,7 +78,7 @@ public class PulsarClientWrapper {
                 .create();
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
-              String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
+                String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
         }
     }
 

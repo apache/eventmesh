@@ -18,6 +18,7 @@
 package org.apache.eventmesh.spi.loader;
 
 public class EventMeshExtensionConstant {
+
     /**
      * eventmesh plugin base path
      */

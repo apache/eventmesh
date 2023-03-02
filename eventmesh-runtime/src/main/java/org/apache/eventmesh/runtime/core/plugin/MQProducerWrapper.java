@@ -81,7 +81,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
-            throws Exception {
+        throws Exception {
         meshMQProducer.request(cloudEvent, rrCallback, timeout);
     }
 
