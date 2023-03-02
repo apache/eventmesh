@@ -20,12 +20,16 @@ package org.apache.eventmesh.connector.kafka.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigFiled;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Config(prefix = "eventMesh.server.kafka", path = "classPath://kafka-client.properties")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientConfiguration {
 
     @ConfigFiled(field = "namesrvAddr", notEmpty = true)

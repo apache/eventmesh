@@ -34,9 +34,7 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaConsumerImplInit() {
-        KafkaConsumerImpl consumer =
-            (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
-
+        KafkaConsumerImpl consumer = (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
     }
@@ -46,9 +44,7 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaProducerImplInit() {
-        KafkaProducerImpl producer =
-            (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
-
+        KafkaProducerImpl producer = (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
     }
