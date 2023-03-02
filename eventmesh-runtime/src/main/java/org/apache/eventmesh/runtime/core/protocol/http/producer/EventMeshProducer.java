@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
@@ -85,6 +86,7 @@ public class EventMeshProducer {
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
             eventMeshHttpConfiguration.getEventMeshCluster()));
+        keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
