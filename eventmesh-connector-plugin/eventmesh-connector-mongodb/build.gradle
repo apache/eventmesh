@@ -43,5 +43,5 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    testImplementation 'de.bwaldvogel:mongo-java-server:1.41.0'
+    testImplementation 'de.bwaldvogel:mongo-java-server:1.42.0'
 }
