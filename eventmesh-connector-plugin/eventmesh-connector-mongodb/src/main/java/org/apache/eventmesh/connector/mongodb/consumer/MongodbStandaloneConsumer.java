@@ -105,6 +105,10 @@ public class MongodbStandaloneConsumer implements Consumer {
         this.client = MongodbClientManager.createMongodbClient(configurationHolder.getUrl());
         this.db = client.getDatabase(configurationHolder.getDatabase());
         this.cappedCol = db.getCollection(configurationHolder.getCollection());
+        //create index
+        Document index = new Document(MongodbConstants.CAPPED_COL_CURSOR_FN, 1)
+            .append(MongodbConstants.CAPPED_COL_TOPIC_FN, 1);
+        this.cappedCol.createIndex(index);
     }
 
     @Override
