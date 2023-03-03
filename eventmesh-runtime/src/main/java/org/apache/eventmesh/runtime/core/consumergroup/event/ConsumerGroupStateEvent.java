@@ -19,11 +19,16 @@ package org.apache.eventmesh.runtime.core.consumergroup.event;
 
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 
+import lombok.Data;
+
+@Data
 public class ConsumerGroupStateEvent {
 
-    public String consumerGroup;
-    public ConsumerGroupStateAction action;
-    public ConsumerGroupConf consumerGroupConfig;
+    private String consumerGroup;
+
+    private ConsumerGroupStateAction action;
+
+    private ConsumerGroupConf consumerGroupConfig;
 
     @Override
     public String toString() {
