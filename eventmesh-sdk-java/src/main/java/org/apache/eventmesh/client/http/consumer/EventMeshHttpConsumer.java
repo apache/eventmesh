@@ -98,7 +98,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         try {
             final String subRes = HttpUtils.post(httpClient, target, subscribeParam);
             final EventMeshRetObj ret = JsonUtils.parseObject(subRes, EventMeshRetObj.class);
-            if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
+            if (Objects.requireNonNull(ret).getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
             SUBSCRIPTIONS.addAll(topicList);
@@ -129,7 +129,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
                 final String target = selectEventMesh();
                 final String res = HttpUtils.post(httpClient, target, requestParam);
                 final EventMeshRetObj ret = JsonUtils.parseObject(res, EventMeshRetObj.class);
-                if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
+                if (EventMeshRetCode.SUCCESS.getRetCode() != Objects.requireNonNull(ret).getRetCode()) {
                     throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                 }
             } catch (Exception e) {
@@ -157,7 +157,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
             final String unSubRes = HttpUtils.post(httpClient, target, unSubscribeParam);
             final EventMeshRetObj ret = JsonUtils.parseObject(unSubRes, EventMeshRetObj.class);
 
-            if (EventMeshRetCode.SUCCESS.getRetCode() != ret.getRetCode()) {
+            if (EventMeshRetCode.SUCCESS.getRetCode() != Objects.requireNonNull(ret).getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
             // todo: avoid concurrentModifiedException

@@ -44,7 +44,10 @@ public class ConnectorResource {
     }
 
     public static ConnectorResource getInstance(String connectorResourcePluginType) {
-        return CONNECTOR_RESOURCE_CACHE.computeIfAbsent(connectorResourcePluginType, key -> connectorResourceBuilder(key));
+        return CONNECTOR_RESOURCE_CACHE.computeIfAbsent(
+            connectorResourcePluginType,
+            ConnectorResource::connectorResourceBuilder
+        );
     }
 
     private static ConnectorResource connectorResourceBuilder(String connectorResourcePluginType) {
