@@ -34,8 +34,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
@@ -44,10 +42,11 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @SuppressWarnings("all")
 public class MongodbStandaloneConsumer implements Consumer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongodbStandaloneConsumer.class);
 
     private final ConfigurationHolder configurationHolder;
 
@@ -154,7 +153,7 @@ public class MongodbStandaloneConsumer implements Consumer {
                         final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                             @Override
                             public void commit(EventMeshAction action) {
-                                LOGGER.info("[MongodbStandaloneConsumer] Mongodb consumer context commit.");
+                                log.info("[MongodbStandaloneConsumer] Mongodb consumer context commit.");
                             }
                         };
                         if (eventListener != null) {
@@ -167,7 +166,7 @@ public class MongodbStandaloneConsumer implements Consumer {
                         }
                     }
                 } catch (Exception ex) {
-                    LOGGER.error("[MongodbStandaloneConsumer] thread run happen exception.", ex);
+                    log.error("[MongodbStandaloneConsumer] thread run happen exception.", ex);
                 }
                 Thread.yield();
             }

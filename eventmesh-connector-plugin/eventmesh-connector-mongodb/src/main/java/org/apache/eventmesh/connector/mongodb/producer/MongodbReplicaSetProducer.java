@@ -30,17 +30,16 @@ import org.apache.eventmesh.connector.mongodb.utils.MongodbCloudEventUtil;
 import java.util.Properties;
 
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 
-public class MongodbReplicaSetProducer implements Producer {
-    private static final Logger logger = LoggerFactory.getLogger(MongodbReplicaSetProducer.class);
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+public class MongodbReplicaSetProducer implements Producer {
     private volatile boolean started = false;
 
     private final ConfigurationHolder configurationHolder;
@@ -99,7 +98,7 @@ public class MongodbReplicaSetProducer implements Producer {
             sendResult.setMessageId(cloudEvent.getId());
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
-            logger.error("[MongodbReplicaSetProducer] publish happen exception.", ex);
+            log.error("[MongodbReplicaSetProducer] publish happen exception.", ex);
             sendCallback.onException(
                     OnExceptionContext.builder()
                             .topic(cloudEvent.getSubject())
@@ -118,7 +117,7 @@ public class MongodbReplicaSetProducer implements Producer {
                     .getDatabase(configurationHolder.getDatabase()).getCollection(configurationHolder.getCollection());
             collection.insertOne(document);
         } catch (Exception ex) {
-            logger.error("[MongodbReplicaSetProducer] sendOneway happen exception.", ex);
+            log.error("[MongodbReplicaSetProducer] sendOneway happen exception.", ex);
         }
     }
 

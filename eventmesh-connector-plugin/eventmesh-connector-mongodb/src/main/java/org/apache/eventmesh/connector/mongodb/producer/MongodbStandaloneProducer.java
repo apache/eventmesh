@@ -32,8 +32,6 @@ import org.apache.eventmesh.connector.mongodb.utils.MongodbSequenceUtil;
 import java.util.Properties;
 
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
@@ -41,10 +39,11 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @SuppressWarnings("all")
 public class MongodbStandaloneProducer implements Producer {
-
-    private static final Logger logger = LoggerFactory.getLogger(MongodbStandaloneProducer.class);
 
     private final ConfigurationHolder configurationHolder;
 
@@ -112,7 +111,7 @@ public class MongodbStandaloneProducer implements Producer {
             sendResult.setMessageId(cloudEvent.getId());
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
-            logger.error("[MongodbStandaloneProducer] publish happen exception.", ex);
+            log.error("[MongodbStandaloneProducer] publish happen exception.", ex);
             sendCallback.onException(
                     OnExceptionContext.builder()
                             .topic(cloudEvent.getSubject())
@@ -132,7 +131,7 @@ public class MongodbStandaloneProducer implements Producer {
                     .append(MongodbConstants.CAPPED_COL_CURSOR_FN, i);
             cappedCol.insertOne(doc);
         } catch (Exception ex) {
-            logger.error("[MongodbStandaloneProducer] sendOneway happen exception.", ex);
+            log.error("[MongodbStandaloneProducer] sendOneway happen exception.", ex);
         }
     }
 
