@@ -50,7 +50,7 @@ public class RocketMQConsumerImpl implements Consumer {
             consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
         }
 
-        String namesrvAddr = clientConfiguration.namesrvAddr;
+        String namesrvAddr = clientConfiguration.getNamesrvAddr();
         String instanceName = keyValue.getProperty("instanceName");
         Properties properties = new Properties();
         properties.put("ACCESS_POINTS", namesrvAddr);
