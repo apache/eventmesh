@@ -42,7 +42,7 @@ public class KafkaConsumerImpl implements Consumer {
 
     @Override
     public synchronized void init(Properties props) throws Exception {
-        String namesrvAddr = clientConfiguration.namesrvAddr;
+        String namesrvAddr = clientConfiguration.getNamesrvAddr();
         String consumerGroup = props.getProperty("consumerGroup");
 
         // Other config props
