@@ -34,9 +34,7 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaConsumerImplInit() {
-        KafkaConsumerImpl consumer =
-            (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
-
+        KafkaConsumerImpl consumer = (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
     }
@@ -46,29 +44,27 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaProducerImplInit() {
-        KafkaProducerImpl producer =
-            (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
-
+        KafkaProducerImpl producer = (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.namesrvAddr, "127.0.0.1:9092;127.0.0.1:9092");
-        Assert.assertEquals(config.clientUserName, "username-succeed!!!");
-        Assert.assertEquals(config.clientPass, "password-succeed!!!");
-        Assert.assertEquals(config.consumeThreadMin, Integer.valueOf(1816));
-        Assert.assertEquals(config.consumeThreadMax, Integer.valueOf(2816));
-        Assert.assertEquals(config.consumeQueueSize, Integer.valueOf(3816));
-        Assert.assertEquals(config.pullBatchSize, Integer.valueOf(4816));
-        Assert.assertEquals(config.ackWindow, Integer.valueOf(5816));
-        Assert.assertEquals(config.pubWindow, Integer.valueOf(6816));
-        Assert.assertEquals(config.consumeTimeout, 7816);
-        Assert.assertEquals(config.pollNameServerInterval, Integer.valueOf(8816));
-        Assert.assertEquals(config.heartbeatBrokerInterval, Integer.valueOf(9816));
-        Assert.assertEquals(config.rebalanceInterval, Integer.valueOf(11816));
-        Assert.assertEquals(config.clusterName, "cluster-succeed!!!");
-        Assert.assertEquals(config.accessKey, "accessKey-succeed!!!");
-        Assert.assertEquals(config.secretKey, "secretKey-succeed!!!");
+        Assert.assertEquals(config.getNamesrvAddr(), "127.0.0.1:9092;127.0.0.1:9092");
+        Assert.assertEquals(config.getClientUserName(), "username-succeed!!!");
+        Assert.assertEquals(config.getClientPass(), "password-succeed!!!");
+        Assert.assertEquals(config.getConsumeThreadMin(), Integer.valueOf(1816));
+        Assert.assertEquals(config.getConsumeThreadMax(), Integer.valueOf(2816));
+        Assert.assertEquals(config.getConsumeQueueSize(), Integer.valueOf(3816));
+        Assert.assertEquals(config.getPullBatchSize(), Integer.valueOf(4816));
+        Assert.assertEquals(config.getAckWindow(), Integer.valueOf(5816));
+        Assert.assertEquals(config.getPubWindow(), Integer.valueOf(6816));
+        Assert.assertEquals(config.getConsumeTimeout(), 7816);
+        Assert.assertEquals(config.getPollNameServerInterval(), Integer.valueOf(8816));
+        Assert.assertEquals(config.getHeartbeatBrokerInterval(), Integer.valueOf(9816));
+        Assert.assertEquals(config.getRebalanceInterval(), Integer.valueOf(11816));
+        Assert.assertEquals(config.getClusterName(), "cluster-succeed!!!");
+        Assert.assertEquals(config.getAccessKey(), "accessKey-succeed!!!");
+        Assert.assertEquals(config.getSecretKey(), "secretKey-succeed!!!");
     }
 }

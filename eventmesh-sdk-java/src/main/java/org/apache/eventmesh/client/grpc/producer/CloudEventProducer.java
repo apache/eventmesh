@@ -33,7 +33,9 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -137,7 +139,7 @@ public class CloudEventProducer {
         final CloudEventBuilder builder = CloudEventBuilder.from(cloudEvent)
             .withExtension(ProtocolKey.ENV, clientConfig.getEnv())
             .withExtension(ProtocolKey.IDC, clientConfig.getIdc())
-            .withExtension(ProtocolKey.IP, IPUtils.getLocalAddress())
+            .withExtension(ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()))
             .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
             .withExtension(ProtocolKey.SYS, clientConfig.getSys())
             .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
