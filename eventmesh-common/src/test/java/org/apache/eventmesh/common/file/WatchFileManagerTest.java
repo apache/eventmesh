@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common.file;
 
+import java.util.Objects;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
@@ -37,7 +38,7 @@ public class WatchFileManagerTest {
 
     @Test
     public void testWatchFile() {
-        String resourceUrl = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
+        String resourceUrl = Objects.requireNonNull(WatchFileManagerTest.class.getResource("/configuration.properties")).getFile();
         String replaceUrl = resourceUrl.replace("/", "\\\\");
         resourceUrl = replaceUrl.substring(2);
         File file = new File(resourceUrl);
