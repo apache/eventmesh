@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.file;
 
-import java.util.Objects;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
