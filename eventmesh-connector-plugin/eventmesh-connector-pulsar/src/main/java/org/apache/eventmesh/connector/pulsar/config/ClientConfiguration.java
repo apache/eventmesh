@@ -25,7 +25,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Config(prefix = "eventMesh.server.pulsar")
+@Config(prefix = "eventMesh.server.pulsar", path = "classPath://pulsar-client.properties")
 public class ClientConfiguration {
 
     @ConfigFiled(field = "service")

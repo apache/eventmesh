@@ -94,9 +94,8 @@ public class Acl {
         aclService.doAclCheckInConnect(buildTcpAclProperties(remoteAddr, userAgent, null, requestCode));
     }
 
-    public void doAclCheckInTcpConnect(String remoteAddr, String token, String subsystem, String topic,
-        String requestURI, Object obj) throws AclException {
-        aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
+    public void doAclCheckInTcpConnect(String remoteAddr, String token, String subsystem, Object obj) throws AclException {
+        aclService.doAclCheckInConnect(buildTcpAclProperties(remoteAddr, token, subsystem, obj));
     }
 
     public void doAclCheckInTcpHeartbeat(String remoteAddr, UserAgent userAgent, int requestCode) throws AclException {
@@ -105,20 +104,6 @@ public class Acl {
 
     public void doAclCheckInTcpSend(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
         aclService.doAclCheckInSend(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
-    }
-
-    private static AclProperties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
-        AclProperties aclProperties = new AclProperties();
-        aclProperties.setClientIp(remoteAddr);
-        aclProperties.setUser(userAgent.getUsername());
-        aclProperties.setPwd(userAgent.getPassword());
-        aclProperties.setSubsystem(userAgent.getSubsystem());
-        aclProperties.setRequestCode(requestCode);
-        if (StringUtils.isNotBlank(topic)) {
-            aclProperties.setTopic(topic);
-        }
-
-        return aclProperties;
     }
 
     public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode)
@@ -143,7 +128,7 @@ public class Acl {
 
     public void doAclCheckInTcpReceive(String remoteAddr, String token, String subsystem, String topic,
         String requestURI, Object obj) throws AclException {
-        aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
+        aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
     }
 
     public void doAclCheckInTcpReceive(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws Exception {
@@ -181,7 +166,21 @@ public class Acl {
         return aclProperties;
     }
 
-    private AclProperties buildHttpAclProperties(String remoteAddr, String token, String subsystem, String topic, String requestURI, Object obj) {
+    private static AclProperties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setUser(userAgent.getUsername());
+        aclProperties.setPwd(userAgent.getPassword());
+        aclProperties.setSubsystem(userAgent.getSubsystem());
+        aclProperties.setRequestCode(requestCode);
+        if (StringUtils.isNotBlank(topic)) {
+            aclProperties.setTopic(topic);
+        }
+
+        return aclProperties;
+    }
+
+    private AclProperties buildTcpAclProperties(String remoteAddr, String token, String subsystem, String topic, String requestURI, Object obj) {
         AclProperties aclProperties = new AclProperties();
         aclProperties.setClientIp(remoteAddr);
         aclProperties.setSubsystem(subsystem);
@@ -194,9 +193,20 @@ public class Acl {
         }
         if (obj instanceof EventMeshAppSubTopicInfo) {
             aclProperties.setExtendedField("group", ((EventMeshAppSubTopicInfo) obj).getApp());
-            aclProperties.setExtendedField("sub", ((EventMeshAppSubTopicInfo) obj).getSub());
             aclProperties.setExtendedField("topics", ((EventMeshAppSubTopicInfo) obj).getTopics());
-            aclProperties.setExtendedField("token", ((EventMeshAppSubTopicInfo) obj).getToken());
+        }
+        return aclProperties;
+    }
+
+    private AclProperties buildTcpAclProperties(String remoteAddr, String token, String subsystem, Object obj) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setSubsystem(subsystem);
+        if (StringUtils.isNotBlank(token)) {
+            aclProperties.setTopic(token);
+        }
+        if (obj instanceof EventMeshAppSubTopicInfo) {
+            aclProperties.setExtendedField("group", ((EventMeshAppSubTopicInfo) obj).getApp());
         }
         return aclProperties;
     }

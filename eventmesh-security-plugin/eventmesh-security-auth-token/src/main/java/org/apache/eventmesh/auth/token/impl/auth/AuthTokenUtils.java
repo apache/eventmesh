@@ -34,6 +34,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -68,7 +70,12 @@ public class AuthTokenUtils {
                 KeyFactory kf = KeyFactory.getInstance("RSA");
                 Key validationKey = kf.generatePublic(spec);
                 JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
-                signedParser.parseClaimsJws(token);
+                Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
+                String sub = signJwt.getBody().get("sub", String.class);
+                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
+                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
+                        + aclProperties.getTopic());
+                }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);
             } catch (NoSuchAlgorithmException e) {
@@ -78,7 +85,51 @@ public class AuthTokenUtils {
             } catch (JwtException e) {
                 throw new AclException("invalid token!", e);
             }
+        } else {
+              {
+                throw new AclException("invalid token!");
+              }
+        }
+    }
 
+    public static void helloTaskAuthTokenByPublicKey(AclProperties aclProperties) {
+
+        String token = aclProperties.getToken();
+        if (StringUtils.isNotBlank(token)) {
+            String publicKeyUrl = null;
+            token = token.replace("Bearer ", "");
+            for (String key : ConfigurationContextUtil.KEYS) {
+                CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
+                if (null == commonConfiguration) {
+                    continue;
+                }
+                if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
+                    throw new AclException("publicKeyUrl cannot be null");
+                }
+                publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
+            }
+            byte[] validationKeyBytes = new byte[0];
+            try {
+                validationKeyBytes = Files.readAllBytes(Paths.get(publicKeyUrl));
+                X509EncodedKeySpec spec = new X509EncodedKeySpec(validationKeyBytes);
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                Key validationKey = kf.generatePublic(spec);
+                JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
+                Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
+                String sub = signJwt.getBody().get("sub", String.class);
+                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
+                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
+                        + aclProperties.getTopic());
+                }
+            } catch (IOException e) {
+                throw new AclException("public key read error!", e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new AclException("no such RSA algorithm!", e);
+            } catch (InvalidKeySpecException e) {
+                throw new AclException("invalid public key spec!", e);
+            } catch (JwtException e) {
+                throw new AclException("invalid token!", e);
+            }
         } else {
               {
                 throw new AclException("invalid token!");
@@ -87,18 +138,13 @@ public class AuthTokenUtils {
     }
 
     public static boolean authAccess(AclProperties aclProperties) {
-
         String topic = aclProperties.getTopic();
-        String token = aclProperties.getToken();
-
         Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
-        String groupToken = aclProperties.getExtendedField("token").toString();
-
-        if (groupTopics.contains(token) && groupToken.equals(token)) {
+        if (groupTopics.contains(topic)) {
             return true;
         } else {
             return false;
         }
-
     }
+
 }

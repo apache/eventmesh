@@ -27,6 +27,8 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class EtcdCustomService extends EtcdRegistryService {
     private static final Logger logger = LoggerFactory.getLogger(EtcdCustomService.class);
 
 
+    @Nullable
     public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
 
         Client client = getEtcdClient();
@@ -69,6 +72,7 @@ public class EtcdCustomService extends EtcdRegistryService {
         }
 
         return null;
+
     }
 
 }
