@@ -66,10 +66,10 @@ public class SubscribeTask extends AbstractTask {
             String token = session.getClient().getToken();
             String subsystem = session.getClient().getSubsystem();
 
-            EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
             subscriptionInfo.getTopicList().forEach(item -> {
                 if (eventMeshServerSecurityEnable) {
                     try {
+                        EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
                         this.acl.doAclCheckInTcpReceive(remoteAddr, token, subsystem, item.getTopic(), null, eventMeshAppSubTopicInfo);
                     } catch (Exception e) {
                         throw new AclException("group:" + session.getClient().getGroup() + " has no auth to sub the topic:" + item.getTopic());

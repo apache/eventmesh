@@ -71,11 +71,10 @@ public class HelloTask extends AbstractTask {
             String group = user.getGroup();
             String token = user.getToken();
             String subsystem = user.getSubsystem();
-            String topic = "ddd/dnamespace/dtopic";
             EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
 
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                this.acl.doAclCheckInTcpConnect(remoteAddr, token, subsystem, topic, null, eventMeshAppSubTopicInfo);
+                this.acl.doAclCheckInTcpConnect(remoteAddr, token, subsystem, eventMeshAppSubTopicInfo);
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
