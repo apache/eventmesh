@@ -95,7 +95,6 @@ public class AuthTokenUtils {
         String topic = aclProperties.getTopic();
 
         Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
-        String groupToken = aclProperties.getExtendedField("token").toString();
 
         if (groupTopics.contains(topic)) {
             return true;

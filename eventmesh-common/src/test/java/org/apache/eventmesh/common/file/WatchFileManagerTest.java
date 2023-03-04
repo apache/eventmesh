@@ -18,14 +18,12 @@
 package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +38,9 @@ public class WatchFileManagerTest {
     @Test
     public void testWatchFile() {
         String resourceUrl = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
+        System.out.println("resourceUrl=="+resourceUrl);
+        String replaceUrl = resourceUrl.replace("/", "\\\\");
+        resourceUrl = replaceUrl.substring(2);
         File file = new File(resourceUrl);
         final FileChangeListener fileChangeListener = new FileChangeListener() {
             @Override
@@ -56,6 +57,7 @@ public class WatchFileManagerTest {
         WatchFileManager.registerFileChangeListener(file.getParent(), fileChangeListener);
 
         Path path = Paths.get(resourceUrl);
+        System.out.println("path=="+path);
         Properties properties = new Properties();
         try (BufferedReader reader = Files.newBufferedReader(path, Constants.DEFAULT_CHARSET)) {
             properties.load(reader);
