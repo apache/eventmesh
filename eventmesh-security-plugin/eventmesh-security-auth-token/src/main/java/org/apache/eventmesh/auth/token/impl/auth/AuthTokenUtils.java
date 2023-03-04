@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.auth.token.impl.auth;
 
-
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.config.CommonConfiguration;
@@ -35,6 +34,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -68,7 +69,12 @@ public class AuthTokenUtils {
                 KeyFactory kf = KeyFactory.getInstance("RSA");
                 Key validationKey = kf.generatePublic(spec);
                 JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
-                signedParser.parseClaimsJws(token);
+                Jws<Claims> signJwt = signedParser.parseClaimsJws(token);
+                String sub = signJwt.getBody().get("sub", String.class);
+                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
+                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
+                        + aclProperties.getTopic());
+                }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);
             } catch (NoSuchAlgorithmException e) {
@@ -87,12 +93,11 @@ public class AuthTokenUtils {
     public static boolean authAccess(AclProperties aclProperties) {
 
         String topic = aclProperties.getTopic();
-        String token = aclProperties.getToken();
 
         Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
         String groupToken = aclProperties.getExtendedField("token").toString();
 
-        if (groupTopics.contains(topic) && groupToken.equals(token)) {
+        if (groupTopics.contains(topic)) {
             return true;
         } else {
             return false;

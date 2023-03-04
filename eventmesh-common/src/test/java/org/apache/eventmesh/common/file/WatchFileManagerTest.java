@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.file;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.io.BufferedReader;
@@ -55,13 +57,13 @@ public class WatchFileManagerTest {
 
         Path path = Paths.get(resourceUrl);
         Properties properties = new Properties();
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+        try (BufferedReader reader = Files.newBufferedReader(path, Constants.DEFAULT_CHARSET)) {
             properties.load(reader);
         } catch (IOException e) {
             Assert.fail("Test failed to load from file");
         }
         properties.setProperty("eventMesh.server.newAdd", "newAdd");
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, Constants.DEFAULT_CHARSET)) {
             properties.store(writer, "newAdd");
         } catch (IOException e) {
             Assert.fail("Test failed to write to file");

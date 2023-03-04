@@ -189,7 +189,6 @@ public class Acl {
         if (obj instanceof EventMeshServicePubTopicInfo) {
             aclProperties.setExtendedField("group", ((EventMeshServicePubTopicInfo) obj).getService());
             aclProperties.setExtendedField("topics", ((EventMeshServicePubTopicInfo) obj).getTopics());
-            aclProperties.setExtendedField("token", ((EventMeshServicePubTopicInfo) obj).getToken());
         }
         return aclProperties;
     }
