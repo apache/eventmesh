@@ -38,7 +38,6 @@ public class WatchFileManagerTest {
     @Test
     public void testWatchFile() {
         String resourceUrl = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
-        System.out.println("resourceUrl=="+resourceUrl);
         String replaceUrl = resourceUrl.replace("/", "\\\\");
         resourceUrl = replaceUrl.substring(2);
         File file = new File(resourceUrl);
@@ -57,7 +56,6 @@ public class WatchFileManagerTest {
         WatchFileManager.registerFileChangeListener(file.getParent(), fileChangeListener);
 
         Path path = Paths.get(resourceUrl);
-        System.out.println("path=="+path);
         Properties properties = new Properties();
         try (BufferedReader reader = Files.newBufferedReader(path, Constants.DEFAULT_CHARSET)) {
             properties.load(reader);
