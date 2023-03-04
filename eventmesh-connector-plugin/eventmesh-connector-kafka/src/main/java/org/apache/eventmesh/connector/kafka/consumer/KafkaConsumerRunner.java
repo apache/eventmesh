@@ -62,6 +62,10 @@ public class KafkaConsumerRunner implements Runnable {
     public void run() {
         try {
             while (!closed.get()) {
+                if (consumer.subscription().isEmpty()) {
+                    // consumer cannot poll if it is subscribe to nothing
+                    continue;
+                }
                 ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000));
                 // Handle new records
                 records.forEach(rec -> {
@@ -82,8 +86,7 @@ public class KafkaConsumerRunner implements Runnable {
                                         break;
                                     case ManualAck:
                                         // update offset
-                                        log
-                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                        log.info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
                                     default:
                                 }
@@ -114,6 +117,3 @@ public class KafkaConsumerRunner implements Runnable {
         consumer.wakeup();
     }
 }
-
-
-
