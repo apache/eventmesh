@@ -41,7 +41,7 @@ public class KafkaProducerImpl implements Producer {
 
     @Override
     public synchronized void init(Properties keyValue) {
-        String namesrvAddr = clientConfiguration.namesrvAddr;
+        String namesrvAddr = clientConfiguration.getNamesrvAddr();
 
         keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, namesrvAddr);
         this.producer = new ProducerImpl(keyValue);
