@@ -110,8 +110,8 @@ public class EventMeshClientUtilTest {
             .hasFieldOrPropertyWithValue("seqNum", cloudEvent.getExtension(ProtocolKey.SEQ_NUM))
             .hasFieldOrPropertyWithValue("uniqueId", cloudEvent.getExtension(ProtocolKey.UNIQUE_ID))
             .hasFieldOrPropertyWithValue("content", new String(
-                Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent),
-                StandardCharsets.UTF_8)));
+                EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(Objects.requireNonNull(cloudEvent)),
+                StandardCharsets.UTF_8));
     }
 
     @Test
@@ -144,8 +144,8 @@ public class EventMeshClientUtilTest {
             .hasFieldOrPropertyWithValue("topic", cloudEvents.get(0).getSubject())
             .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup());
         assertThat(batchMessage.getMessageItemList()).hasSize(1).first().hasFieldOrPropertyWithValue("content",
-                new String(Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .serialize(cloudEvents.get(0)), StandardCharsets.UTF_8)))
+                new String(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                    .serialize(Objects.requireNonNull(cloudEvents.get(0)), StandardCharsets.UTF_8))
             .hasFieldOrPropertyWithValue("ttl", "4000")
             .hasFieldOrPropertyWithValue("seqNum", cloudEvents.get(0).getExtension(ProtocolKey.SEQ_NUM))
             .hasFieldOrPropertyWithValue("uniqueId", cloudEvents.get(0).getExtension(ProtocolKey.UNIQUE_ID));
