@@ -306,8 +306,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.getEventMeshTcpServerPort();
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.getEventMeshCluster());
-            eventMeshRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName() + "-"
-                + ConfigurationContextUtil.TCP);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName() + "-" + ConfigurationContextUtil.TCP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
@@ -320,8 +319,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private void unRegister() throws Exception {
-        String endPoints = IPUtils.getLocalAddress()
-            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.getEventMeshTcpServerPort();
+        String endPoints = IPUtils.getLocalAddress() + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.getEventMeshTcpServerPort();
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName());
@@ -358,8 +356,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private GlobalTrafficShapingHandler newGTSHandler(final ScheduledExecutorService executor, final long readLimit) {
-        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(executor, 0,
-            readLimit) {
+        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(executor, 0, readLimit) {
             @Override
             protected long calculateSize(final Object msg) {
                 return 1;
@@ -418,5 +415,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public Acl getAcl() {
         return acl;
+    }
+
+    public EventMeshTcpConnectionHandler getEventMeshTcpConnectionHandler() {
+        return eventMeshTcpConnectionHandler;
     }
 }
