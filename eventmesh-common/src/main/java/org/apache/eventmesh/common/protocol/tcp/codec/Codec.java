@@ -74,12 +74,20 @@ public class Codec {
             int headerLength = ArrayUtils.getLength(headerData);
             int bodyLength = ArrayUtils.getLength(bodyData);
 
-            int length = 4 + 4 + headerLength + bodyLength;
+            int length = headerLength + bodyLength;
 
             if (length > FRAME_MAX_LENGTH) {
                 throw new IllegalArgumentException("message size is exceed limit!");
             }
-
+            /**
+             * Header + Body, Format:
+             * <pre>
+             * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
+             * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
+             * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
+             * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+             * </pre>
+             */
             out.writeBytes(CONSTANT_MAGIC_FLAG);
             out.writeBytes(VERSION);
             out.writeInt(length);
@@ -108,14 +116,14 @@ public class Codec {
 
                 final int length = in.readInt();
                 final int headerLength = in.readInt();
-                final int bodyLength = length - 8 - headerLength;
+                final int bodyLength = length - headerLength;
                 Header header = parseHeader(in, headerLength);
                 Object body = parseBody(in, header, bodyLength);
 
                 Package pkg = new Package(header, body);
                 out.add(pkg);
             } catch (Exception e) {
-                log.error(String.format("decode error| receive: %s.", deserializeBytes(in.array())), e);
+                log.error("decode error| received data: {}.", deserializeBytes(in.array()), e);
                 throw e;
             }
         }
