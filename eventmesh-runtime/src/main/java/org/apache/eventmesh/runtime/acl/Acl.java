@@ -50,7 +50,7 @@ public class Acl {
     }
 
     public static Acl getInstance(String aclPluginType) {
-        return ACL_CACHE.computeIfAbsent(aclPluginType, key -> aclBuilder(key));
+        return ACL_CACHE.computeIfAbsent(aclPluginType, Acl::aclBuilder);
     }
 
     private static Acl aclBuilder(String aclPluginType) {
