@@ -169,7 +169,7 @@ public class Session {
 
     public void subscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
-            sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
+            sessionContext.getSubscribeTopics().putIfAbsent(item.getTopic(), item);
             Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
             Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
@@ -182,7 +182,7 @@ public class Session {
 
     public void unsubscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
-            sessionContext.subscribeTopics.remove(item.getTopic());
+            sessionContext.getSubscribeTopics().remove(item.getTopic());
             Objects.requireNonNull(clientGroupWrapper.get()).removeSubscription(item, this);
 
             if (!Objects.requireNonNull(clientGroupWrapper.get()).hasSubscription(item.getTopic())) {
@@ -195,7 +195,7 @@ public class Session {
     public EventMeshTcpSendResult upstreamMsg(Header header, CloudEvent event, SendCallback sendCallback,
         long startTime, long taskExecuteTime) {
         String topic = event.getSubject();
-        sessionContext.sendTopics.putIfAbsent(topic, topic);
+        sessionContext.getSendTopics().putIfAbsent(topic, topic);
         return sender.send(header, event, sendCallback, startTime, taskExecuteTime);
     }
 
@@ -358,7 +358,7 @@ public class Session {
             return false;
         }
 
-        if (!sessionContext.subscribeTopics.containsKey(topic)) {
+        if (!sessionContext.getSubscribeTopics().containsKey(topic)) {
             log.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
             return false;
         }

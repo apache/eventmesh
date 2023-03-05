@@ -55,8 +55,8 @@ public class UnSubscribeTask extends AbstractTask {
         try {
             synchronized (session) {
                 List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
-                if (MapUtils.isNotEmpty(session.getSessionContext().subscribeTopics)) {
-                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().subscribeTopics.entrySet()) {
+                if (MapUtils.isNotEmpty(session.getSessionContext().getSubscribeTopics())) {
+                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().getSubscribeTopics().entrySet()) {
                         topics.add(entry.getValue());
                     }
                     session.unsubscribe(topics);
