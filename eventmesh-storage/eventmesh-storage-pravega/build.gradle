@@ -15,19 +15,25 @@
  * limitations under the License.
  */
 
+configurations {
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    implementation.exclude group: 'log4j', module: 'log4j'
+}
 
 dependencies {
-    compileOnly project(":eventmesh-common")
-
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage:eventmesh-storage-api")
+    implementation("io.pravega:pravega-client:$pravega_version") {
+        exclude group: 'io.netty', module: 'netty-codec-http2:4.1.30.Final'
+    }
+    // use newer version to avoid CVE
+    implementation 'io.netty:netty-codec-http2'
+
+    testImplementation "org.testcontainers:testcontainers:1.17.3"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }

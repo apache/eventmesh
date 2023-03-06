@@ -15,19 +15,28 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.api.storage;
 
-dependencies {
-    compileOnly project(":eventmesh-common")
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+/**
+ * ConnectorResourceService
+ */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface ConnectorResourceService {
 
-    implementation project(":eventmesh-storage:eventmesh-storage-api")
+    /**
+     * Resource initialization in connector,such as,some public thread pool if exist
+     *
+     * @throws Exception
+     */
+    void init() throws Exception;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    /**
+     * Resource release in connector,such as,some public thread pool if exist
+     *
+     * @throws Exception
+     */
+    void release() throws Exception;
 }

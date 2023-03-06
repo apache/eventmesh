@@ -14,30 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-def grpcVersion = '1.42.2'
-
 configurations {
-    implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    implementation.exclude group: 'log4j', module: 'log4j'
 }
 
 dependencies {
-    implementation project(":eventmesh-sdk-java")
-    implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage:eventmesh-storage-api")
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.netty:netty-all'
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
-    implementation 'com.alibaba.nacos:nacos-client'
+    implementation project(":eventmesh-common")
+    // https://mavenlibs.com/maven/dependency/io.cloudevents/cloudevents-kafka
+    implementation group: 'io.cloudevents', name: 'cloudevents-kafka', version: '2.2.1'
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+    implementation 'org.apache.kafka:kafka-clients:3.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    testImplementation project(":eventmesh-common")
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
 
     compileOnly 'org.projectlombok:lombok'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.1'
     annotationProcessor 'org.projectlombok:lombok'
 
     testCompileOnly 'org.projectlombok:lombok'

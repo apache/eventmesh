@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.connector.pulsar.connector;
 
-dependencies {
-    compileOnly project(":eventmesh-common")
+import org.apache.eventmesh.api.storage.ConnectorResourceService;
 
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+public class ConnectorResourceServicePulsarImpl implements ConnectorResourceService {
 
-    implementation project(":eventmesh-storage:eventmesh-storage-api")
+    @Override
+    public void init() throws Exception {
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    }
 
-    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    @Override
+    public void release() throws Exception {
+
+    }
 }

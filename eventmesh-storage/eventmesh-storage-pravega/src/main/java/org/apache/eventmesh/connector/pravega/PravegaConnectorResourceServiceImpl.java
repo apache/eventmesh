@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.connector.pravega;
 
-dependencies {
-    compileOnly project(":eventmesh-common")
+import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.connector.pravega.client.PravegaClient;
 
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+import lombok.extern.slf4j.Slf4j;
 
-    implementation project(":eventmesh-storage:eventmesh-storage-api")
+@Slf4j
+public class PravegaConnectorResourceServiceImpl implements ConnectorResourceService {
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    @Override
+    public void init() throws Exception {
+        PravegaClient.getInstance().start();
+    }
 
-    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    @Override
+    public void release() throws Exception {
+        PravegaClient.getInstance().shutdown();
+    }
 }
