@@ -15,13 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.common;
+package org.apache.eventmesh.storage.kafka.connector;
 
-public class EventMeshConstants {
+import org.apache.eventmesh.api.storage.ConnectorResourceService;
 
-    public static final String EVENTMESH_CONF_FILE = "kafka-client.properties";
+public class ConnectorResourceServiceKafkaImpl implements ConnectorResourceService {
 
-    public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+    @Override
+    public void init() throws Exception {
 
-    public static final String STORE_TIMESTAMP = "storetime";
+    }
+
+    @Override
+    public void release() throws Exception {
+
+    }
 }

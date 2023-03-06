@@ -15,19 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.connector;
+package org.apache.eventmesh.storage.kafka.common;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+public class Constants {
 
-public class ConnectorResourceServiceKafkaImpl implements ConnectorResourceService {
-
-    @Override
-    public void init() throws Exception {
-
-    }
-
-    @Override
-    public void release() throws Exception {
-
-    }
+    public static final String BROADCAST_PREFIX = "broadcast-";
 }

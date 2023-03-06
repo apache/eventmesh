@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.consumer;
+package org.apache.eventmesh.storage.kafka.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.connector.kafka.config.ClientConfiguration;
+import org.apache.eventmesh.storage.kafka.config.ClientConfiguration;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 
