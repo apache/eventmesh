@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.client;
+package org.apache.eventmesh.storage.pravega.client;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
+import org.apache.eventmesh.storage.pravega.config.PravegaConnectorConfig;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

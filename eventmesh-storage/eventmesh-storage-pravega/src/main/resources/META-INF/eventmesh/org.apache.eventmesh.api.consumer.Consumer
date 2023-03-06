@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pravega=org.apache.eventmesh.connector.pravega.PravegaConsumerImpl
+pravega=org.apache.eventmesh.storage.pravega.PravegaConsumerImpl

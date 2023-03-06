@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.client;
+package org.apache.eventmesh.storage.pravega.client;
 
 import java.nio.charset.StandardCharsets;
 

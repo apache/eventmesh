@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.client;
+package org.apache.eventmesh.storage.pravega.client;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
+import org.apache.eventmesh.storage.pravega.exception.PravegaConnectorException;
 
 import java.io.Serializable;
 import java.net.URI;
