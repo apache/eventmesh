@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.connector;
 
-import org.apache.eventmesh.api.connector.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.ConnectorResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 

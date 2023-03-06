@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
-
 configurations {
-    implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    implementation.exclude group: 'log4j', module: 'log4j'
 }
 
 dependencies {
-    implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage:eventmesh-storage-api")
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.netty:netty-all'
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
-    implementation 'com.alibaba.nacos:nacos-client'
+    implementation 'org.apache.pulsar:pulsar-client:2.10.1'
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    testImplementation project(":eventmesh-storage:eventmesh-storage-api")
+    testImplementation project(":eventmesh-common")
+    testImplementation 'org.apache.pulsar:pulsar-client:2.10.1'
+
+    implementation 'io.cloudevents:cloudevents-json-jackson'
+
+    testImplementation 'io.cloudevents:cloudevents-json-jackson'
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
