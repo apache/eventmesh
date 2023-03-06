@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rocketmq=org.apache.eventmesh.storage.rocketmq.connector.StorageResourceServiceRocketmqImpl
+rocketmq=org.apache.eventmesh.storage.rocketmq.storage.StorageResourceServiceRocketmqImpl

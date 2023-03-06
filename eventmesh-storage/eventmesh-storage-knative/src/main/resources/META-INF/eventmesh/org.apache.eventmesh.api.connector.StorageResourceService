@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pulsar=org.apache.eventmesh.storage.pulsar.connector.StorageResourceServicePulsarImpl
+knative=org.apache.eventmesh.storage.knative.storage.StorageResourceServiceKnativeImpl

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.rocketmq.connector;
+package org.apache.eventmesh.storage.knative.storage;
 
 import org.apache.eventmesh.api.storage.StorageResourceService;
 
-public class StorageResourceServiceRocketmqImpl implements StorageResourceService {
+public class StorageResourceServiceKnativeImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {
