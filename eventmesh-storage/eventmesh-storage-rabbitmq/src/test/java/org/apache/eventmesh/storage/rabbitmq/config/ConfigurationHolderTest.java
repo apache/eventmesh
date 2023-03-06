@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.rabbitmq.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.rabbitmq.consumer.RabbitmqConsumer;
 import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
@@ -31,7 +31,7 @@ public class ConfigurationHolderTest {
     @Test
     public void getConfigWhenRabbitmqConsumerInit() {
         RabbitmqConsumer consumer =
-            (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
+            (RabbitmqConsumer) StoragePluginFactory.getMeshMQPushConsumer("rabbitmq");
 
         ConfigurationHolder config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -40,7 +40,7 @@ public class ConfigurationHolderTest {
     @Test
     public void getConfigWhenRabbitmqProducerInit() {
         RabbitmqProducer producer =
-            (RabbitmqProducer) ConnectorPluginFactory.getMeshMQProducer("rabbitmq");
+            (RabbitmqProducer) StoragePluginFactory.getMeshMQProducer("rabbitmq");
 
         ConfigurationHolder config = producer.getClientConfiguration();
         assertConfig(config);

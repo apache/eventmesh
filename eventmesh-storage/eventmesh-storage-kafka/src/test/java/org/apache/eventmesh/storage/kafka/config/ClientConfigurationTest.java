@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.kafka.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.kafka.consumer.KafkaConsumerImpl;
 import org.apache.eventmesh.storage.kafka.producer.KafkaProducerImpl;
 
@@ -34,7 +34,7 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaConsumerImplInit() {
-        KafkaConsumerImpl consumer = (KafkaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("kafka");
+        KafkaConsumerImpl consumer = (KafkaConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("kafka");
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
     }
@@ -44,7 +44,7 @@ public class ClientConfigurationTest {
      */
     @Test
     public void getConfigWhenKafkaProducerImplInit() {
-        KafkaProducerImpl producer = (KafkaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("kafka");
+        KafkaProducerImpl producer = (KafkaProducerImpl) StoragePluginFactory.getMeshMQProducer("kafka");
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
     }
