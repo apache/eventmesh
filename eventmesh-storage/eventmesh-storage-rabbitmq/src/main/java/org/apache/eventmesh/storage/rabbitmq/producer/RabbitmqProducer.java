@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.producer;
+package org.apache.eventmesh.storage.rabbitmq.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
@@ -24,12 +24,12 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
-import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
-import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
-import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEventWriter;
-import org.apache.eventmesh.connector.rabbitmq.config.ConfigurationHolder;
-import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
+import org.apache.eventmesh.storage.rabbitmq.client.RabbitmqClient;
+import org.apache.eventmesh.storage.rabbitmq.client.RabbitmqConnectionFactory;
+import org.apache.eventmesh.storage.rabbitmq.cloudevent.RabbitmqCloudEvent;
+import org.apache.eventmesh.storage.rabbitmq.cloudevent.RabbitmqCloudEventWriter;
+import org.apache.eventmesh.storage.rabbitmq.config.ConfigurationHolder;
+import org.apache.eventmesh.storage.rabbitmq.utils.ByteArrayUtils;
 
 import java.util.Optional;
 import java.util.Properties;

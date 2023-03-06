@@ -15,13 +15,13 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.consumer;
+package org.apache.eventmesh.storage.rabbitmq.consumer;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
-import org.apache.eventmesh.connector.rabbitmq.config.ConfigurationHolder;
+import org.apache.eventmesh.storage.rabbitmq.cloudevent.RabbitmqCloudEvent;
+import org.apache.eventmesh.storage.rabbitmq.config.ConfigurationHolder;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

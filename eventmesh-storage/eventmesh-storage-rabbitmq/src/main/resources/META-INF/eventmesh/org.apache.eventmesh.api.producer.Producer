@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rabbitmq=org.apache.eventmesh.connector.rabbitmq.producer.RabbitmqProducer
+rabbitmq=org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer

@@ -15,28 +15,26 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.utils;
-
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.JsonUtils;
+package org.apache.eventmesh.storage.rabbitmq.client;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
-@SuppressWarnings("all")
-public class ByteArrayUtils {
+public class RabbitmqConnectionFactory {
 
-    public static <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
-        String s = JsonUtils.toJSONString(obj);
-        byte[] bytes = s.getBytes();
-        return Optional.ofNullable(bytes);
+    public ConnectionFactory createConnectionFactory() {
+        return new ConnectionFactory();
     }
 
-    public static <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
-        T t = JsonUtils.parseTypeReferenceObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
-        });
-        return Optional.ofNullable(t);
+    public Connection createConnection(ConnectionFactory connectionFactory) throws IOException, TimeoutException {
+        return connectionFactory.newConnection();
+    }
+
+    public Channel createChannel(Connection connection) throws IOException {
+        return connection.createChannel();
     }
 }

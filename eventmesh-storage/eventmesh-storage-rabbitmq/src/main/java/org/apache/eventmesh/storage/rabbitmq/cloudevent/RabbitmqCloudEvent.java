@@ -15,12 +15,12 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.cloudevent;
+package org.apache.eventmesh.storage.rabbitmq.cloudevent;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.connector.rabbitmq.exception.RabbitmqaConnectorException;
-import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
+import org.apache.eventmesh.storage.rabbitmq.exception.RabbitmqaConnectorException;
+import org.apache.eventmesh.storage.rabbitmq.utils.ByteArrayUtils;
 
 import java.io.Serializable;
 import java.net.URI;
