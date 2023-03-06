@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.exception;
+package org.apache.eventmesh.storage.pravega.exception;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 

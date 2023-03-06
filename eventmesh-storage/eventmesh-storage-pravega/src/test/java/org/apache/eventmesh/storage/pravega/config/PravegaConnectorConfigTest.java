@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.config;
+package org.apache.eventmesh.storage.pravega.config;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.connector.pravega.PravegaConsumerImpl;
-import org.apache.eventmesh.connector.pravega.PravegaProducerImpl;
+import org.apache.eventmesh.storage.pravega.PravegaConsumerImpl;
+import org.apache.eventmesh.storage.pravega.PravegaProducerImpl;
 
 import java.net.URI;
 

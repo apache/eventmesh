@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega.client;
+package org.apache.eventmesh.storage.pravega.client;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
-import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
+import org.apache.eventmesh.storage.pravega.config.PravegaConnectorConfig;
+import org.apache.eventmesh.storage.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
 import java.util.UUID;

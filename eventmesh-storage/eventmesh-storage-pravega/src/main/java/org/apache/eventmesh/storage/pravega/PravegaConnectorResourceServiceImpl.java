@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega;
+package org.apache.eventmesh.storage.pravega;
 
 import org.apache.eventmesh.api.storage.ConnectorResourceService;
-import org.apache.eventmesh.connector.pravega.client.PravegaClient;
+import org.apache.eventmesh.storage.pravega.client.PravegaClient;
 
 import lombok.extern.slf4j.Slf4j;
 
