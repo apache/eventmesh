@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.admin;
+package org.apache.eventmesh.storage.standalone.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.admin.TopicProperties;

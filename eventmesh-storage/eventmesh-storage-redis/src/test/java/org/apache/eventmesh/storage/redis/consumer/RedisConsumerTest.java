@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.redis.consumer;
 
 import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
+import org.apache.eventmesh.storage.redis.AbstractRedisServer;
 import org.apache.eventmesh.storage.redis.client.RedissonClient;
 
 import java.net.URI;

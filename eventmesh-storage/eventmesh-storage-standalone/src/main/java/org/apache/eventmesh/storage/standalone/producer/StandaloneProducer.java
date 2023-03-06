@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.producer;
+package org.apache.eventmesh.storage.standalone.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
+import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.resource;
+package org.apache.eventmesh.storage.standalone.resource;
 
 import org.apache.eventmesh.api.storage.ConnectorResourceService;
 
