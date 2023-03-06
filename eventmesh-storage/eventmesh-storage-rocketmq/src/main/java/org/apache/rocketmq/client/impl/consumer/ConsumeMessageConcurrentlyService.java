@@ -19,7 +19,7 @@ package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
+import org.apache.eventmesh.storage.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;

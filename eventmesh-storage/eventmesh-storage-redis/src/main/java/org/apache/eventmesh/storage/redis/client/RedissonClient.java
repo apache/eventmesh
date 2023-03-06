@@ -15,13 +15,13 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.client;
+package org.apache.eventmesh.storage.redis.client;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
-import org.apache.eventmesh.connector.redis.config.RedisProperties;
+import org.apache.eventmesh.storage.redis.cloudevent.CloudEventCodec;
+import org.apache.eventmesh.storage.redis.config.RedisProperties;
 
 import java.util.Arrays;
 

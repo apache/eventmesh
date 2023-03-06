@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.cloudevent;
+package org.apache.eventmesh.storage.redis.cloudevent;
 
 import org.redisson.client.codec.BaseCodec;
 import org.redisson.client.protocol.Decoder;

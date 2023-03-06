@@ -15,19 +15,25 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.storage.redis.connector;
+package org.apache.eventmesh.storage.rocketmq.cloudevent.impl;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import java.util.Map;
 
-public class RedisConnectorResourceService implements ConnectorResourceService {
+import io.cloudevents.core.message.impl.MessageUtils;
+import io.cloudevents.core.v1.CloudEventV1;
 
-    @Override
-    public void init() throws Exception {
+public class RocketMQHeaders {
 
-    }
+    public static final String CE_PREFIX = "CE_";
 
-    @Override
-    public void release() throws Exception {
+    protected static final Map<String, String> ATTRIBUTES_TO_HEADERS =
+        MessageUtils.generateAttributesToHeadersMapping(v -> v);
 
-    }
+    public static final String CONTENT_TYPE =
+        ATTRIBUTES_TO_HEADERS.get(CloudEventV1.DATACONTENTTYPE);
+
+    public static final String SPEC_VERSION = ATTRIBUTES_TO_HEADERS.get(CloudEventV1.SPECVERSION);
+
+
 }
+

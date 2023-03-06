@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.consumer;
 
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+import org.apache.eventmesh.storage.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;

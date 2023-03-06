@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.config;
+package org.apache.eventmesh.storage.redis.config;
 
 import org.apache.eventmesh.common.config.ConfigService;
 

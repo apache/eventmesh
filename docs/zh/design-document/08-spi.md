@@ -105,7 +105,7 @@ org.apache.eventmesh.api.producer.Producer
 文件内容为扩展实例名和对应的实例全类名
 
 ```properties
-rocketmq=org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl
+rocketmq=RocketMQProducerImpl
 ```
 
 至此，一个SPI扩展模块就完成了。在使用的时候只需要通过EventMeshExtensionFactory.getExtension(MeshMQProducer.class, “rocketmq”)就可以获取RocketMQProducerImpl实现类。
