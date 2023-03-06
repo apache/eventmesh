@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.utils;
+package org.apache.eventmesh.storage.pulsar.config;
 
-import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-import io.cloudevents.CloudEvent;
+import lombok.Getter;
+import lombok.Setter;
 
-public class CloudEventUtils {
+@Getter
+@Setter
+@Config(prefix = "eventMesh.server.pulsar", path = "classPath://pulsar-client.properties")
+public class ClientConfiguration {
 
-    public static SendResult convertSendResult(CloudEvent cloudEvent) {
-        SendResult sendResult = new SendResult();
-        sendResult.setTopic(cloudEvent.getSubject());
-        sendResult.setMessageId(cloudEvent.getId());
-        return sendResult;
-    }
+    @ConfigFiled(field = "service")
+    private String serviceAddr;
+
+    @ConfigFiled(field = "authPlugin")
+    private String authPlugin;
+
+    @ConfigFiled(field = "authParams")
+    private String authParams;
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.connector;
+package org.apache.eventmesh.storage.pulsar.connector;
 
 import org.apache.eventmesh.api.storage.ConnectorResourceService;
 

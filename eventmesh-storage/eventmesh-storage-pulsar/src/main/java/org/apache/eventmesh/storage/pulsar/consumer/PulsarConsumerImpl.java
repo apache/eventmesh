@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.consumer;
+package org.apache.eventmesh.storage.pulsar.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
@@ -25,7 +25,7 @@ import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
+import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
 
 import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.MessageListener;

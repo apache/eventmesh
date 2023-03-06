@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.client;
+package org.apache.eventmesh.storage.pulsar.client;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
-import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
+import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
+import org.apache.eventmesh.storage.pulsar.utils.CloudEventUtils;
 
 import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.Producer;

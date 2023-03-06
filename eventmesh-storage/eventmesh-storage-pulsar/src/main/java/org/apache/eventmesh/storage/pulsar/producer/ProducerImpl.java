@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.producer;
+package org.apache.eventmesh.storage.pulsar.producer;
 
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.connector.pulsar.client.PulsarClientWrapper;
-import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
+import org.apache.eventmesh.storage.pulsar.client.PulsarClientWrapper;
+import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
