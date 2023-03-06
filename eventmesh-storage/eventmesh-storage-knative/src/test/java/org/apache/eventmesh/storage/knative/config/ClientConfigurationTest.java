@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.knative.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.knative.consumer.KnativeConsumerImpl;
 import org.apache.eventmesh.storage.knative.producer.KnativeProducerImpl;
 
@@ -29,7 +29,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenKnativeConsumerInit() {
         KnativeConsumerImpl consumer =
-            (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
+            (KnativeConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("knative");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -38,7 +38,7 @@ public class ClientConfigurationTest {
     @Test
     public void getConfigWhenKnativeProducerInit() {
         KnativeProducerImpl producer =
-            (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
+            (KnativeProducerImpl) StoragePluginFactory.getMeshMQProducer("knative");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);

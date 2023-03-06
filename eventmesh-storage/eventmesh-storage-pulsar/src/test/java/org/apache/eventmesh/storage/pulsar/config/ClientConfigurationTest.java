@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.pulsar.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.pulsar.consumer.PulsarConsumerImpl;
 import org.apache.eventmesh.storage.pulsar.producer.PulsarProducerImpl;
 
@@ -28,7 +28,7 @@ public class ClientConfigurationTest {
 
     @Test
     public void getConfigWhenPulsarConsumerInit() {
-        PulsarConsumerImpl consumer = (PulsarConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pulsar");
+        PulsarConsumerImpl consumer = (PulsarConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("pulsar");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -36,7 +36,7 @@ public class ClientConfigurationTest {
 
     @Test
     public void getConfigWhenPulsarProducerInit() {
-        PulsarProducerImpl producer = (PulsarProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pulsar");
+        PulsarProducerImpl producer = (PulsarProducerImpl) StoragePluginFactory.getMeshMQProducer("pulsar");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);

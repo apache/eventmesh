@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.rabbitmq;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.rabbitmq.consumer.RabbitmqConsumer;
 import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
@@ -36,12 +36,12 @@ public class RabbitmqServer {
         RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
 
         rabbitmqConsumer =
-            (RabbitmqConsumer) ConnectorPluginFactory.getMeshMQPushConsumer("rabbitmq");
+            (RabbitmqConsumer) StoragePluginFactory.getMeshMQPushConsumer("rabbitmq");
         rabbitmqConsumer.setRabbitmqConnectionFactory(rabbitmqMockConnectionFactory);
         rabbitmqConsumer.init(new Properties());
         rabbitmqConsumer.start();
 
-        rabbitmqProducer = (RabbitmqProducer) ConnectorPluginFactory.getMeshMQProducer("rabbitmq");
+        rabbitmqProducer = (RabbitmqProducer) StoragePluginFactory.getMeshMQProducer("rabbitmq");
         rabbitmqProducer.setRabbitmqConnectionFactory(rabbitmqMockConnectionFactory);
         rabbitmqProducer.init(new Properties());
         rabbitmqProducer.start();

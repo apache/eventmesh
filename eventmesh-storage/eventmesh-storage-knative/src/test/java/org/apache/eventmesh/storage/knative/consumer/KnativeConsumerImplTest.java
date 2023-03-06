@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.knative.consumer;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 
 import java.util.Properties;
 
@@ -34,7 +34,7 @@ public class KnativeConsumerImplTest {
 
         // Create a Knative consumer:
         KnativeConsumerImpl knativeConsumer =
-            (KnativeConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("knative");
+            (KnativeConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("knative");
 
         try {
             knativeConsumer.init(properties);

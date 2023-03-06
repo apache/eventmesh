@@ -20,7 +20,7 @@ package org.apache.eventmesh.storage.knative.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.storage.knative.cloudevent.impl.KnativeHeaders;
 
@@ -44,7 +44,7 @@ public class KnativeProducerImplTest {
 
         // Create a Knative producer:
         KnativeProducerImpl knativehProducer =
-            (KnativeProducerImpl) ConnectorPluginFactory.getMeshMQProducer("knative");
+            (KnativeProducerImpl) StoragePluginFactory.getMeshMQProducer("knative");
 
         try {
             knativehProducer.init(properties);

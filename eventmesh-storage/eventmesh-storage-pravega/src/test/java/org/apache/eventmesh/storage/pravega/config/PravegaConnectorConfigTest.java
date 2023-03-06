@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.pravega.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.pravega.PravegaConsumerImpl;
 import org.apache.eventmesh.storage.pravega.PravegaProducerImpl;
 
@@ -31,7 +31,7 @@ public class PravegaConnectorConfigTest {
     @Test
     public void getConfigWhenPravegaConsumerInit() {
         PravegaConsumerImpl consumer =
-            (PravegaConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("pravega");
+            (PravegaConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("pravega");
 
         PravegaConnectorConfig config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -40,7 +40,7 @@ public class PravegaConnectorConfigTest {
     @Test
     public void getConfigWhenPravegaProducerInit() {
         PravegaProducerImpl producer =
-            (PravegaProducerImpl) ConnectorPluginFactory.getMeshMQProducer("pravega");
+            (PravegaProducerImpl) StoragePluginFactory.getMeshMQProducer("pravega");
 
         PravegaConnectorConfig config = producer.getClientConfiguration();
         assertConfig(config);

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.rocketmq.config;
 
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.rocketmq.consumer.RocketMQConsumerImpl;
 import org.apache.eventmesh.storage.rocketmq.producer.RocketMQProducerImpl;
 
@@ -28,7 +28,7 @@ public class ClientConfigurationTest {
 
     @Test
     public void getConfigWhenRocketMQConsumerInit() {
-        RocketMQConsumerImpl consumer = (RocketMQConsumerImpl) ConnectorPluginFactory.getMeshMQPushConsumer("rocketmq");
+        RocketMQConsumerImpl consumer = (RocketMQConsumerImpl) StoragePluginFactory.getMeshMQPushConsumer("rocketmq");
 
         ClientConfiguration config = consumer.getClientConfiguration();
         assertConfig(config);
@@ -36,7 +36,7 @@ public class ClientConfigurationTest {
 
     @Test
     public void getConfigWhenRocketMQProducerInit() {
-        RocketMQProducerImpl producer = (RocketMQProducerImpl) ConnectorPluginFactory.getMeshMQProducer("rocketmq");
+        RocketMQProducerImpl producer = (RocketMQProducerImpl) StoragePluginFactory.getMeshMQProducer("rocketmq");
 
         ClientConfiguration config = producer.getClientConfiguration();
         assertConfig(config);
