@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.storage.rabbitmq.connector;
+package org.apache.eventmesh.storage.redis.storage;
 
 import org.apache.eventmesh.api.storage.StorageResourceService;
 
-public class RabbitmqStorageResourceService implements StorageResourceService {
+public class RedisStorageResourceService implements StorageResourceService {
 
     @Override
     public void init() throws Exception {
