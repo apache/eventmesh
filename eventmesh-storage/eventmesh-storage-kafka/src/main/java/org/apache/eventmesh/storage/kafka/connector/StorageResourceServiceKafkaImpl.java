@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.pulsar.connector;
+package org.apache.eventmesh.storage.kafka.connector;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 
-public class ConnectorResourceServicePulsarImpl implements ConnectorResourceService {
+public class StorageResourceServiceKafkaImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {

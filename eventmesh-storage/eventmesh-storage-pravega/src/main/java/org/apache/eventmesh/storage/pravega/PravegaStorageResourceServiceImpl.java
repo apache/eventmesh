@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.rocketmq.connector;
+package org.apache.eventmesh.storage.pravega;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
+import org.apache.eventmesh.storage.pravega.client.PravegaClient;
 
-public class ConnectorResourceServiceRocketmqImpl implements ConnectorResourceService {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class PravegaStorageResourceServiceImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {
-
+        PravegaClient.getInstance().start();
     }
 
     @Override
     public void release() throws Exception {
-
+        PravegaClient.getInstance().shutdown();
     }
 }

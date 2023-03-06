@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.knative.connector;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 
-public class ConnectorResourceServiceKnativeImpl implements ConnectorResourceService {
+public class StorageResourceServiceKnativeImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {

@@ -15,23 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.pravega;
+package org.apache.eventmesh.storage.pulsar.connector;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
-import org.apache.eventmesh.storage.pravega.client.PravegaClient;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-public class PravegaConnectorResourceServiceImpl implements ConnectorResourceService {
+public class StorageResourceServicePulsarImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {
-        PravegaClient.getInstance().start();
+
     }
 
     @Override
     public void release() throws Exception {
-        PravegaClient.getInstance().shutdown();
+
     }
 }

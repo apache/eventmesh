@@ -24,7 +24,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
  * ConnectorResourceService
  */
 @EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
-public interface ConnectorResourceService {
+public interface StorageResourceService {
 
     /**
      * Resource initialization in connector,such as,some public thread pool if exist
