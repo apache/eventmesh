@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rabbitmq;
 
-import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
+import org.apache.eventmesh.storage.rabbitmq.client.RabbitmqConnectionFactory;
 
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
 import com.rabbitmq.client.Channel;

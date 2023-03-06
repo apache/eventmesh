@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.client;
+package org.apache.eventmesh.storage.rabbitmq.client;
 
 import org.apache.commons.lang3.StringUtils;
 

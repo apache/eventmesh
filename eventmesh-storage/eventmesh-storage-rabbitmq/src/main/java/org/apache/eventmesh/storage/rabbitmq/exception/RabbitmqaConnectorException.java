@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.exception;
+package org.apache.eventmesh.storage.rabbitmq.exception;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 

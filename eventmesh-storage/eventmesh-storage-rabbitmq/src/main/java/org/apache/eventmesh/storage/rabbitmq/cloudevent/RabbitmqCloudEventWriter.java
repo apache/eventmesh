@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.cloudevent;
+package org.apache.eventmesh.storage.rabbitmq.cloudevent;
 
 import java.nio.charset.StandardCharsets;
 

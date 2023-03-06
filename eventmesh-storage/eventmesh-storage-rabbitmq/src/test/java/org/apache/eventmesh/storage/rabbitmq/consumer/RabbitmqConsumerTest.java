@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.producer;
+package org.apache.eventmesh.storage.rabbitmq.consumer;
 
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
@@ -36,20 +36,20 @@ import org.junit.Test;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class RabbitmqProducerTest extends RabbitmqServer {
+public class RabbitmqConsumerTest extends RabbitmqServer {
 
     @Test
     public void isStarted() {
-        Assert.assertTrue(rabbitmqProducer.isStarted());
+        Assert.assertTrue(rabbitmqConsumer.isStarted());
     }
 
     @Test
     public void isClosed() {
-        Assert.assertFalse(rabbitmqProducer.isClosed());
+        Assert.assertFalse(rabbitmqConsumer.isClosed());
     }
 
     @Test
-    public void publish() throws Exception {
+    public void subscribe() throws Exception {
         final int expectedCount = 5;
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
 

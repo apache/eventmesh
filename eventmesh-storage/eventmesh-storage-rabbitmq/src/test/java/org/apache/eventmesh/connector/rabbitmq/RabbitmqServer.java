@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.rabbitmq;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.connector.rabbitmq.consumer.RabbitmqConsumer;
-import org.apache.eventmesh.connector.rabbitmq.producer.RabbitmqProducer;
+import org.apache.eventmesh.storage.rabbitmq.consumer.RabbitmqConsumer;
+import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
 import java.util.Properties;
 
