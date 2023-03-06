@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.admin;
+package org.apache.eventmesh.storage.standalone.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.admin.TopicProperties;
-import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
-import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
-import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
+import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
+import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 
 import java.util.ArrayList;
 import java.util.Comparator;

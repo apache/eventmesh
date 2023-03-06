@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.broker.model;
+package org.apache.eventmesh.storage.standalone.broker.model;
 
 import java.io.Serializable;
 import java.util.Objects;

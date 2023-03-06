@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.broker;
+package org.apache.eventmesh.storage.standalone.broker;
 
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
 import java.net.URI;
 

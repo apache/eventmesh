@@ -22,7 +22,7 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.connector.rabbitmq.RabbitmqServer;
+import org.apache.eventmesh.storage.rabbitmq.RabbitmqServer;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

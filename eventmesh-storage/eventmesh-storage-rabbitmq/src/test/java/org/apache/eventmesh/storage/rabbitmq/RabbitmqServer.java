@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq;
+package org.apache.eventmesh.storage.rabbitmq;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.storage.rabbitmq.consumer.RabbitmqConsumer;

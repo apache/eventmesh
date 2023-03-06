@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.redis.client;
 
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
+import org.apache.eventmesh.storage.redis.AbstractRedisServer;
 
 import org.junit.Assert;
 import org.junit.Test;

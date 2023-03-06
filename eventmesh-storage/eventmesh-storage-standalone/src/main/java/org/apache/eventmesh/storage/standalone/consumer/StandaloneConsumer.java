@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.standalone.consumer;
+package org.apache.eventmesh.storage.standalone.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
-import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
-import org.apache.eventmesh.connector.standalone.broker.task.SubScribeTask;
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
+import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
+import org.apache.eventmesh.storage.standalone.broker.task.SubScribeTask;
 
 import java.util.List;
 import java.util.Objects;

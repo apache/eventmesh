@@ -15,7 +15,7 @@
  *   limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis;
+package org.apache.eventmesh.storage.redis;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

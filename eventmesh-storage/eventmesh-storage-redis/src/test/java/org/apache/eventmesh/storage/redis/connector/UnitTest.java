@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
+import org.apache.eventmesh.storage.redis.AbstractRedisServer;
 import org.apache.eventmesh.storage.redis.consumer.RedisConsumer;
 import org.apache.eventmesh.storage.redis.consumer.RedisConsumerTest;
 import org.apache.eventmesh.storage.redis.producer.RedisProducer;
