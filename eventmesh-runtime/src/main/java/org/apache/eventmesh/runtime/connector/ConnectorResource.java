@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.connector;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 
@@ -33,7 +33,7 @@ public class ConnectorResource {
 
     private static final Map<String, ConnectorResource> CONNECTOR_RESOURCE_CACHE = new HashMap<>(16);
 
-    private ConnectorResourceService connectorResourceService;
+    private StorageResourceService storageResourceService;
 
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
@@ -51,15 +51,15 @@ public class ConnectorResource {
     }
 
     private static ConnectorResource connectorResourceBuilder(String connectorResourcePluginType) {
-        ConnectorResourceService connectorResourceServiceExt = EventMeshExtensionFactory.getExtension(ConnectorResourceService.class,
+        StorageResourceService storageResourceServiceExt = EventMeshExtensionFactory.getExtension(StorageResourceService.class,
             connectorResourcePluginType);
-        if (connectorResourceServiceExt == null) {
+        if (storageResourceServiceExt == null) {
             String errorMsg = "can't load the connectorResourceService plugin, please check.";
             log.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }
         ConnectorResource connectorResource = new ConnectorResource();
-        connectorResource.connectorResourceService = connectorResourceServiceExt;
+        connectorResource.storageResourceService = storageResourceServiceExt;
         return connectorResource;
     }
 
@@ -67,7 +67,7 @@ public class ConnectorResource {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-        connectorResourceService.init();
+        storageResourceService.init();
     }
 
     public void release() throws Exception {
@@ -75,6 +75,6 @@ public class ConnectorResource {
             return;
         }
         inited.compareAndSet(true, false);
-        connectorResourceService.release();
+        storageResourceService.release();
     }
 }

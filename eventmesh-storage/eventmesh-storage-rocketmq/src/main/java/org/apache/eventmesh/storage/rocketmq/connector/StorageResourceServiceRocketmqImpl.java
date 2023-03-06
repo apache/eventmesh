@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.kafka.connector;
+package org.apache.eventmesh.storage.rocketmq.connector;
 
-import org.apache.eventmesh.api.storage.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 
-public class ConnectorResourceServiceKafkaImpl implements ConnectorResourceService {
+public class StorageResourceServiceRocketmqImpl implements StorageResourceService {
 
     @Override
     public void init() throws Exception {
