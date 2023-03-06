@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.producer;
+package org.apache.eventmesh.storage.redis.producer;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;

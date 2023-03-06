@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.client;
+package org.apache.eventmesh.storage.redis.client;
 
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 

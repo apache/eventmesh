@@ -107,7 +107,7 @@ org.apache.eventmesh.api.producer.Producer
 The content of the file is the extension instance name and the corresponding instance full class name
 
 ```properties
-rocketmq=org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl
+rocketmq=RocketMQProducerImpl
 ```
 
 At this point, an SPI expansion module is complete. We can use `EventMeshExtensionFactory.getExtension(MeshMQProducer.class, "rocketmq")` to get the `RocketMQProducerImpl` instance.

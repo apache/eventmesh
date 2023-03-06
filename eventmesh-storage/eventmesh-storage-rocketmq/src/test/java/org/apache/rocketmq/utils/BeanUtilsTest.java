@@ -17,9 +17,9 @@
 
 package org.apache.rocketmq.utils;
 
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
+import org.apache.eventmesh.storage.rocketmq.config.ClientConfig;
+import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
+import org.apache.eventmesh.storage.rocketmq.utils.BeanUtils;
 
 import java.util.Properties;
 

@@ -15,14 +15,14 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.consumer;
+package org.apache.eventmesh.storage.redis.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.connector.redis.client.RedissonClient;
+import org.apache.eventmesh.storage.redis.client.RedissonClient;
 
 import java.util.List;
 import java.util.Properties;

@@ -23,8 +23,8 @@ import static org.mockito.ArgumentMatchers.any;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
-import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
+import org.apache.eventmesh.storage.rocketmq.producer.AbstractProducer;
+import org.apache.eventmesh.storage.rocketmq.producer.ProducerImpl;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;

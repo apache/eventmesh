@@ -17,4 +17,4 @@
 # under the License.
 #
 
-org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl
+org.apache.eventmesh.storage.rocketmq.producer.ProducerImpl

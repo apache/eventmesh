@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.redis.producer;
+package org.apache.eventmesh.storage.redis.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
@@ -23,7 +23,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.redis.client.RedissonClient;
+import org.apache.eventmesh.storage.redis.client.RedissonClient;
 
 import java.util.Properties;
 
