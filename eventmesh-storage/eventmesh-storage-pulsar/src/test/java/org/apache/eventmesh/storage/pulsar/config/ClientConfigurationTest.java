@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.config;
+package org.apache.eventmesh.storage.pulsar.config;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.connector.pulsar.consumer.PulsarConsumerImpl;
-import org.apache.eventmesh.connector.pulsar.producer.PulsarProducerImpl;
+import org.apache.eventmesh.storage.pulsar.consumer.PulsarConsumerImpl;
+import org.apache.eventmesh.storage.pulsar.producer.PulsarProducerImpl;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.producer;
+package org.apache.eventmesh.storage.pulsar.producer;
 
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 
