@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.config;
+package org.apache.eventmesh.storage.kafka.config;
 
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.connector.kafka.consumer.KafkaConsumerImpl;
-import org.apache.eventmesh.connector.kafka.producer.KafkaProducerImpl;
+import org.apache.eventmesh.storage.kafka.consumer.KafkaConsumerImpl;
+import org.apache.eventmesh.storage.kafka.producer.KafkaProducerImpl;
 
 import org.junit.Assert;
 import org.junit.Test;

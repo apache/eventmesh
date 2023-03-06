@@ -17,4 +17,4 @@
 # under the License.
 #
 
-org.apache.eventmesh.connector.kafka.producer.ProducerImpl
+org.apache.eventmesh.storage.kafka.producer.ProducerImpl

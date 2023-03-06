@@ -15,9 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.common;
+package org.apache.eventmesh.storage.kafka.common;
 
-public class Constants {
+public class EventMeshConstants {
 
-    public static final String BROADCAST_PREFIX = "broadcast-";
+    public static final String EVENTMESH_CONF_FILE = "kafka-client.properties";
+
+    public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+
+    public static final String STORE_TIMESTAMP = "storetime";
 }
