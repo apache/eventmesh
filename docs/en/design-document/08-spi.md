@@ -81,7 +81,7 @@ In the future, we might support the implementation to load from the maven reposi
 
 The following is an example of how to use the SPI to declare a plugin.
 
-First, we create an eventmesh-storage-api module, and define the extension interface MeshMQProducer, and we use @EventMeshSPI on the MeshMQProducer,
+First, we create an eventmesh-connector-api module, and define the extension interface MeshMQProducer, and we use @EventMeshSPI on the MeshMQProducer,
 which indicates the MeshMQProducer is an SPI interface.
 
 ```java
@@ -91,7 +91,7 @@ public interface MeshMQProducer extends Producer {
 }
 ```
 
-Then we create an eventmesh-storage-rocketmq module, which contains the concrete implementation named RocketMQProducerImpl.
+Then we create an eventmesh-connector-rocketmq module, which contains the concrete implementation named RocketMQProducerImpl.
 
 ```java
 public class RocketMQProducerImpl implements MeshMQProducer {
@@ -100,14 +100,14 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 ```
 
 At the same time, we need to create a file with the full qualified name of the SPI interface under the resource/META-INF/eventmesh directory
-in the eventmesh-storage-rocketmq module.
+in the eventmesh-connector-rocketmq module.
 
 org.apache.eventmesh.api.producer.Producer
 
 The content of the file is the extension instance name and the corresponding instance full class name
 
 ```properties
-rocketmq=org.apache.eventmesh.storage.rocketmq.producer.RocketMQProducerImpl
+rocketmq=org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl
 ```
 
 At this point, an SPI expansion module is complete. We can use `EventMeshExtensionFactory.getExtension(MeshMQProducer.class, "rocketmq")` to get the `RocketMQProducerImpl` instance.
