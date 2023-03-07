@@ -70,6 +70,9 @@ public class SubscribeTask extends AbstractTask {
                 if (eventMeshServerSecurityEnable) {
                     try {
                         EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                        if (eventMeshAppSubTopicInfo == null) {
+                            throw new AclException("no group register");
+                        }
                         this.acl.doAclCheckInTcpReceive(remoteAddr, token, subsystem, item.getTopic(), null, eventMeshAppSubTopicInfo);
                     } catch (Exception e) {
                         throw new AclException("group:" + session.getClient().getGroup() + " has no auth to sub the topic:" + item.getTopic());
