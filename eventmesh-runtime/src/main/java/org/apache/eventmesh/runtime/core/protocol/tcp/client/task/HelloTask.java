@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
@@ -71,9 +72,12 @@ public class HelloTask extends AbstractTask {
             String group = user.getGroup();
             String token = user.getToken();
             String subsystem = user.getSubsystem();
-            EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
 
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                if (eventMeshAppSubTopicInfo == null) {
+                    throw new AclException("no group register");
+                }
                 this.acl.doAclCheckInTcpConnect(remoteAddr, token, subsystem, eventMeshAppSubTopicInfo);
             }
 
