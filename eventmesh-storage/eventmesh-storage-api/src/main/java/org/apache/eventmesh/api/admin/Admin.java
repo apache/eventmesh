@@ -31,7 +31,7 @@ import io.cloudevents.CloudEvent;
 /**
  * Admin API.
  */
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.STORAGE)
 public interface Admin extends LifeCycle {
 
     /**

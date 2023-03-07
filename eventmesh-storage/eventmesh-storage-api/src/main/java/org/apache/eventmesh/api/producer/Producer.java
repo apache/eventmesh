@@ -30,7 +30,7 @@ import io.cloudevents.CloudEvent;
 /**
  * Producer Interface.
  */
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.STORAGE)
 public interface Producer extends LifeCycle {
 
     void init(Properties properties) throws Exception;
