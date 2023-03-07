@@ -43,16 +43,16 @@ public class HttpSummaryMetrics implements Metric {
 
     private float wholeCost = 0f;
 
-    private AtomicLong wholeRequestNum = new AtomicLong(0);
+    private final AtomicLong wholeRequestNum = new AtomicLong(0);
 
     //cumulative value
-    private AtomicLong httpDiscard = new AtomicLong(0);
+    private final AtomicLong httpDiscard = new AtomicLong(0);
 
-    private AtomicLong maxCost = new AtomicLong(0);
+    private final AtomicLong maxCost = new AtomicLong(0);
 
-    private AtomicLong httpRequestPerSecond = new AtomicLong(0);
+    private final AtomicLong httpRequestPerSecond = new AtomicLong(0);
 
-    private LinkedList<Integer> httpRequestTPSSnapshots = new LinkedList<>();
+    private final LinkedList<Integer> httpRequestTPSSnapshots = new LinkedList<>();
 
     public float avgHTTPCost() {
         return (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
@@ -109,7 +109,7 @@ public class HttpSummaryMetrics implements Metric {
 
     private float httpDecodeTimeCost = 0f;
 
-    private AtomicLong httpDecodeNum = new AtomicLong(0);
+    private final AtomicLong httpDecodeNum = new AtomicLong(0);
 
     public void recordDecodeTimeCost(long cost) {
         httpDecodeNum.incrementAndGet();
@@ -120,20 +120,20 @@ public class HttpSummaryMetrics implements Metric {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
 
-    private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
+    private final AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
 
-    private AtomicLong sendBatchMsgNumSum = new AtomicLong(0);
+    private final AtomicLong sendBatchMsgNumSum = new AtomicLong(0);
 
-    private AtomicLong sendBatchMsgFailNumSum = new AtomicLong(0);
+    private final AtomicLong sendBatchMsgFailNumSum = new AtomicLong(0);
 
     // This is a cumulative value
-    private AtomicLong sendBatchMsgDiscardNumSum = new AtomicLong(0);
+    private final AtomicLong sendBatchMsgDiscardNumSum = new AtomicLong(0);
 
     public void recordSendBatchMsgDiscard(long delta) {
         sendBatchMsgDiscardNumSum.addAndGet(delta);
     }
 
-    private LinkedList<Integer> sendBatchMsgTPSSnapshots = new LinkedList<Integer>();
+    private final LinkedList<Integer> sendBatchMsgTPSSnapshots = new LinkedList<Integer>();
 
     public void snapshotSendBatchMsgTPS() {
         Integer tps = sendBatchMsgNumPerSecond.intValue();
@@ -182,17 +182,17 @@ public class HttpSummaryMetrics implements Metric {
         return sendBatchMsgDiscardNumSum.longValue();
     }
 
-    private AtomicLong sendMsgNumSum = new AtomicLong(0);
+    private final AtomicLong sendMsgNumSum = new AtomicLong(0);
 
-    private AtomicLong sendMsgFailNumSum = new AtomicLong(0);
+    private final AtomicLong sendMsgFailNumSum = new AtomicLong(0);
 
-    private AtomicLong replyMsgNumSum = new AtomicLong(0);
+    private final AtomicLong replyMsgNumSum = new AtomicLong(0);
 
-    private AtomicLong replyMsgFailNumSum = new AtomicLong(0);
+    private final AtomicLong replyMsgFailNumSum = new AtomicLong(0);
 
-    private AtomicLong sendMsgNumPerSecond = new AtomicLong(0);
+    private final AtomicLong sendMsgNumPerSecond = new AtomicLong(0);
 
-    private LinkedList<Integer> sendMsgTPSSnapshots = new LinkedList<Integer>();
+    private final LinkedList<Integer> sendMsgTPSSnapshots = new LinkedList<Integer>();
 
     public void snapshotSendMsgTPS() {
         Integer tps = sendMsgNumPerSecond.intValue();
@@ -257,17 +257,17 @@ public class HttpSummaryMetrics implements Metric {
 
     private float wholePushCost = 0f;
 
-    private AtomicLong wholePushRequestNum = new AtomicLong(0);
+    private final AtomicLong wholePushRequestNum = new AtomicLong(0);
 
-    private AtomicLong maxHttpPushLatency = new AtomicLong(0);
+    private final AtomicLong maxHttpPushLatency = new AtomicLong(0);
 
-    private AtomicLong pushMsgNumPerSecond = new AtomicLong(0);
+    private final AtomicLong pushMsgNumPerSecond = new AtomicLong(0);
 
-    private LinkedList<Integer> pushMsgTPSSnapshots = new LinkedList<Integer>();
+    private final LinkedList<Integer> pushMsgTPSSnapshots = new LinkedList<Integer>();
 
-    private AtomicLong httpPushMsgNumSum = new AtomicLong(0);
+    private final AtomicLong httpPushMsgNumSum = new AtomicLong(0);
 
-    private AtomicLong httpPushFailNumSum = new AtomicLong(0);
+    private final AtomicLong httpPushFailNumSum = new AtomicLong(0);
 
     public void snapshotPushMsgTPS() {
         Integer tps = pushMsgNumPerSecond.intValue();
@@ -333,15 +333,15 @@ public class HttpSummaryMetrics implements Metric {
 
     private float batchSend2MQWholeCost = 0f;
 
-    private AtomicLong batchSend2MQNum = new AtomicLong(0);
+    private final AtomicLong batchSend2MQNum = new AtomicLong(0);
 
     private float send2MQWholeCost = 0f;
 
-    private AtomicLong send2MQNum = new AtomicLong(0);
+    private final AtomicLong send2MQNum = new AtomicLong(0);
 
     private float reply2MQWholeCost = 0f;
 
-    private AtomicLong reply2MQNum = new AtomicLong(0);
+    private final AtomicLong reply2MQNum = new AtomicLong(0);
 
     public void recordBatchSendMsgCost(long cost) {
         batchSend2MQNum.incrementAndGet();
