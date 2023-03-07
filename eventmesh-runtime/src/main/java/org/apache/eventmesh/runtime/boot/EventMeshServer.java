@@ -24,9 +24,9 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
+import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class EventMeshServer {
 
     private static Trace trace;
 
-    private final StorageResource storageResource;
+    private final ConnectorResource connectorResource;
 
     private ServiceState serviceState;
 
@@ -66,7 +66,7 @@ public class EventMeshServer {
         this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
 
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
-        this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
+        this.connectorResource = ConnectorResource.getInstance(this.configuration.getEventMeshConnectorPluginType());
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
@@ -83,7 +83,7 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
-        storageResource.init();
+        connectorResource.init();
         if (configuration.isEventMeshServerSecurityEnable()) {
             acl.init();
         }
@@ -173,7 +173,7 @@ public class EventMeshServer {
             registry.shutdown();
         }
 
-        storageResource.release();
+        connectorResource.release();
 
         if (configuration != null && configuration.isEventMeshServerSecurityEnable()) {
             acl.shutdown();

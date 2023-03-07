@@ -124,9 +124,12 @@ public class ClientGroupWrapper {
         this.eventMeshTcpMonitor =
             Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
-        this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
-        this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
-        this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
+        this.persistentMsgConsumer = new MQConsumerWrapper(
+            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
+        this.broadCastMsgConsumer = new MQConsumerWrapper(
+            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
+        this.mqProducerWrapper = new MQProducerWrapper(
+            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
