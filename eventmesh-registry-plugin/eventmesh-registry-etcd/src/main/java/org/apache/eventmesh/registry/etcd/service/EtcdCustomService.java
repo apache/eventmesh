@@ -28,6 +28,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class EtcdCustomService extends EtcdRegistryService {
     private static final String KEY_SERVICE = "service";
     private static final Logger logger = LoggerFactory.getLogger(EtcdCustomService.class);
 
+    @Nullable
     public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
 
         Client client = getEtcdClient();

@@ -65,10 +65,10 @@ public class RocketMQAdmin implements Admin {
         ConfigService configService = ConfigService.getInstance();
         ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
-        nameServerAddr = clientConfiguration.namesrvAddr;
-        clusterName = clientConfiguration.clusterName;
-        String accessKey = clientConfiguration.accessKey;
-        String secretKey = clientConfiguration.secretKey;
+        nameServerAddr = clientConfiguration.getNamesrvAddr();
+        clusterName = clientConfiguration.getClusterName();
+        String accessKey = clientConfiguration.getAccessKey();
+        String secretKey = clientConfiguration.getSecretKey();
 
         RPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
         adminExt = new DefaultMQAdminExt(rpcHook);

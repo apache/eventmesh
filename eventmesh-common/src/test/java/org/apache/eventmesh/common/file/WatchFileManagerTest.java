@@ -20,10 +20,15 @@ package org.apache.eventmesh.common.file;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -39,17 +44,18 @@ public class WatchFileManagerTest {
         final FileChangeListener fileChangeListener = new FileChangeListener() {
             @Override
             public void onChanged(FileChangeContext changeContext) {
-                Assert.assertEquals(f.getName(), changeContext.getFileName());
-                Assert.assertEquals(f.getParent(), changeContext.getDirectoryPath());
+                Assert.assertEquals(file.getName(), changeContext.getFileName());
+                Assert.assertEquals(file.getParent(), changeContext.getDirectoryPath());
             }
 
             @Override
             public boolean support(FileChangeContext changeContext) {
-                return changeContext.getWatchEvent().context().toString().contains(f.getName());
+                return changeContext.getWatchEvent().context().toString().contains(file.getName());
             }
         };
-        WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
+        WatchFileManager.registerFileChangeListener(file.getParent(), fileChangeListener);
 
+        Path path = Paths.get(resourceUrl);
         Properties properties = new Properties();
         properties.load(new BufferedReader(new FileReader(file)));
         properties.setProperty("eventMesh.server.newAdd", "newAdd");

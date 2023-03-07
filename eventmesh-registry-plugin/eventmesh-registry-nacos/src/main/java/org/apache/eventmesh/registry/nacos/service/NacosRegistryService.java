@@ -239,6 +239,7 @@ public class NacosRegistryService implements RegistryService {
             instance.setClusterName(eventMeshClusterName);
             namingService.deregisterInstance(eventMeshName, eventMeshUnRegisterInfo.getProtocolType()
                 + "-" + NacosConstant.GROUP, instance);
+            eventMeshRegisterInfoMap.remove(eventMeshName);
         } catch (NacosException e) {
             log.error("[NacosRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());
