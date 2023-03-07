@@ -24,7 +24,7 @@ configurations {
 dependencies {
     implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-common")
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-storage:eventmesh-storage-api")
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'io.netty:netty-all'
     implementation "io.cloudevents:cloudevents-core"
