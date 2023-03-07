@@ -23,7 +23,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 /**
  * ConnectorResourceService
  */
-@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.STORAGE)
 public interface StorageResourceService {
 
     /**
