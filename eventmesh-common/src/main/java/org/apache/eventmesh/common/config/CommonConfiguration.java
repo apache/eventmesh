@@ -72,9 +72,6 @@ public class CommonConfiguration {
     @ConfigFiled(field = "connector.plugin.type", notEmpty = true)
     private String eventMeshConnectorPluginType = "rocketmq";
 
-    @ConfigFiled(field = "storage.plugin.type", notEmpty = true)
-    private String eventMeshStoragePluginType = "rocketmq";
-
 
     @ConfigFiled(field = "registry.plugin.username")
     private String eventMeshRegistryPluginUsername = "";

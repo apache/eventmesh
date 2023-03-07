@@ -21,7 +21,7 @@ package org.apache.eventmesh.runtime.core.plugin;
 
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.admin.TopicProperties;
-import org.apache.eventmesh.api.factory.StoragePluginFactory;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 
 import java.util.List;
 import java.util.Properties;
@@ -37,7 +37,7 @@ public class MQAdminWrapper extends MQWrapper {
     protected Admin meshMQAdmin;
 
     public MQAdminWrapper(String connectorPluginType) {
-        this.meshMQAdmin = StoragePluginFactory.getMeshMQAdmin(connectorPluginType);
+        this.meshMQAdmin = ConnectorPluginFactory.getMeshMQAdmin(connectorPluginType);
         if (meshMQAdmin == null) {
             log.error("can't load the meshMQAdmin plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQAdmin plugin, please check.");

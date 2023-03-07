@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.plugin;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.factory.StoragePluginFactory;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
@@ -35,7 +35,7 @@ public class MQProducerWrapper extends MQWrapper {
     protected Producer meshMQProducer;
 
     public MQProducerWrapper(String connectorPluginType) {
-        this.meshMQProducer = StoragePluginFactory.getMeshMQProducer(connectorPluginType);
+        this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
         if (meshMQProducer == null) {
             log.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
