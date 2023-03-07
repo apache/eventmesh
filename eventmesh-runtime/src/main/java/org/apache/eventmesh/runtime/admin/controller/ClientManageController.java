@@ -126,8 +126,8 @@ public class ClientManageController {
             eventMeshHTTPServer.getEventMeshHttpConfiguration(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration(), httpHandlerManager);
         new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer, httpHandlerManager);
-        new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType(), httpHandlerManager);
-        new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType(), httpHandlerManager);
+        new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
+        new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
         new RegistryHandler(eventMeshRegistry, httpHandlerManager);
 
         if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
