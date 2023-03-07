@@ -19,22 +19,23 @@ package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestContext {
 
-    private transient Object key;
-    private transient Package request;
-    private transient Package response;
-    private transient CountDownLatch latch;
+    private Object key;
+    private Package request;
+    private final CompletableFuture<Package> future = new CompletableFuture<>();
 
-    public RequestContext(final Object key, final Package request, final CountDownLatch latch) {
+    public RequestContext(final Object key, final Package request) {
         this.key = key;
         this.request = request;
-        this.latch = latch;
     }
 
     public Object getKey() {
@@ -53,33 +54,28 @@ public class RequestContext {
         this.request = request;
     }
 
-    public Package getResponse() {
-        return response;
+    public CompletableFuture<Package> future() {
+        return this.future;
     }
 
-    public void setResponse(final Package response) {
-        this.response = response;
+    public Package getResponse(long timeout, TimeUnit timeUnit) throws ExecutionException, InterruptedException, TimeoutException {
+        return this.future.get(timeout, timeUnit);
     }
 
-    public CountDownLatch getLatch() {
-        return latch;
-    }
-
-    public void setLatch(final CountDownLatch latch) {
-        this.latch = latch;
+    public Package getResponse(long timeout) throws ExecutionException, InterruptedException, TimeoutException {
+        return this.future.get(timeout, TimeUnit.MILLISECONDS);
     }
 
     public void finish(final Package msg) {
-        this.response = msg;
-        latch.countDown();
+        this.future.complete(msg);
     }
 
-    public static RequestContext context(final Object key, final Package request, final CountDownLatch latch) throws Exception {
-        final RequestContext c = new RequestContext(key, request, latch);
+    public static RequestContext context(final Object key, final Package request) throws Exception {
+        final RequestContext context = new RequestContext(key, request);
         if (log.isInfoEnabled()) {
             log.info("_RequestContext|create|key={}", key);
         }
-        return c;
+        return context;
     }
 
 
