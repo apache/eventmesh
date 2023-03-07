@@ -202,6 +202,7 @@ public class PushConsumerImpl {
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
