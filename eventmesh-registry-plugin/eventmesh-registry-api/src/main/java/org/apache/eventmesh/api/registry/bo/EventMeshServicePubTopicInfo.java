@@ -49,6 +49,9 @@ public class EventMeshServicePubTopicInfo {
         this.token = token;
     }
 
+    /*
+    * Service corresponds to an application
+    * */
     @Override
     public String toString() {
         return "EventMeshServicePubTopicInfo{"
