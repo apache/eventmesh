@@ -74,7 +74,7 @@ public class Codec {
             int headerLength = ArrayUtils.getLength(headerData);
             int bodyLength = ArrayUtils.getLength(bodyData);
 
-            int length = headerLength + bodyLength;
+            final int length = CONSTANT_MAGIC_FLAG.length + VERSION.length + headerLength + bodyLength;
 
             if (length > FRAME_MAX_LENGTH) {
                 throw new IllegalArgumentException("message size is exceed limit!");
@@ -116,7 +116,7 @@ public class Codec {
 
                 final int length = in.readInt();
                 final int headerLength = in.readInt();
-                final int bodyLength = length - headerLength;
+                final int bodyLength = length - CONSTANT_MAGIC_FLAG.length - VERSION.length - headerLength;
                 Header header = parseHeader(in, headerLength);
                 Object body = parseBody(in, header, bodyLength);
 
