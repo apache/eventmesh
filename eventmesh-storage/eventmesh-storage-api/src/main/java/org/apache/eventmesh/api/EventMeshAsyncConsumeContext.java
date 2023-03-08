@@ -15,30 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
 
-    private final String extensionTypeName;
+public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    private AbstractContext abstractContext;
+
+    public AbstractContext getAbstractContext() {
+        return abstractContext;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public void setAbstractContext(AbstractContext abstractContext) {
+        this.abstractContext = abstractContext;
     }
+
+    public abstract void commit(EventMeshAction action);
 
 }

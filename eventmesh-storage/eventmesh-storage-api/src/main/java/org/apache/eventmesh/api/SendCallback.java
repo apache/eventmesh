@@ -15,30 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api;
+
+import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.producer.Producer;
+
+import io.cloudevents.CloudEvent;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Call back interface used in {@link Producer#publish(CloudEvent, SendCallback)}.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+public interface SendCallback {
 
-    private final String extensionTypeName;
+    void onSuccess(final SendResult sendResult);
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    void onException(final OnExceptionContext context);
 }

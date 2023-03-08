@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api.storage;
+
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * ConnectorResourceService
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.STORAGE)
+public interface StorageResourceService {
 
-    private final String extensionTypeName;
+    /**
+     * Resource initialization in connector,such as,some public thread pool if exist
+     *
+     * @throws Exception
+     */
+    void init() throws Exception;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    /**
+     * Resource release in connector,such as,some public thread pool if exist
+     *
+     * @throws Exception
+     */
+    void release() throws Exception;
 }

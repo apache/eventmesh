@@ -15,30 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+public class SendResult {
 
-    private final String extensionTypeName;
+    private String messageId;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    private String topic;
+
+    public String getMessageId() {
+        return messageId;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    @Override
+    public String toString() {
+        return "SendResult[topic=" + topic + ", messageId=" + messageId + ']';
+    }
 }

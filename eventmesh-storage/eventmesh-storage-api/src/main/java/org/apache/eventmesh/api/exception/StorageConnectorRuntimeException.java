@@ -15,30 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api.exception;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+public class StorageConnectorRuntimeException extends RuntimeException {
 
-    private final String extensionTypeName;
+    public StorageConnectorRuntimeException() {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public StorageConnectorRuntimeException(String message) {
+        super(message);
+    }
+
+    public StorageConnectorRuntimeException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public StorageConnectorRuntimeException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 
 }
