@@ -20,7 +20,7 @@ package org.apache.eventmesh.storage.standalone.producer;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
@@ -76,7 +76,7 @@ public class StandaloneProducer {
             return sendResult;
         } catch (Exception e) {
             log.error("send message error, topic: {}", cloudEvent.getSubject(), e);
-            throw new ConnectorRuntimeException(
+            throw new StorageConnectorRuntimeException(
                 String.format("Send message error, topic: %s", cloudEvent.getSubject()));
         }
     }
@@ -92,7 +92,7 @@ public class StandaloneProducer {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
                 .messageId(cloudEvent.getId())
                 .topic(cloudEvent.getSubject())
-                .exception(new ConnectorRuntimeException(ex))
+                .exception(new StorageConnectorRuntimeException(ex))
                 .build();
             sendCallback.onException(onExceptionContext);
         }
@@ -113,24 +113,24 @@ public class StandaloneProducer {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
                 .messageId(cloudEvent.getId())
                 .topic(cloudEvent.getSubject())
-                .exception(new ConnectorRuntimeException(ex))
+                .exception(new StorageConnectorRuntimeException(ex))
                 .build();
             sendCallback.onException(onExceptionContext);
         }
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        throw new ConnectorRuntimeException("Request is not supported");
+        throw new StorageConnectorRuntimeException("Request is not supported");
     }
 
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        throw new ConnectorRuntimeException("Reply is not supported");
+        throw new StorageConnectorRuntimeException("Reply is not supported");
     }
 
     public void checkTopicExist(String topic) throws Exception {
         boolean exist = standaloneBroker.checkTopicExist(topic);
         if (!exist) {
-            throw new ConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+            throw new StorageConnectorRuntimeException(String.format("topic:%s is not exist", topic));
         }
     }
 
