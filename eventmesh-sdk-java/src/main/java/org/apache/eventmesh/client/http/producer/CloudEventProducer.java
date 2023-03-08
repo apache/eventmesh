@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -75,7 +76,7 @@ class CloudEventProducer extends AbstractProducerHttpClient<CloudEvent> {
 
     private RequestParam buildCommonPostParam(final CloudEvent cloudEvent) {
         validateCloudEvent(cloudEvent);
-        final byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+        final byte[] bodyByte = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType()))
             .serialize(cloudEvent);
         final String content = new String(bodyByte, StandardCharsets.UTF_8);
 
