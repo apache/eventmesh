@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api.exception;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    private final String extensionTypeName;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class OnExceptionContext {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    private String messageId;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    private String topic;
 
+    /**
+     * Detailed exception stack information.
+     */
+    private StorageConnectorRuntimeException exception;
 }

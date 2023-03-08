@@ -15,30 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api;
+
+import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.producer.Producer;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * The {@code LifeCycle} defines a lifecycle interface for a OMS related service endpoint, like {@link Producer}, {@link Consumer}, and so on.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+public interface LifeCycle {
 
-    private final String extensionTypeName;
+    boolean isStarted();
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    boolean isClosed();
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    void start();
 
+    void shutdown();
 }

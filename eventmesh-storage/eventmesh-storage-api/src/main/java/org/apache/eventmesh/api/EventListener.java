@@ -15,30 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.api;
+
+
+import io.cloudevents.CloudEvent;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Event listener, registered for consume messages by consumer.
+ *
+ * <p>
+ * <strong>
+ * Thread safe requirements: this interface will be invoked by multi threads, so users should keep thread safe during the consume process.
+ * </strong>
+ * </p>
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+public interface EventListener {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    void consume(final CloudEvent cloudEvent, final AsyncConsumeContext context);
 
 }
