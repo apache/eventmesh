@@ -35,6 +35,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -45,11 +46,11 @@ public class AuthTokenUtils {
 
     public static void authTokenByPublicKey(AclProperties aclProperties) {
 
-        String token = aclProperties.getToken();
+        String token =  aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             if (!authAccess(aclProperties)) {
-                throw new AclException(
-                    "group:" + aclProperties.getExtendedField("app") + " has no auth to sub the topic:" + aclProperties.getTopic());
+                throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
+                    + aclProperties.getTopic());
             }
             String publicKeyUrl = null;
             token = token.replace("Bearer ", "");
@@ -71,6 +72,7 @@ public class AuthTokenUtils {
                 Key validationKey = kf.generatePublic(spec);
                 JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
                 Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
+                Jws<Claims> signJwt = signedParser.parseClaimsJws(token);
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
@@ -85,7 +87,9 @@ public class AuthTokenUtils {
             } catch (JwtException e) {
                 throw new AclException("invalid token!", e);
             }
+
         } else {
+            throw new AclException("invalid token!");
               {
                 throw new AclException("invalid token!");
               }
@@ -137,13 +141,17 @@ public class AuthTokenUtils {
     }
 
     public static boolean authAccess(AclProperties aclProperties) {
+
         String topic = aclProperties.getTopic();
+
         Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
+
         if (groupTopics.contains(topic)) {
             return true;
         } else {
             return false;
         }
+
     }
 
 }

@@ -19,6 +19,7 @@ package org.apache.eventmesh.api.registry;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -54,4 +55,6 @@ public interface RegistryService {
     boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException;
 
     public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException;
+
+    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException;
 }

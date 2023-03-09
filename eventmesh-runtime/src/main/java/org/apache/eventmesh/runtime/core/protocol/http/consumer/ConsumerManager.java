@@ -65,26 +65,26 @@ public class ConsumerManager {
 
         if (latestConsumerGroupConfig == null) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE;
-            notification.consumerGroup = consumerGroup;
+            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE);
+            notification.setConsumerGroup(consumerGroup);
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
 
         if (cgm == null) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
+            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW);
+            notification.setConsumerGroup(consumerGroup);
+            notification.setConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
 
         if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
+            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE);
+            notification.setConsumerGroup(consumerGroup);
+            notification.setConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
@@ -123,9 +123,7 @@ public class ConsumerManager {
     /**
      * restart consumer
      */
-    public synchronized void restartConsumer(String consumerGroup,
-        ConsumerGroupConf consumerGroupConfig)
-        throws Exception {
+    public synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
         if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
             cgm.refresh(consumerGroupConfig);
@@ -159,29 +157,29 @@ public class ConsumerManager {
     public void handleConsumerGroupTopicConfChangeEvent(ConsumerGroupTopicConfChangeEvent event) {
         try {
             log.info("onChange event:{}", event);
-            switch (event.action) {
+            switch (event.getAction()) {
                 case NEW: {
-                    ConsumerGroupManager manager = getConsumer(event.consumerGroup);
+                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().put(event.topic, event.newTopicConf);
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().put(event.getTopic(), event.getNewTopicConf());
                     break;
                 }
                 case CHANGE: {
-                    ConsumerGroupManager manager = getConsumer(event.consumerGroup);
+                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().replace(event.topic, event.newTopicConf);
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().replace(event.getTopic(), event.getNewTopicConf());
                     break;
                 }
                 case DELETE: {
-                    ConsumerGroupManager manager = getConsumer(event.consumerGroup);
+                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.topic);
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.getTopic());
                     break;
                 }
                 default:
@@ -197,15 +195,15 @@ public class ConsumerManager {
         try {
             log.info("onChange event:{}", event);
 
-            switch (event.action) {
+            switch (event.getAction()) {
                 case NEW:
-                    addConsumer(event.consumerGroup, event.consumerGroupConfig);
+                    addConsumer(event.getConsumerGroup(), event.getConsumerGroupConfig());
                     break;
                 case CHANGE:
-                    restartConsumer(event.consumerGroup, event.consumerGroupConfig);
+                    restartConsumer(event.getConsumerGroup(), event.getConsumerGroupConfig());
                     break;
                 case DELETE:
-                    delConsumer(event.consumerGroup);
+                    delConsumer(event.getConsumerGroup());
                     break;
                 default:
                     //do nothing

@@ -26,6 +26,7 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
+import org.apache.eventmesh.connector.pulsar.constant.PulsarConstant;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pulsar.client.api.AuthenticationFactory;
@@ -33,9 +34,12 @@ import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.MessageListener;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
+import org.apache.pulsar.client.api.SubscriptionMode;
+import org.apache.pulsar.client.api.SubscriptionType;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
@@ -47,6 +51,7 @@ import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @Config(field = "clientConfiguration")
 public class PulsarConsumerImpl implements Consumer {
@@ -54,9 +59,10 @@ public class PulsarConsumerImpl implements Consumer {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private Properties properties;
     private PulsarClient pulsarClient;
-
     private org.apache.pulsar.client.api.Consumer<byte[]> consumer;
     private EventListener eventListener;
+
+    private ConcurrentHashMap<String, org.apache.pulsar.client.api.Consumer<byte[]>> consumerMap = new ConcurrentHashMap<>();
 
     /**
      * Unified configuration class corresponding to pulsar-client.properties
@@ -89,7 +95,7 @@ public class PulsarConsumerImpl implements Consumer {
             this.pulsarClient = clientBuilder.build();
         } catch (Exception ex) {
             throw new ConnectorRuntimeException(
-                String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
+              String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
         }
     }
 
@@ -100,22 +106,28 @@ public class PulsarConsumerImpl implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-
+        String subTopic = clientConfiguration.getTopicPrefix() + topic;
         if (pulsarClient == null) {
             throw new ConnectorRuntimeException(
-                String.format("Cann't find the pulsar client for topic: %s", topic));
+                String.format("Cann't find the pulsar client for topic: %s", subTopic));
         }
 
         EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
             @Override
             public void commit(EventMeshAction action) {
-                log.debug("message action: {} for topic: {}", action.name(), topic);
+                log.debug("message action: {} for topic: {}", action.name(), subTopic);
             }
         };
 
-        consumer = pulsarClient.newConsumer()
-            .topic(topic)
+        SubscriptionType type = SubscriptionType.Shared;
+
+        String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
+            + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
+        org.apache.pulsar.client.api.Consumer<byte[]> consumer = pulsarClient.newConsumer()
+            .topic(subTopic)
             .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
+            .subscriptionMode(SubscriptionMode.Durable)
+            .subscriptionType(type)
             .messageListener(
                 (MessageListener<byte[]>) (ackConsumer, msg) -> {
                     CloudEvent cloudEvent = EventFormatProvider
@@ -127,17 +139,24 @@ public class PulsarConsumerImpl implements Consumer {
                         ackConsumer.acknowledge(msg);
                     } catch (PulsarClientException ex) {
                         throw new ConnectorRuntimeException(
-                            String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
+                            String.format("Failed to unsubscribe the topic:%s with exception: %s", subTopic, ex.getMessage()));
                     } catch (EventDeserializationException ex) {
                         log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
                     }
                 }).subscribe();
+
+        consumerMap.putIfAbsent(consumerKey, consumer);
+
     }
 
     @Override
     public void unsubscribe(String topic) {
         try {
+            String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
+                + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
+            org.apache.pulsar.client.api.Consumer<byte[]> consumer = consumerMap.get(consumerKey);
             consumer.unsubscribe();
+            consumerMap.remove(consumerKey);
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
                 String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
@@ -167,8 +186,17 @@ public class PulsarConsumerImpl implements Consumer {
     public void shutdown() {
         this.started.compareAndSet(true, false);
         try {
-            this.consumer.close();
+
+            consumerMap.forEach((key, consumer) -> {
+                try {
+                    consumer.close();
+                } catch (PulsarClientException e) {
+                    throw new ConnectorRuntimeException(
+                        String.format("Failed to close the pulsar consumer with exception: %s", e.getMessage()));
+                }
+            });
             this.pulsarClient.close();
+            consumerMap.clear();
         } catch (PulsarClientException ex) {
             throw new ConnectorRuntimeException(
                 String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));

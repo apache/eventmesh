@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.trace.Trace;
 
@@ -48,6 +49,8 @@ public class EventMeshServer {
     private final ConnectorResource connectorResource;
 
     private ServiceState serviceState;
+
+    private ProducerTopicManager producerTopicManager;
 
     private final CommonConfiguration configuration;
 
@@ -125,7 +128,8 @@ public class EventMeshServer {
         if (log.isInfoEnabled()) {
             log.info("eventStore : {}", eventStore);
         }
-
+        producerTopicManager = new ProducerTopicManager(this);
+        producerTopicManager.init();
         serviceState = ServiceState.INITED;
 
         if (log.isInfoEnabled()) {
@@ -151,7 +155,7 @@ public class EventMeshServer {
         if (Objects.nonNull(clientManageController)) {
             clientManageController.start();
         }
-
+        producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
         if (log.isInfoEnabled()) {
             log.info(SERVER_STATE_MSG, serviceState);
@@ -182,7 +186,7 @@ public class EventMeshServer {
         if (configuration != null && configuration.isEventMeshServerTraceEnable()) {
             trace.shutdown();
         }
-
+        producerTopicManager.shutdown();
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
 
@@ -209,5 +213,9 @@ public class EventMeshServer {
 
     public Acl getAcl() {
         return acl;
+    }
+
+    public ProducerTopicManager getProducerTopicManager() {
+        return producerTopicManager;
     }
 }
