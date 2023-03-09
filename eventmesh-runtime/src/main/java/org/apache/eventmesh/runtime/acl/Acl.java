@@ -105,24 +105,6 @@ public class Acl {
         aclService.doAclCheckInSend(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
     }
 
-    public void doAclCheckInTcpReceive(String remoteAddr, UserAgent userAgent, String topic, int requestCode) throws AclException {
-        aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
-    }
-
-    private static AclProperties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
-        AclProperties aclProperties = new AclProperties();
-        aclProperties.setClientIp(remoteAddr);
-        aclProperties.setUser(userAgent.getUsername());
-        aclProperties.setPwd(userAgent.getPassword());
-        aclProperties.setSubsystem(userAgent.getSubsystem());
-        aclProperties.setRequestCode(requestCode);
-        if (StringUtils.isNotBlank(topic)) {
-            aclProperties.setTopic(topic);
-        }
-
-        return aclProperties;
-    }
-
     public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode)
         throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
@@ -188,6 +170,25 @@ public class Acl {
         return aclProperties;
     }
 
+    private AclProperties buildHttpAclProperties(String remoteAddr, String token, String subsystem, String topic, String requestURI, Object obj) {
+        AclProperties aclProperties = new AclProperties();
+        aclProperties.setClientIp(remoteAddr);
+        aclProperties.setSubsystem(subsystem);
+        aclProperties.setRequestURI(requestURI);
+        if (StringUtils.isNotBlank(token)) {
+            aclProperties.setToken(token);
+        }
+        if (StringUtils.isNotBlank(topic)) {
+            aclProperties.setTopic(topic);
+        }
+
+        if (obj instanceof EventMeshServicePubTopicInfo) {
+            aclProperties.setExtendedField("group", ((EventMeshServicePubTopicInfo) obj).getService());
+            aclProperties.setExtendedField("topics", ((EventMeshServicePubTopicInfo) obj).getTopics());
+        }
+        return aclProperties;
+    }
+
     private static AclProperties buildTcpAclProperties(String remoteAddr, UserAgent userAgent, String topic, int requestCode) {
         AclProperties aclProperties = new AclProperties();
         aclProperties.setClientIp(remoteAddr);
@@ -229,25 +230,6 @@ public class Acl {
         }
         if (obj instanceof EventMeshAppSubTopicInfo) {
             aclProperties.setExtendedField("group", ((EventMeshAppSubTopicInfo) obj).getApp());
-        }
-        return aclProperties;
-    }
-
-    private AclProperties buildHttpAclProperties(String remoteAddr, String token, String subsystem, String topic, String requestURI, Object obj) {
-        AclProperties aclProperties = new AclProperties();
-        aclProperties.setClientIp(remoteAddr);
-        aclProperties.setSubsystem(subsystem);
-        aclProperties.setRequestURI(requestURI);
-        if (StringUtils.isNotBlank(token)) {
-            aclProperties.setToken(token);
-        }
-        if (StringUtils.isNotBlank(topic)) {
-            aclProperties.setTopic(topic);
-        }
-
-        if (obj instanceof EventMeshServicePubTopicInfo) {
-            aclProperties.setExtendedField("group", ((EventMeshServicePubTopicInfo) obj).getService());
-            aclProperties.setExtendedField("topics", ((EventMeshServicePubTopicInfo) obj).getTopics());
         }
         return aclProperties;
     }
