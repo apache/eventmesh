@@ -86,6 +86,9 @@ jcommander-1.78.jar
 jetcd-common-0.3.0.jar
 jetcd-core-0.3.0.jar
 jetcd-resolver-0.3.0.jar
+jjwt-api-0.11.1.jar
+jjwt-impl-0.11.1.jar
+jjwt-jackson-0.11.1.jar
 jline-0.9.94.jar
 jna-4.2.2.jar
 jodd-bean-5.1.6.jar

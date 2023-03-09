@@ -1,0 +1,107 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.auth.token.impl.auth;
+
+import org.apache.eventmesh.api.acl.AclProperties;
+import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Set;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+
+public class AuthTokenUtils {
+
+    public static void authTokenByPublicKey(AclProperties aclProperties) {
+
+        String token =  aclProperties.getToken();
+        if (StringUtils.isNotBlank(token)) {
+            if (!authAccess(aclProperties)) {
+                throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
+                    + aclProperties.getTopic());
+            }
+            String publicKeyUrl = null;
+            token = token.replace("Bearer ", "");
+            for (String key : ConfigurationContextUtil.KEYS) {
+                CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
+                if (null == commonConfiguration) {
+                    continue;
+                }
+                if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
+                    throw new AclException("publicKeyUrl cannot be null");
+                }
+                publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
+            }
+            byte[] validationKeyBytes = new byte[0];
+            try {
+                validationKeyBytes = Files.readAllBytes(Paths.get(publicKeyUrl));
+                X509EncodedKeySpec spec = new X509EncodedKeySpec(validationKeyBytes);
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                Key validationKey = kf.generatePublic(spec);
+                JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
+                Jws<Claims> signJwt = signedParser.parseClaimsJws(token);
+                String sub = signJwt.getBody().get("sub", String.class);
+                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
+                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
+                        + aclProperties.getTopic());
+                }
+            } catch (IOException e) {
+                throw new AclException("public key read error!", e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new AclException("no such RSA algorithm!", e);
+            } catch (InvalidKeySpecException e) {
+                throw new AclException("invalid public key spec!", e);
+            } catch (JwtException e) {
+                throw new AclException("invalid token!", e);
+            }
+
+        } else {
+            throw new AclException("invalid token!");
+        }
+    }
+
+    public static boolean authAccess(AclProperties aclProperties) {
+
+        String topic = aclProperties.getTopic();
+
+        Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
+
+        if (groupTopics.contains(topic)) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+}

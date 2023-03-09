@@ -72,6 +72,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "connector.plugin.type", notEmpty = true)
     private String eventMeshConnectorPluginType = "rocketmq";
 
+    @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
+    private boolean eventMeshSecurityValidateTypeToken = false;
 
     @ConfigFiled(field = "registry.plugin.username")
     private String eventMeshRegistryPluginUsername = "";
@@ -95,6 +97,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "server.registry.enabled")
     private boolean eventMeshServerRegistryEnable = false;
 
+    @ConfigFiled(field = "security.publickey")
+    private String eventMeshSecurityPublickey = "";
 
     @ConfigFiled(field = "server.provide.protocols", reload = true)
     private List<String> eventMeshProvideServerProtocols;
