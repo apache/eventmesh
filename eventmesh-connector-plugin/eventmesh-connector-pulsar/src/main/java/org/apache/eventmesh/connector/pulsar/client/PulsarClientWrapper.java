@@ -83,7 +83,7 @@ public class PulsarClientWrapper {
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
-        String topic = cloudEvent.getSubject();
+        String topic = config.getTopicPrefix() + cloudEvent.getSubject();
         Producer<byte[]> producer = producerMap.computeIfAbsent(topic, k -> createProducer(topic));
         try {
             byte[] serializedCloudEvent = EventFormatProvider

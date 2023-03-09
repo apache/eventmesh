@@ -15,32 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.config;
+package org.apache.eventmesh.connector.pulsar.constant;
 
-import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+public class PulsarConstant {
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@Config(prefix = "eventMesh.server.pulsar", path = "classPath://pulsar-client.properties")
-public class ClientConfiguration {
-
-    @ConfigFiled(field = "service")
-    private String serviceAddr;
-
-    @ConfigFiled(field = "authPlugin")
-    private String authPlugin;
-
-    @ConfigFiled(field = "authParams")
-    private String authParams;
-
-    /*
-    *   the full format of topic needs a prefix, but the prefix cannot be passed in the url when the topic is carried
-    *
-    * */
-    @ConfigFiled(field = "topicPrefix")
-    private String topicPrefix;
+    public static final String KEY_SEPARATOR = "/";
 }
