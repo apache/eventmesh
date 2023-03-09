@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_REQUEST;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
+import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -65,10 +66,19 @@ public class HelloTask extends AbstractTask {
         Session session = null;
         UserAgent user = (UserAgent) pkg.getBody();
         try {
+
             //do acl check in connect
+            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            String group = user.getGroup();
+            String token = user.getToken();
+            String subsystem = user.getSubsystem();
+
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                this.acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.getValue());
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                if (eventMeshAppSubTopicInfo == null) {
+                    throw new AclException("no group register");
+                }
+                this.acl.doAclCheckInTcpConnect(remoteAddr, token, subsystem, eventMeshAppSubTopicInfo);
             }
 
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
