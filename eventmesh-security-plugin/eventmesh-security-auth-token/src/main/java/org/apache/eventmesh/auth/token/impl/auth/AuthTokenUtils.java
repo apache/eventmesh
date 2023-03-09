@@ -93,7 +93,6 @@ public class AuthTokenUtils {
     }
 
     public static void helloTaskAuthTokenByPublicKey(AclProperties aclProperties) {
-
         String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             String publicKeyUrl = null;
