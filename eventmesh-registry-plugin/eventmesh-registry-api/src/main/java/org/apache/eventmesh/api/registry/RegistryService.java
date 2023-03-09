@@ -54,7 +54,7 @@ public interface RegistryService {
 
     boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException;
 
-    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException;
+    EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException;
 
-    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException;
+    List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException;
 }
