@@ -18,6 +18,7 @@
 package org.apache.eventmesh.registry.etcd.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -74,5 +75,33 @@ public class EtcdCustomService extends EtcdRegistryService {
         return null;
     }
 
+    @Nullable
+    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
 
+        Client client = getEtcdClient();
+        String keyPrefix = KEY_PREFIX + KEY_APP + EtcdConstant.KEY_SEPARATOR + group;
+        List<KeyValue> keyValues = null;
+        try {
+            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
+
+            GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
+
+            keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
+
+
+            if (CollectionUtils.isNotEmpty(keyValues)) {
+                for (KeyValue kv : keyValues) {
+                    EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
+                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshAppSubTopicInfo.class);
+                    return eventMeshAppSubTopicInfo;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
+            throw new RegistryException(e.getMessage());
+        }
+
+        return null;
+
+    }
 }

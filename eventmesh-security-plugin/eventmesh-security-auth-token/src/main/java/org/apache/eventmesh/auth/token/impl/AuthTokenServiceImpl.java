@@ -40,7 +40,7 @@ public class AuthTokenServiceImpl implements AclService {
 
     @Override
     public void doAclCheckInConnect(AclProperties aclProperties) throws AclException {
-        AuthTokenUtils.authTokenByPublicKey(aclProperties);
+        AuthTokenUtils.helloTaskAuthTokenByPublicKey(aclProperties);
     }
 
     @Override

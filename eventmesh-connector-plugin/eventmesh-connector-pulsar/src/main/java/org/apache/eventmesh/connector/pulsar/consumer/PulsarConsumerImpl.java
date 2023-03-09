@@ -28,6 +28,8 @@ import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 import org.apache.eventmesh.connector.pulsar.constant.PulsarConstant;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.MessageListener;
 import org.apache.pulsar.client.api.PulsarClient;
@@ -69,6 +71,8 @@ public class PulsarConsumerImpl implements Consumer {
     @Override
     public void init(Properties properties) throws Exception {
         this.properties = properties;
+        String token = properties.getProperty(Constants.CONSUMER_TOKEN);
+
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
                 .serviceUrl(clientConfiguration.getServiceAddr());
@@ -79,6 +83,11 @@ public class PulsarConsumerImpl implements Consumer {
                 clientBuilder.authentication(
                     clientConfiguration.getAuthPlugin(),
                     clientConfiguration.getAuthParams()
+                );
+            }
+            if (StringUtils.isNotBlank(token)) {
+                clientBuilder.authentication(
+                    AuthenticationFactory.token(token)
                 );
             }
 
