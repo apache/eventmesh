@@ -59,7 +59,6 @@ public class PulsarConsumerImpl implements Consumer {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private Properties properties;
     private PulsarClient pulsarClient;
-    private org.apache.pulsar.client.api.Consumer<byte[]> consumer;
     private EventListener eventListener;
 
     private ConcurrentHashMap<String, org.apache.pulsar.client.api.Consumer<byte[]>> consumerMap = new ConcurrentHashMap<>();

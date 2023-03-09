@@ -35,7 +35,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -72,7 +71,6 @@ public class AuthTokenUtils {
                 Key validationKey = kf.generatePublic(spec);
                 JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
                 Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
-                Jws<Claims> signJwt = signedParser.parseClaimsJws(token);
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
@@ -89,7 +87,6 @@ public class AuthTokenUtils {
             }
 
         } else {
-            throw new AclException("invalid token!");
               {
                 throw new AclException("invalid token!");
               }
