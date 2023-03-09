@@ -108,6 +108,8 @@ public class Constants {
 
     public static final String ACCESS_POINTS = "ACCESS_POINTS";
 
+    public static final String CLIENT_ADDRESS = "clientAddress";
+
     public static final String REGION = "REGION";
 
     public static final String MESSAGE_MODEL = "MESSAGE_MODEL";
