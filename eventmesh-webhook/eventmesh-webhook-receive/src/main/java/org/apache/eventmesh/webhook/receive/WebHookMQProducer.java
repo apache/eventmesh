@@ -19,7 +19,7 @@ package org.apache.eventmesh.webhook.receive;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Objects;
@@ -31,8 +31,8 @@ public class WebHookMQProducer {
 
     private transient Producer hookMQProducer;
 
-    public WebHookMQProducer(final Properties properties, String connectorPluginType) throws Exception {
-        this.hookMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
+    public WebHookMQProducer(final Properties properties, String storagePluginType) throws Exception {
+        this.hookMQProducer = StoragePluginFactory.getMeshMQProducer(storagePluginType);
         Objects.requireNonNull(hookMQProducer, "doesn't load the hookMQProducer plugin, please check.");
 
         this.hookMQProducer.init(properties);
