@@ -18,11 +18,10 @@
 package org.apache.eventmesh.webhook.receive.config;
 
 import org.apache.eventmesh.common.config.ConfigService;
-
-import java.util.Properties;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Properties;
 
 public class ReceiveConfigurationTest {
 
@@ -45,7 +44,7 @@ public class ReceiveConfigurationTest {
         Properties properties = new Properties();
         properties.put("serverAddr", "127.0.0.1:8848");
         Assert.assertEquals(properties, config.getOperationProperties());
-        Assert.assertEquals("standalone", config.getConnectorPluginType());
+        Assert.assertEquals("standalone", config.getStoragePluginType());
         Assert.assertEquals(".", config.getFilePath());
     }
 }
