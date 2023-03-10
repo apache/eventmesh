@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.standalone.broker;
 
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
-import org.apache.eventmesh.connector.standalone.broker.task.HistoryMessageClear;
 import org.apache.eventmesh.connector.standalone.broker.task.HistoryMessageClearTask;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -117,8 +116,7 @@ public class StandaloneBroker {
     }
 
     private void startHistoryMessageCleanTask() {
-        HistoryMessageClear historyMessageClear = new HistoryMessageClear(messageContainer);
-        Thread thread = new Thread(new HistoryMessageClearTask(historyMessageClear));
+        Thread thread = new Thread(new HistoryMessageClearTask(messageContainer));
         thread.setDaemon(true);
         thread.setName("StandaloneBroker-HistoryMessageCleanTask");
         thread.start();
