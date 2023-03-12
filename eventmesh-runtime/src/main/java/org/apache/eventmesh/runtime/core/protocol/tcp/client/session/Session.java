@@ -277,10 +277,9 @@ public class Session {
         if (!Objects.equals(context, session.context)) {
             return false;
         }
-        if (!Objects.equals(sessionState, session.sessionState)) {
-            return false;
-        }
-        return true;
+        
+        return Objects.equals(sessionState, session.sessionState);
+
     }
 
     @Override
