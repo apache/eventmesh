@@ -326,8 +326,7 @@ public class Session {
     }
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
-        if (!listenRspSend) {
-            if (listenRspLock.tryLock()) {
+        if (!listenRspSend && listenRspLock.tryLock()) {
                 if (!listenRspSend) {
                     if (header == null) {
                         header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
@@ -340,7 +339,7 @@ public class Session {
                     listenRspSend = true;
                 }
                 listenRspLock.unlock();
-            }
+            
         }
     }
 
