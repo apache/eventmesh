@@ -218,4 +218,8 @@ public class EventMeshServer {
     public ProducerTopicManager getProducerTopicManager() {
         return producerTopicManager;
     }
+
+    public CommonConfiguration getConfiguration() {
+        return configuration;
+    }
 }
