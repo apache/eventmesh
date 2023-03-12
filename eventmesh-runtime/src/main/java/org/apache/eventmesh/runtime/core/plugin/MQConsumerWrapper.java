@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.plugin;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 
 import java.util.List;
 import java.util.Properties;
@@ -35,8 +35,8 @@ public class MQConsumerWrapper extends MQWrapper {
 
     protected Consumer meshMQPushConsumer;
 
-    public MQConsumerWrapper(String connectorPluginType) {
-        this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);
+    public MQConsumerWrapper(String storagePluginType) {
+        this.meshMQPushConsumer = StoragePluginFactory.getMeshMQPushConsumer(storagePluginType);
         if (meshMQPushConsumer == null) {
             log.error("can't load the meshMQPushConsumer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
