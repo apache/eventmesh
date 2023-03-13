@@ -70,8 +70,8 @@ public class UnSubscribeRequestBody extends Body {
         UnSubscribeRequestBody body = new UnSubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JsonUtils
-                .deserialize(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
-                }));
+            .parseTypeReferenceObject(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
+            }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
@@ -80,7 +80,7 @@ public class UnSubscribeRequestBody extends Body {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put(URL, url);
-        map.put(TOPIC, JsonUtils.serialize(topics));
+        map.put(TOPIC, JsonUtils.toJSONString(topics));
         map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }
@@ -88,9 +88,9 @@ public class UnSubscribeRequestBody extends Body {
     @Override
     public String toString() {
         return "unSubscribeRequestBody{"
-                + "consumerGroup='" + consumerGroup + '\''
-                + ", url='" + url + '\''
-                + ", topics=" + topics
-                + '}';
+            + "consumerGroup='" + consumerGroup + '\''
+            + ", url='" + url + '\''
+            + ", topics=" + topics
+            + '}';
     }
 }

@@ -42,8 +42,11 @@ public class HeartbeatProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public HeartbeatProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public HeartbeatProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(Heartbeat heartbeat, EventEmitter<Response> emitter) throws Exception {
@@ -110,7 +113,7 @@ public class HeartbeatProcessor {
             String sys = header.getSys();
             int requestCode = RequestCode.HEARTBEAT.getRequestCode();
             for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
-                Acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
+                this.acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
             }
         }
     }

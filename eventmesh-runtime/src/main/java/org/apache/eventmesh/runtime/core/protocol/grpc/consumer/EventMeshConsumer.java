@@ -22,6 +22,7 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.EVENT_ME
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE_NAME;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
 
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -32,6 +33,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -39,55 +41,55 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.MessageHandler;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshConsumer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshConsumer.class);
+    private final transient String consumerGroup;
 
-    private final String consumerGroup;
+    private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final transient EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
-    private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+    private final transient MQConsumerWrapper persistentMqConsumer;
 
-    private final MQConsumerWrapper persistentMqConsumer;
+    private final transient MQConsumerWrapper broadcastMqConsumer;
 
-    private final MQConsumerWrapper broadcastMqConsumer;
+    private final transient MessageHandler messageHandler;
 
-    private final MessageHandler messageHandler;
-
-    private ServiceState serviceState;
+    private transient ServiceState serviceState;
 
     /**
-     * Key: topic
-     * Value: ConsumerGroupTopicConfig
+     * Key: topic Value: ConsumerGroupTopicConfig
      **/
-    private final Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
+    private final transient Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
 
-    public EventMeshConsumer(EventMeshGrpcServer eventMeshGrpcServer, String consumerGroup) {
+    public EventMeshConsumer(final EventMeshGrpcServer eventMeshGrpcServer, final String consumerGroup) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.eventMeshGrpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
         this.consumerGroup = consumerGroup;
         this.messageHandler = new MessageHandler(consumerGroup, eventMeshGrpcServer.getPushMsgExecutor());
-        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
-        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
+        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
+        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
     }
 
     /**
@@ -96,19 +98,18 @@ public class EventMeshConsumer {
      * @param client ConsumerGroupClient
      * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
      */
-    public synchronized boolean registerClient(ConsumerGroupClient client) {
+    public synchronized boolean registerClient(final ConsumerGroupClient client) {
         boolean requireRestart = false;
-        GrpcType grpcType = client.getGrpcType();
-        String topic = client.getTopic();
-        SubscriptionMode subscriptionMode = client.getSubscriptionMode();
 
-        ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
+        ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(client.getTopic());
         if (topicConfig == null) {
-            topicConfig = ConsumerGroupTopicConfig.buildTopicConfig(consumerGroup, topic, subscriptionMode, grpcType);
-            consumerGroupTopicConfig.put(topic, topicConfig);
+            topicConfig = ConsumerGroupTopicConfig.buildTopicConfig(consumerGroup, client.getTopic(),
+                client.getSubscriptionMode(), client.getGrpcType());
+            consumerGroupTopicConfig.put(client.getTopic(), topicConfig);
             requireRestart = true;
         }
         topicConfig.registerClient(client);
+
         return requireRestart;
     }
 
@@ -118,74 +119,81 @@ public class EventMeshConsumer {
      * @param client ConsumerGroupClient
      * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
      */
-    public synchronized boolean deregisterClient(ConsumerGroupClient client) {
+    public synchronized boolean deregisterClient(final ConsumerGroupClient client) {
         boolean requireRestart = false;
-        String topic = client.getTopic();
-        ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
+
+        final ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(client.getTopic());
         if (topicConfig != null) {
             topicConfig.deregisterClient(client);
             if (topicConfig.getSize() == 0) {
-                consumerGroupTopicConfig.remove(topic);
+                consumerGroupTopicConfig.remove(client.getTopic());
                 requireRestart = true;
             }
         }
+
         return requireRestart;
     }
 
     public synchronized void init() throws Exception {
-        if (consumerGroupTopicConfig.isEmpty()) {
+        if (MapUtils.isEmpty(consumerGroupTopicConfig)) {
             // no topics, don't init the consumer
             return;
         }
 
-        Properties keyValue = new Properties();
+        final Properties keyValue = new Properties();
         keyValue.put(IS_BROADCAST, "false");
         keyValue.put(CONSUMER_GROUP, consumerGroup);
         keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
-                eventMeshGrpcConfiguration.getEventMeshCluster()));
+            eventMeshGrpcConfiguration.getEventMeshCluster()));
         persistentMqConsumer.init(keyValue);
-        EventListener clusterEventListner = createEventListener(SubscriptionMode.CLUSTERING);
-        persistentMqConsumer.registerEventListener(clusterEventListner);
+        persistentMqConsumer.registerEventListener(createEventListener(SubscriptionMode.CLUSTERING));
 
-        Properties broadcastKeyValue = new Properties();
+        final Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put(IS_BROADCAST, "true");
         broadcastKeyValue.put(CONSUMER_GROUP, consumerGroup);
         broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
-                eventMeshGrpcConfiguration.getEventMeshCluster()));
+            eventMeshGrpcConfiguration.getEventMeshCluster()));
         broadcastMqConsumer.init(broadcastKeyValue);
-        EventListener broadcastEventListner = createEventListener(SubscriptionMode.BROADCASTING);
-        broadcastMqConsumer.registerEventListener(broadcastEventListner);
+        broadcastMqConsumer.registerEventListener(createEventListener(SubscriptionMode.BROADCASTING));
 
         serviceState = ServiceState.INITED;
-        LOGGER.info("EventMeshConsumer [{}] initialized.............", consumerGroup);
+        if (log.isInfoEnabled()) {
+            log.info("EventMeshConsumer [{}] initialized.............", consumerGroup);
+        }
     }
 
     public synchronized void start() throws Exception {
-        if (consumerGroupTopicConfig.isEmpty()) {
+        if (MapUtils.isEmpty(consumerGroupTopicConfig)) {
             // no topics, don't start the consumer
             return;
         }
 
-        for (Map.Entry<String, ConsumerGroupTopicConfig> entry : consumerGroupTopicConfig.entrySet()) {
-            subscribe(entry.getKey(), entry.getValue().getSubscriptionMode());
-        }
+        consumerGroupTopicConfig.forEach((k, v) -> {
+            try {
+                subscribe(k, v.getSubscriptionMode());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         persistentMqConsumer.start();
         broadcastMqConsumer.start();
 
         serviceState = ServiceState.RUNNING;
-        LOGGER.info("EventMeshConsumer [{}] started..........", consumerGroup);
+        if (log.isInfoEnabled()) {
+            log.info("EventMeshConsumer [{}] started..........", consumerGroup);
+        }
     }
 
     public synchronized void shutdown() throws Exception {
         persistentMqConsumer.shutdown();
         broadcastMqConsumer.shutdown();
 
-        serviceState = ServiceState.STOPED;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("EventMeshConsumer [{}] shutdown.........", consumerGroup);
+        serviceState = ServiceState.STOPPED;
+        if (log.isInfoEnabled()) {
+            log.info("EventMeshConsumer [{}] shutdown.........", consumerGroup);
         }
     }
 
@@ -193,73 +201,73 @@ public class EventMeshConsumer {
         return serviceState;
     }
 
-    public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+    public void subscribe(final String topic, final SubscriptionMode subscriptionMode) throws Exception {
         if (SubscriptionMode.CLUSTERING == subscriptionMode) {
             persistentMqConsumer.subscribe(topic);
         } else if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.subscribe(topic);
         } else {
-            LOGGER.error("Subscribe Failed. Incorrect Subscription Mode");
+            //log.error("Subscribe Failed. Incorrect Subscription Mode");
             throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
         }
     }
 
-    public void unsubscribe(Subscription.SubscriptionItem subscriptionItem) throws Exception {
-        SubscriptionMode mode = subscriptionItem.getMode();
-        String topic = subscriptionItem.getTopic();
+    public void unsubscribe(final Subscription.SubscriptionItem subscriptionItem) throws Exception {
+        final SubscriptionMode mode = subscriptionItem.getMode();
+        final String topic = subscriptionItem.getTopic();
         if (SubscriptionMode.CLUSTERING == mode) {
             persistentMqConsumer.unsubscribe(topic);
         } else if (SubscriptionMode.BROADCASTING == mode) {
             broadcastMqConsumer.unsubscribe(topic);
         } else {
-            LOGGER.error("Unsubscribe Failed. Incorrect Subscription Mode");
             throw new Exception("Unsubscribe Failed. Incorrect Subscription Mode");
         }
     }
 
-    public void updateOffset(SubscriptionMode subscriptionMode, List<CloudEvent> events, AbstractContext context)
-            throws Exception {
+    public void updateOffset(final SubscriptionMode subscriptionMode, final List<CloudEvent> events, final AbstractContext context)
+        throws Exception {
         if (SubscriptionMode.CLUSTERING == subscriptionMode) {
             persistentMqConsumer.updateOffset(events, context);
         } else if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {
-            LOGGER.error("Subscribe Failed. Incorrect Subscription Mode");
             throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
         }
     }
 
-    private EventListener createEventListener(SubscriptionMode subscriptionMode) {
+    private EventListener createEventListener(final SubscriptionMode subscriptionMode) {
         return (event, context) -> {
-
             event = CloudEventBuilder.from(event)
-                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .build();
+                .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                    String.valueOf(System.currentTimeMillis()))
+                .build();
 
-            String topic = event.getSubject();
-            Object bizSeqNo = event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
-            String strBizSeqNo = bizSeqNo == null ? "" : bizSeqNo.toString();
+            final String topic = event.getSubject();
+            final String bizSeqNo = Optional.ofNullable(
+                    (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS))
+                .orElseGet(() -> "");
+            final String uniqueId = Optional.ofNullable((String) event.getExtension(Constants.RMB_UNIQ_ID))
+                .orElseGet(() -> "");
 
-            Object uniqueId = event.getExtension(Constants.RMB_UNIQ_ID);
-            String strUniqueId = uniqueId == null ? "" : uniqueId.toString();
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
+            if (log.isDebugEnabled()) {
+                log.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
             } else {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
+                if (log.isInfoEnabled()) {
+                    log.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic,
+                        bizSeqNo, uniqueId);
                 }
                 eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
             }
 
-            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
+            final EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
-            ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
+            final ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
 
             if (topicConfig != null) {
-                GrpcType grpcType = topicConfig.getGrpcType();
-                HandleMsgContext handleMsgContext = new HandleMsgContext(consumerGroup, event, subscriptionMode, grpcType,
-                        eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, this,
+                final HandleMsgContext handleMsgContext =
+                    new HandleMsgContext(consumerGroup, event, subscriptionMode, topicConfig.getGrpcType(),
+                        eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer,
+                        this,
                         topicConfig);
 
                 if (messageHandler.handle(handleMsgContext)) {
@@ -267,47 +275,50 @@ public class EventMeshConsumer {
                     return;
                 } else {
                     // can not handle the message due to the capacity limit is reached
-                    // wait for sometime and send this message back to mq and consume again
+                    // wait for some time and send this message back to mq and consume again
                     try {
-                        Thread.sleep(5000);
-                        sendMessageBack(consumerGroup, event, strUniqueId, strBizSeqNo);
+                        ThreadUtils.sleep(5, TimeUnit.SECONDS);
+                        sendMessageBack(consumerGroup, event, uniqueId, bizSeqNo);
                     } catch (Exception ignored) {
                         // ignore exception
                     }
                 }
             } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("no active consumer for topic={}|msg={}", topic, event);
+                if (log.isDebugEnabled()) {
+                    log.debug("no active consumer for topic={}|msg={}", topic, event);
                 }
             }
+
             eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
         };
     }
 
-    public void sendMessageBack(String consumerGroup, final CloudEvent event,
-                                final String uniqueId, String bizSeqNo) throws Exception {
-        EventMeshProducer producer
-                = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
+    public void sendMessageBack(final String consumerGroup, final CloudEvent event,
+        final String uniqueId, final String bizSeqNo) throws Exception {
+        final EventMeshProducer producer
+            = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {
-            LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
+            if (log.isWarnEnabled()) {
+                log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
                     consumerGroup, bizSeqNo, uniqueId);
+            }
             return;
         }
 
         final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event,
-                producer, eventMeshGrpcServer);
+            producer, eventMeshGrpcServer);
 
         producer.send(sendMessageBackContext, new SendCallback() {
             @Override
-            public void onSuccess(SendResult sendResult) {
+            public void onSuccess(final SendResult sendResult) {
             }
 
             @Override
-            public void onException(OnExceptionContext context) {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
-                            bizSeqNo, uniqueId);
+            public void onException(final OnExceptionContext context) {
+                if (log.isWarnEnabled()) {
+                    log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
+                        bizSeqNo, uniqueId);
                 }
             }
         });

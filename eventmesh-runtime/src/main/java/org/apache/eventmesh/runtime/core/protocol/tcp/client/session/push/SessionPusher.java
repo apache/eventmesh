@@ -47,11 +47,13 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.api.trace.Span;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SessionPusher {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
@@ -78,9 +80,9 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (SubscriptionMode.BROADCASTING == downStreamMsgContext.subscriptionItem.getMode()) {
+        if (SubscriptionMode.BROADCASTING == downStreamMsgContext.getSubscriptionItem().getMode()) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()) {
+        } else if (SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
@@ -123,29 +125,29 @@ public class SessionPusher {
                 session.getContext().writeAndFlush(pkg).addListener(
                     (ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
-                            logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
+                            log.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
                                 downStreamMsgContext.retryTimes, downStreamMsgContext.event);
                             deliverFailMsgsCount.incrementAndGet();
 
                             //how long to isolate client when push fail
                             long isolateTime = System.currentTimeMillis()
-                                + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
+                                + session.getEventMeshTCPConfiguration().getEventMeshTcpPushFailIsolateTimeInMills();
                             session.setIsolateTime(isolateTime);
-                            logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
+                            log.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                             //retry
-                            long delayTime = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
-                                ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
-                                : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
+                            long delayTime = SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()
+                                ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
+                                : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
                             downStreamMsgContext.delay(delayTime);
                             Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                         } else {
                             deliveredMsgsCount.incrementAndGet();
-                            logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+                            log.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
                                 downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
 
                             if (session.isIsolated()) {
-                                logger.info("cancel isolated,client:{}", session.getClient());
+                                log.info("cancel isolated,client:{}", session.getClient());
                                 session.setIsolateTime(System.currentTimeMillis());
                             }
                         }
@@ -160,7 +162,7 @@ public class SessionPusher {
 
     public void unAckMsg(String seq, DownStreamMsgContext downStreamMsgContext) {
         downStreamMap.put(seq, downStreamMsgContext);
-        logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
+        log.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
     }
 
     public int getTotalUnackMsgs() {

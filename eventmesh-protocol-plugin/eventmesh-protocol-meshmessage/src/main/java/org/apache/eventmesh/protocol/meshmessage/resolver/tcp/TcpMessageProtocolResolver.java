@@ -48,10 +48,10 @@ public class TcpMessageProtocolResolver {
         String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.isBlank(protocolType)
-                || StringUtils.isBlank(protocolVersion)
-                || StringUtils.isBlank(protocolDesc)) {
+            || StringUtils.isBlank(protocolVersion)
+            || StringUtils.isBlank(protocolDesc)) {
             throw new ProtocolHandleException(String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
-                    protocolType, protocolVersion, protocolDesc));
+                protocolType, protocolVersion, protocolDesc));
         }
 
         if (!StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_NAME, protocolType)) {
@@ -73,11 +73,11 @@ public class TcpMessageProtocolResolver {
         }
 
         cloudEventBuilder = cloudEventBuilder
-                .withId(header.getSeq())
-                .withSource(URI.create("/"))
-                .withType("eventmeshmessage")
-                .withSubject(topic)
-                .withData(content.getBytes(StandardCharsets.UTF_8));
+            .withId(header.getSeq())
+            .withSource(URI.create("/"))
+            .withType("eventmeshmessage")
+            .withSubject(topic)
+            .withData(content.getBytes(StandardCharsets.UTF_8));
 
         for (String propKey : header.getProperties().keySet()) {
             try {

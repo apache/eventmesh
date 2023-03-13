@@ -17,13 +17,10 @@
 
 package org.apache.eventmesh.connector.redis.client;
 
-import static org.apache.eventmesh.connector.redis.config.ConfigurationWrapper.getPropertiesByPrefix;
-import static org.apache.eventmesh.connector.redis.config.ConfigurationWrapper.getProperty;
-
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
-import org.apache.eventmesh.connector.redis.config.ConfigOptions;
 import org.apache.eventmesh.connector.redis.config.RedisProperties;
 
 import java.util.Arrays;
@@ -35,8 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Within EventMesh's JVM, there is no multi-connector server, and redisson itself is pooled management,
- * so a single instance is fine, and it can save resources and improve performance.
+ * Within EventMesh's JVM, there is no multi-connector server, and redisson itself is pooled management, so a single instance is fine, and it can save
+ * resources and improve performance.
  */
 public final class RedissonClient {
 
@@ -59,39 +56,8 @@ public final class RedissonClient {
     }
 
     public static Redisson create() {
-        RedisProperties properties = new RedisProperties();
-        String serverTypeName = getProperty(ConfigOptions.SERVER_TYPE);
-        if (serverTypeName != null) {
-            try {
-                properties.setServerType(RedisProperties.ServerType.valueOf(serverTypeName));
-            } catch (Exception e) {
-                final String message = "Invalid Redis server type: " + properties.getServerType()
-                    + ", supported values are: "
-                    + Arrays.toString(RedisProperties.ServerType.values());
-                throw new ConnectorRuntimeException(message, e);
-            }
-        } else {
-            properties.setServerType(RedisProperties.ServerType.SINGLE);
-        }
-
-        String serverAddress = getProperty(ConfigOptions.SERVER_ADDRESS);
-        if (serverAddress != null) {
-            properties.setServerAddress(serverAddress);
-        } else {
-            throw new ConnectorRuntimeException("Lack Redis server address");
-        }
-
-        String serverMasterName = getProperty(ConfigOptions.SERVER_MASTER_NAME);
-        if (serverMasterName != null) {
-            properties.setServerMasterName(serverMasterName);
-        }
-
-        String serverPassword = getProperty(ConfigOptions.SERVER_PASSWORD);
-        if (serverPassword != null) {
-            properties.setServerPassword(serverPassword);
-        }
-
-        properties.setRedissonProperties(getPropertiesByPrefix(ConfigOptions.REDISSON_PROPERTIES_PREFIX));
+        ConfigService configService = ConfigService.getInstance();
+        RedisProperties properties = configService.buildConfigInstance(RedisProperties.class);
 
         return create(properties);
     }

@@ -41,8 +41,9 @@ jobs:
 
             Want to get closer to the community?
 
-            WeChat Group：
-            ![wechat_qr](https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-assistant.jpg?raw=true)
+            |WeChat Assistant|WeChat Public Account|Slack|
+            |-|-|-|
+            |<img src="https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)|
 
             Mailing Lists:
             | Name | Description |Subscribe	|Unsubscribe|Archive
@@ -61,8 +62,9 @@ jobs:
 
             Want to get closer to the community?
 
-            WeChat Group：
-            ![wechat_qr](https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-assistant.jpg?raw=true)
+            |WeChat Assistant|WeChat Public Account|Slack|
+            |-|-|-|
+            |<img src="https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/incubator-eventmesh/blob/master/docs/images/contact/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)|
 
             Mailing Lists:
             | Name | Description |Subscribe	|Unsubscribe|Archive
@@ -70,3 +72,4 @@ jobs:
             |Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
             |Development	|Development related discussions|	[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
             |Commits	|All commits to repositories|	[Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
+            |Issues	|Issues or PRs comments and reviews|	[Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|

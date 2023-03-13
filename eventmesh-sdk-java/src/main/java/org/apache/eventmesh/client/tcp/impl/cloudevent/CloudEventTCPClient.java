@@ -74,7 +74,7 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException {
+        throws EventMeshException {
         cloudEventTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 
@@ -95,10 +95,8 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
     @Override
     public void close() throws EventMeshException {
-        try (final EventMeshTCPPubClient<CloudEvent> pubClient = cloudEventTCPPubClient;
-             final EventMeshTCPSubClient<CloudEvent> subClient = cloudEventTCPSubClient) {
-            // close client
-        }
+        this.cloudEventTCPPubClient.close();
+        this.cloudEventTCPSubClient.close();
     }
 
     @Override

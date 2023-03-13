@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.trace.pinpoint;
 
+import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
@@ -45,33 +46,49 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
+import lombok.Data;
+
 /**
  * https://github.com/pinpoint-apm/pinpoint
  */
+@Config(field = "pinpointConfiguration")
+@Config(field = "exporterConfiguration")
+@Data
 public class PinpointTraceService implements EventMeshTraceService {
 
-    private SdkTracerProvider sdkTracerProvider;
+    private transient SdkTracerProvider sdkTracerProvider;
 
-    private Tracer tracer;
+    private transient Tracer tracer;
 
-    private TextMapPropagator textMapPropagator;
+    private transient TextMapPropagator textMapPropagator;
 
-    protected Thread shutdownHook;
+    /**
+     * Unified configuration class corresponding to pinpoint.properties
+     */
+    private transient PinpointConfiguration pinpointConfiguration;
 
+    /**
+     * Unified configuration class corresponding to exporter.properties
+     */
+    private transient ExporterConfiguration exporterConfiguration;
+
+    private transient SpanProcessor spanProcessor;
+
+    private transient Thread shutdownHook;
 
     @Override
     public void init() throws TraceException {
-        long eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        long eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        int eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        int eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        final long eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        final long eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        final int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        final int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
-        SpanProcessor spanProcessor = BatchSpanProcessor.builder(
+        spanProcessor = BatchSpanProcessor.builder(
                 new PinpointSpanExporter(
-                    PinpointConfiguration.getAgentId(),
-                    PinpointConfiguration.getAgentName(),
-                    PinpointConfiguration.getApplicationName(),
-                    PinpointConfiguration.getGrpcTransportConfig()))
+                    pinpointConfiguration.getAgentId(),
+                    pinpointConfiguration.getAgentName(),
+                    pinpointConfiguration.getApplicationName(),
+                    pinpointConfiguration.getGrpcTransportConfig()))
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
             .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
@@ -82,7 +99,7 @@ public class PinpointTraceService implements EventMeshTraceService {
             .addSpanProcessor(spanProcessor)
             .build();
 
-        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+        final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(sdkTracerProvider)
             .build();
@@ -92,19 +109,20 @@ public class PinpointTraceService implements EventMeshTraceService {
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
 
         shutdownHook = new Thread(sdkTracerProvider::close);
+        shutdownHook.setDaemon(true);
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     @Override
-    public Context extractFrom(Context context, Map<String, Object> carrier) throws TraceException {
+    public Context extractFrom(final Context context, final Map<String, Object> carrier) throws TraceException {
         textMapPropagator.extract(context, carrier, new TextMapGetter<Map<String, Object>>() {
             @Override
-            public Iterable<String> keys(@Nonnull Map<String, Object> carrier) {
+            public Iterable<String> keys(final @Nonnull Map<String, Object> carrier) {
                 return carrier.keySet();
             }
 
             @Override
-            public String get(Map<String, Object> carrier, @Nonnull String key) {
+            public String get(final Map<String, Object> carrier, final @Nonnull String key) {
                 return Optional.ofNullable(carrier.get(key)).map(Objects::toString).orElse(null);
             }
         });
@@ -113,7 +131,7 @@ public class PinpointTraceService implements EventMeshTraceService {
     }
 
     @Override
-    public void inject(Context context, Map<String, Object> carrier) {
+    public void inject(final Context context, final Map<String, Object> carrier) {
         textMapPropagator.inject(context, carrier, (cr, key, value) -> {
             if (cr != null) {
                 cr.put(key, value);
@@ -122,12 +140,12 @@ public class PinpointTraceService implements EventMeshTraceService {
     }
 
     @Override
-    public Span createSpan(String spanName,
-                           SpanKind spanKind,
-                           long startTimestamp,
-                           TimeUnit timeUnit,
-                           Context context,
-                           boolean isSpanFinishInOtherThread) throws TraceException {
+    public Span createSpan(final String spanName,
+        final SpanKind spanKind,
+        final long startTimestamp,
+        final TimeUnit timeUnit,
+        final Context context,
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
             .setParent(context)
             .setSpanKind(spanKind)
@@ -136,7 +154,8 @@ public class PinpointTraceService implements EventMeshTraceService {
     }
 
     @Override
-    public Span createSpan(String spanName, SpanKind spanKind, Context context, boolean isSpanFinishInOtherThread) throws TraceException {
+    public Span createSpan(final String spanName, final SpanKind spanKind, final Context context,
+        final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
             .setParent(context)
             .setSpanKind(spanKind)
@@ -146,6 +165,35 @@ public class PinpointTraceService implements EventMeshTraceService {
 
     @Override
     public void shutdown() throws TraceException {
-        sdkTracerProvider.close();
+
+        Exception ex = null;
+
+        try {
+            if (sdkTracerProvider != null) {
+                sdkTracerProvider.close();
+            }
+        } catch (Exception e) {
+            ex = e;
+        }
+
+        try {
+            if (spanProcessor != null) {
+                spanProcessor.close();
+            }
+        } catch (Exception e) {
+            ex = e;
+        }
+
+        if (ex != null) {
+            throw new TraceException("trace close error", ex);
+        }
+    }
+
+    public PinpointConfiguration getClientConfiguration() {
+        return this.pinpointConfiguration;
+    }
+
+    public ExporterConfiguration getExporterConfiguration() {
+        return this.exporterConfiguration;
     }
 }

@@ -25,17 +25,15 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * simple client usage example
  */
+@Slf4j
 public class CClientDemo {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(CClientDemo.class);
 
     private static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
     private static final String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
@@ -50,11 +48,9 @@ public class CClientDemo {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT
-                        || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("receive message-------------------------------------" + msg);
+                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
+                    if (log.isInfoEnabled()) {
+                        log.info("receive message: {}", msg);
                     }
                 }
             }

@@ -24,13 +24,14 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
 public class BroadCastPubClient {
+
     public static void main(String[] args) throws Exception {
         try (PubClientImpl pubClient =
-                     new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
             for (int i = 0; i < 10000; i++) {
-                ThreadUtils.randomSleep(0, 500);
+                ThreadUtils.randomPause(0, 500);
                 pubClient.broadcast(MessageUtils.broadcastMessage(ClientConstants.BROADCAST_TOPIC, i), 5000);
             }
         }

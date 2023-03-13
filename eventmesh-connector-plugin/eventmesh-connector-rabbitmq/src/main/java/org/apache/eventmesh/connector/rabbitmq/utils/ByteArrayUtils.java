@@ -17,33 +17,26 @@
 
 package org.apache.eventmesh.connector.rabbitmq.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Optional;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @SuppressWarnings("all")
 public class ByteArrayUtils {
 
     public static <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
-        byte[] bytes = null;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream sOut = new ObjectOutputStream(out);
-        sOut.writeObject(obj);
-        sOut.flush();
-        bytes = out.toByteArray();
-
+        String s = JsonUtils.toJSONString(obj);
+        byte[] bytes = s.getBytes();
         return Optional.ofNullable(bytes);
     }
 
     public static <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
-        T t = null;
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        ObjectInputStream sIn = new ObjectInputStream(in);
-        t = (T) sIn.readObject();
+        T t = JsonUtils.parseTypeReferenceObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
+        });
         return Optional.ofNullable(t);
-
     }
 }

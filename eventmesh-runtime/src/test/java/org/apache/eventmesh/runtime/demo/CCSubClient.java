@@ -26,18 +26,17 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class CCSubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CCSubClient.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class CCSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl subClient =
-                     new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new SubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             subClient.init();
             subClient.heartbeat();
             subClient.listen();
@@ -45,8 +44,8 @@ public class CCSubClient {
             subClient.registerBusiHandler(new ReceiveMsgHook() {
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("Received message: {}", msg);
+                    if (log.isInfoEnabled()) {
+                        log.info("Received message: {}", msg);
                     }
                     if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
                         Package rrResponse = MessageUtils.rrResponse(msg);

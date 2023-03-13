@@ -17,95 +17,123 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public abstract class AbstractRemotingServer {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final int DEFAULT_SLEEP_SECONDS = 30;
 
-    public EventLoopGroup bossGroup;
+    private EventLoopGroup bossGroup;
 
-    public EventLoopGroup ioGroup;
+    private EventLoopGroup ioGroup;
 
-    public EventLoopGroup workerGroup;
+    private EventExecutorGroup workerGroup;
 
-    public int port;
+    private int port;
 
-    private EventLoopGroup initBossGroup(String threadPrefix) {
-        bossGroup = new NioEventLoopGroup(1, new ThreadFactory() {
-            AtomicInteger count = new AtomicInteger(0);
+    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r, threadPrefix + "-boss-" + count.incrementAndGet());
-                t.setDaemon(true);
-                return t;
-            }
-        });
-
+    public EventLoopGroup getBossGroup() {
         return bossGroup;
     }
 
-    private EventLoopGroup initIOGroup(String threadPrefix) {
-        ioGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
-            AtomicInteger count = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r, threadPrefix + "-io-" + count.incrementAndGet());
-            }
-        });
+    public EventLoopGroup getIoGroup() {
         return ioGroup;
     }
 
-    private EventLoopGroup initWorkerGroup(String threadPrefix) {
-        workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
-            AtomicInteger count = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r, threadPrefix + "-worker-" + count.incrementAndGet());
-                return t;
-            }
-        });
+    public EventExecutorGroup getWorkerGroup() {
         return workerGroup;
     }
 
-    public void init(String threadPrefix) throws Exception {
-        initBossGroup(threadPrefix);
-        initIOGroup(threadPrefix);
-        initWorkerGroup(threadPrefix);
+    public int getPort() {
+        return port;
+    }
+
+    public void setBossGroup(final EventLoopGroup bossGroup) {
+        this.bossGroup = bossGroup;
+    }
+
+    public void setIoGroup(final EventLoopGroup ioGroup) {
+        this.ioGroup = ioGroup;
+    }
+
+    public void setWorkerGroup(final EventExecutorGroup workerGroup) {
+        this.workerGroup = workerGroup;
+    }
+
+    public void setPort(final int port) {
+        this.port = port;
+    }
+
+    private void buildBossGroup(final String threadPrefix) {
+        if (useEpoll()) {
+            bossGroup = new EpollEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyEpoll-Boss", true));
+        } else {
+            bossGroup = new NioEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyNio-Boss", true));
+        }
+
+    }
+
+    private void buildIOGroup(final String threadPrefix) {
+        if (useEpoll()) {
+            ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
+        } else {
+            ioGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyNio-IO"));
+        }
+    }
+
+    private void buildWorkerGroup(final String threadPrefix) {
+        workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
+    }
+
+    public void init(final String threadPrefix) throws Exception {
+        buildBossGroup(threadPrefix);
+        buildIOGroup(threadPrefix);
+        buildWorkerGroup(threadPrefix);
     }
 
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            logger.info("shutdown bossGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown bossGroup");
+            }
         }
 
-        ThreadUtils.randomSleep(30);
+        ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            logger.info("shutdown ioGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown ioGroup");
+            }
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
-            logger.info("shutdown workerGroup");
+            if (log.isInfoEnabled()) {
+                log.info("shutdown workerGroup");
+            }
         }
     }
 
-    public void start() throws Exception {
-
+    protected boolean useEpoll() {
+        return SystemUtils.isLinuxPlatform() && Epoll.isAvailable();
     }
+
+    public abstract void start() throws Exception;
 }

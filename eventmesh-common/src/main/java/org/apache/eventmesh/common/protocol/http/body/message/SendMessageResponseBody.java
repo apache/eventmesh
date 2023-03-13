@@ -73,9 +73,9 @@ public class SendMessageResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
@@ -91,6 +91,7 @@ public class SendMessageResponseBody extends Body {
     @Data
     @Builder
     public static class ReplyMessage {
+
         public String topic;
         public String body;
         public Map<String, String> properties;

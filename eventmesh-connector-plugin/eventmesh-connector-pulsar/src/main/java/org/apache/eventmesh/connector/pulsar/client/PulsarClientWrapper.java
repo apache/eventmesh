@@ -19,9 +19,12 @@ package org.apache.eventmesh.connector.pulsar.client;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
@@ -29,6 +32,7 @@ import org.apache.pulsar.client.api.PulsarClientException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
@@ -46,8 +50,9 @@ public class PulsarClientWrapper {
     private PulsarClient pulsarClient;
     private Map<String, Producer<byte[]>> producerMap = new HashMap<>();
 
-    public PulsarClientWrapper(ClientConfiguration config)  {
+    public PulsarClientWrapper(ClientConfiguration config, Properties properties)  {
         this.config = config;
+        String token = properties.getProperty(Constants.PRODUCER_TOKEN);
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
                 .serviceUrl(config.getServiceAddr());
@@ -58,6 +63,11 @@ public class PulsarClientWrapper {
                 clientBuilder.authentication(
                     config.getAuthPlugin(),
                     config.getAuthParams()
+                );
+            }
+            if (StringUtils.isNotBlank(token)) {
+                clientBuilder.authentication(
+                    AuthenticationFactory.token(token)
                 );
             }
 
@@ -83,7 +93,7 @@ public class PulsarClientWrapper {
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
-        String topic = cloudEvent.getSubject();
+        String topic = config.getTopicPrefix() + cloudEvent.getSubject();
         Producer<byte[]> producer = producerMap.computeIfAbsent(topic, k -> createProducer(topic));
         try {
             byte[] serializedCloudEvent = EventFormatProvider

@@ -25,10 +25,10 @@ import lombok.Data;
 public class EventMeshGrpcClientConfig {
 
     @Builder.Default
-    private String serverAddr = "127.0.0.1";
+    private String serverAddr = "localhost";
 
     @Builder.Default
-    private int serverPort = 10205;
+    private int serverPort = 10_205;
 
     @Builder.Default
     private String env = "env";
@@ -59,35 +59,24 @@ public class EventMeshGrpcClientConfig {
 
     @Override
     public String toString() {
-        return "ClientConfig={"
-            + "ServerAddr="
+        return "ClientConfig={ServerAddr="
             + serverAddr
-            + ","
-            + "ServerPort="
+            + ",ServerPort="
             + serverPort
-            + ","
-            + "env="
+            + ",env="
             + env
-            + ","
-            + "idc="
+            + ",idc="
             + idc
-            + ","
-            + "producerGroup="
+            + ",producerGroup="
             + producerGroup
-            + ","
-            + "consumerGroup="
+            + ",consumerGroup="
             + consumerGroup
-            + ","
-            + "sys="
+            + ",sys="
             + sys
-            + ","
-            + "userName="
+            + ",userName="
             + userName
-            + ","
-            + "password="
-            + "***"
-            + ","
-            + "useTls="
+            + ",password=***"
+            + ",useTls="
             + useTls
             + "}";
     }

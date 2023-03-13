@@ -19,9 +19,6 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class ConsumerGroupTopicConfig {
 
     protected final String consumerGroup;
@@ -40,8 +37,8 @@ public abstract class ConsumerGroupTopicConfig {
     }
 
     public static ConsumerGroupTopicConfig buildTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode,
-                                                            GrpcType grpcType) {
-        if (GrpcType.STREAM.equals(grpcType)) {
+        GrpcType grpcType) {
+        if (GrpcType.STREAM == grpcType) {
             return new StreamTopicConfig(consumerGroup, topic, subscriptionMode);
         } else {
             return new WebhookTopicConfig(consumerGroup, topic, subscriptionMode);

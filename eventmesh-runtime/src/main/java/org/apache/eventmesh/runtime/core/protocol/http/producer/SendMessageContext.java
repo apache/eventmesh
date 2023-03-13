@@ -30,14 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class SendMessageContext extends RetryContext {
 
-    public static final Logger logger = LoggerFactory.getLogger("retry");
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SendMessageContext extends RetryContext {
 
     private CloudEvent event;
 
@@ -115,11 +114,11 @@ public class SendMessageContext extends RetryContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
-                .append("bizSeqNo=").append(bizSeqNo)
-                .append(",retryTimes=").append(retryTimes)
-                .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
-                .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
-                .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append("bizSeqNo=").append(bizSeqNo)
+            .append(",retryTimes=").append(retryTimes)
+            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
+            .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
@@ -142,8 +141,8 @@ public class SendMessageContext extends RetryContext {
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("", context.getException());
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
+                log.warn("", context.getException());
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendBatchMsgFailed(1);
             }
 
         });
