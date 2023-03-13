@@ -23,39 +23,33 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class ProducerTopicManager {
 
-    private Logger retryLogger = LoggerFactory.getLogger("p-topic-m");
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private EventMeshServer eventMeshServer;
-
-    public ProducerTopicManager(EventMeshServer eventMeshServer) {
-        this.eventMeshServer = eventMeshServer;
-    }
 
     private transient ScheduledFuture<?> scheduledTask;
 
     protected static ScheduledExecutorService scheduler;
 
-    private ConcurrentHashMap<String, EventMeshServicePubTopicInfo> eventMeshServicePubTopicInfoMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, EventMeshServicePubTopicInfo> eventMeshServicePubTopicInfoMap = new ConcurrentHashMap<>(64);
+
+    public ProducerTopicManager(EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
+    }
 
     public void init() {
-
         scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
             new EventMeshThreadFactory("Producer-Topic-Manager", true));
-        logger.info("ProducerTopicManager inited......");
-
+        log.info("ProducerTopicManager inited......");
     }
 
     public void start() {
@@ -63,29 +57,28 @@ public class ProducerTopicManager {
         if (scheduledTask == null) {
             synchronized (ProducerTopicManager.class) {
                 scheduledTask = scheduler.scheduleAtFixedRate(() -> {
-
                     try {
-                        List<EventMeshServicePubTopicInfo> list = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
-                        list.forEach(e -> {
-                            eventMeshServicePubTopicInfoMap.put(e.getService(), e);
-                        });
+                        if (!eventMeshServer.getConfiguration().isEventMeshServerRegistryEnable()) {
+                            return;
+                        }
+                        List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
+                        Optional.ofNullable(pubTopicInfoList)
+                            .ifPresent(lt -> lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("ProducerTopicManager update eventMesh pub topic info error. ", e);
                     }
 
                 }, 5, 20, TimeUnit.SECONDS);
             }
         }
-
-
-        logger.info("ProducerTopicManager started......");
+        log.info("ProducerTopicManager started......");
     }
 
     public void shutdown() {
         if (scheduledTask != null) {
             scheduledTask.cancel(false);
         }
-        logger.info("ProducerTopicManager shutdown......");
+        log.info("ProducerTopicManager shutdown......");
     }
 
     public ConcurrentHashMap<String, EventMeshServicePubTopicInfo> getEventMeshServicePubTopicInfoMap() {
