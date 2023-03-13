@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
@@ -41,9 +39,10 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 
-public class MongodbReplicaSetConsumer implements Consumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongodbReplicaSetConsumer.class);
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+public class MongodbReplicaSetConsumer implements Consumer {
     private final ConfigurationHolder configurationHolder;
 
     private MongoClient mongoClient;
@@ -129,7 +128,7 @@ public class MongodbReplicaSetConsumer implements Consumer {
                 final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                     @Override
                     public void commit(EventMeshAction action) {
-                        LOGGER.info("[MongodbReplicaSetConsumer] Mongodb consumer context commit.");
+                        log.info("[MongodbReplicaSetConsumer] Mongodb consumer context commit.");
                     }
                 };
                 if (eventListener != null) {
