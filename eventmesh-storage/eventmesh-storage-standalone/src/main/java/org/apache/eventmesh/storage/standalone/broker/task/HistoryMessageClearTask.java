@@ -18,46 +18,24 @@
 package org.apache.eventmesh.storage.standalone.broker.task;
 
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
-import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
-import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * This task used to clear the history message, the element in message queue can only be cleaned by this task.
- */
 @Slf4j
 public class HistoryMessageClearTask implements Runnable {
 
-    private final ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
+    private HistoryMessageClear historyMessageClear;
 
-    /**
-     * If the currentTimeMills - messageCreateTimeMills >= MESSAGE_STORE_WINDOW, then the message will be clear
-     */
-    private static final long MESSAGE_STORE_WINDOW = 60 * 60 * 1000;
-
-    public HistoryMessageClearTask(ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer) {
-        this.messageContainer = messageContainer;
+    public HistoryMessageClearTask(HistoryMessageClear historyMessageClear) {
+        this.historyMessageClear = historyMessageClear;
     }
 
     @Override
     public void run() {
         while (true) {
-            messageContainer.forEach((topicMetadata, messageQueue) -> {
-                long currentTimeMillis = System.currentTimeMillis();
-                MessageEntity oldestMessage = messageQueue.getHead();
-                if (oldestMessage == null) {
-                    return;
-                }
-                if (currentTimeMillis - oldestMessage.getCreateTimeMills() >= MESSAGE_STORE_WINDOW) {
-                    messageQueue.removeHead();
-                }
-            });
+            historyMessageClear.clearMessages();
             try {
                 ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
