@@ -60,9 +60,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
     public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
@@ -74,6 +72,13 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
+
+    private final Acl acl;
+
+    public SendAsyncMessageProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.acl = eventMeshHTTPServer.getAcl();
+    }
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
@@ -91,14 +96,14 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
-                    eventMeshHttpConfiguration.getEventMeshCluster(),
+                eventMeshHttpConfiguration.getEventMeshCluster(),
                 localAddress, eventMeshHttpConfiguration.getEventMeshEnv(),
-                    eventMeshHttpConfiguration.getEventMeshIDC());
+                eventMeshHttpConfiguration.getEventMeshIDC());
 
         String protocolType = sendMessageRequestHeader.getProtocolType();
         String protocolVersin = sendMessageRequestHeader.getProtocolVersion();
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(request);
 
         Span span = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
@@ -171,7 +176,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
             int requestCode = Integer.parseInt(request.getRequestCode());
             try {
-                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 responseEventMeshCommand = request.createHttpCommandResponse(
                     sendMessageResponseHeader,
@@ -206,7 +211,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
-        if (!eventMeshProducer.getStarted().get()) {
+        if (!eventMeshProducer.isStarted()) {
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(),
@@ -228,14 +233,14 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        if (content.length() > eventMeshHttpConfiguration.eventMeshEventSize) {
+        if (content.length() > eventMeshHttpConfiguration.getEventMeshEventSize()) {
             httpLogger.error("Event size exceeds the limit: {}",
-                eventMeshHttpConfiguration.eventMeshEventSize);
+                eventMeshHttpConfiguration.getEventMeshEventSize());
 
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_SIZE_ERR.getRetCode(),
-                    "Event size exceeds the limit: " + eventMeshHttpConfiguration.eventMeshEventSize));
+                    "Event size exceeds the limit: " + eventMeshHttpConfiguration.getEventMeshEventSize()));
             asyncContext.onComplete(responseEventMeshCommand);
 
             Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
@@ -250,7 +255,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, request.reqTime)
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                        eventMeshHttpConfiguration.getEventMeshServerIp())
+                    eventMeshHttpConfiguration.getEventMeshServerIp())
                 .build();
 
             if (messageLogger.isDebugEnabled()) {
@@ -290,7 +295,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 //ignore
             }
         };
-
 
         try {
             event = CloudEventBuilder.from(sendMessageContext.getEvent())

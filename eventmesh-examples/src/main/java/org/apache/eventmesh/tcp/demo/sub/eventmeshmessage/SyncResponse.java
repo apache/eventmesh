@@ -37,39 +37,38 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static final SyncResponse handler = new SyncResponse();
-
-    private static EventMeshTCPClient<EventMeshMessage> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
         try {
-            client = EventMeshTCPClientFactory
-                    .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+            final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory
+                .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
-            client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
+                SubscriptionType.SYNC);
             // Synchronize RR messages
-            client.registerSubBusiHandler(handler);
+            client.registerSubBusiHandler(new SyncResponse());
 
             client.listen();
 
         } catch (Exception e) {
-            log.warn("SyncResponse failed", e);
+            log.error("SyncResponse failed", e);
         }
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive sync rr msg: {}", msg);
+    public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
+        if (log.isInfoEnabled()) {
+            log.info("receive sync rr msg: {}", msg);
+        }
         return Optional.ofNullable(msg);
     }
 

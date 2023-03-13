@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.acl.impl;
 
+import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 
-import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,7 +65,7 @@ public class AclServiceImplTest {
     @Test
     public void testDoAclCheckInConnect() {
         try {
-            service.doAclCheckInConnect(new Properties());
+            service.doAclCheckInConnect(new AclProperties());
         } catch (AclException e) {
             Assert.fail(e.getMessage());
         }
@@ -74,7 +74,7 @@ public class AclServiceImplTest {
     @Test
     public void testDoAclCheckInHeartbeat() {
         try {
-            service.doAclCheckInHeartbeat(new Properties());
+            service.doAclCheckInHeartbeat(new AclProperties());
         } catch (AclException e) {
             Assert.fail(e.getMessage());
         }
@@ -83,7 +83,7 @@ public class AclServiceImplTest {
     @Test
     public void testDoAclCheckInSend() {
         try {
-            service.doAclCheckInSend(new Properties());
+            service.doAclCheckInSend(new AclProperties());
         } catch (AclException e) {
             Assert.fail(e.getMessage());
         }
@@ -92,7 +92,7 @@ public class AclServiceImplTest {
     @Test
     public void testDoAclCheckInReceive() {
         try {
-            service.doAclCheckInReceive(new Properties());
+            service.doAclCheckInReceive(new AclProperties());
         } catch (AclException e) {
             Assert.fail(e.getMessage());
         }

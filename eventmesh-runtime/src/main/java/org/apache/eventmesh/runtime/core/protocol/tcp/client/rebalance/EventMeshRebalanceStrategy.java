@@ -21,5 +21,6 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
  * EventMeshRebalanceStrategy
  */
 public interface EventMeshRebalanceStrategy {
+
     void doRebalance() throws Exception;
 }

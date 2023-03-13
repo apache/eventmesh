@@ -20,8 +20,4 @@ package org.apache.eventmesh.trace.jaeger.common;
 public class JaegerConstants {
 
     public static final String SERVICE_NAME = "eventmesh_trace";
-
-    public static final String KEY_JAEGER_IP = "eventmesh.trace.jaeger.ip";
-
-    public static final String KEY_JAEGER_PORT = "eventmesh.trace.jaeger.port";
 }

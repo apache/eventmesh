@@ -21,6 +21,7 @@ package org.apache.eventmesh.connector.rocketmq.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 
 public class RocketMQAdmin implements Admin {
+
     private final AtomicBoolean isStarted;
 
     protected DefaultMQAdminExt adminExt;
@@ -60,13 +62,13 @@ public class RocketMQAdmin implements Admin {
     public RocketMQAdmin(Properties properties) {
         isStarted = new AtomicBoolean(false);
 
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
+        ConfigService configService = ConfigService.getInstance();
+        ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
-        nameServerAddr = clientConfiguration.namesrvAddr;
-        clusterName = clientConfiguration.clusterName;
-        String accessKey = clientConfiguration.accessKey;
-        String secretKey = clientConfiguration.secretKey;
+        nameServerAddr = clientConfiguration.getNamesrvAddr();
+        clusterName = clientConfiguration.getClusterName();
+        String accessKey = clientConfiguration.getAccessKey();
+        String secretKey = clientConfiguration.getSecretKey();
 
         RPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
         adminExt = new DefaultMQAdminExt(rpcHook);

@@ -35,14 +35,13 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class UpStreamMsgContext extends RetryContext {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class UpStreamMsgContext extends RetryContext {
 
     private Session session;
 
@@ -87,7 +86,7 @@ public class UpStreamMsgContext extends RetryContext {
 
     @Override
     public void retry() {
-        logger.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
+        log.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
             EventMeshUtil.getMessageBizSeq(this.event));
 
         try {
@@ -102,14 +101,14 @@ public class UpStreamMsgContext extends RetryContext {
                     createSendCallback(replyCmd, taskExecuteTime, event, this), startTime, taskExecuteTime);
 
                 if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
-                    logger.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
+                    log.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
                         session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
                     throw new Exception(sendStatus.getDetail());
                 }
             }
         } catch (Exception e) {
-            logger.error("TCP UpstreamMsg Retry error", e);
+            log.error("TCP UpstreamMsg Retry error", e);
         }
     }
 
@@ -121,7 +120,7 @@ public class UpStreamMsgContext extends RetryContext {
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
-                logger.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
+                log.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
                     System.currentTimeMillis() - createTime);
                 if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command
                     .ASYNC_MESSAGE_TO_SERVER_ACK) {
@@ -141,7 +140,7 @@ public class UpStreamMsgContext extends RetryContext {
                 Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
-                logger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
+                log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
                     System.currentTimeMillis() - createTime, new Exception(context.getException()));
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), seq));
                 msg.setBody(event);

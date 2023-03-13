@@ -33,22 +33,21 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SuppressWarnings("restriction")
+@Slf4j
 @EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
 public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(QueryWebHookConfigByManufacturerHandler.class);
 
     private final transient WebHookConfigOperation operation;
 
     public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
-                                                   HttpHandlerManager httpHandlerManager) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
         Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");
@@ -68,15 +67,15 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
         Objects.requireNonNull(node, "JsonNode can not be null");
 
-        WebHookConfig webHookConfig = JsonUtils.deserialize(node.get("webHookConfig").toString(), WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.parseObject(node.get("webHookConfig").toString(), WebHookConfig.class);
         Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
         Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            LOGGER.error("get WebHookConfigOperation implementation Failed.", e);
+            log.error("get WebHookConfigOperation implementation Failed.", e);
         }
     }
 }

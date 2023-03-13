@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.kafka.connector;
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 
 public class ConnectorResourceServiceKafkaImpl implements ConnectorResourceService {
+
     @Override
     public void init() throws Exception {
 

@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.registry.Registry;
 
 public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
@@ -28,12 +27,13 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final Registry registry;
+    private final EventMeshServer eventMeshServer;
 
-    public EventMeshGrpcBootstrap(ConfigurationWrapper configurationWrapper, Registry registry) {
-        this.registry = registry;
-        this.eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
-        eventMeshGrpcConfiguration.init();
+    public EventMeshGrpcBootstrap(final EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
+        ConfigService configService = ConfigService.getInstance();
+        this.eventMeshGrpcConfiguration = configService.buildConfigInstance(EventMeshGrpcConfiguration.class);
+
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
     }
 
@@ -41,7 +41,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     public void init() throws Exception {
         // server init
         if (eventMeshGrpcConfiguration != null) {
-            eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration, registry);
+            eventMeshGrpcServer = new EventMeshGrpcServer(this.eventMeshServer, this.eventMeshGrpcConfiguration);
             eventMeshGrpcServer.init();
         }
     }
@@ -59,5 +59,13 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer.shutdown();
         }
+    }
+
+    public EventMeshGrpcServer getEventMeshGrpcServer() {
+        return eventMeshGrpcServer;
+    }
+
+    public void setEventMeshGrpcServer(EventMeshGrpcServer eventMeshGrpcServer) {
+        this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 }

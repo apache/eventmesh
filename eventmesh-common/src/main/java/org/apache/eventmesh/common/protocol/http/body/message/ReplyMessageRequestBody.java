@@ -106,8 +106,8 @@ public class ReplyMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
+                JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
@@ -117,12 +117,12 @@ public class ReplyMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("replyMessageRequestBody={")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("origTopic=").append(origTopic).append(",")
-                .append("content=").append(content).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("origTopic=").append(origTopic).append(",")
+            .append("content=").append(content).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 
@@ -133,7 +133,7 @@ public class ReplyMessageRequestBody extends Body {
         map.put(ORIGTOPIC, origTopic);
         map.put(UNIQUEID, uniqueId);
         map.put(CONTENT, content);
-        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
+        map.put(EXTFIELDS, JsonUtils.toJSONString(extFields));
         map.put(PRODUCERGROUP, producerGroup);
         return map;
     }

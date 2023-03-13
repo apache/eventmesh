@@ -25,17 +25,16 @@ import org.apache.eventmesh.connector.rabbitmq.config.ConfigurationHolder;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RabbitmqConsumerHandler implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(RabbitmqConsumerHandler.class);
 
     private final Channel channel;
     private final ConfigurationHolder configurationHolder;
@@ -58,7 +57,7 @@ public class RabbitmqConsumerHandler implements Runnable {
                     final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                         @Override
                         public void commit(EventMeshAction action) {
-                            logger.info("[RabbitmqConsumerHandler] Rabbitmq consumer context commit.");
+                            log.info("[RabbitmqConsumerHandler] Rabbitmq consumer context commit.");
                         }
                     };
                     if (eventListener != null) {
@@ -69,7 +68,7 @@ public class RabbitmqConsumerHandler implements Runnable {
                     }
                 }
             } catch (Exception ex) {
-                logger.error("[RabbitmqConsumerHandler] thread run happen exception.", ex);
+                log.error("[RabbitmqConsumerHandler] thread run happen exception.", ex);
             }
         }
     }

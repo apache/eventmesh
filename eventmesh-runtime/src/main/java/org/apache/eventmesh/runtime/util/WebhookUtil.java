@@ -27,22 +27,20 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
  *
  * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md">CloudEvents Http Webhook</a>
  */
+@Slf4j
 public class WebhookUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookUtil.class);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
@@ -51,11 +49,11 @@ public class WebhookUtil {
     private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
-                                                  final String targetUrl,
-                                                  final String requestOrigin) {
-        
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("obtain webhook delivery agreement for url: {}", targetUrl);
+        final String targetUrl,
+        final String requestOrigin) {
+
+        if (log.isInfoEnabled()) {
+            log.info("obtain webhook delivery agreement for url: {}", targetUrl);
         }
 
         final HttpOptions builder = new HttpOptions(targetUrl);
@@ -64,18 +62,20 @@ public class WebhookUtil {
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
             final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             return StringUtils.isEmpty(allowedOrigin)
-                    || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
-        } catch (IOException e) {
-            LOGGER.error("HTTP Options Method is not supported at the Delivery Target: {}, "
-                + "unable to obtain the webhook delivery agreement.", targetUrl, e);
+                || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
+        } catch (Exception e) {
+            if (log.isErrorEnabled()) {
+                log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
+                    + "unable to obtain the webhook delivery agreement.", targetUrl);
+            }
         }
         return true;
     }
 
     public static void setWebhookHeaders(final HttpPost builder,
-                                         final String contentType,
-                                         final String requestOrigin,
-                                         final String urlAuthType) {
+        final String contentType,
+        final String requestOrigin,
+        final String urlAuthType) {
         builder.setHeader(CONTENT_TYPE_HEADER, contentType);
         builder.setHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 

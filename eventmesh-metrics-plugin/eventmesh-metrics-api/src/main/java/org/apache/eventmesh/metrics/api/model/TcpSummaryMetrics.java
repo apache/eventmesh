@@ -23,15 +23,16 @@ import lombok.Data;
 
 @Data
 public class TcpSummaryMetrics implements Metric {
+
     private AtomicInteger client2eventMeshMsgNum;
     private AtomicInteger eventMesh2mqMsgNum;
     private AtomicInteger mq2eventMeshMsgNum;
     private AtomicInteger eventMesh2clientMsgNum;
 
-    private double client2eventMeshTPS;
-    private double eventMesh2clientTPS;
-    private double eventMesh2mqTPS;
-    private double mq2eventMeshTPS;
+    private int client2eventMeshTPS;
+    private int eventMesh2clientTPS;
+    private int eventMesh2mqTPS;
+    private int mq2eventMeshTPS;
     private int subTopicNum;
 
     private int allConnections;
@@ -77,39 +78,39 @@ public class TcpSummaryMetrics implements Metric {
         this.eventMesh2clientMsgNum = new AtomicInteger(0);
     }
 
-    public double getClient2eventMeshTPS() {
+    public int getClient2eventMeshTPS() {
         return client2eventMeshTPS;
     }
 
-    public void setClient2eventMeshTPS(double client2eventMeshTPS) {
+    public void setClient2eventMeshTPS(int client2eventMeshTPS) {
         this.client2eventMeshTPS = client2eventMeshTPS;
     }
 
-    public double getEventMesh2clientTPS() {
+    public int getEventMesh2clientTPS() {
         return eventMesh2clientTPS;
     }
 
-    public void setEventMesh2clientTPS(double eventMesh2clientTPS) {
+    public void setEventMesh2clientTPS(int eventMesh2clientTPS) {
         this.eventMesh2clientTPS = eventMesh2clientTPS;
     }
 
-    public double getEventMesh2mqTPS() {
+    public int getEventMesh2mqTPS() {
         return eventMesh2mqTPS;
     }
 
-    public void setEventMesh2mqTPS(double eventMesh2mqTPS) {
+    public void setEventMesh2mqTPS(int eventMesh2mqTPS) {
         this.eventMesh2mqTPS = eventMesh2mqTPS;
     }
 
-    public double getMq2eventMeshTPS() {
+    public int getMq2eventMeshTPS() {
         return mq2eventMeshTPS;
     }
 
-    public void setMq2eventMeshTPS(double mq2eventMeshTPS) {
+    public void setMq2eventMeshTPS(int mq2eventMeshTPS) {
         this.mq2eventMeshTPS = mq2eventMeshTPS;
     }
 
-    public double getAllTPS() {
+    public int getAllTPS() {
         return client2eventMeshTPS + eventMesh2clientTPS;
     }
 

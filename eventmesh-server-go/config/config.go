@@ -18,6 +18,7 @@ package config
 import (
 	"io/ioutil"
 	"sync/atomic"
+	"time"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"gopkg.in/yaml.v3"
@@ -31,12 +32,13 @@ const (
 )
 
 type Config struct {
-	Name   string `yaml:"name" toml:"name"`
+	Common *Common `yaml:"common" toml:"common"`
 	Server struct {
 		*HTTPOption `yaml:"http" toml:"http"`
 		*GRPCOption `yaml:"grpc" toml:"grpc"`
 		*TCPOption  `yaml:"tcp" toml:"tcp"`
 	}
+	PProf         *PProfOption      `yaml:"pprof" toml:"pprof"`
 	ActivePlugins map[string]string `yaml:"active-plugins" toml:"active-plugins"`
 	Plugins       plugin.Config     `yaml:"plugins,omitempty"`
 }
@@ -49,6 +51,62 @@ func init() {
 
 func defaultConfig() *Config {
 	cfg := &Config{}
+	cfg.Common = &Common{
+		Name:         "eventmesh-server",
+		RegistryName: "eventmesh-go",
+		Cluster:      "1",
+		Env:          "{}",
+		IDC:          "idc1",
+	}
+	cfg.Server.GRPCOption = &GRPCOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+		SendPoolSize:          10,
+		SubscribePoolSize:     10,
+		RetryPoolSize:         10,
+		PushMessagePoolSize:   10,
+		ReplyPoolSize:         10,
+		MsgReqNumPerSecond:    5,
+		SessionExpiredInMills: 5 * time.Second,
+		SendMessageTimeout:    5 * time.Second,
+	}
+	cfg.Server.HTTPOption = &HTTPOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+	}
+	cfg.Server.TCPOption = &TCPOption{
+		Port: "10010",
+		TLSOption: &TLSOption{
+			EnableInsecure: false,
+			CA:             "",
+			Certfile:       "",
+			Keyfile:        "",
+		},
+		Multicore: false,
+	}
+	cfg.ActivePlugins = map[string]string{
+		"connector": "standalone",
+		"log":       "default",
+	}
+	cfg.PProf = &PProfOption{
+		Enable: true,
+		Port:   "10011",
+	}
+	cfg.Plugins = map[string]map[string]yaml.Node{
+		"connector": {
+			"standalone": yaml.Node{},
+		},
+	}
 	return cfg
 }
 

@@ -35,14 +35,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventDeserializer;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ConsumerImpl {
-    public static final Logger logger = LoggerFactory.getLogger(ConsumerImpl.class);
+
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
@@ -52,12 +53,14 @@ public class ConsumerImpl {
     private Set<String> topicsSet;
 
     public ConsumerImpl(final Properties properties) {
+        // Setting the ClassLoader to null is necessary for Kafka consumer configuration
+        final ClassLoader original = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(null);
+        
         Properties props = new Properties();
-
-        // Other config props
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CloudEventDeserializer.class);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CloudEventDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getProperty(ConsumerConfig.GROUP_ID_CONFIG));
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
@@ -66,6 +69,8 @@ public class ConsumerImpl {
         kafkaConsumerRunner = new KafkaConsumerRunner(this.kafkaConsumer);
         executorService = Executors.newFixedThreadPool(10);
         topicsSet = new HashSet<>();
+
+        Thread.currentThread().setContextClassLoader(original);
     }
 
     public Properties attributes() {
@@ -81,7 +86,9 @@ public class ConsumerImpl {
 
     public synchronized void shutdown() {
         if (this.started.compareAndSet(true, false)) {
-            this.kafkaConsumer.close();
+            // Shutdown the executor and interrupt any running tasks
+            kafkaConsumerRunner.shutdown();
+            executorService.shutdown();
         }
     }
 
@@ -106,7 +113,7 @@ public class ConsumerImpl {
             List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
-            logger.error("Error while subscribing the Kafka consumer to topic: ", e);
+            log.error("Error while subscribing the Kafka consumer to topic: ", e);
             throw new ConnectorRuntimeException(
                 String.format("Kafka consumer can't attach to %s.", topic));
         }
@@ -120,7 +127,7 @@ public class ConsumerImpl {
             List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
-            logger.error("Error while unsubscribing the Kafka consumer: ", e);
+            log.error("Error while unsubscribing the Kafka consumer: ", e);
             throw new ConnectorRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
         }
     }

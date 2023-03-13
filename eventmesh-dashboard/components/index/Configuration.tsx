@@ -29,44 +29,47 @@ import {
   Box,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, {
-  useContext, useEffect, useState,
-} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/context';
 
 interface EventMeshConfiguration {
-  sysID: string,
-  namesrvAddr: string,
-  eventMeshEnv: string,
-  eventMeshIDC: string,
-  eventMeshCluster: string,
-  eventMeshServerIp: string,
-  eventMeshName: string,
-  eventMeshWebhookOrigin: string,
-  eventMeshServerSecurityEnable: boolean,
-  eventMeshServerRegistryEnable: boolean,
+  sysID: string;
+  namesrvAddr: string;
+  eventMeshEnv: string;
+  eventMeshIDC: string;
+  eventMeshCluster: string;
+  eventMeshServerIp: string;
+  eventMeshName: string;
+  eventMeshWebhookOrigin: string;
+  eventMeshServerSecurityEnable: boolean;
+  eventMeshServerRegistryEnable: boolean;
 
-  eventMeshTcpServerPort: number,
-  eventMeshTcpServerEnabled: boolean,
+  eventMeshTcpServerPort: number;
+  eventMeshTcpServerEnabled: boolean;
 
-  eventMeshHttpServerPort: number,
-  eventMeshHttpServerUseTls: boolean,
+  eventMeshHttpServerPort: number;
+  eventMeshHttpServerUseTls: boolean;
 
-  eventMeshGrpcServerPort: number,
-  eventMeshGrpcServerUseTls: boolean,
+  eventMeshGrpcServerPort: number;
+  eventMeshGrpcServerUseTls: boolean;
 }
 
 const Configuration = () => {
   const { state } = useContext(AppContext);
-  const [configuration, setConfiguration] = useState<Partial<EventMeshConfiguration>>({});
+  const [configuration, setConfiguration] = useState<
+  Partial<EventMeshConfiguration>
+  >({});
 
   useEffect(() => {
     const controller = new AbortController();
     const fetch = async () => {
       try {
-        const { data } = await axios.get<EventMeshConfiguration>(`${state.endpoint}/configuration`, {
-          signal: controller.signal,
-        });
+        const { data } = await axios.get<EventMeshConfiguration>(
+          `${state.endpoint}/configuration`,
+          {
+            signal: controller.signal,
+          },
+        );
         setConfiguration(data);
       } catch (error) {
         setConfiguration({});
@@ -80,7 +83,10 @@ const Configuration = () => {
     };
   }, [state.endpoint]);
 
-  type ConfigurationRecord = Record<string, string | number | boolean | undefined>;
+  type ConfigurationRecord = Record<
+  string,
+  string | number | boolean | undefined
+  >;
   const commonConfiguration: ConfigurationRecord = {
     'System ID': configuration.sysID,
     'NameServer Address': configuration.namesrvAddr,
@@ -90,8 +96,10 @@ const Configuration = () => {
     'EventMesh Server IP': configuration.eventMeshServerIp,
     'EventMEsh Name': configuration.eventMeshName,
     'EventMesh Webhook Origin': configuration.eventMeshWebhookOrigin,
-    'EventMesh Server Security Enable': configuration.eventMeshServerSecurityEnable,
-    'EventMesh Server Registry Enable': configuration.eventMeshServerRegistryEnable,
+    'EventMesh Server Security Enable':
+      configuration.eventMeshServerSecurityEnable,
+    'EventMesh Server Registry Enable':
+      configuration.eventMeshServerRegistryEnable,
   };
 
   const tcpConfiguration: ConfigurationRecord = {
@@ -142,7 +150,12 @@ const Configuration = () => {
         mt="4"
         opacity="0.8"
       >
-        <Text fontSize="l" fontWeight="semibold" color="rgb(211,85,25)" textAlign={['left', 'center']}>
+        <Text
+          fontSize="l"
+          fontWeight="semibold"
+          color="rgb(211,85,25)"
+          textAlign={['left', 'center']}
+        >
           EventMesh Daemon Not Connected
         </Text>
       </Box>
@@ -160,11 +173,7 @@ const Configuration = () => {
         p="4"
         mt="4"
       >
-        <Text
-          w="full"
-        >
-          EventMesh Configuration
-        </Text>
+        <Text w="full">EventMesh Configuration</Text>
 
         <TableContainer mt="4">
           <Table variant="simple">
@@ -174,12 +183,9 @@ const Configuration = () => {
                 <Th>Value</Th>
               </Tr>
             </Thead>
-            <Tbody>
-              {convertConfigurationToTable(commonConfiguration)}
-            </Tbody>
+            <Tbody>{convertConfigurationToTable(commonConfiguration)}</Tbody>
           </Table>
         </TableContainer>
-
       </Box>
       <Box
         maxW="full"
@@ -190,11 +196,7 @@ const Configuration = () => {
         p="4"
         mt="4"
       >
-        <Text
-          w="full"
-        >
-          TCP Configuration
-        </Text>
+        <Text w="full">TCP Configuration</Text>
 
         <TableContainer mt="4">
           <Table variant="simple">
@@ -204,16 +206,11 @@ const Configuration = () => {
                 <Th>Value</Th>
               </Tr>
             </Thead>
-            <Tbody>
-              {convertConfigurationToTable(tcpConfiguration)}
-            </Tbody>
+            <Tbody>{convertConfigurationToTable(tcpConfiguration)}</Tbody>
           </Table>
         </TableContainer>
 
-        <Text
-          w="full"
-          mt="4"
-        >
+        <Text w="full" mt="4">
           HTTP Configuration
         </Text>
 
@@ -225,16 +222,11 @@ const Configuration = () => {
                 <Th>Value</Th>
               </Tr>
             </Thead>
-            <Tbody>
-              {convertConfigurationToTable(httpConfiguration)}
-            </Tbody>
+            <Tbody>{convertConfigurationToTable(httpConfiguration)}</Tbody>
           </Table>
         </TableContainer>
 
-        <Text
-          w="full"
-          mt="4"
-        >
+        <Text w="full" mt="4">
           gRPC Configuration
         </Text>
 
@@ -246,9 +238,7 @@ const Configuration = () => {
                 <Th>Value</Th>
               </Tr>
             </Thead>
-            <Tbody>
-              {convertConfigurationToTable(grpcConfiguration)}
-            </Tbody>
+            <Tbody>{convertConfigurationToTable(grpcConfiguration)}</Tbody>
           </Table>
         </TableContainer>
       </Box>

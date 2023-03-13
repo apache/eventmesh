@@ -62,10 +62,8 @@ func main() {
 			c.JSON(http.StatusOK, Err(err, "-1"))
 			return
 		}
-		sps := strings.Split(content, "&")
-		for _, sp := range sps {
-			fmt.Println(sp)
-		}
+
+		fmt.Printf("query content: %s \n", contentEscape(content))
 		c.JSON(http.StatusOK, OK("OK"))
 	}
 	router.Any("/*anypath", func(c *gin.Context) {
@@ -77,4 +75,10 @@ func main() {
 	if err := router.Run(fmt.Sprintf(":%d", 18080)); err != nil {
 		panic(err)
 	}
+}
+
+func contentEscape(content string) string {
+	escapedContent := strings.Replace(content, "\n", "", -1)
+	escapedContent = strings.Replace(escapedContent, "\r", "", -1)
+	return escapedContent
 }

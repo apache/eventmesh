@@ -34,64 +34,62 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshCatalogClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshCatalogClient.class);
+
     private final transient EventMeshCatalogClientConfig clientConfig;
     private final transient EventMeshGrpcConsumer eventMeshGrpcConsumer;
     private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<>();
 
-    public EventMeshCatalogClient(EventMeshCatalogClientConfig clientConfig,
-                                  EventMeshGrpcConsumer eventMeshGrpcConsumer) {
+    public EventMeshCatalogClient(final EventMeshCatalogClientConfig clientConfig,
+        final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
         this.clientConfig = clientConfig;
         this.eventMeshGrpcConsumer = eventMeshGrpcConsumer;
     }
 
-    public void init() throws Exception {
-        Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
+    public void init() {
+        final Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
         AssertUtils.notNull(selector, String.format("selector=%s not register.please check it.",
-                clientConfig.getSelectorType()));
-        ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
+            clientConfig.getSelectorType()));
+        final ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
         AssertUtils.notNull(instance, "catalog server is not running.please check it.");
 
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
-                .usePlaintext().build();
-        CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
+        final ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
+            .usePlaintext().build();
+        final CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
 
-        QueryOperationsRequest request = QueryOperationsRequest.newBuilder()
-                .setServiceName(clientConfig.getAppServerName()).build();
-        QueryOperationsResponse response = catalogClient.queryOperations(request);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("received response: {}", response.toString());
+        final QueryOperationsRequest request = QueryOperationsRequest.newBuilder()
+            .setServiceName(clientConfig.getAppServerName()).build();
+        final QueryOperationsResponse response = catalogClient.queryOperations(request);
+        if (log.isInfoEnabled()) {
+            log.info("received response: {}", response);
         }
 
-        List<Operation> operations = response.getOperationsList();
+        final List<Operation> operations = response.getOperationsList();
         if (CollectionUtils.isEmpty(operations)) {
             return;
         }
-
-        for (Operation operation : operations) {
-            if (!"subscribe".equals(operation.getType())) {
-                continue;
+        operations.forEach(operation -> {
+            if ("subscribe".equals(operation.getType())) {
+                final SubscriptionItem subscriptionItem = new SubscriptionItem();
+                subscriptionItem.setTopic(operation.getChannelName());
+                subscriptionItem.setMode(clientConfig.getSubscriptionMode());
+                subscriptionItem.setType(clientConfig.getSubscriptionType());
+                subscriptionItems.add(subscriptionItem);
             }
-            SubscriptionItem subscriptionItem = new SubscriptionItem();
-            subscriptionItem.setTopic(operation.getChannelName());
-            subscriptionItem.setMode(clientConfig.getSubscriptionMode());
-            subscriptionItem.setType(clientConfig.getSubscriptionType());
-            subscriptionItems.add(subscriptionItem);
-        }
+        });
         eventMeshGrpcConsumer.subscribe(subscriptionItems);
     }
 
     public void destroy() {
-        if (subscriptionItems == null || subscriptionItems.isEmpty()) {
-            return;
+        if (CollectionUtils.isNotEmpty(subscriptionItems)) {
+            eventMeshGrpcConsumer.unsubscribe(subscriptionItems);
         }
-        eventMeshGrpcConsumer.unsubscribe(subscriptionItems);
+
     }
 }

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
@@ -35,22 +34,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.opentelemetry.api.trace.Span;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class HTTPMessageHandler implements MessageHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(HTTPMessageHandler.class);
+@Slf4j
+public class HTTPMessageHandler implements MessageHandler {
 
     private transient EventMeshConsumer eventMeshConsumer;
 
     private static final transient ScheduledExecutorService SCHEDULER =
-            ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
+        ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
@@ -79,10 +76,10 @@ public class HTTPMessageHandler implements MessageHandler {
     @Override
     public boolean handle(final HandleMsgContext handleMsgContext) {
         if (MapUtils.getObject(waitingRequests, handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet()).size()
-                > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
-            LOGGER.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
-                            + "consumerGroup:{}, threshold:{}",
-                    handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
+            > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
+            log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
+                    + "consumerGroup:{}, threshold:{}",
+                handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
             return false;
         }
 
@@ -91,8 +88,8 @@ public class HTTPMessageHandler implements MessageHandler {
                 String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getSpecVersion()).toString();
 
                 Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                                handleMsgContext.getEvent()),
-                        EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                        handleMsgContext.getEvent()),
+                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
 
                 try {
                     new AsyncHTTPPushRequest(handleMsgContext, waitingRequests).tryHTTPRequest();
@@ -103,8 +100,8 @@ public class HTTPMessageHandler implements MessageHandler {
             });
             return true;
         } catch (RejectedExecutionException e) {
-            LOGGER.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
-                    handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
+            log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
+                handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
     }

@@ -48,7 +48,7 @@ public class ConsulRegistryServiceTest {
     @Before
     public void registryTest() {
         consulRegistryService = new ConsulRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
+        CommonConfiguration configuration = new CommonConfiguration();
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
         configuration.setNamesrvAddr("127.0.0.1:8500");
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
@@ -92,7 +92,6 @@ public class ConsulRegistryServiceTest {
         Field startStatus = consulRegistryServiceClass.getDeclaredField("START_STATUS");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(consulRegistryService);
-
 
         Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));

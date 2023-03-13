@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 #!/usr/bin/env bash
 
 mockgen.exe -package=mocks -destination=./mocks/heartbeat_service.go github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb HeartbeatServiceServer

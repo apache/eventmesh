@@ -22,15 +22,20 @@ package org.apache.eventmesh.runtime.admin.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class DeleteTCPClientRequest {
-    public String host;
-    public int port;
+
+    private String host;
+
+    private int port;
 
     @JsonCreator
     public DeleteTCPClientRequest(
-            @JsonProperty("host") String host,
-            @JsonProperty("port") int port
-    ) {
+        @JsonProperty("host") String host,
+        @JsonProperty("port") int port) {
+
         super();
         this.host = host;
         this.port = port;

@@ -26,14 +26,13 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class SyncSubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SyncSubClient.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
@@ -45,8 +44,8 @@ public class SyncSubClient {
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                        if ((LOGGER.isInfoEnabled())) {
-                            LOGGER.info("receive message -------------------------------" + msg);
+                        if ((log.isInfoEnabled())) {
+                            log.info("receive message -------------------------------" + msg);
                         }
                     }
                 }

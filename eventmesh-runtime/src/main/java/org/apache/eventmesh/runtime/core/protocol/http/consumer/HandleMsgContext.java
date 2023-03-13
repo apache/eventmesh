@@ -33,14 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
-public class HandleMsgContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandleMsgContext.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class HandleMsgContext {
 
     private String msgRandomNo;
 
@@ -73,17 +72,17 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(final String msgRandomNo,
-                            final String consumerGroup,
-                            final EventMeshConsumer eventMeshConsumer,
-                            final String topic,
-                            final CloudEvent event,
-                            final SubscriptionItem subscriptionItem,
-                            final AbstractContext context,
-                            final ConsumerGroupConf consumerGroupConfig,
-                            final EventMeshHTTPServer eventMeshHTTPServer,
-                            final String bizSeqNo,
-                            final String uniqueId,
-                            final ConsumerGroupTopicConf consumeTopicConfig) {
+        final String consumerGroup,
+        final EventMeshConsumer eventMeshConsumer,
+        final String topic,
+        final CloudEvent event,
+        final SubscriptionItem subscriptionItem,
+        final AbstractContext context,
+        final ConsumerGroupConf consumerGroupConfig,
+        final EventMeshHTTPServer eventMeshHTTPServer,
+        final String bizSeqNo,
+        final String uniqueId,
+        final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
@@ -206,8 +205,8 @@ public class HandleMsgContext {
 
     public void finish() {
         if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("messageAcked|topic={}|event={}", topic, event);
+            if (log.isDebugEnabled()) {
+                log.debug("messageAcked|topic={}|event={}", topic, event);
             }
             eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
         }
@@ -232,25 +231,25 @@ public class HandleMsgContext {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("handleMsgContext={")
-                .append("consumerGroup=")
-                .append(consumerGroup)
-                .append(",topic=")
-                .append(topic)
-                .append(",subscriptionItem=")
-                .append(subscriptionItem)
-                .append(",consumeTopicConfig=")
-                .append(consumeTopicConfig)
-                .append(",bizSeqNo=")
-                .append(bizSeqNo)
-                .append(",uniqueId=")
-                .append(uniqueId)
-                .append(",ttl=")
-                .append(ttl)
-                .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
-                .append('}')
-                .toString();
+            .append("handleMsgContext={")
+            .append("consumerGroup=")
+            .append(consumerGroup)
+            .append(",topic=")
+            .append(topic)
+            .append(",subscriptionItem=")
+            .append(subscriptionItem)
+            .append(",consumeTopicConfig=")
+            .append(consumeTopicConfig)
+            .append(",bizSeqNo=")
+            .append(bizSeqNo)
+            .append(",uniqueId=")
+            .append(uniqueId)
+            .append(",ttl=")
+            .append(ttl)
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append('}')
+            .toString();
     }
 
 }

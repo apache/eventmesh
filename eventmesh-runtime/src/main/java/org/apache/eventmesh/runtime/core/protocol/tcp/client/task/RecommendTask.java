@@ -36,9 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class RecommendTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecommendTask.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class RecommendTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
@@ -60,12 +62,12 @@ public class RecommendTask extends AbstractTask {
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
             res.setBody(eventMeshRecommendResult);
         } catch (Exception e) {
             MESSAGE_LOGGER.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg
-                    .getHeader().getSeq()));
+                .getHeader().getSeq()));
 
         } finally {
             writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
@@ -91,7 +93,7 @@ public class RecommendTask extends AbstractTask {
         }
 
         if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
-                EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
+            EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
             throw new Exception("client purpose config is error");
         }
     }

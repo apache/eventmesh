@@ -27,33 +27,31 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.grpc.stub.StreamObserver;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SubStreamHandler<T> extends Thread {
 
-    private static final Logger logger = LoggerFactory.getLogger(SubStreamHandler.class);
+    private final transient CountDownLatch latch = new CountDownLatch(1);
 
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private final transient ConsumerServiceStub consumerAsyncClient;
 
-    private final ConsumerServiceStub consumerAsyncClient;
+    private final transient EventMeshGrpcClientConfig clientConfig;
 
-    private final EventMeshGrpcClientConfig clientConfig;
+    private transient StreamObserver<Subscription> sender;
 
-    private StreamObserver<Subscription> sender;
+    private final transient ReceiveMsgHook<T> listener;
 
-    private final ReceiveMsgHook<T> listener;
-
-    public SubStreamHandler(ConsumerServiceStub consumerAsyncClient, EventMeshGrpcClientConfig clientConfig,
-                            ReceiveMsgHook<T> listener) {
+    public SubStreamHandler(final ConsumerServiceStub consumerAsyncClient, final EventMeshGrpcClientConfig clientConfig,
+        final ReceiveMsgHook<T> listener) {
         this.consumerAsyncClient = consumerAsyncClient;
         this.clientConfig = clientConfig;
         this.listener = listener;
     }
 
-    public void sendSubscription(Subscription subscription) {
+    public void sendSubscription(final Subscription subscription) {
         synchronized (this) {
             if (this.sender == null) {
                 this.sender = consumerAsyncClient.subscribeStream(createReceiver());
@@ -65,48 +63,64 @@ public class SubStreamHandler<T> extends Thread {
     private StreamObserver<SimpleMessage> createReceiver() {
         return new StreamObserver<SimpleMessage>() {
             @Override
-            public void onNext(SimpleMessage message) {
+            public void onNext(final SimpleMessage message) {
                 T msg = EventMeshClientUtil.buildMessage(message, listener.getProtocolType());
 
                 if (msg instanceof Map) {
-                    logger.info("Received message from Server." + message);
+                    if (log.isInfoEnabled()) {
+                        log.info("Received message from Server:{}", message);
+                    }
                 } else {
-                    logger.info("Received message from Server.|seq={}|uniqueId={}|", message.getSeqNum(), message.getUniqueId());
+                    if (log.isInfoEnabled()) {
+                        log.info("Received message from Server.|seq={}|uniqueId={}|", message.getSeqNum(),
+                            message.getUniqueId());
+                    }
                     Subscription streamReply = null;
                     try {
                         Optional<T> reply = listener.handle(msg);
                         if (reply.isPresent()) {
                             streamReply = buildReplyMessage(message, reply.get());
                         }
-                    } catch (Throwable t) {
-                        logger.error("Error in handling reply message.|seq={}|uniqueId={}|", message.getSeqNum(), message.getUniqueId(), t);
+                    } catch (Exception e) {
+                        if (log.isErrorEnabled()) {
+                            log.error("Error in handling reply message.|seq={}|uniqueId={}|",
+                                message.getSeqNum(), message.getUniqueId(), e);
+                        }
                     }
                     if (streamReply != null) {
-                        logger.info("Sending reply message to Server.|seq={}|uniqueId={}|", streamReply.getReply().getSeqNum(),
-                            streamReply.getReply().getUniqueId());
+                        if (log.isInfoEnabled()) {
+                            log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
+                                streamReply.getReply().getSeqNum(),
+                                streamReply.getReply().getUniqueId());
+                        }
                         senderOnNext(streamReply);
                     }
                 }
             }
 
             @Override
-            public void onError(Throwable t) {
-                logger.error("Received Server side error: " + t.getMessage());
+            public void onError(final Throwable t) {
+                if (log.isErrorEnabled()) {
+                    log.error("Received Server side error", t);
+                }
                 close();
             }
 
             @Override
             public void onCompleted() {
-                logger.info("Finished receiving messages from server.");
+                if (log.isInfoEnabled()) {
+                    log.info("Finished receiving messages from server.");
+                }
                 close();
             }
         };
     }
 
-    private Subscription buildReplyMessage(SimpleMessage reqMessage, T replyMessage) {
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage, clientConfig, listener.getProtocolType());
+    private Subscription buildReplyMessage(final SimpleMessage reqMessage, final T replyMessage) {
+        final SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage,
+            clientConfig, listener.getProtocolType());
 
-        Subscription.Reply reply = Subscription.Reply.newBuilder()
+        final Subscription.Reply reply = Subscription.Reply.newBuilder()
             .setProducerGroup(clientConfig.getConsumerGroup())
             .setTopic(simpleMessage.getTopic())
             .setContent(simpleMessage.getContent())
@@ -127,26 +141,29 @@ public class SubStreamHandler<T> extends Thread {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            logger.error("SubStreamHandler Thread interrupted." + e.getMessage());
+            log.error("SubStreamHandler Thread interrupted", e);
         }
     }
 
     public void close() {
         if (this.sender != null) {
             senderOnComplete();
-            this.sender = null;
         }
+
         latch.countDown();
-        logger.info("SubStreamHandler closed.");
+
+        if (log.isInfoEnabled()) {
+            log.info("SubStreamHandler closed.");
+        }
     }
 
-    private void senderOnNext(Subscription subscription) {
+    private void senderOnNext(final Subscription subscription) {
         try {
             synchronized (sender) {
                 sender.onNext(subscription);
             }
-        } catch (Throwable t) {
-            logger.warn("StreamObserver Error onNext {}", t.getMessage());
+        } catch (Exception e) {
+            log.error("StreamObserver Error onNext", e);
         }
     }
 
@@ -155,8 +172,8 @@ public class SubStreamHandler<T> extends Thread {
             synchronized (sender) {
                 sender.onCompleted();
             }
-        } catch (Throwable t) {
-            logger.warn("StreamObserver Error onComplete {}", t.getMessage());
+        } catch (Exception e) {
+            log.error("StreamObserver Error onComplete", e);
         }
     }
 }

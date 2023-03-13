@@ -26,9 +26,4 @@ type TCPOption struct {
 
 	// TLSOption process with the tls configuration
 	*TLSOption `yaml:"tls" toml:"tls"`
-
-	// PProfOption if pprof is enabled, server
-	// will start on given port, and you can check
-	// on http://ip:port/pprof/debug
-	*PProfOption `yaml:"pprof" toml:"pprof"`
 }

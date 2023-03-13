@@ -39,26 +39,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
-    public static final AsyncSubscribe handler = new AsyncSubscribe();
-
-    private static EventMeshTCPClient<CloudEvent> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
         try {
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+            final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
-            client.registerSubBusiHandler(handler);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
+                SubscriptionType.ASYNC);
+            client.registerSubBusiHandler(new AsyncSubscribe());
 
             client.listen();
         } catch (Exception e) {
@@ -67,13 +65,16 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     }
 
     @Override
-    public Optional<CloudEvent> handle(CloudEvent msg) {
+    public Optional<CloudEvent> handle(final CloudEvent msg) {
         if (msg.getData() == null) {
             log.warn("receive async msg's data is null.");
             return Optional.empty();
         }
-        String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive async msg: {}|{}", msg, content);
+
+        final String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
+        if (log.isInfoEnabled()) {
+            log.info("receive async msg: {}|{}", msg, content);
+        }
         return Optional.empty();
     }
 }

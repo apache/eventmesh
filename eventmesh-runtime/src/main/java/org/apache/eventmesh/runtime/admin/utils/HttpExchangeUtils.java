@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class HttpExchangeUtils {
+
     public static String streamToString(InputStream stream) throws IOException {
         InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(isr);

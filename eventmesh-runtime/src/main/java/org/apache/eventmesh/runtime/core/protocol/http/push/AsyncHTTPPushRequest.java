@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
@@ -83,7 +82,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
-                                Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
+        Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
         super(handleMsgContext);
         this.waitingRequests = waitingRequests;
     }
@@ -175,7 +174,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
 
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-            JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
+            JsonUtils.toJSONString(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
         HttpEntity httpEntity = new UrlEncodedFormEntity(body, StandardCharsets.UTF_8);
 
@@ -188,7 +187,6 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
             eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
             urlAuthType);
-
 
         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordPushMsg();
 
@@ -296,11 +294,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .append(",retryTimes=").append(retryTimes)
             .append(",uniqueId=").append(handleMsgContext.getUniqueId())
             .append(",executeTime=")
-            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
+            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",lastPushTime=")
-            .append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT))
+            .append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",createTime=")
-            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
@@ -336,7 +334,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         try {
             Map<String, Object> ret =
-                JsonUtils.deserialize(content, new TypeReference<Map<String, Object>>() {
+                JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
             Integer retCode = (Integer) ret.get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
@@ -350,13 +348,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             }
             return ClientRetCode.FAIL;
-        } catch (JsonException e) {
-            if (MESSAGE_LOGGER.isWarnEnabled()) {
-                MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            }
-            return ClientRetCode.FAIL;
-        } catch (Throwable t) {
+        } catch (Throwable e) {
             if (MESSAGE_LOGGER.isWarnEnabled()) {
                 MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);

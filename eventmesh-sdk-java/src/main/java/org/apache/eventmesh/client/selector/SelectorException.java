@@ -18,13 +18,14 @@
 package org.apache.eventmesh.client.selector;
 
 public class SelectorException extends RuntimeException {
+
     private static final long serialVersionUID = 7126682512429265292L;
 
-    public SelectorException(String message) {
+    public SelectorException(final String message) {
         super(message);
     }
 
-    public SelectorException(String message, Throwable cause) {
+    public SelectorException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

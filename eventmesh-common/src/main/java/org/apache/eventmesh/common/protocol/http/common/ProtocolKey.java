@@ -33,6 +33,7 @@ public class ProtocolKey {
     public static final String CONTENT_TYPE = "contenttype";
 
     public static class ClientInstanceKey {
+
         ////////////////////////////////////Protocol layer requester description///////////
         public static final String ENV = "env";
         public static final String IDC = "idc";
@@ -45,10 +46,13 @@ public class ProtocolKey {
         public static final String UNIQUEID = "uniqueid";
         public static final String PRODUCERGROUP = "producergroup";
         public static final String CONSUMERGROUP = "consumergroup";
+
+        public static final String TOKEN = "token";
     }
 
 
     public static class EventMeshInstanceKey {
+
         ///////////////////////////////////////////////Protocol layer EventMesh description
         public static final String EVENTMESHCLUSTER = "eventmeshcluster";
         public static final String EVENTMESHIP = "eventmeship";
@@ -57,6 +61,7 @@ public class ProtocolKey {
     }
 
     public static class CloudEventsKey {
+
         public static final String ID = "id";
         public static final String SOURCE = "source";
         public static final String SUBJECT = "subject";

@@ -16,61 +16,49 @@
 package grpc
 
 import (
-	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"github.com/stretchr/testify/assert"
-	"testing"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"time"
 )
 
-func Test_eventMeshHeartbeat_sendMsg(t *testing.T) {
-	// run fake server
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go runFakeServer(ctx)
-	cli, err := New(&conf.GRPCConfig{
-		Host: "127.0.0.1",
-		Port: 8086,
-		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
-		},
-		ConsumerConfig: conf.ConsumerConfig{
-			Enabled:       true,
-			ConsumerGroup: "fake-consumer",
-			PoolSize:      5,
-		},
-		HeartbeatConfig: conf.HeartbeatConfig{
-			Period:  time.Second * 5,
-			Timeout: time.Second * 3,
-		},
-	})
-	topic := "fake-topic"
-	assert.NoError(t, cli.SubscribeStream(conf.SubscribeItem{
-		SubscribeType: 1,
-		SubscribeMode: 1,
-		Topic:         topic,
-	}, func(message *proto.SimpleMessage) interface{} {
-		t.Logf("receive sub msg:%v", message.String())
-		return nil
-	}))
-	rcli := cli.(*eventMeshGRPCClient)
-	beat := rcli.heartbeat
-	assert.NoError(t, err, "create grpc client")
-	defer assert.NoError(t, cli.Close())
-	tests := []struct {
-		name string
-		want error
-	}{
-		{
-			want: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := beat.sendMsg(beat.client)
-			assert.NoError(t, err)
+var _ = Describe("dispatcher test", func() {
+
+	Context("messageDispatcher_addHandler test ", func() {
+		It("fake-topic", func() {
+			cli, err := New(&conf.GRPCConfig{
+				Host: "127.0.0.1",
+				Port: 8086,
+				ProducerConfig: conf.ProducerConfig{
+					ProducerGroup:    "test-publish-group",
+					LoadBalancerType: conf.Random,
+				},
+				ConsumerConfig: conf.ConsumerConfig{
+					Enabled:       true,
+					ConsumerGroup: "fake-consumer",
+					PoolSize:      5,
+				},
+				HeartbeatConfig: conf.HeartbeatConfig{
+					Period:  time.Second * 50,
+					Timeout: time.Second * 30,
+				},
+			})
+			Ω(err).NotTo(HaveOccurred())
+
+			topic := "fake-topic"
+			Ω(cli.SubscribeStream(conf.SubscribeItem{
+				SubscribeType: 1,
+				SubscribeMode: 1,
+				Topic:         topic,
+			}, func(message *proto.SimpleMessage) interface{} {
+				return nil
+			})).NotTo(HaveOccurred())
+
+			rcli := cli.(*eventMeshGRPCClient)
+			beat := rcli.heartbeat
+			Ω(beat.sendMsg(beat.client)).NotTo(HaveOccurred())
+			Ω(cli.Close()).NotTo(HaveOccurred())
 		})
-	}
-}
+	})
+})

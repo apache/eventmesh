@@ -36,9 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class UnSubscribeTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnSubscribeTask.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class UnSubscribeTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
@@ -53,8 +55,8 @@ public class UnSubscribeTask extends AbstractTask {
         try {
             synchronized (session) {
                 List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
-                if (MapUtils.isNotEmpty(session.getSessionContext().subscribeTopics)) {
-                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().subscribeTopics.entrySet()) {
+                if (MapUtils.isNotEmpty(session.getSessionContext().getSubscribeTopics())) {
+                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().getSubscribeTopics().entrySet()) {
                         topics.add(entry.getValue());
                     }
                     session.unsubscribe(topics);
@@ -62,12 +64,12 @@ public class UnSubscribeTask extends AbstractTask {
                 }
             }
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
-                    .getSeq()));
+                .getSeq()));
         } catch (Exception e) {
             MESSAGE_LOGGER.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                    +
-                    "unSubscribing", pkg.getHeader().getSeq()));
+                +
+                "unSubscribing", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }

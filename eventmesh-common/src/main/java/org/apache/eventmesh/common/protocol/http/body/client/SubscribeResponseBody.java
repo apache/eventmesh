@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SubscribeResponseBody extends Body {
+
     private Integer retCode;
     private String retMsg;
     private long resTime = System.currentTimeMillis();
@@ -69,7 +70,7 @@ public class SubscribeResponseBody extends Body {
         sb.append("regResponseBody={")
             .append("retCode=").append(retCode).append(",")
             .append("retMsg=").append(retMsg).append(",")
-            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

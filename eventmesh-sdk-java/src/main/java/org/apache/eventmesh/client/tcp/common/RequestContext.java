@@ -19,31 +19,30 @@ package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RequestContext {
-
-    private static final Logger logger = LoggerFactory.getLogger(RequestContext.class);
 
     private Object key;
     private Package request;
-    private Package response;
-    private CountDownLatch latch;
+    private final CompletableFuture<Package> future = new CompletableFuture<>();
 
-    public RequestContext(Object key, Package request, CountDownLatch latch) {
+    public RequestContext(final Object key, final Package request) {
         this.key = key;
         this.request = request;
-        this.latch = latch;
     }
 
     public Object getKey() {
         return key;
     }
 
-    public void setKey(Object key) {
+    public void setKey(final Object key) {
         this.key = key;
     }
 
@@ -51,39 +50,36 @@ public class RequestContext {
         return request;
     }
 
-    public void setRequest(Package request) {
+    public void setRequest(final Package request) {
         this.request = request;
     }
 
-    public Package getResponse() {
-        return response;
+    public CompletableFuture<Package> future() {
+        return this.future;
     }
 
-    public void setResponse(Package response) {
-        this.response = response;
+    public Package getResponse(long timeout, TimeUnit timeUnit) throws ExecutionException, InterruptedException, TimeoutException {
+        return this.future.get(timeout, timeUnit);
     }
 
-    public CountDownLatch getLatch() {
-        return latch;
+    public Package getResponse(long timeout) throws ExecutionException, InterruptedException, TimeoutException {
+        return this.future.get(timeout, TimeUnit.MILLISECONDS);
     }
 
-    public void setLatch(CountDownLatch latch) {
-        this.latch = latch;
+    public void finish(final Package msg) {
+        this.future.complete(msg);
     }
 
-    public void finish(Package msg) {
-        this.response = msg;
-        latch.countDown();
-    }
-
-    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
-        RequestContext c = new RequestContext(key, request, latch);
-        logger.info("_RequestContext|create|key=" + key);
-        return c;
+    public static RequestContext context(final Object key, final Package request) throws Exception {
+        final RequestContext context = new RequestContext(key, request);
+        if (log.isInfoEnabled()) {
+            log.info("_RequestContext|create|key={}", key);
+        }
+        return context;
     }
 
 
-    public static Object key(Package request) {
+    public static Object key(final Package request) {
         return request.getHeader().getSeq();
     }
 }

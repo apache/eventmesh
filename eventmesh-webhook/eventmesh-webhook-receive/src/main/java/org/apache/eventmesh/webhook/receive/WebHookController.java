@@ -20,28 +20,25 @@ package org.apache.eventmesh.webhook.receive;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
-import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
+import org.apache.eventmesh.webhook.receive.protocol.ProtocolManager;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-
-import lombok.Setter;
-
+@Slf4j
 public class WebHookController {
-
-    private static final String WEBHOOK_PRODUCER_CONNECTOR_PROP = "eventMesh.webHook.producer.connector";
 
     private static final String PROTOCOL_ADAPTOR = "webhook";
 
@@ -54,30 +51,30 @@ public class WebHookController {
     /**
      * protocol pool
      */
-    private final ProtocolManage protocolManage = new ProtocolManage();
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final transient ProtocolManager protocolManager = new ProtocolManager();
+
     /**
      * config pool
      */
-    private HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManager hookConfigOperationManager;
 
-    private WebHookMQProducer webHookMQProducer;
+    private transient WebHookMQProducer webHookMQProducer;
 
-    private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
+    private transient ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
 
-    @Setter
-    private ConfigurationWrapper configurationWrapper;
+    private transient ReceiveConfiguration receiveConfiguration;
 
     public void init() throws Exception {
-        this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProperties(),
-            configurationWrapper.getProp(WEBHOOK_PRODUCER_CONNECTOR_PROP));
-        this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
+        receiveConfiguration = ConfigService.getInstance().buildConfigInstance(ReceiveConfiguration.class);
+        Properties rootConfig = ConfigService.getInstance().getRootConfig();
+
+        this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getStoragePluginType());
+        this.hookConfigOperationManager = new HookConfigOperationManager(receiveConfiguration);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
 
     /**
-     * 1. get webhookConfig from path 2. get ManufacturerProtocol and execute 3.
-     * convert to cloudEvent obj 4. send cloudEvent
+     * 1. get webhookConfig from path 2. get ManufacturerProtocol and execute 3. convert to cloudEvent obj 4. send cloudEvent
      *
      * @param path   CallbackPath
      * @param header map of webhook request header
@@ -88,7 +85,7 @@ public class WebHookController {
         // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
-        webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
+        webHookConfig = hookConfigOperationManager.queryWebHookConfigById(webHookConfig);
         if (webHookConfig == null) {
             throw new Exception("No matching webhookConfig.");
         }
@@ -100,7 +97,7 @@ public class WebHookController {
 
         // 2. get ManufacturerProtocol and execute
         String manufacturerName = webHookConfig.getManufacturerName();
-        ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
+        ManufacturerProtocol protocol = protocolManager.getManufacturerProtocol(manufacturerName);
         WebHookRequest webHookRequest = new WebHookRequest();
         webHookRequest.setData(body);
         try {
@@ -123,14 +120,16 @@ public class WebHookController {
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(sendResult.toString());
+                if (log.isDebugEnabled()) {
+                    log.debug(sendResult.toString());
                 }
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("", context.getException());
+                if (log.isWarnEnabled()) {
+                    log.warn("", context.getException());
+                }
             }
 
         });
