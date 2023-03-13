@@ -18,10 +18,11 @@
 package org.apache.eventmesh.webhook.receive.config;
 
 import org.apache.eventmesh.common.config.ConfigService;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.Properties;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ReceiveConfigurationTest {
 
