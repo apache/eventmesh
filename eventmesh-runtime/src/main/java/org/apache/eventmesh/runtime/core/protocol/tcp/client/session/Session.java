@@ -75,7 +75,7 @@ public class Session {
 
     private SessionSender sender;
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
     private long lastHeartbeatTime = System.currentTimeMillis();
 
@@ -85,7 +85,7 @@ public class Session {
 
     private boolean listenRspSend = false;
 
-    private ReentrantLock listenRspLock = new ReentrantLock();
+    private final ReentrantLock listenRspLock = new ReentrantLock();
 
     private String listenRequestSeq = null;
 
