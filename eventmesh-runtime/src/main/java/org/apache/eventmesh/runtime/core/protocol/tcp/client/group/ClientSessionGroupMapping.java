@@ -277,7 +277,7 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
-        for (SubscriptionItem item : session.getSessionContext().subscribeTopics.values()) {
+        for (SubscriptionItem item : session.getSessionContext().getSubscribeTopics().values()) {
             ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
             clientGroupWrapper.removeSubscription(item, session);
             if (!clientGroupWrapper.hasSubscription(item.getTopic())) {
@@ -297,7 +297,7 @@ public class ClientSessionGroupMapping {
         if (unAckMsg.size() > 0 && clientGroupWrapper.getGroupConsumerSessions().size() > 0) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                if (SubscriptionMode.BROADCASTING == downStreamMsgContext.subscriptionItem.getMode()) {
+                if (SubscriptionMode.BROADCASTING == downStreamMsgContext.getSubscriptionItem().getMode()) {
                     log.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",
                         downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event),
                         session.getClient());
@@ -308,11 +308,11 @@ public class ClientSessionGroupMapping {
                         downStreamMsgContext.event.getSubject(),
                         clientGroupWrapper.groupConsumerSessions);
                 if (reChooseSession != null) {
-                    downStreamMsgContext.session = reChooseSession;
+                    downStreamMsgContext.setSession(reChooseSession);
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
                     log.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(),
-                        downStreamMsgContext.session.getClient());
+                        downStreamMsgContext.getSession().getClient());
                 } else {
                     log.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(),
                         downStreamMsgContext.event.getSubject());

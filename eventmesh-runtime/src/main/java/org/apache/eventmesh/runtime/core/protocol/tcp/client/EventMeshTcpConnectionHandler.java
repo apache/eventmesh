@@ -28,14 +28,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Sharable
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
-    public static final AtomicInteger connections = new AtomicInteger(0);
+    private final AtomicInteger connections = new AtomicInteger(0);
+
     private EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshTcpConnectionHandler(EventMeshTCPServer eventMeshTCPServer) {
@@ -92,5 +92,9 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
         }
 
         ctx.fireUserEventTriggered(evt);
+    }
+
+    public int getConnectionCount() {
+        return this.connections.get();
     }
 }
