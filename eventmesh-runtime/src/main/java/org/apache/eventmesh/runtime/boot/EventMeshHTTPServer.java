@@ -76,7 +76,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final transient EventMeshServer eventMeshServer;
 
-    public transient ServiceState serviceState;
+    private transient ServiceState serviceState;
 
     private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -84,7 +84,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final Acl acl;
 
-    public final transient EventBus eventBus = new EventBus();
+    private final transient EventBus eventBus = new EventBus();
 
     private transient ConsumerManager consumerManager;
 
@@ -94,27 +94,27 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private transient HttpRetryer httpRetryer;
 
-    public transient ThreadPoolExecutor batchMsgExecutor;
+    private transient ThreadPoolExecutor batchMsgExecutor;
 
-    public transient ThreadPoolExecutor sendMsgExecutor;
+    private transient ThreadPoolExecutor sendMsgExecutor;
 
-    public transient ThreadPoolExecutor remoteMsgExecutor;
+    private transient ThreadPoolExecutor remoteMsgExecutor;
 
-    public transient ThreadPoolExecutor replyMsgExecutor;
+    private transient ThreadPoolExecutor replyMsgExecutor;
 
-    public transient ThreadPoolExecutor pushMsgExecutor;
+    private transient ThreadPoolExecutor pushMsgExecutor;
 
-    public transient ThreadPoolExecutor clientManageExecutor;
+    private transient ThreadPoolExecutor clientManageExecutor;
 
-    public transient ThreadPoolExecutor adminExecutor;
+    private transient ThreadPoolExecutor adminExecutor;
 
-    public ThreadPoolExecutor webhookExecutor;
+    private ThreadPoolExecutor webhookExecutor;
 
     private transient RateLimiter msgRateLimiter;
 
     private transient RateLimiter batchRateLimiter;
 
-    public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
+    private transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
 
