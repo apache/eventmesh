@@ -34,13 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProducerTopicManager {
 
-    private EventMeshServer eventMeshServer;
+    private final EventMeshServer eventMeshServer;
 
     private transient ScheduledFuture<?> scheduledTask;
 
     protected static ScheduledExecutorService scheduler;
 
-    private ConcurrentHashMap<String, EventMeshServicePubTopicInfo> eventMeshServicePubTopicInfoMap = new ConcurrentHashMap<>(64);
+    private final ConcurrentHashMap<String, EventMeshServicePubTopicInfo> eventMeshServicePubTopicInfoMap = new ConcurrentHashMap<>(64);
 
     public ProducerTopicManager(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
