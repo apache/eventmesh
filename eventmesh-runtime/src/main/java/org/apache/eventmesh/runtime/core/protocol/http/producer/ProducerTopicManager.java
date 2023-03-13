@@ -63,7 +63,8 @@ public class ProducerTopicManager {
                             return;
                         }
                         List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
-                        Optional.ofNullable(pubTopicInfoList).ifPresent(lt->lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
+                        Optional.ofNullable(pubTopicInfoList)
+                            .ifPresent(lt -> lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
                     } catch (Exception e) {
                         log.error("ProducerTopicManager update eventMesh pub topic info error. ", e);
                     }
