@@ -62,8 +62,8 @@ public class ProducerTopicManager {
                         if (!eventMeshServer.getConfiguration().isEventMeshServerRegistryEnable()) {
                             return;
                         }
-                        List<EventMeshServicePubTopicInfo> list = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
-                        Optional.ofNullable(list).orElse(new ArrayList<>(0)).forEach(e -> eventMeshServicePubTopicInfoMap.put(e.getService(), e));
+                        List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
+                        Optional.ofNullable(pubTopicInfoList).ifPresent(lt->lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
                     } catch (Exception e) {
                         log.error("ProducerTopicManager update eventMesh pub topic info error. ", e);
                     }
