@@ -42,19 +42,19 @@ public class StorageResource {
     }
 
     public static StorageResource getInstance(String storageResourcePluginType) {
-        return STORAGE_RESOURCE_CACHE.computeIfAbsent(storageResourcePluginType, StorageResource::connectorResourceBuilder);
+        return STORAGE_RESOURCE_CACHE.computeIfAbsent(storageResourcePluginType, StorageResource::storageResourceBuilder);
     }
 
-    private static StorageResource connectorResourceBuilder(String connectorResourcePluginType) {
-        StorageResourceService connectorResourceServiceExt = EventMeshExtensionFactory.getExtension(StorageResourceService.class,
-            connectorResourcePluginType);
-        if (connectorResourceServiceExt == null) {
-            String errorMsg = "can't load the connectorResourceService plugin, please check.";
+    private static StorageResource storageResourceBuilder(String storageResourcePluginType) {
+        StorageResourceService storageResourceServiceExt = EventMeshExtensionFactory.getExtension(StorageResourceService.class,
+            storageResourcePluginType);
+        if (storageResourceServiceExt == null) {
+            String errorMsg = "can't load the StorageResourceService plugin, please check.";
             log.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }
         StorageResource storageResource = new StorageResource();
-        storageResource.storageResourceService = connectorResourceServiceExt;
+        storageResource.storageResourceService = storageResourceServiceExt;
         return storageResource;
     }
 
