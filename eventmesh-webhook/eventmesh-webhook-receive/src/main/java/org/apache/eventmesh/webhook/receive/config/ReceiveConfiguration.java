@@ -28,8 +28,8 @@ import lombok.Data;
 @Config(prefix = "eventMesh.webHook")
 public class ReceiveConfiguration {
 
-    @ConfigFiled(field = "producer.connector")
-    private String connectorPluginType;
+    @ConfigFiled(field = "producer.storage")
+    private String storagePluginType;
 
     @ConfigFiled(field = "operationMode")
     private String operationMode;
