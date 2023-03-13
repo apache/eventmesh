@@ -22,6 +22,7 @@ import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
