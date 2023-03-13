@@ -15,59 +15,54 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.connector;
+package org.apache.eventmesh.runtime.storage;
 
-import org.apache.eventmesh.api.connector.ConnectorResourceService;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
-
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConnectorResource {
+public class StorageResource {
 
-    private static final Map<String, ConnectorResource> CONNECTOR_RESOURCE_CACHE = new HashMap<>(16);
+    private static final Map<String, StorageResource> STORAGE_RESOURCE_CACHE = new HashMap<>(16);
 
-    private ConnectorResourceService connectorResourceService;
+    private StorageResourceService storageResourceService;
 
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
     private final AtomicBoolean released = new AtomicBoolean(false);
 
-    private ConnectorResource() {
+    private StorageResource() {
 
     }
 
-    public static ConnectorResource getInstance(String connectorResourcePluginType) {
-        return CONNECTOR_RESOURCE_CACHE.computeIfAbsent(
-            connectorResourcePluginType,
-            ConnectorResource::connectorResourceBuilder
-        );
+    public static StorageResource getInstance(String storageResourcePluginType) {
+        return STORAGE_RESOURCE_CACHE.computeIfAbsent(storageResourcePluginType, StorageResource::storageResourceBuilder);
     }
 
-    private static ConnectorResource connectorResourceBuilder(String connectorResourcePluginType) {
-        ConnectorResourceService connectorResourceServiceExt = EventMeshExtensionFactory.getExtension(ConnectorResourceService.class,
-            connectorResourcePluginType);
-        if (connectorResourceServiceExt == null) {
-            String errorMsg = "can't load the connectorResourceService plugin, please check.";
+    private static StorageResource storageResourceBuilder(String storageResourcePluginType) {
+        StorageResourceService storageResourceServiceExt = EventMeshExtensionFactory.getExtension(StorageResourceService.class,
+            storageResourcePluginType);
+        if (storageResourceServiceExt == null) {
+            String errorMsg = "can't load the StorageResourceService plugin, please check.";
             log.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }
-        ConnectorResource connectorResource = new ConnectorResource();
-        connectorResource.connectorResourceService = connectorResourceServiceExt;
-        return connectorResource;
+        StorageResource storageResource = new StorageResource();
+        storageResource.storageResourceService = storageResourceServiceExt;
+        return storageResource;
     }
 
     public void init() throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-        connectorResourceService.init();
+        storageResourceService.init();
     }
 
     public void release() throws Exception {
@@ -75,6 +70,6 @@ public class ConnectorResource {
             return;
         }
         inited.compareAndSet(true, false);
-        connectorResourceService.release();
+        storageResourceService.release();
     }
 }

@@ -88,22 +88,22 @@ public abstract class AbstractRemotingServer {
 
     }
 
-    private void buildIOGroup(final String threadPrefix, final int threadNum) {
+    private void buildIOGroup(final String threadPrefix) {
         if (useEpoll()) {
-            ioGroup = new EpollEventLoopGroup(threadNum, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
+            ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
         } else {
-            ioGroup = new NioEventLoopGroup(threadNum, new EventMeshThreadFactory(threadPrefix + "-NettyNio-IO"));
+            ioGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyNio-IO"));
         }
     }
 
-    private void buildWorkerGroup(final String threadPrefix, final int threadNum) {
-        workerGroup = new NioEventLoopGroup(threadNum, new EventMeshThreadFactory(threadPrefix + "-worker"));
+    private void buildWorkerGroup(final String threadPrefix) {
+        workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
     }
 
     public void init(final String threadPrefix) throws Exception {
         buildBossGroup(threadPrefix);
-        buildIOGroup(threadPrefix, MAX_THREADS);
-        buildWorkerGroup(threadPrefix, MAX_THREADS);
+        buildIOGroup(threadPrefix);
+        buildWorkerGroup(threadPrefix);
     }
 
     public void shutdown() throws Exception {

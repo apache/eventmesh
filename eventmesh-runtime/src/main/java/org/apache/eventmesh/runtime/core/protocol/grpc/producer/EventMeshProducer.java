@@ -65,7 +65,7 @@ public class EventMeshProducer {
         //TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-            eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
+            eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
