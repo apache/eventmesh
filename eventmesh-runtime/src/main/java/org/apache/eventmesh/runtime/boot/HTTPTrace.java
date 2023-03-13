@@ -36,7 +36,7 @@ import lombok.Getter;
 
 public class HTTPTrace {
 
-    public boolean useTrace;
+    public final boolean useTrace;
 
     public HTTPTrace(boolean useTrace) {
         this.useTrace = useTrace;
@@ -54,11 +54,11 @@ public class HTTPTrace {
     @Getter
     public class TraceOperation {
 
-        private Span span;
+        private final Span span;
 
         private TraceOperation childTraceOperation;
 
-        private boolean traceEnabled;
+        private final boolean traceEnabled;
 
         public void endTrace(CloudEvent ce) {
             if (!HTTPTrace.this.useTrace) {
@@ -80,7 +80,7 @@ public class HTTPTrace {
                 childTraceOperation.exceptionTrace(ex, map);
             }
             try (Scope ignored = span.makeCurrent()) {
-                TraceUtils.finishSpanWithException(span, map, ex.getMessage(), ex);
+                TraceUtils.finishSpanWithException(span, map, Objects.requireNonNull(ex).getMessage(), ex);
             }
         }
 
