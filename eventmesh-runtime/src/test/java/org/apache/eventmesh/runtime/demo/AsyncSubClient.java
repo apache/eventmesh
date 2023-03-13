@@ -26,14 +26,13 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class AsyncSubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncSubClient.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class AsyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
@@ -46,8 +45,8 @@ public class AsyncSubClient {
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getBody() instanceof EventMeshMessage) {
                         String body = ((EventMeshMessage) msg.getBody()).getBody();
-                        if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("receive message -------------------------------" + body);
+                        if (log.isInfoEnabled()) {
+                            log.info("receive message -------------------------------" + body);
                         }
                     }
                 }

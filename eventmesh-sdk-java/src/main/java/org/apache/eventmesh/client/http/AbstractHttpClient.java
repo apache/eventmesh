@@ -39,12 +39,11 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,9 +56,9 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
     protected final CloseableHttpClient httpClient;
 
-    public AbstractHttpClient(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
-        Preconditions.checkNotNull(eventMeshHttpClientConfig, "liteClientConfig can't be null");
-        Preconditions.checkNotNull(eventMeshHttpClientConfig.getLiteEventMeshAddr(), "liteServerAddr can't be null");
+    public AbstractHttpClient(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        Objects.requireNonNull(eventMeshHttpClientConfig, "liteClientConfig can't be null");
+        Objects.requireNonNull(eventMeshHttpClientConfig.getLiteEventMeshAddr(), "liteServerAddr can't be null");
 
         this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
         this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
@@ -69,11 +68,14 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
     @Override
     public void close() throws EventMeshException {
-        try (final CloseableHttpClient ignore = this.httpClient) {
-            // ignore
-        } catch (IOException e) {
-            throw new EventMeshException("Close http client error", e);
+        if (this.httpClient != null) {
+            try {
+                this.httpClient.close();
+            } catch (IOException e) {
+                throw new EventMeshException(e);
+            }
         }
+
     }
 
     private CloseableHttpClient setHttpClient() throws EventMeshException {
@@ -82,8 +84,8 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         }
         SSLContext sslContext;
         try {
-            String protocol = eventMeshHttpClientConfig.getSslClientProtocol();
-            TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
+            final String protocol = eventMeshHttpClientConfig.getSslClientProtocol();
+            final TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
 
@@ -99,13 +101,13 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         }
     }
 
-    private HttpClientConnectionManager getHttpPoolManager(SSLContext sslContext, int poolSize) {
-        SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
-        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+    private HttpClientConnectionManager getHttpPoolManager(final SSLContext sslContext, final int poolSize) {
+        final SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
+        final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
             .register("http", PlainConnectionSocketFactory.getSocketFactory())
             .register("https", sslFactory)
             .build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         connectionManager.setMaxTotal(poolSize);
         return connectionManager;
     }

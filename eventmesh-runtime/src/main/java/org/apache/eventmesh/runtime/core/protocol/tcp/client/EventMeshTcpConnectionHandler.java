@@ -22,18 +22,20 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Sharable
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
-    public static final AtomicInteger connections = new AtomicInteger(0);
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final AtomicInteger connections = new AtomicInteger(0);
+
     private EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshTcpConnectionHandler(EventMeshTCPServer eventMeshTCPServer) {
@@ -43,27 +45,24 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        logger.info("client|tcp|channelRegistered|remoteAddress={}|msg={}", remoteAddress, "");
+        log.info("client|tcp|channelRegistered|remoteAddress={}|msg={}", remoteAddress, "");
         super.channelRegistered(ctx);
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        logger.info("client|tcp|channelUnregistered|remoteAddress={}|msg={}", remoteAddress, "");
+        log.info("client|tcp|channelUnregistered|remoteAddress={}|msg={}", remoteAddress, "");
         super.channelUnregistered(ctx);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        logger.info("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "");
+        log.info("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "");
 
-        int c = connections.incrementAndGet();
-        if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpClientMaxNum) {
-            logger.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect "
-                    +
-                    "this eventMesh server");
+        if (connections.incrementAndGet() > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpClientMaxNum()) {
+            log.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect this eventMesh server");
             ctx.close();
             return;
         }
@@ -75,7 +74,7 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         connections.decrementAndGet();
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        logger.info("client|tcp|channelInactive|remoteAddress={}|msg={}", remoteAddress, "");
+        log.info("client|tcp|channelInactive|remoteAddress={}|msg={}", remoteAddress, "");
         eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
         super.channelInactive(ctx);
     }
@@ -87,11 +86,15 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state().equals(IdleState.ALL_IDLE)) {
                 final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                logger.info("client|tcp|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass().getName());
+                log.info("client|tcp|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass().getName());
                 eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
             }
         }
 
         ctx.fireUserEventTriggered(evt);
+    }
+
+    public int getConnectionCount() {
+        return this.connections.get();
     }
 }

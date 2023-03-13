@@ -20,21 +20,33 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 import java.util.Objects;
 
 public class ProducerGroupConf {
+
     private String groupName;
+
+    private String token;
 
     public ProducerGroupConf(String groupName) {
         this.groupName = groupName;
+    }
+
+    public ProducerGroupConf(String groupName, String token) {
+        this.groupName = groupName;
+        this.token = token;
     }
 
     public String getGroupName() {
         return groupName;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("producerGroupConfig={")
-                .append("groupName=").append(groupName).append("}");
+            .append("groupName=").append(groupName).append("}");
         return sb.toString();
     }
 
@@ -48,13 +60,7 @@ public class ProducerGroupConf {
         }
         ProducerGroupConf that = (ProducerGroupConf) o;
 
-        if (groupName == that.groupName) {
-            return true;
-        }
-        if (groupName == null) {
-            return false;
-        }
-        return groupName.equals(that.groupName);
+        return Objects.equals(groupName, that.groupName);
     }
 
     @Override

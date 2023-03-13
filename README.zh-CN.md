@@ -38,7 +38,7 @@
 ![EventMesh Data Mesh](docs/images/eventmesh-bridge.png)
 
 ## 组件
- 
+
 **Apache EventMesh (Incubating)** 由多个组件组成，这些组件集成了不同的中间件和消息传输协议，以增强应用程序运行时的功能。
 
 - **eventmesh-runtime**: 在生产者和消费者之间传输事件的中间件，它支持云原生应用程序和微服务。
@@ -79,7 +79,7 @@
 
 每一名贡献者都在这个项目的发展上都是至关重要的。我们真诚地感谢所有对代码和文档的贡献者！想要尝试贡献的可以看看以下三个链接。
 
-- [贡献准则](https://eventmesh.apache.org/docs/contribute/contribute)
+- [贡献准则](https://eventmesh.apache.org/zh/community/contribute/contribute)
 - [值得新人尝试的 Issue](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 
 这是项目的[贡献者名单](https://github.com/apache/incubator-eventmesh/graphs/contributors)

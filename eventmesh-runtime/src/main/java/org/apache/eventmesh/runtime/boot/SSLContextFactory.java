@@ -30,58 +30,46 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SSLContextFactory {
-    private static Logger httpLogger = LoggerFactory.getLogger("http");
 
     private static String protocol = "TLSv1.1";
 
     private static String fileName;
 
-    private static String pass;
+    private static String password;
 
-
-    public static SSLContext getSslContext(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
+    public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration)
+        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+        UnrecoverableKeyException, KeyManagementException {
         SSLContext sslContext;
-        InputStream inputStream = null;
-        try {
-            protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
 
-            fileName = eventMeshHttpConfiguration.eventMeshServerSSLCer;
+        try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
+            + File.separator
+            + fileName), StandardOpenOption.READ)) {
+            protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
+            fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
+            password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
 
-            char[] filePass = null;
-            pass = eventMeshHttpConfiguration.eventMeshServerSSLPass;
-            if (StringUtils.isNotBlank(pass)) {
-                filePass = pass.toCharArray();
-            }
-            sslContext = SSLContext.getInstance(protocol);
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
-                + File.separator
-                + fileName), StandardOpenOption.READ);
+            char[] filePass = StringUtils.isNotBlank(password) ? password.toCharArray() : new char[0];
+            final KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(inputStream, filePass);
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(keyStore, filePass);
+
+            sslContext = SSLContext.getInstance(protocol);
             sslContext.init(kmf.getKeyManagers(), null, null);
-        } catch (Exception e) {
-            httpLogger.warn("sslContext init failed", e);
-            sslContext = null;
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    httpLogger.warn("IOException found", e);
-                }
-            }
         }
+
         return sslContext;
     }
 }

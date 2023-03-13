@@ -38,7 +38,7 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     private final EventMeshTCPPubClient<EventMeshMessage> eventMeshMessageTCPPubClient;
     private final EventMeshTCPSubClient<EventMeshMessage> eventMeshMessageTCPSubClient;
 
-    public EventMeshMessageTCPClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
+    public EventMeshMessageTCPClient(final EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         eventMeshMessageTCPPubClient = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig);
         eventMeshMessageTCPSubClient = new EventMeshMessageTCPSubClient(eventMeshTcpClientConfig);
     }
@@ -50,26 +50,26 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     }
 
     @Override
-    public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
+    public Package rr(final EventMeshMessage eventMeshMessage, final long timeout) throws EventMeshException {
         validateMessage(eventMeshMessage);
         return eventMeshMessageTCPPubClient.rr(eventMeshMessage, timeout);
     }
 
     @Override
-    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout)
-            throws EventMeshException {
+    public void asyncRR(final EventMeshMessage eventMeshMessage, final AsyncRRCallback callback, final long timeout)
+        throws EventMeshException {
         validateMessage(eventMeshMessage);
         eventMeshMessageTCPPubClient.asyncRR(eventMeshMessage, callback, timeout);
     }
 
     @Override
-    public Package publish(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
+    public Package publish(final EventMeshMessage eventMeshMessage, final long timeout) throws EventMeshException {
         validateMessage(eventMeshMessage);
         return eventMeshMessageTCPPubClient.publish(eventMeshMessage, timeout);
     }
 
     @Override
-    public void broadcast(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
+    public void broadcast(final EventMeshMessage eventMeshMessage, final long timeout) throws EventMeshException {
         validateMessage(eventMeshMessage);
         eventMeshMessageTCPPubClient.broadcast(eventMeshMessage, timeout);
     }
@@ -80,8 +80,9 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     }
 
     @Override
-    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException {
+    public void subscribe(final String topic, final SubscriptionMode subscriptionMode,
+        final SubscriptionType subscriptionType)
+        throws EventMeshException {
         eventMeshMessageTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 
@@ -91,20 +92,27 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     }
 
     @Override
-    public void registerPubBusiHandler(ReceiveMsgHook<EventMeshMessage> handler) throws EventMeshException {
+    public void registerPubBusiHandler(final ReceiveMsgHook<EventMeshMessage> handler) throws EventMeshException {
         eventMeshMessageTCPPubClient.registerBusiHandler(handler);
     }
 
     @Override
-    public void registerSubBusiHandler(ReceiveMsgHook<EventMeshMessage> handler) throws EventMeshException {
+    public void registerSubBusiHandler(final ReceiveMsgHook<EventMeshMessage> handler) throws EventMeshException {
         eventMeshMessageTCPSubClient.registerBusiHandler(handler);
     }
 
     @Override
     public void close() throws EventMeshException {
-        try (final EventMeshTCPPubClient<EventMeshMessage> eventMeshTCPPubClient = eventMeshMessageTCPPubClient;
-             final EventMeshTCPSubClient<EventMeshMessage> eventMeshTCPSubClient = eventMeshMessageTCPSubClient) {
-            // close client
+        try {
+            this.eventMeshMessageTCPPubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
+        }
+
+        try {
+            this.eventMeshMessageTCPSubClient.close();
+        } catch (Exception e) {
+            throw new EventMeshException(e);
         }
     }
 
@@ -118,7 +126,7 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
         return eventMeshMessageTCPSubClient;
     }
 
-    private void validateMessage(EventMeshMessage message) {
+    private void validateMessage(final EventMeshMessage message) {
         Preconditions.checkNotNull(message, "Message cannot be null");
         Preconditions.checkArgument(isNotBlank(message.getTopic()), "Message's topic cannot be null and blank");
         Preconditions.checkArgument(isNotBlank(message.getBody()), "Message's body cannot be null and blank");

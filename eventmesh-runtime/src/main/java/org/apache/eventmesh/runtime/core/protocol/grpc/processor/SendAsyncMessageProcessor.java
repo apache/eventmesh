@@ -47,16 +47,21 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-public class SendAsyncMessageProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SendAsyncMessageProcessor {
 
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public SendAsyncMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    private final Acl acl;
+
+    public SendAsyncMessageProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
@@ -83,14 +88,14 @@ public class SendAsyncMessageProcessor {
         // control flow rate limit
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
-            logger.error("Send message speed over limit.");
+            log.error("Send message speed over limit.");
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
 
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
 
         String seqNum = message.getSeqNum();
@@ -102,7 +107,7 @@ public class SendAsyncMessageProcessor {
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent,
-                eventMeshProducer, eventMeshGrpcServer);
+            eventMeshProducer, eventMeshGrpcServer);
 
         eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
@@ -111,7 +116,7 @@ public class SendAsyncMessageProcessor {
             public void onSuccess(SendResult sendResult) {
                 ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, sendResult.toString(), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId);
                 eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
             }
@@ -121,7 +126,7 @@ public class SendAsyncMessageProcessor {
                 ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
                     EventMeshUtil.stackTrace(context.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId, context.getException());
             }
         });
@@ -135,7 +140,7 @@ public class SendAsyncMessageProcessor {
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            this.acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         }
     }
 }

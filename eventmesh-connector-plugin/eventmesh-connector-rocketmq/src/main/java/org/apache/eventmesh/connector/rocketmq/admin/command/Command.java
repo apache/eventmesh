@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.admin.command;
 
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
@@ -26,20 +27,24 @@ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 
 import java.util.UUID;
 
+import lombok.Data;
+
+@Data
 public abstract class Command {
+
     protected DefaultMQAdminExt adminExt;
 
     protected String nameServerAddr;
     protected String clusterName;
 
     public void init() {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
+        ConfigService configService = ConfigService.getInstance();
+        ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
-        nameServerAddr = clientConfiguration.namesrvAddr;
-        clusterName = clientConfiguration.clusterName;
-        String accessKey = clientConfiguration.accessKey;
-        String secretKey = clientConfiguration.secretKey;
+        nameServerAddr = clientConfiguration.getNamesrvAddr();
+        clusterName = clientConfiguration.getClusterName();
+        String accessKey = clientConfiguration.getAccessKey();
+        String secretKey = clientConfiguration.getSecretKey();
 
         RPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
         adminExt = new DefaultMQAdminExt(rpcHook);

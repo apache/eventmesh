@@ -33,15 +33,14 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/clientManage/showClientBySystem")
 public class ShowClientBySystemHandler extends AbstractHttpHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -58,15 +57,15 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("showClientBySubsys,subsys:{}", subSystem);
+            if (log.isInfoEnabled()) {
+                log.info("showClientBySubsys,subsys:{}", subSystem);
             }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -75,9 +74,9 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
-                                        userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
-                                        userAgent.getPath(), userAgent.getPurpose()))
-                                .append(newLine);
+                                userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                                userAgent.getPath(), userAgent.getPurpose()))
+                            .append(newLine);
                     }
                 }
             }

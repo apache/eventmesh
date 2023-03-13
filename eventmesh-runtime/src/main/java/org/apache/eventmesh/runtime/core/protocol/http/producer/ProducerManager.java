@@ -22,12 +22,11 @@ import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ProducerManager {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -38,11 +37,11 @@ public class ProducerManager {
     }
 
     public void init() throws Exception {
-        logger.info("producerManager inited......");
+        log.info("producerManager inited......");
     }
 
     public void start() throws Exception {
-        logger.info("producerManager started......");
+        log.info("producerManager started......");
     }
 
     public EventMeshProducer getEventMeshProducer(String producerGroup) throws Exception {
@@ -51,6 +50,27 @@ public class ProducerManager {
             synchronized (producerTable) {
                 if (!producerTable.containsKey(producerGroup)) {
                     ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup);
+                    eventMeshProducer = createEventMeshProducer(producerGroupConfig);
+                    eventMeshProducer.start();
+                }
+            }
+        }
+
+        eventMeshProducer = producerTable.get(producerGroup);
+
+        if (!eventMeshProducer.isStarted()) {
+            eventMeshProducer.start();
+        }
+
+        return eventMeshProducer;
+    }
+
+    public EventMeshProducer getEventMeshProducer(String producerGroup, String token) throws Exception {
+        EventMeshProducer eventMeshProducer = null;
+        if (!producerTable.containsKey(producerGroup)) {
+            synchronized (producerTable) {
+                if (!producerTable.containsKey(producerGroup)) {
+                    ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup, token);
                     eventMeshProducer = createEventMeshProducer(producerGroupConfig);
                     eventMeshProducer.start();
                 }
@@ -81,10 +101,10 @@ public class ProducerManager {
             try {
                 eventMeshProducer.shutdown();
             } catch (Exception ex) {
-                logger.error("shutdown eventMeshProducer[{}] err", eventMeshProducer, ex);
+                log.error("shutdown eventMeshProducer[{}] err", eventMeshProducer, ex);
             }
         }
-        logger.info("producerManager shutdown......");
+        log.info("producerManager shutdown......");
     }
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {

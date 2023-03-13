@@ -17,10 +17,6 @@
 
 package org.apache.rocketmq.consumer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
 import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 
@@ -40,10 +36,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import io.cloudevents.CloudEvent;
-
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
+
     private PushConsumerImpl consumer;
 
     @Mock
@@ -63,7 +58,6 @@ public class PushConsumerImplTest {
         //Properties consumerProp = new Properties();
         consumerProp.put("CONSUMER_ID", "TestGroup");
         consumer = new PushConsumerImpl(consumerProp);
-
 
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
@@ -91,7 +85,7 @@ public class PushConsumerImplTest {
         consumedMsg.setTopic("HELLO_QUEUE");
         consumer.subscribe("HELLO_QUEUE", "*");
         ((MessageListenerConcurrently) rocketmqPushConsumer
-                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
 
     }

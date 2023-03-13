@@ -17,49 +17,44 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.eventmesh.common.utils.AssertUtils;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 
 import lombok.Data;
 
 @Data
+@Config(prefix = "eventMesh.server.rabbitmq", path = "classPath://rabbitmq-client.properties")
 public class ConfigurationHolder {
-    public String host;
-    public int port;
-    public String username;
-    public String passwd;
-    public String virtualHost;
 
-    public BuiltinExchangeType exchangeType;
-    public String exchangeName;
-    public String routingKey;
-    public String queueName;
-    public boolean autoAck;
+    @ConfigFiled(field = "host")
+    private String host;
 
-    public void init() {
-        this.host = getProperty(ConfigKey.HOST);
-        this.port = Integer.parseInt(getProperty(ConfigKey.PORT));
-        this.username = getProperty(ConfigKey.USER_NAME);
-        this.passwd = getProperty(ConfigKey.PASSWD);
-        this.virtualHost = ConfigurationWrapper.getProperty(ConfigKey.VIRTUAL_HOST);
-        this.exchangeType = BuiltinExchangeType.valueOf(getProperty(ConfigKey.EXCHANGE_TYPE));
-        this.exchangeName = getProperty(ConfigKey.EXCHANGE_NAME);
-        this.routingKey = getProperty(ConfigKey.ROUTING_KEY);
-        this.queueName = getProperty(ConfigKey.QUEUE_NAME);
-        this.autoAck = Boolean.parseBoolean(getProperty(ConfigKey.AUTO_ACK));
-    }
+    @ConfigFiled(field = "port")
+    private int port;
 
-    /**
-     * get property
-     *
-     * @param configKey config key
-     * @return property
-     */
-    private String getProperty(String configKey) {
-        String property = ConfigurationWrapper.getProperty(configKey);
-        AssertUtils.notBlack(property, String.format("%s error", configKey));
-        return property;
+    @ConfigFiled(field = "username")
+    private String username;
 
-    }
+    @ConfigFiled(field = "passwd")
+    private String passwd;
+
+    @ConfigFiled(field = "virtualHost")
+    private String virtualHost;
+
+    @ConfigFiled(field = "exchangeType")
+    private BuiltinExchangeType exchangeType;
+
+    @ConfigFiled(field = "exchangeName")
+    private String exchangeName;
+
+    @ConfigFiled(field = "routingKey")
+    private String routingKey;
+
+    @ConfigFiled(field = "queueName")
+    private String queueName;
+
+    @ConfigFiled(field = "autoAck")
+    private boolean autoAck;
 }

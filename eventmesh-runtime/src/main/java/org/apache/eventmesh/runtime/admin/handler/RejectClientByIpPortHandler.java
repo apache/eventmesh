@@ -37,15 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/clientManage/rejectClientByIpPort")
 public class RejectClientByIpPortHandler extends AbstractHttpHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(RejectClientByIpPortHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -69,7 +68,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
+            log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
@@ -78,7 +77,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer,
-                                    entry.getValue(), clientSessionGroupMapping);
+                                entry.getValue(), clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -86,20 +85,20 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|rejectClientByIpPort|fail|ip={}|port={},errMsg={}", ip, port, e);
+                log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={},errMsg={}", ip, port, e);
                 result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
-                        port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
+                    port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
-                    NetUtils.addressToString(successRemoteAddrs));
+                NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("rejectClientByIpPort fail...", e);
+            log.error("rejectClientByIpPort fail...", e);
         }
 
     }

@@ -36,9 +36,13 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class UnSubscribeTask extends AbstractTask {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
 
     public UnSubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -51,21 +55,21 @@ public class UnSubscribeTask extends AbstractTask {
         try {
             synchronized (session) {
                 List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
-                if (MapUtils.isNotEmpty(session.getSessionContext().subscribeTopics)) {
-                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().subscribeTopics.entrySet()) {
+                if (MapUtils.isNotEmpty(session.getSessionContext().getSubscribeTopics())) {
+                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().getSubscribeTopics().entrySet()) {
                         topics.add(entry.getValue());
                     }
                     session.unsubscribe(topics);
-                    messageLogger.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
+                    MESSAGE_LOGGER.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
                 }
             }
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
-                    .getSeq()));
+                .getSeq()));
         } catch (Exception e) {
-            messageLogger.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
+            MESSAGE_LOGGER.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                    +
-                    "unSubscribing", pkg.getHeader().getSeq()));
+                +
+                "unSubscribing", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }

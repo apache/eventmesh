@@ -21,5 +21,6 @@ package org.apache.eventmesh.client.tcp.common;
  * AsyncRRCallback
  */
 public interface AsyncRRCallback {
+
     void callback(Package msg);
 }

@@ -31,12 +31,31 @@ server:
     reply-pool-size: 10
     msg-req-num-per-second: 5
     cluster: "test"
+    env: "env"
     idc: "idc1"
     session-expired-in-mills: 5s
     send-message-timeout: 5s
+  http:
+    port: 10010
+    tls:
+      enable-secure: false
+      ca: ""
+      certfile: ""
+      keyfile: ""
+    pprof:
+      port: 10011
+  tcp:
+    port: 10010
+    tls:
+      enable-secure: false
+      ca: ""
+      certfile: ""
+      keyfile: ""
+    pprof:
+      port: 10011
 active-plugins:
   registry: nacos
-  connector: rocketmq
+  connector: standalone
   log: default
 plugins:
   registry:

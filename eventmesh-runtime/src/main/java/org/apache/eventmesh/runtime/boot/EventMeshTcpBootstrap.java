@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.registry.Registry;
 
 public class EventMeshTcpBootstrap implements EventMeshBootstrap {
 
@@ -30,24 +29,20 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
 
     private final EventMeshServer eventMeshServer;
 
-    private final Registry registry;
-
-    public EventMeshTcpBootstrap(EventMeshServer eventMeshServer,
-                                 ConfigurationWrapper configurationWrapper,
-                                 Registry registry) {
+    public EventMeshTcpBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
-        this.registry = registry;
-        this.eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
-        eventMeshTcpConfiguration.init();
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
 
+        ConfigService configService = ConfigService.getInstance();
+        this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
+
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
     }
 
     @Override
     public void init() throws Exception {
         // server init
         if (eventMeshTcpConfiguration != null) {
-            eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration, registry);
+            eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration);
             eventMeshTcpServer.init();
         }
     }
@@ -66,4 +61,13 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
             eventMeshTcpServer.shutdown();
         }
     }
+
+    public EventMeshTCPServer getEventMeshTcpServer() {
+        return eventMeshTcpServer;
+    }
+
+    public void setEventMeshTcpServer(EventMeshTCPServer eventMeshTcpServer) {
+        this.eventMeshTcpServer = eventMeshTcpServer;
+    }
+
 }

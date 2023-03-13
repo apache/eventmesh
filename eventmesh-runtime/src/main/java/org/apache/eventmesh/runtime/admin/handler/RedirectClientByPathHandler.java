@@ -35,18 +35,17 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * redirect subsystem for path
  */
+@Slf4j
 @EventHttpHandler(path = "/clientManage/redirectClientByPath")
 public class RedirectClientByPathHandler extends AbstractHttpHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(RedirectClientByPathHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -66,15 +65,15 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
             if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
-                    || StringUtils.isBlank(destEventMeshPort)
-                    || !StringUtils.isNumeric(destEventMeshPort)) {
+                || StringUtils.isBlank(destEventMeshPort)
+                || !StringUtils.isNumeric(destEventMeshPort)) {
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
-                    destEventMeshIp, destEventMeshPort);
+            log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
+                destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             StringBuilder redirectResult = new StringBuilder();
@@ -90,26 +89,26 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
-                        +
-                        "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
+                log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
+                    +
+                    "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
-                                +
-                                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                        sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e
-                                .getMessage());
+                        +
+                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e
+                        .getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
-                            +
-                            "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("redirectClientByPath fail...", e);
+            log.error("redirectClientByPath fail...", e);
         }
     }
 }

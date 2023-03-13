@@ -34,19 +34,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EventHttpHandler(path = "/clientManage/rejectAllClient")
 public class RejectAllClientHandler extends AbstractHttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RejectAllClientHandler.class);
+    private final transient EventMeshTCPServer eventMeshTCPServer;
 
-    private final EventMeshTCPServer eventMeshTCPServer;
-
-    public RejectAllClientHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+    public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
+        final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -58,46 +58,37 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
      * @throws IOException
      */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
-        OutputStream out = httpExchange.getResponseBody();
-        try {
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+    public void handle(final HttpExchange httpExchange) throws IOException {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
-                logger.info("rejectAllClient in admin====================");
+                if (log.isInfoEnabled()) {
+                    log.info("rejectAllClient in admin====================");
+                }
                 if (!sessionMap.isEmpty()) {
-                    for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                                eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                    for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
+                        final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
+                            eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
                     }
                 }
             } catch (Exception e) {
-                logger.error("clientManage|rejectAllClient|fail", e);
-                result = String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage());
+                log.error("clientManage rejectAllClient fail", e);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                out.write(String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
+                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
+                    .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            result = String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
-                    NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            out.write(String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
+                NetUtils.addressToString(successRemoteAddrs)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("rejectAllClient fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            log.error("rejectAllClient fail.", e);
         }
     }
 }

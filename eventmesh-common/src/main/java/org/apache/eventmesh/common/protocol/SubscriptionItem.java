@@ -24,7 +24,7 @@ import com.google.common.base.Objects;
 
 public class SubscriptionItem implements Serializable {
 
-    public static final long serialVersionUID = 2375640521211793028L;
+    private static final long serialVersionUID = 171486618880705657L;
 
     private String topic;
 
@@ -70,10 +70,10 @@ public class SubscriptionItem implements Serializable {
     @Override
     public String toString() {
         return "SubscriptionItem{"
-                + "topic=" + topic
-                + ", mode=" + mode
-                + ", type=" + type
-                + '}';
+            + "topic=" + topic
+            + ", mode=" + mode
+            + ", type=" + type
+            + '}';
     }
 
     @Override

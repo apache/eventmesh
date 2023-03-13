@@ -16,7 +16,7 @@
 #
 
 github:
-  description: EventMesh is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+  description: EventMesh is a new generation serverless event middleware for building distributed event-driven applications.
   homepage: https://eventmesh.apache.org/
   labels:
     - pubsub
@@ -49,3 +49,12 @@ github:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         required_approving_review_count: 1
+notifications:
+    commits:      commits@eventmesh.apache.org
+    # Send all issue emails (new, closed, comments) to issues@
+    issues:       issues@eventmesh.apache.org
+    # Send new/closed PR notifications to dev@
+    pullrequests_status: dev@eventmesh.apache.org
+    # Send individual PR comments/reviews to issues@
+    pullrequests_comment: issues@eventmesh.apache.org
+    jira_options: link label worklog

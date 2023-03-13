@@ -23,14 +23,13 @@ import org.apache.eventmesh.admin.rocketmq.handler.TopicsHandler;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
-public class AdminController {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
+@Slf4j
+public class AdminController {
 
     public AdminController() {
     }
@@ -39,6 +38,6 @@ public class AdminController {
 
         server.createContext(TOPIC_MANAGE_PATH, new TopicsHandler());
 
-        logger.info("EventMesh-Admin Controller server context created successfully");
+        log.info("EventMesh-Admin Controller server context created successfully");
     }
 }

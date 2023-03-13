@@ -21,16 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SelectorFactory {
-    private static final Map<String, Selector> selectorMap = new HashMap<>();
 
-    public static Selector get(String type) {
-        return selectorMap.get(type);
+    private static final Map<String, Selector> SELECTOR_MAP = new HashMap<>();
+
+    public static Selector get(final String type) {
+        return SELECTOR_MAP.get(type);
     }
 
-    public static void register(String type, Selector selector) {
+    public static void register(final String type, final Selector selector) {
         if (selector == null) {
             return;
         }
-        selectorMap.put(type, selector);
+        SELECTOR_MAP.put(type, selector);
     }
 }

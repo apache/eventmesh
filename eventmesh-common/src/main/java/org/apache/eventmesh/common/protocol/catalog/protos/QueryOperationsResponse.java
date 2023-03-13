@@ -342,8 +342,7 @@ public final class QueryOperationsResponse extends
     @Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
+        return new Builder(parent);
     }
 
     /**
