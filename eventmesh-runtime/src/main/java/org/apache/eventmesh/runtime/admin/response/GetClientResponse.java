@@ -20,33 +20,37 @@ package org.apache.eventmesh.runtime.admin.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class GetClientResponse {
-    public String env;
-    public String subsystem;
-    public String url;
-    public String pid;
-    public String host;
-    public int port;
-    public String version;
-    public String idc;
-    public String group;
-    public String purpose;
-    public String protocol;
+
+    private String env;
+    private String subsystem;
+    private String url;
+    private String pid;
+    private String host;
+    private int port;
+    private String version;
+    private String idc;
+    private String group;
+    private String purpose;
+    private String protocol;
 
     @JsonCreator
     public GetClientResponse(
-            @JsonProperty("env") String env,
-            @JsonProperty("subsystem") String subsystem,
-            @JsonProperty("url") String url,
-            @JsonProperty("pid") String pid,
-            @JsonProperty("host") String host,
-            @JsonProperty("port") int port,
-            @JsonProperty("version") String version,
-            @JsonProperty("idc") String idc,
-            @JsonProperty("group") String group,
-            @JsonProperty("purpose") String purpose,
-            @JsonProperty("protocol") String protocol
-    ) {
+        @JsonProperty("env") String env,
+        @JsonProperty("subsystem") String subsystem,
+        @JsonProperty("url") String url,
+        @JsonProperty("pid") String pid,
+        @JsonProperty("host") String host,
+        @JsonProperty("port") int port,
+        @JsonProperty("version") String version,
+        @JsonProperty("idc") String idc,
+        @JsonProperty("group") String group,
+        @JsonProperty("purpose") String purpose,
+        @JsonProperty("protocol") String protocol) {
+
         super();
         this.env = env;
         this.subsystem = subsystem;

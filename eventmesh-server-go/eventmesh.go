@@ -16,6 +16,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
@@ -26,12 +27,18 @@ import (
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/metrics/prometheus"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/registry"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol/cloudevents"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/registry/nacos"
 )
 
+var confPath string
+
+func init() {
+	flag.StringVar(&confPath, "config", config.ServerConfigPath, "configuration file path")
+}
+
 func main() {
-	cfg, err := config.LoadConfig(config.ServerConfigPath)
+	cfg, err := config.LoadConfig(confPath)
 	if err != nil {
 		log.Fatalf("load config err:%v", err)
 	}

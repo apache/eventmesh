@@ -28,6 +28,12 @@ func TestConfig_Load(t *testing.T) {
 	assert := testifyassert.New(t)
 
 	config := &Config{}
+	config.Common = &Common{
+		RegistryName: "test",
+		Cluster:      "test",
+		Env:          "env",
+		IDC:          "idc1",
+	}
 	config.Server.GRPCOption = &GRPCOption{
 		Port: "10010",
 		TLSOption: &TLSOption{
@@ -36,19 +42,12 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 		SendPoolSize:          10,
 		SubscribePoolSize:     10,
 		RetryPoolSize:         10,
 		PushMessagePoolSize:   10,
 		ReplyPoolSize:         10,
 		MsgReqNumPerSecond:    5,
-		RegistryName:          "test",
-		Cluster:               "test",
-		Env:                   "env",
-		IDC:                   "idc1",
 		SessionExpiredInMills: 5 * time.Second,
 		SendMessageTimeout:    5 * time.Second,
 	}
@@ -60,9 +59,6 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 	}
 	config.Server.TCPOption = &TCPOption{
 		Port: "10010",
@@ -72,15 +68,16 @@ func TestConfig_Load(t *testing.T) {
 			Certfile:       "",
 			Keyfile:        "",
 		},
-		PProfOption: &PProfOption{
-			Port: "10011",
-		},
 		Multicore: false,
 	}
 	config.ActivePlugins = map[string]string{
 		"registry":  "nacos",
 		"connector": "rocketmq",
 		"log":       "default",
+	}
+	config.PProf = &PProfOption{
+		Enable: true,
+		Port:   "10011",
 	}
 	config.Plugins = plugin.Config{}
 

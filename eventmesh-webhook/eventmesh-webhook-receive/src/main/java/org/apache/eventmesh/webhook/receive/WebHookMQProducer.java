@@ -19,45 +19,41 @@ package org.apache.eventmesh.webhook.receive;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
 
+import java.util.Objects;
 import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 public class WebHookMQProducer {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private transient Producer hookMQProducer;
 
-    protected Producer hookMQProducer;
+    public WebHookMQProducer(final Properties properties, String storagePluginType) throws Exception {
+        this.hookMQProducer = StoragePluginFactory.getMeshMQProducer(storagePluginType);
+        Objects.requireNonNull(hookMQProducer, "doesn't load the hookMQProducer plugin, please check.");
 
-    public WebHookMQProducer(Properties properties, String connectorPluginType) {
-        this.hookMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
-        if (hookMQProducer == null) {
-            logger.error("can't load the hookMQProducer plugin, please check.");
-            throw new RuntimeException("doesn't load the hookMQProducer plugin, please check.");
-        }
-        try {
-            this.hookMQProducer.init(properties);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        this.hookMQProducer.init(properties);
     }
 
-    public void send(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+    public void send(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception {
+        Objects.requireNonNull(cloudEvent, "cloudEvent can not be null");
+
         hookMQProducer.publish(cloudEvent, sendCallback);
     }
 
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
+    public void request(final CloudEvent cloudEvent, final RequestReplyCallback rrCallback, final long timeout)
         throws Exception {
+        Objects.requireNonNull(cloudEvent, "cloudEvent can not be null");
+
         hookMQProducer.request(cloudEvent, rrCallback, timeout);
     }
 
     public boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception {
+        Objects.requireNonNull(cloudEvent, "cloudEvent can not be null");
+
         return hookMQProducer.reply(cloudEvent, sendCallback);
     }
 

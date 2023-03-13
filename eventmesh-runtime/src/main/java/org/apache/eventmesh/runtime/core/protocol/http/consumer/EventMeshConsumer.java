@@ -59,6 +59,10 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshConsumer {
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
@@ -71,8 +75,6 @@ public class EventMeshConsumer {
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
     private ConsumerGroupConf consumerGroupConf;
@@ -84,10 +86,8 @@ public class EventMeshConsumer {
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.consumerGroupConf = consumerGroupConf;
-        this.persistentMqConsumer = new MQConsumerWrapper(
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshConnectorPluginType());
-        this.broadcastMqConsumer = new MQConsumerWrapper(
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshConnectorPluginType());
+        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshStoragePluginType());
+        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshStoragePluginType());
     }
 
     private MessageHandler httpMessageHandler;
@@ -99,26 +99,26 @@ public class EventMeshConsumer {
         keyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
         keyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
         keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
         persistentMqConsumer.init(keyValue);
 
         EventListener clusterEventListener = (event, context) -> {
             String protocolVersion =
-                    Objects.requireNonNull(event.getSpecVersion()).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
-                    EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
-                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
+                EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
             try {
                 String topic = event.getSubject();
                 String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO)).toString();
                 String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID)).toString();
 
                 event = CloudEventBuilder.from(event)
-                        .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                        .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
-                        .build();
+                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
+                    .build();
                 if (messageLogger.isDebugEnabled()) {
                     messageLogger.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
                 } else {
@@ -126,12 +126,12 @@ public class EventMeshConsumer {
                 }
 
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConf(),
-                        topic, null);
+                    topic, null);
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
                 if (currentTopicConfig == null) {
-                    logger.error("no topicConfig found, consumerGroup:{} topic:{}",
-                            consumerGroupConf.getConsumerGroup(), topic);
+                    log.error("no topicConfig found, consumerGroup:{} topic:{}",
+                        consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
@@ -142,13 +142,13 @@ public class EventMeshConsumer {
                 }
 
                 SubscriptionItem subscriptionItem =
-                        consumerGroupConf.getConsumerGroupTopicConf().get(topic).getSubscriptionItem();
+                    consumerGroupConf.getConsumerGroupTopicConf().get(topic).getSubscriptionItem();
                 HandleMsgContext handleMsgContext = new HandleMsgContext(
-                        EventMeshUtil.buildPushMsgSeqNo(),
-                        consumerGroupConf.getConsumerGroup(),
-                        EventMeshConsumer.this,
-                        topic, event, subscriptionItem, eventMeshAsyncConsumeContext.getAbstractContext(),
-                        consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                    EventMeshUtil.buildPushMsgSeqNo(),
+                    consumerGroupConf.getConsumerGroup(),
+                    EventMeshConsumer.this,
+                    topic, event, subscriptionItem, eventMeshAsyncConsumeContext.getAbstractContext(),
+                    consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                 if (httpMessageHandler.handle(handleMsgContext)) {
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
@@ -172,25 +172,25 @@ public class EventMeshConsumer {
         broadcastKeyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
         broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
         broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
         broadcastMqConsumer.init(broadcastKeyValue);
 
         EventListener broadcastEventListener = (event, context) -> {
 
             String protocolVersion =
-                    Objects.requireNonNull(event.getSpecVersion()).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
-                    EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
-                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
+                EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
             try {
 
                 event = CloudEventBuilder.from(event)
-                        .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-                                String.valueOf(System.currentTimeMillis()))
-                        .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
-                        .build();
+                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                        String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
+                    .build();
 
                 String topic = event.getSubject();
                 String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO, "");
@@ -200,18 +200,18 @@ public class EventMeshConsumer {
                     messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
                 } else {
                     messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}",
-                            topic, bizSeqNo,
-                            uniqueId);
+                        topic, bizSeqNo,
+                        uniqueId);
                 }
 
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(
-                        consumerGroupConf.getConsumerGroupTopicConf(), topic, null);
+                    consumerGroupConf.getConsumerGroupTopicConf(), topic, null);
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
-                        (EventMeshAsyncConsumeContext) context;
+                    (EventMeshAsyncConsumeContext) context;
 
                 if (currentTopicConfig == null) {
-                    logger.error("no topicConfig found, consumerGroup:{} topic:{}",
-                            consumerGroupConf.getConsumerGroup(), topic);
+                    log.error("no topicConfig found, consumerGroup:{} topic:{}",
+                        consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
@@ -222,15 +222,15 @@ public class EventMeshConsumer {
                 }
 
                 SubscriptionItem subscriptionItem =
-                        consumerGroupConf.getConsumerGroupTopicConf().get(topic)
-                                .getSubscriptionItem();
+                    consumerGroupConf.getConsumerGroupTopicConf().get(topic)
+                        .getSubscriptionItem();
                 HandleMsgContext handleMsgContext =
-                        new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(),
-                                consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                                topic, event, subscriptionItem,
-                                eventMeshAsyncConsumeContext.getAbstractContext(),
-                                consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId,
-                                currentTopicConfig);
+                    new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(),
+                        consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
+                        topic, event, subscriptionItem,
+                        eventMeshAsyncConsumeContext.getAbstractContext(),
+                        consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId,
+                        currentTopicConfig);
 
                 if (httpMessageHandler.handle(handleMsgContext)) {
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
@@ -250,7 +250,7 @@ public class EventMeshConsumer {
 
         inited4Persistent.compareAndSet(false, true);
         inited4Broadcast.compareAndSet(false, true);
-        logger.info("EventMeshConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
+        log.info("EventMeshConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
     }
 
     private String getEventExtension(CloudEvent event, String protocolKey, String defaultValue) {
@@ -266,7 +266,7 @@ public class EventMeshConsumer {
     }
 
     public void subscribe(String topic, SubscriptionItem subscriptionItem) throws Exception {
-        if (!SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
+        if (SubscriptionMode.BROADCASTING != subscriptionItem.getMode()) {
             persistentMqConsumer.subscribe(topic);
         } else {
             broadcastMqConsumer.subscribe(topic);
@@ -274,7 +274,7 @@ public class EventMeshConsumer {
     }
 
     public void unsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
+        if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.unsubscribe(topic);
         } else {
             persistentMqConsumer.unsubscribe(topic);
@@ -289,8 +289,8 @@ public class EventMeshConsumer {
     }
 
     public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<CloudEvent> events,
-                             AbstractContext context) {
-        if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
+        AbstractContext context) {
+        if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {
             persistentMqConsumer.updateOffset(events, context);
@@ -312,16 +312,16 @@ public class EventMeshConsumer {
     public void sendMessageBack(final CloudEvent event, final String uniqueId, String bizSeqNo) throws Exception {
 
         EventMeshProducer sendMessageBack
-                = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
+            = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
 
         if (sendMessageBack == null) {
-            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
-                    consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
+            log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
+                consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             return;
         }
 
         final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, sendMessageBack,
-                eventMeshHTTPServer);
+            eventMeshHTTPServer);
 
         sendMessageBack.send(sendMessageBackContext, new SendCallback() {
             @Override
@@ -330,8 +330,8 @@ public class EventMeshConsumer {
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
-                        consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
+                log.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
+                    consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             }
         });
     }

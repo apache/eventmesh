@@ -17,60 +17,36 @@
 
 package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
-import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.util.Utils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AsyncPublishInstance {
+public class AsyncPublishInstance extends GrpcAbstractDemo {
 
     // This messageSize is also used in SubService.java (Subscriber)
-    public static final int messageSize = 5;
+    public static final int MESSAGE_SIZE = 5;
 
     public static void main(String[] args) throws Exception {
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-
-        EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-                .env("env").idc("idc")
-                .sys("1234").build();
-
-        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig)) {
-            
-            Map<String, String> content = new HashMap<>();
+            final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");
 
-            for (int i = 0; i < messageSize; i++) {
-                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                        .content(JsonUtils.serialize(content))
-                        .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
-                        .uniqueId(RandomStringUtils.generateNum(30))
-                        .bizSeqNo(RandomStringUtils.generateNum(30))
-                        .build()
-                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
-                eventMeshGrpcProducer.publish(eventMeshMessage);
-                Thread.sleep(1000);
+            for (int i = 0; i < MESSAGE_SIZE; i++) {
+                buildEventMeshMessage(content);
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
-            Thread.sleep(30000);
-            try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
-                // ignore
-            }
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

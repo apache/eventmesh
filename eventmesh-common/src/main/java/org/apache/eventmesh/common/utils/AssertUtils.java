@@ -50,7 +50,8 @@ public final class AssertUtils {
 
     /**
      * assert str is not black
-     * @param str str
+     *
+     * @param str     str
      * @param message message
      */
     public static void notBlack(final String str, final String message) {

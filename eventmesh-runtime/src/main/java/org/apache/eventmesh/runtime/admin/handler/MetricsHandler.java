@@ -17,32 +17,38 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class MetricsHandler implements HttpHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
+@Slf4j
+@EventHttpHandler(path = "/metrics")
+public class MetricsHandler extends AbstractHttpHandler {
+
     private final HttpSummaryMetrics httpSummaryMetrics;
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
-    public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer, EventMeshTCPServer eventMeshTcpServer) {
+    public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshTCPServer eventMeshTcpServer,
+        HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
     }
@@ -61,8 +67,7 @@ public class MetricsHandler implements HttpHandler {
     }
 
     /**
-     * GET /metrics
-     * Return a response that contains a summary of metrics
+     * GET /metrics Return a response that contains a summary of metrics
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -114,9 +119,10 @@ public class MetricsHandler implements HttpHandler {
                 tcpSummaryMetrics.getAllConnections(),
                 tcpSummaryMetrics.getSubTopicNum()
             );
-            String result = JsonUtils.toJson(getMetricsResponse);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            String result = JsonUtils.toJSONString(getMetricsResponse);
+            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            httpExchange.sendResponseHeaders(200, bytes.length);
+            out.write(bytes);
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -125,15 +131,16 @@ public class MetricsHandler implements HttpHandler {
             String stackTrace = writer.toString();
 
             Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            String result = JsonUtils.toJSONString(error);
+            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            httpExchange.sendResponseHeaders(500, bytes.length);
+            out.write(bytes);
         } finally {
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.warn("out close failed...", e);
+                    log.warn("out close failed...", e);
                 }
             }
         }
@@ -142,10 +149,10 @@ public class MetricsHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }

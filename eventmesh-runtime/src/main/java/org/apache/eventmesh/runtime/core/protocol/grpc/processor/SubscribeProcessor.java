@@ -47,8 +47,11 @@ public class SubscribeProcessor {
 
     private final transient GrpcType grpcType = GrpcType.WEBHOOK;
 
+    private final Acl acl;
+
     public SubscribeProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.acl = eventMeshGrpcServer.getAcl();
     }
 
     public void process(final Subscription subscription, final EventEmitter<Response> emitter) throws Exception {
@@ -84,18 +87,18 @@ public class SubscribeProcessor {
         final List<ConsumerGroupClient> newClients = new LinkedList<>();
         for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
             final ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                    .env(header.getEnv())
-                    .idc(header.getIdc())
-                    .sys(header.getSys())
-                    .ip(header.getIp())
-                    .pid(header.getPid())
-                    .consumerGroup(consumerGroup)
-                    .topic(item.getTopic())
-                    .grpcType(grpcType)
-                    .subscriptionMode(item.getMode())
-                    .url(subscription.getUrl())
-                    .lastUpTime(new Date())
-                    .build();
+                .env(header.getEnv())
+                .idc(header.getIdc())
+                .sys(header.getSys())
+                .ip(header.getIp())
+                .pid(header.getPid())
+                .consumerGroup(consumerGroup)
+                .topic(item.getTopic())
+                .grpcType(grpcType)
+                .subscriptionMode(item.getMode())
+                .url(subscription.getUrl())
+                .lastUpTime(new Date())
+                .build();
             newClients.add(newClient);
         }
 
@@ -131,8 +134,8 @@ public class SubscribeProcessor {
         final RequestHeader header = subscription.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-                Acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
-                        header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
+                this.acl.doAclCheckInHttpReceive(header.getIp(), header.getUsername(), header.getPassword(),
+                    header.getSys(), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

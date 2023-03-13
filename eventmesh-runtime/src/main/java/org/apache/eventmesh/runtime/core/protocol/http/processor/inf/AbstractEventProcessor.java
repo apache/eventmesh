@@ -84,7 +84,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
             Map<String, String> metadata = new HashMap<>(1 << 4);
             for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
-                    eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
 
                 String consumerGroupKey = consumerGroupMap.getKey();
                 ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
@@ -93,9 +93,9 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
                 consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
 
                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                        new HashMap<>(1 << 4);
+                    new HashMap<>(1 << 4);
                 for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                        consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
@@ -107,7 +107,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
                 }
 
                 consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
+                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
             }
 
             eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
@@ -119,7 +119,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
 
     protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
-            throws Exception {
+        throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
@@ -130,8 +130,8 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         Registry registry = eventMeshHTTPServer.getRegistry();
         List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
         String httpServiceName =
-                ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
-                        + "-" + ConfigurationContextUtil.HTTP;
+            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
+                + "-" + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
@@ -148,11 +148,11 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
             }
 
             ConsumerGroupMetadata consumerGroupMetadata =
-                    JsonUtils.deserialize(topicMetadataJson, ConsumerGroupMetadata.class);
+                JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                    Optional.ofNullable(consumerGroupMetadata)
-                            .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
-                            .orElseGet(Maps::newConcurrentMap);
+                Optional.ofNullable(consumerGroupMetadata)
+                    .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
+                    .orElseGet(Maps::newConcurrentMap);
 
             for (SubscriptionItem subscriptionItem : subscriptionList) {
                 if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
@@ -167,6 +167,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
     /**
      * builder response header map
+     *
      * @param requestWrapper requestWrapper
      * @return Map
      */
@@ -187,6 +188,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
     /**
      * validation sysHeaderMap is null
+     *
      * @param sysHeaderMap sysHeaderMap
      * @return Returns true if any is empty
      */
@@ -199,6 +201,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
     /**
      * validation requestBodyMap key url topic consumerGroup is any null
+     *
      * @param requestBodyMap requestBodyMap
      * @return any null then true
      */
@@ -206,11 +209,12 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         return requestBodyMap.get(EventMeshConstants.URL) == null
             || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
             || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
-        
+
     }
 
     /**
      * builder RemoteHeaderMap
+     *
      * @param localAddress
      * @return
      */
@@ -232,18 +236,19 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
     }
 
     /**
-     *  http post
-     * @param client client
-     * @param uri uri
-     * @param requestHeader requestHeader
-     * @param requestBody requestBody
+     * http post
+     *
+     * @param client          client
+     * @param uri             uri
+     * @param requestHeader   requestHeader
+     * @param requestBody     requestBody
      * @param responseHandler responseHandler
      * @return string
      * @throws IOException
      */
     public static String post(CloseableHttpClient client, String uri,
-                              Map<String, String> requestHeader, Map<String, Object> requestBody,
-                              ResponseHandler<String> responseHandler) throws IOException {
+        Map<String, String> requestHeader, Map<String, Object> requestBody,
+        ResponseHandler<String> responseHandler) throws IOException {
         AssertUtils.notNull(client, "client can't be null");
         AssertUtils.notBlack(uri, "uri can't be null");
         AssertUtils.notNull(requestHeader, "requestParam can't be null");
@@ -260,7 +265,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         //body
         if (MapUtils.isNotEmpty(requestBody)) {
-            String jsonStr = Optional.ofNullable(JsonUtils.serialize(requestBody)).orElse("");
+            String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 
@@ -274,5 +279,5 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         return client.execute(httpPost, responseHandler);
     }
-    
+
 }

@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
-import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -29,17 +31,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The config handler
  */
-public class ConfigurationHandler implements HttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
+@Slf4j
+@EventHttpHandler(path = "/configuration")
+public class ConfigurationHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
@@ -48,8 +50,10 @@ public class ConfigurationHandler implements HttpHandler {
     public ConfigurationHandler(
         EventMeshTCPConfiguration eventMeshTCPConfiguration,
         EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-        EventMeshGrpcConfiguration eventMeshGrpcConfiguration
+        EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
+        HttpHandlerManager httpHandlerManager
     ) {
+        super(httpHandlerManager);
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
@@ -69,60 +73,48 @@ public class ConfigurationHandler implements HttpHandler {
     }
 
     /**
-     * GET /config
-     * Return a response that contains the EventMesh configuration
+     * GET /config Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            try {
+                GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+                    eventMeshTCPConfiguration.getSysID(),
+                    eventMeshTCPConfiguration.getNamesrvAddr(),
+                    eventMeshTCPConfiguration.getEventMeshEnv(),
+                    eventMeshTCPConfiguration.getEventMeshIDC(),
+                    eventMeshTCPConfiguration.getEventMeshCluster(),
+                    eventMeshTCPConfiguration.getEventMeshServerIp(),
+                    eventMeshTCPConfiguration.getEventMeshName(),
+                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+                    eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
+                    // TCP Configuration
+                    eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
+                    // HTTP Configuration
+                    eventMeshHTTPConfiguration.getHttpServerPort(),
+                    eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
+                    // gRPC Configuration
+                    eventMeshGrpcConfiguration.getGrpcServerPort(),
+                    eventMeshGrpcConfiguration.isEventMeshServerUseTls()
+                );
 
-        try {
-            GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                eventMeshTCPConfiguration.getSysID(),
-                eventMeshTCPConfiguration.getNamesrvAddr(),
-                eventMeshTCPConfiguration.getEventMeshEnv(),
-                eventMeshTCPConfiguration.getEventMeshIDC(),
-                eventMeshTCPConfiguration.getEventMeshCluster(),
-                eventMeshTCPConfiguration.getEventMeshServerIp(),
-                eventMeshTCPConfiguration.getEventMeshName(),
-                eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-                eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
+                String result = JsonUtils.toJSONString(getConfigurationResponse);
+                httpExchange.sendResponseHeaders(200, result.getBytes().length);
+                out.write(result.getBytes());
+            } catch (Exception e) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
 
-                // TCP Configuration
-                eventMeshTCPConfiguration.eventMeshTcpServerPort,
-
-                // HTTP Configuration
-                eventMeshHTTPConfiguration.httpServerPort,
-                eventMeshHTTPConfiguration.eventMeshServerUseTls,
-
-                // gRPC Configuration
-                eventMeshGrpcConfiguration.grpcServerPort,
-                eventMeshGrpcConfiguration.eventMeshServerUseTls
-            );
-
-            String result = JsonUtils.toJson(getConfigurationResponse);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
-        } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
-
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJson(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, result.getBytes().length);
+                out.write(result.getBytes());
             }
         }
     }

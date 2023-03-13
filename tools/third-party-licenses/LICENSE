@@ -216,11 +216,7 @@ The following components are provided under the Apache License. See project link
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     assertj-core 2.6.0: https://github.com/assertj/assertj-core, Apache 2.0
-    async-http-client 2.12.0: https://https://github.com/AsyncHttpClient/async-http-client, Apache 2.0
-    bcpkix-jdk15on 1.69: https://github.com/bcgit/bc-java, Apache 2.0
-    bcprov-jdk15on 1.69: https://github.com/bcgit/bc-java, Apache 2.0
-    bcprov-ext-jdk15on 1.69: https://github.com/bcgit/bc-java, Apache 2.0
-    bcutil-jdk15on 1.69: https://github.com/bcgit/bc-java, Apache 2.0
+    async-http-client 2.12.0: https://github.com/AsyncHttpClient/async-http-client, Apache 2.0
     byte-buddy 1.11.0: https://github.com/raphw/byte-buddy, Apache 2.0
     cache-api 1.1.1: https://github.com/jsr107/jsr107spec, Apache 2.0
     cloudevents-api 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
@@ -246,6 +242,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
     fastjson 1.2.76: https://github.com/alibaba/fastjson, Apache 2.0
     guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
+    guice 4.2.2: https://github.com/google/guice, Apache 2.0
     grpc-api 1.43.2: https://github.com/grpc/grpc-java, Apache-2.0
     grpc-context 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
     grpc-core 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
@@ -273,6 +270,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     jetcd-core 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jetcd-resolver 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
+    kafka-clients 3.0.0: https://github.com/apache/kafka, Apache 2.0
     log4j-api 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-core 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-slf4j-impl 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
@@ -318,8 +316,8 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     netty-transport-rxtx 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-transport-sctp 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-transport-udt 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
-    okio 1.17.2: https://github.com/square/okio, Apache 2.0
     okhttp 3.14.9: https://github.com/square/okhttp, Apache 2.0
+    okio 1.17.2: https://github.com/square/okio, Apache 2.0
     opencensus-api 0.12.3: https://github.com/census-instrumentation/opencensus-java, Apache 2.0
     opencensus-contrib-grpc-metrics 0.12.3: https://github.com/census-instrumentation/opencensus-java, Apache 2.0
     openmessaging-api 2.22.1-pubsub: https://github.com/openmessaging/dledger, Apache 2.0
@@ -353,7 +351,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     pulsar-client 2.10.1: https://github.com/apache/pulsar, Apache 2.0
     pulsar-client-admin-api 2.10.1: https://github.com/apache/pulsar, Apache 2.0
     pulsar-client-api 2.10.1: https://github.com/apache/pulsar, Apache 2.0
-    reactor-core-3.4.13.jar: https://github.com/reactor/reactor-core, Apache 2.0
+    reactor-core 3.4.13: https://github.com/reactor/reactor-core, Apache 2.0
     rocketmq-acl 4.9.3: https://github.com/apache/rocketmq, Apache 2.0
     rocketmq-broker 4.9.3: https://github.com/apache/rocketmq, Apache 2.0
     rocketmq-client 4.9.3: https://github.com/apache/rocketmq, Apache 2.0
@@ -446,6 +444,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
 
     animal-sniffer-annotations 1.17: https://github.com/mojohaus/animal-sniffer, MIT
     bcpkix-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
+    bcprov-ext-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
     bcprov-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
     bcutil-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
     checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT

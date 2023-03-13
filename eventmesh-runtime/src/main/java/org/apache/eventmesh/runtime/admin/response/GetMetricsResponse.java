@@ -20,100 +20,103 @@ package org.apache.eventmesh.runtime.admin.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
 
+@Data
 public class GetMetricsResponse {
+
     // HTTP Metrics
-    public float maxHTTPTPS;
-    public float avgHTTPTPS;
-    public long maxHTTPCost;
-    public float avgHTTPCost;
-    public float avgHTTPBodyDecodeCost;
-    public long httpDiscard;
-    public float maxBatchSendMsgTPS;
-    public float avgBatchSendMsgTPS;
-    public long sendBatchMsgNumSum;
-    public long sendBatchMsgFailNumSum;
-    public float sendBatchMsgFailRate;
-    public long sendBatchMsgDiscardNumSum;
-    public float maxSendMsgTPS;
-    public float avgSendMsgTPS;
-    public long sendMsgNumSum;
-    public long sendMsgFailNumSum;
-    public float sendMsgFailRate;
-    public long replyMsgNumSum;
-    public long replyMsgFailNumSum;
-    public float maxPushMsgTPS;
-    public float avgPushMsgTPS;
-    public long pushHTTPMsgNumSum;
-    public long pushHTTPMsgFailNumSum;
-    public float pushHTTPMsgFailRate;
-    public float maxHTTPPushLatency;
-    public float avgHTTPPushLatency;
-    public int batchMsgQueueSize;
-    public int sendMsgQueueSize;
-    public int pushMsgQueueSize;
-    public int retryHTTPQueueSize;
-    public float avgBatchSendMsgCost;
-    public float avgSendMsgCost;
-    public float avgReplyMsgCost;
+    private float maxHTTPTPS;
+    private float avgHTTPTPS;
+    private long maxHTTPCost;
+    private float avgHTTPCost;
+    private float avgHTTPBodyDecodeCost;
+    private long httpDiscard;
+    private float maxBatchSendMsgTPS;
+    private float avgBatchSendMsgTPS;
+    private long sendBatchMsgNumSum;
+    private long sendBatchMsgFailNumSum;
+    private float sendBatchMsgFailRate;
+    private long sendBatchMsgDiscardNumSum;
+    private float maxSendMsgTPS;
+    private float avgSendMsgTPS;
+    private long sendMsgNumSum;
+    private long sendMsgFailNumSum;
+    private float sendMsgFailRate;
+    private long replyMsgNumSum;
+    private long replyMsgFailNumSum;
+    private float maxPushMsgTPS;
+    private float avgPushMsgTPS;
+    private long pushHTTPMsgNumSum;
+    private long pushHTTPMsgFailNumSum;
+    private float pushHTTPMsgFailRate;
+    private float maxHTTPPushLatency;
+    private float avgHTTPPushLatency;
+    private int batchMsgQueueSize;
+    private int sendMsgQueueSize;
+    private int pushMsgQueueSize;
+    private int retryHTTPQueueSize;
+    private float avgBatchSendMsgCost;
+    private float avgSendMsgCost;
+    private float avgReplyMsgCost;
 
     // TCP Metrics
-    public int retryTCPQueueSize;
-    public double client2eventMeshTCPTPS;
-    public double eventMesh2mqTCPTPS;
-    public double mq2eventMeshTCPTPS;
-    public double eventMesh2clientTCPTPS;
-    public double allTCPTPS;
-    public int allTCPConnections;
-    public int subTopicTCPNum;
+    private int retryTCPQueueSize;
+    private double client2eventMeshTCPTPS;
+    private double eventMesh2mqTCPTPS;
+    private double mq2eventMeshTCPTPS;
+    private double eventMesh2clientTCPTPS;
+    private double allTCPTPS;
+    private int allTCPConnections;
+    private int subTopicTCPNum;
 
 
     @JsonCreator
     public GetMetricsResponse(
-            // HTTP Metrics
-            @JsonProperty("maxHTTPTPS") float maxHTTPTPS,
-            @JsonProperty("avgHTTPTPS") float avgHTTPTPS,
-            @JsonProperty("maxHTTPCost") long maxHTTPCost,
-            @JsonProperty("avgHTTPCost") float avgHTTPCost,
-            @JsonProperty("avgHTTPBodyDecodeCost") float avgHTTPBodyDecodeCost,
-            @JsonProperty("httpDiscard") long httpDiscard,
-            @JsonProperty("maxBatchSendMsgTPS") float maxBatchSendMsgTPS,
-            @JsonProperty("avgBatchSendMsgTPS") float avgBatchSendMsgTPS,
-            @JsonProperty("sendBatchMsgNumSum") long sendBatchMsgNumSum,
-            @JsonProperty("sendBatchMsgFailNumSum") long sendBatchMsgFailNumSum,
-            @JsonProperty("sendBatchMsgFailRate") float sendBatchMsgFailRate,
-            @JsonProperty("sendBatchMsgDiscardNumSum") long sendBatchMsgDiscardNumSum,
-            @JsonProperty("maxSendMsgTPS") float maxSendMsgTPS,
-            @JsonProperty("avgSendMsgTPS") float avgSendMsgTPS,
-            @JsonProperty("sendMsgNumSum") long sendMsgNumSum,
-            @JsonProperty("sendMsgFailNumSum") long sendMsgFailNumSum,
-            @JsonProperty("sendMsgFailRate") float sendMsgFailRate,
-            @JsonProperty("replyMsgNumSum") long replyMsgNumSum,
-            @JsonProperty("replyMsgFailNumSum") long replyMsgFailNumSum,
-            @JsonProperty("maxPushMsgTPS") float maxPushMsgTPS,
-            @JsonProperty("avgPushMsgTPS") float avgPushMsgTPS,
-            @JsonProperty("pushHTTPMsgNumSum") long pushHTTPMsgNumSum,
-            @JsonProperty("pushHTTPMsgFailNumSum") long pushHTTPMsgFailNumSum,
-            @JsonProperty("pushHTTPMsgFailRate") float pushHTTPMsgFailRate,
-            @JsonProperty("maxHTTPPushLatency") float maxHTTPPushLatency,
-            @JsonProperty("avgHTTPPushLatency") float avgHTTPPushLatency,
-            @JsonProperty("batchMsgQueueSize") int batchMsgQueueSize,
-            @JsonProperty("sendMsgQueueSize") int sendMsgQueueSize,
-            @JsonProperty("pushMsgQueueSize") int pushMsgQueueSize,
-            @JsonProperty("retryHTTPQueueSize") int retryHTTPQueueSize,
-            @JsonProperty("avgBatchSendMsgCost") float avgBatchSendMsgCost,
-            @JsonProperty("avgSendMsgCost") float avgSendMsgCost,
-            @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
-            // TCP Metrics
-            @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
-            @JsonProperty("client2eventMeshTCPTPS") double client2eventMeshTCPTPS,
-            @JsonProperty("eventMesh2mqTCPTPS") double eventMesh2mqTCPTPS,
-            @JsonProperty("mq2eventMeshTCPTPS") double mq2eventMeshTCPTPS,
-            @JsonProperty("eventMesh2clientTCPTPS") double eventMesh2clientTCPTPS,
-            @JsonProperty("allTCPTPS") double allTCPTPS,
-            @JsonProperty("allTCPConnections") int allTCPConnections,
-            @JsonProperty("subTopicTCPNum") int subTopicTCPNum
-    ) {
+        // HTTP Metrics
+        @JsonProperty("maxHTTPTPS") float maxHTTPTPS,
+        @JsonProperty("avgHTTPTPS") float avgHTTPTPS,
+        @JsonProperty("maxHTTPCost") long maxHTTPCost,
+        @JsonProperty("avgHTTPCost") float avgHTTPCost,
+        @JsonProperty("avgHTTPBodyDecodeCost") float avgHTTPBodyDecodeCost,
+        @JsonProperty("httpDiscard") long httpDiscard,
+        @JsonProperty("maxBatchSendMsgTPS") float maxBatchSendMsgTPS,
+        @JsonProperty("avgBatchSendMsgTPS") float avgBatchSendMsgTPS,
+        @JsonProperty("sendBatchMsgNumSum") long sendBatchMsgNumSum,
+        @JsonProperty("sendBatchMsgFailNumSum") long sendBatchMsgFailNumSum,
+        @JsonProperty("sendBatchMsgFailRate") float sendBatchMsgFailRate,
+        @JsonProperty("sendBatchMsgDiscardNumSum") long sendBatchMsgDiscardNumSum,
+        @JsonProperty("maxSendMsgTPS") float maxSendMsgTPS,
+        @JsonProperty("avgSendMsgTPS") float avgSendMsgTPS,
+        @JsonProperty("sendMsgNumSum") long sendMsgNumSum,
+        @JsonProperty("sendMsgFailNumSum") long sendMsgFailNumSum,
+        @JsonProperty("sendMsgFailRate") float sendMsgFailRate,
+        @JsonProperty("replyMsgNumSum") long replyMsgNumSum,
+        @JsonProperty("replyMsgFailNumSum") long replyMsgFailNumSum,
+        @JsonProperty("maxPushMsgTPS") float maxPushMsgTPS,
+        @JsonProperty("avgPushMsgTPS") float avgPushMsgTPS,
+        @JsonProperty("pushHTTPMsgNumSum") long pushHTTPMsgNumSum,
+        @JsonProperty("pushHTTPMsgFailNumSum") long pushHTTPMsgFailNumSum,
+        @JsonProperty("pushHTTPMsgFailRate") float pushHTTPMsgFailRate,
+        @JsonProperty("maxHTTPPushLatency") float maxHTTPPushLatency,
+        @JsonProperty("avgHTTPPushLatency") float avgHTTPPushLatency,
+        @JsonProperty("batchMsgQueueSize") int batchMsgQueueSize,
+        @JsonProperty("sendMsgQueueSize") int sendMsgQueueSize,
+        @JsonProperty("pushMsgQueueSize") int pushMsgQueueSize,
+        @JsonProperty("retryHTTPQueueSize") int retryHTTPQueueSize,
+        @JsonProperty("avgBatchSendMsgCost") float avgBatchSendMsgCost,
+        @JsonProperty("avgSendMsgCost") float avgSendMsgCost,
+        @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
+        // TCP Metrics
+        @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
+        @JsonProperty("client2eventMeshTCPTPS") double client2eventMeshTCPTPS,
+        @JsonProperty("eventMesh2mqTCPTPS") double eventMesh2mqTCPTPS,
+        @JsonProperty("mq2eventMeshTCPTPS") double mq2eventMeshTCPTPS,
+        @JsonProperty("eventMesh2clientTCPTPS") double eventMesh2clientTCPTPS,
+        @JsonProperty("allTCPTPS") double allTCPTPS,
+        @JsonProperty("allTCPConnections") int allTCPConnections,
+        @JsonProperty("subTopicTCPNum") int subTopicTCPNum) {
+
         super();
         this.maxHTTPTPS = maxHTTPTPS;
         this.avgHTTPTPS = avgHTTPTPS;

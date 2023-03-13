@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.Converter;
 
 public class SubscriptionTypeConverter implements Converter<String, SubscriptionType> {
+
     @Override
     public SubscriptionType convert(String value) {
         return SubscriptionType.valueOf(value);

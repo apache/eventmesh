@@ -31,11 +31,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import io.cloudevents.CloudEvent;
 
 public class StandaloneAdmin implements Admin {
+
     private final AtomicBoolean isStarted;
 
     private final StandaloneBroker standaloneBroker;

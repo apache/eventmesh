@@ -18,6 +18,9 @@
 dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation "org.apache.commons:commons-lang3"
+    implementation project(":eventmesh-common")
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
     testImplementation "org.apache.commons:commons-lang3"

@@ -25,12 +25,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PushContext {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private SessionPusher sessionPusher;
 
@@ -56,7 +55,7 @@ public class PushContext {
 
     public void unAckMsg(String seq, DownStreamMsgContext downStreamMsgContext) {
         unAckMsg.put(seq, downStreamMsgContext);
-        logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
+        log.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
     }
 
     public int getTotalUnackMsgs() {
@@ -71,13 +70,13 @@ public class PushContext {
     @Override
     public String toString() {
         return "PushContext{"
-                +
-                "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
-                +
-                ",deliverFailCount=" + deliverFailMsgsCount.longValue()
-                +
-                ",unAckMsg=" + CollectionUtils.size(unAckMsg)
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
+            +
+            ",deliverFailCount=" + deliverFailMsgsCount.longValue()
+            +
+            ",unAckMsg=" + CollectionUtils.size(unAckMsg)
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

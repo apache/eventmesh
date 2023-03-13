@@ -48,8 +48,8 @@ type EventMeshConsumer interface {
 
 type eventMeshConsumer struct {
 	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
+	persistentConsumer wrapper.Consumer
+	broadcastConsumer  wrapper.Consumer
 	messageHandler     MessageHandler
 	serviceState       consts.ServiceState
 	// consumerGroupTopicConfig key is topic
@@ -92,9 +92,9 @@ func (e *eventMeshConsumer) Init() error {
 	persistProps := make(map[string]string)
 	persistProps["isBroadcast"] = "false"
 	persistProps["consumerGroup"] = e.ConsumerGroup
-	persistProps["eventMeshIDC"] = config.GlobalConfig().Server.GRPCOption.IDC
+	persistProps["eventMeshIDC"] = config.GlobalConfig().Common.IDC
 	persistProps["instanceName"] = util.BuildMeshClientID(e.ConsumerGroup,
-		config.GlobalConfig().Server.GRPCOption.Cluster)
+		config.GlobalConfig().Common.Cluster)
 	if err := e.persistentConsumer.Init(persistProps); err != nil {
 		return err
 	}
@@ -104,9 +104,9 @@ func (e *eventMeshConsumer) Init() error {
 	broadcastProps := make(map[string]string)
 	broadcastProps["isBroadcast"] = "false"
 	broadcastProps["consumerGroup"] = e.ConsumerGroup
-	broadcastProps["eventMeshIDC"] = config.GlobalConfig().Server.GRPCOption.IDC
+	broadcastProps["eventMeshIDC"] = config.GlobalConfig().Common.IDC
 	broadcastProps["instanceName"] = util.BuildMeshClientID(e.ConsumerGroup,
-		config.GlobalConfig().Server.GRPCOption.Cluster)
+		config.GlobalConfig().Common.Cluster)
 	if err := e.broadcastConsumer.Init(broadcastProps); err != nil {
 		return err
 	}
@@ -192,6 +192,7 @@ func (e *eventMeshConsumer) Shutdown() error {
 	if err := e.broadcastConsumer.Shutdown(); err != nil {
 		return err
 	}
+	e.serviceState = consts.STOPED
 	return nil
 }
 

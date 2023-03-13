@@ -20,15 +20,17 @@ package org.apache.eventmesh.runtime.admin.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class Error {
-    public String message;
-    public String stackTrace;
+
+    private String message;
+
+    private String stackTrace;
 
     @JsonCreator
-    public Error(
-            @JsonProperty("message") String message,
-            @JsonProperty("stackTrace") String stackTrace
-    ) {
+    public Error(@JsonProperty("message") String message, @JsonProperty("stackTrace") String stackTrace) {
         super();
         this.message = message;
         this.stackTrace = stackTrace;

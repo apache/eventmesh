@@ -32,18 +32,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * query recommend eventmesh
  */
+@Slf4j
 @EventHttpHandler(path = "/eventMesh/recommend")
 public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
-
-    private final Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -73,11 +72,11 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
-            logger.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
+            log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            logger.error("QueryRecommendEventMeshHandler fail...", e);
+            log.error("QueryRecommendEventMeshHandler fail...", e);
         }
     }
 }

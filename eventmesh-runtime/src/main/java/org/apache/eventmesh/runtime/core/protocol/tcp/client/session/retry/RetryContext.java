@@ -40,13 +40,8 @@ public abstract class RetryContext implements Delayed {
     @Override
     public int compareTo(Delayed delayed) {
         RetryContext obj = (RetryContext) delayed;
-        if (this.executeTime > obj.executeTime) {
-            return 1;
-        } else if (this.executeTime == obj.executeTime) {
-            return 0;
-        } else {
-            return -1;
-        }
+        return Long.compare(this.executeTime, obj.executeTime);
+
     }
 
     @Override

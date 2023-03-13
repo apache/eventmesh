@@ -25,15 +25,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicConf implements Serializable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerGroupTopicConf.class);
 
     private static final long serialVersionUID = 4548889791666411923L;
 
@@ -47,8 +42,7 @@ public class ConsumerGroupTopicConf implements Serializable {
     private SubscriptionItem subscriptionItem;
 
     /**
-     * PUSH URL
-     * Map key:IDC value:URL list in IDC
+     * PUSH URL Map key:IDC value:URL list in IDC
      */
     private Map<String, List<String>> idcUrls = Maps.newConcurrentMap();
 
@@ -72,12 +66,12 @@ public class ConsumerGroupTopicConf implements Serializable {
         }
         final ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
         return consumerGroup.equals(that.consumerGroup)
-                &&
-                Objects.equals(topic, that.topic)
-                &&
-                Objects.equals(subscriptionItem, that.subscriptionItem)
-                &&
-                Objects.equals(idcUrls, that.idcUrls);
+            &&
+            Objects.equals(topic, that.topic)
+            &&
+            Objects.equals(subscriptionItem, that.subscriptionItem)
+            &&
+            Objects.equals(idcUrls, that.idcUrls);
     }
 
     @Override
@@ -89,9 +83,9 @@ public class ConsumerGroupTopicConf implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("consumeTopicConfig={consumerGroup=").append(consumerGroup)
-                .append(",topic=").append(topic)
-                .append(",subscriptionMode=").append(subscriptionItem)
-                .append(",idcUrls=").append(idcUrls).append('}');
+            .append(",topic=").append(topic)
+            .append(",subscriptionMode=").append(subscriptionItem)
+            .append(",idcUrls=").append(idcUrls).append('}');
         return sb.toString();
     }
 

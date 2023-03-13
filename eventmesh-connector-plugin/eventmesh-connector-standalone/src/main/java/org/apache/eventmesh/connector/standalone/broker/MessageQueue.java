@@ -19,15 +19,13 @@ package org.apache.eventmesh.connector.standalone.broker;
 
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
-import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
 
 /**
- * This is a block queue, can get entity by offset.
- * The queue is a FIFO data structure.
+ * This is a block queue, can get entity by offset. The queue is a FIFO data structure.
  */
 public class MessageQueue {
 
@@ -80,8 +78,7 @@ public class MessageQueue {
     }
 
     /**
-     * Get the first message at this queue, waiting for the message is available if the queue is empty,
-     * this method will not remove the message
+     * Get the first message at this queue, waiting for the message is available if the queue is empty, this method will not remove the message
      *
      * @return MessageEntity
      * @throws InterruptedException
@@ -146,8 +143,7 @@ public class MessageQueue {
     }
 
     /**
-     * Get the message by offset, since the offset is increment, so we can get the first message in this queue
-     * and calculate the index of this offset
+     * Get the message by offset, since the offset is increment, so we can get the first message in this queue and calculate the index of this offset
      *
      * @param offset
      * @return MessageEntity

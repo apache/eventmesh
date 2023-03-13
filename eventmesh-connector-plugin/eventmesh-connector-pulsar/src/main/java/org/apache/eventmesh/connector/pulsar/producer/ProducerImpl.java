@@ -36,10 +36,13 @@ public class ProducerImpl extends AbstractProducer {
     private ClientConfiguration config;
     private PulsarClientWrapper pulsarClient;
 
+    public ProducerImpl(final Properties properties, ClientConfiguration config) {
+        this(properties);
+        setConfig(config);
+    }
+
     public ProducerImpl(final Properties properties) {
         super(properties);
-        this.config = new ClientConfiguration();
-        this.config.init();
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
@@ -52,7 +55,7 @@ public class ProducerImpl extends AbstractProducer {
 
     public void start() {
         this.started.compareAndSet(false, true);
-        this.pulsarClient = new PulsarClientWrapper(config);
+        this.pulsarClient = new PulsarClientWrapper(config, properties);
     }
 
     public void shutdown() {
@@ -72,5 +75,9 @@ public class ProducerImpl extends AbstractProducer {
     @Override
     public boolean isClosed() {
         return !this.isStarted();
+    }
+
+    public void setConfig(ClientConfiguration config) {
+        this.config = config;
     }
 }

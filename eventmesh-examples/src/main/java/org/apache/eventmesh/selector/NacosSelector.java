@@ -23,6 +23,7 @@ import org.apache.eventmesh.client.selector.ServiceInstance;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.util.Utils;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import com.alibaba.nacos.api.exception.NacosException;
@@ -31,25 +32,28 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
 public class NacosSelector implements Selector {
+
     private transient NamingService namingService;
 
-    public void init() throws Exception {
+    public void init() throws SelectorException {
         try {
-            Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-            namingService = NamingFactory.createNamingService(properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
-        } catch (NacosException e) {
-            throw new Exception("NamingService create error", e);
+            final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+            namingService = NamingFactory.createNamingService(
+                properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
+        } catch (NacosException | IOException e) {
+            throw new SelectorException("NamingService create error", e);
         }
     }
 
     @Override
-    public ServiceInstance selectOne(String serviceName) throws SelectorException {
+    public ServiceInstance selectOne(final String serviceName) throws SelectorException {
         try {
-            Instance instance = namingService.selectOneHealthyInstance(serviceName);
+            final Instance instance = namingService.selectOneHealthyInstance(serviceName);
             if (instance == null) {
                 return null;
             }
-            ServiceInstance serviceInstance = new ServiceInstance();
+
+            final ServiceInstance serviceInstance = new ServiceInstance();
             serviceInstance.setHost(instance.getIp());
             serviceInstance.setPort(instance.getPort());
             serviceInstance.setHealthy(instance.isHealthy());

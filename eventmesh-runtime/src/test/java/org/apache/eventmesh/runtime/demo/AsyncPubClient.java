@@ -25,31 +25,30 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 
-public class AsyncPubClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncPubClient.class);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class AsyncPubClient {
 
     public static void main(String[] args) throws Exception {
         try (PubClientImpl pubClient =
-                     new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
             pubClient.registerBusiHandler(new ReceiveMsgHook() {
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("server good by request: {}", msg);
+                    if (log.isInfoEnabled()) {
+                        log.info("server good by request: {}", msg);
                     }
                 }
             });
 
             for (int i = 0; i < 1; i++) {
-                ThreadUtils.randomSleep(0, 500);
+                ThreadUtils.randomPause(0, 500);
                 pubClient.broadcast(MessageUtils.asyncMessage(ClientConstants.ASYNC_TOPIC, i), 5000);
             }
         }

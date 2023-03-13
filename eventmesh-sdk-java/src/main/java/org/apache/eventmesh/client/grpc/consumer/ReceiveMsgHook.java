@@ -20,7 +20,6 @@ package org.apache.eventmesh.client.grpc.consumer;
 import java.util.Optional;
 
 /**
- *
  * @param <T>
  */
 public interface ReceiveMsgHook<T> {
@@ -31,7 +30,7 @@ public interface ReceiveMsgHook<T> {
      * @param msg
      * @return
      */
-    Optional<T> handle(T msg) throws Throwable;
+    Optional<T> handle(T msg) throws Exception;
 
     String getProtocolType();
 

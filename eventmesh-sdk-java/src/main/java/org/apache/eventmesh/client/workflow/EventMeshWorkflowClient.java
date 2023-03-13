@@ -25,38 +25,41 @@ import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
 import org.apache.eventmesh.common.protocol.workflow.protos.WorkflowGrpc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshWorkflowClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshWorkflowClient.class);
-    private final EventMeshWorkflowClientConfig clientConfig;
+    private final transient EventMeshWorkflowClientConfig clientConfig;
 
-    public EventMeshWorkflowClient(EventMeshWorkflowClientConfig clientConfig) {
+    public EventMeshWorkflowClient(final EventMeshWorkflowClientConfig clientConfig) {
         this.clientConfig = clientConfig;
     }
 
     public WorkflowGrpc.WorkflowBlockingStub getWorkflowClient() throws Exception {
-        Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
+        final Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
         if (selector == null) {
-            throw new Exception(String.format("selector=%s not register.please check it.", clientConfig.getSelectorType()));
+            throw new Exception(String.format("selector=%s not register.please check it.",
+                clientConfig.getSelectorType()));
         }
-        ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
+        final ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
         if (instance == null) {
             throw new Exception("workflow server is not running.please check it.");
         }
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort()).usePlaintext().build();
+        final ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(),
+            instance.getPort()).usePlaintext().build();
         return WorkflowGrpc.newBlockingStub(channel);
     }
 
-    public ExecuteResponse execute(ExecuteRequest request) throws Exception {
-        WorkflowGrpc.WorkflowBlockingStub workflowClient = getWorkflowClient();
-        ExecuteResponse response = workflowClient.execute(request);
-        logger.info("received response {}", response);
+    public ExecuteResponse execute(final ExecuteRequest request) throws Exception {
+        final WorkflowGrpc.WorkflowBlockingStub workflowClient = getWorkflowClient();
+        final ExecuteResponse response = workflowClient.execute(request);
+        if (log.isInfoEnabled()) {
+            log.info("received response:{}", response);
+        }
         return response;
     }
 }

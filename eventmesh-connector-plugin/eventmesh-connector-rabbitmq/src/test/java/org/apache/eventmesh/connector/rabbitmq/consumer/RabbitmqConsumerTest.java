@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.connector.rabbitmq.RabbitmqServer;
 
 import java.net.URI;
@@ -60,17 +61,17 @@ public class RabbitmqConsumerTest extends RabbitmqServer {
 
         rabbitmqConsumer.subscribe("topic");
 
-        Thread.sleep(1000);
+        ThreadUtils.sleep(1, TimeUnit.SECONDS);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                    .withId(String.valueOf(i))
-                    .withTime(OffsetDateTime.now())
-                    .withSource(URI.create("testsource"))
-                    .withSubject("topic")
-                    .withType(String.class.getCanonicalName())
-                    .withDataContentType("text/plain")
-                    .withData("data".getBytes(StandardCharsets.UTF_8))
-                    .build();
+                .withId(String.valueOf(i))
+                .withTime(OffsetDateTime.now())
+                .withSource(URI.create("testsource"))
+                .withSubject("topic")
+                .withType(String.class.getCanonicalName())
+                .withDataContentType("text/plain")
+                .withData("data".getBytes(StandardCharsets.UTF_8))
+                .build();
 
             rabbitmqProducer.publish(cloudEvent, new SendCallback() {
                 @Override

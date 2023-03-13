@@ -59,7 +59,7 @@ public class ZookeeperRegistryServiceTest {
         testingServer.start();
 
         zkRegistryService = new ZookeeperRegistryService();
-        CommonConfiguration configuration = new CommonConfiguration(null);
+        CommonConfiguration configuration = new CommonConfiguration();
         configuration.setNamesrvAddr("127.0.0.1:1500");
         configuration.setEventMeshName("eventmesh");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
@@ -71,7 +71,6 @@ public class ZookeeperRegistryServiceTest {
         HashMap<String, String> metaData = Maps.newHashMap();
         metaData.put("test", "a");
         Mockito.when(eventMeshRegisterInfo.getMetadata()).thenReturn(metaData);
-
 
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);

@@ -30,13 +30,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class KafkaConsumerRunner implements Runnable {
-    private final Logger logger = LoggerFactory.getLogger(KafkaConsumerRunner.class);
+
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final KafkaConsumer<String, CloudEvent> consumer;
     private ConcurrentHashMap<CloudEvent, Long> cloudEventToOffset;
@@ -58,8 +60,12 @@ public class KafkaConsumerRunner implements Runnable {
 
     @Override
     public void run() {
-        while (!closed.get()) {
-            try {
+        try {
+            while (!closed.get()) {
+                if (consumer.subscription().isEmpty()) {
+                    // consumer cannot poll if it is subscribe to nothing
+                    continue;
+                }
                 ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000));
                 // Handle new records
                 records.forEach(rec -> {
@@ -72,7 +78,7 @@ public class KafkaConsumerRunner implements Runnable {
                                 switch (action) {
                                     case CommitMessage:
                                         // update offset
-                                        logger.info("message commit, topic: {}, current offset:{}", topicName,
+                                        log.info("message commit, topic: {}, current offset:{}", topicName,
                                             rec.offset());
                                         break;
                                     case ReconsumeLater:
@@ -80,8 +86,7 @@ public class KafkaConsumerRunner implements Runnable {
                                         break;
                                     case ManualAck:
                                         // update offset
-                                        logger
-                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                        log.info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
                                     default:
                                 }
@@ -92,18 +97,17 @@ public class KafkaConsumerRunner implements Runnable {
                             listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
                         }
                     } catch (Exception e) {
-                        logger.info("Error parsing cloudevents: {}", e.getMessage());
+                        log.info("Error parsing cloudevents: {}", e.getMessage());
                     }
                 });
-            } catch (WakeupException e) {
-                // Ignore exception if closing
-                if (!closed.get()) {
-                    throw e;
-                }
-            } finally {
-                consumer.close();
-                break;
             }
+        } catch (WakeupException e) {
+            // Ignore exception if closing
+            if (!closed.get()) {
+                throw e;
+            }
+        } finally {
+            consumer.close();
         }
     }
 
@@ -113,6 +117,3 @@ public class KafkaConsumerRunner implements Runnable {
         consumer.wakeup();
     }
 }
-
-
-

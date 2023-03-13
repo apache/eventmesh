@@ -34,18 +34,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.Channel;
+
+
+import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 
+@Slf4j
 public class IPUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IPUtils.class);
 
     public static String getLocalAddress() {
         // if the progress works under docker environment
@@ -105,7 +104,7 @@ public class IPUtils {
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
         } catch (SocketException | UnknownHostException e) {
-            LOG.error("socket or unknown host exception:", e);
+            log.error("socket or unknown host exception:", e);
         }
         return null;
     }
@@ -137,8 +136,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
+    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result, Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {
@@ -205,7 +203,7 @@ public class IPUtils {
                 return new IPAddressString(new URL(url).getHost()).isValid();
             }
         } catch (Exception e) {
-            LOG.warn("Invalid URL format url={}", url, e);
+            log.warn("Invalid URL format url={}", url, e);
             return false;
         }
         return true;
@@ -220,7 +218,7 @@ public class IPUtils {
             String host = new URL(url).getHost();
             return new HostName(host).getAddress();
         } catch (MalformedURLException e) {
-            LOG.error("Invalid URL format url={}", url, e);
+            log.error("Invalid URL format url={}", url, e);
             return null;
         }
     }

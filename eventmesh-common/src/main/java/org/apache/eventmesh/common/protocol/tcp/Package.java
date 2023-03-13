@@ -22,8 +22,7 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
 public class Package implements ProtocolTransportObject {
 
-    public static final long serialVersionUID = 6523844038162094569L;
-
+    private static final long serialVersionUID = 3353018029137072737L;
     private transient Header header;
     private Object body;
 
@@ -47,7 +46,7 @@ public class Package implements ProtocolTransportObject {
     public Package() {
 
     }
-    
+
     public Package(Header header) {
         this.header = header;
     }

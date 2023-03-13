@@ -16,9 +16,12 @@
 package consumer
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/emitter"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"os"
 	"time"
 )
 
@@ -38,4 +41,44 @@ type GroupClient struct {
 	APIVersion       string
 	LastUPTime       time.Time
 	Emiter           emitter.EventEmitter
+}
+
+func DefaultStreamGroupClient() *GroupClient {
+	hostname, _ := os.Hostname()
+	return &GroupClient{
+		ENV:              config.GlobalConfig().Common.Env,
+		IDC:              config.GlobalConfig().Common.IDC,
+		ConsumerGroup:    "ConsumerGroup",
+		Topic:            "Topic",
+		GRPCType:         consts.STREAM,
+		SubscriptionMode: pb.Subscription_SubscriptionItem_CLUSTERING,
+		SYS:              "test-SYS",
+		IP:               util.GetIP(),
+		PID:              util.PID(),
+		Hostname:         hostname,
+		APIVersion:       "v1",
+		URL:              "",
+		LastUPTime:       time.Now(),
+		Emiter:           emitter.NewEventEmitter(nil),
+	}
+}
+
+func DefaultWebhookGroupClient() *GroupClient {
+	hostname, _ := os.Hostname()
+	return &GroupClient{
+		ENV:              config.GlobalConfig().Common.Env,
+		IDC:              config.GlobalConfig().Common.IDC,
+		ConsumerGroup:    "ConsumerGroup",
+		Topic:            "Topic",
+		GRPCType:         consts.WEBHOOK,
+		SubscriptionMode: pb.Subscription_SubscriptionItem_CLUSTERING,
+		SYS:              "test-SYS",
+		IP:               util.GetIP(),
+		PID:              util.PID(),
+		Hostname:         hostname,
+		APIVersion:       "v1",
+		URL:              "http://test.com",
+		LastUPTime:       time.Now(),
+		Emiter:           nil,
+	}
 }

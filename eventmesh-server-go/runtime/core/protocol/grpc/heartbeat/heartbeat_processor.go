@@ -34,10 +34,6 @@ type Processor interface {
 type processor struct {
 }
 
-func NewProcessor() Processor {
-	return &processor{}
-}
-
 func (p *processor) Heartbeat(consumerMgr consumer.ConsumerManager, msg *pb.Heartbeat) (*pb.Response, error) {
 	hdr := msg.Header
 	if err := validator.ValidateHeader(hdr); err != nil {

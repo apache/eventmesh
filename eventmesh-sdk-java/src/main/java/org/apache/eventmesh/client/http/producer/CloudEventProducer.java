@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -45,41 +46,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventProducer extends AbstractProducerHttpClient<CloudEvent> {
 
-    public CloudEventProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+    public CloudEventProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
     @Override
-    public RequestParam builderPublishRequestParam(CloudEvent cloudEvent) {
-        CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
+    public RequestParam builderPublishRequestParam(final CloudEvent cloudEvent) {
+        final CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
         return buildCommonPostParam(enhanceCloudEvent)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
     }
 
     @Override
-    public RequestParam builderRequestParam(CloudEvent cloudEvent, long timeout) {
-        CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
+    public RequestParam builderRequestParam(final CloudEvent cloudEvent, long timeout) {
+        final CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
         return buildCommonPostParam(enhanceCloudEvent)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .setTimeout(timeout);
     }
 
     @Override
-    public void validateMessage(CloudEvent cloudEvent) {
+    public void validateMessage(final CloudEvent cloudEvent) {
         Preconditions.checkNotNull(cloudEvent, "CloudEvent cannot be null");
     }
 
-    private void validateCloudEvent(CloudEvent cloudEvent) {
+    private void validateCloudEvent(final CloudEvent cloudEvent) {
         Preconditions.checkNotNull(cloudEvent, "CloudEvent cannot be null");
     }
 
-    private RequestParam buildCommonPostParam(CloudEvent cloudEvent) {
+    private RequestParam buildCommonPostParam(final CloudEvent cloudEvent) {
         validateCloudEvent(cloudEvent);
-        byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+        final byte[] bodyByte = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType()))
             .serialize(cloudEvent);
-        String content = new String(bodyByte, StandardCharsets.UTF_8);
+        final String content = new String(bodyByte, StandardCharsets.UTF_8);
 
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
+        final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
@@ -115,8 +116,8 @@ class CloudEventProducer extends AbstractProducerHttpClient<CloudEvent> {
     }
 
     @Override
-    public CloudEvent transformMessage(EventMeshRetObj retObj) {
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+    public CloudEvent transformMessage(final EventMeshRetObj retObj) {
+        final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
             SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;

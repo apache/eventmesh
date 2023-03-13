@@ -21,8 +21,7 @@ import org.apache.commons.text.RandomStringGenerator;
 
 public class RandomStringUtils {
 
-    private static final RandomStringGenerator RANDOM_NUM_GENERATOR = new RandomStringGenerator.Builder()
-            .withinRange('0', '9').build();
+    private static final RandomStringGenerator RANDOM_NUM_GENERATOR = new RandomStringGenerator.Builder().withinRange('0', '9').build();
 
     public static String generateNum(int length) {
         return RANDOM_NUM_GENERATOR.generate(length);

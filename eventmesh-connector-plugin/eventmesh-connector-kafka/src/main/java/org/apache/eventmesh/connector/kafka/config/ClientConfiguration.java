@@ -17,39 +17,82 @@
 
 package org.apache.eventmesh.connector.kafka.config;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-import com.google.common.base.Preconditions;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Config(prefix = "eventMesh.server.kafka", path = "classPath://kafka-client.properties")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientConfiguration {
 
-    public String namesrvAddr = "";
-    public String clientUserName = "username";
-    public String clientPass = "password";
-    public Integer consumeThreadMin = 2;
-    public Integer consumeThreadMax = 2;
-    public Integer consumeQueueSize = 10000;
-    public Integer pullBatchSize = 32;
-    public Integer ackWindow = 1000;
-    public Integer pubWindow = 100;
-    public long consumeTimeout = 0L;
-    public Integer pollNameServerInterval = 10 * 1000;
-    public Integer heartbeatBrokerInterval = 30 * 1000;
-    public Integer rebalanceInterval = 20 * 1000;
-    public String clusterName = "";
-    public String accessKey = "";
-    public String secretKey = "";
+    @ConfigFiled(field = "namesrvAddr", notEmpty = true)
+    @Builder.Default
+    private String namesrvAddr = "";
 
-    public void init() {
-        String namesrvAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_KAFKA_SERVER_PORT);
-        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_KAFKA_SERVER_PORT));
-        namesrvAddr = StringUtils.trim(namesrvAddrStr);
-    }
+    @ConfigFiled(field = "username")
+    @Builder.Default
+    private String clientUserName = "username";
 
-    static class ConfKeys {
+    @ConfigFiled(field = "password")
+    @Builder.Default
+    private String clientPass = "password";
 
-        public static String KEYS_EVENTMESH_KAFKA_SERVER_PORT = "eventMesh.server.kafka.port";
+    @ConfigFiled(field = "client.consumeThreadMin")
+    @Builder.Default
+    private Integer consumeThreadMin = 2;
 
-    }
+    @ConfigFiled(field = "client.consumeThreadMax")
+    @Builder.Default
+    private Integer consumeThreadMax = 2;
+
+    @ConfigFiled(field = "client.consumeThreadPoolQueueSize")
+    @Builder.Default
+    private Integer consumeQueueSize = 10000;
+
+    @ConfigFiled(field = "client.pullBatchSize")
+    @Builder.Default
+    private Integer pullBatchSize = 32;
+
+    @ConfigFiled(field = "client.ackwindow")
+    @Builder.Default
+    private Integer ackWindow = 1000;
+
+    @ConfigFiled(field = "client.pubwindow")
+    @Builder.Default
+    private Integer pubWindow = 100;
+
+    @ConfigFiled(field = "client.comsumeTimeoutInMin")
+    @Builder.Default
+    private long consumeTimeout = 0L;
+
+    @ConfigFiled(field = "client.pollNameServerInterval")
+    @Builder.Default
+    private Integer pollNameServerInterval = 10 * 1000;
+
+    @ConfigFiled(field = "client.heartbeatBrokerInterval")
+    @Builder.Default
+    private Integer heartbeatBrokerInterval = 30 * 1000;
+
+    @ConfigFiled(field = "client.rebalanceInterval")
+    @Builder.Default
+    private Integer rebalanceInterval = 20 * 1000;
+
+    @ConfigFiled(field = "cluster")
+    @Builder.Default
+    private String clusterName = "";
+
+    @ConfigFiled(field = "accessKey")
+    @Builder.Default
+    private String accessKey = "";
+
+    @ConfigFiled(field = "secretKey")
+    @Builder.Default
+    private String secretKey = "";
 }

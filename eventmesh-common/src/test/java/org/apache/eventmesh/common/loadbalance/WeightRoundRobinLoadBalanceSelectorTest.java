@@ -25,12 +25,13 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 public class WeightRoundRobinLoadBalanceSelectorTest {
-
-    private Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalanceSelectorTest.class);
 
     private WeightRoundRobinLoadBalanceSelector<String> weightRoundRobinLoadBalanceSelector;
 
@@ -51,7 +52,7 @@ public class WeightRoundRobinLoadBalanceSelectorTest {
             addressToNum.put(select, addressToNum.getOrDefault(select, 0) + 1);
         }
         addressToNum.forEach((key, value) -> {
-            logger.info("{}: {}", key, value);
+            log.info("{}: {}", key, value);
         });
         Assert.assertTrue(addressToNum.get("B") > addressToNum.get("A"));
         Assert.assertTrue(addressToNum.get("C") > addressToNum.get("B"));

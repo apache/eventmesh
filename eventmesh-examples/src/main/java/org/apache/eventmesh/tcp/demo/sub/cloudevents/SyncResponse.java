@@ -39,44 +39,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
-    public static final SyncResponse handler = new SyncResponse();
-
-    private static EventMeshTCPClient<CloudEvent> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
         try {
-            client = EventMeshTCPClientFactory
-                    .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+            final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory
+                .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             // Synchronize RR messages
-            client.registerSubBusiHandler(handler);
+            client.registerSubBusiHandler(new SyncResponse());
 
             client.listen();
 
         } catch (Exception e) {
-            log.warn("SyncResponse failed", e);
+            log.error("SyncResponse failed", e);
         }
     }
 
     @Override
-    public Optional<CloudEvent> handle(CloudEvent event) {
+    public Optional<CloudEvent> handle(final CloudEvent event) {
         if (event.getData() == null) {
             log.warn("receive sync msg's data is null.");
             return Optional.empty();
         }
-        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive sync rr msg: {}|{}", event, content);
+
+        final String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        if (log.isInfoEnabled()) {
+            log.info("receive sync rr msg: {}|{}", event, content);
+        }
         return Optional.of(event);
     }
 

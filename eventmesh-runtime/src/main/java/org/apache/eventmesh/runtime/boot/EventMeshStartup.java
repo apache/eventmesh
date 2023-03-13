@@ -17,39 +17,43 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.File;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshStartup {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(EventMeshStartup.class);
 
     public static void main(String[] args) throws Exception {
         try {
-            final EventMeshServer server = new EventMeshServer(
-                    new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
-                    EventMeshConstants.EVENTMESH_CONF_FILE, false));
+            ConfigService.getInstance()
+                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
+
+            EventMeshServer server = new EventMeshServer();
+            server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("eventMesh shutting down hook begin.");
+                    if (log.isInfoEnabled()) {
+                        log.info("eventMesh shutting down hook begin.");
                     }
                     long start = System.currentTimeMillis();
                     server.shutdown();
                     long end = System.currentTimeMillis();
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("eventMesh shutdown cost {}ms", end - start);
+                    if (log.isInfoEnabled()) {
+                        log.info("eventMesh shutdown cost {}ms", end - start);
                     }
                 } catch (Exception e) {
-                    LOGGER.error("exception when shutdown.", e);
+                    log.error("exception when shutdown.", e);
                 }
             }));
         } catch (Throwable e) {
-            LOGGER.error("EventMesh start fail.", e);
+            log.error("EventMesh start fail.", e);
             System.exit(-1);
         }
 

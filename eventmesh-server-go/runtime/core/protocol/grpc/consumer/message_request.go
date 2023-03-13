@@ -156,10 +156,10 @@ func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 		httpHdr.Set(grpc.REQUEST_CODE, grpc.HTTP_PUSH_CLIENT_ASYNC)
 		httpHdr.Set(grpc.LANGUAGE, "Go")
 		httpHdr.Set(grpc.Version, "1.0")
-		httpHdr.Set(grpc.EVENTMESHCLUSTER, config.GlobalConfig().Server.Cluster)
-		httpHdr.Set(grpc.EVENTMESHENV, config.GlobalConfig().Server.Env)
+		httpHdr.Set(grpc.EVENTMESHCLUSTER, config.GlobalConfig().Common.Cluster)
+		httpHdr.Set(grpc.EVENTMESHENV, config.GlobalConfig().Common.Env)
 		httpHdr.Set(grpc.EVENTMESHIP, util.GetIP())
-		httpHdr.Set(grpc.EVENTMESHIDC, config.GlobalConfig().Server.IDC)
+		httpHdr.Set(grpc.EVENTMESHIDC, config.GlobalConfig().Common.IDC)
 		httpHdr.Set(grpc.PROTOCOL_TYPE, hr.SimpleMessage.Header.ProtocolType)
 		httpHdr.Set(grpc.PROTOCOL_DESC, hr.SimpleMessage.Header.ProtocolDesc)
 		httpHdr.Set(grpc.PROTOCOL_VERSION, hr.SimpleMessage.Header.ProtocolVersion)
@@ -212,7 +212,7 @@ func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 func (w *WebhookRequest) getURLs() []string {
 	var (
 		urls       []string
-		currentIDC = config.GlobalConfig().Server.GRPCOption.IDC
+		currentIDC = config.GlobalConfig().Common.IDC
 	)
 
 	w.IDCWebhookURLs.Range(func(key, value any) bool {

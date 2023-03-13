@@ -38,16 +38,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Sets;
 
-public abstract class AbstractPushRequest extends RetryContext {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPushRequest.class);
+@Slf4j
+public abstract class AbstractPushRequest extends RetryContext {
 
     protected EventMeshGrpcServer eventMeshGrpcServer;
     protected long createTime = System.currentTimeMillis();
@@ -86,7 +84,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
             return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
-            LOGGER.error("Error in getting EventMeshMessage from CloudEvent", e);
+            log.error("Error in getting EventMeshMessage from CloudEvent", e);
             return null;
         }
     }
@@ -97,7 +95,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
             return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(simpleMessage));
         } catch (Exception e) {
-            LOGGER.error("Error in getting CloudEvent from EventMeshMessage", e);
+            log.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
         }
     }
@@ -130,7 +128,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             try {
                 eventMeshConsumer.updateOffset(subscriptionMode, Collections.singletonList(event), context);
             } catch (Exception e) {
-                LOGGER.error("Error in updating offset in EventMeshConsumer", e);
+                log.error("Error in updating offset in EventMeshConsumer", e);
             }
         }
     }

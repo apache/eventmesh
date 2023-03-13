@@ -30,9 +30,8 @@ create table if not exists t_event
     version     varchar(64)                        not null,
     create_time datetime default CURRENT_TIMESTAMP not null,
     update_time datetime default CURRENT_TIMESTAMP not null,
-    constraint unique_title
-    unique (title)
-    )
+    index `index_title` (title)
+)
     collate = utf8mb3_bin;
 
 create table if not exists t_event_catalog
@@ -47,8 +46,9 @@ create table if not exists t_event_catalog
     status       int                                    not null,
     create_time  datetime     default CURRENT_TIMESTAMP not null,
     update_time  datetime     default CURRENT_TIMESTAMP not null,
-    constraint unique_operation_id
-    unique (operation_id)
+    index `index_service_name` (service_name),
+    index `index_channel_name` (channel_name),
+    index `index_operation_id` (operation_id)
     )
     collate = utf8mb3_bin;
 

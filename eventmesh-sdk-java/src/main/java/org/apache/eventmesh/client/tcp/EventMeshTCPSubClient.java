@@ -39,7 +39,7 @@ public interface EventMeshTCPSubClient<ProtocolMessage> extends AutoCloseable {
     void reconnect() throws EventMeshException;
 
     void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws EventMeshException;
+        throws EventMeshException;
 
     void unsubscribe() throws EventMeshException;
 
@@ -47,5 +47,4 @@ public interface EventMeshTCPSubClient<ProtocolMessage> extends AutoCloseable {
 
     void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
-    void close() throws EventMeshException;
 }

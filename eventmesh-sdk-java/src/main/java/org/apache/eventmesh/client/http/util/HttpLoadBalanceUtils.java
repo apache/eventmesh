@@ -39,21 +39,21 @@ public class HttpLoadBalanceUtils {
     private static final Pattern IP_PORT_WEIGHT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}:\\d{1,6}");
 
     public static LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(
-            EventMeshHttpClientConfig eventMeshHttpClientConfig)
-            throws EventMeshException {
+        final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+        throws EventMeshException {
         LoadBalanceSelector<String> eventMeshServerSelector = null;
         switch (eventMeshHttpClientConfig.getLoadBalanceType()) {
             case RANDOM:
                 eventMeshServerSelector = new RandomLoadBalanceSelector<>(buildClusterGroupFromConfig(
-                        eventMeshHttpClientConfig));
+                    eventMeshHttpClientConfig));
                 break;
             case WEIGHT_RANDOM:
                 eventMeshServerSelector = new WeightRandomLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(
-                        eventMeshHttpClientConfig));
+                    eventMeshHttpClientConfig));
                 break;
             case WEIGHT_ROUND_ROBIN:
                 eventMeshServerSelector = new WeightRoundRobinLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(
-                        eventMeshHttpClientConfig));
+                    eventMeshHttpClientConfig));
                 break;
             default:
                 // ignore
@@ -65,41 +65,47 @@ public class HttpLoadBalanceUtils {
     }
 
     private static List<Weight<String>> buildWeightedClusterGroupFromConfig(
-            EventMeshHttpClientConfig eventMeshHttpClientConfig)
-            throws EventMeshException {
-        List<String> eventMeshAddrs = Splitter.on(";").trimResults().splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());
+        final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+        throws EventMeshException {
+        final List<String> eventMeshAddrs = Splitter.on(";")
+            .trimResults()
+            .splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());
+
         if (CollectionUtils.isEmpty(eventMeshAddrs)) {
             throw new EventMeshException("liteEventMeshAddr can not be empty");
         }
 
-        List<Weight<String>> eventMeshAddrWeightList = new ArrayList<>();
-        for (String eventMeshAddrWight : eventMeshAddrs) {
+        final List<Weight<String>> eventMeshAddrWeightList = new ArrayList<>();
+        for (final String eventMeshAddrWight : eventMeshAddrs) {
             if (!IP_PORT_WEIGHT_PATTERN.matcher(eventMeshAddrWight).matches()) {
                 throw new EventMeshException(
-                        String.format("liteEventMeshAddr:%s is not illegal", eventMeshHttpClientConfig.getLiteEventMeshAddr()));
+                    String.format("liteEventMeshAddr:%s is not illegal", eventMeshHttpClientConfig.getLiteEventMeshAddr()));
             }
-            int splitIndex = eventMeshAddrWight.lastIndexOf(":");
-            Weight<String> weight = new Weight<>(
-                    eventMeshAddrWight.substring(0, splitIndex),
-                    Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1))
+            final int splitIndex = eventMeshAddrWight.lastIndexOf(":");
+            final Weight<String> weight = new Weight<>(
+                eventMeshAddrWight.substring(0, splitIndex),
+                Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1))
             );
             eventMeshAddrWeightList.add(weight);
         }
         return eventMeshAddrWeightList;
     }
 
-    private static List<String> buildClusterGroupFromConfig(EventMeshHttpClientConfig eventMeshHttpClientConfig)
-            throws EventMeshException {
-        List<String> eventMeshAddrs = Splitter.on(";").trimResults().splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());
+    private static List<String> buildClusterGroupFromConfig(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+        throws EventMeshException {
+        final List<String> eventMeshAddrs = Splitter.on(";")
+            .trimResults()
+            .splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());
+
         if (CollectionUtils.isEmpty(eventMeshAddrs)) {
             throw new EventMeshException("liteEventMeshAddr can not be empty");
         }
 
-        List<String> eventMeshAddrList = new ArrayList<>();
-        for (String eventMeshAddr : eventMeshAddrs) {
+        final List<String> eventMeshAddrList = new ArrayList<>();
+        for (final String eventMeshAddr : eventMeshAddrs) {
             if (!IP_PORT_PATTERN.matcher(eventMeshAddr).matches()) {
                 throw new EventMeshException(
-                        String.format("liteEventMeshAddr:%s is not illegal", eventMeshHttpClientConfig.getLiteEventMeshAddr()));
+                    String.format("liteEventMeshAddr:%s is not illegal", eventMeshHttpClientConfig.getLiteEventMeshAddr()));
             }
             eventMeshAddrList.add(eventMeshAddr);
         }

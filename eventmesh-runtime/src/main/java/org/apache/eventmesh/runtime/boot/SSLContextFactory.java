@@ -40,10 +40,8 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SSLContextFactory {
+
     private static String protocol = "TLSv1.1";
 
     private static String fileName;
@@ -51,16 +49,16 @@ public class SSLContextFactory {
     private static String password;
 
     public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration)
-            throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
-            UnrecoverableKeyException, KeyManagementException {
+        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+        UnrecoverableKeyException, KeyManagementException {
         SSLContext sslContext;
 
         try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
-                + File.separator
-                + fileName), StandardOpenOption.READ)) {
-            protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
-            fileName = eventMeshHttpConfiguration.eventMeshServerSSLCer;
-            password = eventMeshHttpConfiguration.eventMeshServerSSLPass;
+            + File.separator
+            + fileName), StandardOpenOption.READ)) {
+            protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
+            fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
+            password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
 
             char[] filePass = StringUtils.isNotBlank(password) ? password.toCharArray() : new char[0];
             final KeyStore keyStore = KeyStore.getInstance("JKS");

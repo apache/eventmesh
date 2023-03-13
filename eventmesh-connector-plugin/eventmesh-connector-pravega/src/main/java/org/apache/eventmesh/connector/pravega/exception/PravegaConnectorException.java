@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.pravega.exception;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 
 public class PravegaConnectorException extends ConnectorRuntimeException {
+
     public PravegaConnectorException(String message) {
         super(message);
     }

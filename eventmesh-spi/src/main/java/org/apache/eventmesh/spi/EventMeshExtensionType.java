@@ -23,6 +23,7 @@ package org.apache.eventmesh.spi;
 public enum EventMeshExtensionType {
     UNKNOWN("unknown"),
     CONNECTOR("connector"),
+    STORAGE("storage"),
     REGISTRY("registry"),
     SECURITY("security"),
     PROTOCOL("protocol"),

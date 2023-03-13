@@ -48,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaClient {
+
     private final PravegaConnectorConfig config;
     private final StreamManager streamManager;
     private final EventStreamClientFactory clientFactory;
@@ -56,6 +57,18 @@ public class PravegaClient {
     private final Map<String, SubscribeTask> subscribeTaskMap = new ConcurrentHashMap<>();
 
     private static PravegaClient instance;
+
+    public static PravegaClient getInstance() {
+        return instance;
+    }
+
+    public static PravegaClient getInstance(PravegaConnectorConfig config) {
+        if (instance == null) {
+            instance = new PravegaClient(config);
+        }
+
+        return instance;
+    }
 
     private PravegaClient(PravegaConnectorConfig config) {
         this.config = config;
@@ -72,22 +85,15 @@ public class PravegaClient {
         readerGroupManager = ReaderGroupManager.withScope(config.getScope(), clientConfig);
     }
 
-    public static PravegaClient getInstance() {
-        if (instance == null) {
-            instance = new PravegaClient(PravegaConnectorConfig.getInstance());
-        }
-        return instance;
-    }
-
     protected static PravegaClient getNewInstance(PravegaConnectorConfig config) {
         return new PravegaClient(config);
     }
 
     public void start() {
         if (createScope()) {
-            log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
+            log.info("Create Pravega scope[{}] success.", config.getScope());
         } else {
-            log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
+            log.info("Pravega scope[{}] has already been created.", config.getScope());
         }
     }
 
@@ -102,9 +108,9 @@ public class PravegaClient {
     }
 
     /**
-     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1
-     * since {@link EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture}
-     * with {@link Void} which couldn't get messageId.
+     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1 since {@link
+     * EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture} with {@link Void} which couldn't get
+     * messageId.
      *
      * @param topic      topic
      * @param cloudEvent cloudEvent

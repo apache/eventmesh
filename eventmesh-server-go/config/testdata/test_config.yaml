@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+common:
+  cluster: "test"
+  registry-name: "test"
+  env: "env"
+  idc: "idc1"
 server:
   grpc:
     port: 10010
@@ -21,18 +26,12 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
     send-pool-size: 10
     subscribe-pool-size: 10
     retry-pool-size: 10
     push-message-pool-size: 10
     reply-pool-size: 10
     msg-req-num-per-second: 5
-    cluster: "test"
-    registry-name: "test"
-    env: "env"
-    idc: "idc1"
     session-expired-in-mills: 5s
     send-message-timeout: 5s
   http:
@@ -42,8 +41,6 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
   tcp:
     port: 10010
     tls:
@@ -51,8 +48,9 @@ server:
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof:
-      port: 10011
+pprof:
+  enable: true
+  port: 10011
 active-plugins:
   registry: nacos
   connector: rocketmq

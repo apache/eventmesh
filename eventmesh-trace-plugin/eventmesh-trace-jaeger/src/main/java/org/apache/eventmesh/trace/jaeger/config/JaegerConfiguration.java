@@ -17,81 +17,18 @@
 
 package org.apache.eventmesh.trace.jaeger.config;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
-import org.apache.eventmesh.trace.jaeger.common.JaegerConstants;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
-import org.apache.commons.lang3.StringUtils;
+import lombok.Data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-
-import com.google.common.base.Preconditions;
-
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@UtilityClass
+@Data
+@Config(prefix = "eventmesh.trace.jaeger", path = "classPath://jaeger.properties")
 public class JaegerConfiguration {
 
-    private static final String CONFIG_FILE = "jaeger.properties";
-
-    private static final Properties PROPERTIES = new Properties();
-
+    @ConfigFiled(field = "ip", notEmpty = true)
     private String eventMeshJaegerIp = "localhost";
 
+    @ConfigFiled(field = "port", notEmpty = true)
     private int eventMeshJaegerPort = 14250;
-
-    static {
-        loadProperties();
-        initializeConfig();
-    }
-
-    private void loadProperties() {
-        URL resource = JaegerConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
-        if (resource != null) {
-            try (InputStream inputStream = resource.openStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                if (inputStream.available() > 0) {
-                    PROPERTIES.load(reader);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Load zipkin.properties file from classpath error", e);
-            }
-        }
-        // get from config home
-        try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            PropertiesUtils.loadPropertiesWhenFileExist(PROPERTIES, configPath);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot load jaeger.properties file from conf", e);
-        }
-    }
-
-    private void initializeConfig() {
-        String jaegerIp = PROPERTIES.getProperty(JaegerConstants.KEY_JAEGER_IP);
-        Preconditions.checkState(StringUtils.isNotEmpty(jaegerIp),
-            String.format("%s error", JaegerConstants.KEY_JAEGER_IP));
-        eventMeshJaegerIp = StringUtils.deleteWhitespace(jaegerIp);
-
-        String jaegerPort = PROPERTIES.getProperty(JaegerConstants.KEY_JAEGER_PORT);
-        if (StringUtils.isNotEmpty(jaegerPort)) {
-            eventMeshJaegerPort = Integer.parseInt(StringUtils.deleteWhitespace(jaegerPort));
-        }
-    }
-
-    public static String getEventMeshJaegerIp() {
-        return eventMeshJaegerIp;
-    }
-
-    public static int getEventMeshJaegerPort() {
-        return eventMeshJaegerPort;
-    }
 }
