@@ -23,7 +23,8 @@ import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
-import org.apache.eventmesh.storage.standalone.broker.task.SubScribeTask;
+import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
+import org.apache.eventmesh.storage.standalone.broker.task.SubscribeTask;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,13 +43,13 @@ public class StandaloneConsumer implements Consumer {
 
     private final AtomicBoolean isStarted;
 
-    private final ConcurrentHashMap<String, SubScribeTask> subscribeTaskTable;
+    private final ConcurrentHashMap<String, Subscribe> subscribeTable;
 
     private final ExecutorService consumeExecutorService;
 
     public StandaloneConsumer(Properties properties) {
         this.standaloneBroker = StandaloneBroker.getInstance();
-        this.subscribeTaskTable = new ConcurrentHashMap<>(16);
+        this.subscribeTable = new ConcurrentHashMap<>(16);
         this.isStarted = new AtomicBoolean(false);
         this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors() * 2,
@@ -75,8 +76,8 @@ public class StandaloneConsumer implements Consumer {
     @Override
     public void shutdown() {
         isStarted.compareAndSet(true, false);
-        subscribeTaskTable.forEach(((topic, subScribeTask) -> subScribeTask.shutdown()));
-        subscribeTaskTable.clear();
+        subscribeTable.forEach(((topic, subScribe) -> subScribe.shutdown()));
+        subscribeTable.clear();
     }
 
     @Override
@@ -95,26 +96,27 @@ public class StandaloneConsumer implements Consumer {
     @Override
     public void subscribe(String topic) throws Exception {
 
-        if (subscribeTaskTable.containsKey(topic)) {
+        if (subscribeTable.containsKey(topic)) {
             return;
         }
-        synchronized (subscribeTaskTable) {
+        synchronized (subscribeTable) {
             standaloneBroker.createTopicIfAbsent(topic);
-            SubScribeTask subScribeTask = new SubScribeTask(topic, standaloneBroker, listener);
-            subscribeTaskTable.put(topic, subScribeTask);
+            Subscribe subscribe = new Subscribe(topic, standaloneBroker, listener);
+            SubscribeTask subScribeTask = new SubscribeTask(subscribe);
+            subscribeTable.put(topic, subscribe);
             consumeExecutorService.execute(subScribeTask);
         }
     }
 
     @Override
     public void unsubscribe(String topic) {
-        if (!subscribeTaskTable.containsKey(topic)) {
+        if (!subscribeTable.containsKey(topic)) {
             return;
         }
-        synchronized (subscribeTaskTable) {
-            SubScribeTask subScribeTask = subscribeTaskTable.get(topic);
-            subScribeTask.shutdown();
-            subscribeTaskTable.remove(topic);
+        synchronized (subscribeTable) {
+            Subscribe subScribe = subscribeTable.get(topic);
+            subScribe.shutdown();
+            subscribeTable.remove(topic);
         }
     }
 
