@@ -161,7 +161,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
                 targetMesh = meshAddress;
             }
 
-            CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
+            CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
 
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
