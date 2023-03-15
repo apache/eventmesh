@@ -57,9 +57,9 @@ import com.google.common.collect.Maps;
 @EventMeshTrace
 public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    public static final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    public static final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final Acl acl;
 
