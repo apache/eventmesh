@@ -124,12 +124,9 @@ public class ClientGroupWrapper {
         this.eventMeshTcpMonitor =
             Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
-        this.persistentMsgConsumer = new MQConsumerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
-        this.broadCastMsgConsumer = new MQConsumerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
-        this.mqProducerWrapper = new MQProducerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshConnectorPluginType());
+        this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
+        this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
+        this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
@@ -599,18 +596,14 @@ public class ClientGroupWrapper {
                         continue;
                     }
 
-                    downStreamMsgContext.session = session;
+                    downStreamMsgContext.setSession(session);
 
                     //downstream broadcast msg asynchronously
                     eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
-                        .submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                //msg put in eventmesh,waiting client ack
-                                session.getPusher()
-                                    .unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-                                session.downstreamMsg(downStreamMsgContext);
-                            }
+                        .submit(() -> {
+                            //msg put in eventmesh,waiting client ack
+                            session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                            session.downstreamMsg(downStreamMsgContext);
                         });
                 }
 

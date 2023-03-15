@@ -82,7 +82,7 @@ public class ClientManageControllerTest {
             eventMeshHTTPServer, eventMeshGrpcServer, registry);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
-        eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshConnectorPluginType("standalone");
+        eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshStoragePluginType("standalone");
 
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);

@@ -55,7 +55,7 @@ public class ProducerImpl extends AbstractProducer {
 
     public void start() {
         this.started.compareAndSet(false, true);
-        this.pulsarClient = new PulsarClientWrapper(config);
+        this.pulsarClient = new PulsarClientWrapper(config, properties);
     }
 
     public void shutdown() {

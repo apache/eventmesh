@@ -68,7 +68,7 @@ public class WebHookController {
         receiveConfiguration = ConfigService.getInstance().buildConfigInstance(ReceiveConfiguration.class);
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
 
-        this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getConnectorPluginType());
+        this.webHookMQProducer = new WebHookMQProducer(rootConfig, receiveConfiguration.getStoragePluginType());
         this.hookConfigOperationManager = new HookConfigOperationManager(receiveConfiguration);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
