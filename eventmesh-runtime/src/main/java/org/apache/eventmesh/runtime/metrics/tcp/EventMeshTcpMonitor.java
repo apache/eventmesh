@@ -21,7 +21,6 @@ import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.metrics.MonitorMetricConstants;
 
@@ -112,17 +111,17 @@ public class EventMeshTcpMonitor {
                 AtomicLong deliveredMsgsCount = session.getPusher().getDeliveredMsgsCount();
                 AtomicLong deliveredFailCount = session.getPusher().getDeliverFailMsgsCount();
                 int unAckMsgsCount = session.getPusher().getTotalUnackMsgs();
-                int sendTopics = session.getSessionContext().sendTopics.size();
-                int subscribeTopics = session.getSessionContext().subscribeTopics.size();
+                int sendTopics = session.getSessionContext().getSendTopics().size();
+                int subscribeTopics = session.getSessionContext().getSubscribeTopics().size();
 
                 tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
                     deliveredFailCount.longValue(), deliveredMsgsCount.longValue(),
                     unAckMsgsCount, sendTopics, subscribeTopics, session.getClient());
 
-                topicSet.addAll(session.getSessionContext().subscribeTopics.keySet());
+                topicSet.addAll(session.getSessionContext().getSubscribeTopics().keySet());
             }
             tcpSummaryMetrics.setSubTopicNum(topicSet.size());
-            tcpSummaryMetrics.setAllConnections(EventMeshTcpConnectionHandler.connections.get());
+            tcpSummaryMetrics.setAllConnections(eventMeshTCPServer.getEventMeshTcpConnectionHandler().getConnectionCount());
             printAppLogger(tcpSummaryMetrics);
 
 

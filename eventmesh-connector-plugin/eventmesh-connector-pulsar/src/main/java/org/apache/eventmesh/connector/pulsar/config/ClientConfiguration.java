@@ -36,4 +36,11 @@ public class ClientConfiguration {
 
     @ConfigFiled(field = "authParams")
     private String authParams;
+
+    /*
+    *   the full format of topic needs a prefix, but the prefix cannot be passed in the url when the topic is carried
+    *
+    * */
+    @ConfigFiled(field = "topicPrefix")
+    private String topicPrefix;
 }

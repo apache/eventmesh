@@ -16,6 +16,7 @@ bcprov-ext-jdk15on-1.70.jar
 bcprov-jdk15on-1.69.jar
 bcutil-jdk15on-1.69.jar
 bouncy-castle-bc-2.10.1-pkg.jar
+bson-3.12.11.jar
 byte-buddy-1.11.0.jar
 cache-api-1.1.1.jar
 checker-qual-3.12.0.jar
@@ -86,6 +87,9 @@ jcommander-1.78.jar
 jetcd-common-0.3.0.jar
 jetcd-core-0.3.0.jar
 jetcd-resolver-0.3.0.jar
+jjwt-api-0.11.1.jar
+jjwt-impl-0.11.1.jar
+jjwt-jackson-0.11.1.jar
 jline-0.9.94.jar
 jna-4.2.2.jar
 jodd-bean-5.1.6.jar
@@ -99,6 +103,8 @@ log4j-api-2.17.1.jar
 log4j-core-2.17.1.jar
 log4j-slf4j-impl-2.17.1.jar
 lz4-java-1.7.1.jar
+mongodb-driver-3.12.11.jar
+mongodb-driver-core-3.12.11.jar
 metrics-annotation-4.1.0.jar
 metrics-core-4.1.0.jar
 metrics-healthchecks-4.1.0.jar

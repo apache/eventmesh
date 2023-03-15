@@ -177,7 +177,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             eventSize = Integer.parseInt(Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.SIZE)).toString());
             CloudEventData eventData = event.getData();
 
-            if (eventData != null || StringUtils.isBlank(batchId)
+            if (eventData == null || StringUtils.isBlank(batchId)
                 || StringUtils.isBlank(producerGroup)
                 || eventSize != eventList.size()) {
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(

@@ -22,7 +22,7 @@
 
 # Apache EventMesh (Incubating)
 
-**Apache EventMesh (Incubating)** is a fully serverless platform used to build distributed [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture)  applications. 
+**Apache EventMesh (Incubating)** is a new generation serverless event middleware for building distributed [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) applications.
 
 ### EventMesh Architecture
 
@@ -36,8 +36,8 @@
 Apache EventMesh (Incubating) has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
 
 - Built around the [CloudEvents](https://cloudevents.io) specification.
-- Rapidty extendsible language sdk around [gRPC](https://grpc.io) protocols.
-- Rapidty extendsible middleware by connectors such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity).
+- Rapidty extendsible interconnector layer such as the source or sink of Saas, CloudService, and Database etc.
+- Rapidty extendsible storage layer such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity).
 - Rapidty extendsible controller such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
 - Guaranteed at-least-once delivery.
 - Deliver events between multiple EventMesh deployments.
@@ -110,3 +110,4 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 |Users|User discussion|[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
 |Development|Development discussion (Design Documents, Issues, etc.)|[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
 |Commits|Commits to related repositories| [Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
+|Issues|Issues or PRs comments and reviews| [Subscribe](mailto:issues-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:issues-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?issues@eventmesh.apache.org)|
