@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
-import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
@@ -74,47 +73,45 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshHTTPServer extends AbstractHTTPServer {
 
-    private final transient EventMeshServer eventMeshServer;
+    private final EventMeshServer eventMeshServer;
 
-    public transient ServiceState serviceState;
+    private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
-    private final transient Registry registry;
+    private final Registry registry;
 
     private final Acl acl;
 
-    public final transient EventBus eventBus = new EventBus();
+    public final EventBus eventBus = new EventBus();
 
-    private transient ConsumerManager consumerManager;
+    private ConsumerManager consumerManager;
 
-    private transient SubscriptionManager subscriptionManager;
+    private SubscriptionManager subscriptionManager;
 
-    private transient ProducerManager producerManager;
+    private ProducerManager producerManager;
 
-    private transient HttpRetryer httpRetryer;
+    private HttpRetryer httpRetryer;
 
-    public transient ThreadPoolExecutor batchMsgExecutor;
+    private ThreadPoolExecutor batchMsgExecutor;
 
-    public transient ThreadPoolExecutor sendMsgExecutor;
+    private ThreadPoolExecutor sendMsgExecutor;
 
-    public transient ThreadPoolExecutor remoteMsgExecutor;
+    private ThreadPoolExecutor remoteMsgExecutor;
 
-    public transient ThreadPoolExecutor replyMsgExecutor;
+    private ThreadPoolExecutor replyMsgExecutor;
 
-    public transient ThreadPoolExecutor pushMsgExecutor;
+    private ThreadPoolExecutor pushMsgExecutor;
 
-    public transient ThreadPoolExecutor clientManageExecutor;
+    private ThreadPoolExecutor clientManageExecutor;
 
-    public transient ThreadPoolExecutor adminExecutor;
+    private ThreadPoolExecutor adminExecutor;
 
-    public ThreadPoolExecutor webhookExecutor;
+    private ThreadPoolExecutor webhookExecutor;
 
     private transient RateLimiter msgRateLimiter;
 
     private transient RateLimiter batchRateLimiter;
 
-    public transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
+    private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
 
@@ -394,10 +391,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return producerManager;
     }
 
-    public ServiceState getServiceState() {
-        return serviceState;
-    }
-
     public EventMeshHTTPConfiguration getEventMeshHttpConfiguration() {
         return eventMeshHttpConfiguration;
     }
@@ -452,5 +445,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public Registry getRegistry() {
         return registry;
+    }
+
+    public HTTPClientPool getHttpClientPool() {
+        return httpClientPool;
     }
 }
