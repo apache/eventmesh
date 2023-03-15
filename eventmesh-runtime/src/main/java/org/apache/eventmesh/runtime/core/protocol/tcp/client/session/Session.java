@@ -75,7 +75,7 @@ public class Session {
 
     private SessionSender sender;
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
     private long lastHeartbeatTime = System.currentTimeMillis();
 
@@ -85,7 +85,7 @@ public class Session {
 
     private boolean listenRspSend = false;
 
-    private ReentrantLock listenRspLock = new ReentrantLock();
+    private final ReentrantLock listenRspLock = new ReentrantLock();
 
     private String listenRequestSeq = null;
 
@@ -326,19 +326,17 @@ public class Session {
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
         if (!listenRspSend && listenRspLock.tryLock()) {
-            if (!listenRspSend) {
-                if (header == null) {
-                    header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
-                }
-                Package msg = new Package();
-                msg.setHeader(header);
-
-                // TODO: if startTime is modified
-                Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
-                listenRspSend = true;
+            if (header == null) {
+                header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
             }
-            listenRspLock.unlock();
+            Package msg = new Package();
+            msg.setHeader(header);
 
+            // TODO: if startTime is modified
+            Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
+            listenRspSend = true;
+
+            listenRspLock.unlock();
         }
     }
 
