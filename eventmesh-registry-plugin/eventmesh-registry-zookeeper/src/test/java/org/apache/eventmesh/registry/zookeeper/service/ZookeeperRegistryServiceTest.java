@@ -104,11 +104,11 @@ public class ZookeeperRegistryServiceTest {
         zkRegistryService.shutdown();
 
         Class<ZookeeperRegistryService> zkRegistryServiceClass = ZookeeperRegistryService.class;
-        Field initStatus = zkRegistryServiceClass.getDeclaredField("INIT_STATUS");
+        Field initStatus = zkRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(zkRegistryService);
 
-        Field startStatus = zkRegistryServiceClass.getDeclaredField("START_STATUS");
+        Field startStatus = zkRegistryServiceClass.getDeclaredField("startStatus");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(zkRegistryService);
 
