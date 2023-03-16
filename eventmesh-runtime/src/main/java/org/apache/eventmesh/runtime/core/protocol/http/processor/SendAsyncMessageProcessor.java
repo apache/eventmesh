@@ -63,13 +63,13 @@ import io.opentelemetry.api.trace.Span;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    public static final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    public static final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
+    public static final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    public static final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -232,7 +232,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
         }
 
-        String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        String content = event.getData() == null ? "" : new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
         if (content.length() > eventMeshHttpConfiguration.getEventMeshEventSize()) {
             httpLogger.error("Event size exceeds the limit: {}",
                 eventMeshHttpConfiguration.getEventMeshEventSize());
@@ -368,8 +368,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
-
-        return;
     }
 
     @Override
