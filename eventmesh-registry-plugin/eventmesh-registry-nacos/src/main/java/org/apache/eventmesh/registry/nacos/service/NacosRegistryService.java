@@ -50,9 +50,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NacosRegistryService implements RegistryService {
 
-    private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
+    private  final AtomicBoolean initStatus = new AtomicBoolean(false);
 
-    private static final AtomicBoolean START_STATUS = new AtomicBoolean(false);
+    private  final AtomicBoolean startStatus = new AtomicBoolean(false);
 
     private String serverAddr;
 
@@ -66,8 +66,8 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void init() throws RegistryException {
-        boolean update = INIT_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!initStatus.compareAndSet(false, true)) {
             return;
         }
         eventMeshRegisterInfoMap = new HashMap<>(ConfigurationContextUtil.KEYS.size());
@@ -89,8 +89,8 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void start() throws RegistryException {
-        boolean update = START_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!startStatus.compareAndSet(false, true)) {
             return;
         }
         try {
@@ -107,8 +107,12 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void shutdown() throws RegistryException {
-        INIT_STATUS.compareAndSet(true, false);
-        START_STATUS.compareAndSet(true, false);
+        if (!initStatus.compareAndSet(true, false)) {
+            return;
+        }
+        if (!startStatus.compareAndSet(true, false)) {
+            return;
+        }
         try {
             namingService.shutDown();
         } catch (NacosException e) {

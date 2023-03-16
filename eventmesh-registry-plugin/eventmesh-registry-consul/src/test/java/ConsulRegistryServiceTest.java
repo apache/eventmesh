@@ -85,11 +85,11 @@ public class ConsulRegistryServiceTest {
         consulRegistryService.shutdown();
         Assert.assertNull(consulRegistryService.getConsulClient());
         Class<ConsulRegistryService> consulRegistryServiceClass = ConsulRegistryService.class;
-        Field initStatus = consulRegistryServiceClass.getDeclaredField("INIT_STATUS");
+        Field initStatus = consulRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(consulRegistryService);
 
-        Field startStatus = consulRegistryServiceClass.getDeclaredField("START_STATUS");
+        Field startStatus = consulRegistryServiceClass.getDeclaredField("startStatus");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(consulRegistryService);
 
