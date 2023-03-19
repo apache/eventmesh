@@ -25,6 +25,8 @@ import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -86,7 +88,9 @@ public class EventMeshProducer {
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
             eventMeshHttpConfiguration.getEventMeshCluster()));
-        keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
+        if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
+            keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
+        }
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());

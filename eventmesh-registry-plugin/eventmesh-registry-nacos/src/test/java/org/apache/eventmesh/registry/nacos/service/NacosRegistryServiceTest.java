@@ -90,11 +90,11 @@ public class NacosRegistryServiceTest {
         nacosRegistryService.shutdown();
 
         Class<NacosRegistryService> nacosRegistryServiceClass = NacosRegistryService.class;
-        Field initStatus = nacosRegistryServiceClass.getDeclaredField("INIT_STATUS");
+        Field initStatus = nacosRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(nacosRegistryService);
 
-        Field startStatus = nacosRegistryServiceClass.getDeclaredField("START_STATUS");
+        Field startStatus = nacosRegistryServiceClass.getDeclaredField("startStatus");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(nacosRegistryService);
 

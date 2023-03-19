@@ -179,9 +179,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         final long startTime = System.currentTimeMillis();
         try {
 
-            final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
-                @Override
-                public void onResponse(final HttpCommand httpCommand) {
+            final CompleteHandler<HttpCommand> handler = httpCommand -> {
                     try {
                         if (log.isDebugEnabled()) {
                             log.debug("{}", httpCommand);
@@ -192,7 +190,6 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                     } catch (Exception ex) {
                         //ignore
                     }
-                }
             };
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
