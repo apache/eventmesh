@@ -87,11 +87,11 @@ public class EtcdRegistryServiceTest {
         etcdRegistryService.shutdown();
 
         Class<EtcdRegistryService> etcdRegistryServiceClass = EtcdRegistryService.class;
-        Field initStatus = etcdRegistryServiceClass.getDeclaredField("INIT_STATUS");
+        Field initStatus = etcdRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(etcdRegistryService);
 
-        Field startStatus = etcdRegistryServiceClass.getDeclaredField("START_STATUS");
+        Field startStatus = etcdRegistryServiceClass.getDeclaredField("startStatus");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(etcdRegistryService);
 
