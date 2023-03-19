@@ -35,7 +35,6 @@ public class MessageQueueTest {
     private static final int DEFAULT_OFFSET = 0;
     private static final int WRONG_OFFSET = 4;
     private MessageQueue messageQueue;
-    private MessageEntity messageEntity;
 
     @Before
     public void setUp() throws InterruptedException {
@@ -114,7 +113,7 @@ public class MessageQueueTest {
 
     private void initMessageQueue() throws InterruptedException {
         messageQueue = new MessageQueue(DEFAULT_SIZE);
-        messageEntity = createDefaultMessageEntity();
+        MessageEntity messageEntity = createDefaultMessageEntity();
         messageQueue.put(messageEntity);
     }
 
