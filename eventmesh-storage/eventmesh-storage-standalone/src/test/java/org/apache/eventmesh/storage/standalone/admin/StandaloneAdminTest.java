@@ -1,12 +1,36 @@
-package org.apache.eventmesh.connector.standalone.admin;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
-import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
-import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
+package org.apache.eventmesh.storage.standalone.admin;
+
+import static org.apache.eventmesh.storage.standalone.TestUtils.LENGTH;
+import static org.apache.eventmesh.storage.standalone.TestUtils.OFF_SET;
+import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
+import static org.apache.eventmesh.storage.standalone.TestUtils.TOPIC_DO_NOT_EXISTS;
+import static org.apache.eventmesh.storage.standalone.TestUtils.TOPIC_EXISTS;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageContainer;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageEntity;
+
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
+import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,12 +45,6 @@ import io.cloudevents.CloudEvent;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StandaloneAdminTest {
-
-    private static final String TEST_TOPIC = "test_topic";
-    private static final int OFF_SET = 0;
-    private static final int LENGTH = 5;
-    private static final boolean TOPIC_EXISTS = true;
-    private static final boolean TOPIC_DO_NOT_EXISTS = false;
 
     @Mock
     private StandaloneBroker standaloneBroker;
@@ -71,7 +89,7 @@ public class StandaloneAdminTest {
     @Test
     public void testGetEvent() throws Exception {
         Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(TOPIC_EXISTS);
-        Mockito.when(standaloneBroker.getMessage(TEST_TOPIC, OFF_SET)).thenReturn(new MockCloudEvent());
+        Mockito.when(standaloneBroker.getMessage(TEST_TOPIC, OFF_SET)).thenReturn(createDefaultCloudEvent());
         List<CloudEvent> events = standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH);
         Assert.assertNotNull(events);
         Assert.assertFalse(events.isEmpty());
@@ -85,20 +103,19 @@ public class StandaloneAdminTest {
     }
 
     @Test
-    public void testPublish() {
+    public void testPublish() throws Exception {
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        MessageEntity messageEntity = createDefaultMessageEntity();
+        Mockito.when(standaloneBroker.putMessage(TEST_TOPIC, cloudEvent)).thenReturn(messageEntity);
+        standaloneAdmin.publish(cloudEvent);
+        Mockito.verify(standaloneBroker).putMessage(TEST_TOPIC, cloudEvent);
     }
 
     private void initStaticInstance() {
         try (MockedStatic<StandaloneBroker> standaloneBrokerMockedStatic = Mockito.mockStatic(StandaloneBroker.class)) {
             standaloneBrokerMockedStatic.when(StandaloneBroker::getInstance).thenReturn(standaloneBroker);
-            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(createMessageContainer());
+            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(createDefaultMessageContainer());
             standaloneAdmin = new StandaloneAdmin(new Properties());
         }
-    }
-
-    private ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer() {
-        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>();
-        messageContainer.put(new TopicMetadata(TEST_TOPIC), new MessageQueue());
-        return messageContainer;
     }
 }

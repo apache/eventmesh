@@ -21,9 +21,4 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
 }

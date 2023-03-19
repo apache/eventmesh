@@ -17,57 +17,86 @@
 
 package org.apache.eventmesh.storage.standalone.broker;
 
+import static org.apache.eventmesh.storage.standalone.TestUtils.OFF_SET;
+import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
+
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
-import java.net.URI;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class StandaloneBrokerTest {
 
     @Test
-    public void getInstance() {
+    public void testGetInstance() {
         Assert.assertNotNull(StandaloneBroker.getInstance());
     }
 
     @Test
-    public void putMessage() throws InterruptedException {
+    public void testCreateTopicIfAbsent() {
         StandaloneBroker instance = StandaloneBroker.getInstance();
-        CloudEvent cloudEvent = CloudEventBuilder.v1()
-            .withId("test")
-            .withSource(URI.create("testsource"))
-            .withType("testType")
-            .build();
-        MessageEntity messageEntity = instance.putMessage("test-topic", cloudEvent);
+        Pair<MessageQueue, AtomicLong> pair = instance.createTopicIfAbsent(TEST_TOPIC);
+        Assert.assertNotNull(pair);
+    }
+
+    @Test
+    public void testPutMessage() throws InterruptedException {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        MessageEntity messageEntity = instance.putMessage(TEST_TOPIC, cloudEvent);
         Assert.assertNotNull(messageEntity);
     }
 
     @Test
-    public void takeMessage() throws InterruptedException {
+    public void testTakeMessage() throws InterruptedException {
         StandaloneBroker instance = StandaloneBroker.getInstance();
-        CloudEvent cloudEvent = CloudEventBuilder.v1()
-            .withId("test")
-            .withSource(URI.create("testsource"))
-            .withType("testType")
-            .build();
-        instance.putMessage("test-topic", cloudEvent);
-        CloudEvent message = instance.takeMessage("test-topic");
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        instance.putMessage(TEST_TOPIC, cloudEvent);
+        CloudEvent message = instance.takeMessage(TEST_TOPIC);
         Assert.assertNotNull(message);
     }
 
     @Test
-    public void getMessage() {
+    public void testGetMessage() throws InterruptedException {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        instance.putMessage(TEST_TOPIC, cloudEvent);
+        CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC);
+        Assert.assertNotNull(cloudEventResult);
     }
 
     @Test
-    public void testGetMessage() {
+    public void testMessageWithOffSet() throws InterruptedException {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        instance.putMessage(TEST_TOPIC, cloudEvent);
+        CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC, OFF_SET);
+        Assert.assertNotNull(cloudEventResult);
     }
 
     @Test
-    public void checkTopicExist() {
+    public void testCheckTopicExist() throws InterruptedException {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        instance.putMessage(TEST_TOPIC, cloudEvent);
+        boolean exists = instance.checkTopicExist(TEST_TOPIC);
+        Assert.assertTrue(exists);
+    }
+
+    @Test
+    public void testDeleteTopicIfExist() throws InterruptedException {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        CloudEvent cloudEvent = createDefaultCloudEvent();
+        instance.putMessage(TEST_TOPIC, cloudEvent);
+        instance.deleteTopicIfExist(TEST_TOPIC);
+        boolean exists = instance.checkTopicExist(TEST_TOPIC);
+        Assert.assertFalse(exists);
     }
 }
