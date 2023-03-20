@@ -74,7 +74,7 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.batchPublish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response " + response.toString());
+                log.info("Received response {}", response);
             }
             return response;
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class CloudEventProducer {
 
     public Response publish(final CloudEvent cloudEvent) {
         if (log.isInfoEnabled()) {
-            log.info("Publish message " + cloudEvent.toString());
+            log.info("Publish message {}", cloudEvent);
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, null);
 
@@ -96,7 +96,7 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.publish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response " + response.toString());
+                log.info("Received response {}", response);
             }
             return response;
         } catch (Exception e) {
@@ -109,7 +109,7 @@ public class CloudEventProducer {
 
     public CloudEvent requestReply(final CloudEvent cloudEvent, final int timeout) {
         if (log.isInfoEnabled()) {
-            log.info("RequestReply message " + cloudEvent.toString());
+            log.info("RequestReply message {}", cloudEvent);
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, String.valueOf(timeout));
 
@@ -118,7 +118,7 @@ public class CloudEventProducer {
         try {
             final SimpleMessage reply = publisherClient.requestReply(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received reply message:{}", reply.toString());
+                log.info("Received reply message:{}", reply);
             }
 
             final Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
