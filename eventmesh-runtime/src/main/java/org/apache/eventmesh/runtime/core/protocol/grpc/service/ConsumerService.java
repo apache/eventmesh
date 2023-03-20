@@ -52,6 +52,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         this.replyThreadPoolExecutor = replyThreadPoolExecutor;
     }
 
+    @Override
     public void subscribe(Subscription request, StreamObserver<Response> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribe", EventMeshConstants.PROTOCOL_GRPC,
@@ -71,6 +72,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         });
     }
 
+    @Override
     public StreamObserver<Subscription> subscribeStream(StreamObserver<SimpleMessage> responseObserver) {
         EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
 
@@ -145,6 +147,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             .build();
     }
 
+    @Override
     public void unsubscribe(Subscription request, StreamObserver<Response> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
