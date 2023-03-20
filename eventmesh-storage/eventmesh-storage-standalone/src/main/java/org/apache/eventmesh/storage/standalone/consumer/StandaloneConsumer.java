@@ -95,7 +95,6 @@ public class StandaloneConsumer implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-
         if (subscribeTable.containsKey(topic)) {
             return;
         }
