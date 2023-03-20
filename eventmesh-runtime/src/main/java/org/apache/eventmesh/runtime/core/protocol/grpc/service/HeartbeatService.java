@@ -45,6 +45,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
+    @Override
     public void heartbeat(Heartbeat request, StreamObserver<Response> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "heartbeat", EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
