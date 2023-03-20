@@ -69,20 +69,4 @@ public class StandaloneConsumerTest {
         standaloneConsumer.shutdown();
         Assert.assertTrue(standaloneConsumer.isClosed());
     }
-
-    @Test
-    public void testUpdateOffset() {
-    }
-
-    @Test
-    public void subscribe() throws Exception {
-    }
-
-    @Test
-    public void unsubscribe() {
-    }
-
-    @Test
-    public void registerEventListener() {
-    }
 }
