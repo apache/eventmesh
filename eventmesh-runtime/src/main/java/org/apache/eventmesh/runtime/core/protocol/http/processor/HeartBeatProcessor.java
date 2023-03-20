@@ -178,20 +178,18 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         final long startTime = System.currentTimeMillis();
         try {
-
             final CompleteHandler<HttpCommand> handler = httpCommand -> {
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("{}", httpCommand);
-                        }
-                        eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
-                            System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
-                    } catch (Exception ex) {
-                        //ignore
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("{}", httpCommand);
                     }
+                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                } catch (Exception ex) {
+                    //ignore
+                }
             };
-
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
             asyncContext.onComplete(responseEventMeshCommand, handler);
         } catch (Exception e) {
