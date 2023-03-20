@@ -116,5 +116,4 @@ public class MessageQueueTest {
         MessageEntity messageEntity = createDefaultMessageEntity();
         messageQueue.put(messageEntity);
     }
-
 }
