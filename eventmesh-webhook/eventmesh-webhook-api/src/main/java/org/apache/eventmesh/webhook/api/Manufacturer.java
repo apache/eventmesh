@@ -54,11 +54,7 @@ public class Manufacturer {
     }
 
     public List<String> getManufacturerEvents(String manufacturerName) {
-        if (!manufacturerEventMap.containsKey(manufacturerName)) {
-            List<String> m = new ArrayList<>();
-            manufacturerEventMap.put(manufacturerName, m);
-            return m;
-        }
+        manufacturerEventMap.computeIfAbsent(manufacturerName, key -> manufacturerEventMap.put(manufacturerName, new ArrayList<>()));
         return manufacturerEventMap.get(manufacturerName);
     }
 }
