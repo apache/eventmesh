@@ -37,10 +37,9 @@ import io.cloudevents.CloudEvent;
 public class StandaloneAdmin implements Admin {
 
     private final AtomicBoolean isStarted;
-
     private final StandaloneBroker standaloneBroker;
 
-    public StandaloneAdmin(Properties properties) {
+    public StandaloneAdmin() {
         this.standaloneBroker = StandaloneBroker.getInstance();
         this.isStarted = new AtomicBoolean(false);
     }
@@ -66,20 +65,21 @@ public class StandaloneAdmin implements Admin {
     }
 
     @Override
-    public void init(Properties keyValue) throws Exception {
+    public void init(Properties properties) throws Exception {
+
     }
 
     @Override
     public List<TopicProperties> getTopic() throws Exception {
         ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = this.standaloneBroker.getMessageContainer();
         List<TopicProperties> topicList = new ArrayList<>();
-        for (TopicMetadata topicMetadata : messageContainer.keySet()) {
+        messageContainer.keySet().forEach(topicMetadata -> {
             MessageQueue messageQueue = messageContainer.get(topicMetadata);
             topicList.add(new TopicProperties(
                 topicMetadata.getTopicName(),
                 messageQueue.getPutIndex() - messageQueue.getTakeIndex()
             ));
-        }
+        });
         topicList.sort(Comparator.comparing(t -> t.name));
         return topicList;
     }

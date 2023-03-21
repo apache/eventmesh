@@ -59,7 +59,7 @@ public class RocketMQAdmin implements Admin {
     private int numOfQueue = 4;
     private int queuePermission = 6;
 
-    public RocketMQAdmin(Properties properties) {
+    public RocketMQAdmin() {
         isStarted = new AtomicBoolean(false);
 
         ConfigService configService = ConfigService.getInstance();
@@ -98,7 +98,8 @@ public class RocketMQAdmin implements Admin {
     }
 
     @Override
-    public void init(Properties keyValue) throws Exception {
+    public void init(Properties properties) {
+
     }
 
     @Override
@@ -163,11 +164,11 @@ public class RocketMQAdmin implements Admin {
     }
 
     @Override
-    public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
+    public List<CloudEvent> getEvent(String topicName, int offset, int length) {
         return null;
     }
 
     @Override
-    public void publish(CloudEvent cloudEvent) throws Exception {
+    public void publish(CloudEvent cloudEvent) {
     }
 }

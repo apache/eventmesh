@@ -37,7 +37,7 @@ public interface Admin extends LifeCycle {
     /**
      * Initializes admin api service.
      */
-    void init(Properties keyValue) throws Exception;
+    void init(Properties properties) throws Exception;
 
     /**
      * Get the list of topics.
