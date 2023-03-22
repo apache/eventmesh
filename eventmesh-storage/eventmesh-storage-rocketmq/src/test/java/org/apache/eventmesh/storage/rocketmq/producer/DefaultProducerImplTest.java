@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.producer;
+package org.apache.eventmesh.storage.rocketmq.producer;
 
 
 import org.junit.After;
