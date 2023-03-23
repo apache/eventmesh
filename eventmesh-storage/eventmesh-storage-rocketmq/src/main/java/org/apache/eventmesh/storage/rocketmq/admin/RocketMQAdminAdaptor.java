@@ -29,9 +29,10 @@ import io.cloudevents.CloudEvent;
 
 public class RocketMQAdminAdaptor implements Admin {
 
-    private RocketMQAdmin admin;
+    private final RocketMQAdmin admin;
 
     public RocketMQAdminAdaptor() {
+        admin = new RocketMQAdmin();
     }
 
     @Override
@@ -55,8 +56,8 @@ public class RocketMQAdminAdaptor implements Admin {
     }
 
     @Override
-    public void init(Properties keyValue) throws Exception {
-        admin = new RocketMQAdmin(keyValue);
+    public void init(Properties properties) throws Exception {
+        admin.init(properties);
     }
 
     @Override
@@ -75,12 +76,12 @@ public class RocketMQAdminAdaptor implements Admin {
     }
 
     @Override
-    public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
+    public List<CloudEvent> getEvent(String topicName, int offset, int length) {
         return admin.getEvent(topicName, offset, length);
     }
 
     @Override
-    public void publish(CloudEvent cloudEvent) throws Exception {
+    public void publish(CloudEvent cloudEvent) {
         admin.publish(cloudEvent);
     }
 }
