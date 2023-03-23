@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.consumer;
+package org.apache.eventmesh.storage.rocketmq.consumer;
 
-import org.apache.eventmesh.storage.rocketmq.consumer.PushConsumerImpl;
 import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;

@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.utils;
+package org.apache.eventmesh.storage.rocketmq.utils;
 
 import org.apache.eventmesh.storage.rocketmq.config.ClientConfig;
 import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
-import org.apache.eventmesh.storage.rocketmq.utils.BeanUtils;
 
 import java.util.Properties;
 
