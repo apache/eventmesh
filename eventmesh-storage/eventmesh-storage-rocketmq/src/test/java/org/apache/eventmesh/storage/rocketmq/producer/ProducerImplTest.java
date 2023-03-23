@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.producer;
+package org.apache.eventmesh.storage.rocketmq.producer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
@@ -23,8 +23,6 @@ import static org.mockito.ArgumentMatchers.any;
 
 import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.storage.rocketmq.producer.AbstractProducer;
-import org.apache.eventmesh.storage.rocketmq.producer.ProducerImpl;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
