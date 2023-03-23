@@ -30,7 +30,6 @@ import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -115,7 +114,7 @@ public class StandaloneAdminTest {
         try (MockedStatic<StandaloneBroker> standaloneBrokerMockedStatic = Mockito.mockStatic(StandaloneBroker.class)) {
             standaloneBrokerMockedStatic.when(StandaloneBroker::getInstance).thenReturn(standaloneBroker);
             Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(createDefaultMessageContainer());
-            standaloneAdmin = new StandaloneAdmin(new Properties());
+            standaloneAdmin = new StandaloneAdmin();
         }
     }
 }

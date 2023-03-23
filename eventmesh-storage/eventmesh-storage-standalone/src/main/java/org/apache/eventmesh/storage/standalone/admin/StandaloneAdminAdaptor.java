@@ -29,9 +29,10 @@ import io.cloudevents.CloudEvent;
 
 public class StandaloneAdminAdaptor implements Admin {
 
-    private StandaloneAdmin admin;
+    private final StandaloneAdmin admin;
 
     public StandaloneAdminAdaptor() {
+        admin = new StandaloneAdmin();
     }
 
     @Override
@@ -55,8 +56,8 @@ public class StandaloneAdminAdaptor implements Admin {
     }
 
     @Override
-    public void init(Properties keyValue) throws Exception {
-        admin = new StandaloneAdmin(keyValue);
+    public void init(Properties properties) throws Exception {
+        admin.init(properties);
     }
 
     @Override
