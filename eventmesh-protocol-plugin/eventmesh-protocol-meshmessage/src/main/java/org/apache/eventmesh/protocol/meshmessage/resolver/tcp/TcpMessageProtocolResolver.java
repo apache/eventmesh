@@ -76,6 +76,7 @@ public class TcpMessageProtocolResolver {
             .withId(header.getSeq())
             .withSource(URI.create("/"))
             .withType("eventmeshmessage")
+            .withDataContentType("text/plain")
             .withSubject(topic)
             .withData(content.getBytes(StandardCharsets.UTF_8));
 
