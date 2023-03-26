@@ -19,6 +19,7 @@ package org.apache.eventmesh.client.grpc.consumer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
+import org.apache.eventmesh.common.ThreadWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
@@ -32,9 +33,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubStreamHandler<T> extends Thread {
-
-    private final transient CountDownLatch latch = new CountDownLatch(1);
+public class SubStreamHandler<T> extends ThreadWrapper {
 
     private final transient ConsumerServiceStub consumerAsyncClient;
 
@@ -138,11 +137,7 @@ public class SubStreamHandler<T> extends Thread {
 
     @Override
     public void run() {
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            log.error("SubStreamHandler Thread interrupted", e);
-        }
+        await();
     }
 
     public void close() {
@@ -150,7 +145,7 @@ public class SubStreamHandler<T> extends Thread {
             senderOnComplete();
         }
 
-        latch.countDown();
+        shutdown();
 
         if (log.isInfoEnabled()) {
             log.info("SubStreamHandler closed.");
@@ -175,5 +170,10 @@ public class SubStreamHandler<T> extends Thread {
         } catch (Exception e) {
             log.error("StreamObserver Error onComplete", e);
         }
+    }
+
+    @Override
+    public String getThreadName() {
+        return "Grpc-SubStreamHandler-thread";
     }
 }
