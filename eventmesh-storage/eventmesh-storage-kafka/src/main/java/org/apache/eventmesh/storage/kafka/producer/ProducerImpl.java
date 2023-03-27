@@ -46,14 +46,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ProducerImpl {
 
     private KafkaProducer<String, CloudEvent> producer;
-    Properties properties;
-
-    private AtomicBoolean isStarted;
+    private final Properties properties = new Properties();
+    private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     public ProducerImpl(Properties props) {
-        this.isStarted = new AtomicBoolean(false);
-
-        properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
             props.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -77,8 +73,8 @@ public class ProducerImpl {
         isStarted.compareAndSet(true, false);
     }
 
-    public ProducerImpl init(Properties properties) throws Exception {
-        return new ProducerImpl(properties);
+    public void init(Properties properties) {
+        this.properties.putAll(properties);
     }
 
     public void send(CloudEvent cloudEvent) {
@@ -90,12 +86,19 @@ public class ProducerImpl {
     }
 
     public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, StorageConnectorRuntimeException {
-        Admin admin = Admin.create(properties);
-        Set<String> topicNames = admin.listTopics().names().get();
-        admin.close();
-        boolean exist = topicNames.contains(topic);
-        if (!exist) {
-            throw new StorageConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+        Admin admin = null;
+        try {
+            admin = Admin.create(properties);
+            Set<String> topicNames = admin.listTopics().names().get();
+            admin.close();
+            boolean exist = topicNames.contains(topic);
+            if (!exist) {
+                throw new StorageConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+            }
+        } finally {
+            if (admin != null) {
+                admin.close();
+            }
         }
     }
 
