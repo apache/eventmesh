@@ -38,7 +38,6 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class TcpMessageProtocolResolver {
 
-
     public static CloudEvent buildEvent(Header header, EventMeshMessage message) throws ProtocolHandleException {
 
         CloudEventBuilder cloudEventBuilder;
@@ -67,7 +66,6 @@ public class TcpMessageProtocolResolver {
 
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
             cloudEventBuilder = CloudEventBuilder.v03();
-
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolVersion: %s", protocolVersion));
         }
@@ -76,9 +74,12 @@ public class TcpMessageProtocolResolver {
             .withId(header.getSeq())
             .withSource(URI.create("/"))
             .withType("eventmeshmessage")
-            .withDataContentType("text/plain")
             .withSubject(topic)
-            .withData(content.getBytes(StandardCharsets.UTF_8));
+            .withData(content.getBytes(Constants.DEFAULT_CHARSET));
+
+        if (message.getHeaders().containsKey(Constants.DATA_CONTENT_TYPE)) {
+            cloudEventBuilder.withDataContentType(message.getHeaders().get(Constants.DATA_CONTENT_TYPE));
+        }
 
         for (String propKey : header.getProperties().keySet()) {
             try {
