@@ -74,8 +74,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      * DELETE /client/http
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
             String url = deleteHTTPClientRequest.getUrl();
@@ -97,14 +96,6 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
         }
     }
 
