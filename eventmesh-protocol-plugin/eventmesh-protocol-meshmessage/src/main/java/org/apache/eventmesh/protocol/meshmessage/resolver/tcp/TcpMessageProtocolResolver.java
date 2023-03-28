@@ -39,7 +39,6 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 public class TcpMessageProtocolResolver {
 
     public static CloudEvent buildEvent(Header header, EventMeshMessage message) throws ProtocolHandleException {
-
         CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
