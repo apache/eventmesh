@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.rocketmq.exception;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
-public class RMQTimeoutException extends StorageConnectorRuntimeException {
+public class RMQTimeoutException extends StorageRuntimeException {
 
     public RMQTimeoutException(String message) {
         super(message);

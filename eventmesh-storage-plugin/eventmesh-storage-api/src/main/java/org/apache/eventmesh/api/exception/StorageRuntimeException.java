@@ -17,21 +17,21 @@
 
 package org.apache.eventmesh.api.exception;
 
-public class StorageConnectorRuntimeException extends RuntimeException {
+public class StorageRuntimeException extends RuntimeException {
 
-    public StorageConnectorRuntimeException() {
+    public StorageRuntimeException() {
 
     }
 
-    public StorageConnectorRuntimeException(String message) {
+    public StorageRuntimeException(String message) {
         super(message);
     }
 
-    public StorageConnectorRuntimeException(Throwable throwable) {
+    public StorageRuntimeException(Throwable throwable) {
         super(throwable);
     }
 
-    public StorageConnectorRuntimeException(String message, Throwable throwable) {
+    public StorageRuntimeException(String message, Throwable throwable) {
         super(message, throwable);
     }
 

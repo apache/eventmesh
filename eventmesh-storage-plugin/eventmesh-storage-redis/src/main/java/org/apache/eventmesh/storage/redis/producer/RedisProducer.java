@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.storage.redis.client.RedissonClient;
 
@@ -88,7 +88,7 @@ public class RedisProducer implements Producer {
                         OnExceptionContext.builder()
                             .topic(cloudEvent.getSubject())
                             .messageId(cloudEvent.getId())
-                            .exception(new StorageConnectorRuntimeException(throwable))
+                            .exception(new StorageRuntimeException(throwable))
                             .build()
                     );
                 } else {
@@ -103,7 +103,7 @@ public class RedisProducer implements Producer {
                 OnExceptionContext.builder()
                     .topic(cloudEvent.getSubject())
                     .messageId(cloudEvent.getId())
-                    .exception(new StorageConnectorRuntimeException(e))
+                    .exception(new StorageRuntimeException(e))
                     .build()
             );
         }
@@ -119,12 +119,12 @@ public class RedisProducer implements Producer {
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) {
-        throw new StorageConnectorRuntimeException("Request is not supported");
+        throw new StorageRuntimeException("Request is not supported");
     }
 
     @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) {
-        throw new StorageConnectorRuntimeException("Reply is not supported");
+        throw new StorageRuntimeException("Reply is not supported");
     }
 
     @Override

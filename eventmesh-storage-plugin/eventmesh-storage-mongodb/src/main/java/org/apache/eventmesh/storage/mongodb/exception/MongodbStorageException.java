@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.mongodb.exception;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
-public class MongodbStorageException extends StorageConnectorRuntimeException {
+public class MongodbStorageException extends StorageRuntimeException {
 
     public MongodbStorageException(String message) {
         super(message);

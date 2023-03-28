@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.rocketmq.cloudevent.RocketMQMessageFactory;
 import org.apache.eventmesh.storage.rocketmq.utils.CloudEventUtils;
@@ -175,7 +175,7 @@ public class ProducerImpl extends AbstractProducer {
             @Override
             public void onException(Throwable e) {
                 String topic = message.getTopic();
-                StorageConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
+                StorageRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
                 OnExceptionContext context = new OnExceptionContext();
                 context.setTopic(topic);
                 context.setException(onsEx);
@@ -196,7 +196,7 @@ public class ProducerImpl extends AbstractProducer {
             @Override
             public void onException(Throwable e) {
                 String topic = message.getTopic();
-                StorageConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
+                StorageRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
                 OnExceptionContext context = new OnExceptionContext();
                 context.setTopic(topic);
                 context.setException(onsEx);
