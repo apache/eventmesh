@@ -54,6 +54,7 @@ Please go to the [roadmap](https://github.com/apache/eventmesh/blob/master/docs/
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
 - [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): Serverless workflow runtime for event Orchestration on EventMesh.
 - [EventMesh-dashboard](https://github.com/apache/eventmesh-dashboard): Operation and maintenance console of EventMesh.
+- [EventMesh-catalog](https://github.com/apache/eventmesh-catalog): Catalog service for event schema management using AsyncAPI.
 - [EventMesh-go](https://github.com/apache/eventmesh-go): A go implementation for EventMesh runtime.
 
 ## Quick start
