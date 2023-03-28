@@ -95,7 +95,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            log.error(result);
         }
     }
 
