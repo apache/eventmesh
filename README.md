@@ -1,7 +1,7 @@
 <div align="center">
 
 <br /><br />
-<img src="docs/images/logo.png" width="256">
+<img src="resources/logo.png" width="256">
 <br />
 
 [![CI status](https://img.shields.io/github/actions/workflow/status/apache/incubator-eventmesh/ci.yml?logo=github&style=for-the-badge)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
@@ -14,8 +14,8 @@
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)
 
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
-[📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
-[⚙️ Roadmap](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/roadmap.md) |
+[📔 Examples](https://github.com/apache/eventmesh/tree/master/eventmesh-examples) |
+[⚙️ Roadmap](https://eventmesh.apache.org/docs/roadmap) |
 [🌐 简体中文](README.zh-CN.md)
 </div>
 
@@ -26,10 +26,10 @@
 
 ### EventMesh Architecture
 
-![EventMesh Architecture](docs/images/eventmesh-architecture-3.png)
+![EventMesh Architecture](resources/eventmesh-architecture-3.png)
 
 ### EventMesh Dashboard
-![EventMesh Dashboard](docs/images/dashboard.png)
+![EventMesh Dashboard](resources/dashboard.png)
 
 ## Features
 
@@ -48,7 +48,7 @@ Apache EventMesh has a vast amount of features to help users achieve their goals
 - Easy Function develop and framework integration.
 
 ## Roadmap
-Please go to the [roadmap](https://github.com/apache/eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh.
+Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the release history and new features of Apache EventMesh.
 
 ## Community
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
@@ -60,19 +60,19 @@ Please go to the [roadmap](https://github.com/apache/eventmesh/blob/master/docs/
 ## Quick start
 Here are the guidelines:
 
-[Step 1: Deploy eventmesh-store](docs/en/instruction/01-store.md)
+[Step 1: Deploy eventmesh-store](https://eventmesh.apache.org/docs/instruction/store)
 
-[Step 2: Start eventmesh-runtime](docs/en/instruction/02-runtime.md)
+[Step 2: Start eventmesh-runtime](https://eventmesh.apache.org/docs/instruction/runtime)
 
-[Step 3: Run our demos](docs/en/instruction/03-demo.md)
+[Step 3: Run our demos](https://eventmesh.apache.org/docs/instruction/demo)
 
 Besides, we also provide the docker-version guidelines for you if you prefer Docker:
 
-[Step 1: Deploy eventmesh-store using docker](docs/en/instruction/01-store-with-docker.md)
+[Step 1: Deploy eventmesh-store using docker](https://eventmesh.apache.org/docs/instruction/store-with-docker)
 
-[Step 2: Start eventmesh-runtime using docker](docs/en/instruction/02-runtime-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](https://eventmesh.apache.org/docs/instruction/runtime-with-docker)
 
-[Step 3: Run our demos](docs/en/instruction/03-demo.md)
+[Step 3: Run our demos](https://eventmesh.apache.org/docs/instruction/demo)
 
 ## Contributing
 
@@ -107,7 +107,7 @@ Apache EventMesh is licensed under the [Apache License, Version 2.0](http://www.
 
 |WeChat Assistant|WeChat Public Account|Slack|
 |-|-|-|
-|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)|
+|<img src="resources/wechat-assistant.jpg" width="128"/>|<img src="resources/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)|
 
 ### Mailing List
 
