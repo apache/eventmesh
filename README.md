@@ -20,9 +20,9 @@
 </div>
 
 
-# Apache EventMesh (Incubating)
+# Apache EventMesh
 
-**Apache EventMesh (Incubating)** is a new generation serverless event middleware for building distributed [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) applications.
+**Apache EventMesh** is a new generation serverless event middleware for building distributed [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) applications.
 
 ### EventMesh Architecture
 
@@ -33,7 +33,7 @@
 
 ## Features
 
-Apache EventMesh (Incubating) has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
+Apache EventMesh has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
 
 - Built around the [CloudEvents](https://cloudevents.io) specification.
 - Rapidty extendsible interconnector layer such as the source or sink of Saas, CloudService, and Database etc.
@@ -49,7 +49,7 @@ Apache EventMesh (Incubating) has a vast amount of features to help users achiev
 
 ## Roadmap
 
-Please go to the [roadmap](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh (Incubating).
+Please go to the [roadmap](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh.
 
 ## Quick start
 Here are the guidelines:
@@ -70,7 +70,7 @@ Besides, we also provide the docker-version guidelines for you if you prefer Doc
 
 ## Contributing
 
-Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
+Each contributor has played an important role in promoting the robust development of Apache EventMesh. We sincerely appreciate all contributors who have contributed code and documents.
 
 - [Contributing Guideline](https://eventmesh.apache.org/community/contribute/contribute)
 - [Good First Issues](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
@@ -89,13 +89,13 @@ Here is the [List of Contributors](https://github.com/apache/incubator-eventmesh
 <img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>
 <img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
 
-Apache EventMesh (Incubating) enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF Cloud Native Landscape.</a>
+Apache EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF Cloud Native Landscape.</a>
 
 </div>
 
 ## License
 
-Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+Apache EventMesh is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Community
 
@@ -107,7 +107,7 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 |Name|Description|Subscribe|Unsubscribe|Archive
 |-|-|-|-|-|
-|Users|User discussion|[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
-|Development|Development discussion (Design Documents, Issues, etc.)|[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
-|Commits|Commits to related repositories| [Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
-|Issues|Issues or PRs comments and reviews| [Subscribe](mailto:issues-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:issues-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?issues@eventmesh.apache.org)|
+|Users|User discussion|[Subscribe](mailto:users-subscribe@eventmesh.apache.org)|[Unsubscribe](mailto:users-unsubscribe@eventmesh.apache.org)|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
+|Development|Development discussion (Design Documents, Issues, etc.)|[Subscribe](mailto:dev-subscribe@eventmesh.apache.org)|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.apache.org)|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
+|Commits|Commits to related repositories| [Subscribe](mailto:commits-subscribe@eventmesh.apache.org) |[Unsubscribe](mailto:commits-unsubscribe@eventmesh.apache.org) |[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
+|Issues|Issues or PRs comments and reviews| [Subscribe](mailto:issues-subscribe@eventmesh.apache.org) |[Unsubscribe](mailto:issues-unsubscribe@eventmesh.apache.org) |[Mail Archives](https://lists.apache.org/list.html?issues@eventmesh.apache.org)|
