@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRespons
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -81,8 +82,12 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         }
 
-        final ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
+
+        String protocolType = sendMessageRequestHeader.getProtocolType();
+
+        final ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+
         final CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         final SendMessageResponseHeader sendMessageResponseHeader =
