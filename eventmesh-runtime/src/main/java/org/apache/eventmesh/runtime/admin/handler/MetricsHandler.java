@@ -70,11 +70,9 @@ public class MetricsHandler extends AbstractHttpHandler {
      * GET /metrics Return a response that contains a summary of metrics
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
                 httpSummaryMetrics.maxHTTPTPS(),
                 httpSummaryMetrics.avgHTTPTPS(),
@@ -134,15 +132,8 @@ public class MetricsHandler extends AbstractHttpHandler {
             String result = JsonUtils.toJSONString(error);
             byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(500, bytes.length);
-            out.write(bytes);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+
+            log.error(result, e);
         }
     }
 
