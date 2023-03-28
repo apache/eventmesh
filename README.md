@@ -48,8 +48,13 @@ Apache EventMesh has a vast amount of features to help users achieve their goals
 - Easy Function develop and framework integration.
 
 ## Roadmap
+Please go to the [roadmap](https://github.com/apache/eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh.
 
-Please go to the [roadmap](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh.
+## Community
+- [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
+- [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): Serverless workflow runtime for event Orchestration on EventMesh.
+- [EventMesh-dashboard](https://github.com/apache/eventmesh-dashboard): Operation and maintenance console of EventMesh.
+- [EventMesh-go](https://github.com/apache/eventmesh-go): A go implementation for EventMesh runtime.
 
 ## Quick start
 Here are the guidelines:
