@@ -15,31 +15,13 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
-
-configurations {
-    implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-}
-
 dependencies {
-    implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.netty:netty-all'
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
-    implementation 'com.alibaba.nacos:nacos-client'
-
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
 }
