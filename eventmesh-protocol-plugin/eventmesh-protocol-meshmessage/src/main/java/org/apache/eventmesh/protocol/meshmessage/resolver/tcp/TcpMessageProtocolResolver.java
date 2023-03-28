@@ -35,7 +35,6 @@ import java.util.Objects;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.assertj.core.util.Strings;
 
 public class TcpMessageProtocolResolver {
 
@@ -116,7 +115,7 @@ public class TcpMessageProtocolResolver {
         Package pkg = new Package();
         pkg.setBody(eventMeshMessage);
 
-        if (!Strings.isNullOrEmpty(cloudEvent.getDataContentType())) {
+        if (!StringUtils.isBlank(cloudEvent.getDataContentType())) {
             eventMeshMessage.getHeaders().put(Constants.DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
         }
 
