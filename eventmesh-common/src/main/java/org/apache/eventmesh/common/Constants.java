@@ -28,7 +28,7 @@ public class Constants {
 
     public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
-    public static final String DATA_CONTENT_TYPE = "DataContentType";
+    public static final String DATA_CONTENT_TYPE = "datacontenttype";
 
     public static final String LANGUAGE_JAVA = "JAVA";
 
