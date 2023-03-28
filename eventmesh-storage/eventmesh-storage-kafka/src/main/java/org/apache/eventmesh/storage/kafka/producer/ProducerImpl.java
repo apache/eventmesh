@@ -86,18 +86,11 @@ public class ProducerImpl {
     }
 
     public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, StorageConnectorRuntimeException {
-        Admin admin = null;
-        try {
-            admin = Admin.create(properties);
+        try(Admin admin = Admin.create(properties)){
             Set<String> topicNames = admin.listTopics().names().get();
-            admin.close();
             boolean exist = topicNames.contains(topic);
             if (!exist) {
                 throw new StorageConnectorRuntimeException(String.format("topic:%s is not exist", topic));
-            }
-        } finally {
-            if (admin != null) {
-                admin.close();
             }
         }
     }
