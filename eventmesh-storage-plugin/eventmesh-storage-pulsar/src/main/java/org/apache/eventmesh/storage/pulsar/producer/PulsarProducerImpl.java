@@ -19,7 +19,7 @@ package org.apache.eventmesh.storage.pulsar.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
@@ -70,27 +70,27 @@ public class PulsarProducerImpl implements Producer {
 
     @Override
     public void sendOneway(CloudEvent cloudEvent) {
-        throw new StorageConnectorRuntimeException("SendOneWay is not supported");
+        throw new StorageRuntimeException("SendOneWay is not supported");
     }
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        throw new StorageConnectorRuntimeException("Request is not supported");
+        throw new StorageRuntimeException("Request is not supported");
     }
 
     @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        throw new StorageConnectorRuntimeException("Reply is not supported");
+        throw new StorageRuntimeException("Reply is not supported");
     }
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        throw new StorageConnectorRuntimeException("CheckTopicExist is not supported");
+        throw new StorageRuntimeException("CheckTopicExist is not supported");
     }
 
     @Override
     public void setExtFields() {
-        throw new StorageConnectorRuntimeException("SetExtFields is not supported");
+        throw new StorageRuntimeException("SetExtFields is not supported");
     }
 
     public ClientConfiguration getClientConfiguration() {

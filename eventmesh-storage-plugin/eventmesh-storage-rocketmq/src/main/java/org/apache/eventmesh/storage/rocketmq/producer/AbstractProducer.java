@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.rocketmq.producer;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.rocketmq.config.ClientConfig;
 import org.apache.eventmesh.storage.rocketmq.exception.RMQMessageFormatException;
@@ -55,7 +55,7 @@ public abstract class AbstractProducer {
 
         String accessPoints = clientConfig.getAccessPoints();
         if (accessPoints == null || accessPoints.isEmpty()) {
-            throw new StorageConnectorRuntimeException("OMS AccessPoints is null or empty.");
+            throw new StorageRuntimeException("OMS AccessPoints is null or empty.");
         }
 
         this.rocketmqProducer.setNamesrvAddr(accessPoints.replace(',', ';'));
@@ -75,7 +75,7 @@ public abstract class AbstractProducer {
             try {
                 this.rocketmqProducer.start();
             } catch (MQClientException e) {
-                throw new StorageConnectorRuntimeException("-1", e);
+                throw new StorageRuntimeException("-1", e);
             }
         }
         this.started.set(true);
@@ -96,7 +96,7 @@ public abstract class AbstractProducer {
         return !this.isStarted();
     }
 
-    StorageConnectorRuntimeException checkProducerException(String topic, String msgId, Throwable e) {
+    StorageRuntimeException checkProducerException(String topic, String msgId, Throwable e) {
         if (e instanceof MQClientException) {
             if (e.getCause() != null) {
                 if (e.getCause() instanceof RemotingTimeoutException) {
@@ -107,7 +107,7 @@ public abstract class AbstractProducer {
                     || e.getCause() instanceof RemotingConnectException) {
                     if (e.getCause() instanceof MQBrokerException) {
                         MQBrokerException brokerException = (MQBrokerException) e.getCause();
-                        return new StorageConnectorRuntimeException(
+                        return new StorageRuntimeException(
                             String.format("Received a broker exception, Topic=%s, msgId=%s, %s",
                                 topic, msgId, brokerException.getErrorMessage()), e);
                     }
@@ -115,7 +115,7 @@ public abstract class AbstractProducer {
                     if (e.getCause() instanceof RemotingConnectException) {
                         RemotingConnectException connectException =
                             (RemotingConnectException) e.getCause();
-                        return new StorageConnectorRuntimeException(
+                        return new StorageRuntimeException(
                             String.format(
                                 "Network connection experiences failures. Topic=%s, msgId=%s, %s",
                                 topic, msgId, connectException.getMessage()), e);
@@ -125,7 +125,7 @@ public abstract class AbstractProducer {
                 // Exception thrown by local.
                 MQClientException clientException = (MQClientException) e;
                 if (-1 == clientException.getResponseCode()) {
-                    return new StorageConnectorRuntimeException(
+                    return new StorageRuntimeException(
                         String.format("Topic does not exist, Topic=%s, msgId=%s",
                             topic, msgId), e);
                 } else if (ResponseCode.MESSAGE_ILLEGAL == clientException.getResponseCode()) {
@@ -135,21 +135,21 @@ public abstract class AbstractProducer {
                 }
             }
         }
-        return new StorageConnectorRuntimeException("Send message to RocketMQ broker failed.", e);
+        return new StorageRuntimeException("Send message to RocketMQ broker failed.", e);
     }
 
     protected void checkProducerServiceState(DefaultMQProducerImpl producer) {
         switch (producer.getServiceState()) {
             case CREATE_JUST:
-                throw new StorageConnectorRuntimeException(
+                throw new StorageRuntimeException(
                     String.format("You do not have start the producer, %s",
                         producer.getServiceState()));
             case SHUTDOWN_ALREADY:
-                throw new StorageConnectorRuntimeException(
+                throw new StorageRuntimeException(
                     String.format("Your producer has been shut down, %s",
                         producer.getServiceState()));
             case START_FAILED:
-                throw new StorageConnectorRuntimeException(
+                throw new StorageRuntimeException(
                     String.format("When you start your service throws an exception, %s",
                         producer.getServiceState()));
             case RUNNING:

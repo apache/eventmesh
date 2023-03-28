@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.rabbitmq.exception;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
-public class RabbitmqStorageException extends StorageConnectorRuntimeException {
+public class RabbitmqStorageException extends StorageRuntimeException {
 
     public RabbitmqStorageException(String message) {
         super(message);
