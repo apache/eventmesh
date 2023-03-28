@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
 
