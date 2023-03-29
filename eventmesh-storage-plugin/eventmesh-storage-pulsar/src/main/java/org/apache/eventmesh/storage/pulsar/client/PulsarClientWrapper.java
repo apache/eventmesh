@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.pulsar.client;
 
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
 import org.apache.eventmesh.storage.pulsar.utils.CloudEventUtils;
@@ -73,7 +73,7 @@ public class PulsarClientWrapper {
 
             this.pulsarClient = clientBuilder.build();
         } catch (PulsarClientException ex) {
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
               String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
         }
     }
@@ -87,7 +87,7 @@ public class PulsarClientWrapper {
                 .blockIfQueueFull(true)
                 .create();
         } catch (PulsarClientException ex) {
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
               String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
         }
     }

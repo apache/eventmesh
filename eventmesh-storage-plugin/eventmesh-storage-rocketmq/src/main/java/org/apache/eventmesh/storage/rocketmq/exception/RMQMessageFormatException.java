@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.rocketmq.exception;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
-public class RMQMessageFormatException extends StorageConnectorRuntimeException {
+public class RMQMessageFormatException extends StorageRuntimeException {
 
     public RMQMessageFormatException(String message) {
         super(message);

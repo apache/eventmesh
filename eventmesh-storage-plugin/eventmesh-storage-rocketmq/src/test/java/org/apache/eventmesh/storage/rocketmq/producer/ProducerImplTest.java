@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -126,7 +126,7 @@ public class ProducerImplTest {
                 .withData(new byte[]{'a'})
                 .build();
             producer.send(cloudEvent);
-            failBecauseExceptionWasNotThrown(StorageConnectorRuntimeException.class);
+            failBecauseExceptionWasNotThrown(StorageRuntimeException.class);
         } catch (Exception e) {
             assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
         }

@@ -35,5 +35,5 @@ public class OnExceptionContext {
     /**
      * Detailed exception stack information.
      */
-    private StorageConnectorRuntimeException exception;
+    private StorageRuntimeException exception;
 }
