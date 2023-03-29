@@ -102,8 +102,8 @@ public class GrpcClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            log.error(result);
+            httpExchange.sendResponseHeaders(500, 0);
+            log.error(result, e);
         }
     }
 
