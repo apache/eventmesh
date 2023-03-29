@@ -8,8 +8,6 @@ asm-commons-9.2.jar
 asm-tree-9.2.jar
 asm-util-9.2.jar
 assertj-core-2.6.0.jar
-async-http-client-2.12.0.jar
-async-http-client-netty-utils-2.12.0.jar
 bcpkix-jdk15on-1.69.jar
 bcprov-ext-jdk15on-1.69.jar
 bcprov-ext-jdk15on-1.70.jar
@@ -131,7 +129,6 @@ netty-codec-xml-4.1.79.Final.jar
 netty-common-4.1.79.Final.jar
 netty-handler-4.1.79.Final.jar
 netty-handler-proxy-4.1.79.Final.jar
-netty-reactive-streams-2.0.4.jar
 netty-resolver-4.1.79.Final.jar
 netty-resolver-dns-4.1.79.Final.jar
 netty-resolver-dns-classes-macos-4.1.79.Final.jar
@@ -187,7 +184,6 @@ protobuf-java-3.19.2.jar
 protobuf-java-3.19.4.jar
 protobuf-java-3.21.5.jar
 protobuf-java-util-3.17.2.jar
-protobuf-java-util-3.21.5.jar
 protobuf-java-util-3.5.1.jar
 proto-google-common-protos-2.0.1.jar
 pulsar-client-2.10.1.jar

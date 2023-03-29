@@ -86,7 +86,7 @@ public class ProducerImpl {
     }
 
     public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, StorageRuntimeException {
-        try(Admin admin = Admin.create(properties)){
+        try (Admin admin = Admin.create(properties)) {
             Set<String> topicNames = admin.listTopics().names().get();
             boolean exist = topicNames.contains(topic);
             if (!exist) {
