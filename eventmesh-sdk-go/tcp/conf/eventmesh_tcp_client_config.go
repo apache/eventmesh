@@ -15,7 +15,7 @@
 
 package conf
 
-import "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+import "github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
 
 type EventMeshTCPClientConfig struct {
 	host      string

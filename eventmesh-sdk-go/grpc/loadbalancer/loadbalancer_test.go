@@ -16,7 +16,7 @@
 package loadbalancer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"

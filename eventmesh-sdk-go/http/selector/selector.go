@@ -18,7 +18,7 @@ package selector
 import (
 	"errors"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
 	"regexp"
 	"strconv"
 	"strings"

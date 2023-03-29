@@ -16,7 +16,7 @@
 package producer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"time"
 )
