@@ -212,7 +212,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        final String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        final String content = new String(Objects.requireNonNull(event.getData().toBytes()), StandardCharsets.UTF_8);
         if (Objects.requireNonNull(content).length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()) {
             if (log.isErrorEnabled()) {
                 log.error("Event size exceeds the limit: {}",
