@@ -19,11 +19,11 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
-	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
+	gcommon "github.com/apache/eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	gutils "github.com/apache/eventmesh/eventmesh-sdk-go/common/utils"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/common"
 )
 
 const (

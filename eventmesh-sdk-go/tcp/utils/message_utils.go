@@ -18,11 +18,11 @@ package utils
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
-	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
+	gcommon "github.com/apache/eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/utils"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/common"
 )
 
 const seqLength = 10

@@ -18,7 +18,7 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/seq"
 	"google.golang.org/grpc"
 	"io"
 	"io/ioutil"
@@ -28,9 +28,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 )
 
 // fakeServer used to do the test

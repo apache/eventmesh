@@ -16,9 +16,9 @@
 package grpc
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/seq"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 )
 
 // GRPCOption option to set up the option for grpc client

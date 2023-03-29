@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/apache/incubator-eventmesh/eventmesh-sdk-go
+module github.com/apache/eventmesh/eventmesh-sdk-go
 
 go 1.16
 
