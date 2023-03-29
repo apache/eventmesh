@@ -18,8 +18,8 @@
 package producer
 
 import (
-	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
-	ghttp "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http"
+	gutils "github.com/apache/eventmesh/eventmesh-sdk-go/common/utils"
+	ghttp "github.com/apache/eventmesh/eventmesh-sdk-go/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/http"

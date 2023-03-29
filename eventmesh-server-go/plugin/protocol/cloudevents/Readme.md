@@ -1,1 +1,0 @@
-transfer the message with cloudevents protocol

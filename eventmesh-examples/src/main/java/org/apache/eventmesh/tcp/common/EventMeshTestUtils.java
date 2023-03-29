@@ -21,6 +21,7 @@ import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVE
 
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -125,6 +126,7 @@ public class EventMeshTestUtils {
         mqMsg.getProperties().put(UtilsConstants.MSG_TYPE, "persistent");
         mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.KEYS, generateRandomString(16));
+        mqMsg.getHeaders().put(Constants.DATA_CONTENT_TYPE, "text/plain");
         mqMsg.setBody("testSyncRR");
         return mqMsg;
     }
@@ -136,6 +138,7 @@ public class EventMeshTestUtils {
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
+        mqMsg.getHeaders().put(Constants.DATA_CONTENT_TYPE, "text/plain");
         mqMsg.setBody("testAsyncRR");
         return mqMsg;
     }
@@ -146,6 +149,7 @@ public class EventMeshTestUtils {
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
+        mqMsg.getHeaders().put(Constants.DATA_CONTENT_TYPE, "text/plain");
         mqMsg.setBody(ASYNC_MSG_BODY);
         return mqMsg;
     }
@@ -156,6 +160,7 @@ public class EventMeshTestUtils {
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
+        mqMsg.getHeaders().put(Constants.DATA_CONTENT_TYPE, "text/plain");
         mqMsg.setBody(ASYNC_MSG_BODY);
         return mqMsg;
     }
