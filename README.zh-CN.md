@@ -4,17 +4,17 @@
 <img src="docs/images/logo.png" width="256">
 <br />
 
-[![CI status](https://img.shields.io/github/workflow/status/apache/incubator-eventmesh/Continuous%20Integration?logo=github&style=for-the-badge)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
-[![CodeCov](https://img.shields.io/codecov/c/gh/apache/incubator-eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/incubator-eventmesh)
-[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
+[![CI status](https://img.shields.io/github/workflow/status/apache/eventmesh/Continuous%20Integration?logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/ci.yml)
+[![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
+[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/context:java)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/alerts/)
 
-[![License](https://img.shields.io/github/license/apache/incubator-eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/incubator-eventmesh/releases)
+[![License](https://img.shields.io/github/license/apache/eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/eventmesh/releases)
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw)
 
 [📦 文档 (英文)](https://eventmesh.apache.org/docs/introduction) |
-[📔 例子](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
+[📔 例子](https://github.com/apache/eventmesh/tree/master/eventmesh-examples) |
 [⚙️ 路线图](https://eventmesh.apache.org/docs/roadmap) |
 [🌐 英文版](README.md)
 </div>
@@ -80,13 +80,13 @@
 每一名贡献者都在这个项目的发展上都是至关重要的。我们真诚地感谢所有对代码和文档的贡献者！想要尝试贡献的可以看看以下三个链接。
 
 - [贡献准则](https://eventmesh.apache.org/zh/community/contribute/contribute)
-- [值得新人尝试的 Issue](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+- [值得新人尝试的 Issue](https://github.com/apache/eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 
-这是项目的[贡献者名单](https://github.com/apache/incubator-eventmesh/graphs/contributors)
+这是项目的[贡献者名单](https://github.com/apache/eventmesh/graphs/contributors)
 ，感谢各位的大力支持 :)
 
-<a href="https://github.com/apache/incubator-eventmesh/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=apache/incubator-eventmesh" />
+<a href="https://github.com/apache/eventmesh/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=apache/eventmesh" />
 </a>
 
 ## CNCF Landscape

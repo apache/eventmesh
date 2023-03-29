@@ -16,9 +16,9 @@
 package http
 
 import (
-	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/selector"
+	gcommon "github.com/apache/eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/selector"
 	nethttp "net/http"
 	"time"
 )

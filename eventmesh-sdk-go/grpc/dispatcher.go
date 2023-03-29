@@ -17,8 +17,8 @@ package grpc
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 	"sync"
 	"time"
 

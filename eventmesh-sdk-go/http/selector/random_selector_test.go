@@ -16,7 +16,7 @@
 package selector
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

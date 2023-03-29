@@ -21,12 +21,12 @@ import (
 	"github.com/google/uuid"
 	"strconv"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
-	gtcp "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
+	gtcp "github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/utils"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/conf"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
