@@ -19,7 +19,7 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
 	"net/http"
 	"net/http/httptest"
 	"strings"

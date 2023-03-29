@@ -16,7 +16,7 @@
 package utils
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/model"
 	"io/ioutil"
 	nethttp "net/http"
 	"net/url"

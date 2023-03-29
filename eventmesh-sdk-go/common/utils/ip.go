@@ -16,7 +16,7 @@
 package utils
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 
 	"net"
 	"sync"
