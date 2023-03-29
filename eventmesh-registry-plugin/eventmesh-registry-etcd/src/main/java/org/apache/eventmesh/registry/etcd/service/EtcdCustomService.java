@@ -90,11 +90,14 @@ public class EtcdCustomService extends EtcdRegistryService {
 
 
             if (CollectionUtils.isNotEmpty(keyValues)) {
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = null;
                 for (KeyValue kv : keyValues) {
-                    EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
-                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshAppSubTopicInfo.class);
-                    return eventMeshAppSubTopicInfo;
+                    eventMeshAppSubTopicInfo = JsonUtils.parseObject(
+                        new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET),
+                        EventMeshAppSubTopicInfo.class
+                    );
                 }
+                return eventMeshAppSubTopicInfo;
             }
         } catch (Exception e) {
             logger.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
