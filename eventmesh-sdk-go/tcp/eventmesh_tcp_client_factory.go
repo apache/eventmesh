@@ -16,8 +16,8 @@
 package tcp
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/conf"
 )
 
 func CreateEventMeshTCPClient(eventMeshTcpClientConfig conf.EventMeshTCPClientConfig, messageType protocol.MessageType) EventMeshTCPClient {

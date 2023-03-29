@@ -18,7 +18,7 @@
 package consumer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -18,7 +18,7 @@ package utils
 import (
 	"encoding/json"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 )
 
 func MarshalJsonBytes(obj interface{}) []byte {

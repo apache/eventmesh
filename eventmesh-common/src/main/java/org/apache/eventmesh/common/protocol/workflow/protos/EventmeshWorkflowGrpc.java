@@ -61,7 +61,7 @@ public final class EventmeshWorkflowGrpc {
       "rotocol.ExecuteResponse\"\000B\226\001\n4org.apache" +
       ".eventmesh.common.protocol.workflow.prot" +
       "osB\025EventmeshWorkflowGrpcP\001ZEgithub.com/" +
-      "apache/incubator-eventmesh/eventmesh-wor" +
+      "apache/eventmesh/eventmesh-wor" +
       "kflow-go/api/protob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor

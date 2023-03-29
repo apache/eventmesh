@@ -387,7 +387,7 @@ subprojects {
                 pom {
                     name = 'EventMesh'
                     description = 'Apache EventMesh'
-                    url = 'https://github.com/apache/incubator-eventmesh'
+                    url = 'https://github.com/apache/eventmesh'
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
@@ -396,15 +396,15 @@ subprojects {
                     }
                     developers {
                         developer {
-                            id = 'Apache EventMesh(incubating)'
-                            name = 'Apache EventMesh(incubating) of ASF'
+                            id = 'Apache EventMesh'
+                            name = 'Apache EventMesh of ASF'
                             url = 'https://eventmesh.apache.org/'
                         }
                     }
                     scm {
-                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        url = 'https://github.com/apache/incubator-eventmesh'
+                        connection = 'scm:git:git@github.com:apache/eventmesh.git'
+                        developerConnection = 'scm:git:git@github.com:apache/eventmesh.git'
+                        url = 'https://github.com/apache/eventmesh'
                     }
                 }
             }

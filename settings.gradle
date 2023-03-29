@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'incubator-eventmesh'
+rootProject.name = 'eventmesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
 include 'eventmesh-sdk-java'

@@ -16,7 +16,7 @@
 package client
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/body"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/http/body"
 )
 
 var HeartbeatRequestBodyKey = struct {
