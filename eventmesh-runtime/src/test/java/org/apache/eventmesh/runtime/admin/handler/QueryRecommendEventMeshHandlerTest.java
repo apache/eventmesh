@@ -79,7 +79,7 @@ public class QueryRecommendEventMeshHandlerTest {
         outputStream = new ByteArrayOutputStream();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
-            dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
+            dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(Boolean.TRUE);
             handler.handle(httpExchange);
             String response = outputStream.toString();
             Assert.assertEquals("params illegal!", response);
