@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.storage.pravega.exception;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
-public class PravegaStorageException extends StorageConnectorRuntimeException {
+public class PravegaStorageException extends StorageRuntimeException {
 
     public PravegaStorageException(String message) {
         super(message);
