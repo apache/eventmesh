@@ -18,19 +18,15 @@
 package org.apache.eventmesh.client.grpc.producer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.grpc.ManagedChannel;
@@ -49,37 +45,31 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private final transient ManagedChannel channel;
 
-    private transient PublisherServiceBlockingStub publisherClient;
+    private PublisherServiceBlockingStub publisherClient;
 
-    private transient CloudEventProducer cloudEventProducer;
+    private  CloudEventProducer cloudEventProducer;
+
+    private  EventMeshMessageProducer eventMeshMessageProducer;
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
-        channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
-            .usePlaintext().build();
-        publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
-
-        cloudEventProducer = new CloudEventProducer(clientConfig, publisherClient);
+        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).usePlaintext().build();
+        this.publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
+        this.cloudEventProducer = new CloudEventProducer(clientConfig, publisherClient);
+        this.eventMeshMessageProducer = new EventMeshMessageProducer(clientConfig, publisherClient);
     }
 
-    public Response publish(EventMeshMessage message) {
+    public <T> Response publish(T message) {
         if (log.isInfoEnabled()) {
             log.info("Publish message " + message.toString());
         }
-
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, PROTOCOL_TYPE);
-        try {
-            Response response = publisherClient.publish(simpleMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error in publishing message {}", message, e);
-            }
+        if (message instanceof CloudEvent) {
+            return cloudEventProducer.publish((CloudEvent) message);
+        } else if (message instanceof EventMeshMessage) {
+            return eventMeshMessageProducer.publish((EventMeshMessage) message);
+        } else {
+            throw new IllegalArgumentException("Not support message " + message.getClass().getName());
         }
-        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -92,58 +82,26 @@ public class EventMeshGrpcProducer implements AutoCloseable {
             return null;
         }
 
-        if (messageList.get(0) instanceof CloudEvent) {
+        T target = messageList.get(0);
+        if (target instanceof CloudEvent) {
             return cloudEventProducer.publish((List<CloudEvent>) messageList);
+        } else if (target instanceof EventMeshMessage) {
+            return eventMeshMessageProducer.publish((List<EventMeshMessage>) messageList);
+        } else {
+            throw new IllegalArgumentException("Not support message " + target.getClass().getName());
         }
-
-        BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(messageList, clientConfig, PROTOCOL_TYPE);
-        try {
-            Response response = publisherClient.batchPublish(batchMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error in BatchPublish message {}", messageList, e);
-            }
-        }
-        return null;
     }
 
-    public Response publish(final CloudEvent cloudEvent) {
-        return cloudEventProducer.publish(cloudEvent);
-    }
+    public <T> T requestReply(final T message, final long timeout) {
 
-    public CloudEvent requestReply(final CloudEvent cloudEvent, final int timeout) {
-        return cloudEventProducer.requestReply(cloudEvent, timeout);
-    }
-
-    public EventMeshMessage requestReply(final EventMeshMessage message, final int timeout) {
-        if (log.isInfoEnabled()) {
-            log.info("RequestReply message:{}", message);
+        if (message instanceof CloudEvent) {
+            CloudEvent cloudEvent = cloudEventProducer.requestReply((CloudEvent) message, timeout);
+            return (T) cloudEvent;
+        } else if (message instanceof EventMeshMessage) {
+            return (T) eventMeshMessageProducer.requestReply((EventMeshMessage) message, timeout);
+        } else {
+            throw new IllegalArgumentException("Not support message " + message.getClass().getName());
         }
-
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, PROTOCOL_TYPE);
-        try {
-            SimpleMessage reply = publisherClient.withDeadlineAfter(timeout, TimeUnit.MILLISECONDS)
-                .requestReply(simpleMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received reply message:{}", reply);
-            }
-
-            final Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
-            if (msg instanceof EventMeshMessage) {
-                return (EventMeshMessage) msg;
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error in RequestReply message {}", message, e);
-            }
-        }
-        return null;
     }
 
     @Override

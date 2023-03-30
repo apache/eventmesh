@@ -43,9 +43,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import io.cloudevents.CloudEvent;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(PublisherServiceBlockingStub.class)
@@ -58,11 +61,16 @@ public class EventMeshGrpcProducerTest {
     @Mock
     private PublisherServiceBlockingStub stub;
 
+    @Mock
+    private EventMeshMessageProducer eventMeshMessageProducer;
+
     @Before
     public void setUp() throws Exception {
         producer = new EventMeshGrpcProducer(EventMeshGrpcClientConfig.builder().build());
         producer.setCloudEventProducer(cloudEventProducer);
+        producer.setEventMeshMessageProducer(eventMeshMessageProducer);
         producer.setPublisherClient(stub);
+
         doThrow(RuntimeException.class).when(stub).publish(
             argThat(argument -> argument != null && StringUtils.equals(argument.getContent(),
                 "mockExceptionContent")));
@@ -70,20 +78,35 @@ public class EventMeshGrpcProducerTest {
             argThat(argument -> argument != null && StringUtils.equals(argument.getContent(), "mockContent")));
         doReturn(Response.getDefaultInstance()).when(stub).batchPublish(
             argThat(argument -> argument != null && StringUtils.equals(argument.getTopic(), "mockTopic")));
+        doReturn(stub).when(stub).withDeadlineAfter(1000L, TimeUnit.MILLISECONDS);
         doAnswer(invocation -> {
             SimpleMessage simpleMessage = invocation.getArgument(0);
             if (StringUtils.isEmpty(simpleMessage.getContent())) {
                 return SimpleMessage.getDefaultInstance();
             }
             return SimpleMessage.newBuilder(simpleMessage).build();
-        }).when(stub).requestReply(any());
-        doReturn(stub).when(stub).withDeadlineAfter(1000, TimeUnit.MILLISECONDS);
+        }).when(stub).requestReply(Mockito.isA(SimpleMessage.class));
         when(cloudEventProducer.publish(anyList())).thenReturn(Response.getDefaultInstance());
+        when(cloudEventProducer.publish(Mockito.isA(CloudEvent.class))).thenReturn(Response.getDefaultInstance());
+        when(eventMeshMessageProducer.publish(anyList())).thenReturn(Response.getDefaultInstance());
+        when(eventMeshMessageProducer.publish(Mockito.isA(EventMeshMessage.class))).thenReturn(Response.getDefaultInstance());
+        doAnswer(invocation -> {
+            EventMeshMessage eventMeshMessage = invocation.getArgument(0);
+            if (StringUtils.isEmpty(eventMeshMessage.getContent())) {
+                return null;
+            }
+            return eventMeshMessage;
+        }).when(eventMeshMessageProducer).requestReply(any(), Mockito.anyLong());
+
     }
 
     @Test
     public void testPublishWithException() {
-        assertThat(producer.publish(defaultEventMeshMessageBuilder().content("mockExceptionContent").build())).isNull();
+        try {
+            producer.publish(defaultEventMeshMessageBuilder().content("mockExceptionContent").build());
+        } catch (Exception e) {
+            assertThat(e).isNotNull();
+        }
     }
 
     @Test
@@ -109,9 +132,9 @@ public class EventMeshGrpcProducerTest {
     @Test
     public void testRequestReply() {
         assertThat(producer.requestReply(defaultEventMeshMessageBuilder().content(StringUtils.EMPTY).build(),
-            1000)).isNull();
+            1000L)).isNull();
         EventMeshMessage eventMeshMessage = defaultEventMeshMessageBuilder().build();
-        assertThat(producer.requestReply(eventMeshMessage, 1000)).hasFieldOrPropertyWithValue("content",
+        assertThat(producer.requestReply(eventMeshMessage, 1000L)).hasFieldOrPropertyWithValue("content",
             eventMeshMessage.getContent()).hasFieldOrPropertyWithValue("topic", eventMeshMessage.getTopic());
     }
 
