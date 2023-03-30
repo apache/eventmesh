@@ -427,7 +427,7 @@ subprojects {
         sign publishing.publications.mavenJava
     }
 
-    def grpcVersion = '1.43.2'
+    def grpcVersion = '1.54.0'
 
     dependencyManagement {
         dependencies {
