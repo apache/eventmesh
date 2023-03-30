@@ -483,7 +483,7 @@ subprojects {
             dependency "org.assertj:assertj-core:2.6.0"
 
             dependency "org.mockito:mockito-core:3.8.0"
-            dependency "org.mockito:mockito-inline:3.8.0"
+            dependency "org.mockito:mockito-inline:3.12.4"
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.9"
 
