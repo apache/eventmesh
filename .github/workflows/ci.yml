@@ -21,7 +21,7 @@ name: "Continuous Integration"
 
 on:
   push:
-    branches: ['*']
+    branches: [ '*' ]
   pull_request:
     branches: [ '*' ]
 
@@ -31,8 +31,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest]
-        java: [8, 11]
+        os: [ ubuntu-latest, macOS-latest ]
+        java: [ 8, 11 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -54,14 +54,24 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
-        run: ./gradlew clean build jar dist jacocoTestReport
+        run: ./gradlew clean build jar dist jacocoTestReport --parallel --daemon
 
       - name: Install plugin
         run: ./gradlew installPlugin
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
 
       - name: Upload coverage report to codecov.io
         run: bash <(curl -s https://codecov.io/bash) || echo 'Failed to upload coverage report!'
