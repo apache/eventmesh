@@ -90,11 +90,7 @@ public class EtcdCustomService extends EtcdRegistryService {
                         new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
                         EventMeshAppSubTopicInfo.class
                     );
-                if (eventMeshAppSubTopicInfo != null) {
-                    return eventMeshAppSubTopicInfo;
-                } else {
-                    throw new NullPointerException("eventMeshAppSubTopicInfo is null!");
-                }
+                return eventMeshAppSubTopicInfo;
             }
         } catch (Exception e) {
             logger.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
