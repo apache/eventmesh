@@ -19,9 +19,9 @@ package org.apache.eventmesh.grpc.sub;
 
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,7 +67,7 @@ public class EventMeshAsyncSubscribe extends GrpcAbstractDemo implements Receive
     }
 
     @Override
-    public String getProtocolType() {
-        return EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
+    public EventMeshProtocolType getProtocolType() {
+        return EventMeshProtocolType.EVENT_MESH_MESSAGE;
     }
 }

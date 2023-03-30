@@ -15,25 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc.consumer;
+package org.apache.eventmesh.client.grpc.producer;
 
-import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
+ *
  * @param <T>
  */
-public interface ReceiveMsgHook<T> {
+public interface GrpcProducer<T> {
 
-    /**
-     * Handle the received message, return the response message.
-     *
-     * @param msg
-     * @return
-     */
-    Optional<T> handle(T msg) throws Exception;
+    Response publish(T message);
 
-    EventMeshProtocolType getProtocolType();
+    Response publish(List<T> messages);
+
+    T requestReply(T message, long timeout);
 
 }

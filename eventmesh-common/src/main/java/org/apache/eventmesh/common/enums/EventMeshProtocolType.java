@@ -15,25 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc.consumer;
+package org.apache.eventmesh.common.enums;
 
-import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+public enum EventMeshProtocolType {
 
-import java.util.Optional;
+    CLOUD_EVENTS("cloudevents"),
+    EVENT_MESH_MESSAGE("eventmeshmessage"),
+    OPEN_MESSAGE("openmessage");
 
-/**
- * @param <T>
- */
-public interface ReceiveMsgHook<T> {
+    private String name;
 
-    /**
-     * Handle the received message, return the response message.
-     *
-     * @param msg
-     * @return
-     */
-    Optional<T> handle(T msg) throws Exception;
+    EventMeshProtocolType(String name) {
+        this.name = name;
+    }
 
-    EventMeshProtocolType getProtocolType();
+    public String protocolTypeName() {
+        return this.name;
+    }
+
+    public static EventMeshProtocolType eventMeshProtocolType(String name) {
+        for (EventMeshProtocolType protocolType : EventMeshProtocolType.values()) {
+            if (protocolType.protocolTypeName().equals(name)) {
+                return protocolType;
+            }
+        }
+        return null;
+    }
 
 }
