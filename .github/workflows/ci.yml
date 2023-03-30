@@ -55,13 +55,13 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Cache Gradle packages
-          uses: actions/cache@v3
-          with:
-            path: |
-              ~/.gradle/caches
-              ~/.gradle/wrapper
-            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-            restore-keys: ${{ runner.os }}-gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
