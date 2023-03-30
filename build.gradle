@@ -460,7 +460,7 @@ subprojects {
             dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
             dependency "io.dropwizard.metrics:metrics-json:4.1.0"
 
-            dependency 'io.opentelemetry:opentelemetry-api:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-api:1.24.0'
             dependency 'io.opentelemetry:opentelemetry-sdk:1.3.0'
             dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha'
             dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
