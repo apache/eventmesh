@@ -62,6 +62,7 @@ jobs:
               ~/.gradle/wrapper
             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
             restore-keys: ${{ runner.os }}-gradle
+
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
         run: ./gradlew clean build jar dist jacocoTestReport --parallel --daemon
