@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -204,7 +205,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
 
         final Subscription.Builder builder = Subscription.newBuilder()
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
             .setConsumerGroup(clientConfig.getConsumerGroup());
 
         if (StringUtils.isNotEmpty(url)) {
@@ -250,8 +251,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     private void heartBeat() {
-        final RequestHeader header = EventMeshClientUtil.buildHeader(
-            clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
+        final RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
 
         scheduler.scheduleAtFixedRate(() -> {
             if (MapUtils.isEmpty(subscriptionMap)) {
