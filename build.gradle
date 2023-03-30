@@ -480,7 +480,7 @@ subprojects {
 
             dependency "junit:junit:4.13.2"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
-            dependency "org.assertj:assertj-core:2.6.0"
+            dependency "org.assertj:assertj-core:2.9.1"
 
             dependency "org.mockito:mockito-core:3.8.0"
             dependency "org.mockito:mockito-inline:3.8.0"
