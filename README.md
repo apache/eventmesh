@@ -109,6 +109,10 @@ Apache EventMesh is licensed under the [Apache License, Version 2.0](http://www.
 |-|-|-|
 |<img src="resources/wechat-assistant.jpg" width="128"/>|<img src="resources/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1ooav8slu-ijUI98MiEI501jhK1cabKQ)|
 
+bi-weekly meeting : [#Tencent meeting](https://meeting.tencent.com/dm/wes6Erb9ioVV) : 346-6926-0133
+
+bi-weekly meeting record : [bilibili](https://space.bilibili.com/1057662180)
+
 ### Mailing List
 
 |Name|Description|Subscribe|Unsubscribe|Archive
