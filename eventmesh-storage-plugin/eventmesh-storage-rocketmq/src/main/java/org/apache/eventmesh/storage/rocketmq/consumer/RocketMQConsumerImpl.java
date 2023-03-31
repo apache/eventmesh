@@ -42,7 +42,7 @@ public class RocketMQConsumerImpl implements Consumer {
     private ClientConfiguration clientConfiguration;
 
     @Override
-    public synchronized void init(Properties keyValue) throws Exception {
+    public synchronized void init(Properties keyValue) {
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
 
         String consumerGroup = keyValue.getProperty("consumerGroup");
@@ -67,7 +67,7 @@ public class RocketMQConsumerImpl implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic) throws Exception {
+    public void subscribe(String topic) {
         pushConsumer.subscribe(topic, "*");
     }
 
