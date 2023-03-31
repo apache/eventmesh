@@ -128,7 +128,6 @@ public class CloudEventUtils {
             e.printStackTrace();
         }
         return rmqMessageExt;
-
     }
 
     /**
@@ -146,8 +145,6 @@ public class CloudEventUtils {
         if (Objects.nonNull(apply)) {
             biConsumer.accept(target, apply);
         }
-
     }
-
 
 }
