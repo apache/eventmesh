@@ -96,9 +96,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public void heartbeat() throws Exception {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
+        task = scheduler.scheduleAtFixedRate(() -> {
+            
                 try {
                     if (!isActive()) {
                         SubClientImpl.this.reconnect();
@@ -112,7 +111,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 } catch (Exception e) {
                     //ignore
                 }
-            }
+            
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
@@ -165,35 +164,32 @@ public class SubClientImpl extends TCPClient implements SubClient {
         Package response = super.io(request, timeout);
         switch (request.getHeader().getCommand()) {
             case HELLO_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
+                Assert.assertEquals(Command.HELLO_RESPONSE,response.getHeader().getCommand());
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
+                Assert.assertEquals(Command.HEARTBEAT_RESPONSE, response.getHeader().getCommand());
                 break;
             case LISTEN_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
+                Assert.assertEquals(Command.LISTEN_RESPONSE, response.getHeader().getCommand());
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
+                Assert.assertEquals(Command.CLIENT_GOODBYE_RESPONSE,response.getHeader().getCommand());
                 break;
             case SUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
+                Assert.assertEquals(Command.SUBSCRIBE_RESPONSE, response.getHeader().getCommand());
                 break;
             case UNSUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
+                Assert.assertEquals(Command.UNSUBSCRIBE_RESPONSE, response.getHeader().getCommand());
                 break;
             case SYS_LOG_TO_LOGSERVER:
-                Assert.assertNull(response);
-                break;
             case TRACE_LOG_TO_LOGSERVER:
                 Assert.assertNull(response);
                 break;
             default:
                 break;
         }
-        if (response != null) {
-            assert response.getHeader().getCode() == OPStatus.SUCCESS.getCode();
-        }
+        
+        assert response != null || response.getHeader().getCode() == OPStatus.SUCCESS.getCode();
         return response;
     }
 
