@@ -75,28 +75,29 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      */
     void delete(HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
-            String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
-            String url = deleteHTTPClientRequest.getUrl();
+            try {
+                String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
+                DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
+                String url = deleteHTTPClientRequest.getUrl();
 
-            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
-                clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
+                for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+                    clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
+                }
+
+                httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                httpExchange.sendResponseHeaders(200, 0);
+            } catch (Exception e) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
+
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, 0);
+                out.write(result.getBytes());
             }
-
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            httpExchange.sendResponseHeaders(200, 0);
-        } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
-
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-
-            log.error(result, e);
         }
     }
 
