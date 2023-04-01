@@ -83,7 +83,7 @@ public final class RedissonClient {
             config = new Config();
         }
 
-        config.setCodec(CloudEventCodec.INSTANCE);
+        config.setCodec(CloudEventCodec.getInstance());
 
         switch (serverType) {
             case SINGLE:
