@@ -29,9 +29,17 @@ import io.netty.buffer.ByteBufAllocator;
 
 public class CloudEventCodec extends BaseCodec {
 
-    public static final CloudEventCodec INSTANCE = new CloudEventCodec();
+    private static final CloudEventCodec INSTANCE = new CloudEventCodec();
 
     private static final JsonFormat jsonFormat = new JsonFormat(false, true);
+
+    private CloudEventCodec() {
+        // To prevent class instantiation
+    }
+
+    public static CloudEventCodec getInstance() {
+        return INSTANCE;
+    }
 
     private static final Encoder encoder = in -> {
         ByteBuf out = ByteBufAllocator.DEFAULT.buffer();
