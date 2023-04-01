@@ -58,7 +58,7 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals(9816, config.getEventMeshServerRetryThreadNum());
         Assert.assertEquals(11816, config.getEventMeshServerPullRegistryInterval());
         Assert.assertEquals(12816, config.getEventMeshServerAsyncAccumulationThreshold());
-        Assert.assertEquals(13816,config.getEventMeshServerRetryBlockQSize());
+        Assert.assertEquals(13816, config.getEventMeshServerRetryBlockQSize());
         Assert.assertEquals(14816, config.getEventMeshServerBatchBlockQSize());
         Assert.assertEquals(15816, config.getEventMeshServerSendMsgBlockQSize());
         Assert.assertEquals(16816, config.getEventMeshServerPushMsgBlockQSize());
