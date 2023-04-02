@@ -32,6 +32,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 
 import com.sun.net.httpserver.HttpExchange;
@@ -83,14 +84,18 @@ public class RegistryHandler extends AbstractHttpHandler {
                 getRegistryResponseList.add(getRegistryResponse);
             }
             getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.getEventMeshClusterName()));
-
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            httpExchange.sendResponseHeaders(
+                200,
+                Objects.requireNonNull(result).getBytes().length
+            );
             out.write(result.getBytes());
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            httpExchange.sendResponseHeaders(
+                200,
+                Objects.requireNonNull(result).getBytes().length);
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(result.getBytes());
             }
@@ -100,10 +105,12 @@ public class RegistryHandler extends AbstractHttpHandler {
             e.printStackTrace(printWriter);
             printWriter.flush();
             String stackTrace = writer.toString();
-
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
+            httpExchange.sendResponseHeaders(
+                500,
+                Objects.requireNonNull(result).getBytes().length
+            );
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(result.getBytes());
             }
