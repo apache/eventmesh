@@ -221,23 +221,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     }
-                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
+                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK || result == ClientRetCode.FAIL) {
                         complete();
                         if (isComplete()) {
                             handleMsgContext.finish();
                         }
-                    } else if (result == ClientRetCode.RETRY) {
+                    } else if (result == ClientRetCode.RETRY || result == ClientRetCode.NOLISTEN) {
                         delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.NOLISTEN) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.FAIL) {
-                        complete();
                         if (isComplete()) {
                             handleMsgContext.finish();
                         }
