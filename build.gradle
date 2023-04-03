@@ -444,7 +444,7 @@ subprojects {
             dependency "org.apache.logging.log4j:log4j-core:2.17.1"
             dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
 
-            dependency "com.lmax:disruptor:3.4.2"
+            dependency "com.lmax:disruptor:3.4.4"
 
             dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
             dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
