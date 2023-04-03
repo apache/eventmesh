@@ -505,7 +505,7 @@ subprojects {
 
             dependency "com.alibaba.nacos:nacos-client:2.2.1"
 
-            dependency 'org.apache.zookeeper:zookeeper:3.7.1'
+            dependency 'org.apache.zookeeper:zookeeper:3.8.1'
             dependency 'org.apache.curator:curator-client:5.4.0'
             dependency 'org.apache.curator:curator-framework:5.4.0'
             dependency 'org.apache.curator:curator-recipes:5.4.0'
