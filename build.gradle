@@ -479,7 +479,7 @@ subprojects {
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.13.2"
-            dependency "com.github.stefanbirkner:system-rules:1.16.1"
+            dependency "com.github.stefanbirkner:system-rules:1.18.0"
             dependency "org.assertj:assertj-core:2.6.0"
 
             dependency "org.mockito:mockito-core:3.8.0"
