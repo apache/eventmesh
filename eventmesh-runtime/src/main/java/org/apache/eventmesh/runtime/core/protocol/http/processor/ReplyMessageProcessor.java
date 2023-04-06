@@ -60,13 +60,13 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class ReplyMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private static final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
+    private static final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    private static final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public ReplyMessageProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -78,7 +78,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         String localAddress = IPUtils.getLocalAddress();
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+            ChannelRemoteAddr, localAddress);
 
         ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) asyncContext.getRequest().getHeader();
 
@@ -199,7 +199,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         try {
             // body
-            //omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
+
             event = CloudEventBuilder.from(event)
                 .withSubject(replyTopic)
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
