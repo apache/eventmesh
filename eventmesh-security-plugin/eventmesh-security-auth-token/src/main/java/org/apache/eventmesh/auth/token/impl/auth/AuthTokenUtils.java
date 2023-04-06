@@ -33,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
+import java.util.Objects;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
@@ -52,44 +53,9 @@ public class AuthTokenUtils {
                     + aclProperties.getTopic());
             }
             String publicKeyUrl = null;
-            token = token.replace("Bearer ", "");
-            for (String key : ConfigurationContextUtil.KEYS) {
-                CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-                if (null == commonConfiguration) {
-                    continue;
-                }
-                if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
-                    throw new AclException("publicKeyUrl cannot be null");
-                }
-                publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
-            }
-            byte[] validationKeyBytes = new byte[0];
-            try {
-                validationKeyBytes = Files.readAllBytes(Paths.get(publicKeyUrl));
-                X509EncodedKeySpec spec = new X509EncodedKeySpec(validationKeyBytes);
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                Key validationKey = kf.generatePublic(spec);
-                JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
-                Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
-                String sub = signJwt.getBody().get("sub", String.class);
-                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
-                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                        + aclProperties.getTopic());
-                }
-            } catch (IOException e) {
-                throw new AclException("public key read error!", e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new AclException("no such RSA algorithm!", e);
-            } catch (InvalidKeySpecException e) {
-                throw new AclException("invalid public key spec!", e);
-            } catch (JwtException e) {
-                throw new AclException("invalid token!", e);
-            }
-
+            String sub = validateTokenAndGetSub(token, publicKeyUrl, aclProperties);
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -97,43 +63,9 @@ public class AuthTokenUtils {
         String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             String publicKeyUrl = null;
-            token = token.replace("Bearer ", "");
-            for (String key : ConfigurationContextUtil.KEYS) {
-                CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-                if (null == commonConfiguration) {
-                    continue;
-                }
-                if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
-                    throw new AclException("publicKeyUrl cannot be null");
-                }
-                publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
-            }
-            byte[] validationKeyBytes = new byte[0];
-            try {
-                validationKeyBytes = Files.readAllBytes(Paths.get(publicKeyUrl));
-                X509EncodedKeySpec spec = new X509EncodedKeySpec(validationKeyBytes);
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                Key validationKey = kf.generatePublic(spec);
-                JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
-                Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
-                String sub = signJwt.getBody().get("sub", String.class);
-                if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
-                    throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                        + aclProperties.getTopic());
-                }
-            } catch (IOException e) {
-                throw new AclException("public key read error!", e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new AclException("no such RSA algorithm!", e);
-            } catch (InvalidKeySpecException e) {
-                throw new AclException("invalid public key spec!", e);
-            } catch (JwtException e) {
-                throw new AclException("invalid token!", e);
-            }
+            String sub = validateTokenAndGetSub(token, publicKeyUrl, aclProperties);
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -143,12 +75,36 @@ public class AuthTokenUtils {
 
         Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
 
-        if (groupTopics.contains(topic)) {
-            return true;
-        } else {
-            return false;
-        }
+        return groupTopics.contains(topic);
 
+    }
+
+    public static String validateTokenAndGetSub(String token, String publicKeyUrl, AclProperties aclProperties) {
+        String sub = null;
+        token = token.replace("Bearer ", "");
+        byte[] validationKeyBytes;
+        try {
+            validationKeyBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(publicKeyUrl)));
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(validationKeyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            Key validationKey = kf.generatePublic(spec);
+            JwtParser signedParser = Jwts.parserBuilder().setSigningKey(validationKey).build();
+            Jwt<?, Claims> signJwt = signedParser.parseClaimsJws(token);
+            sub = signJwt.getBody().get("sub", String.class);
+            if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
+                throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
+                    + aclProperties.getTopic());
+            }
+        } catch (IOException e) {
+            throw new AclException("public key read error!", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new AclException("no such RSA algorithm!", e);
+        } catch (InvalidKeySpecException e) {
+            throw new AclException("invalid public key spec!", e);
+        } catch (JwtException e) {
+            throw new AclException("invalid token!", e);
+        }
+        return sub;
     }
 
 }
