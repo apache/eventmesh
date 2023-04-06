@@ -22,9 +22,9 @@ public class EventMeshVersion {
     public static final String CURRENT_VERSION = Version.V3_0_0.name();
 
     public static String getCurrentVersionDesc() {
-        return CURRENT_VERSION.replaceAll("V", "")
-            .replaceAll("_", ".")
-            .replaceAll("_SNAPSHOT", "-SNAPSHOT");
+        return CURRENT_VERSION.replace("V", "")
+            .replace("_", ".")
+            .replace("_SNAPSHOT", "-SNAPSHOT");
     }
 
     public enum Version {
