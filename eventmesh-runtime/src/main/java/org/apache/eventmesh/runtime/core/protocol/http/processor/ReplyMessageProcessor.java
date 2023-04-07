@@ -76,9 +76,10 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseEventMeshCommand;
         String localAddress = IPUtils.getLocalAddress();
+        final String channelRemoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            ChannelRemoteAddr, localAddress);
+            channelRemoteAddr, localAddress);
 
         ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) asyncContext.getRequest().getHeader();
 
