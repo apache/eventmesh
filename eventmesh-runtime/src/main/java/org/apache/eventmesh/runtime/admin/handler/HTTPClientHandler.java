@@ -139,7 +139,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes());
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
