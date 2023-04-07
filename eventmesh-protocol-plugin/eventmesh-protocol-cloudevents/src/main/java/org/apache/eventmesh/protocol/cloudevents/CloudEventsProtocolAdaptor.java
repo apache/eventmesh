@@ -39,6 +39,7 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocol
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         Preconditions.checkNotNull(cloudEvent, "cloudEvent cannot be null");
-        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+        String protocolDesc = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_DESC)).toString();
         if (StringUtils.equals("http", protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
@@ -127,7 +128,8 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 @Override
                 public Map<String, Object> toMap() {
                     byte[] eventByte =
-                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
+                        Objects.requireNonNull(EventFormatProvider.getInstance()
+                            .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
                     map.put("content", new String(eventByte, StandardCharsets.UTF_8));
                     return map;
                 }
