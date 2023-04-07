@@ -28,7 +28,7 @@ import org.junit.Test;
 
 public class BeanUtilsTest {
 
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
     public static class CustomizedConfig extends ClientConfig {
 
@@ -84,13 +84,12 @@ public class BeanUtilsTest {
     public void testPopulate() {
         CustomizedConfig config = BeanUtils.populate(properties, CustomizedConfig.class);
 
-        //RemotingConfig config = BeanUtils.populate(properties, RemotingConfig.class);
-        Assert.assertEquals(config.getRmqMaxRedeliveryTimes(), 120);
-        Assert.assertEquals(config.getStringTest(), "kaka");
-        Assert.assertEquals(config.getRmqConsumerGroup(), "Default_Consumer_Group");
-        Assert.assertEquals(config.getRmqMessageConsumeTimeout(), 101);
-        Assert.assertEquals(config.getLongTest(), 1234567890L);
-        Assert.assertEquals(config.getDoubleTest(), 10.234, 0.000001);
+        Assert.assertEquals(120, config.getRmqMaxRedeliveryTimes());
+        Assert.assertEquals("kaka", config.getStringTest());
+        Assert.assertEquals("Default_Consumer_Group", config.getRmqConsumerGroup());
+        Assert.assertEquals(101, config.getRmqMessageConsumeTimeout());
+        Assert.assertEquals(1234567890L, config.getLongTest());
+        Assert.assertEquals(10.234, 0.000001, config.getDoubleTest());
     }
 
     @Test
@@ -98,17 +97,16 @@ public class BeanUtilsTest {
         CustomizedConfig config = new CustomizedConfig();
         config.setConsumerId("NewConsumerId");
 
-        Assert.assertEquals(config.getConsumerId(), "NewConsumerId");
+        Assert.assertEquals("NewConsumerId", config.getConsumerId());
 
-        config = BeanUtils.populate(properties, config);
+        BeanUtils.populate(properties, config);
 
-        //RemotingConfig config = BeanUtils.populate(properties, RemotingConfig.class);
-        Assert.assertEquals(config.getRmqMaxRedeliveryTimes(), 120);
-        Assert.assertEquals(config.getStringTest(), "kaka");
-        Assert.assertEquals(config.getRmqConsumerGroup(), "Default_Consumer_Group");
-        Assert.assertEquals(config.getRmqMessageConsumeTimeout(), 101);
-        Assert.assertEquals(config.getLongTest(), 1234567890L);
-        Assert.assertEquals(config.getDoubleTest(), 10.234, 0.000001);
+        Assert.assertEquals(120, config.getRmqMaxRedeliveryTimes());
+        Assert.assertEquals("kaka", config.getStringTest());
+        Assert.assertEquals("Default_Consumer_Group", config.getRmqConsumerGroup());
+        Assert.assertEquals(101, config.getRmqMessageConsumeTimeout());
+        Assert.assertEquals(1234567890L, config.getLongTest());
+        Assert.assertEquals(10.234, 0.000001, config.getDoubleTest());
     }
 
 }
