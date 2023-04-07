@@ -49,7 +49,7 @@ public class RabbitmqCloudEventTest {
     public void toByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assert.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
         Assert.assertNotNull(data);
@@ -59,12 +59,12 @@ public class RabbitmqCloudEventTest {
     public void getFromByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assert.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
         Assert.assertNotNull(data);
 
         RabbitmqCloudEvent event = RabbitmqCloudEvent.getFromByteArray(data);
-        Assert.assertEquals(event.getExtensions().get("subject"), "topic");
+        Assert.assertEquals("topic", event.getExtensions().get("subject"));
     }
 }
