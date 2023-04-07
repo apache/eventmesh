@@ -21,8 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
-
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -85,22 +84,22 @@ public class ProducerImpl {
         }
     }
 
-    public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, StorageConnectorRuntimeException {
-        try(Admin admin = Admin.create(properties)){
+    public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, StorageRuntimeException {
+        try (Admin admin = Admin.create(properties)) {
             Set<String> topicNames = admin.listTopics().names().get();
             boolean exist = topicNames.contains(topic);
             if (!exist) {
-                throw new StorageConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+                throw new StorageRuntimeException(String.format("topic:%s is not exist", topic));
             }
         }
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        throw new StorageConnectorRuntimeException("Request is not supported");
+        throw new StorageRuntimeException("Request is not supported");
     }
 
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        throw new StorageConnectorRuntimeException("Reply is not supported");
+        throw new StorageRuntimeException("Reply is not supported");
     }
 
     public void sendOneway(CloudEvent message) {
@@ -110,7 +109,7 @@ public class ProducerImpl {
         try {
             this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent), (metadata, exception) -> {
                 if (exception != null) {
-                    StorageConnectorRuntimeException onsEx = new StorageConnectorRuntimeException(exception.getMessage(), exception);
+                    StorageRuntimeException onsEx = new StorageRuntimeException(exception.getMessage(), exception);
                     OnExceptionContext context = new OnExceptionContext();
                     context.setTopic(cloudEvent.getSubject());
                     context.setException(onsEx);

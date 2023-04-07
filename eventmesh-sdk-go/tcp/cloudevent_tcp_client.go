@@ -16,8 +16,8 @@
 package tcp
 
 import (
-	gtcp "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
+	gtcp "github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/conf"
 )
 
 type CloudEventTCPClient struct {

@@ -19,7 +19,7 @@ package org.apache.eventmesh.storage.kafka.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -56,7 +56,7 @@ public class ConsumerImpl {
         // Setting the ClassLoader to null is necessary for Kafka consumer configuration
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(null);
-        
+
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -114,7 +114,7 @@ public class ConsumerImpl {
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
             log.error("Error while subscribing the Kafka consumer to topic: ", e);
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
                 String.format("Kafka consumer can't attach to %s.", topic));
         }
     }
@@ -128,7 +128,7 @@ public class ConsumerImpl {
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
             log.error("Error while unsubscribing the Kafka consumer: ", e);
-            throw new StorageConnectorRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
+            throw new StorageRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
         }
     }
 

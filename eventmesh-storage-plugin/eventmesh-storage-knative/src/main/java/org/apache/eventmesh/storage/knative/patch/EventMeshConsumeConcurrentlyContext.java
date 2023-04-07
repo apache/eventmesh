@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.exception;
+package org.apache.eventmesh.storage.knative.patch;
 
-public class StorageConnectorRuntimeException extends RuntimeException {
+public class EventMeshConsumeConcurrentlyContext {
+    private boolean manualAck = true;
 
-    public StorageConnectorRuntimeException() {
-
+    public boolean isManualAck() {
+        return manualAck;
     }
 
-    public StorageConnectorRuntimeException(String message) {
-        super(message);
+    public void setManualAck(boolean manualAck) {
+        this.manualAck = manualAck;
     }
-
-    public StorageConnectorRuntimeException(Throwable throwable) {
-        super(throwable);
-    }
-
-    public StorageConnectorRuntimeException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
-
 }

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.redis.client;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.storage.redis.cloudevent.CloudEventCodec;
@@ -70,7 +70,7 @@ public final class RedissonClient {
             final String message = "Invalid Redis server type: " + properties.getServerType()
                 + ", supported values are: "
                 + Arrays.toString(RedisProperties.ServerType.values());
-            throw new StorageConnectorRuntimeException(message, ie);
+            throw new StorageRuntimeException(message, ie);
         }
 
         String serverAddress = properties.getServerAddress();
@@ -83,7 +83,7 @@ public final class RedissonClient {
             config = new Config();
         }
 
-        config.setCodec(CloudEventCodec.INSTANCE);
+        config.setCodec(CloudEventCodec.getInstance());
 
         switch (serverType) {
             case SINGLE:
@@ -106,7 +106,7 @@ public final class RedissonClient {
                 final String message = "Invalid Redis server type: " + properties.getServerType()
                     + ", supported values are: "
                     + Arrays.toString(RedisProperties.ServerType.values());
-                throw new StorageConnectorRuntimeException(message);
+                throw new StorageRuntimeException(message);
         }
 
         return (Redisson) Redisson.create(config);

@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.pulsar.client;
 
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
 import org.apache.eventmesh.storage.pulsar.utils.CloudEventUtils;
@@ -32,6 +32,7 @@ import org.apache.pulsar.client.api.PulsarClientException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -46,9 +47,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PulsarClientWrapper {
 
-    private ClientConfiguration config;
-    private PulsarClient pulsarClient;
-    private Map<String, Producer<byte[]>> producerMap = new HashMap<>();
+    private final ClientConfiguration config;
+    private final PulsarClient pulsarClient;
+    private final Map<String, Producer<byte[]>> producerMap = new HashMap<>();
 
     public PulsarClientWrapper(ClientConfiguration config, Properties properties)  {
         this.config = config;
@@ -73,7 +74,7 @@ public class PulsarClientWrapper {
 
             this.pulsarClient = clientBuilder.build();
         } catch (PulsarClientException ex) {
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
               String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
         }
     }
@@ -87,7 +88,7 @@ public class PulsarClientWrapper {
                 .blockIfQueueFull(true)
                 .create();
         } catch (PulsarClientException ex) {
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
               String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
         }
     }
@@ -96,9 +97,9 @@ public class PulsarClientWrapper {
         String topic = config.getTopicPrefix() + cloudEvent.getSubject();
         Producer<byte[]> producer = producerMap.computeIfAbsent(topic, k -> createProducer(topic));
         try {
-            byte[] serializedCloudEvent = EventFormatProvider
+            byte[] serializedCloudEvent = Objects.requireNonNull(EventFormatProvider
                 .getInstance()
-                .resolveFormat(JsonFormat.CONTENT_TYPE)
+                .resolveFormat(JsonFormat.CONTENT_TYPE))
                 .serialize(cloudEvent);
             producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
                 sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));

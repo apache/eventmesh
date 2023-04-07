@@ -20,6 +20,13 @@ package org.apache.eventmesh.storage.rocketmq.config;
 
 import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@NoArgsConstructor
+@Getter
+@Setter
 public class ClientConfig implements NonStandardKeys {
 
     private String driverImpl;
@@ -43,163 +50,4 @@ public class ClientConfig implements NonStandardKeys {
     private int rmqPullMessageCacheCapacity = 1000;
     private String messageModel;
 
-    public String getDriverImpl() {
-        return driverImpl;
-    }
-
-    public void setDriverImpl(final String driverImpl) {
-        this.driverImpl = driverImpl;
-    }
-
-    public String getAccessPoints() {
-        return accessPoints;
-    }
-
-    public void setAccessPoints(final String accessPoints) {
-        this.accessPoints = accessPoints;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(final String namespace) {
-        this.namespace = namespace;
-    }
-
-    public String getProducerId() {
-        return producerId;
-    }
-
-    public void setProducerId(final String producerId) {
-        this.producerId = producerId;
-    }
-
-    public String getConsumerId() {
-        return consumerId;
-    }
-
-    public void setConsumerId(final String consumerId) {
-        this.consumerId = consumerId;
-    }
-
-    public int getOperationTimeout() {
-        return operationTimeout;
-    }
-
-    public void setOperationTimeout(final int operationTimeout) {
-        this.operationTimeout = operationTimeout;
-    }
-
-    public String getRoutingSource() {
-        return routingSource;
-    }
-
-    public void setRoutingSource(final String routingSource) {
-        this.routingSource = routingSource;
-    }
-
-    public String getRmqConsumerGroup() {
-        return rmqConsumerGroup;
-    }
-
-    public void setRmqConsumerGroup(final String rmqConsumerGroup) {
-        this.rmqConsumerGroup = rmqConsumerGroup;
-    }
-
-    public String getRmqProducerGroup() {
-        return rmqProducerGroup;
-    }
-
-    public void setRmqProducerGroup(final String rmqProducerGroup) {
-        this.rmqProducerGroup = rmqProducerGroup;
-    }
-
-    public int getRmqMaxRedeliveryTimes() {
-        return rmqMaxRedeliveryTimes;
-    }
-
-    public void setRmqMaxRedeliveryTimes(final int rmqMaxRedeliveryTimes) {
-        this.rmqMaxRedeliveryTimes = rmqMaxRedeliveryTimes;
-    }
-
-    public int getRmqMessageConsumeTimeout() {
-        return rmqMessageConsumeTimeout;
-    }
-
-    public void setRmqMessageConsumeTimeout(final int rmqMessageConsumeTimeout) {
-        this.rmqMessageConsumeTimeout = rmqMessageConsumeTimeout;
-    }
-
-    public int getRmqMaxConsumeThreadNums() {
-        return rmqMaxConsumeThreadNums;
-    }
-
-    public void setRmqMaxConsumeThreadNums(final int rmqMaxConsumeThreadNums) {
-        this.rmqMaxConsumeThreadNums = rmqMaxConsumeThreadNums;
-    }
-
-    public int getRmqMinConsumeThreadNums() {
-        return rmqMinConsumeThreadNums;
-    }
-
-    public void setRmqMinConsumeThreadNums(final int rmqMinConsumeThreadNums) {
-        this.rmqMinConsumeThreadNums = rmqMinConsumeThreadNums;
-    }
-
-    public String getRmqMessageDestination() {
-        return rmqMessageDestination;
-    }
-
-    public void setRmqMessageDestination(final String rmqMessageDestination) {
-        this.rmqMessageDestination = rmqMessageDestination;
-    }
-
-    public int getRmqPullMessageBatchNums() {
-        return rmqPullMessageBatchNums;
-    }
-
-    public void setRmqPullMessageBatchNums(final int rmqPullMessageBatchNums) {
-        this.rmqPullMessageBatchNums = rmqPullMessageBatchNums;
-    }
-
-    public int getRmqPullMessageCacheCapacity() {
-        return rmqPullMessageCacheCapacity;
-    }
-
-    public void setRmqPullMessageCacheCapacity(final int rmqPullMessageCacheCapacity) {
-        this.rmqPullMessageCacheCapacity = rmqPullMessageCacheCapacity;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
-    public String getRoutingDestination() {
-        return routingDestination;
-    }
-
-    public void setRoutingDestination(String routingDestination) {
-        this.routingDestination = routingDestination;
-    }
-
-    public String getRoutingExpression() {
-        return routingExpression;
-    }
-
-    public void setRoutingExpression(String routingExpression) {
-        this.routingExpression = routingExpression;
-    }
-
-    public String getMessageModel() {
-        return messageModel;
-    }
-
-    public void setMessageModel(String messageModel) {
-        this.messageModel = messageModel;
-    }
 }

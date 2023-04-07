@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.pulsar.producer;
 
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,11 +38,11 @@ public abstract class AbstractProducer {
         return this.properties;
     }
 
-    StorageConnectorRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
+    StorageRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
         if (cloudEvent.getData() == null) {
-            return new StorageConnectorRuntimeException(String.format("CloudEvent message data does not exist, %s", e.getMessage()));
+            return new StorageRuntimeException(String.format("CloudEvent message data does not exist, %s", e.getMessage()));
         }
-        return new StorageConnectorRuntimeException(String.format("Unknown connector runtime exception, %s", e.getMessage()));
+        return new StorageRuntimeException(String.format("Unknown connector runtime exception, %s", e.getMessage()));
     }
 
     public boolean isStarted() {

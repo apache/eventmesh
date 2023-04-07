@@ -22,11 +22,11 @@ import org.apache.eventmesh.client.catalog.config.EventMeshCatalogClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.selector.SelectorFactory;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.workflow.EventMeshWorkflowClient;
 import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,7 +103,7 @@ public class WorkflowPaymentAsyncSubscribe extends GrpcAbstractDemo implements R
     }
 
     @Override
-    public String getProtocolType() {
-        return EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
+    public EventMeshProtocolType getProtocolType() {
+        return EventMeshProtocolType.EVENT_MESH_MESSAGE;
     }
 }

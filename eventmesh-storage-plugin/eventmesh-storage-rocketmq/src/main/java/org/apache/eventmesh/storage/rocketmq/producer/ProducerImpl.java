@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.rocketmq.cloudevent.RocketMQMessageFactory;
 import org.apache.eventmesh.storage.rocketmq.utils.CloudEventUtils;
@@ -146,7 +146,7 @@ public class ProducerImpl extends AbstractProducer {
 
     private Message supplySysProp(Message msg, CloudEvent cloudEvent) {
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
-            String ceKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+            String ceKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
             if (cloudEvent.getExtension(ceKey) != null && StringUtils.isNotEmpty(Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString())) {
                 MessageAccessor.putProperty(msg, sysPropKey, Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString());
                 msg.getProperties().remove(ceKey);
@@ -163,7 +163,7 @@ public class ProducerImpl extends AbstractProducer {
                 for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                     if (StringUtils.isNotEmpty(message.getProperty(sysPropKey))) {
                         String prop = message.getProperty(sysPropKey);
-                        String tmpPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                        String tmpPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                         MessageAccessor.putProperty(message, tmpPropKey, prop);
                         message.getProperties().remove(sysPropKey);
                     }
@@ -175,7 +175,7 @@ public class ProducerImpl extends AbstractProducer {
             @Override
             public void onException(Throwable e) {
                 String topic = message.getTopic();
-                StorageConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
+                StorageRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
                 OnExceptionContext context = new OnExceptionContext();
                 context.setTopic(topic);
                 context.setException(onsEx);
@@ -196,7 +196,7 @@ public class ProducerImpl extends AbstractProducer {
             @Override
             public void onException(Throwable e) {
                 String topic = message.getTopic();
-                StorageConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
+                StorageRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
                 OnExceptionContext context = new OnExceptionContext();
                 context.setTopic(topic);
                 context.setException(onsEx);

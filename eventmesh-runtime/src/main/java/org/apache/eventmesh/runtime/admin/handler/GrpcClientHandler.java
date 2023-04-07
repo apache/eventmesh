@@ -77,35 +77,33 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      */
     void delete(HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
-            try {
-                String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-                DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
-                String url = deleteGrpcClientRequest.getUrl();
+            String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
+            DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
+            String url = deleteGrpcClientRequest.getUrl();
 
-                ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
-                Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
-                for (List<ConsumerGroupClient> clientList : clientTable.values()) {
-                    for (ConsumerGroupClient client : clientList) {
-                        if (Objects.equals(client.getUrl(), url)) {
-                            consumerManager.deregisterClient(client);
-                        }
+            ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
+            Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
+            for (List<ConsumerGroupClient> clientList : clientTable.values()) {
+                for (ConsumerGroupClient client : clientList) {
+                    if (Objects.equals(client.getUrl(), url)) {
+                        consumerManager.deregisterClient(client);
                     }
                 }
-
-                httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-                httpExchange.sendResponseHeaders(200, 0);
-            } catch (Exception e) {
-                StringWriter writer = new StringWriter();
-                PrintWriter printWriter = new PrintWriter(writer);
-                e.printStackTrace(printWriter);
-                printWriter.flush();
-                String stackTrace = writer.toString();
-
-                Error error = new Error(e.toString(), stackTrace);
-                String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, 0);
-                out.write(result.getBytes());
             }
+
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.sendResponseHeaders(200, 0);
+        } catch (Exception e) {
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            e.printStackTrace(printWriter);
+            printWriter.flush();
+            String stackTrace = writer.toString();
+
+            Error error = new Error(e.toString(), stackTrace);
+            String result = JsonUtils.toJSONString(error);
+            httpExchange.sendResponseHeaders(500, 0);
+            log.error(result, e);
         }
     }
 

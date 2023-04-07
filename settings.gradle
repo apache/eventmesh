@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'incubator-eventmesh'
+rootProject.name = 'eventmesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
 include 'eventmesh-sdk-java'
@@ -26,6 +26,7 @@ include 'eventmesh-spi'
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
 include 'eventmesh-storage-plugin:eventmesh-storage-kafka'
+include 'eventmesh-storage-plugin:eventmesh-storage-knative'
 include 'eventmesh-storage-plugin:eventmesh-storage-mongodb'
 include 'eventmesh-storage-plugin:eventmesh-storage-pulsar'
 include 'eventmesh-storage-plugin:eventmesh-storage-pravega'

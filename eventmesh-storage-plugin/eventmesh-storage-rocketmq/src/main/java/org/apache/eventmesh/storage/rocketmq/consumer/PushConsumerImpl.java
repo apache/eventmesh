@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.api.exception.StorageConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.rocketmq.cloudevent.RocketMQMessageFactory;
 import org.apache.eventmesh.storage.rocketmq.common.EventMeshConstants;
@@ -68,12 +68,12 @@ public class PushConsumerImpl {
 
         String accessPoints = clientConfig.getAccessPoints();
         if (accessPoints == null || accessPoints.isEmpty()) {
-            throw new StorageConnectorRuntimeException("OMS AccessPoints is null or empty.");
+            throw new StorageRuntimeException("OMS AccessPoints is null or empty.");
         }
         this.rocketmqPushConsumer.setNamesrvAddr(accessPoints.replace(',', ';'));
         String consumerGroup = clientConfig.getConsumerId();
         if (null == consumerGroup || consumerGroup.isEmpty()) {
-            throw new StorageConnectorRuntimeException(
+            throw new StorageRuntimeException(
                 "Consumer Group is necessary for RocketMQ, please set it.");
         }
         this.rocketmqPushConsumer.setConsumerGroup(consumerGroup);
@@ -107,7 +107,7 @@ public class PushConsumerImpl {
             try {
                 this.rocketmqPushConsumer.start();
             } catch (Exception e) {
-                throw new StorageConnectorRuntimeException(e.getMessage());
+                throw new StorageRuntimeException(e.getMessage());
             }
         }
     }
@@ -137,7 +137,7 @@ public class PushConsumerImpl {
         try {
             this.rocketmqPushConsumer.subscribe(topic, subExpression);
         } catch (MQClientException e) {
-            throw new StorageConnectorRuntimeException(String.format("RocketMQ push consumer can't attach to %s.", topic));
+            throw new StorageRuntimeException(String.format("RocketMQ push consumer can't attach to %s.", topic));
         }
     }
 
@@ -145,7 +145,7 @@ public class PushConsumerImpl {
         try {
             this.rocketmqPushConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            throw new StorageConnectorRuntimeException(String.format("RocketMQ push consumer fails to unsubscribe topic: %s", topic));
+            throw new StorageRuntimeException(String.format("RocketMQ push consumer fails to unsubscribe topic: %s", topic));
         }
     }
 
@@ -186,7 +186,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }
@@ -195,7 +195,7 @@ public class PushConsumerImpl {
             }
 
             if (eventListener == null) {
-                throw new StorageConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
+                throw new StorageRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                     msg.getTopic()));
             }
 
@@ -257,7 +257,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }
@@ -266,7 +266,7 @@ public class PushConsumerImpl {
             }
 
             if (eventListener == null) {
-                throw new StorageConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
+                throw new StorageRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                     msg.getTopic()));
             }
 

@@ -387,7 +387,7 @@ subprojects {
                 pom {
                     name = 'EventMesh'
                     description = 'Apache EventMesh'
-                    url = 'https://github.com/apache/incubator-eventmesh'
+                    url = 'https://github.com/apache/eventmesh'
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
@@ -396,15 +396,15 @@ subprojects {
                     }
                     developers {
                         developer {
-                            id = 'Apache EventMesh(incubating)'
-                            name = 'Apache EventMesh(incubating) of ASF'
+                            id = 'Apache EventMesh'
+                            name = 'Apache EventMesh of ASF'
                             url = 'https://eventmesh.apache.org/'
                         }
                     }
                     scm {
-                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        url = 'https://github.com/apache/incubator-eventmesh'
+                        connection = 'scm:git:git@github.com:apache/eventmesh.git'
+                        developerConnection = 'scm:git:git@github.com:apache/eventmesh.git'
+                        url = 'https://github.com/apache/eventmesh'
                     }
                 }
             }
@@ -473,9 +473,9 @@ subprojects {
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
-            dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
+            dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
 
-            dependency "org.springframework.boot:spring-boot-starter-web:2.6.7"
+            dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.13.2"
@@ -485,7 +485,7 @@ subprojects {
             dependency "org.mockito:mockito-core:3.8.0"
             dependency "org.mockito:mockito-inline:3.8.0"
             dependency "org.powermock:powermock-module-junit4:2.0.2"
-            dependency "org.powermock:powermock-api-mockito2:2.0.2"
+            dependency "org.powermock:powermock-api-mockito2:2.0.9"
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
             dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
@@ -503,13 +503,13 @@ subprojects {
             dependency "org.yaml:snakeyaml:1.30"
             dependency "org.javassist:javassist:3.24.0-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.1.0"
+            dependency "com.alibaba.nacos:nacos-client:2.2.1"
 
-            dependency 'org.apache.zookeeper:zookeeper:3.4.6'
-            dependency 'org.apache.curator:curator-client:4.0.1'
-            dependency 'org.apache.curator:curator-framework:4.0.1'
-            dependency 'org.apache.curator:curator-recipes:4.0.1'
-            dependency 'org.apache.curator:curator-test:2.12.0'
+            dependency 'org.apache.zookeeper:zookeeper:3.7.1'
+            dependency 'org.apache.curator:curator-client:5.4.0'
+            dependency 'org.apache.curator:curator-framework:5.4.0'
+            dependency 'org.apache.curator:curator-recipes:5.4.0'
+            dependency 'org.apache.curator:curator-test:5.4.0'
 
             dependency "org.projectlombok:lombok:1.18.22"
             dependency "com.github.seancfoley:ipaddress:5.3.3"
