@@ -130,7 +130,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                     byte[] eventByte =
                         Objects.requireNonNull(EventFormatProvider.getInstance()
                             .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
-                    map.put("content", new String(eventByte, StandardCharsets.UTF_8));
+                    map.put("content", new String(eventByte, Constants.DEFAULT_CHARSET));
                     return map;
                 }
             };
