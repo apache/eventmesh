@@ -19,8 +19,6 @@ package org.apache.eventmesh.auth.token.impl.auth;
 
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +31,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Set;
-import java.util.Objects;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
