@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Properties;
+import java.util.Objects;
 
 import org.assertj.core.util.Strings;
 
@@ -81,7 +82,7 @@ public class ConfigService {
         configInfo.setPath(config == null ? null : config.path());
         configInfo.setHump(config == null ? ConfigInfo.HUMP_SPOT : config.hump());
         configInfo.setPrefix(config == null ? null : config.prefix());
-        configInfo.setMonitor(config == null ? false : config.monitor());
+        configInfo.setMonitor(config != null && config.monitor());
         configInfo.setReloadMethodName(config == null ? null : config.reloadMethodName());
 
         try {
@@ -127,7 +128,7 @@ public class ConfigService {
         }
 
         if (filePath.contains(".jar")) {
-            try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
+            try (final InputStream inputStream = getClass().getResourceAsStream(Objects.requireNonNull(resourceUrl))) {
                 if (inputStream == null) {
                     throw new RuntimeException("file is not exists");
                 }
