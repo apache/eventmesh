@@ -124,7 +124,7 @@ public class RedirectClientByPathHandlerTest {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
                     any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
             }
         }
