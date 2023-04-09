@@ -80,7 +80,7 @@ public class EventHandler extends AbstractHttpHandler {
 
     private Map<String, String> queryToMap(String query) {
         if (query == null) {
-            return null;
+            return new HashMap<>();
         }
         Map<String, String> result = new HashMap<>();
         for (String param : query.split("&")) {
@@ -105,7 +105,6 @@ public class EventHandler extends AbstractHttpHandler {
             String queryString = httpExchange.getRequestURI().getQuery();
             if (queryString == null || "".equals(queryString)) {
                 httpExchange.sendResponseHeaders(401, 0);
-                out.close();
                 return;
             }
 
