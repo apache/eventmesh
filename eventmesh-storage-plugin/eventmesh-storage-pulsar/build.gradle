@@ -23,11 +23,11 @@ configurations {
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
-    implementation 'org.apache.pulsar:pulsar-client:2.10.1'
+    implementation 'org.apache.pulsar:pulsar-client:2.11.0'
 
     testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     testImplementation project(":eventmesh-common")
-    testImplementation 'org.apache.pulsar:pulsar-client:2.10.1'
+    testImplementation 'org.apache.pulsar:pulsar-client:2.11.0'
 
     implementation 'io.cloudevents:cloudevents-json-jackson'
 
