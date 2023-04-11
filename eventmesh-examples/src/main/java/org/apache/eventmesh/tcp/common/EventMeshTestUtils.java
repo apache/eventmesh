@@ -108,7 +108,7 @@ public class EventMeshTestUtils {
         return getPackageMsg(RESPONSE_TO_SERVER, request);
     }
 
-    public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic,String msgType, String msg , string keys, 
+    public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic, String msgType, String msg, String keys, 
                                                        String keyMsg, String testMessage){
 
         final EventMeshMessage mqmsg = new EventMeshMessage();
