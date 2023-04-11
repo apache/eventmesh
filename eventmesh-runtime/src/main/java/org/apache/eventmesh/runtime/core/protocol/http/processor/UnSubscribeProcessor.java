@@ -160,12 +160,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         // remove subscribed url
                         if (!StringUtils.equals(unSubscribeUrl, client.getUrl())) {
                             clientUrls.add(client.getUrl());
-
-                            List<String> urls = idcUrls.get(client.getIdc());
-                            if (urls == null) {
-                                urls = new ArrayList<String>();
-                                idcUrls.put(client.getIdc(), urls);
-                            }
+                            idcUrls.computeIfAbsent(client.getIdc(), k -> new ArrayList<>());
                         }
 
                     }
