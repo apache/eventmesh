@@ -38,8 +38,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.lang.model.element.PackageElement;
-import javax.swing.text.Utilities;
+
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -53,7 +52,7 @@ public class EventMeshTestUtils {
     private static final String DEFAULT_TTL_MS = "30000";
 
 
-    private static UserAgent getUserAgent(Integer port, String subsystem1, Integer pid){
+    private static UserAgent getUserAgent(Integer port, String subsystem, Integer pid){
         return UserAgent.builder()
         .env(UtilsConstants.ENV)
         .host(UtilsConstants.HOST)
@@ -62,7 +61,7 @@ public class EventMeshTestUtils {
         .group(UtilsConstants.GROUP)
         .path(UtilsConstants.PATH)
         .port(port)
-        .subsystem(subsystem1)
+        .subsystem(subsystem)
         .pid(pid)
         .version(UtilsConstants.VERSION)
         .idc(UtilsConstants.IDC)
@@ -84,7 +83,7 @@ public class EventMeshTestUtils {
 
     private static Package getPackageMsg(Command requestToServer, EventMeshMessage eventMeshMessage){
         final Package msg = new Package();
-        msg.setHeader(new Header(requestToServer,0,null,generateRandomString(SEQ_LENGTH)));
+        msg.setHeader(new Header(requestToServer, 0, null, generateRandomString(SEQ_LENGTH)));
         msg.setBody(eventMeshMessage);
         return msg;
     }
