@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
@@ -124,7 +125,7 @@ public class RedirectClientByPathHandlerTest {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
                     any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(Constants.DEFAULT_CHARSET.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
             }
         }
