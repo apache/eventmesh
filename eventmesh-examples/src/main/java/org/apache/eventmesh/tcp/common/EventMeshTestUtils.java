@@ -125,25 +125,25 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateSyncRRMqMsg() {
         
-        return EventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC , UtilsConstants.MSG_TYPE , "persistent",UtilsConstants.KEYS, generateRandomString(16),
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC , UtilsConstants.MSG_TYPE , "persistent", UtilsConstants.KEYS, generateRandomString(16),
         "testSyncRR");
     }
 
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
-        return EventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
         UtilsConstants.PROPERTY_MESSAGE_REPLY_TO ,"notnull",
         "testAsyncRR");
     }
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
-        return EventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
         UtilsConstants.PROPERTY_MESSAGE_REPLY_TO ,"notnull",
         ASYNC_MSG_BODY);
     }
 
     public static EventMeshMessage generateBroadcastMqMsg() {
-        return EventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO , "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI" , 
         UtilsConstants.PROPERTY_MESSAGE_REPLY_TO ,"notnull",
         ASYNC_MSG_BODY);
     }
