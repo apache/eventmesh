@@ -4,3 +4,11 @@ Source - A source connector obtains data from an underlying data producer and de
 
 Sink - A sink connector receives CloudEvents and does some specific business logics. (e.g., A MySQL Sink extracts useful data from CloudEvents and writes them to a MySQL database).
 CloudEvents - A specification for describing event data in common formats to provide interoperability across services, platforms and systems.
+
+Add a new connector by implementting the source/sink interface using different SDKs:
+
+[eventmesh-sdk-java](https://github.com/apache/eventmesh/tree/master/eventmesh-sdk-java)
+
+[eventmesh-sdk-go](https://github.com/apache/eventmesh/tree/master/eventmesh-sdk-go)
+
+[eventmesh-sdk-rust](https://github.com/apache/eventmesh/tree/master/eventmesh-sdk-rust)
