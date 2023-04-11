@@ -100,7 +100,7 @@ public class Utils {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                pkg.getHeader().getCmd(),mqMessage, user, taskExecuteTime - startTime,
+                pkg.getHeader().getCmd(), mqMessage, user, taskExecuteTime - startTime,
                 System.currentTimeMillis() - startTime, e);
         } else {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
