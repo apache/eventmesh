@@ -121,7 +121,7 @@ public class Trace {
 
         //add trace info
         for (String entry : cloudEvent.getExtensionNames()) {
-            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Object.requireNonNull(cloudEvent.getExtension(entry)).toString());
+            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Objects.requireNonNull(cloudEvent.getExtension(entry)).toString());
         }
         return span;
     }
@@ -141,7 +141,7 @@ public class Trace {
         }
 
         for (String entry : cloudEvent.getExtensionNames()) {
-            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Object.requireNonNull(cloudEvent.getExtension(entry)).toString());
+            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Objects.requireNonNull(cloudEvent.getExtension(entry)).toString());
         }
         return span;
     }
