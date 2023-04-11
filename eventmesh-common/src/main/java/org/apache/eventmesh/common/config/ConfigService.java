@@ -24,8 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Properties;
 import java.util.Objects;
+import java.util.Properties;
+
 
 import org.assertj.core.util.Strings;
 
