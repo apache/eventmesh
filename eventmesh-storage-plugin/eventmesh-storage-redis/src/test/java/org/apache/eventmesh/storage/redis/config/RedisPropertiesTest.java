@@ -34,14 +34,14 @@ public class RedisPropertiesTest {
     }
 
     private void assertConfig(RedisProperties config) {
-        Assert.assertEquals(config.getServerAddress(), "redis://127.0.0.1:6379");
-        Assert.assertEquals(config.getServerType(), RedisProperties.ServerType.SINGLE);
-        Assert.assertEquals(config.getServerMasterName(), "serverMasterName-success!!!");
+        Assert.assertEquals("redis://127.0.0.1:6379", config.getServerAddress());
+        Assert.assertEquals(RedisProperties.ServerType.SINGLE, config.getServerType());
+        Assert.assertEquals("serverMasterName-success!!!", config.getServerMasterName());
 
         Properties properties = new Properties();
         properties.put("threads", "2");
         properties.put("nettyThreads", "2");
         Properties redissonProperties = config.getRedissonProperties();
-        Assert.assertEquals(redissonProperties, properties);
+        Assert.assertEquals(properties, redissonProperties);
     }
 }
