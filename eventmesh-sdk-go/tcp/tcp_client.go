@@ -23,12 +23,12 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp/codec"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/utils"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp/codec"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/common"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/tcp/utils"
 )
 
 type BaseTCPClient struct {

@@ -68,7 +68,7 @@ public class HTTPMessageHandler implements MessageHandler {
 
     public HTTPMessageHandler(EventMeshConsumer eventMeshConsumer) {
         this.eventMeshConsumer = eventMeshConsumer;
-        this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().pushMsgExecutor;
+        this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().getPushMsgExecutor();
         waitingRequests.put(this.eventMeshConsumer.getConsumerGroupConf().getConsumerGroup(), Sets.newConcurrentHashSet());
         SCHEDULER.scheduleAtFixedRate(this::checkTimeout, 0, 1000, TimeUnit.MILLISECONDS);
     }

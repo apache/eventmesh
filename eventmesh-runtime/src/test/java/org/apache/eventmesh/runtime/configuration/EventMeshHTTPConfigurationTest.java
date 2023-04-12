@@ -45,40 +45,40 @@ public class EventMeshHTTPConfigurationTest {
     }
 
     private void assertHTTPConfig(EventMeshHTTPConfiguration config) throws AddressStringException {
-        Assert.assertEquals(config.getHttpServerPort(), 1816);
-        Assert.assertEquals(config.isEventMeshServerBatchMsgBatchEnabled(), Boolean.FALSE);
-        Assert.assertEquals(config.getEventMeshServerBatchMsgThreadNum(), 2816);
-        Assert.assertEquals(config.getEventMeshServerSendMsgThreadNum(), 3816);
-        Assert.assertEquals(config.getEventMeshServerPushMsgThreadNum(), 4816);
-        Assert.assertEquals(config.getEventMeshServerReplyMsgThreadNum(), 5816);
-        Assert.assertEquals(config.getEventMeshServerClientManageThreadNum(), 6816);
-        Assert.assertEquals(config.getEventMeshServerRegistryThreadNum(), 7816);
-        Assert.assertEquals(config.getEventMeshServerAdminThreadNum(), 8816);
+        Assert.assertEquals(1816, config.getHttpServerPort());
+        Assert.assertEquals(Boolean.FALSE, config.isEventMeshServerBatchMsgBatchEnabled());
+        Assert.assertEquals(2816, config.getEventMeshServerBatchMsgThreadNum());
+        Assert.assertEquals(3816, config.getEventMeshServerSendMsgThreadNum());
+        Assert.assertEquals(4816, config.getEventMeshServerPushMsgThreadNum());
+        Assert.assertEquals(5816, config.getEventMeshServerReplyMsgThreadNum());
+        Assert.assertEquals(6816, config.getEventMeshServerClientManageThreadNum());
+        Assert.assertEquals(7816, config.getEventMeshServerRegistryThreadNum());
+        Assert.assertEquals(8816, config.getEventMeshServerAdminThreadNum());
 
-        Assert.assertEquals(config.getEventMeshServerRetryThreadNum(), 9816);
-        Assert.assertEquals(config.getEventMeshServerPullRegistryInterval(), 11816);
-        Assert.assertEquals(config.getEventMeshServerAsyncAccumulationThreshold(), 12816);
-        Assert.assertEquals(config.getEventMeshServerRetryBlockQSize(), 13816);
-        Assert.assertEquals(config.getEventMeshServerBatchBlockQSize(), 14816);
-        Assert.assertEquals(config.getEventMeshServerSendMsgBlockQSize(), 15816);
-        Assert.assertEquals(config.getEventMeshServerPushMsgBlockQSize(), 16816);
-        Assert.assertEquals(config.getEventMeshServerClientManageBlockQSize(), 17816);
-        Assert.assertEquals(config.getEventMeshServerBusyCheckInterval(), 18816);
-        Assert.assertEquals(config.isEventMeshServerConsumerEnabled(), Boolean.TRUE);
-        Assert.assertEquals(config.isEventMeshServerUseTls(), Boolean.TRUE);
-        Assert.assertEquals(config.getEventMeshHttpMsgReqNumPerSecond(), 19816);
-        Assert.assertEquals(config.getEventMeshBatchMsgRequestNumPerSecond(), 21816);
-        Assert.assertEquals(config.getEventMeshEventSize(), 22816);
-        Assert.assertEquals(config.getEventMeshEventBatchSize(), 23816);
+        Assert.assertEquals(9816, config.getEventMeshServerRetryThreadNum());
+        Assert.assertEquals(11816, config.getEventMeshServerPullRegistryInterval());
+        Assert.assertEquals(12816, config.getEventMeshServerAsyncAccumulationThreshold());
+        Assert.assertEquals(13816, config.getEventMeshServerRetryBlockQSize());
+        Assert.assertEquals(14816, config.getEventMeshServerBatchBlockQSize());
+        Assert.assertEquals(15816, config.getEventMeshServerSendMsgBlockQSize());
+        Assert.assertEquals(16816, config.getEventMeshServerPushMsgBlockQSize());
+        Assert.assertEquals(17816, config.getEventMeshServerClientManageBlockQSize());
+        Assert.assertEquals(18816, config.getEventMeshServerBusyCheckInterval());
+        Assert.assertEquals(Boolean.TRUE, config.isEventMeshServerConsumerEnabled());
+        Assert.assertEquals(Boolean.TRUE, config.isEventMeshServerUseTls());
+        Assert.assertEquals(19816, config.getEventMeshHttpMsgReqNumPerSecond());
+        Assert.assertEquals(21816, config.getEventMeshBatchMsgRequestNumPerSecond());
+        Assert.assertEquals(22816, config.getEventMeshEventSize());
+        Assert.assertEquals(23816, config.getEventMeshEventBatchSize());
 
         List<IPAddress> list4 = new ArrayList<>();
         list4.add(new IPAddressString("127.0.0.1").toAddress());
         list4.add(new IPAddressString("127.0.0.2").toAddress());
-        Assert.assertEquals(config.getEventMeshIpv4BlackList(), list4);
+        Assert.assertEquals(list4, config.getEventMeshIpv4BlackList());
         List<IPAddress> list6 = new ArrayList<>();
         list6.add(new IPAddressString("0:0:0:0:0:0:7f00:01").toAddress());
         list6.add(new IPAddressString("0:0:0:0:0:0:7f00:02").toAddress());
-        Assert.assertEquals(config.getEventMeshIpv6BlackList(), list6);
+        Assert.assertEquals(list6, config.getEventMeshIpv6BlackList());
     }
 
     private void assertCommonConfig(CommonConfiguration config) {
@@ -88,6 +88,7 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals("name-succeed!!!", config.getEventMeshName());
         Assert.assertEquals("816", config.getSysID());
         Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
+        Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
         Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());

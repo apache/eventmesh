@@ -28,12 +28,14 @@ import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -176,20 +178,23 @@ public abstract class TcpClient implements Closeable {
 
     protected Package io(Package msg, long timeout) throws Exception {
         Object key = RequestContext.key(msg);
-        CountDownLatch latch = new CountDownLatch(1);
-        RequestContext c = RequestContext.context(key, msg, latch);
-        if (!contexts.contains(c)) {
-            contexts.put(key, c);
+        RequestContext context = RequestContext.context(key, msg);
+        if (!contexts.contains(context)) {
+            contexts.put(key, context);
         } else {
             if (log.isInfoEnabled()) {
                 log.info("duplicate key : {}", key);
             }
         }
         send(msg);
-        if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS)) {
-            throw new TimeoutException("operation timeout, context.key=" + c.getKey());
-        }
-        return c.getResponse();
+        Supplier<Package> supplier = () -> {
+            try {
+                return context.getResponse(timeout);
+            } catch (ExecutionException | InterruptedException | TimeoutException exception) {
+                throw new RuntimeException(exception);
+            }
+        };
+        return CompletableFuture.supplyAsync(supplier).get();
     }
 
     // todo: remove hello

@@ -20,9 +20,9 @@ package org.apache.eventmesh.client.grpc.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class EventMeshClientUtilTest {
     @Test
     public void testBuildHeader() {
         EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
-        assertThat(EventMeshClientUtil.buildHeader(clientConfig, "protocolType")).hasFieldOrPropertyWithValue("env",
+        assertThat(EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.CLOUD_EVENTS)).hasFieldOrPropertyWithValue("env",
                 clientConfig.getEnv()).hasFieldOrPropertyWithValue("idc", clientConfig.getIdc())
             .hasFieldOrPropertyWithValue("ip", IPUtils.getLocalAddress())
             .hasFieldOrPropertyWithValue("pid", Long.toString(ThreadUtils.getPID()))
@@ -57,7 +58,7 @@ public class EventMeshClientUtilTest {
             .hasFieldOrPropertyWithValue("language", clientConfig.getLanguage())
             .hasFieldOrPropertyWithValue("username", clientConfig.getUserName())
             .hasFieldOrPropertyWithValue("password", clientConfig.getPassword())
-            .hasFieldOrPropertyWithValue("protocolType", "protocolType")
+            .hasFieldOrPropertyWithValue("protocolType", EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName())
             .hasFieldOrPropertyWithValue("protocolDesc", Constants.PROTOCOL_GRPC)
             .hasFieldOrPropertyWithValue("protocolVersion", SpecVersion.V1.toString());
     }
@@ -75,7 +76,7 @@ public class EventMeshClientUtilTest {
         SimpleMessage message = SimpleMessage.newBuilder().setSeqNum("1").setUniqueId(RandomStringUtils.generateNum(5))
             .setTopic("mockTopic")
             .setContent("{\"specversion\":\"1.0\",\"id\":\"id\",\"source\":\"source\",\"type\":\"type\"}").build();
-        Object buildMessage = EventMeshClientUtil.buildMessage(message, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+        Object buildMessage = EventMeshClientUtil.buildMessage(message, EventMeshProtocolType.CLOUD_EVENTS);
         assertThat(buildMessage).isInstanceOf(CloudEvent.class);
         CloudEvent cloudEvent = (CloudEvent) buildMessage;
         assertThat(cloudEvent).isNotNull().hasFieldOrPropertyWithValue("subject", message.getTopic());
@@ -87,7 +88,7 @@ public class EventMeshClientUtilTest {
     public void testBuildMessageWithDefaultProto() {
         SimpleMessage message = SimpleMessage.newBuilder().setSeqNum("1").setUniqueId(RandomStringUtils.generateNum(5))
             .setTopic("mockTopic").setContent("mockContent").build();
-        Object buildMessage = EventMeshClientUtil.buildMessage(message, null);
+        Object buildMessage = EventMeshClientUtil.buildMessage(message, EventMeshProtocolType.EVENT_MESH_MESSAGE);
         assertThat(buildMessage).isInstanceOf(EventMeshMessage.class)
             .hasFieldOrPropertyWithValue("content", message.getContent())
             .hasFieldOrPropertyWithValue("topic", message.getTopic())
@@ -102,15 +103,15 @@ public class EventMeshClientUtilTest {
             .withExtension(ProtocolKey.UNIQUE_ID, "uniqueId").build();
         EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
         assertThat(EventMeshClientUtil.buildSimpleMessage(cloudEvent, clientConfig,
-            EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)).hasFieldOrPropertyWithValue("header",
-                EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME))
+            EventMeshProtocolType.CLOUD_EVENTS)).hasFieldOrPropertyWithValue("header",
+                EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.CLOUD_EVENTS))
             .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup())
             .hasFieldOrPropertyWithValue("topic", cloudEvent.getSubject())
             .hasFieldOrPropertyWithValue("ttl", "4000")
             .hasFieldOrPropertyWithValue("seqNum", cloudEvent.getExtension(ProtocolKey.SEQ_NUM))
             .hasFieldOrPropertyWithValue("uniqueId", cloudEvent.getExtension(ProtocolKey.UNIQUE_ID))
             .hasFieldOrPropertyWithValue("content", new String(
-                EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent),
+                Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent),
                 StandardCharsets.UTF_8));
     }
 
@@ -120,8 +121,8 @@ public class EventMeshClientUtilTest {
             .uniqueId("mockUniqueId").bizSeqNo("mockBizSeqNo").build();
         EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
         assertThat(
-            EventMeshClientUtil.buildSimpleMessage(eventMeshMessage, clientConfig, "")).hasFieldOrPropertyWithValue(
-                "header", EventMeshClientUtil.buildHeader(clientConfig, ""))
+            EventMeshClientUtil.buildSimpleMessage(eventMeshMessage, clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
+            .hasFieldOrPropertyWithValue("header", EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
             .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup())
             .hasFieldOrPropertyWithValue("topic", eventMeshMessage.getTopic())
             .hasFieldOrPropertyWithValue("ttl", "4000")
@@ -138,13 +139,13 @@ public class EventMeshClientUtilTest {
                 .withExtension(ProtocolKey.UNIQUE_ID, "uniqueId").build());
         EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
         BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(cloudEvents, clientConfig,
-            EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+            EventMeshProtocolType.CLOUD_EVENTS);
         assertThat(batchMessage).hasFieldOrPropertyWithValue("header",
-                EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME))
+                EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.CLOUD_EVENTS))
             .hasFieldOrPropertyWithValue("topic", cloudEvents.get(0).getSubject())
             .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup());
         assertThat(batchMessage.getMessageItemList()).hasSize(1).first().hasFieldOrPropertyWithValue("content",
-                new String(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                new String(Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
                     .serialize(cloudEvents.get(0)), StandardCharsets.UTF_8))
             .hasFieldOrPropertyWithValue("ttl", "4000")
             .hasFieldOrPropertyWithValue("seqNum", cloudEvents.get(0).getExtension(ProtocolKey.SEQ_NUM))
@@ -160,9 +161,9 @@ public class EventMeshClientUtilTest {
                 .bizSeqNo("mockBizSeqNo")
                 .prop(Collections.singletonMap(Constants.EVENTMESH_MESSAGE_CONST_TTL, "4000")).build());
         EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
-        BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(eventMeshMessages, clientConfig, "");
+        BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(eventMeshMessages, clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
         assertThat(batchMessage).hasFieldOrPropertyWithValue("header",
-                EventMeshClientUtil.buildHeader(clientConfig, ""))
+                EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
             .hasFieldOrPropertyWithValue("topic", eventMeshMessages.get(0).getTopic())
             .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup());
         EventMeshMessage firstMeshMessage = eventMeshMessages.get(0);

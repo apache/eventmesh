@@ -70,7 +70,7 @@ public class EventMeshTcpRetryer {
         int maxRetryTimes = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgAsyncRetryTimes();
         if (retryContext instanceof DownStreamMsgContext) {
             DownStreamMsgContext downStreamMsgContext = (DownStreamMsgContext) retryContext;
-            maxRetryTimes = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
+            maxRetryTimes = SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()
                 ? eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgSyncRetryTimes() :
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgAsyncRetryTimes();
         }

@@ -19,7 +19,9 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
@@ -166,15 +168,19 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
+        final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            final String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
-            final String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
-            final String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
             final String requestURI = requestWrapper.getRequestURI();
+            String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
             try {
-                this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);
+                EventMeshServicePubTopicInfo eventMeshServicePubTopicInfo = eventMeshHTTPServer.getEventMeshServer()
+                    .getProducerTopicManager().getEventMeshServicePubTopicInfo(producerGroup);
+                if (eventMeshServicePubTopicInfo == null) {
+                    throw new AclException("no group register");
+                }
+                this.acl.doAclCheckInHttpSend(remoteAddr, token, subsystem, topic, requestURI, eventMeshServicePubTopicInfo);
             } catch (Exception e) {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
                     responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
@@ -193,7 +199,12 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        final EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+        final EventMeshProducer eventMeshProducer;
+        if (StringUtils.isNotBlank(token)) {
+            eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup, token);
+        } else {
+            eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+        }
 
         if (!eventMeshProducer.isStarted()) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, responseHeaderMap,
@@ -201,7 +212,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        final String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        final String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
         if (Objects.requireNonNull(content).length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()) {
             if (log.isErrorEnabled()) {
                 log.error("Event size exceeds the limit: {}",

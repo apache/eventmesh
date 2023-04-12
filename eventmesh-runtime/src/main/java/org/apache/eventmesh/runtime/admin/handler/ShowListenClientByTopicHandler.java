@@ -68,7 +68,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
             if (!clientGroupMap.isEmpty()) {
                 for (ClientGroupWrapper cgw : clientGroupMap.values()) {
                     Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
-                    if (listenSessionSet != null && listenSessionSet.size() > 0) {
+                    if (listenSessionSet != null && !listenSessionSet.isEmpty()) {
                         result.append(String.format("group:%s", cgw.getGroup())).append(newLine);
                         for (Session session : listenSessionSet) {
                             UserAgent userAgent = session.getClient();

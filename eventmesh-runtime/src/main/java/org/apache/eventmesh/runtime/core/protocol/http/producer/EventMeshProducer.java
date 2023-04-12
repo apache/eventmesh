@@ -19,10 +19,13 @@ package org.apache.eventmesh.runtime.core.protocol.http.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,6 +42,10 @@ public class EventMeshProducer {
 
     public AtomicBoolean getInited() {
         return inited;
+    }
+
+    public AtomicBoolean getStarted() {
+        return started;
     }
 
     public boolean isStarted() {
@@ -81,10 +88,13 @@ public class EventMeshProducer {
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
             eventMeshHttpConfiguration.getEventMeshCluster()));
+        if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
+            keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
+        }
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
-        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshConnectorPluginType());
+        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }

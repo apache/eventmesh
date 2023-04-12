@@ -19,8 +19,8 @@ package org.apache.eventmesh.client.grpc.producer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
@@ -43,9 +43,9 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CloudEventProducer {
+public class CloudEventProducer implements GrpcProducer<CloudEvent> {
 
-    private static final String PROTOCOL_TYPE = EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
+    private static final EventMeshProtocolType PROTOCOL_TYPE = EventMeshProtocolType.CLOUD_EVENTS;
 
     private final transient EventMeshGrpcClientConfig clientConfig;
 
@@ -57,6 +57,7 @@ public class CloudEventProducer {
         this.publisherClient = publisherClient;
     }
 
+    @Override
     public Response publish(final List<CloudEvent> events) {
         if (log.isInfoEnabled()) {
             log.info("BatchPublish message, batch size={}", events.size());
@@ -74,7 +75,7 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.batchPublish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response " + response.toString());
+                log.info("Received response:{}", response.toString());
             }
             return response;
         } catch (Exception e) {
@@ -85,9 +86,10 @@ public class CloudEventProducer {
         return null;
     }
 
+    @Override
     public Response publish(final CloudEvent cloudEvent) {
         if (log.isInfoEnabled()) {
-            log.info("Publish message " + cloudEvent.toString());
+            log.info("Publish message: {}", cloudEvent.toString());
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, null);
 
@@ -96,7 +98,7 @@ public class CloudEventProducer {
         try {
             final Response response = publisherClient.publish(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received response " + response.toString());
+                log.info("Received response:{} ", response.toString());
             }
             return response;
         } catch (Exception e) {
@@ -107,9 +109,10 @@ public class CloudEventProducer {
         return null;
     }
 
-    public CloudEvent requestReply(final CloudEvent cloudEvent, final int timeout) {
+    @Override
+    public CloudEvent requestReply(final CloudEvent cloudEvent, final long timeout) {
         if (log.isInfoEnabled()) {
-            log.info("RequestReply message " + cloudEvent.toString());
+            log.info("RequestReply message {}", cloudEvent);
         }
         final CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, String.valueOf(timeout));
 
@@ -118,7 +121,7 @@ public class CloudEventProducer {
         try {
             final SimpleMessage reply = publisherClient.requestReply(enhancedMessage);
             if (log.isInfoEnabled()) {
-                log.info("Received reply message:{}", reply.toString());
+                log.info("Received reply message:{}", reply);
             }
 
             final Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
@@ -143,7 +146,7 @@ public class CloudEventProducer {
             .withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()))
             .withExtension(ProtocolKey.SYS, clientConfig.getSys())
             .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE.protocolTypeName())
             .withExtension(ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_GRPC)
             .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
             .withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30))

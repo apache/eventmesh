@@ -20,6 +20,8 @@ package org.apache.eventmesh.registry.zookeeper.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -52,9 +54,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ZookeeperRegistryService implements RegistryService {
 
-    private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
+    private final AtomicBoolean initStatus = new AtomicBoolean(false);
 
-    private static final AtomicBoolean START_STATUS = new AtomicBoolean(false);
+    private final AtomicBoolean startStatus = new AtomicBoolean(false);
 
     private String serverAddr;
 
@@ -64,8 +66,8 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void init() throws RegistryException {
-        boolean update = INIT_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!initStatus.compareAndSet(false, true)) {
             log.warn("[ZookeeperRegistryService] has been init");
             return;
         }
@@ -85,8 +87,8 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void start() throws RegistryException {
-        boolean update = START_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!startStatus.compareAndSet(false, true)) {
             log.warn("[ZookeeperRegistryService] has been start");
             return;
         }
@@ -106,12 +108,14 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void shutdown() throws RegistryException {
-        INIT_STATUS.compareAndSet(true, false);
-        START_STATUS.compareAndSet(true, false);
-        try (CuratorFramework closedClient = zkClient) {
-            //
-        } catch (Exception e) {
-            throw new RegistryException("ZookeeperRegistry shutdown failed", e);
+        if (!initStatus.compareAndSet(true, false)) {
+            return;
+        }
+        if (!startStatus.compareAndSet(true, false)) {
+            return;
+        }
+        if (null != zkClient) {
+            zkClient.close();
         }
         log.info("ZookeeperRegistryService closed");
     }
@@ -282,6 +286,16 @@ public class ZookeeperRegistryService implements RegistryService {
         }
         log.info("EventMesh successfully logout to zookeeper");
         return true;
+    }
+
+    @Override
+    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
+        return null;
+    }
+
+    @Override
+    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
+        return null;
     }
 
     private String formatInstancePath(String clusterName, String serviceName, String endPoint) {

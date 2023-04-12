@@ -19,6 +19,8 @@ package org.apache.eventmesh.registry.nacos.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -48,9 +50,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NacosRegistryService implements RegistryService {
 
-    private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
+    private  final AtomicBoolean initStatus = new AtomicBoolean(false);
 
-    private static final AtomicBoolean START_STATUS = new AtomicBoolean(false);
+    private  final AtomicBoolean startStatus = new AtomicBoolean(false);
 
     private String serverAddr;
 
@@ -64,8 +66,8 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void init() throws RegistryException {
-        boolean update = INIT_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!initStatus.compareAndSet(false, true)) {
             return;
         }
         eventMeshRegisterInfoMap = new HashMap<>(ConfigurationContextUtil.KEYS.size());
@@ -87,8 +89,8 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void start() throws RegistryException {
-        boolean update = START_STATUS.compareAndSet(false, true);
-        if (!update) {
+
+        if (!startStatus.compareAndSet(false, true)) {
             return;
         }
         try {
@@ -105,8 +107,12 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public void shutdown() throws RegistryException {
-        INIT_STATUS.compareAndSet(true, false);
-        START_STATUS.compareAndSet(true, false);
+        if (!initStatus.compareAndSet(true, false)) {
+            return;
+        }
+        if (!startStatus.compareAndSet(true, false)) {
+            return;
+        }
         try {
             namingService.shutDown();
         } catch (NacosException e) {
@@ -188,7 +194,7 @@ public class NacosRegistryService implements RegistryService {
         String purpose)
         throws RegistryException {
         // todo find metadata
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
@@ -245,6 +251,16 @@ public class NacosRegistryService implements RegistryService {
         }
         log.info("EventMesh successfully logout to nacos");
         return true;
+    }
+
+    @Override
+    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
+        return null;
     }
 
     public String getServerAddr() {

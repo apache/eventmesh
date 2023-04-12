@@ -76,8 +76,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      * DELETE /client/grpc
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
             String url = deleteGrpcClientRequest.getUrl();
@@ -103,16 +102,8 @@ public class GrpcClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            httpExchange.sendResponseHeaders(500, 0);
+            log.error(result, e);
         }
     }
 

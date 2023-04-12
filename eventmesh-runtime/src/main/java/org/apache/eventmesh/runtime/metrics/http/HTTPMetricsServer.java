@@ -48,9 +48,9 @@ public class HTTPMetricsServer {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
         this.summaryMetrics = new HttpSummaryMetrics(
-            eventMeshHTTPServer.batchMsgExecutor,
-            eventMeshHTTPServer.sendMsgExecutor,
-            eventMeshHTTPServer.pushMsgExecutor,
+            eventMeshHTTPServer.getBatchMsgExecutor(),
+            eventMeshHTTPServer.getSendMsgExecutor(),
+            eventMeshHTTPServer.getPushMsgExecutor(),
             eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
 
         init();

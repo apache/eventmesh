@@ -20,7 +20,7 @@ dependencies {
     compileOnly project(":eventmesh-common")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

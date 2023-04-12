@@ -15,7 +15,7 @@
 
 package tcp
 
-import gtcp "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+import gtcp "github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol/tcp"
 
 type EventMeshTCPPubClient interface {
 	init()

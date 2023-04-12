@@ -63,13 +63,13 @@ import io.opentelemetry.api.trace.Span;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
+    private static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -86,7 +86,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand responseEventMeshCommand;
         String localAddress = IPUtils.getLocalAddress();
         HttpCommand request = asyncContext.getRequest();
-        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
+        CMD_LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
                 Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
@@ -101,12 +101,12 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 eventMeshHttpConfiguration.getEventMeshIDC());
 
         String protocolType = sendMessageRequestHeader.getProtocolType();
-        String protocolVersin = sendMessageRequestHeader.getProtocolVersion();
+        String protocolVersion = sendMessageRequestHeader.getProtocolVersion();
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor =
             ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(request);
 
-        Span span = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+        Span span = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
             EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, true);
 
         //validate event
@@ -120,9 +120,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg(), null);
             return;
         }
@@ -140,9 +140,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg(), null);
             return;
         }
@@ -161,9 +161,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg(), null);
             return;
         }
@@ -182,11 +182,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
                 asyncContext.onComplete(responseEventMeshCommand);
-                aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
+                ACL_LOGGER.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
 
-                Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+                Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-                TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+                TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshRetCode.EVENTMESH_ACL_ERR.getErrMsg(), null);
                 return;
             }
@@ -202,9 +202,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPDiscard();
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg(), null);
             return;
         }
@@ -218,9 +218,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg(), null);
 
             return;
@@ -232,9 +232,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
         }
 
-        String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        String content = event.getData() == null ? "" : new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
         if (content.length() > eventMeshHttpConfiguration.getEventMeshEventSize()) {
-            httpLogger.error("Event size exceeds the limit: {}",
+            HTTP_LOGGER.error("Event size exceeds the limit: {}",
                 eventMeshHttpConfiguration.getEventMeshEventSize());
 
             responseEventMeshCommand = request.createHttpCommandResponse(
@@ -243,9 +243,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     "Event size exceeds the limit: " + eventMeshHttpConfiguration.getEventMeshEventSize()));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_SIZE_ERR.getErrMsg(), null);
             return;
         }
@@ -258,20 +258,20 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     eventMeshHttpConfiguration.getEventMeshServerIp())
                 .build();
 
-            if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
+            if (MESSAGE_LOGGER.isDebugEnabled()) {
+                MESSAGE_LOGGER.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
             }
         } catch (Exception e) {
-            messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
+            MESSAGE_LOGGER.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(),
                     EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
             asyncContext.onComplete(responseEventMeshCommand);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg(), null);
             return;
         }
@@ -284,8 +284,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
             try {
-                if (httpLogger.isDebugEnabled()) {
-                    httpLogger.debug("{}", httpCommand);
+                if (HTTP_LOGGER.isDebugEnabled()) {
+                    HTTP_LOGGER.debug("{}", httpCommand);
                 }
                 eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
@@ -302,7 +302,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .build();
             sendMessageContext.setEvent(event);
 
-            Span clientSpan = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span clientSpan = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
             try {
                 eventMeshProducer.send(sendMessageContext, new SendCallback() {
@@ -316,7 +316,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         asyncContext.onComplete(succ, handler);
                         long endTime = System.currentTimeMillis();
                         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
-                        messageLogger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        MESSAGE_LOGGER.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime, topic, bizNo, uniqueId);
 
                         TraceUtils.finishSpan(span, sendMessageContext.getEvent());
@@ -335,11 +335,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         long endTime = System.currentTimeMillis();
                         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
                         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
-                        messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        MESSAGE_LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime, topic, bizNo, uniqueId, context.getException());
 
                         TraceUtils.finishSpanWithException(span,
-                            EventMeshUtil.getCloudEventExtensionMap(protocolVersin, sendMessageContext.getEvent()),
+                            EventMeshUtil.getCloudEventExtensionMap(protocolVersion, sendMessageContext.getEvent()),
                             EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), context.getException());
                     }
                 });
@@ -356,20 +356,18 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         + EventMeshUtil.stackTrace(ex, 2)));
             asyncContext.onComplete(err);
 
-            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            Span excepSpan = TraceUtils.prepareServerSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersin, event),
+            TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), null);
 
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             long endTime = System.currentTimeMillis();
-            messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+            MESSAGE_LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                 endTime - startTime, topic, bizNo, uniqueId, ex);
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
-
-        return;
     }
 
     @Override

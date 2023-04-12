@@ -24,10 +24,10 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
 
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 }

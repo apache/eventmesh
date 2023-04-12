@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.convert.Convert;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,9 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -41,7 +43,7 @@ public interface FileLoad {
 
     YamlFileLoad YAML_FILE_LOAD = new YamlFileLoad();
 
-    public static FileLoad getFileLoad(String fileType) {
+    static FileLoad getFileLoad(String fileType) {
         if (Objects.equals("properties", fileType)) {
             return PROPERTIES_FILE_LOAD;
         } else if (Objects.equals("yaml", fileType)) {
@@ -68,9 +70,15 @@ public interface FileLoad {
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             final Properties properties = new Properties();
             if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {
-                properties.load(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(configInfo.getResourceUrl()))));
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET))) {
+                    properties.load(reader);
+                }
             } else {
-                properties.load(new BufferedReader(new FileReader(configInfo.getFilePath())));
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(Files.newInputStream(Paths.get(configInfo.getFilePath())), Constants.DEFAULT_CHARSET))) {
+                    properties.load(reader);
+                }
             }
 
             if (Objects.isNull(configInfo.getClazz())) {

@@ -19,6 +19,8 @@ package org.apache.eventmesh.registry.consul.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
+import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -47,9 +49,9 @@ public class ConsulRegistryService implements RegistryService {
 
     public static final String IP_PORT_SEPARATOR = ":";
 
-    private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
+    private final AtomicBoolean initStatus = new AtomicBoolean(false);
 
-    private static final AtomicBoolean START_STATUS = new AtomicBoolean(false);
+    private final AtomicBoolean startStatus = new AtomicBoolean(false);
 
     private String consulHost;
 
@@ -61,7 +63,7 @@ public class ConsulRegistryService implements RegistryService {
 
     @Override
     public void init() throws RegistryException {
-        if (INIT_STATUS.compareAndSet(false, true)) {
+        if (initStatus.compareAndSet(false, true)) {
             for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
                 if (null != commonConfiguration) {
@@ -83,13 +85,21 @@ public class ConsulRegistryService implements RegistryService {
 
     @Override
     public void start() throws RegistryException {
+        if (!startStatus.compareAndSet(false, true)) {
+            return;
+        }
         consulClient = new ConsulClient(new ConsulRawClient(consulHost, Integer.parseInt(consulPort)));
+
     }
 
     @Override
     public void shutdown() throws RegistryException {
-        INIT_STATUS.compareAndSet(true, false);
-        START_STATUS.compareAndSet(true, false);
+        if (!initStatus.compareAndSet(true, false)) {
+            return;
+        }
+        if (!startStatus.compareAndSet(true, false)) {
+            return;
+        }
         consulClient = null;
     }
 
@@ -120,6 +130,16 @@ public class ConsulRegistryService implements RegistryService {
         }
         log.info("EventMesh successfully unregistered to consul");
         return true;
+    }
+
+    @Override
+    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
+        return null;
+    }
+
+    @Override
+    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
+        return null;
     }
 
     @Override

@@ -80,9 +80,9 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (SubscriptionMode.BROADCASTING == downStreamMsgContext.subscriptionItem.getMode()) {
+        if (SubscriptionMode.BROADCASTING == downStreamMsgContext.getSubscriptionItem().getMode()) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()) {
+        } else if (SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
@@ -136,7 +136,7 @@ public class SessionPusher {
                             log.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                             //retry
-                            long delayTime = SubscriptionType.SYNC == downStreamMsgContext.subscriptionItem.getType()
+                            long delayTime = SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()
                                 ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
                                 : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
                             downStreamMsgContext.delay(delayTime);
