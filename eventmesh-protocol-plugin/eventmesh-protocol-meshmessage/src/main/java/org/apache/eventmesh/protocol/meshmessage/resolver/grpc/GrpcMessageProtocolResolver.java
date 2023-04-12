@@ -25,13 +25,10 @@ import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.ProtocolException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.sql.ClientInfoStatus;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
