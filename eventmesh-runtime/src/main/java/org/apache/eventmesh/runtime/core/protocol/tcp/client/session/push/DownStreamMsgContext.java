@@ -60,7 +60,7 @@ public class DownStreamMsgContext extends RetryContext {
 
     private final long expireTime;
 
-    public boolean msgFromOtherEventMesh;
+    public final boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
         AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
