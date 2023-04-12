@@ -59,81 +59,64 @@ public class SendMessageRequestProtocolResolver {
 
             String content = sendMessageRequestBody.getContent();
 
-            CloudEvent event = null;
             CloudEventBuilder cloudEventBuilder;
-            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v1();
 
-                cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
-                    .withSubject(sendMessageRequestBody.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
-                    .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
-                    .withExtension(SendMessageRequestBody.PRODUCERGROUP,
-                        sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
-                if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
-                }
-                if (sendMessageRequestBody.getExtFields() != null && sendMessageRequestBody.getExtFields().size() > 0) {
-                    for (Map.Entry<String, String> entry : sendMessageRequestBody.getExtFields().entrySet()) {
-                        cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                    }
-                }
-                event = cloudEventBuilder.build();
-            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v03();
-                cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
-                    .withSubject(sendMessageRequestBody.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
-                    .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
-                    .withExtension(SendMessageRequestBody.PRODUCERGROUP,
-                        sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
-                if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
-                }
-                if (sendMessageRequestBody.getExtFields() != null && sendMessageRequestBody.getExtFields().size() > 0) {
-                    for (Map.Entry<String, String> entry : sendMessageRequestBody.getExtFields().entrySet()) {
-                        cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                    }
-                }
-                event = cloudEventBuilder.build();
+            switch (protocolVersion) {
+                case SpecVersion.V1.toString():
+                    cloudEventBuilder = CloudEventBuilder.v1();
+                    break;
+                case SpecVersion.V03.toString():
+                    cloudEventBuilder = CloudEventBuilder.v03();
+                    break;
+                default:
+                    return null; // unsupported protocol version
             }
+
+            CloudEvent event = getBuilderCloudEvent(sendMessageRequestBody, protocolType, protocolDesc, protocolVersion,
+                code, env, idc, ip, pid, sys, username, passwd, version, language, content, cloudEventBuilder);
             return event;
+
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e.getCause());
         }
+    }
+
+    private static CloudEvent getBuilderCloudEvent(SendMessageRequestBody sendMessageRequestBody, String protocolType, String protocolDesc,
+        String protocolVersion, String code, String env, String idc, String ip, String pid, String sys, String username, String passwd,
+        ProtocolVersion version, String language, String content, CloudEventBuilder cloudEventBuilder) {
+        CloudEvent event;
+        cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
+            .withSubject(sendMessageRequestBody.getTopic())
+            .withType("eventmeshmessage")
+            .withSource(URI.create("/"))
+            .withData(content.getBytes(StandardCharsets.UTF_8))
+            .withExtension(ProtocolKey.REQUEST_CODE, code)
+            .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
+            .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
+            .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
+            .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
+            .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
+            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
+            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
+            .withExtension(ProtocolKey.VERSION, version.getVersion())
+            .withExtension(ProtocolKey.LANGUAGE, language)
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+            .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+            .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
+            .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
+            .withExtension(SendMessageRequestBody.PRODUCERGROUP,
+                sendMessageRequestBody.getProducerGroup())
+            .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
+        if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
+            cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
+        }
+        if (sendMessageRequestBody.getExtFields() != null && sendMessageRequestBody.getExtFields().size() > 0) {
+            for (Map.Entry<String, String> entry : sendMessageRequestBody.getExtFields().entrySet()) {
+                cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+            }
+        }
+        event = cloudEventBuilder.build();
+        return event;
     }
 }
