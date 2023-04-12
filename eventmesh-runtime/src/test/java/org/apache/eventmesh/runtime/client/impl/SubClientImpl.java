@@ -163,24 +163,25 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public Package dispatcher(Package request, long timeout) throws Exception {
         Assert.assertNotNull(request);
         Package response = super.io(request, timeout);
+        Command cmd = response.getHeader().getCommand();
         switch (request.getHeader().getCommand()) {
             case HELLO_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
+                Assert.assertEquals(cmd, Command.HELLO_RESPONSE);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
+                Assert.assertEquals(cmd, Command.HEARTBEAT_RESPONSE);
                 break;
             case LISTEN_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
+                Assert.assertEquals(cmd, Command.LISTEN_RESPONSE);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
+                Assert.assertEquals(cmd, Command.CLIENT_GOODBYE_RESPONSE);
                 break;
             case SUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
+                Assert.assertEquals(cmd, Command.SUBSCRIBE_RESPONSE);
                 break;
             case UNSUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
+                Assert.assertEquals(cmd, Command.UNSUBSCRIBE_RESPONSE);
                 break;
             case SYS_LOG_TO_LOGSERVER:
                 Assert.assertNull(response);
