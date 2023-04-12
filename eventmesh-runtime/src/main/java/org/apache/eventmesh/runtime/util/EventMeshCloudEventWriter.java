@@ -25,14 +25,14 @@ import io.cloudevents.rw.CloudEventRWException;
 
 public class EventMeshCloudEventWriter implements CloudEventContextWriter {
 
-    private Map<String, Object> extensionMap = null;
+    private Map<String, Object> extensionMap;
 
     public EventMeshCloudEventWriter() {
         extensionMap = new HashMap<String, Object>();
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(String key, String value)
+    public CloudEventContextWriter withContextAttribute(@Nullable String key, @Nullable String value)
         throws CloudEventRWException {
         extensionMap.put(key, value);
         return this;
