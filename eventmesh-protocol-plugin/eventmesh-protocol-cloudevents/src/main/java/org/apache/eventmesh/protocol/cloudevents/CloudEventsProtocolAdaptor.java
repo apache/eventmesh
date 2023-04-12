@@ -38,11 +38,10 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocol
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
