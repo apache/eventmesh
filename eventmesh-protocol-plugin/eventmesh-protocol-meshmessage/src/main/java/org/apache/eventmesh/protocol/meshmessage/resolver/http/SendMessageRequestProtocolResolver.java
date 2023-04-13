@@ -44,10 +44,10 @@ public class SendMessageRequestProtocolResolver {
 
             CloudEventBuilder cloudEventBuilder;
             switch (SpecVersion.parse(sendMessageRequestHeader.getProtocolVersion())) {
-                case SpecVersion.V1:
+                case V1:
                     cloudEventBuilder = CloudEventBuilder.v1();
                     break;
-                case SpecVersion.V03:
+                case V03:
                     cloudEventBuilder = CloudEventBuilder.v03();
                     break;
                 default:
