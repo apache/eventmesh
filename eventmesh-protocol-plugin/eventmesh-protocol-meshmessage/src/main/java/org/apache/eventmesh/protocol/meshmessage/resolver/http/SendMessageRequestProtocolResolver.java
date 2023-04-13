@@ -56,8 +56,7 @@ public class SendMessageRequestProtocolResolver {
                     return null; // unsupported protocol version
             }
 
-            CloudEvent event = getBuilderCloudEvent(sendMessageRequestHeader, sendMessageRequestBody, cloudEventBuilder);
-            return event;
+            return getBuilderCloudEvent(sendMessageRequestHeader, sendMessageRequestBody, cloudEventBuilder);
 
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e.getCause());
@@ -66,7 +65,6 @@ public class SendMessageRequestProtocolResolver {
 
     private static CloudEvent getBuilderCloudEvent(SendMessageRequestHeader sendMessageRequestHeader, SendMessageRequestBody sendMessageRequestBody,
         CloudEventBuilder cloudEventBuilder) {
-        CloudEvent event;
         cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
             .withSubject(sendMessageRequestBody.getTopic())
             .withType("eventmeshmessage")
@@ -98,8 +96,7 @@ public class SendMessageRequestProtocolResolver {
                 cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
             }
         }
-        event = cloudEventBuilder.build();
-        return event;
+        return cloudEventBuilder.build();
     }
 
 }
