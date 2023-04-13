@@ -193,20 +193,17 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                     eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
 
-                final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
-                    @Override
-                    public void onResponse(final HttpCommand httpCommand) {
-                        try {
-                            if (log.isDebugEnabled()) {
-                                log.debug("{}", httpCommand);
-                            }
-                            eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-
-                            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
-                                System.currentTimeMillis() - request.getReqTime());
-                        } catch (Exception ex) {
-                            log.error("onResponse error", ex);
+                final CompleteHandler<HttpCommand> handler = httpCommand -> {
+                    try {
+                        if (log.isDebugEnabled()) {
+                            log.debug("{}", httpCommand);
                         }
+                        eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+
+                        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                            System.currentTimeMillis() - request.getReqTime());
+                    } catch (Exception ex) {
+                        log.error("onResponse error", ex);
                     }
                 };
 

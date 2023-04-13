@@ -98,9 +98,9 @@ public class Utils {
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
         Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
+            final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                pkg.getHeader().getCmd(),
-                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                pkg.getHeader().getCmd(), mqMessage, user, taskExecuteTime - startTime,
                 System.currentTimeMillis() - startTime, e);
         } else {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
@@ -118,8 +118,9 @@ public class Utils {
      */
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
+            final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                mqMessage, user, taskExecuteTime - startTime,
                 System.currentTimeMillis() - startTime);
         } else {
             MESSAGE_LOGGER

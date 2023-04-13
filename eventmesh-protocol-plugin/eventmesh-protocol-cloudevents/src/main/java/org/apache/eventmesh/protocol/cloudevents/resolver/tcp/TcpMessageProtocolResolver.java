@@ -25,6 +25,7 @@ import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -77,7 +78,7 @@ public class TcpMessageProtocolResolver {
 
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
             // todo:resolve different format
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+            CloudEvent event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
                 .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v03(event);
 

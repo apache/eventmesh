@@ -19,9 +19,9 @@ package org.apache.eventmesh.runtime.metrics;
 
 public class MonitorMetricConstants {
 
-    public static final String EVENTMESH_MONITOR_FORMAT_COMMON = "{\"protocol\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_COMMON = "{\"protocol\":\"{}\",\"s\":\"{}\",\"t\":\"{}\"}";
 
-    public static final String EVENTMESH_TCP_MONITOR_FORMAT_THREADPOOL = "{\"threadPoolName\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
+    public static final String EVENTMESH_TCP_MONITOR_FORMAT_THREADPOOL = "{\"threadPoolName\":\"{}\",\"s\":\"{}\",\"t\":\"{}\"}";
 
     public static final String CLIENT_2_EVENTMESH_TPS = "client2eventMeshTPS";
     public static final String EVENTMESH_2_MQ_TPS = "eventMesh2mqTPS";

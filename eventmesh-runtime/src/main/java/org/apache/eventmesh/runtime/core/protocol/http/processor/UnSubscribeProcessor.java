@@ -119,19 +119,16 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         final String unSubscribeUrl = unSubscribeRequestBody.getUrl();
         final List<String> unSubTopicList = unSubscribeRequestBody.getTopics();
 
-        final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
-            @Override
-            public void onResponse(final HttpCommand httpCommand) {
-                try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("{}", httpCommand);
-                    }
-                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
-                        System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
-                } catch (Exception ex) {
-                    // ignore
+        final CompleteHandler<HttpCommand> handler = httpCommand -> {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", httpCommand);
                 }
+                eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                    System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+            } catch (Exception ex) {
+                // ignore
             }
         };
 
@@ -163,12 +160,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         // remove subscribed url
                         if (!StringUtils.equals(unSubscribeUrl, client.getUrl())) {
                             clientUrls.add(client.getUrl());
-
-                            List<String> urls = idcUrls.get(client.getIdc());
-                            if (urls == null) {
-                                urls = new ArrayList<String>();
-                                idcUrls.put(client.getIdc(), urls);
-                            }
+                            idcUrls.computeIfAbsent(client.getIdc(), k -> new ArrayList<>());
                         }
 
                     }
