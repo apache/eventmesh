@@ -42,14 +42,12 @@ public class SendMessageBatchV2ProtocolResolver {
             SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader = (SendMessageBatchV2RequestHeader) header;
             SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody = (SendMessageBatchV2RequestBody) body;
 
-            String protocolVersion = sendMessageBatchV2RequestHeader.getProtocolVersion();
-
             CloudEventBuilder cloudEventBuilder;
-            switch (protocolVersion) {
-                case SpecVersion.V1.toString():
+            switch (parse(sendMessageBatchV2RequestHeader.getProtocolVersion())) {
+                case V1:
                     cloudEventBuilder = CloudEventBuilder.v1();
                     break;
-                case SpecVersion.V03.toString():
+                case V03:
                     cloudEventBuilder = CloudEventBuilder.v03();
                     break;
                 default:
