@@ -56,8 +56,7 @@ public class SendMessageBatchV2ProtocolResolver {
                     return null; // unsupported protocol version
             }
 
-            CloudEvent event = getBuildCloudEvent(sendMessageBatchV2RequestHeader, sendMessageBatchV2RequestBody, cloudEventBuilder);
-            return event;
+            return getBuildCloudEvent(sendMessageBatchV2RequestHeader, sendMessageBatchV2RequestBody, cloudEventBuilder);
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e.getCause());
         }
@@ -65,7 +64,6 @@ public class SendMessageBatchV2ProtocolResolver {
 
     private static CloudEvent getBuildCloudEvent(SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader,
         SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody, CloudEventBuilder cloudEventBuilder) {
-        CloudEvent event;
         cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
             .withSubject(sendMessageBatchV2RequestBody.getTopic())
             .withType("eventmeshmessage")
@@ -90,7 +88,6 @@ public class SendMessageBatchV2ProtocolResolver {
         if (StringUtils.isNotEmpty(sendMessageBatchV2RequestBody.getTag())) {
             cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageBatchV2RequestBody.getTag());
         }
-        event = cloudEventBuilder.build();
-        return event;
+        return cloudEventBuilder.build();
     }
 }
