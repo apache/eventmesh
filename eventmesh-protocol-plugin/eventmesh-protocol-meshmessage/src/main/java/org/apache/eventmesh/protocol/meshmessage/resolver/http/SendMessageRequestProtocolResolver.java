@@ -42,14 +42,12 @@ public class SendMessageRequestProtocolResolver {
             SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) header;
             SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) body;
 
-            String protocolVersion = sendMessageRequestHeader.getProtocolVersion();
-
             CloudEventBuilder cloudEventBuilder;
-            switch (protocolVersion) {
-                case SpecVersion.V1.toString():
+            switch (SpecVersion.parse(sendMessageRequestHeader.getProtocolVersion())) {
+                case SpecVersion.V1:
                     cloudEventBuilder = CloudEventBuilder.v1();
                     break;
-                case SpecVersion.V03.toString():
+                case SpecVersion.V03:
                     cloudEventBuilder = CloudEventBuilder.v03();
                     break;
                 default:
