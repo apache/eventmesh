@@ -42,25 +42,9 @@ public class SendMessageRequestProtocolResolver {
             SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) header;
             SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) body;
 
-            String protocolType = sendMessageRequestHeader.getProtocolType();
-            String protocolDesc = sendMessageRequestHeader.getProtocolDesc();
             String protocolVersion = sendMessageRequestHeader.getProtocolVersion();
 
-            String code = sendMessageRequestHeader.getCode();
-            String env = sendMessageRequestHeader.getEnv();
-            String idc = sendMessageRequestHeader.getIdc();
-            String ip = sendMessageRequestHeader.getIp();
-            String pid = sendMessageRequestHeader.getPid();
-            String sys = sendMessageRequestHeader.getSys();
-            String username = sendMessageRequestHeader.getUsername();
-            String passwd = sendMessageRequestHeader.getPasswd();
-            ProtocolVersion version = sendMessageRequestHeader.getVersion();
-            String language = sendMessageRequestHeader.getLanguage();
-
-            String content = sendMessageRequestBody.getContent();
-
             CloudEventBuilder cloudEventBuilder;
-
             switch (protocolVersion) {
                 case SpecVersion.V1.toString():
                     cloudEventBuilder = CloudEventBuilder.v1();
@@ -72,8 +56,7 @@ public class SendMessageRequestProtocolResolver {
                     return null; // unsupported protocol version
             }
 
-            CloudEvent event = getBuilderCloudEvent(sendMessageRequestBody, protocolType, protocolDesc, protocolVersion,
-                code, env, idc, ip, pid, sys, username, passwd, version, language, content, cloudEventBuilder);
+            CloudEvent event = getBuilderCloudEvent(sendMessageRequestHeader, sendMessageRequestBody, cloudEventBuilder);
             return event;
 
         } catch (Exception e) {
@@ -81,28 +64,27 @@ public class SendMessageRequestProtocolResolver {
         }
     }
 
-    private static CloudEvent getBuilderCloudEvent(SendMessageRequestBody sendMessageRequestBody, String protocolType, String protocolDesc,
-        String protocolVersion, String code, String env, String idc, String ip, String pid, String sys, String username, String passwd,
-        ProtocolVersion version, String language, String content, CloudEventBuilder cloudEventBuilder) {
+    private static CloudEvent getBuilderCloudEvent(SendMessageRequestHeader sendMessageRequestHeader, SendMessageRequestBody sendMessageRequestBody,
+        CloudEventBuilder cloudEventBuilder) {
         CloudEvent event;
         cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
             .withSubject(sendMessageRequestBody.getTopic())
             .withType("eventmeshmessage")
             .withSource(URI.create("/"))
-            .withData(content.getBytes(StandardCharsets.UTF_8))
-            .withExtension(ProtocolKey.REQUEST_CODE, code)
-            .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-            .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-            .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-            .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-            .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-            .withExtension(ProtocolKey.VERSION, version.getVersion())
-            .withExtension(ProtocolKey.LANGUAGE, language)
-            .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-            .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-            .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+            .withData(sendMessageRequestBody.getContent().getBytes(StandardCharsets.UTF_8))
+            .withExtension(ProtocolKey.REQUEST_CODE, sendMessageRequestHeader.getCode())
+            .withExtension(ProtocolKey.ClientInstanceKey.ENV, sendMessageRequestHeader.getEnv())
+            .withExtension(ProtocolKey.ClientInstanceKey.IDC, sendMessageRequestHeader.getIdc())
+            .withExtension(ProtocolKey.ClientInstanceKey.IP, sendMessageRequestHeader.getIp())
+            .withExtension(ProtocolKey.ClientInstanceKey.PID, sendMessageRequestHeader.getPid())
+            .withExtension(ProtocolKey.ClientInstanceKey.SYS, sendMessageRequestHeader.getSys())
+            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, sendMessageRequestHeader.getUsername())
+            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, sendMessageRequestHeader.getPasswd())
+            .withExtension(ProtocolKey.VERSION, sendMessageRequestHeader.getVersion().getVersion())
+            .withExtension(ProtocolKey.LANGUAGE, sendMessageRequestHeader.getLanguage())
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, sendMessageRequestHeader.getProtocolType())
+            .withExtension(ProtocolKey.PROTOCOL_DESC, sendMessageRequestHeader.getProtocolDesc())
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, sendMessageRequestHeader.getProtocolVersion())
             .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
             .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
             .withExtension(SendMessageRequestBody.PRODUCERGROUP,
@@ -119,4 +101,5 @@ public class SendMessageRequestProtocolResolver {
         event = cloudEventBuilder.build();
         return event;
     }
+
 }
