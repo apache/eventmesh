@@ -51,8 +51,8 @@ public class PropertiesUtilsTest {
         String path = configService.getRootPath();
         try {
             PropertiesUtils.loadPropertiesWhenFileExist(properties, path);
-            Assert.assertEquals(properties.get("eventMesh.server.env").toString(), "env-succeed!!!");
-            Assert.assertEquals(properties.get("eventMesh.server.idc").toString(), "idc-succeed!!!");
+            Assert.assertEquals("env-succeed!!!", properties.get("eventMesh.server.env").toString());
+            Assert.assertEquals("idc-succeed!!!", properties.get("eventMesh.server.idc").toString());
         } catch (Exception e) {
             Assert.fail();
         }
