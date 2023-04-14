@@ -47,7 +47,7 @@ public class ConfigurationHolderTest {
     }
 
     private void assertConfig(ConfigurationHolder config) {
-        Assert.assertEquals("127.0.0.1",config.getHost());
+        Assert.assertEquals("127.0.0.1", config.getHost());
         Assert.assertEquals(5672, config.getPort());
         Assert.assertEquals("username-success!!!", config.getUsername());
         Assert.assertEquals("passwd-success!!!", config.getPasswd());
