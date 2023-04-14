@@ -89,10 +89,8 @@ public class ConsumerManager {
     }
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
-        EventMeshConsumer consumer = consumerTable.get(consumerGroup);
-        if (consumer == null) {
-            consumer = new EventMeshConsumer(eventMeshGrpcServer, consumerGroup);
-            consumerTable.put(consumerGroup, consumer);
+        return consumerTable.computeIfAbsent(consumerGroup, key ->
+            consumerTable.put(consumerGroup, new EventMeshConsumer(eventMeshGrpcServer, consumerGroup)));
         }
         return consumer;
     }
