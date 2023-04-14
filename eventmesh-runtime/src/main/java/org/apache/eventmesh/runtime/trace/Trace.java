@@ -22,9 +22,9 @@ import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
