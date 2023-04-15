@@ -100,6 +100,8 @@ public class ClientGroupWrapper {
 
     public AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
+    public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
+
     private MQConsumerWrapper persistentMsgConsumer;
 
     private MQConsumerWrapper broadCastMsgConsumer;
@@ -108,8 +110,6 @@ public class ClientGroupWrapper {
         new ConcurrentHashMap<String, Set<Session>>();
 
     private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
-
-    public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
     private final MQProducerWrapper mqProducerWrapper;
 
