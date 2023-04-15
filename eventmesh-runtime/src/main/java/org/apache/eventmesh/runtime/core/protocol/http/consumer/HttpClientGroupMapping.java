@@ -388,8 +388,8 @@ public final class HttpClientGroupMapping {
             client.setUrl(url);
             client.setLastUpTime(new Date());
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, 
-                key -> Collections.unmodifiableList(new ArrayList<Client>() {
+            List<Client> localClients = localClientInfoMapping.computeIfAbsent
+                    (groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
                     private static final long serialVersionUID = -529919988844134656L;
 
                     {
@@ -449,8 +449,8 @@ public final class HttpClientGroupMapping {
             client.setUrl(url);
             client.setLastUpTime(new Date());
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, 
-                key -> Collections.unmodifiableList(new ArrayList<Client>() {
+            List<Client> localClients = localClientInfoMapping.computeIfAbsent
+                    (groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
                     private static final long serialVersionUID = -529919988844134656L;
 
                     {
