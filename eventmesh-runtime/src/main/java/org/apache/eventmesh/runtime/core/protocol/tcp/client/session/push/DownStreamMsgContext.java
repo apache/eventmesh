@@ -47,12 +47,12 @@ public class DownStreamMsgContext extends RetryContext {
     @Setter
     private Session session;
 
-    private AbstractContext consumeConcurrentlyContext;
+    private final AbstractContext consumeConcurrentlyContext;
 
-    private MQConsumerWrapper consumer;
+    private final MQConsumerWrapper consumer;
 
     @Getter
-    private SubscriptionItem subscriptionItem;
+    private final SubscriptionItem subscriptionItem;
 
     private long lastPushTime;
 
