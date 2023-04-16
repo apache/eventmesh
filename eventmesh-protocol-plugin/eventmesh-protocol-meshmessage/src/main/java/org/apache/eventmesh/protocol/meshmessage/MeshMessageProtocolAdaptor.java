@@ -19,7 +19,10 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchEventMeshCloudEventWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
@@ -32,6 +35,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.meshmessage.resolver.grpc.GrpcEventMeshCloudEventProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
@@ -64,18 +68,19 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             org.apache.eventmesh.common.protocol.http.header.Header header = ((HttpCommand) protocol).getHeader();
             Body body = ((HttpCommand) protocol).getBody();
             String requestCode = ((HttpCommand) protocol).getRequestCode();
-
             return deserializeHttpProtocol(requestCode, header, body);
         } else if (protocol instanceof SimpleMessageWrapper) {
             SimpleMessage message = ((SimpleMessageWrapper) protocol).getMessage();
             return deserializeGrpcProtocol(message);
+        } else if (protocol instanceof EventMeshCloudEventWrapper) {
+            EventMeshCloudEventWrapper wrapper = (EventMeshCloudEventWrapper) protocol;
+            return GrpcEventMeshCloudEventProtocolResolver.buildEvent(wrapper.getMessage());
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
     }
 
-    private CloudEvent deserializeGrpcProtocol(SimpleMessage message)
-        throws ProtocolHandleException {
+    private CloudEvent deserializeGrpcProtocol(SimpleMessage message) throws ProtocolHandleException {
         return GrpcMessageProtocolResolver.buildEvent(message);
     }
 
@@ -106,6 +111,9 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
         if (protocol instanceof BatchMessageWrapper) {
             BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
             return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else if (protocol instanceof BatchEventMeshCloudEventWrapper) {
+            CloudEventBatch cloudEventBatch = ((BatchEventMeshCloudEventWrapper) protocol).getMessage();
+            return GrpcEventMeshCloudEventProtocolResolver.buildBatchEvents(cloudEventBatch);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
@@ -139,6 +147,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_TCP, protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
+        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT, protocolDesc)) {
+            return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
         }

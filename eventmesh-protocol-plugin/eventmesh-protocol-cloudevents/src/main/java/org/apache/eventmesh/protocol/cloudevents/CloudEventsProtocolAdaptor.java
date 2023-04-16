@@ -19,7 +19,10 @@ package org.apache.eventmesh.protocol.cloudevents;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchEventMeshCloudEventWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
@@ -30,6 +33,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.resolver.grpc.GrpcEventMeshCloudEventProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV2ProtocolResolver;
@@ -77,6 +81,9 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         } else if (cloudEvent instanceof SimpleMessageWrapper) {
             SimpleMessage simpleMessage = ((SimpleMessageWrapper) cloudEvent).getMessage();
             return GrpcMessageProtocolResolver.buildEvent(simpleMessage);
+        } else if (cloudEvent instanceof EventMeshCloudEventWrapper) {
+            EventMeshCloudEventWrapper ce = (EventMeshCloudEventWrapper) cloudEvent;
+            return GrpcEventMeshCloudEventProtocolResolver.buildEvent(ce.getMessage());
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", cloudEvent.getClass()));
         }
@@ -110,6 +117,9 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         if (protocol instanceof BatchMessageWrapper) {
             BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
             return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else if (protocol instanceof BatchEventMeshCloudEventWrapper) {
+            CloudEventBatch cloudEventBatch = ((BatchEventMeshCloudEventWrapper) protocol).getMessage();
+            return GrpcEventMeshCloudEventProtocolResolver.buildBatchEvents(cloudEventBatch);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
