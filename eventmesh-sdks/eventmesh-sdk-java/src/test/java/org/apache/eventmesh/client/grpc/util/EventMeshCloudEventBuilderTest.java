@@ -42,13 +42,6 @@ import org.junit.Test;
 
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-/**
- * desc：
- *
- * @author: mxsm
- * @Date: 2023/4/11 19:29
- * @since 1.0.0
- */
 public class EventMeshCloudEventBuilderTest {
 
     private EventMeshGrpcClientConfig clientConfig;
