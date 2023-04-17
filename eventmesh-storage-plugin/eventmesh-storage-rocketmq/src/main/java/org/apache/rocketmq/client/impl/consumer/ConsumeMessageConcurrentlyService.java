@@ -106,7 +106,9 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     @Override
     public void shutdown(long awaitTerminateMillis) {
-
+        this.scheduledExecutorService.shutdown();
+        org.apache.rocketmq.common.utils.ThreadUtils.shutdownGracefully(this.consumeExecutor, awaitTerminateMillis, TimeUnit.MILLISECONDS);
+        this.cleanExpireMsgExecutors.shutdown();
     }
 
     public void shutdown() {
