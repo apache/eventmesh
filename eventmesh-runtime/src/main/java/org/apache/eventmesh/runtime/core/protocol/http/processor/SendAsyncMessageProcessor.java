@@ -86,10 +86,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand responseEventMeshCommand;
         String localAddress = IPUtils.getLocalAddress();
         HttpCommand request = asyncContext.getRequest();
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         CMD_LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
                 Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+                remoteAddr, localAddress);
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) request.getHeader();
 
@@ -170,7 +171,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         //do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
             String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
             String subsystem = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
