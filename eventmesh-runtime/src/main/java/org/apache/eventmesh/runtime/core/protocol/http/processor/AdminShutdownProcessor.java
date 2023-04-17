@@ -34,7 +34,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public final Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
     private EventMeshServer eventMeshServer;
 
@@ -46,10 +46,10 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
         HttpCommand responseEventMeshCommand;
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-            EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 
