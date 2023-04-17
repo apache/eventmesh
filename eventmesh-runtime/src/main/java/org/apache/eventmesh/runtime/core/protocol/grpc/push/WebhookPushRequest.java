@@ -60,9 +60,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class WebhookPushRequest extends AbstractPushRequest {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    private static final Logger CMD_LOGGER = LoggerFactory.getLogger("cmd");
+    private static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     /**
      * Key: idc Value: list of URLs

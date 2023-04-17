@@ -32,20 +32,18 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
-    public final Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    private EventMeshServer eventMeshServer;
-
-    public AdminShutdownProcessor(EventMeshServer eventMeshServer) {
-        this.eventMeshServer = eventMeshServer;
-    }
+    private final EventMeshServer eventMeshServer;
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseEventMeshCommand;
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
@@ -53,7 +51,7 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
         eventMeshServer.shutdown();
 
-        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        HttpCommand responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
         asyncContext.onComplete(responseEventMeshCommand);
     }
 

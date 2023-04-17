@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBase {
 
-    private final Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    private final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 

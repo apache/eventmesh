@@ -71,9 +71,9 @@ import com.google.common.collect.Sets;
 
 public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
-    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public static final Logger CMD_LOGGER = LoggerFactory.getLogger("cmd");
+    public static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     public static final Logger LOGGER = LoggerFactory.getLogger("AsyncHTTPPushRequest");
 
