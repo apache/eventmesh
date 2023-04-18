@@ -56,7 +56,7 @@ public class GithubProtocol implements ManufacturerProtocol {
         final Map<String, String> header) throws Exception {
 
         final String fromSignature = header.get(FROM_SIGNATURE);
-        if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
+        if (Boolean.FALSE.equals(isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret()))) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
