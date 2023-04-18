@@ -122,7 +122,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             client.setUrl(heartbeatEntity.url);
             client.setLastUpTime(new Date());
 
-            if (StringUtils.isBlank(client.getTopic())) {
+            if (StringUtils.isBlank(client.getTopic()) || StringUtils.isBlank(client.getUrl())) {
                 continue;
             }
 
@@ -147,10 +147,6 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                     }
                     return;
                 }
-            }
-
-            if (StringUtils.isBlank(client.getUrl())) {
-                continue;
             }
 
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
