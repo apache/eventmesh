@@ -32,6 +32,7 @@ import io.cloudevents.CloudEvent;
 
 
 import lombok.extern.slf4j.Slf4j;
+import java.util.Objects;
 
 @Slf4j
 public class ClientAckContext {
