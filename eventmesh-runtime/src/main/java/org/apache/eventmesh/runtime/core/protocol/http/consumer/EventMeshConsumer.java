@@ -75,7 +75,7 @@ public class EventMeshConsumer {
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private ConsumerGroupConf consumerGroupConf;
 

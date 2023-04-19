@@ -66,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MessageTransferTask extends AbstractTask {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 

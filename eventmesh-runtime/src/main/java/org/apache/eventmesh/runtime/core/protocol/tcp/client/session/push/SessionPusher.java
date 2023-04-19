@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SessionPusher {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
