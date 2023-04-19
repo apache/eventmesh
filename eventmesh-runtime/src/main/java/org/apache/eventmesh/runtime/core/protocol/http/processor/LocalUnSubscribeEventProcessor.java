@@ -76,14 +76,14 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
         String localAddress = IPUtils.getLocalAddress();
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         if (log.isInfoEnabled()) {
             log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
         }
 
         // user request header
-        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
 
         // build sys header
         requestWrapper.buildSysHeaderForClient();

@@ -67,15 +67,14 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final Channel channel = handlerSpecific.getCtx().channel();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
         String localAddress = IPUtils.getLocalAddress();
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(channel);
         if (log.isInfoEnabled()) {
             log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-                EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(channel),
-                localAddress);
+                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
         }
 
         // user request header
-        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP,
-            RemotingHelper.parseChannelRemoteAddr(channel));
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
@@ -118,11 +117,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {
-                    this.acl.doAclCheckInHttpReceive(RemotingHelper.parseChannelRemoteAddr(channel),
-                        sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString(),
-                        sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString(),
-                        sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString(),
-                        item.getTopic(),
+                    String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
+                    String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+                    String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
+                    this.acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
                         requestWrapper.getRequestURI());
                 } catch (Exception e) {
                     if (log.isWarnEnabled()) {
@@ -180,8 +178,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                     eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
-                responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
