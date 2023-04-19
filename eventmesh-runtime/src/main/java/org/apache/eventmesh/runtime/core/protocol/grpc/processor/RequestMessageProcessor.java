@@ -50,7 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RequestMessageProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 

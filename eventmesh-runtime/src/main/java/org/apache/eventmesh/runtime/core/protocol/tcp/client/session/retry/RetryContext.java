@@ -20,7 +20,10 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
 import io.cloudevents.CloudEvent;
+
 
 public abstract class RetryContext implements Delayed {
 
@@ -38,7 +41,7 @@ public abstract class RetryContext implements Delayed {
     }
 
     @Override
-    public int compareTo(Delayed delayed) {
+    public int compareTo(@Nonnull Delayed delayed) {
         RetryContext obj = (RetryContext) delayed;
         return Long.compare(this.executeTime, obj.executeTime);
 

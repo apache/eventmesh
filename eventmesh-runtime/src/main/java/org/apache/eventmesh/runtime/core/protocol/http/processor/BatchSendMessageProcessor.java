@@ -64,9 +64,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 

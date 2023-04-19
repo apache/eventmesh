@@ -26,7 +26,7 @@ import lombok.Data;
 @Data
 public class ServiceInstance implements Serializable {
 
-    private static final long serialVersionUID = -5770826614635186498L;
+    private static final long serialVersionUID = -4622423079578878337L;
 
     private String host;
     private int port;
