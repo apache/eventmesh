@@ -206,7 +206,8 @@ public class EtcdRegistryService implements RegistryService {
             EventMeshDataInfo eventMeshDataInfo =
                 new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                     endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
-            ByteSequence etcdValue = ByteSequence.from(Objects.requireNonNull(JsonUtils.toJSONString(eventMeshDataInfo)).getBytes(Constants.DEFAULT_CHARSET));
+            ByteSequence etcdValue = ByteSequence.from(Objects.requireNonNull(JsonUtils.toJSONString(eventMeshDataInfo))
+                                                 .getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 
