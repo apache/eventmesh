@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Session {
 
-    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 

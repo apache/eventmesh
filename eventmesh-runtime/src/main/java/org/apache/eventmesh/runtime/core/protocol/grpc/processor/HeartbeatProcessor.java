@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 public class HeartbeatProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
