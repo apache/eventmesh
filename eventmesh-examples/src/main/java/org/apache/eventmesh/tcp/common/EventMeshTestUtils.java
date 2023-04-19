@@ -70,7 +70,7 @@ public class EventMeshTestUtils {
      
 
     // generate pub-client
-        public static UserAgent generateClient1() {
+    public static UserAgent generateClient1() {
         final UserAgent agent = getUserAgent(UtilsConstants.PORT_1, UtilsConstants.SUB_SYSTEM_1, UtilsConstants.PID_1);
         return MessageUtils.generatePubClient(agent);
     }
@@ -81,7 +81,7 @@ public class EventMeshTestUtils {
         return MessageUtils.generateSubClient(agent);
     }
 
-    private static Package getPackageMsg(Command requestToServer, EventMeshMessage eventMeshMessage){
+    private static Package getPackageMsg(Command requestToServer, EventMeshMessage eventMeshMessage) {
         final Package msg = new Package();
         msg.setHeader(new Header(requestToServer, 0, null, generateRandomString(SEQ_LENGTH)));
         msg.setBody(eventMeshMessage);
@@ -108,38 +108,39 @@ public class EventMeshTestUtils {
         return getPackageMsg(RESPONSE_TO_SERVER, request);
     }
 
-    public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic, String msgType, String msg, String keys, String keyMsg, String testMessage) {
+    public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic, String msgType, String msg,
+                                                       String keys, String keyMsg, String testMessage) {
         final EventMeshMessage mqmsg = new EventMeshMessage();
         mqmsg.setTopic(eventMeshTcpSyncTestTopic);
         mqmsg.getProperties().put(msgType, msg);
         mqmsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
-        mqmsg.getProperties().put(keys,keyMsg);
+        mqmsg.getProperties().put(keys, keyMsg);
         mqmsg.getHeaders().put(Constants.DATA_CONTENT_TYPE, "text/plain");
         mqmsg.setBody(testMessage);
-        return mqmsg ;
+        return mqmsg;
     }
          
     public static EventMeshMessage generateSyncRRMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.MSG_TYPE, "persistent", UtilsConstants.KEYS, generateRandomString(16),
-        "testSyncRR");
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.MSG_TYPE,
+                                   "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR");
     }
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", 
-        UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull",
-        "testAsyncRR");
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, 
+                                   "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+                                   "notnull", "testAsyncRR");
     }
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", 
-        UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull",
-        ASYNC_MSG_BODY);
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
+                                   "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+                                   "notnull", ASYNC_MSG_BODY);
     }
 
     public static EventMeshMessage generateBroadcastMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", 
-        UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull",
-        ASYNC_MSG_BODY);
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
+                                   "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+                                   "notnull", ASYNC_MSG_BODY);
     }
 
     private static String generateRandomString(final int length) {
