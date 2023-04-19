@@ -42,19 +42,19 @@ public class NetUtilsTest {
 
         formData = "item_id=10081&item_name=test item name";
         result = NetUtils.formData2Dic(formData);
-        Assert.assertEquals(result.get("item_id"), "10081");
+        Assert.assertEquals("10081", result.get("item_id"));
     }
 
     @Test
     public void testAddressToString() {
         List<InetSocketAddress> clients = new ArrayList<>();
         String result = NetUtils.addressToString(clients);
-        Assert.assertEquals(result, "no session had been closed");
+        Assert.assertEquals("no session had been closed", result);
 
         InetSocketAddress localAddress = new InetSocketAddress(80);
         clients.add(localAddress);
         result = NetUtils.addressToString(clients);
-        Assert.assertEquals(result, localAddress + "|");
+        Assert.assertEquals(localAddress + "|", result);
     }
 
     @Test
