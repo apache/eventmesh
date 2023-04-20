@@ -123,8 +123,8 @@ public class EventHandler extends AbstractHttpHandler {
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
             String result = JsonUtils.toJSONString(eventJsonList);
-            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             try (OutputStream out = httpExchange.getResponseBody()) {
                 StringWriter writer = new StringWriter();
@@ -135,8 +135,8 @@ public class EventHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
-                out.write(result.getBytes());
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
                 log.warn("out close failed...", ioe);
             }
@@ -168,8 +168,8 @@ public class EventHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
-                out.write(result.getBytes());
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
                 log.warn("out close failed...", ioe);
             }
