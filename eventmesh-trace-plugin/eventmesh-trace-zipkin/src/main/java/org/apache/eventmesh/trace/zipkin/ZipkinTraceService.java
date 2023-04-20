@@ -144,12 +144,7 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
     @Override
     public void inject(Context context, Map<String, Object> map) {
-        textMapPropagator.inject(context, map, new TextMapSetter<Map<String, Object>>() {
-            @Override
-            public void set(@Nullable Map<String, Object> carrier, String key, String value) {
-                map.put(key, value);
-            }
-        });
+        textMapPropagator.inject(context, map, (carrier, key, value) -> map.put(key, value));
     }
 
     @Override
