@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.common.Constants;
 
 import java.io.IOException;
 import java.io.OutputStream;
