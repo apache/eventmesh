@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.http;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
@@ -41,17 +42,8 @@ public class SendMessageBatchV2ProtocolResolver {
             SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader = (SendMessageBatchV2RequestHeader) header;
             SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody = (SendMessageBatchV2RequestBody) body;
 
-            CloudEventBuilder cloudEventBuilder;
-            switch (SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion())) {
-                case V1:
-                    cloudEventBuilder = CloudEventBuilder.v1();
-                    break;
-                case V03:
-                    cloudEventBuilder = CloudEventBuilder.v03();
-                    break;
-                default:
-                    return null; // unsupported protocol version
-            }
+            CloudEventBuilder cloudEventBuilder = CloudEventBuilder.fromSpecVersion(
+                    SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion()));
 
             return getBuildCloudEvent(sendMessageBatchV2RequestHeader, sendMessageBatchV2RequestBody, cloudEventBuilder);
         } catch (Exception e) {
@@ -65,7 +57,7 @@ public class SendMessageBatchV2ProtocolResolver {
             .withSubject(sendMessageBatchV2RequestBody.getTopic())
             .withType("eventmeshmessage")
             .withSource(URI.create("/"))
-            .withData(sendMessageBatchV2RequestBody.getMsg().getBytes(StandardCharsets.UTF_8))
+            .withData(sendMessageBatchV2RequestBody.getMsg().getBytes(Constants.DEFAULT_CHARSET))
             .withExtension(ProtocolKey.REQUEST_CODE, sendMessageBatchV2RequestHeader.getCode())
             .withExtension(ProtocolKey.ClientInstanceKey.ENV, sendMessageBatchV2RequestHeader.getEnv())
             .withExtension(ProtocolKey.ClientInstanceKey.IDC, sendMessageBatchV2RequestHeader.getIdc())
