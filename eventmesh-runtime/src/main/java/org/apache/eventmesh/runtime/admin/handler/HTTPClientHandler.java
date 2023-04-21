@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.common.Constants;
 
 import java.io.IOException;
 import java.io.OutputStream;
