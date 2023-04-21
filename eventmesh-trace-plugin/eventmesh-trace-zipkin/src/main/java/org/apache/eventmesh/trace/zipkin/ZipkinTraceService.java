@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -42,6 +43,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -143,9 +145,10 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
     @Override
     public void inject(Context context, Map<String, Object> map) {
-        textMapPropagator.inject(context, map, (cr, key, value) -> {
-            if (cr != null) {
-                cr.put(key, value);
+        textMapPropagator.inject(context, map, new TextMapSetter<Map<String, Object>>() {
+            @Override
+            public void set(@Nullable Map<String, Object> carrier, String key, String value) {
+                map.put(key, value);
             }
         });
     }
