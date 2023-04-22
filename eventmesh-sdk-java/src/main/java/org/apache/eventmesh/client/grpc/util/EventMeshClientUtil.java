@@ -77,7 +77,7 @@ public class EventMeshClientUtil {
         final String content = message.getContent();
 
         // This is GRPC response message
-        if (StringUtils.isEmpty(message.getSeqNum()) && StringUtils.isEmpty(message.getUniqueId())) {
+        if (StringUtils.isAllEmpty(message.getSeqNum(), message.getUniqueId())) {
             return (T) JsonUtils.parseTypeReferenceObject(content,
                 new TypeReference<HashMap<String, String>>() {
                 });
@@ -110,7 +110,7 @@ public class EventMeshClientUtil {
     private static CloudEvent switchSimpleMessage2CloudEvent(SimpleMessage message, String content) {
         final String contentType = message.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
         final CloudEvent cloudEvent = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(contentType))
-            .deserialize(content.getBytes(StandardCharsets.UTF_8));
+            .deserialize(content.getBytes(Constants.DEFAULT_CHARSET));
 
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(cloudEvent)
             .withSubject(message.getTopic())
