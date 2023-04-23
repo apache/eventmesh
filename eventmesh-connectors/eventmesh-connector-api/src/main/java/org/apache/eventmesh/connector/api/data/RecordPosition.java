@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.connector.api.data;
 
-import org.apache.eventmesh.connector.api.data.RecordOffset;
-import org.apache.eventmesh.connector.api.data.RecordPartition;
-
 import java.util.Objects;
 
 public class RecordPosition {
