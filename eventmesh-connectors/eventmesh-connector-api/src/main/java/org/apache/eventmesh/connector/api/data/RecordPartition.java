@@ -23,10 +23,10 @@ import java.util.Objects;
 public class RecordPartition {
 
     /**
-     * if pull message from mq
-     * key=topic,value=topicName
-     * key=brokerName,value=brokerName
-     * key=queueId,value=queueId
+     * if pull message from mq key=topic,
+     * value=topicName key=brokerName,
+     * value=brokerName key=queueId,
+     * value=queueId
      */
     private final Map<String, ?> partition;
 
@@ -40,10 +40,12 @@ public class RecordPartition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof RecordPartition))
+        }
+        if (!(o instanceof RecordPartition)) {
             return false;
+        }
         RecordPartition partition1 = (RecordPartition) o;
         return Objects.equals(partition, partition1.partition);
     }
@@ -55,8 +57,8 @@ public class RecordPartition {
 
     @Override
     public String toString() {
-        return "RecordPartition{" +
-            "partition=" + partition +
-            '}';
+        return "RecordPartition{"
+            + "partition=" + partition
+            + "}";
     }
 }

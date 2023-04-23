@@ -19,6 +19,9 @@ package org.apache.eventmesh.connector.api.data;
 
 import java.util.Set;
 
+/**
+ * used for connector-record extension
+ */
 public interface KeyValue {
 
     KeyValue put(String key, boolean value);

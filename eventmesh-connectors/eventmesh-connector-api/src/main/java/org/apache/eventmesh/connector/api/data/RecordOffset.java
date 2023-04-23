@@ -23,8 +23,8 @@ import java.util.Objects;
 public class RecordOffset {
 
     /**
-     * if pull message from mq
-     * key=queueOffset,value=queueOffset value
+     * if pull message from mq key=queueOffset,
+     * value=queueOffset value
      */
     private final Map<String, ?> offset;
 
@@ -38,10 +38,12 @@ public class RecordOffset {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof RecordOffset))
+        }
+        if (!(o instanceof RecordOffset)) {
             return false;
+        }
         RecordOffset offset1 = (RecordOffset) o;
         return Objects.equals(offset, offset1.offset);
     }
@@ -53,8 +55,8 @@ public class RecordOffset {
 
     @Override
     public String toString() {
-        return "RecordOffset{" +
-            "offset=" + offset +
-            '}';
+        return "RecordOffset{"
+             + "offset=" + offset
+             + "}";
     }
 }

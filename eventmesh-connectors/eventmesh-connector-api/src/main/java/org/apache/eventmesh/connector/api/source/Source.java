@@ -22,6 +22,9 @@ import org.apache.eventmesh.connector.api.data.ConnectRecord;
 
 import java.util.List;
 
+/**
+ * Source
+ */
 public interface Source extends Connector {
 
     List<ConnectRecord> poll();

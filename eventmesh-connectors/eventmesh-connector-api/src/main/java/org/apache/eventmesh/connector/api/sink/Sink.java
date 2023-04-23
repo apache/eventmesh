@@ -22,6 +22,9 @@ import org.apache.eventmesh.connector.api.data.ConnectRecord;
 
 import java.util.List;
 
+/**
+ * Sink
+ */
 public interface Sink extends Connector {
 
     void put(List<ConnectRecord> sinkRecords);

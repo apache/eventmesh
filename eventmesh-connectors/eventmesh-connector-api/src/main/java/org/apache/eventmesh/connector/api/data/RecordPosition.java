@@ -40,10 +40,12 @@ public class RecordPosition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof RecordPosition))
+        }
+        if (!(o instanceof RecordPosition)) {
             return false;
+        }
         RecordPosition position = (RecordPosition) o;
         return recordPartition.equals(position.recordPartition) && recordOffset.equals(position.recordOffset);
     }
