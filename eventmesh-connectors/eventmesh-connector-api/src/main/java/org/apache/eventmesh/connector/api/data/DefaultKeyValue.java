@@ -22,13 +22,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultKeyValue implements KeyValue {
-    private Map<String, String> properties = new ConcurrentHashMap<>();
 
-    @Override
-    public KeyValue put(String key, boolean value) {
-        properties.put(key, String.valueOf(value));
-        return this;
-    }
+    private Map<String, String> properties = new ConcurrentHashMap<>();
 
     @Override
     public boolean getBoolean(String key) {
@@ -54,6 +49,12 @@ public class DefaultKeyValue implements KeyValue {
     @Override
     public short getShort(String key, short defaultValue) {
         return properties.containsKey(key) ? getShort(key) : defaultValue;
+    }
+
+    @Override
+    public KeyValue put(String key, boolean value) {
+        properties.put(key, String.valueOf(value));
+        return this;
     }
 
     @Override

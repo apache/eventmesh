@@ -20,6 +20,9 @@ package org.apache.eventmesh.connector.api.connector;
 import org.apache.eventmesh.connector.api.config.Config;
 import org.apache.eventmesh.connector.api.data.ConnectRecord;
 
+/**
+ * Connector
+ */
 public interface Connector {
 
     Class<? extends Config> configClass();

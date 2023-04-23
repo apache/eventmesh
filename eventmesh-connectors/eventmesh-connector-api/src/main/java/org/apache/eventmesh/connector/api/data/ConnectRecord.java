@@ -34,12 +34,12 @@ public class ConnectRecord {
     private KeyValue extensions;
 
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
-                         Long timestamp) {
+        Long timestamp) {
         this(recordPartition, recordOffset, timestamp, null);
     }
 
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
-                         Long timestamp, Object data) {
+        Long timestamp, Object data) {
         this.position = new RecordPosition(recordPartition, recordOffset);
         this.timestamp = timestamp;
         this.data = data;
@@ -104,11 +104,15 @@ public class ConnectRecord {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConnectRecord)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ConnectRecord)) {
+            return false;
+        }
         ConnectRecord that = (ConnectRecord) o;
         return Objects.equals(timestamp, that.timestamp) && Objects.equals(data, that.data)
-                && Objects.equals(position, that.position) && Objects.equals(extensions, that.extensions);
+            && Objects.equals(position, that.position) && Objects.equals(extensions, that.extensions);
     }
 
     @Override
@@ -118,11 +122,11 @@ public class ConnectRecord {
 
     @Override
     public String toString() {
-        return "ConnectRecord{" +
-                "timestamp=" + timestamp +
-                ", data=" + data +
-                ", position=" + position +
-                ", extensions=" + extensions +
-                '}';
+        return "ConnectRecord{"
+            + "timestamp=" + timestamp
+            + ", data=" + data
+            + ", position=" + position
+            + ", extensions=" + extensions
+            + "}";
     }
 }
