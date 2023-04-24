@@ -152,9 +152,9 @@ public class Utils {
     public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+            if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),
+                    HttpHeaderNames.ACCEPT_ENCODING.toString(),
+                    HttpHeaderNames.CONTENT_LENGTH.toString())) {
                 continue;
             }
             headerParam.put(key, fullReq.headers().get(key));
