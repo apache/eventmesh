@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -133,7 +134,6 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
             builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
-            //eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
 
             addToWaitingMap(this);
 
@@ -177,9 +177,9 @@ public class WebhookPushRequest extends AbstractPushRequest {
         return response -> {
             removeWaitingMap(WebhookPushRequest.this);
             long cost = System.currentTimeMillis() - lastPushTime;
-            //eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
+            
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                //eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
+                
                 MESSAGE_LOGGER.info(
                     "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
                         + "|uniqueId={}|cost={}", selectedPushUrl, simpleMessage.getTopic(),
@@ -219,7 +219,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             Map<String, Object> ret =
                 JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
-            Integer retCode = (Integer) ret.get("retCode");
+            Integer retCode = (Integer) Objects.requireNonNull(ret).get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
@@ -257,6 +257,6 @@ public class WebhookPushRequest extends AbstractPushRequest {
             }
         }
         MESSAGE_LOGGER.error("No event emitters from subscriber, no message returning.");
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 }
