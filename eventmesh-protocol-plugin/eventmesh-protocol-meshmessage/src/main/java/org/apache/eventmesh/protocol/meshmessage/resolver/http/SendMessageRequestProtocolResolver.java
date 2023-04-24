@@ -29,7 +29,6 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import io.cloudevents.CloudEvent;
