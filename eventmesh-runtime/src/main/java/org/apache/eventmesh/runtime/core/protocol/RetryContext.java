@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
+package org.apache.eventmesh.runtime.core.protocol;
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -24,14 +24,13 @@ import javax.annotation.Nonnull;
 
 import io.cloudevents.CloudEvent;
 
-
-public abstract class RetryContext implements Delayed {
+public abstract class RetryContext implements DelayRetryable {
 
     public CloudEvent event;
 
     public String seq;
 
-    public int retryTimes = 0;
+    public int retryTimes;
 
     public long executeTime = System.currentTimeMillis();
 
@@ -51,6 +50,4 @@ public abstract class RetryContext implements Delayed {
     public long getDelay(TimeUnit unit) {
         return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
-
-    public abstract void retry();
 }
