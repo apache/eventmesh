@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.constants;
 
 import org.apache.eventmesh.common.Constants;
 
+import java.nio.charset.StandardCharsets;
+
 public class EventMeshConstants {
 
     public static final String EVENT_STORE_PROPERTIES = "eventstore";
@@ -31,7 +33,7 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_GRPC = "grpc";
 
-    public static final String DEFAULT_CHARSET = "UTF-8";
+    public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     public static final String IP_PORT_SEPARATOR = ":";
 
