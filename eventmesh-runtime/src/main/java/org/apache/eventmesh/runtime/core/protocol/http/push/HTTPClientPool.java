@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -43,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -55,7 +55,7 @@ public class HTTPClientPool {
 
     private final transient List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
 
-    private int core;
+    private final int core;
 
     private static final int DEFAULT_MAX_TOTAL = 200;
     private static final int DEFAULT_IDLETIME_SECONDS = 30;
@@ -73,7 +73,7 @@ public class HTTPClientPool {
             return client;
         }
 
-        return clients.get(RandomUtils.nextInt(core, 2 * core) % core);
+        return clients.get(ThreadLocalRandom.current().nextInt(core, 2 * core) % core);
     }
 
     public void shutdown() throws IOException {
