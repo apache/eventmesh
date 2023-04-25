@@ -58,9 +58,11 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
-    public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
+    private final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    
+    private final Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -71,7 +73,6 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         this.acl = eventMeshHTTPServer.getAcl();
     }
 
-    public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext)
@@ -161,7 +162,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             return;
         }
 
-        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
         if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize()) {
             batchMessageLogger.error("Event size exceeds the limit: {}",
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEventSize());
