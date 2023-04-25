@@ -20,9 +20,11 @@ package org.apache.eventmesh.runtime.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
-import javax.annotation.Nonnull;
+
 
 public class EventMeshCloudEventWriter implements CloudEventContextWriter {
 
