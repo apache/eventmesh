@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.SUCCESS;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CMD;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PROTOCOL_HTTP;
+
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -34,10 +36,11 @@ import io.netty.channel.ChannelHandlerContext;
 
 import lombok.RequiredArgsConstructor;
 
+
 @RequiredArgsConstructor
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
-    public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
+    public final Logger cmdLogger = LoggerFactory.getLogger(CMD);
 
     private final EventMeshServer eventMeshServer;
 
@@ -47,16 +50,11 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
+            PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 
-        HttpCommand responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        HttpCommand responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(SUCCESS);
         asyncContext.onComplete(responseEventMeshCommand);
-    }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
     }
 }
