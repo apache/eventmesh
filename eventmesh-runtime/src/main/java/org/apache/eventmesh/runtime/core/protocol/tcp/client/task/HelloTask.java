@@ -18,6 +18,11 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
+import static org.apache.eventmesh.common.protocol.tcp.OPStatus.FAIL;
+import static org.apache.eventmesh.common.protocol.tcp.OPStatus.SUCCESS;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.MESSAGE;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PURPOSE_PUB;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PURPOSE_SUB;
 
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
@@ -50,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HelloTask extends AbstractTask {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(MESSAGE);
 
     private final Acl acl;
 
@@ -88,12 +93,11 @@ public class HelloTask extends AbstractTask {
 
             validateUserAgent(user);
             session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
-            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                pkg.getHeader().getSeq()));
+            res.setHeader(new Header(HELLO_RESPONSE, SUCCESS.getCode(), SUCCESS.getDesc(), pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
-            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
+            res.setHeader(new Header(HELLO_RESPONSE, FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                 .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
                 new ChannelFutureListener() {
@@ -121,9 +125,8 @@ public class HelloTask extends AbstractTask {
             throw new Exception("client version cannot be null");
         }
 
-        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
-            EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
 
+        if (!StringUtils.equalsAny(user.getPurpose(), PURPOSE_PUB, PURPOSE_SUB)) {
             throw new Exception("client purpose config is error");
         }
 

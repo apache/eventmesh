@@ -18,15 +18,19 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
+import static org.apache.eventmesh.common.protocol.tcp.OPStatus.SUCCESS;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.DATE_FORMAT;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.MESSAGE;
+import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.CLOSED;
+import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.CREATED;
+import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.RUNNING;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
@@ -53,118 +57,72 @@ import io.netty.channel.ChannelHandlerContext;
 
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
+import lombok.Setter;
 
 @Slf4j
 public class Session {
 
-    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(MESSAGE);
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 
+    @Setter
+    @Getter
     private UserAgent client;
 
+    @Setter
+    @Getter
     private InetSocketAddress remoteAddress;
 
+    @Setter
+    @Getter
     protected ChannelHandlerContext context;
 
+    @Setter
+    @Getter
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
 
+    @Setter
+    @Getter
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
+    @Setter
+    @Getter
     private SessionPusher pusher;
 
+    @Setter
+    @Getter
     private SessionSender sender;
 
     private final long createTime = System.currentTimeMillis();
 
+    @Setter
+    @Getter
     private long lastHeartbeatTime = System.currentTimeMillis();
 
-    private long isolateTime = 0;
+    @Setter
+    @Getter
+    private long isolateTime;
 
+    @Setter
+    @Getter
     private SessionContext sessionContext = new SessionContext(this);
 
-    private boolean listenRspSend = false;
+    private boolean listenRspSend;
 
     private final ReentrantLock listenRspLock = new ReentrantLock();
 
-    private String listenRequestSeq = null;
+    @Setter
+    @Getter
+    private String listenRequestSeq;
 
-    protected SessionState sessionState = SessionState.CREATED;
-
-    public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public void setRemoteAddress(InetSocketAddress remoteAddress) {
-        this.remoteAddress = remoteAddress;
-    }
-
-    public long getLastHeartbeatTime() {
-        return lastHeartbeatTime;
-    }
+    @Setter
+    @Getter
+    protected SessionState sessionState = CREATED;
 
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
-    }
-
-    public SessionState getSessionState() {
-        return sessionState;
-    }
-
-    public void setSessionState(SessionState sessionState) {
-        this.sessionState = sessionState;
-    }
-
-    public void setClient(UserAgent client) {
-        this.client = client;
-    }
-
-    public SessionPusher getPusher() {
-        return pusher;
-    }
-
-    public void setPusher(SessionPusher pusher) {
-        this.pusher = pusher;
-    }
-
-    public SessionSender getSender() {
-        return sender;
-    }
-
-    public void setSender(SessionSender sender) {
-        this.sender = sender;
-    }
-
-    public void setLastHeartbeatTime(long lastHeartbeatTime) {
-        this.lastHeartbeatTime = lastHeartbeatTime;
-    }
-
-    public SessionContext getSessionContext() {
-        return sessionContext;
-    }
-
-    public void setSessionContext(SessionContext sessionContext) {
-        this.sessionContext = sessionContext;
-    }
-
-    public ChannelHandlerContext getContext() {
-        return context;
-    }
-
-    public void setContext(ChannelHandlerContext context) {
-        this.context = context;
-    }
-
-    public UserAgent getClient() {
-        return client;
-    }
-
-    public String getListenRequestSeq() {
-        return listenRequestSeq;
-    }
-
-    public void setListenRequestSeq(String listenRequestSeq) {
-        this.listenRequestSeq = listenRequestSeq;
     }
 
     public void subscribe(List<SubscriptionItem> items) throws Exception {
@@ -201,7 +159,7 @@ public class Session {
 
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
-        trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
+        trySendListenResponse(new Header(LISTEN_RESPONSE, SUCCESS.getCode(), "succeed",
             getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
@@ -214,7 +172,7 @@ public class Session {
     public void write2Client(final Package pkg) {
 
         try {
-            if (SessionState.CLOSED == sessionState) {
+            if (CLOSED == sessionState) {
                 return;
             }
 
@@ -257,9 +215,9 @@ public class Session {
             +
             ",sender=" + sender
             +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            ",createTime=" + DateFormatUtils.format(createTime, DATE_FORMAT)
             +
-            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, DATE_FORMAT) + '}';
     }
 
     @Override
@@ -299,14 +257,6 @@ public class Session {
         return result;
     }
 
-    public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
-        return clientGroupWrapper;
-    }
-
-    public void setClientGroupWrapper(WeakReference<ClientGroupWrapper> clientGroupWrapper) {
-        this.clientGroupWrapper = clientGroupWrapper;
-    }
-
     public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.client = client;
         this.context = context;
@@ -316,18 +266,10 @@ public class Session {
         this.pusher = new SessionPusher(this);
     }
 
-    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
-        return eventMeshTCPConfiguration;
-    }
-
-    public void setEventMeshTCPConfiguration(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-    }
-
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
         if (!listenRspSend && listenRspLock.tryLock()) {
             if (header == null) {
-                header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
+                header = new Header(LISTEN_RESPONSE, SUCCESS.getCode(), "succeed", null);
             }
             Package msg = new Package();
             msg.setHeader(header);
@@ -340,16 +282,8 @@ public class Session {
         }
     }
 
-    public long getIsolateTime() {
-        return isolateTime;
-    }
-
-    public void setIsolateTime(long isolateTime) {
-        this.isolateTime = isolateTime;
-    }
-
     public boolean isAvailable(String topic) {
-        if (SessionState.CLOSED == sessionState) {
+        if (CLOSED == sessionState) {
             log.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
@@ -363,7 +297,7 @@ public class Session {
     }
 
     public boolean isRunning() {
-        if (SessionState.RUNNING != sessionState) {
+        if (RUNNING != sessionState) {
             log.warn("session is not running, state:{} client:{}", sessionState, client);
             return false;
         }
