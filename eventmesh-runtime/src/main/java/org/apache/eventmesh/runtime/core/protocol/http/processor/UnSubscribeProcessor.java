@@ -241,11 +241,6 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         }
     }
 
-    @Override
-    public boolean rejectRequest() {
-        return false;
-    }
-
     private void registerClient(final UnSubscribeRequestHeader unSubscribeRequestHeader,
         final String consumerGroup,
         final List<String> topicList,

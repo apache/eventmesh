@@ -345,10 +345,4 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         TraceUtils.finishSpanWithException(excepSpan, EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 retCode.getErrMsg(), null);
     }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
-    }
-
 }

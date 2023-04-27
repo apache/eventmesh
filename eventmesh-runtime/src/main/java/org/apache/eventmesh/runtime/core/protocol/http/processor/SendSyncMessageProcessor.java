@@ -328,9 +328,4 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         return;
     }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
-    }
 }

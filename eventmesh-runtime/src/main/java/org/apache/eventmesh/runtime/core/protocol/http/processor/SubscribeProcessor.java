@@ -213,11 +213,6 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         }
     }
 
-    @Override
-    public boolean rejectRequest() {
-        return false;
-    }
-
     private ClientInfo getClientInfo(final SubscribeRequestHeader subscribeRequestHeader) {
         ClientInfo clientInfo = new ClientInfo();
         clientInfo.setEnv(subscribeRequestHeader.getEnv());
