@@ -28,11 +28,8 @@ import org.apache.kafka.common.errors.WakeupException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 import io.cloudevents.CloudEvent;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +40,6 @@ public class KafkaConsumerRunner implements Runnable {
     private final KafkaConsumer<String, CloudEvent> consumer;
     private ConcurrentHashMap<CloudEvent, Long> cloudEventToOffset;
     private EventListener listener;
-    private AtomicInteger offset;
 
     public KafkaConsumerRunner(KafkaConsumer<String, CloudEvent> kafkaConsumer) {
         this.consumer = kafkaConsumer;
@@ -81,13 +77,11 @@ public class KafkaConsumerRunner implements Runnable {
                                         log.info("message commit, topic: {}, current offset:{}", topicName,
                                             rec.offset());
                                         break;
-                                    case ReconsumeLater:
-                                        // don't update offset
-                                        break;
                                     case ManualAck:
                                         // update offset
                                         log.info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
+                                    case ReconsumeLater:
                                     default:
                                 }
                             }
