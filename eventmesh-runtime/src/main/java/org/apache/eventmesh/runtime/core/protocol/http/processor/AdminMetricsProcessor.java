@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import lombok.RequiredArgsConstructor;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -25,8 +24,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequest
 
 import io.netty.channel.ChannelHandlerContext;
 
-
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class AdminMetricsProcessor implements HttpRequestProcessor {
