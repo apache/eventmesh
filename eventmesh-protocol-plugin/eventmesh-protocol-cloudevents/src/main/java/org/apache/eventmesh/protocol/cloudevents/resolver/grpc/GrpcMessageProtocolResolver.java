@@ -167,7 +167,7 @@ public class GrpcMessageProtocolResolver {
         String username = getEventExtensionIfAbsent(header.getUsername(), event, USERNAME);
         String passwd = getEventExtensionIfAbsent(header.getPassword(), event, PASSWD);
 
-        CloudEventBuilder eventBuilder = CloudEventBuilder.fromSpecVersion(SpecVersion.parse(protocolVersion));
+        CloudEventBuilder eventBuilder = CloudEventBuilder.from(event);
 
         return eventBuilder
             .withExtension(ENV, env)
