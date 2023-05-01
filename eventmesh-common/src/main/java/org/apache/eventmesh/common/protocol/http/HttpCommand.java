@@ -60,6 +60,24 @@ public class HttpCommand implements ProtocolTransportObject {
     private transient Header header;
 
     private transient Body body;
+    
+    // getter and setter for header
+    public Header getHeader() {
+        return header;
+    }
+
+    public void setHeader(Header header) {
+        this.header = header;
+    }
+
+    // getter and setter for body
+    public Body getBody() {
+        return body;
+    }
+
+    public void setBody(Body body) {
+        this.body = body;
+    }
 
     //Command request time
     public long reqTime;
