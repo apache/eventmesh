@@ -17,6 +17,13 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.tcp;
 
+import static org.apache.eventmesh.common.Constants.DATA_CONTENT_TYPE;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
+import static org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant.PROTOCOL_NAME;
+
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -32,13 +39,6 @@ import java.util.Objects;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.apache.eventmesh.common.Constants.DATA_CONTENT_TYPE;
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
-import static org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant.PROTOCOL_NAME;
 
 public class TcpMessageProtocolResolver {
 

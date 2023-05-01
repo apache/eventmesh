@@ -17,31 +17,26 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.tcp;
 
-import org.apache.eventmesh.common.Constants;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
+import static org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant.PROTOCOL_NAME;
+
+import static io.cloudevents.jackson.JsonFormat.CONTENT_TYPE;
+
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 
 import com.google.common.base.Preconditions;
-
-import static io.cloudevents.jackson.JsonFormat.CONTENT_TYPE;
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
-import static org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant.PROTOCOL_NAME;
 
 public class TcpMessageProtocolResolver {
 
