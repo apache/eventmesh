@@ -36,19 +36,24 @@ import io.cloudevents.jackson.JsonFormat;
 
 import com.google.common.base.Preconditions;
 
+import static io.cloudevents.jackson.JsonFormat.CONTENT_TYPE;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
+import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
+import static org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant.PROTOCOL_NAME;
+
 public class TcpMessageProtocolResolver {
 
     public static CloudEvent buildEvent(Header header, String cloudEventJson)
         throws ProtocolHandleException {
-        CloudEventBuilder cloudEventBuilder;
+        final CloudEventBuilder cloudEventBuilder;
 
-        String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
-        String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
-        String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
+        String protocolType = header.getProperty(PROTOCOL_TYPE).toString();
+        String protocolVersion = header.getProperty(PROTOCOL_VERSION).toString();
+        String protocolDesc = header.getProperty(PROTOCOL_DESC).toString();
 
-        if (StringUtils.isBlank(protocolType)
-            || StringUtils.isBlank(protocolVersion)
-            || StringUtils.isBlank(protocolDesc)) {
+        if (StringUtils.isAnyBlank(protocolType, protocolVersion, protocolDesc)) {
             throw new ProtocolHandleException(
                 String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
                     protocolType, protocolVersion, protocolDesc));
@@ -59,33 +64,20 @@ public class TcpMessageProtocolResolver {
                 String.format("invalid method params cloudEventJson %s", cloudEventJson));
         }
 
-        if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {
+        if (!StringUtils.equals(PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
 
-        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+        if (StringUtils.equalsAny(protocolVersion, SpecVersion.V1.toString(), SpecVersion.V03.toString())) {
             // todo:resolve different format
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(CONTENT_TYPE);
             Preconditions
-                .checkNotNull(eventFormat, String.format("EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE));
-            CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
-            cloudEventBuilder = CloudEventBuilder.v1(event);
-            for (String propKey : header.getProperties().keySet()) {
-                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-            }
-
-            return cloudEventBuilder.build();
-
-        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            // todo:resolve different format
-            CloudEvent event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
-                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
-            cloudEventBuilder = CloudEventBuilder.v03(event);
-
-            for (String propKey : header.getProperties().keySet()) {
-                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-            }
-
+                    .checkNotNull(eventFormat, "EventFormat: %s is not supported", CONTENT_TYPE);
+            CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(DEFAULT_CHARSET));
+            cloudEventBuilder = CloudEventBuilder.from(event);
+            header.getProperties().forEach((k, v) -> {
+                cloudEventBuilder.withExtension(k, v.toString());
+            });
             return cloudEventBuilder.build();
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolVersion: %s", protocolVersion));
