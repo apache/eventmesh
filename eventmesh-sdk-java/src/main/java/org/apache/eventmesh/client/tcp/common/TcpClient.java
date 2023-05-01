@@ -60,7 +60,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class TcpClient implements Closeable {
 
-    protected static final transient int CLIENTNO = (new Random()).nextInt(1000);
+    protected static transient int CLIENTNO = 0;
+    
+    static {
+        try {
+            CLIENTNO = SecureRandom.getInstanceStrong().nextInt(1000);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Failed to generate a random number!", e);
+        }
+    }
 
     protected final transient ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
