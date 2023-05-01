@@ -20,15 +20,14 @@ package org.apache.eventmesh.common.protocol.grpc.common;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class SimpleMessageWrapper implements ProtocolTransportObject {
 
     private static final long serialVersionUID = 4562321593749195797L;
 
     private final SimpleMessage simpleMessage;
-
-    public SimpleMessageWrapper(SimpleMessage simpleMessage) {
-        this.simpleMessage = simpleMessage;
-    }
 
     public SimpleMessage getMessage() {
         return simpleMessage;

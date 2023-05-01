@@ -17,7 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
-import org.apache.eventmesh.common.Constants;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
+
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
@@ -34,8 +40,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -62,7 +66,7 @@ public class HttpCommand implements ProtocolTransportObject {
     public Body body;
 
     //Command request time
-    public long reqTime;
+    public long reqTime = System.currentTimeMillis();
 
     //Command response time
     public long resTime;
@@ -76,7 +80,6 @@ public class HttpCommand implements ProtocolTransportObject {
     public HttpCommand(String httpMethod, String httpVersion, String requestCode) {
         this.httpMethod = httpMethod;
         this.httpVersion = httpVersion;
-        this.reqTime = System.currentTimeMillis();
         this.requestCode = requestCode;
         this.opaque = requestId.incrementAndGet();
     }
@@ -116,38 +119,16 @@ public class HttpCommand implements ProtocolTransportObject {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("httpCommand={")
-            .append(cmdType).append(",")
-            .append(httpMethod).append("/").append(httpVersion).append(",")
-            .append("requestCode=").append(requestCode).append(",")
-            .append("opaque=").append(opaque).append(",");
-
-        if (cmdType == CmdType.RES) {
-            sb.append("cost=").append(resTime - reqTime).append(",");
-        }
-
-        sb.append("header=").append(header).append(",")
-            .append("body=").append(body)
+        StringBuilder sb = toStr();
+        sb.append("body=").append(body)
             .append("}");
 
         return sb.toString();
     }
 
     public String abstractDesc() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("httpCommand={")
-            .append(cmdType).append(",")
-            .append(httpMethod).append("/").append(httpVersion).append(",")
-            .append("requestCode=").append(requestCode).append(",")
-            .append("opaque=").append(opaque).append(",");
-
-        if (cmdType == CmdType.RES) {
-            sb.append("cost=").append(resTime - reqTime).append(",");
-        }
-
-        sb.append("header=").append(header).append(",")
-            .append("bodySize=").append(body.toString().length()).append("}");
+        StringBuilder sb = toStr();
+        sb.append("bodySize=").append(body.toString().length()).append("}");
 
         return sb.toString();
     }
@@ -167,14 +148,31 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
+            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
-        headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        headers.add(CONTENT_TYPE, "text/plain; charset=" + DEFAULT_CHARSET);
+        headers.add(CONTENT_LENGTH, response.content().readableBytes());
+        headers.add(CONNECTION, KEEP_ALIVE);
         Optional.of(this.getHeader().toMap()).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
         return response;
     }
+
+    private StringBuilder toStr() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("httpCommand={")
+                .append(cmdType).append(",")
+                .append(httpMethod).append("/").append(httpVersion).append(",")
+                .append("requestCode=").append(requestCode).append(",")
+                .append("opaque=").append(opaque).append(",");
+
+        if (cmdType == CmdType.RES) {
+            sb.append("cost=").append(resTime - reqTime).append(",");
+        }
+
+        sb.append("header=").append(header).append(",");
+        return sb;
+    }
+
 
     public enum CmdType {
         REQ,

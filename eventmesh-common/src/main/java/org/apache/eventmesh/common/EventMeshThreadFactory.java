@@ -20,8 +20,10 @@ package org.apache.eventmesh.common;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 public class EventMeshThreadFactory implements ThreadFactory {
 
     @Getter
@@ -29,14 +31,6 @@ public class EventMeshThreadFactory implements ThreadFactory {
     private final AtomicInteger threadIndex;
     private final boolean daemon;
     private Integer priority;
-
-    public EventMeshThreadFactory(final String threadNamePrefix, final AtomicInteger threadIndex, final boolean daemon,
-        final Integer priority) {
-        this.threadNamePrefix = threadNamePrefix;
-        this.threadIndex = threadIndex;
-        this.daemon = daemon;
-        this.priority = priority;
-    }
 
     public EventMeshThreadFactory(final String threadNamePrefix, final AtomicInteger threadIndex,
         final boolean daemon) {

@@ -20,14 +20,13 @@ package org.apache.eventmesh.common.protocol.grpc.common;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class BatchMessageWrapper implements ProtocolTransportObject {
 
     private static final long serialVersionUID = -3296467364340663768L;
     private final BatchMessage batchMessage;
-
-    public BatchMessageWrapper(BatchMessage batchMessage) {
-        this.batchMessage = batchMessage;
-    }
 
     public BatchMessage getMessage() {
         return batchMessage;
