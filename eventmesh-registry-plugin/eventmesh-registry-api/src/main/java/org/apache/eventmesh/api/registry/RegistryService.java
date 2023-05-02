@@ -49,7 +49,7 @@ public interface RegistryService {
     default Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
         String clusterName, String group, String purpose) throws RegistryException {
         return Collections.emptyMap();
-    };
+    }
 
     void registerMetadata(Map<String, String> metadataMap);
 
@@ -59,9 +59,9 @@ public interface RegistryService {
 
     default EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
         return null;
-    };
+    }
 
     default List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
         return Collections.emptyList();
-    };
+    }
 }

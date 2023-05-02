@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.registry.consul.service;
 
-import lombok.Getter;
+import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -31,7 +30,6 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,9 +41,8 @@ import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
 
 @Slf4j
 public class ConsulRegistryService implements RegistryService {

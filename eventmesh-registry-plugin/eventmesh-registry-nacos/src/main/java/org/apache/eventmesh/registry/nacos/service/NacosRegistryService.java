@@ -17,23 +17,25 @@
 
 package org.apache.eventmesh.registry.nacos.service;
 
-import lombok.Getter;
+import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
+import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.GROUP;
+import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.IP_PORT_SEPARATOR;
+import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.PASSWORD;
+import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.SERVER_ADDR;
+import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.USERNAME;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
-import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,14 +50,8 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.client.naming.NacosNamingService;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.GROUP;
-import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.IP_PORT_SEPARATOR;
-import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.PASSWORD;
-import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.SERVER_ADDR;
-import static org.apache.eventmesh.registry.nacos.constant.NacosConstant.USERNAME;
 
 @Slf4j
 public class NacosRegistryService implements RegistryService {

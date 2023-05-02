@@ -17,19 +17,21 @@
 
 package org.apache.eventmesh.registry.zookeeper.service;
 
+import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
+import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.IP_PORT_SEPARATOR;
+import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.NAMESPACE;
+import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.PATH_SEPARATOR;
 
-import lombok.Getter;
+import static org.apache.zookeeper.CreateMode.EPHEMERAL;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant;
 import org.apache.eventmesh.registry.zookeeper.pojo.EventMeshInstance;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,12 +40,10 @@ import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,14 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.IP_PORT_SEPARATOR;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.NAMESPACE;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.PATH_SEPARATOR;
-import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 
 @Slf4j
 public class ZookeeperRegistryService implements RegistryService {

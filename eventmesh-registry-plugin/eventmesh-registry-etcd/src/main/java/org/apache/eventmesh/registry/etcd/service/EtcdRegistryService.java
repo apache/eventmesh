@@ -17,31 +17,37 @@
 
 package org.apache.eventmesh.registry.etcd.service;
 
-import lombok.Getter;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
+import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
+import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.PASSWORD;
+import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.SERVER_ADDR;
+import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.USERNAME;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 import org.apache.eventmesh.registry.etcd.factory.EtcdClientFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.etcd.jetcd.ByteSequence;
@@ -50,15 +56,8 @@ import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 
-
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.PASSWORD;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.SERVER_ADDR;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.USERNAME;
 
 @Slf4j
 public class EtcdRegistryService implements RegistryService {

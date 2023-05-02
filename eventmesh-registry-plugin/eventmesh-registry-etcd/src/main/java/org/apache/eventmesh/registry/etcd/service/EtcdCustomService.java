@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.registry.etcd.service;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
+import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -33,16 +33,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EtcdCustomService extends EtcdRegistryService {
