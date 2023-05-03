@@ -21,6 +21,7 @@ public class ProtocolKey {
 
     public static final String ENV = "env";
     public static final String IDC = "idc";
+    public static final String REGION = "region";
     public static final String SYS = "sys";
     public static final String PID = "pid";
     public static final String IP = "ip";

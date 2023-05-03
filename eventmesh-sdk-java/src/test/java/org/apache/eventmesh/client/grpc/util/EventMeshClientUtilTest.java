@@ -36,7 +36,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
@@ -44,6 +46,7 @@ import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+import io.openmessaging.api.Message;
 
 public class EventMeshClientUtilTest {
 
@@ -172,5 +175,57 @@ public class EventMeshClientUtilTest {
             .hasFieldOrPropertyWithValue("uniqueId", firstMeshMessage.getUniqueId())
             .hasFieldOrPropertyWithValue("seqNum", firstMeshMessage.getBizSeqNo())
             .hasFieldOrPropertyWithValue("ttl", firstMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL));
+    }
+
+    @Test
+    public void buildOpenMessagesWithDefaultProto() {
+        final Message openMessage = new Message();
+
+        openMessage.getSystemProperties().put(ProtocolKey.ENV, "dev");
+        openMessage.getSystemProperties().put(ProtocolKey.REGION, "SZ");
+        openMessage.getSystemProperties().put(ProtocolKey.IDC, "1111");
+        openMessage.getSystemProperties().put(ProtocolKey.IP, "127.0.0.1");
+        openMessage.getSystemProperties().put(ProtocolKey.PID, "998");
+        openMessage.getSystemProperties().put(ProtocolKey.SYS, "windows");
+        openMessage.getSystemProperties().put(ProtocolKey.USERNAME, "mxsm");
+        openMessage.getSystemProperties().put(ProtocolKey.PASSWD, "eventmesh");
+        openMessage.getSystemProperties().put(ProtocolKey.LANGUAGE, "Java");
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_TYPE, EventMeshProtocolType.OPEN_MESSAGE.protocolTypeName());
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_VERSION, "1.0");
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_DESC, "Version 1.0");
+        openMessage.setUserProperties(new Properties());
+        openMessage.getUserProperties().put(ProtocolKey.PRODUCERGROUP, "eventmesh_group");
+        openMessage.setTopic("EventMesh");
+        openMessage.setBody("EventMesh".getBytes(Constants.DEFAULT_CHARSET));
+        openMessage.getUserProperties().put(ProtocolKey.TTL, "4000");
+        openMessage.setMsgID("1234");
+        openMessage.getUserProperties().put(ProtocolKey.SEQ_NUM, "1");
+        openMessage.setTag("mxsm");
+
+        List<Message> messages = Collections.singletonList(openMessage);
+        EventMeshGrpcClientConfig clientConfig = EventMeshGrpcClientConfig.builder().build();
+        BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(messages, clientConfig, EventMeshProtocolType.OPEN_MESSAGE);
+        assertThat(batchMessage).hasFieldOrPropertyWithValue("header",
+                EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.OPEN_MESSAGE))
+            .hasFieldOrPropertyWithValue("topic", messages.get(0).getTopic())
+            .hasFieldOrPropertyWithValue("producerGroup", clientConfig.getProducerGroup());
+        Message openMessage1 = messages.get(0);
+        assertThat(batchMessage.getMessageItemList()).hasSize(1).first()
+            .hasFieldOrPropertyWithValue("content", new String(openMessage1.getBody(), Constants.DEFAULT_CHARSET))
+            .hasFieldOrPropertyWithValue("uniqueId", openMessage1.getMsgID())
+            .hasFieldOrPropertyWithValue("seqNum", openMessage.getUserProperties().getProperty(ProtocolKey.SEQ_NUM))
+            .hasFieldOrPropertyWithValue("ttl", openMessage1.getUserProperties(ProtocolKey.TTL));
+
+        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(openMessage, clientConfig, EventMeshProtocolType.OPEN_MESSAGE);
+        Assert.assertEquals("4000", simpleMessage.getTtl());
+        Assert.assertEquals("mxsm", simpleMessage.getTag());
+        Assert.assertEquals("EventMesh", simpleMessage.getContent());
+        Assert.assertEquals("1", simpleMessage.getSeqNum());
+        Assert.assertEquals("1234", simpleMessage.getUniqueId());
+
+        Object obj = EventMeshClientUtil.buildMessage(simpleMessage, EventMeshProtocolType.OPEN_MESSAGE);
+        assertThat(obj).isInstanceOf(Message.class).hasFieldOrPropertyWithValue("body", simpleMessage.getContentBytes().toByteArray());
+
+
     }
 }

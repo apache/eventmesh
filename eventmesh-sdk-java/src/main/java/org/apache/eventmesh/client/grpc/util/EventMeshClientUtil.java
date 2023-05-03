@@ -44,6 +44,7 @@ import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+import io.openmessaging.api.Message;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -92,6 +93,7 @@ public class EventMeshClientUtil {
             case EVENT_MESH_MESSAGE:
                 return (T) switchSimpleMessage2EventMeshMessage(message, seq, uniqueId, content);
             case OPEN_MESSAGE:
+                return (T) switchSimpleMessage2OpenMessage(message, seq, uniqueId, content);
             default:
                 return null;
         }
@@ -105,6 +107,35 @@ public class EventMeshClientUtil {
             .uniqueId(uniqueId)
             .prop(message.getPropertiesMap())
             .build();
+    }
+
+    private static Message switchSimpleMessage2OpenMessage(SimpleMessage message, String seq, String uniqueId, String content) {
+        final Message openMessage = new Message();
+
+        openMessage.getSystemProperties().put(ProtocolKey.ENV, message.getHeader().getEnv());
+        openMessage.getSystemProperties().put(ProtocolKey.REGION, message.getHeader().getRegion());
+        openMessage.getSystemProperties().put(ProtocolKey.IDC, message.getHeader().getIdc());
+        openMessage.getSystemProperties().put(ProtocolKey.IP, message.getHeader().getIp());
+        openMessage.getSystemProperties().put(ProtocolKey.PID, message.getHeader().getPid());
+        openMessage.getSystemProperties().put(ProtocolKey.SYS, message.getHeader().getSys());
+        openMessage.getSystemProperties().put(ProtocolKey.USERNAME, message.getHeader().getUsername());
+        openMessage.getSystemProperties().put(ProtocolKey.PASSWD, message.getHeader().getPassword());
+        openMessage.getSystemProperties().put(ProtocolKey.LANGUAGE, message.getHeader().getLanguage());
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_TYPE, message.getHeader().getProtocolType());
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_VERSION, message.getHeader().getProtocolVersion());
+        openMessage.getSystemProperties().put(ProtocolKey.PROTOCOL_DESC, message.getHeader().getProtocolDesc());
+
+        openMessage.getUserProperties().put(ProtocolKey.PRODUCERGROUP, message.getProducerGroup());
+        openMessage.setTopic(message.getTopic());
+        openMessage.setBody(Objects.isNull(content) ? null : content.getBytes(Constants.DEFAULT_CHARSET));
+        openMessage.getUserProperties().put(ProtocolKey.TTL, message.getTtl());
+        openMessage.setMsgID(uniqueId);
+        openMessage.getUserProperties().put(ProtocolKey.SEQ_NUM, seq);
+        openMessage.setTag(message.getTag());
+
+        openMessage.getUserProperties().putAll(message.getPropertiesMap());
+
+        return openMessage;
     }
 
     private static CloudEvent switchSimpleMessage2CloudEvent(SimpleMessage message, String content) {
@@ -131,6 +162,7 @@ public class EventMeshClientUtil {
             case EVENT_MESH_MESSAGE:
                 return switchEventMessage2SimpleMessage((EventMeshMessage) message, clientConfig, protocolType);
             case OPEN_MESSAGE:
+                return switchOpenMessage2SimpleMessage((Message) message, clientConfig, protocolType);
             default:
                 return null;
         }
@@ -154,6 +186,39 @@ public class EventMeshClientUtil {
             .setSeqNum(seqNum)
             .setUniqueId(uniqueId)
             .setTtl(ttl)
+            .putAllProperties(props)
+            .build();
+    }
+
+    private static SimpleMessage switchOpenMessage2SimpleMessage(Message message, EventMeshGrpcClientConfig clientConfig,
+        EventMeshProtocolType protocolType) {
+        final Message openMessage = message;
+
+        final String ttl = Optional.ofNullable(openMessage.getSystemProperties(ProtocolKey.TTL)).orElseGet(
+            () -> openMessage.getUserProperties(ProtocolKey.TTL) == null ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                : openMessage.getUserProperties(ProtocolKey.TTL));
+        final String seqNum = Optional.ofNullable(openMessage.getSystemProperties(ProtocolKey.SEQ_NUM)).orElseGet(
+            () -> openMessage.getUserProperties(ProtocolKey.SEQ_NUM) == null ? RandomStringUtils.generateNum(30)
+                : openMessage.getUserProperties(ProtocolKey.SEQ_NUM));
+        final String uniqueId = Optional.ofNullable(openMessage.getMsgID()).orElseGet(
+            () -> Objects.nonNull(openMessage.getSystemProperties(ProtocolKey.UNIQUE_ID)) ? openMessage.getSystemProperties(ProtocolKey.UNIQUE_ID) :
+                openMessage.getUserProperties(ProtocolKey.UNIQUE_ID) == null ? RandomStringUtils.generateNum(30)
+                    : openMessage.getUserProperties(ProtocolKey.UNIQUE_ID));
+
+        final String tag = openMessage.getTag();
+        final Map<String, String> props = new HashMap<>();
+        openMessage.getSystemProperties().forEach((key, value) -> props.put(key.toString(), value == null ? null : value.toString()));
+        openMessage.getUserProperties().forEach((key, value) -> props.put(key.toString(), value == null ? null : value.toString()));
+
+        return SimpleMessage.newBuilder()
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+            .setProducerGroup(clientConfig.getProducerGroup())
+            .setTopic(openMessage.getTopic())
+            .setContent(new String(openMessage.getBody(), Constants.DEFAULT_CHARSET))
+            .setSeqNum(seqNum)
+            .setUniqueId(uniqueId)
+            .setTtl(ttl)
+            .setTag(tag)
             .putAllProperties(props)
             .build();
     }
@@ -189,9 +254,8 @@ public class EventMeshClientUtil {
             .setContent(content)
             .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
 
-        cloudEvent.getExtensionNames().forEach(extName -> {
-            builder.putProperties(extName, Objects.requireNonNull(cloudEvent.getExtension(extName)).toString());
-        });
+        cloudEvent.getExtensionNames()
+            .forEach(extName -> builder.putProperties(extName, Objects.requireNonNull(cloudEvent.getExtension(extName)).toString()));
         return builder.build();
     }
 
@@ -205,6 +269,7 @@ public class EventMeshClientUtil {
             case EVENT_MESH_MESSAGE:
                 return switchEventMessages2BatchMessage((List<EventMeshMessage>) messageList, clientConfig, protocolType);
             case OPEN_MESSAGE:
+                return switchOpenMessages2BatchMessage((List<Message>) messageList, clientConfig, protocolType);
             default:
                 return null;
         }
@@ -260,6 +325,43 @@ public class EventMeshClientUtil {
                 .build();
             messageBuilder.addMessageItem(messageItem);
         });
+        return messageBuilder.build();
+    }
+
+    private static BatchMessage switchOpenMessages2BatchMessage(List<Message> messageList, EventMeshGrpcClientConfig clientConfig,
+        EventMeshProtocolType protocolType) {
+        List<Message> messages = messageList;
+        BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
+            .setProducerGroup(clientConfig.getProducerGroup())
+            .setTopic(messages.get(0).getTopic());
+
+        messages.forEach(openMessage -> {
+            final String ttl = Optional.ofNullable(openMessage.getSystemProperties(ProtocolKey.TTL)).orElseGet(
+                () -> openMessage.getUserProperties(ProtocolKey.TTL) == null ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                    : openMessage.getUserProperties(ProtocolKey.TTL));
+            final String seqNum = Optional.ofNullable(openMessage.getSystemProperties(ProtocolKey.SEQ_NUM)).orElseGet(
+                () -> openMessage.getUserProperties(ProtocolKey.SEQ_NUM) == null ? RandomStringUtils.generateNum(30)
+                    : openMessage.getUserProperties(ProtocolKey.SEQ_NUM));
+            final String uniqueId = Optional.ofNullable(openMessage.getMsgID()).orElseGet(
+                () -> Objects.nonNull(openMessage.getSystemProperties(ProtocolKey.UNIQUE_ID)) ? openMessage.getSystemProperties(ProtocolKey.UNIQUE_ID)
+                    : openMessage.getUserProperties(ProtocolKey.UNIQUE_ID) == null ? RandomStringUtils.generateNum(30)
+                        : openMessage.getUserProperties(ProtocolKey.UNIQUE_ID));
+            final String tag = openMessage.getTag();
+            final Map<String, String> props = new HashMap<>();
+            openMessage.getSystemProperties().forEach((key, value) -> props.put(key.toString(), value == null ? null : value.toString()));
+            openMessage.getUserProperties().forEach((key, value) -> props.put(key.toString(), value == null ? null : value.toString()));
+            BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
+                .setContent(Objects.isNull(openMessage.getBody()) ? null : new String(openMessage.getBody(), Constants.DEFAULT_CHARSET))
+                .setUniqueId(uniqueId)
+                .setSeqNum(seqNum)
+                .setTtl(ttl)
+                .setTag(tag)
+                .putAllProperties(props)
+                .build();
+            messageBuilder.addMessageItem(item);
+        });
+
         return messageBuilder.build();
     }
 }
