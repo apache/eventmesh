@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.registry.zookeeper.service;
 
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.IP_PORT_SEPARATOR;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.NAMESPACE;
-import static org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant.PATH_SEPARATOR;
-
-import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
@@ -32,6 +26,7 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant;
 import org.apache.eventmesh.registry.zookeeper.pojo.EventMeshInstance;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,6 +35,7 @@ import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.StandardCharsets;
@@ -76,8 +72,8 @@ public class ZookeeperRegistryService implements RegistryService {
             log.warn("[ZookeeperRegistryService] has been init");
             return;
         }
-        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(KEYS.size());
-        for (String key : KEYS) {
+        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
+        for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
             if (null == commonConfiguration) {
                 continue;
@@ -102,7 +98,7 @@ public class ZookeeperRegistryService implements RegistryService {
             zkClient = CuratorFrameworkFactory.builder()
                 .connectString(serverAddr)
                 .retryPolicy(retryPolicy)
-                .namespace(NAMESPACE)
+                .namespace(ZookeeperConstant.NAMESPACE)
                 .build();
             zkClient.start();
 
@@ -128,7 +124,7 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException {
         List<EventMeshDataInfo> eventMeshDataInfoList = new ArrayList<>();
-        for (String key : KEYS) {
+        for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration configuration = ConfigurationContextUtil.get(key);
             if (Objects.isNull(configuration)) {
                 continue;
@@ -146,7 +142,7 @@ public class ZookeeperRegistryService implements RegistryService {
                 }
 
                 for (String endpoint : instances) {
-                    String instancePath = servicePath.concat(PATH_SEPARATOR).concat(endpoint);
+                    String instancePath = servicePath.concat(ZookeeperConstant.PATH_SEPARATOR).concat(endpoint);
 
                     Stat stat = new Stat();
                     byte[] data;
@@ -195,7 +191,7 @@ public class ZookeeperRegistryService implements RegistryService {
                 }
 
                 for (String endpoint : instances) {
-                    String instancePath = servicePath.concat(PATH_SEPARATOR).concat(endpoint);
+                    String instancePath = servicePath.concat(ZookeeperConstant.PATH_SEPARATOR).concat(endpoint);
 
                     Stat stat = new Stat();
                     byte[] data;
@@ -236,7 +232,7 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
-            String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(IP_PORT_SEPARATOR);
+            String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
             if (null == ipPort || ipPort.length < 2) {
                 return false;
             }
@@ -259,7 +255,7 @@ public class ZookeeperRegistryService implements RegistryService {
             zkClient.create()
                 .orSetData()
                 .creatingParentsIfNeeded()
-                .withMode(EPHEMERAL)
+                .withMode(CreateMode.EPHEMERAL)
                 .forPath(path,
                     Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null").getBytes(StandardCharsets.UTF_8));
 
@@ -289,13 +285,13 @@ public class ZookeeperRegistryService implements RegistryService {
     }
 
     private String formatInstancePath(String clusterName, String serviceName, String endPoint) {
-        return PATH_SEPARATOR.concat(clusterName)
-            .concat(PATH_SEPARATOR).concat(serviceName)
-            .concat(PATH_SEPARATOR).concat(endPoint);
+        return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
+            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
+            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
     }
 
     private String formatServicePath(String clusterName, String serviceName) {
-        return PATH_SEPARATOR.concat(clusterName)
-            .concat(PATH_SEPARATOR).concat(serviceName);
+        return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
+            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
     }
 }

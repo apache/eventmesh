@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.registry.consul.service;
 
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
@@ -65,7 +63,7 @@ public class ConsulRegistryService implements RegistryService {
     @Override
     public void init() throws RegistryException {
         if (initStatus.compareAndSet(false, true)) {
-            for (String key : KEYS) {
+            for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
                 if (null != commonConfiguration) {
                     String namesrvAddr = commonConfiguration.getNamesrvAddr();

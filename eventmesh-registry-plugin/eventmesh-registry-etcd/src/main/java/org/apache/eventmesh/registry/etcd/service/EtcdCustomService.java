@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.registry.etcd.service;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
-
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -43,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EtcdCustomService extends EtcdRegistryService {
 
-    private static final String KEY_PREFIX = "eventMesh" + KEY_SEPARATOR;
+    private static final String KEY_PREFIX = "eventMesh" + EtcdConstant.KEY_SEPARATOR;
     private static final String KEY_APP = "app";
     private static final String KEY_SERVICE = "service";
 
@@ -51,11 +50,11 @@ public class EtcdCustomService extends EtcdRegistryService {
     public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
 
         Client client = getEtcdClient();
-        String keyPrefix = KEY_PREFIX + KEY_SERVICE + KEY_SEPARATOR;
+        String keyPrefix = KEY_PREFIX + KEY_SERVICE + EtcdConstant.KEY_SEPARATOR;
         List<KeyValue> keyValues = null;
         try {
             List<EventMeshServicePubTopicInfo> eventMeshServicePubTopicInfoList = new ArrayList<>();
-            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(DEFAULT_CHARSET));
+            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
 
@@ -63,7 +62,7 @@ public class EtcdCustomService extends EtcdRegistryService {
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
                     EventMeshServicePubTopicInfo eventMeshServicePubTopicInfo =
-                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), DEFAULT_CHARSET), EventMeshServicePubTopicInfo.class);
+                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshServicePubTopicInfo.class);
                     eventMeshServicePubTopicInfoList.add(eventMeshServicePubTopicInfo);
                 }
                 return eventMeshServicePubTopicInfoList;
@@ -79,16 +78,16 @@ public class EtcdCustomService extends EtcdRegistryService {
     @Nullable
     public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
         Client client = getEtcdClient();
-        String keyPrefix = KEY_PREFIX + KEY_APP + KEY_SEPARATOR + group;
+        String keyPrefix = KEY_PREFIX + KEY_APP + EtcdConstant.KEY_SEPARATOR + group;
         List<KeyValue> keyValues = null;
         try {
-            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(DEFAULT_CHARSET));
+            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
                     JsonUtils.parseObject(
-                        new String(keyValues.get(0).getValue().getBytes(), DEFAULT_CHARSET),
+                        new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
                         EventMeshAppSubTopicInfo.class
                     );
                 return eventMeshAppSubTopicInfo;

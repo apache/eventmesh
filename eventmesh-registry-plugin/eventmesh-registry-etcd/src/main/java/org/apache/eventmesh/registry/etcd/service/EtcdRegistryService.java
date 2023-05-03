@@ -17,23 +17,18 @@
 
 package org.apache.eventmesh.registry.etcd.service;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.utils.ConfigurationContextUtil.KEYS;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.KEY_SEPARATOR;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.PASSWORD;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.SERVER_ADDR;
-import static org.apache.eventmesh.registry.etcd.constant.EtcdConstant.USERNAME;
-
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 import org.apache.eventmesh.registry.etcd.factory.EtcdClientFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -66,8 +61,8 @@ public class EtcdRegistryService implements RegistryService {
 
     private final AtomicBoolean startStatus = new AtomicBoolean(false);
 
-    private static final String KEY_PREFIX = KEY_SEPARATOR + "eventMesh" + KEY_SEPARATOR + "registry"
-        + KEY_SEPARATOR;
+    private static final String KEY_PREFIX = EtcdConstant.KEY_SEPARATOR + "eventMesh" + EtcdConstant.KEY_SEPARATOR + "registry"
+        + EtcdConstant.KEY_SEPARATOR;
 
     private String serverAddr;
 
@@ -88,8 +83,8 @@ public class EtcdRegistryService implements RegistryService {
         if (!initStatus.compareAndSet(false, true)) {
             return;
         }
-        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(KEYS.size());
-        for (String key : KEYS) {
+        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
+        for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
             if (null == commonConfiguration) {
                 continue;
@@ -115,9 +110,9 @@ public class EtcdRegistryService implements RegistryService {
         }
         try {
             Properties properties = new Properties();
-            properties.setProperty(SERVER_ADDR, serverAddr);
-            properties.setProperty(USERNAME, username);
-            properties.setProperty(PASSWORD, password);
+            properties.setProperty(EtcdConstant.SERVER_ADDR, serverAddr);
+            properties.setProperty(EtcdConstant.USERNAME, username);
+            properties.setProperty(EtcdConstant.PASSWORD, password);
             this.etcdClient = EtcdClientFactory.createClient(properties);
 
             etcdRegistryMonitorExecutorService.scheduleAtFixedRate(new EventMeshEtcdRegisterMonitor(),
@@ -155,15 +150,15 @@ public class EtcdRegistryService implements RegistryService {
         List<EventMeshDataInfo> eventMeshDataInfoList = new ArrayList<>();
 
         try {
-            String keyPrefix = clusterName == null ? KEY_PREFIX : KEY_PREFIX + KEY_SEPARATOR + clusterName;
-            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(DEFAULT_CHARSET));
+            String keyPrefix = clusterName == null ? KEY_PREFIX : KEY_PREFIX + EtcdConstant.KEY_SEPARATOR + clusterName;
+            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             List<KeyValue> keyValues = etcdClient.getKVClient().get(keyByteSequence, getOption).get().getKvs();
 
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
                     EventMeshDataInfo eventMeshDataInfo =
-                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), DEFAULT_CHARSET), EventMeshDataInfo.class);
+                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshDataInfo.class);
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             }
@@ -210,7 +205,7 @@ public class EtcdRegistryService implements RegistryService {
             EventMeshDataInfo eventMeshDataInfo =
                 new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                     endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
-            ByteSequence etcdValue = ByteSequence.from(JsonUtils.toJSONString(eventMeshDataInfo).getBytes(DEFAULT_CHARSET));
+            ByteSequence etcdValue = ByteSequence.from(JsonUtils.toJSONString(eventMeshDataInfo).getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 
@@ -255,12 +250,12 @@ public class EtcdRegistryService implements RegistryService {
     private ByteSequence getEtcdKey(String eventMeshClusterName, String eventMeshName, String endPoint) {
         StringBuilder etcdKey = new StringBuilder(KEY_PREFIX).append(eventMeshClusterName);
         if (StringUtils.isNoneBlank(eventMeshName)) {
-            etcdKey.append(KEY_SEPARATOR).append(eventMeshName);
+            etcdKey.append(EtcdConstant.KEY_SEPARATOR).append(eventMeshName);
         }
         if (StringUtils.isNoneBlank(endPoint)) {
-            etcdKey.append(KEY_SEPARATOR).append(endPoint);
+            etcdKey.append(EtcdConstant.KEY_SEPARATOR).append(endPoint);
         }
-        return ByteSequence.from(etcdKey.toString().getBytes(DEFAULT_CHARSET));
+        return ByteSequence.from(etcdKey.toString().getBytes(Constants.DEFAULT_CHARSET));
     }
 
     /**
