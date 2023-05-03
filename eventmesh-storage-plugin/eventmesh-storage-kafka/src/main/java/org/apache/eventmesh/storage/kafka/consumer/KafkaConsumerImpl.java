@@ -41,7 +41,7 @@ public class KafkaConsumerImpl implements Consumer {
     private ClientConfiguration clientConfiguration;
 
     @Override
-    public synchronized void init(Properties props) throws Exception {
+    public synchronized void init(Properties props) {
         String namesrvAddr = clientConfiguration.getNamesrvAddr();
         String consumerGroup = props.getProperty("consumerGroup");
 
@@ -57,7 +57,7 @@ public class KafkaConsumerImpl implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic) throws Exception {
+    public void subscribe(String topic) {
         consumer.subscribe(topic);
     }
 
