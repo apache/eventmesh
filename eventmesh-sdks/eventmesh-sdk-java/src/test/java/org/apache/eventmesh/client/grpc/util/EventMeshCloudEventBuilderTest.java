@@ -158,8 +158,13 @@ public class EventMeshCloudEventBuilderTest {
         CloudEvent eventmesh = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
             .setId(UUID.randomUUID().toString()).build();
         Object event = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertTrue(event instanceof io.cloudevents.CloudEvent);
-        Object event1 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh, EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        Assert.assertTrue(event1 instanceof EventMeshMessage);
+        Assert.assertNull(event);
+        CloudEvent eventmesh1 = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
+            .setId(UUID.randomUUID().toString()).putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+            .build();
+        Object event1 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.CLOUD_EVENTS);
+        Assert.assertTrue(event1 instanceof io.cloudevents.CloudEvent);
+        Object event2 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.EVENT_MESH_MESSAGE);
+        Assert.assertTrue(event2 instanceof EventMeshMessage);
     }
 }

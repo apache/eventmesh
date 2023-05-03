@@ -271,6 +271,7 @@ public class EventMeshCloudEventBuilder {
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
             return (T) JsonUtils.parseTypeReferenceObject(content,
                 new TypeReference<HashMap<String, String>>() {
+
                 });
         }
         if (null == protocolType) {
