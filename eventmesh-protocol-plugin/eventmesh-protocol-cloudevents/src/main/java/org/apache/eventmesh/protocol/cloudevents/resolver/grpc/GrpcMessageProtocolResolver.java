@@ -17,26 +17,8 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.grpc;
 
-import static org.apache.eventmesh.common.Constants.CONTENT_TYPE_CLOUDEVENTS_JSON;
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.Constants.LANGUAGE_JAVA;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.CONTENT_TYPE;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.ENV;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.IDC;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.IP;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.LANGUAGE;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PASSWD;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PID;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PRODUCERGROUP;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PROTOCOL_DESC;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PROTOCOL_TYPE;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PROTOCOL_VERSION;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.SEQ_NUM;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.SYS;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.TTL;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.UNIQUE_ID;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.USERNAME;
-
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
@@ -49,7 +31,6 @@ import java.util.List;
 import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
@@ -59,16 +40,16 @@ public class GrpcMessageProtocolResolver {
     public static CloudEvent buildEvent(SimpleMessage message) {
         String cloudEventJson = message.getContent();
 
-        String contentType = message.getPropertiesOrDefault(CONTENT_TYPE, CONTENT_TYPE_CLOUDEVENTS_JSON);
+        String contentType = message.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, Constants.CONTENT_TYPE_CLOUDEVENTS_JSON);
         EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
-        CloudEvent event = Objects.requireNonNull(eventFormat).deserialize(cloudEventJson.getBytes(DEFAULT_CHARSET));
+        CloudEvent event = Objects.requireNonNull(eventFormat).deserialize(cloudEventJson.getBytes(Constants.DEFAULT_CHARSET));
 
         RequestHeader header = message.getHeader();
 
-        String seqNum = getEventExtensionIfAbsent(message.getSeqNum(), event, SEQ_NUM);
-        String uniqueId = getEventExtensionIfAbsent(message.getUniqueId(), event, UNIQUE_ID);
-        String ttl = getEventExtensionIfAbsent(message.getTtl(), event, TTL);
-        String producerGroup = getEventExtensionIfAbsent(message.getProducerGroup(), event, PRODUCERGROUP);
+        String seqNum = getEventExtensionIfAbsent(message.getSeqNum(), event, ProtocolKey.SEQ_NUM);
+        String uniqueId = getEventExtensionIfAbsent(message.getUniqueId(), event, ProtocolKey.UNIQUE_ID);
+        String ttl = getEventExtensionIfAbsent(message.getTtl(), event, ProtocolKey.TTL);
+        String producerGroup = getEventExtensionIfAbsent(message.getProducerGroup(), event, ProtocolKey.PRODUCERGROUP);
         String topic = StringUtils.defaultIfEmpty(message.getTopic(), event.getSubject());
 
         CloudEventBuilder eventBuilder = builderCloudEventBuilder(header, event, seqNum, uniqueId, producerGroup, ttl,
@@ -80,21 +61,21 @@ public class GrpcMessageProtocolResolver {
     }
 
     public static SimpleMessageWrapper buildSimpleMessage(CloudEvent cloudEvent) {
-        String env = getEventExtensionOrDefault(cloudEvent, ENV, "env");
-        String idc = getEventExtensionOrDefault(cloudEvent, IDC, "idc");
-        String ip = getEventExtensionOrDefault(cloudEvent, IP, "127.0.0.1");
-        String pid = getEventExtensionOrDefault(cloudEvent, PID, "123");
-        String sys = getEventExtensionOrDefault(cloudEvent, SYS, "sys123");
-        String userName = getEventExtensionOrDefault(cloudEvent, USERNAME, "user");
-        String passwd = getEventExtensionOrDefault(cloudEvent, PASSWD, "pass");
-        String language = getEventExtensionOrDefault(cloudEvent, LANGUAGE, LANGUAGE_JAVA);
-        String protocol = getEventExtensionOrDefault(cloudEvent, PROTOCOL_TYPE, "protocol");
-        String protocolDesc = getEventExtensionOrDefault(cloudEvent, PROTOCOL_DESC, "protocolDesc");
-        String protocolVersion = getEventExtensionOrDefault(cloudEvent, PROTOCOL_VERSION, "1.0");
-        String seqNum = getEventExtensionOrDefault(cloudEvent, SEQ_NUM, "");
-        String uniqueId = getEventExtensionOrDefault(cloudEvent, UNIQUE_ID, "");
-        String producerGroup = getEventExtensionOrDefault(cloudEvent, PRODUCERGROUP, "producerGroup");
-        String ttl = getEventExtensionOrDefault(cloudEvent, TTL, "3000");
+        String env = getEventExtensionOrDefault(cloudEvent, ProtocolKey.ENV, "env");
+        String idc = getEventExtensionOrDefault(cloudEvent, ProtocolKey.IDC, "idc");
+        String ip = getEventExtensionOrDefault(cloudEvent, ProtocolKey.IP, "127.0.0.1");
+        String pid = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PID, "123");
+        String sys = getEventExtensionOrDefault(cloudEvent, ProtocolKey.SYS, "sys123");
+        String userName = getEventExtensionOrDefault(cloudEvent, ProtocolKey.USERNAME, "user");
+        String passwd = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PASSWD, "pass");
+        String language = getEventExtensionOrDefault(cloudEvent, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
+        String protocol = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PROTOCOL_TYPE, "protocol");
+        String protocolDesc = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PROTOCOL_DESC, "protocolDesc");
+        String protocolVersion = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PROTOCOL_VERSION, "1.0");
+        String seqNum = getEventExtensionOrDefault(cloudEvent, ProtocolKey.SEQ_NUM, "");
+        String uniqueId = getEventExtensionOrDefault(cloudEvent, ProtocolKey.UNIQUE_ID, "");
+        String producerGroup = getEventExtensionOrDefault(cloudEvent, ProtocolKey.PRODUCERGROUP, "producerGroup");
+        String ttl = getEventExtensionOrDefault(cloudEvent, ProtocolKey.TTL, "3000");
 
         RequestHeader header = RequestHeader.newBuilder()
             .setEnv(env).setIdc(idc)
@@ -109,13 +90,13 @@ public class GrpcMessageProtocolResolver {
 
         SimpleMessage.Builder messageBuilder = SimpleMessage.newBuilder()
             .setHeader(header)
-            .setContent(new String(Objects.requireNonNull(eventFormat).serialize(cloudEvent), DEFAULT_CHARSET))
+            .setContent(new String(Objects.requireNonNull(eventFormat).serialize(cloudEvent), Constants.DEFAULT_CHARSET))
             .setProducerGroup(producerGroup)
             .setSeqNum(seqNum)
             .setUniqueId(uniqueId)
             .setTopic(cloudEvent.getSubject())
             .setTtl(ttl)
-            .putProperties(CONTENT_TYPE, contentType);
+            .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
 
         for (String key : cloudEvent.getExtensionNames()) {
             messageBuilder.putProperties(key, Objects.requireNonNull(cloudEvent.getExtension(key)).toString());
@@ -132,14 +113,14 @@ public class GrpcMessageProtocolResolver {
         for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
             String cloudEventJson = item.getContent();
 
-            String contentType = item.getPropertiesOrDefault(CONTENT_TYPE, CONTENT_TYPE_CLOUDEVENTS_JSON);
+            String contentType = item.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, Constants.CONTENT_TYPE_CLOUDEVENTS_JSON);
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
-            CloudEvent event = Objects.requireNonNull(eventFormat).deserialize(cloudEventJson.getBytes(DEFAULT_CHARSET));
+            CloudEvent event = Objects.requireNonNull(eventFormat).deserialize(cloudEventJson.getBytes(Constants.DEFAULT_CHARSET));
 
-            String seqNum = getEventExtensionIfAbsent(item.getSeqNum(), event, SEQ_NUM);
-            String uniqueId = getEventExtensionIfAbsent(item.getUniqueId(), event, UNIQUE_ID);
-            String producerGroup = getEventExtensionIfAbsent(batchMessage.getProducerGroup(), event, PRODUCERGROUP);
-            String ttl = getEventExtensionIfAbsent(item.getTtl(), event, TTL);
+            String seqNum = getEventExtensionIfAbsent(item.getSeqNum(), event, ProtocolKey.SEQ_NUM);
+            String uniqueId = getEventExtensionIfAbsent(item.getUniqueId(), event, ProtocolKey.UNIQUE_ID);
+            String producerGroup = getEventExtensionIfAbsent(batchMessage.getProducerGroup(), event, ProtocolKey.PRODUCERGROUP);
+            String ttl = getEventExtensionIfAbsent(item.getTtl(), event, ProtocolKey.TTL);
             String topic = StringUtils.defaultIfEmpty(batchMessage.getTopic(), event.getSubject());
 
             CloudEventBuilder eventBuilder = builderCloudEventBuilder(header, event, seqNum, uniqueId, producerGroup,
@@ -155,36 +136,36 @@ public class GrpcMessageProtocolResolver {
     private static CloudEventBuilder builderCloudEventBuilder(RequestHeader header, CloudEvent event, String seqNum,
                                                               String uniqueId, String producerGroup, String ttl,
                                                               String topic) {
-        String env = getEventExtensionIfAbsent(header.getEnv(), event, ENV);
-        String idc = getEventExtensionIfAbsent(header.getIdc(), event, IDC);
-        String ip = getEventExtensionIfAbsent(header.getIp(), event, IP);
-        String pid = getEventExtensionIfAbsent(header.getPid(), event, PID);
-        String sys = getEventExtensionIfAbsent(header.getSys(), event, SYS);
-        String language = getEventExtensionIfAbsent(header.getLanguage(), event, LANGUAGE);
-        String protocolType = getEventExtensionIfAbsent(header.getProtocolType(), event, PROTOCOL_TYPE);
-        String protocolDesc = getEventExtensionIfAbsent(header.getProtocolDesc(), event, PROTOCOL_DESC);
-        String protocolVersion = getEventExtensionIfAbsent(header.getProtocolVersion(), event, PROTOCOL_VERSION);
-        String username = getEventExtensionIfAbsent(header.getUsername(), event, USERNAME);
-        String passwd = getEventExtensionIfAbsent(header.getPassword(), event, PASSWD);
+        String env = getEventExtensionIfAbsent(header.getEnv(), event, ProtocolKey.ENV);
+        String idc = getEventExtensionIfAbsent(header.getIdc(), event, ProtocolKey.IDC);
+        String ip = getEventExtensionIfAbsent(header.getIp(), event, ProtocolKey.IP);
+        String pid = getEventExtensionIfAbsent(header.getPid(), event, ProtocolKey.PID);
+        String sys = getEventExtensionIfAbsent(header.getSys(), event, ProtocolKey.SYS);
+        String language = getEventExtensionIfAbsent(header.getLanguage(), event, ProtocolKey.LANGUAGE);
+        String protocolType = getEventExtensionIfAbsent(header.getProtocolType(), event, ProtocolKey.PROTOCOL_TYPE);
+        String protocolDesc = getEventExtensionIfAbsent(header.getProtocolDesc(), event, ProtocolKey.PROTOCOL_DESC);
+        String protocolVersion = getEventExtensionIfAbsent(header.getProtocolVersion(), event, ProtocolKey.PROTOCOL_VERSION);
+        String username = getEventExtensionIfAbsent(header.getUsername(), event, ProtocolKey.USERNAME);
+        String passwd = getEventExtensionIfAbsent(header.getPassword(), event, ProtocolKey.PASSWD);
 
         CloudEventBuilder eventBuilder = CloudEventBuilder.from(event);
 
         return eventBuilder
-            .withExtension(ENV, env)
-            .withExtension(IDC, idc)
-            .withExtension(IP, ip)
-            .withExtension(PID, pid)
-            .withExtension(SYS, sys)
-            .withExtension(USERNAME, username)
-            .withExtension(PASSWD, passwd)
-            .withExtension(LANGUAGE, language)
-            .withExtension(PROTOCOL_TYPE, protocolType)
-            .withExtension(PROTOCOL_DESC, protocolDesc)
-            .withExtension(PROTOCOL_VERSION, protocolVersion)
-            .withExtension(SEQ_NUM, seqNum)
-            .withExtension(UNIQUE_ID, uniqueId)
-            .withExtension(PRODUCERGROUP, producerGroup)
-            .withExtension(TTL, ttl)
+            .withExtension(ProtocolKey.ENV, env)
+            .withExtension(ProtocolKey.IDC, idc)
+            .withExtension(ProtocolKey.IP, ip)
+            .withExtension(ProtocolKey.PID, pid)
+            .withExtension(ProtocolKey.SYS, sys)
+            .withExtension(ProtocolKey.USERNAME, username)
+            .withExtension(ProtocolKey.PASSWD, passwd)
+            .withExtension(ProtocolKey.LANGUAGE, language)
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+            .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+            .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+            .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+            .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+            .withExtension(ProtocolKey.TTL, ttl)
             .withSubject(topic);
 
     }
