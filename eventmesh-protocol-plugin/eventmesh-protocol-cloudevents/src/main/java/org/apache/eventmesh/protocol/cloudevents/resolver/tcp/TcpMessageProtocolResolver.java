@@ -17,24 +17,21 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.tcp;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_DESC;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_TYPE;
-import static org.apache.eventmesh.common.Constants.PROTOCOL_VERSION;
-import static org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant.PROTOCOL_NAME;
-
-import static io.cloudevents.jackson.JsonFormat.CONTENT_TYPE;
-
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 import com.google.common.base.Preconditions;
 
@@ -44,9 +41,9 @@ public class TcpMessageProtocolResolver {
         throws ProtocolHandleException {
         final CloudEventBuilder cloudEventBuilder;
 
-        String protocolType = header.getProperty(PROTOCOL_TYPE).toString();
-        String protocolVersion = header.getProperty(PROTOCOL_VERSION).toString();
-        String protocolDesc = header.getProperty(PROTOCOL_DESC).toString();
+        String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
+        String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
+        String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.isAnyBlank(protocolType, protocolVersion, protocolDesc)) {
             throw new ProtocolHandleException(
@@ -59,16 +56,16 @@ public class TcpMessageProtocolResolver {
                 String.format("invalid method params cloudEventJson %s", cloudEventJson));
         }
 
-        if (!StringUtils.equals(PROTOCOL_NAME, protocolType)) {
+        if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
 
         if (StringUtils.equalsAny(protocolVersion, SpecVersion.V1.toString(), SpecVersion.V03.toString())) {
             // todo:resolve different format
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(CONTENT_TYPE);
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions
-                    .checkNotNull(eventFormat, "EventFormat: %s is not supported", CONTENT_TYPE);
-            CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(DEFAULT_CHARSET));
+                    .checkNotNull(eventFormat, "EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE);
+            CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.from(event);
             header.getProperties().forEach((k, v) -> {
                 cloudEventBuilder.withExtension(k, v.toString());
