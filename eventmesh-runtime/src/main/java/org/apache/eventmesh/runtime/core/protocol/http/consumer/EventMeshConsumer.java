@@ -75,7 +75,7 @@ public class EventMeshConsumer {
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private ConsumerGroupConf consumerGroupConf;
 
@@ -193,8 +193,8 @@ public class EventMeshConsumer {
                     .build();
 
                 String topic = event.getSubject();
-                String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO, "");
-                String uniqueId = getEventExtension(event, ProtocolKey.ClientInstanceKey.UNIQUEID, "");
+                String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO);
+                String uniqueId = getEventExtension(event, ProtocolKey.ClientInstanceKey.UNIQUEID);
 
                 if (messageLogger.isDebugEnabled()) {
                     messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
@@ -253,9 +253,9 @@ public class EventMeshConsumer {
         log.info("EventMeshConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
     }
 
-    private String getEventExtension(CloudEvent event, String protocolKey, String defaultValue) {
+    private String getEventExtension(CloudEvent event, String protocolKey) {
         Object extension = event.getExtension(protocolKey);
-        return Objects.isNull(extension) ? defaultValue : extension.toString();
+        return Objects.isNull(extension) ? "" : extension.toString();
     }
 
     public synchronized void start() throws Exception {

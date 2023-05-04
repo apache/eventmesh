@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.knative.connector;
+package org.apache.eventmesh.storage.knative.storage;
 
 import org.apache.eventmesh.api.storage.StorageResourceService;
 

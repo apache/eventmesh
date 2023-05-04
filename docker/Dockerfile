@@ -16,20 +16,24 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+FROM openjdk:8-jdk as builder
+WORKDIR /build
+COPY . .
+RUN ./gradlew clean build jar dist --parallel --daemon
+RUN ./gradlew installPlugin
 
-FROM centos7-jdk8:latest
+FROM openjdk:8-jdk
+RUN apt-get update && apt-get install -y locales
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
+WORKDIR /data/app/eventmesh
+COPY --from=builder /build/dist ./
 
-MAINTAINER mikexue mike_xwm@126.com
-
-WORKDIR /data
-RUN mkdir /data/app
-ADD EventMesh_1.3.0-release.tar.gz  /data/app/eventmesh
-WORKDIR /data/app/eventmesh/bin
-
-EXPOSE 10000
-EXPOSE 10105
+EXPOSE 10106 
+EXPOSE 10205 10105 10002
 
 ENV DOCKER true
+ENV EVENTMESH_HOME /data/app/eventmesh
+ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
+ENV CONFPATH /data/app/eventmesh/conf
 
-CMD sh start.sh
-
+CMD ["bash", "bin/start.sh"]

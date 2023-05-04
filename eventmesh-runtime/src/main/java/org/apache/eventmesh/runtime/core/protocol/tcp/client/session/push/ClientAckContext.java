@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
@@ -46,7 +47,7 @@ public class ClientAckContext {
 
     private List<CloudEvent> events;
 
-    private MQConsumerWrapper consumer;
+    private final MQConsumerWrapper consumer;
 
     public ClientAckContext(String seq, AbstractContext context, List<CloudEvent> events, MQConsumerWrapper consumer) {
         this.seq = seq;
@@ -55,7 +56,7 @@ public class ClientAckContext {
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
         String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? "" :
-            events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL).toString();
+            Objects.requireNonNull(events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)).toString();
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }

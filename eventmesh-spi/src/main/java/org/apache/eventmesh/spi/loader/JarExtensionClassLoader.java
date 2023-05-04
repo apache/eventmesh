@@ -66,7 +66,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
-        return extensionClassCache.computeIfAbsent(extensionType, t -> doLoadExtensionClass(t));
+        return extensionClassCache.computeIfAbsent(extensionType, this::doLoadExtensionClass);
     }
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {

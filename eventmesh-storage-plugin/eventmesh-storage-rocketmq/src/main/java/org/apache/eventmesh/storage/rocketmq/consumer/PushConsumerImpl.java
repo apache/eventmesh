@@ -186,7 +186,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }
@@ -257,7 +257,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }

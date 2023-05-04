@@ -85,7 +85,7 @@ public class PravegaConsumerImpl implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic) throws Exception {
+    public void subscribe(String topic) {
         if (!client.subscribe(topic, isBroadcast, consumerGroup, instanceName, eventListener)) {
             throw new PravegaStorageException(String.format("subscribe topic[%s] fail.", topic));
         }

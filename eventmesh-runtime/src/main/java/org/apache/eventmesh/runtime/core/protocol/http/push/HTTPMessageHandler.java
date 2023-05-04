@@ -44,24 +44,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HTTPMessageHandler implements MessageHandler {
 
-    private transient EventMeshConsumer eventMeshConsumer;
+    private final transient EventMeshConsumer eventMeshConsumer;
 
     private static final transient ScheduledExecutorService SCHEDULER =
         ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
-    public static final transient Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
+    protected static final transient Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
-    private transient ThreadPoolExecutor pushExecutor;
+    private final transient ThreadPoolExecutor pushExecutor;
 
     private void checkTimeout() {
-        waitingRequests.forEach((key, value) -> {
+        waitingRequests.forEach((key, value) ->
             value.forEach(r -> {
                 r.timeout();
                 waitingRequests.get(r.handleMsgContext.getConsumerGroup()).remove(r);
-            });
-        });
+            })
+        );
 
     }
 

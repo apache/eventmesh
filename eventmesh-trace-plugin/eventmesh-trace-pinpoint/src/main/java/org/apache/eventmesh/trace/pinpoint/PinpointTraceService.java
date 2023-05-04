@@ -122,7 +122,7 @@ public class PinpointTraceService implements EventMeshTraceService {
             }
 
             @Override
-            public String get(final Map<String, Object> carrier, final @Nonnull String key) {
+            public String get(final @Nonnull Map<String, Object> carrier, final @Nonnull String key) {
                 return Optional.ofNullable(carrier.get(key)).map(Objects::toString).orElse(null);
             }
         });

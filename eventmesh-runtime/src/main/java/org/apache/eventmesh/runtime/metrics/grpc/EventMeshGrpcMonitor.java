@@ -38,12 +38,12 @@ public class EventMeshGrpcMonitor {
     private static final int SCHEDULE_THREAD_SIZE = 1;
     private static final String THREAD_NAME_PREFIX = "eventMesh-grpc-monitor-scheduler";
 
-    private EventMeshGrpcServer eventMeshGrpcServer;
-    private List<MetricsRegistry> metricsRegistries;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final List<MetricsRegistry> metricsRegistries;
 
-    private ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService scheduler;
     private ScheduledFuture<?> scheduleTask;
-    private GrpcSummaryMetrics grpcSummaryMetrics;
+    private final GrpcSummaryMetrics grpcSummaryMetrics;
 
     public EventMeshGrpcMonitor(EventMeshGrpcServer eventMeshGrpcServer, List<MetricsRegistry> metricsRegistries) {
         this.eventMeshGrpcServer = Preconditions.checkNotNull(eventMeshGrpcServer);
@@ -58,9 +58,7 @@ public class EventMeshGrpcMonitor {
     }
 
     public void start() throws Exception {
-        metricsRegistries.forEach(metricsRegistry -> {
-            metricsRegistry.register(grpcSummaryMetrics);
-        });
+        metricsRegistries.forEach(metricsRegistry -> metricsRegistry.register(grpcSummaryMetrics));
 
         // update tps metrics and clear counter
         scheduleTask = scheduler.scheduleAtFixedRate(() -> {

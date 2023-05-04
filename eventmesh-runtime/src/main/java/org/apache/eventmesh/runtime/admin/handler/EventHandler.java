@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
@@ -80,7 +81,7 @@ public class EventHandler extends AbstractHttpHandler {
 
     private Map<String, String> queryToMap(String query) {
         if (query == null) {
-            return null;
+            return new HashMap<>();
         }
         Map<String, String> result = new HashMap<>();
         for (String param : query.split("&")) {
@@ -105,7 +106,6 @@ public class EventHandler extends AbstractHttpHandler {
             String queryString = httpExchange.getRequestURI().getQuery();
             if (queryString == null || "".equals(queryString)) {
                 httpExchange.sendResponseHeaders(401, 0);
-                out.close();
                 return;
             }
 
@@ -124,8 +124,8 @@ public class EventHandler extends AbstractHttpHandler {
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
             String result = JsonUtils.toJSONString(eventJsonList);
-            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             try (OutputStream out = httpExchange.getResponseBody()) {
                 StringWriter writer = new StringWriter();
@@ -136,8 +136,8 @@ public class EventHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
-                out.write(result.getBytes());
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
                 log.warn("out close failed...", ioe);
             }
@@ -169,8 +169,8 @@ public class EventHandler extends AbstractHttpHandler {
 
                 Error error = new Error(e.toString(), stackTrace);
                 String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes().length);
-                out.write(result.getBytes());
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
                 log.warn("out close failed...", ioe);
             }

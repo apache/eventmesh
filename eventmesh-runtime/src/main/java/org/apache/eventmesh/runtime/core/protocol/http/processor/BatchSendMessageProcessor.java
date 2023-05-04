@@ -64,11 +64,13 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    private final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    
+    private final Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     private final Acl acl;
 
@@ -77,7 +79,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         this.acl = eventMeshHTTPServer.getAcl();
     }
 
-    public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
+    
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
@@ -236,7 +238,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 try {
                     this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
                 } catch (Exception e) {
-                    //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+                
 
                     responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                         sendMessageBatchResponseHeader,
