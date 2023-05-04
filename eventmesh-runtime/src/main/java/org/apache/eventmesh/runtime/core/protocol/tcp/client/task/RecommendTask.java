@@ -18,17 +18,14 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.RECOMMEND_RESPONSE;
-import static org.apache.eventmesh.common.protocol.tcp.OPStatus.FAIL;
-import static org.apache.eventmesh.common.protocol.tcp.OPStatus.SUCCESS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.MESSAGE;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PURPOSE_PUB;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PURPOSE_SUB;
 import static org.apache.eventmesh.runtime.util.Utils.writeAndFlush;
 
 import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
 
@@ -41,7 +38,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class RecommendTask extends AbstractTask {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(MESSAGE);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     public RecommendTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);
@@ -60,12 +57,12 @@ public class RecommendTask extends AbstractTask {
             String group = getGroupOfClient(user);
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
-            res.setHeader(new Header(RECOMMEND_RESPONSE, SUCCESS.getCode(), SUCCESS.getDesc(),
+            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                 pkg.getHeader().getSeq()));
             res.setBody(eventMeshRecommendResult);
         } catch (Exception e) {
             MESSAGE_LOGGER.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);
-            res.setHeader(new Header(RECOMMEND_RESPONSE, FAIL.getCode(), e.toString(), pkg
+            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg
                 .getHeader().getSeq()));
 
         } finally {
@@ -91,7 +88,7 @@ public class RecommendTask extends AbstractTask {
             throw new Exception("client wemqPasswd cannot be null");
         }
 
-        if (!StringUtils.equalsAny(user.getPurpose(), PURPOSE_PUB, PURPOSE_SUB)) {
+        if (!StringUtils.equalsAny(user.getPurpose(), EventMeshConstants.PURPOSE_PUB, EventMeshConstants.PURPOSE_SUB)) {
             throw new Exception("client purpose config is error");
         }
     }

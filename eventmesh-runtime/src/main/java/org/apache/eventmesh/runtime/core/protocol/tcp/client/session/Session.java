@@ -18,19 +18,15 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
-import static org.apache.eventmesh.common.protocol.tcp.OPStatus.SUCCESS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.DATE_FORMAT;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.MESSAGE;
-import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.CLOSED;
-import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.CREATED;
-import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState.RUNNING;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
@@ -63,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Session {
 
-    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(MESSAGE);
+    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 
@@ -119,7 +115,7 @@ public class Session {
 
     @Setter
     @Getter
-    protected SessionState sessionState = CREATED;
+    protected SessionState sessionState = SessionState.CREATED;
 
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
@@ -159,7 +155,7 @@ public class Session {
 
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
-        trySendListenResponse(new Header(LISTEN_RESPONSE, SUCCESS.getCode(), "succeed",
+        trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
             getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
@@ -172,7 +168,7 @@ public class Session {
     public void write2Client(final Package pkg) {
 
         try {
-            if (CLOSED == sessionState) {
+            if (SessionState.CLOSED == sessionState) {
                 return;
             }
 
@@ -215,9 +211,9 @@ public class Session {
             +
             ",sender=" + sender
             +
-            ",createTime=" + DateFormatUtils.format(createTime, DATE_FORMAT)
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
             +
-            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, DATE_FORMAT) + '}';
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -269,7 +265,7 @@ public class Session {
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
         if (!listenRspSend && listenRspLock.tryLock()) {
             if (header == null) {
-                header = new Header(LISTEN_RESPONSE, SUCCESS.getCode(), "succeed", null);
+                header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
             }
             Package msg = new Package();
             msg.setHeader(header);
@@ -283,7 +279,7 @@ public class Session {
     }
 
     public boolean isAvailable(String topic) {
-        if (CLOSED == sessionState) {
+        if (SessionState.CLOSED == sessionState) {
             log.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
@@ -297,7 +293,7 @@ public class Session {
     }
 
     public boolean isRunning() {
-        if (RUNNING != sessionState) {
+        if (SessionState.RUNNING != sessionState) {
             log.warn("session is not running, state:{} client:{}", sessionState, client);
             return false;
         }
