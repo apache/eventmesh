@@ -235,7 +235,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                     summaryMetrics.recordReplyMsgFailed();
                     summaryMetrics.recordReplyMsgCost(endTime - startTime);
                     messageLogger.error("message|eventMesh2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, replyMQCluster + "-" + RR_REPLY_TOPIC,
+                        endTime - startTime, replyMQCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC,
                         origTopic, bizNo, uniqueId, context.getException());
                 }
             });

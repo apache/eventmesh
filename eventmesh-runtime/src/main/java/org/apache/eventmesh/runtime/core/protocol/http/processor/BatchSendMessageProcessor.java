@@ -223,7 +223,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
                 if (StringUtils.isBlank(ttl) || !StringUtils.isNumeric(ttl)) {
                     cloudEvent = CloudEventBuilder.from(cloudEvent)
-                        .withExtension(TTL, String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS))
+                        .withExtension(SendMessageRequestBody.TTL, String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS))
                         .withExtension("msgtype", "persistent")
                         .build();
                 }
