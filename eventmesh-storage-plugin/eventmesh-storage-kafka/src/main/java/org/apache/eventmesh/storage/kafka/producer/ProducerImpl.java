@@ -107,7 +107,7 @@ public class ProducerImpl {
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         try {
-            this.producer.send(new ProducerRecord<>(Objects.requireNonNull(cloudEvent.getSubject(), cloudEvent), (metadata, exception) -> {
+            this.producer.send(new ProducerRecord<>(Objects.requireNonNull(cloudEvent.getSubject()), cloudEvent), (metadata, exception) -> {
                 if (exception != null) {
                     StorageRuntimeException onsEx = new StorageRuntimeException(exception.getMessage(), exception);
                     OnExceptionContext context = new OnExceptionContext();
