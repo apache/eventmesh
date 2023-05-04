@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
+package org.apache.eventmesh.metrics.api;
 
+import org.junit.Assert;
+import org.junit.Test;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+public class MetricsPluginFactoryTest {
 
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-inline"
+    @Test
+    public void testGetMetricsRegistry_throwException() {
+        Exception exception = Assert.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
+        Assert.assertTrue(exception.getMessage().contains("is not supported"));
+    }
 }
