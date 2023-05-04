@@ -104,7 +104,8 @@ public class BatchPublishMessageProcessor {
 
         for (CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
-            String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) ? "" : Objects.requireNonNull(event).getExtension(ProtocolKey.UNIQUE_ID).toString();
+            String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) 
+                ? "" : Objects.requireNonNull(event).getExtension(ProtocolKey.UNIQUE_ID).toString();
             ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
             EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
