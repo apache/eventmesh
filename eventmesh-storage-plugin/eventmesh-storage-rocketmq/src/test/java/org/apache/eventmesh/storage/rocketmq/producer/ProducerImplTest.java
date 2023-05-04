@@ -64,7 +64,7 @@ public class ProducerImplTest {
         config.setProperty("access_points", "IP1:9876,IP2:9876");
         producer = new ProducerImpl(config);
 
-        Field field = AbstractProducer.class.getDeclaredField("rocketmqProducer");
+        Field field = RocketMQAbstractProducer.class.getDeclaredField("rocketmqProducer");
         field.setAccessible(true);
         field.set(producer, rocketmqProducer);
 

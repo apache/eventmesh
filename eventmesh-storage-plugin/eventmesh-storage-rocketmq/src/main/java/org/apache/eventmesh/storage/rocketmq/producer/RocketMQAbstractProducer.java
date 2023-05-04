@@ -18,6 +18,7 @@
 package org.apache.eventmesh.storage.rocketmq.producer;
 
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
+import org.apache.eventmesh.api.producer.AbstractProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.rocketmq.config.ClientConfig;
 import org.apache.eventmesh.storage.rocketmq.exception.RMQMessageFormatException;
@@ -25,36 +26,30 @@ import org.apache.eventmesh.storage.rocketmq.exception.RMQTimeoutException;
 import org.apache.eventmesh.storage.rocketmq.utils.BeanUtils;
 import org.apache.eventmesh.storage.rocketmq.utils.OMSUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl;
-import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.protocol.ResponseCode;
-import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractProducer {
-
-    static final InternalLogger log = ClientLogger.getLog();
-    final Properties properties;
+public abstract class RocketMQAbstractProducer extends AbstractProducer {
     final DefaultMQProducer rocketmqProducer;
-    protected final AtomicBoolean started = new AtomicBoolean(false);
     //    private boolean started = false;
     private final ClientConfig clientConfig;
 
-    AbstractProducer(final Properties properties) {
-        this.properties = properties;
+    RocketMQAbstractProducer(final Properties properties) {
+        super(properties);
         this.rocketmqProducer = new DefaultMQProducer();
         this.clientConfig = BeanUtils.populate(properties, ClientConfig.class);
 
         String accessPoints = clientConfig.getAccessPoints();
-        if (accessPoints == null || accessPoints.isEmpty()) {
+        if (StringUtils.isEmpty(accessPoints)) {
             throw new StorageRuntimeException("OMS AccessPoints is null or empty.");
         }
 
@@ -70,30 +65,26 @@ public abstract class AbstractProducer {
         properties.put(Constants.PRODUCER_ID, producerId);
     }
 
-    public synchronized void start() {
+    public void start() {
         if (!started.get()) {
-            try {
-                this.rocketmqProducer.start();
-            } catch (MQClientException e) {
-                throw new StorageRuntimeException("-1", e);
+            synchronized (this) {
+                try {
+                    this.rocketmqProducer.start();
+                } catch (MQClientException e) {
+                    throw new StorageRuntimeException("-1", e);
+                }
             }
         }
         this.started.set(true);
     }
 
-    public synchronized void shutdown() {
+    public void shutdown() {
         if (this.started.get()) {
-            this.rocketmqProducer.shutdown();
+            synchronized (this) {
+                this.rocketmqProducer.shutdown();
+            }
         }
         this.started.set(false);
-    }
-
-    public boolean isStarted() {
-        return this.started.get();
-    }
-
-    public boolean isClosed() {
-        return !this.isStarted();
     }
 
     StorageRuntimeException checkProducerException(String topic, String msgId, Throwable e) {
@@ -113,8 +104,7 @@ public abstract class AbstractProducer {
                     }
 
                     if (e.getCause() instanceof RemotingConnectException) {
-                        RemotingConnectException connectException =
-                            (RemotingConnectException) e.getCause();
+                        RemotingConnectException connectException = (RemotingConnectException) e.getCause();
                         return new StorageRuntimeException(
                             String.format(
                                 "Network connection experiences failures. Topic=%s, msgId=%s, %s",

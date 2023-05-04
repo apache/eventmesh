@@ -18,20 +18,15 @@
 package org.apache.eventmesh.storage.pulsar.producer;
 
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.producer.AbstractProducer;
 import org.apache.eventmesh.storage.pulsar.client.PulsarClientWrapper;
 import org.apache.eventmesh.storage.pulsar.config.ClientConfiguration;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class ProducerImpl extends AbstractProducer {
-
-    private final AtomicBoolean started = new AtomicBoolean(false);
 
     private ClientConfiguration config;
     private PulsarClientWrapper pulsarClient;
@@ -54,27 +49,17 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void start() {
-        this.started.compareAndSet(false, true);
+        this.started.set(true);
         this.pulsarClient = new PulsarClientWrapper(config, properties);
     }
 
     public void shutdown() {
         try {
-            this.started.compareAndSet(true, false);
+            this.started.set(false);
             this.pulsarClient.shutdown();
         } catch (Exception ignored) {
             // ignored
         }
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.started.get();
-    }
-
-    @Override
-    public boolean isClosed() {
-        return !this.isStarted();
     }
 
     public void setConfig(ClientConfiguration config) {

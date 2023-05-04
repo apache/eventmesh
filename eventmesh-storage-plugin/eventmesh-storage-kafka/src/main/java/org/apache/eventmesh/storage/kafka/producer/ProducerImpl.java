@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.storage.kafka.producer;
 
-import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
+import org.apache.eventmesh.api.producer.AbstractProducer;
 
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventSerializer;
@@ -42,34 +41,18 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SuppressWarnings("deprecation")
-public class ProducerImpl {
+public class ProducerImpl extends AbstractProducer {
 
     private KafkaProducer<String, CloudEvent> producer;
-    private final Properties properties = new Properties();
-    private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     public ProducerImpl(Properties props) {
+        super(props);
+        properties.clear();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
             props.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CloudEventSerializer.class);
         this.producer = new KafkaProducer<>(properties);
-    }
-
-    public boolean isStarted() {
-        return isStarted.get();
-    }
-
-    public boolean isClosed() {
-        return !isStarted.get();
-    }
-
-    public void start() {
-        isStarted.compareAndSet(false, true);
-    }
-
-    public void shutdown() {
-        isStarted.compareAndSet(true, false);
     }
 
     public void init(Properties properties) {
@@ -92,17 +75,6 @@ public class ProducerImpl {
                 throw new StorageRuntimeException(String.format("topic:%s is not exist", topic));
             }
         }
-    }
-
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        throw new StorageRuntimeException("Request is not supported");
-    }
-
-    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        throw new StorageRuntimeException("Reply is not supported");
-    }
-
-    public void sendOneway(CloudEvent message) {
     }
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
