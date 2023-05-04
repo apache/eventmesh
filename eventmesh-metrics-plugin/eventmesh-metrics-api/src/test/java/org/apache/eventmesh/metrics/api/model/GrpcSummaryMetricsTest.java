@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.api;
-
-import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
+package org.apache.eventmesh.metrics.api.model;
 
 import org.junit.Assert;
 import org.junit.Test;

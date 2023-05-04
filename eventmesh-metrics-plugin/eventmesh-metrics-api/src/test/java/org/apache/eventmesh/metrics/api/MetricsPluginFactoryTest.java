@@ -15,33 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.metrics.api;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
+public class MetricsPluginFactoryTest {
 
-import io.cloudevents.rw.CloudEventContextWriter;
-import io.cloudevents.rw.CloudEventRWException;
-
-
-public class EventMeshCloudEventWriter implements CloudEventContextWriter {
-
-    private Map<String, Object> extensionMap;
-
-    public EventMeshCloudEventWriter() {
-        extensionMap = new HashMap<String, Object>();
-    }
-
-    @Override
-    public CloudEventContextWriter withContextAttribute(@Nonnull String key, @Nonnull String value)
-        throws CloudEventRWException {
-        extensionMap.put(key, value);
-        return this;
-    }
-
-    public Map<String, Object> getExtensionMap() {
-        return extensionMap;
+    @Test
+    public void testGetMetricsRegistry_throwException() {
+        Exception exception = Assert.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
+        Assert.assertTrue(exception.getMessage().contains("is not supported"));
     }
 }
