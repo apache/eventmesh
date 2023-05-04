@@ -17,34 +17,17 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody.BATCHID;
-import static org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody.PRODUCERGROUP;
-import static org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody.SIZE;
-import static org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody.TTL;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_ACL_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.SUCCESS;
-import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.IDC;
-import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.PASSWD;
-import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.PID;
-import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.SYS;
-import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.USERNAME;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.ACL;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CMD;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.DEFAULT_MSG_TTL_MILLS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PROTOCOL_HTTP;
-
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
@@ -55,6 +38,7 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
@@ -81,9 +65,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
-    private final Logger cmdLogger = LoggerFactory.getLogger(CMD);
+    private final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    private final Logger aclLogger = LoggerFactory.getLogger(ACL);
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
     
     private final Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
@@ -104,7 +88,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
                 Integer.valueOf(request.getRequestCode())),
-            PROTOCOL_HTTP,
+            EventMeshConstants.PROTOCOL_HTTP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         SendMessageBatchRequestHeader sendMessageBatchRequestHeader =
@@ -123,7 +107,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (CollectionUtils.isEmpty(eventList)) {
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
             return;
         }
 
@@ -135,7 +119,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             batchMessageLogger.error("Event batch size exceeds the limit: {}",
                     httpConfiguration.getEventMeshEventBatchSize());
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
                     "Event batch size exceeds the limit: " + httpConfiguration.getEventMeshEventBatchSize(),
                     SendMessageBatchResponseBody.class);
             return;
@@ -146,42 +130,42 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             if (!ObjectUtils.allNotNull(event.getSource(), event.getSpecVersion())
                 || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                        EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
                 return;
             }
 
-            String content = event.getData() == null ? "" : new String(event.getData().toBytes(), DEFAULT_CHARSET);
+            String content = event.getData() == null ? "" : new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET);
             if (content.length() > httpConfiguration.getEventMeshEventSize()) {
                 batchMessageLogger.error("Event size exceeds the limit: {}",
                         httpConfiguration.getEventMeshEventSize());
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                        EVENTMESH_PROTOCOL_HEADER_ERR,
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR,
                         "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(),
                         SendMessageBatchResponseBody.class);
                 return;
             }
 
-            String idc = getExtension(event, IDC);
-            String pid = getExtension(event, PID);
-            String sys = getExtension(event, SYS);
+            String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
+            String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
+            String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
 
             //validate event-extension
             if (StringUtils.isAnyBlank(idc, pid, sys)
                 || !StringUtils.isNumeric(pid)) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                        EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
                 return;
             }
 
-            batchId = getExtension(event, BATCHID);
-            producerGroup = getExtension(event, PRODUCERGROUP);
-            eventSize = Integer.parseInt(getExtension(event, SIZE));
+            batchId = getExtension(event, SendMessageBatchRequestBody.BATCHID);
+            producerGroup = getExtension(event, SendMessageBatchRequestBody.PRODUCERGROUP);
+            eventSize = Integer.parseInt(getExtension(event, SendMessageBatchRequestBody.SIZE));
             CloudEventData eventData = event.getData();
 
             if (eventData == null || StringUtils.isAnyBlank(batchId, producerGroup)
                 || eventSize != eventList.size()) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                        EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
                 return;
             }
 
@@ -189,10 +173,10 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         if (!eventMeshHTTPServer.getBatchRateLimiter()
-            .tryAcquire(eventSize, DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            .tryAcquire(eventSize, EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             summaryMetrics.recordSendBatchMsgDiscard(eventSize);
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                    EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, null, SendMessageBatchResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, null, SendMessageBatchResponseBody.class);
             return;
         }
 
@@ -202,7 +186,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (!batchEventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                    EVENTMESH_BATCH_PRODUCER_STOPED_ERR, null, SendMessageBatchResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR, null, SendMessageBatchResponseBody.class);
             return;
         }
 
@@ -218,9 +202,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 continue;
             }
 
-            String user = getExtension(cloudEvent, USERNAME);
-            String pass = getExtension(cloudEvent, PASSWD);
-            String subsystem = getExtension(cloudEvent, SYS);
+            String user = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.USERNAME);
+            String pass = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.PASSWD);
+            String subsystem = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.SYS);
 
             //do acl check
             if (httpConfiguration.isEventMeshServerSecurityEnable()) {
@@ -228,18 +212,18 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                            EVENTMESH_ACL_ERR, e.getMessage(), SendMessageBatchResponseBody.class);
+                            EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageBatchResponseBody.class);
                     aclLogger.warn("CLIENT HAS NO PERMISSION,BatchSendMessageProcessor send failed", e);
                     return;
                 }
             }
 
             try {
-                String ttl = getExtension(cloudEvent, TTL);
+                String ttl = getExtension(cloudEvent, SendMessageRequestBody.TTL);
 
                 if (StringUtils.isBlank(ttl) || !StringUtils.isNumeric(ttl)) {
                     cloudEvent = CloudEventBuilder.from(cloudEvent)
-                        .withExtension(TTL, String.valueOf(DEFAULT_MSG_TTL_MILLS))
+                        .withExtension(TTL, String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS))
                         .withExtension("msgtype", "persistent")
                         .build();
                 }
@@ -263,7 +247,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (CollectionUtils.isEmpty(eventList)) {
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchResponseBody.class);
             return;
         }
 
@@ -316,7 +300,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
             batchId, batchEndTime - batchStartTime, eventSize, topicBatchMessageMappings.keySet());
 
-        completeResponse(request, asyncContext, sendMessageBatchResponseHeader, SUCCESS, null,
+        completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS, null,
                 SendMessageBatchResponseBody.class);
         return;
     }

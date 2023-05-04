@@ -17,15 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.SUCCESS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PROTOCOL_HTTP;
-
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeResponseHeader;
@@ -34,6 +29,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
@@ -80,7 +76,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         if (log.isInfoEnabled()) {
             log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                 RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                PROTOCOL_HTTP,
+                    EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         }
 
@@ -99,7 +95,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 unSubscribeRequestHeader.getSys())
             || !StringUtils.isNumeric(unSubscribeRequestHeader.getPid())) {
             completeResponse(request, asyncContext, unSubscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_HEADER_ERR, null, UnSubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, UnSubscribeResponseBody.class);
             return;
         }
 
@@ -107,7 +103,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         if (StringUtils.isAnyBlank(unSubscribeRequestBody.getUrl(), unSubscribeRequestBody.getConsumerGroup())
             || CollectionUtils.isEmpty(unSubscribeRequestBody.getTopics())) {
             completeResponse(request, asyncContext, unSubscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR, null, UnSubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, UnSubscribeResponseBody.class);
             return;
         }
 
@@ -194,13 +190,13 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                             localConsumerGroupMap.get(consumerGroup));
 
-                    responseEventMeshCommand = request.createHttpCommandResponse(SUCCESS);
+                    responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                     asyncContext.onComplete(responseEventMeshCommand, handler);
 
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, unSubscribeResponseHeader,
-                            EVENTMESH_UNSUBSCRIBE_ERR,
-                            EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                             UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
@@ -216,7 +212,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getConsumerManager()
                         .notifyConsumerManager(consumerGroup, null);
                     responseEventMeshCommand =
-                            request.createHttpCommandResponse(SUCCESS);
+                            request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                     asyncContext.onComplete(responseEventMeshCommand, handler);
                     // clean ClientInfo
                     subscriptionManager.getLocalClientInfoMapping().keySet()
@@ -226,8 +222,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, unSubscribeResponseHeader,
-                            EVENTMESH_UNSUBSCRIBE_ERR,
-                            EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                             UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"

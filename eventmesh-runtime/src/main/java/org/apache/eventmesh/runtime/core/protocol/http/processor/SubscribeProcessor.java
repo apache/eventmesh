@@ -17,17 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_ACL_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR;
-import static org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode.SUCCESS;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.PROTOCOL_HTTP;
-
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeResponseHeader;
@@ -37,6 +31,7 @@ import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -78,7 +73,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         if (log.isInfoEnabled()) {
             log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(requestCode), PROTOCOL_HTTP, remoteAddr, localAddress);
+                RequestCode.get(requestCode), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
         }
 
         final SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
@@ -97,7 +92,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
             || !StringUtils.isNumeric(subscribeRequestHeader.getPid())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
             return;
         }
 
@@ -105,7 +100,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         if (StringUtils.isAnyBlank(subscribeRequestBody.getUrl(), subscribeRequestBody.getConsumerGroup())
             || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR, null, SubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SubscribeResponseBody.class);
             return;
         }
         final List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
@@ -121,7 +116,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         requestCode);
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, subscribeResponseHeader,
-                            EVENTMESH_ACL_ERR, e.getMessage(), SubscribeResponseBody.class);
+                            EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SubscribeResponseBody.class);
                     if (log.isWarnEnabled()) {
                         log.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
                     }
@@ -139,8 +134,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
                 log.error("subscriber url {} is not valid", url);
                 completeResponse(request, asyncContext, subscribeResponseHeader,
-                        EVENTMESH_PROTOCOL_BODY_ERR,
-                        EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
                         SubscribeResponseBody.class);
                 return;
             }
@@ -149,8 +144,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 log.error("subscriber url:{} is invalid.", url, e);
             }
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR,
-                    EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
                     SubscribeResponseBody.class);
             return;
         }
@@ -160,8 +155,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin())) {
             log.error("subscriber url {} is not allowed by the target system", url);
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EVENTMESH_PROTOCOL_BODY_ERR,
-                    EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url,
                     SubscribeResponseBody.class);
             return;
         }
@@ -192,12 +187,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     }
                 };
 
-                responseEventMeshCommand = request.createHttpCommandResponse(SUCCESS);
+                responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
                 completeResponse(request, asyncContext, subscribeResponseHeader,
-                        EVENTMESH_SUBSCRIBE_ERR,
-                        EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                        EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR,
+                        EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                         SubscribeResponseBody.class);
                 final long endTime = System.currentTimeMillis();
                 if (log.isErrorEnabled()) {
