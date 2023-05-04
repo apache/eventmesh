@@ -18,13 +18,13 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.common.Constants;
 
 import java.io.IOException;
 import java.io.OutputStream;
