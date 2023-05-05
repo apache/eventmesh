@@ -20,6 +20,6 @@ package org.apache.eventmesh.api;
 
 public abstract class AsyncConsumeContext {
 
-    protected abstract void commit(EventMeshAction action);
+    public abstract void commit(EventMeshAction action);
 
 }
