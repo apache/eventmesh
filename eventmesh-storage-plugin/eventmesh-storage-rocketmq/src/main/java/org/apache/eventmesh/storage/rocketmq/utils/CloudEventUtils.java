@@ -57,29 +57,24 @@ public class CloudEventUtils {
         rmqMsg.getProperties().forEach((k, v) -> MessageAccessor.putProperty(message, k, v));
 
         if (rmqMsg.getMsgId() != null) {
-            MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_MESSAGE_ID),
-                rmqMsg.getMsgId());
+            MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_MESSAGE_ID, rmqMsg.getMsgId());
         }
 
         if (rmqMsg.getTopic() != null) {
-            MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_DESTINATION),
-                rmqMsg.getTopic());
+            MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_DESTINATION, rmqMsg.getTopic());
         }
 
-        //
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_BORN_HOST),
-            String.valueOf(rmqMsg.getBornHost()));
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP),
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_BORN_HOST, String.valueOf(rmqMsg.getBornHost()));
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
             String.valueOf(rmqMsg.getBornTimestamp()));
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_STORE_HOST),
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_STORE_HOST,
             String.valueOf(rmqMsg.getStoreHost()));
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP),
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
             String.valueOf(rmqMsg.getStoreTimestamp()));
 
         //use in manual ack
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_ID),
-            String.valueOf(rmqMsg.getQueueId()));
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET),
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_ID, String.valueOf(rmqMsg.getQueueId()));
+        MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_OFFSET,
             String.valueOf(rmqMsg.getQueueOffset()));
 
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
@@ -94,15 +89,8 @@ public class CloudEventUtils {
         return message;
     }
 
-
-    private static String buildCloudEventPropertyKey(String propName) {
-        return propName;
-    }
-
-    public static org.apache.rocketmq.common.message.MessageExt msgConvertExt(Message message) {
-
-        org.apache.rocketmq.common.message.MessageExt rmqMessageExt =
-            new org.apache.rocketmq.common.message.MessageExt();
+    public static MessageExt msgConvertExt(Message message) {
+        MessageExt rmqMessageExt = new MessageExt();
         try {
             initProperty(message, rmqMessageExt, Message::getKeys, Message::setKeys);
             initProperty(message, rmqMessageExt, Message::getTags, Message::setTags);
@@ -114,10 +102,8 @@ public class CloudEventUtils {
             //All destinations in RocketMQ use Topic
             rmqMessageExt.setTopic(message.getTopic());
 
-            int queueId =
-                Integer.parseInt(message.getProperty(buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_ID)));
-            long queueOffset = Long.parseLong(
-                message.getProperty(buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET)));
+            int queueId = Integer.parseInt(message.getProperty(Constants.PROPERTY_MESSAGE_QUEUE_ID));
+            long queueOffset = Long.parseLong(message.getProperty(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
             //use in manual ack
             rmqMessageExt.setQueueId(queueId);
             rmqMessageExt.setQueueOffset(queueOffset);
