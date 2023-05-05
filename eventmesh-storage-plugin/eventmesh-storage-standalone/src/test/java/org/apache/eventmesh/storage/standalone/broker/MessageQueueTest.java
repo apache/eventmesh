@@ -103,12 +103,12 @@ public class MessageQueueTest {
     public void testGetTakeIndex() throws InterruptedException {
         MessageEntity takeIndexMessageEntity = messageQueue.take();
         Assert.assertNotNull(takeIndexMessageEntity);
-        Assert.assertTrue(messageQueue.getTakeIndex() == 1);
+        Assert.assertEquals(1, messageQueue.getPutIndex());
     }
 
     @Test
     public void testGetPutIndex() {
-        Assert.assertTrue(messageQueue.getPutIndex() == 1);
+        Assert.assertEquals(1, messageQueue.getPutIndex());
     }
 
     private void initMessageQueue() throws InterruptedException {
