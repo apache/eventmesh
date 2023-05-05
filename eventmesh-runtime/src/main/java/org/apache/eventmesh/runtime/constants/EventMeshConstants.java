@@ -33,7 +33,7 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_GRPC = "grpc";
 
-    public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    public static final String DEFAULT_CHARSET = Constants.DEFAULT_CHARSET.name();
 
     public static final String IP_PORT_SEPARATOR = ":";
 
