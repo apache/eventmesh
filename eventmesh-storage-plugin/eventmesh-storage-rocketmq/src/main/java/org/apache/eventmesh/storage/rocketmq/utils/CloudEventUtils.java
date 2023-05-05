@@ -85,7 +85,7 @@ public class CloudEventUtils {
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
             if (StringUtils.isNotEmpty(message.getProperty(sysPropKey))) {
                 String prop = message.getProperty(sysPropKey);
-                String tmpPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                String tmpPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                 MessageAccessor.putProperty(message, tmpPropKey, prop);
                 message.getProperties().remove(sysPropKey);
             }
@@ -125,7 +125,6 @@ public class CloudEventUtils {
             message.getProperties().forEach((k, v) -> MessageAccessor.putProperty(rmqMessageExt, k, v));
         } catch (Exception e) {
             log.error("Error with msgConvertExt", e);
-            e.printStackTrace();
         }
         return rmqMessageExt;
     }
