@@ -90,7 +90,7 @@ public class ConsumerManager {
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
         return consumerTable.computeIfAbsent(consumerGroup, key ->
-                                             consumerTable.put(consumerGroup, new EventMeshConsumer(eventMeshGrpcServer, consumerGroup)));
+            consumerTable.put(consumerGroup, new EventMeshConsumer(eventMeshGrpcServer, consumerGroup)));
     }
 
     public synchronized void registerClient(final ConsumerGroupClient newClient) {
