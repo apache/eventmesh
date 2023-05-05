@@ -152,7 +152,7 @@ public class WebhookFileListener {
                 for (final WatchEvent<?> event : key.pollEvents()) {
                     final String flashPath = watchKeyPathMap.get(key);
                     // manufacturer change
-                    final String path = flashPath + "/" + event.context();
+                    final String path = flashPath.concat("/").concat(event.context().toString());
                     final File file = new File(path);
                     if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
                         if (file.isFile()) {
