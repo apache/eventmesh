@@ -15,33 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.storage.knative.storage;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.eventmesh.api.storage.StorageResourceService;
 
-import javax.annotation.Nonnull;
+public class StorageResourceServiceKnativeImpl implements StorageResourceService {
+    @Override
+    public void init() throws Exception {
 
-import io.cloudevents.rw.CloudEventContextWriter;
-import io.cloudevents.rw.CloudEventRWException;
-
-
-public class EventMeshCloudEventWriter implements CloudEventContextWriter {
-
-    private Map<String, Object> extensionMap;
-
-    public EventMeshCloudEventWriter() {
-        extensionMap = new HashMap<String, Object>();
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(@Nonnull String key, @Nonnull String value)
-        throws CloudEventRWException {
-        extensionMap.put(key, value);
-        return this;
-    }
+    public void release() throws Exception {
 
-    public Map<String, Object> getExtensionMap() {
-        return extensionMap;
     }
 }

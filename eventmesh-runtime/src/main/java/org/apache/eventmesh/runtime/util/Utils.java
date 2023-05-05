@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.util;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 
@@ -44,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Utils {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     /**
      * used to send messages to the client
@@ -98,9 +99,9 @@ public class Utils {
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
         Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
+            final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                pkg.getHeader().getCmd(),
-                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                pkg.getHeader().getCmd(), mqMessage, user, taskExecuteTime - startTime,
                 System.currentTimeMillis() - startTime, e);
         } else {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
@@ -118,8 +119,9 @@ public class Utils {
      */
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
+            final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                mqMessage, user, taskExecuteTime - startTime,
                 System.currentTimeMillis() - startTime);
         } else {
             MESSAGE_LOGGER
@@ -150,9 +152,9 @@ public class Utils {
     public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+            if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),
+                    HttpHeaderNames.ACCEPT_ENCODING.toString(),
+                    HttpHeaderNames.CONTENT_LENGTH.toString())) {
                 continue;
             }
             headerParam.put(key, fullReq.headers().get(key));

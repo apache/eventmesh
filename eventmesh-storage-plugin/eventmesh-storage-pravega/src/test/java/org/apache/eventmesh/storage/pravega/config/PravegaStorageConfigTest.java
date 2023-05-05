@@ -47,14 +47,14 @@ public class PravegaStorageConfigTest {
     }
 
     private void assertConfig(PravegaStorageConfig config) {
-        Assert.assertEquals(config.getControllerURI(), URI.create("tcp://127.0.0.1:816"));
-        Assert.assertEquals(config.getScope(), "scope-success!!!");
+        Assert.assertEquals(URI.create("tcp://127.0.0.1:816"), config.getControllerURI());
+        Assert.assertEquals("scope-success!!!", config.getScope());
         Assert.assertTrue(config.isAuthEnabled());
-        Assert.assertEquals(config.getUsername(), "username-success!!!");
-        Assert.assertEquals(config.getPassword(), "password-success!!!");
+        Assert.assertEquals("username-success!!!", config.getUsername());
+        Assert.assertEquals("password-success!!!", config.getPassword());
         Assert.assertTrue(config.isTlsEnable());
-        Assert.assertEquals(config.getTruststore(), "truststore-success!!!");
-        Assert.assertEquals(config.getClientPoolSize(), 816);
-        Assert.assertEquals(config.getQueueSize(), 1816);
+        Assert.assertEquals("truststore-success!!!", config.getTruststore());
+        Assert.assertEquals(816, config.getClientPoolSize());
+        Assert.assertEquals(1816, config.getQueueSize());
     }
 }

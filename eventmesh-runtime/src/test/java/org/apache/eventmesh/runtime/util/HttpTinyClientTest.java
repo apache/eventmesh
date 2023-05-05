@@ -44,8 +44,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, null, null, "utf-8", 0);
-            Assert.assertEquals(result.getContent(), content);
-            Assert.assertEquals(result.getCode(), HttpURLConnection.HTTP_OK);
+            Assert.assertEquals(content, result.getContent());
+            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
 
         List<String> paramValues = new ArrayList<>();
@@ -60,8 +60,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, headers, paramValues, "utf-8", 0);
-            Assert.assertEquals(result.getContent(), content);
-            Assert.assertEquals(result.getCode(), HttpURLConnection.HTTP_OK);
+            Assert.assertEquals(content, result.getContent());
+            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
     }
 
@@ -72,8 +72,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpPost(requestUrl, anyList(), anyList(), "utf-8", 0);
-            Assert.assertEquals(result.getContent(), content);
-            Assert.assertEquals(result.getCode(), HttpURLConnection.HTTP_OK);
+            Assert.assertEquals(content, result.getContent());
+            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
     }
 }

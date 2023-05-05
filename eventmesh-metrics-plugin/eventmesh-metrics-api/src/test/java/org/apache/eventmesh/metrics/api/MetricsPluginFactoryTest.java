@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.knative.connector;
+package org.apache.eventmesh.metrics.api;
 
-import org.apache.eventmesh.api.storage.StorageResourceService;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class StorageResourceServiceKnativeImpl implements StorageResourceService {
-    @Override
-    public void init() throws Exception {
+public class MetricsPluginFactoryTest {
 
-    }
-
-    @Override
-    public void release() throws Exception {
-
+    @Test
+    public void testGetMetricsRegistry_throwException() {
+        Exception exception = Assert.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
+        Assert.assertTrue(exception.getMessage().contains("is not supported"));
     }
 }

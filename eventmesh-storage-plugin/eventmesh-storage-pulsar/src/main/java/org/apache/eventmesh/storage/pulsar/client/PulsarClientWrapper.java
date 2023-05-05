@@ -32,6 +32,7 @@ import org.apache.pulsar.client.api.PulsarClientException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -46,9 +47,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PulsarClientWrapper {
 
-    private ClientConfiguration config;
-    private PulsarClient pulsarClient;
-    private Map<String, Producer<byte[]>> producerMap = new HashMap<>();
+    private final ClientConfiguration config;
+    private final PulsarClient pulsarClient;
+    private final Map<String, Producer<byte[]>> producerMap = new HashMap<>();
 
     public PulsarClientWrapper(ClientConfiguration config, Properties properties)  {
         this.config = config;
@@ -96,9 +97,9 @@ public class PulsarClientWrapper {
         String topic = config.getTopicPrefix() + cloudEvent.getSubject();
         Producer<byte[]> producer = producerMap.computeIfAbsent(topic, k -> createProducer(topic));
         try {
-            byte[] serializedCloudEvent = EventFormatProvider
+            byte[] serializedCloudEvent = Objects.requireNonNull(EventFormatProvider
                 .getInstance()
-                .resolveFormat(JsonFormat.CONTENT_TYPE)
+                .resolveFormat(JsonFormat.CONTENT_TYPE))
                 .serialize(cloudEvent);
             producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
                 sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));

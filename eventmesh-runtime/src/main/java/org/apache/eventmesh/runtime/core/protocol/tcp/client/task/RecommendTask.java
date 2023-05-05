@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RecommendTask extends AbstractTask {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     public RecommendTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
         super(pkg, ctx, startTime, eventMeshTCPServer);

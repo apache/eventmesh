@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -127,12 +129,12 @@ public class ZipkinTraceService implements EventMeshTraceService {
     public Context extractFrom(Context context, Map<String, Object> map) throws TraceException {
         textMapPropagator.extract(context, map, new TextMapGetter<Map<String, Object>>() {
             @Override
-            public Iterable<String> keys(Map<String, Object> carrier) {
+            public Iterable<String> keys(@Nonnull Map<String, Object> carrier) {
                 return carrier.keySet();
             }
 
             @Override
-            public String get(Map<String, Object> carrier, String key) {
+            public String get(@Nonnull Map<String, Object> carrier, String key) {
                 return Optional.ofNullable(carrier.get(key)).map(Object::toString).orElse(null);
             }
         });
