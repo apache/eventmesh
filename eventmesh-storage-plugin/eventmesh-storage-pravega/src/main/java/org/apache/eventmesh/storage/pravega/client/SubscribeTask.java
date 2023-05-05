@@ -49,9 +49,7 @@ public class SubscribeTask extends Thread {
         while (running.get()) {
             if (continueRead.get()) {
                 EventRead<byte[]> event = reader.readNextEvent(2000);
-                if (event == null) {
-                    continue;
-                }
+
                 byte[] eventByteArray = event.getEvent();
                 if (eventByteArray == null) {
                     continue;
@@ -59,10 +57,8 @@ public class SubscribeTask extends Thread {
                 PravegaEvent pravegaEvent = PravegaEvent.getFromByteArray(eventByteArray);
                 cloudEvent = pravegaEvent.convertToCloudEvent();
 
-                listener.consume(cloudEvent, new PravegaEventMeshAsyncConsumeContext());
-            } else {
-                listener.consume(cloudEvent, new PravegaEventMeshAsyncConsumeContext());
             }
+            listener.consume(cloudEvent, new PravegaEventMeshAsyncConsumeContext());
         }
     }
 

@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
@@ -68,7 +69,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HandlerService {
 
-    private final Logger httpLogger = LoggerFactory.getLogger("http");
+    private final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
@@ -336,8 +337,8 @@ public class HandlerService {
             Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
-                responseBodyMap.put("retCode", retCode.getRetCode());
-                responseBodyMap.put("retMsg", retCode.getErrMsg());
+                responseBodyMap.put(EventMeshConstants.RET_CODE, retCode.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, retCode.getErrMsg());
                 HttpEventWrapper responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
                 asyncContext.onComplete(responseWrapper);
                 this.exception = new RuntimeException(retCode.getErrMsg());
