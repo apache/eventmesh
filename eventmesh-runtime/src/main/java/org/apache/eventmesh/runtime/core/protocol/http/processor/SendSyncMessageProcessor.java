@@ -250,19 +250,17 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         final long startTime = System.currentTimeMillis();
 
-        final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
-            @Override
-            public void onResponse(final HttpCommand httpCommand) {
-                try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("{}", httpCommand);
-                    }
-                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
-                } catch (Exception ex) {
-                    log.error("onResponse error", ex);
-                    // ignore
+        final CompleteHandler<HttpCommand> handler = httpCommand -> {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", httpCommand);
                 }
+                eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                    System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+            } catch (Exception ex) {
+                log.error("onResponse error", ex);
+                // ignore
             }
         };
 
