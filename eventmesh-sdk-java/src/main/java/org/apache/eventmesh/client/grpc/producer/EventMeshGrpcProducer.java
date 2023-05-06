@@ -31,6 +31,7 @@ import java.util.List;
 import io.cloudevents.CloudEvent;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.openmessaging.api.Message;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -47,9 +48,11 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private PublisherServiceBlockingStub publisherClient;
 
-    private  CloudEventProducer cloudEventProducer;
+    private CloudEventProducer cloudEventProducer;
 
-    private  EventMeshMessageProducer eventMeshMessageProducer;
+    private EventMeshMessageProducer eventMeshMessageProducer;
+
+    private OpenMessageGrpProducer openMessageGrpProducer;
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
@@ -57,6 +60,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         this.publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
         this.cloudEventProducer = new CloudEventProducer(clientConfig, publisherClient);
         this.eventMeshMessageProducer = new EventMeshMessageProducer(clientConfig, publisherClient);
+        this.openMessageGrpProducer = new OpenMessageGrpProducer(clientConfig, publisherClient);
     }
 
     public <T> Response publish(T message) {
@@ -67,6 +71,8 @@ public class EventMeshGrpcProducer implements AutoCloseable {
             return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
             return eventMeshMessageProducer.publish((EventMeshMessage) message);
+        } else if (message instanceof Message) {
+            return openMessageGrpProducer.publish((Message) message);
         } else {
             throw new IllegalArgumentException("Not support message " + message.getClass().getName());
         }
@@ -87,6 +93,8 @@ public class EventMeshGrpcProducer implements AutoCloseable {
             return cloudEventProducer.publish((List<CloudEvent>) messageList);
         } else if (target instanceof EventMeshMessage) {
             return eventMeshMessageProducer.publish((List<EventMeshMessage>) messageList);
+        } else if (target instanceof Message) {
+            return openMessageGrpProducer.publish((List<Message>) messageList);
         } else {
             throw new IllegalArgumentException("Not support message " + target.getClass().getName());
         }
@@ -99,6 +107,8 @@ public class EventMeshGrpcProducer implements AutoCloseable {
             return (T) cloudEvent;
         } else if (message instanceof EventMeshMessage) {
             return (T) eventMeshMessageProducer.requestReply((EventMeshMessage) message, timeout);
+        } else if (message instanceof Message) {
+            return (T) openMessageGrpProducer.requestReply((Message) message, timeout);
         } else {
             throw new IllegalArgumentException("Not support message " + message.getClass().getName());
         }
