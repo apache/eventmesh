@@ -126,10 +126,12 @@ public class SendMessageContext extends RetryContext {
     public void retry() throws Exception {
         if (eventMeshProducer == null) {
             log.error("Exception happends during retry. EventMeshProduceer is null.");
+            return;
         }
 
         if (retryTimes > 0) { //retry once
             log.error("Exception happends during retry. The retryTimes > 0.");
+            return;
         }
 
         retryTimes++;
