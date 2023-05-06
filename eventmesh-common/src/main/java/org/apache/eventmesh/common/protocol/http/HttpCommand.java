@@ -41,6 +41,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
 import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 public class HttpCommand implements ProtocolTransportObject {
@@ -57,27 +60,9 @@ public class HttpCommand implements ProtocolTransportObject {
 
     public String httpVersion;
 
-    private transient Header header;
+    @Getter @Setter private transient Header header;
 
-    private transient Body body;
-    
-    // getter and setter for header
-    public Header getHeader() {
-        return header;
-    }
-
-    public void setHeader(Header header) {
-        this.header = header;
-    }
-
-    // getter and setter for body
-    public Body getBody() {
-        return body;
-    }
-
-    public void setBody(Body body) {
-        this.body = body;
-    }
+    @Getter @Setter private transient Body body;
 
     //Command request time
     public long reqTime;
