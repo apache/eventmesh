@@ -21,11 +21,15 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
+import org.apache.eventmesh.common.loadbalance.SourceIPHashLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;
 import org.apache.eventmesh.common.loadbalance.WeightRandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.SystemUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +59,10 @@ public class HttpLoadBalanceUtils {
                 eventMeshServerSelector = new WeightRoundRobinLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(
                     eventMeshHttpClientConfig));
                 break;
+            case SOURCE_IP_HASH:
+                eventMeshServerSelector = new SourceIPHashLoadBalanceSelector<>(
+                        buildClusterGroupFromConfig(eventMeshHttpClientConfig), toClientKey(eventMeshHttpClientConfig));
+                break;
             default:
                 // ignore
         }
@@ -62,6 +70,27 @@ public class HttpLoadBalanceUtils {
             throw new EventMeshException("liteEventMeshAddr param illegal,please check");
         }
         return eventMeshServerSelector;
+    }
+
+    /**
+     * get client unique key(format: IP-pid-userName-sslClientProtocol) from EventMeshHttpClientConfig.
+     * @param eventMeshHttpClientConfig
+     * @return
+     */
+    private static String toClientKey(EventMeshHttpClientConfig eventMeshHttpClientConfig) {
+        String ip = eventMeshHttpClientConfig.getIp();
+        if (StringUtils.equals(ip, "localhost")) {
+            ip = IPUtils.getLocalAddress();
+        }
+        String pid = eventMeshHttpClientConfig.getPid();
+        if (StringUtils.isBlank(pid)) {
+            pid = SystemUtils.getProcessId();
+        }
+        return StringUtils.joinWith("-",
+                ip, pid,
+                eventMeshHttpClientConfig.getUserName(),
+                eventMeshHttpClientConfig.getSslClientProtocol()
+        );
     }
 
     private static List<Weight<String>> buildWeightedClusterGroupFromConfig(
