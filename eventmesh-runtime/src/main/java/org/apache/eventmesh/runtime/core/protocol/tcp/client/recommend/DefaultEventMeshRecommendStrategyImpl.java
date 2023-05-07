@@ -113,7 +113,7 @@ public class DefaultEventMeshRecommendStrategyImpl implements EventMeshRecommend
         Objects.requireNonNull(clientDistributedMap, "clientDistributedMap can not be null");
 
         if (recommendProxyNum < DEFAULT_PROXY_NUM || MapUtils.isEmpty(clientDistributedMap)) {
-            return new ArrayList<String>();
+            return new ArrayList<>(0);
         }
 
         if (log.isInfoEnabled()) {
