@@ -47,15 +47,11 @@ public class GrpcMessageProtocolResolver {
         try {
             RequestHeader requestHeader = message.getHeader();
 
-            String protocolVersion = requestHeader.getProtocolVersion();
-
-            String content = message.getContent();
-
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1();
-            if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+            if (StringUtils.equals(SpecVersion.V03.toString(), requestHeader.getProtocolVersion())) {
                 cloudEventBuilder = CloudEventBuilder.v03();
             }
-            return getBuilderCloudEvent(requestHeader,content,cloudEventBuilder,message.getSeqNum(),
+            return getBuilderCloudEvent(requestHeader,message.getContent(),cloudEventBuilder,message.getSeqNum(),
                     message.getTopic(),message.getUniqueId(),message.getProducerGroup(),message.getTtl(),
                     message.getPropertiesMap(),message.getTag());
         } catch (Exception e) {
@@ -67,16 +63,12 @@ public class GrpcMessageProtocolResolver {
         List<CloudEvent> events = new LinkedList<>();
         RequestHeader requestHeader = message.getHeader();
 
-        String protocolVersion = requestHeader.getProtocolVersion();
-
         for (MessageItem item : message.getMessageItemList()) {
-            String content = item.getContent();
-
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1();
-            if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+            if (StringUtils.equals(SpecVersion.V03.toString(), requestHeader.getProtocolVersion())) {
                 cloudEventBuilder = CloudEventBuilder.v03();
             }
-            events.add(getBuilderCloudEvent(requestHeader,content,cloudEventBuilder,item.getSeqNum(),
+            events.add(getBuilderCloudEvent(requestHeader,item.getContent(),cloudEventBuilder,item.getSeqNum(),
                     message.getTopic(), item.getUniqueId(), message.getProducerGroup(), item.getTtl(),
                     item.getPropertiesMap(),item.getTag()));
         }
