@@ -40,7 +40,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -78,12 +77,12 @@ public class RedirectClientByPathHandlerTest {
         RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);
 
         // mock session map
-        ConcurrentHashMap<InetSocketAddress, Session> sessionMap = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, Session> sessionMap = new ConcurrentHashMap<>();
         Session session = mock(Session.class);
         UserAgent agent = mock(UserAgent.class);
         when(agent.getPath()).thenReturn("path");
         when(session.getClient()).thenReturn(agent);
-        sessionMap.put(new InetSocketAddress(8080), session);
+        sessionMap.put("127.0.0.1:8080", session);
         when(mapping.getSessionMap()).thenReturn(sessionMap);
 
         // mock uri

@@ -24,7 +24,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.metrics.MonitorMetricConstants;
 
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -102,8 +101,7 @@ public class EventMeshTcpMonitor {
             tcpSummaryMetrics.setMq2eventMeshTPS((int) 1000.0d * msgNum / period);
 
             //count topics subscribed by client in this eventMesh
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap =
-                eventMeshTCPServer.getClientSessionGroupMapping().getSessionMap();
+            ConcurrentHashMap<String, Session> sessionMap = eventMeshTCPServer.getClientSessionGroupMapping().getSessionMap();
             Iterator<Session> sessionIterator = sessionMap.values().iterator();
             Set<String> topicSet = new HashSet<>();
             while (sessionIterator.hasNext()) {

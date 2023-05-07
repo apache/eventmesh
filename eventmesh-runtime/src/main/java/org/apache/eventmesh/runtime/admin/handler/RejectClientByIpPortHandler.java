@@ -68,16 +68,17 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
+            String address = ip + ":" + port;
             log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
             try {
                 if (!sessionMap.isEmpty()) {
-                    for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                        if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer,
-                                entry.getValue(), clientSessionGroupMapping);
+                    for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
+                        if (StringUtils.equals(entry.getKey(), address)) {
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, entry.getValue(),
+                                clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
