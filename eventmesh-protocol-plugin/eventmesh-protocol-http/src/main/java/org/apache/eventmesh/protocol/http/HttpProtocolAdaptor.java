@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Collections;
 
 import io.cloudevents.CloudEvent;
 
@@ -78,7 +79,7 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
         throws ProtocolHandleException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -99,7 +100,7 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         // ce data
         if (null != cloudEvent.getData()) {
             Map<String, Object> dataContentMap = JsonUtils.parseTypeReferenceObject(
-                new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
+                new String(Objects.requireNonNull(cloudEvent.getData()).toBytes(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 });
             String requestHeader = JsonUtils.toJSONString(
