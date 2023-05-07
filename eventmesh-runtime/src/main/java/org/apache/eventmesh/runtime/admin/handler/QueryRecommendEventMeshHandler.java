@@ -23,7 +23,7 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.DefaultEventMeshRecommendStrategyImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
                 return;
             }
 
-            EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
+            EventMeshRecommendStrategy eventMeshRecommendStrategy = new DefaultEventMeshRecommendStrategyImpl(eventMeshTCPServer);
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);

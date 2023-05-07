@@ -26,7 +26,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.DefaultEventMeshRecommendStrategyImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +55,7 @@ public class RecommendTask extends AbstractTask {
             UserAgent user = (UserAgent) pkg.getBody();
             validateUserAgent(user);
             String group = getGroupOfClient(user);
-            EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
+            EventMeshRecommendStrategy eventMeshRecommendStrategy = new DefaultEventMeshRecommendStrategyImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                 pkg.getHeader().getSeq()));
