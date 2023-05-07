@@ -24,6 +24,8 @@ import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,71 +62,12 @@ public class GrpcMessageProtocolResolver {
 
             String content = message.getContent();
 
-            CloudEvent event = null;
-            CloudEventBuilder cloudEventBuilder;
-            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v1();
-
-                cloudEventBuilder = cloudEventBuilder.withId(message.getSeqNum())
-                    .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
-                    .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId())
-                    .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
-                    .withExtension(ProtocolKey.TTL, message.getTtl());
-
-                for (Map.Entry<String, String> entry : message.getPropertiesMap().entrySet()) {
-                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                }
-                if (StringUtils.isNotEmpty(message.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, message.getTag());
-                }
-                event = cloudEventBuilder.build();
-            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+            CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1();
+            if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
-                cloudEventBuilder = cloudEventBuilder.withId(message.getSeqNum())
-                    .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
-                    .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId())
-                    .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
-                    .withExtension(ProtocolKey.TTL, message.getTtl());
-
-                for (Map.Entry<String, String> entry : message.getPropertiesMap().entrySet()) {
-                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                }
-                if (StringUtils.isNotEmpty(message.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, message.getTag());
-                }
-                event = cloudEventBuilder.build();
             }
-            return event;
+            return getBuilderCloudEventForSimpleMessage(message,protocolType,protocolDesc,protocolVersion,
+                    env,idc,ip,pid,sys,username,passwd,language,content,cloudEventBuilder);
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e.getCause());
         }
@@ -150,72 +93,12 @@ public class GrpcMessageProtocolResolver {
         for (MessageItem item : message.getMessageItemList()) {
             String content = item.getContent();
 
-            CloudEvent event = null;
-            CloudEventBuilder cloudEventBuilder;
-
-            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v1();
-
-                cloudEventBuilder = cloudEventBuilder.withId(item.getSeqNum())
-                    .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, item.getSeqNum())
-                    .withExtension(ProtocolKey.UNIQUE_ID, item.getUniqueId())
-                    .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
-                    .withExtension(ProtocolKey.TTL, item.getTtl());
-
-                for (Map.Entry<String, String> entry : item.getPropertiesMap().entrySet()) {
-                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                }
-                if (StringUtils.isNotEmpty(item.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, item.getTag());
-                }
-                event = cloudEventBuilder.build();
-            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+            CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1();
+            if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
-                cloudEventBuilder = cloudEventBuilder.withId(item.getSeqNum())
-                    .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, item.getSeqNum())
-                    .withExtension(ProtocolKey.UNIQUE_ID, item.getUniqueId())
-                    .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
-                    .withExtension(ProtocolKey.TTL, item.getTtl());
-
-                for (Map.Entry<String, String> entry : item.getPropertiesMap().entrySet()) {
-                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
-                }
-                if (StringUtils.isNotEmpty(item.getTag())) {
-                    cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, item.getTag());
-                }
-                event = cloudEventBuilder.build();
             }
-            events.add(event);
+            events.add(getBuilderCloudEventForBatchMessage(message,protocolType,protocolDesc,protocolVersion,
+                    env,idc,ip,pid,sys,username,passwd,language,content,item,cloudEventBuilder));
         }
 
         return events;
@@ -271,5 +154,79 @@ public class GrpcMessageProtocolResolver {
 
     private static String getEventExtension(CloudEvent event, String protocolKey) {
         return Objects.requireNonNull(event.getExtension(protocolKey)).toString();
+    }
+
+    private static CloudEvent getBuilderCloudEventForSimpleMessage(SimpleMessage message,String protocolType, String protocolDesc,
+                                                   String protocolVersion, String env, String idc, String ip, String pid, String sys,
+                                                   String username, String passwd, String language, String content,
+                                                   CloudEventBuilder cloudEventBuilder) {
+        CloudEvent event;
+        cloudEventBuilder = cloudEventBuilder.withId(message.getSeqNum())
+                .withSubject(message.getTopic())
+                .withType("eventmeshmessage")
+                .withSource(URI.create("/"))
+                .withData(content.getBytes(StandardCharsets.UTF_8))
+                .withExtension(ProtocolKey.ENV, env)
+                .withExtension(ProtocolKey.IDC, idc)
+                .withExtension(ProtocolKey.IP, ip)
+                .withExtension(ProtocolKey.PID, pid)
+                .withExtension(ProtocolKey.SYS, sys)
+                .withExtension(ProtocolKey.USERNAME, username)
+                .withExtension(ProtocolKey.PASSWD, passwd)
+                .withExtension(ProtocolKey.LANGUAGE, language)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
+                .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId())
+                .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
+                .withExtension(ProtocolKey.TTL, message.getTtl());
+
+        for (Map.Entry<String, String> entry : message.getPropertiesMap().entrySet()) {
+            cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+        }
+        if (StringUtils.isNotEmpty(message.getTag())) {
+            cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, message.getTag());
+        }
+
+        event = cloudEventBuilder.build();
+        return event;
+    }
+
+    private static CloudEvent getBuilderCloudEventForBatchMessage(BatchMessage message,String protocolType, String protocolDesc,
+                                                                   String protocolVersion, String env, String idc, String ip, String pid, String sys,
+                                                                   String username, String passwd, String language, String content,
+                                                                  MessageItem item,CloudEventBuilder cloudEventBuilder) {
+        CloudEvent event;
+        cloudEventBuilder = cloudEventBuilder.withId(item.getSeqNum())
+                .withSubject(message.getTopic())
+                .withType("eventmeshmessage")
+                .withSource(URI.create("/"))
+                .withData(content.getBytes(StandardCharsets.UTF_8))
+                .withExtension(ProtocolKey.ENV, env)
+                .withExtension(ProtocolKey.IDC, idc)
+                .withExtension(ProtocolKey.IP, ip)
+                .withExtension(ProtocolKey.PID, pid)
+                .withExtension(ProtocolKey.SYS, sys)
+                .withExtension(ProtocolKey.USERNAME, username)
+                .withExtension(ProtocolKey.PASSWD, passwd)
+                .withExtension(ProtocolKey.LANGUAGE, language)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                .withExtension(ProtocolKey.SEQ_NUM, item.getSeqNum())
+                .withExtension(ProtocolKey.UNIQUE_ID, item.getUniqueId())
+                .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
+                .withExtension(ProtocolKey.TTL, item.getTtl());
+
+        for (Map.Entry<String, String> entry : item.getPropertiesMap().entrySet()) {
+            cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+        }
+        if (StringUtils.isNotEmpty(item.getTag())) {
+            cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, item.getTag());
+        }
+
+        event = cloudEventBuilder.build();
+        return event;
     }
 }
