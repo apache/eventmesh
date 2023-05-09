@@ -93,12 +93,13 @@ public class RegistryHandler extends AbstractHttpHandler {
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(
                 200,
-                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+                bytes.length
             );
             try (OutputStream out = httpExchange.getResponseBody()) {
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                out.write(bytes);
             } catch (IOException ioe) {
                 log.warn("out close failed...", e);
             }
@@ -110,12 +111,13 @@ public class RegistryHandler extends AbstractHttpHandler {
             String stackTrace = writer.toString();
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(
                 500,
-                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+                bytes.length
             );
             try (OutputStream out = httpExchange.getResponseBody()) {
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                out.write(bytes);
             } catch (IOException ioe) {
                 log.warn("out close failed...", e);
             }
