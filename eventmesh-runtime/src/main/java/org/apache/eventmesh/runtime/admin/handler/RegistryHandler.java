@@ -33,6 +33,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 
 import com.sun.net.httpserver.HttpExchange;
@@ -85,12 +86,18 @@ public class RegistryHandler extends AbstractHttpHandler {
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
 
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(
+                200,
+                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+            );
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(
+                200,
+                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+            );
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
@@ -105,7 +112,10 @@ public class RegistryHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(
+                500,
+                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+            );
             try (OutputStream out = httpExchange.getResponseBody()) {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } catch (IOException ioe) {
