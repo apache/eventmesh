@@ -27,7 +27,8 @@ import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -52,9 +53,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 import com.google.common.base.Preconditions;
 
