@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.common.protocol.http.header;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class BaseResponseHeaderTest {
@@ -29,7 +29,7 @@ public class BaseResponseHeaderTest {
     @Test
     public void testToMap() {
         BaseResponseHeader header = BaseResponseHeader.buildHeader("200");
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is("200"));
+        assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
+        assertEquals("200", header.toMap().get(ProtocolKey.REQUEST_CODE));
     }
 }
