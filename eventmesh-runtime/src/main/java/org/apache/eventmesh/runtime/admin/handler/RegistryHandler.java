@@ -67,11 +67,9 @@ public class RegistryHandler extends AbstractHttpHandler {
      * GET /registry Return a response that contains the list of EventMesh clusters
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
             List<EventMeshDataInfo> eventMeshDataInfos = eventMeshRegistry.findAllEventMeshInfo();
             for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
@@ -93,7 +91,11 @@ public class RegistryHandler extends AbstractHttpHandler {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            } catch (IOException ioe) {
+                log.warn("out close failed...", e);
+            }
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -104,14 +106,10 @@ public class RegistryHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
+            try (OutputStream out = httpExchange.getResponseBody()) {
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            } catch (IOException ioe) {
+                log.warn("out close failed...", e);
             }
         }
     }
