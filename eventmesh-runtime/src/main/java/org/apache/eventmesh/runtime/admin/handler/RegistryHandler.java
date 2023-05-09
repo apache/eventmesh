@@ -84,7 +84,6 @@ public class RegistryHandler extends AbstractHttpHandler {
                 getRegistryResponseList.add(getRegistryResponse);
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
-
             String result = JsonUtils.toJSONString(getRegistryResponseList);
             httpExchange.sendResponseHeaders(
                 200,
@@ -109,7 +108,6 @@ public class RegistryHandler extends AbstractHttpHandler {
             e.printStackTrace(printWriter);
             printWriter.flush();
             String stackTrace = writer.toString();
-
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(
