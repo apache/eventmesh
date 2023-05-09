@@ -30,17 +30,13 @@ import org.apache.commons.collections4.MapUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class UnSubscribeTask extends AbstractTask {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
@@ -55,11 +51,9 @@ public class UnSubscribeTask extends AbstractTask {
         Package msg = new Package();
         try {
             synchronized (session) {
-                List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
-                if (MapUtils.isNotEmpty(session.getSessionContext().getSubscribeTopics())) {
-                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().getSubscribeTopics().entrySet()) {
-                        topics.add(entry.getValue());
-                    }
+                ConcurrentHashMap<String, SubscriptionItem> subscribeTopics = session.getSessionContext().getSubscribeTopics();
+                if (MapUtils.isNotEmpty(subscribeTopics)) {
+                    List<SubscriptionItem> topics = new ArrayList<>(subscribeTopics.values());
                     session.unsubscribe(topics);
                     MESSAGE_LOGGER.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
                 }

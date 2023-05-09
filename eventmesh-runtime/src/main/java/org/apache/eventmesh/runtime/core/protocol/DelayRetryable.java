@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.runtime.core.protocol;
 
 import java.util.concurrent.Delayed;
 
 /**
- *
+ * Retry
  */
 public interface DelayRetryable extends Delayed {
 
-    boolean retry() throws Exception;
+    void retry() throws Exception;
 }
