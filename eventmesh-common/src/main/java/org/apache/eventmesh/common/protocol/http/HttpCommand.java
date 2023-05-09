@@ -60,9 +60,9 @@ public class HttpCommand implements ProtocolTransportObject {
 
     public String httpVersion;
 
-    @Getter @Setter private transient Header header;
+    private transient Header header;
 
-    @Getter @Setter private transient Body body;
+    private transient Body body;
 
     //Command request time
     public long reqTime;
