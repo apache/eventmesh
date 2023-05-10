@@ -20,9 +20,9 @@ package org.apache.eventmesh.common;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.AllArgsConstructor;
 import javax.annotation.Nonnull;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
