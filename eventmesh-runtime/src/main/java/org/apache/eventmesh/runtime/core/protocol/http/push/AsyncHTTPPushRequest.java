@@ -366,8 +366,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public boolean retry() {
+    public void retry() {
         tryHTTPRequest();
-        return true;
     }
 }

@@ -25,7 +25,6 @@ import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -40,15 +39,13 @@ public class TcpMessageProtocolResolver {
 
     public static CloudEvent buildEvent(Header header, String cloudEventJson)
         throws ProtocolHandleException {
-        CloudEventBuilder cloudEventBuilder;
+        final CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
         String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
         String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
-        if (StringUtils.isBlank(protocolType)
-            || StringUtils.isBlank(protocolVersion)
-            || StringUtils.isBlank(protocolDesc)) {
+        if (StringUtils.isAnyBlank(protocolType, protocolVersion, protocolDesc)) {
             throw new ProtocolHandleException(
                 String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
                     protocolType, protocolVersion, protocolDesc));
@@ -63,29 +60,16 @@ public class TcpMessageProtocolResolver {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
 
-        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+        if (StringUtils.equalsAny(protocolVersion, SpecVersion.V1.toString(), SpecVersion.V03.toString())) {
             // todo:resolve different format
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions
-                .checkNotNull(eventFormat, String.format("EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE));
+                    .checkNotNull(eventFormat, "EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE);
             CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
-            cloudEventBuilder = CloudEventBuilder.v1(event);
-            for (String propKey : header.getProperties().keySet()) {
-                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-            }
-
-            return cloudEventBuilder.build();
-
-        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            // todo:resolve different format
-            CloudEvent event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
-                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
-            cloudEventBuilder = CloudEventBuilder.v03(event);
-
-            for (String propKey : header.getProperties().keySet()) {
-                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-            }
-
+            cloudEventBuilder = CloudEventBuilder.from(event);
+            header.getProperties().forEach((k, v) -> {
+                cloudEventBuilder.withExtension(k, v.toString());
+            });
             return cloudEventBuilder.build();
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolVersion: %s", protocolVersion));

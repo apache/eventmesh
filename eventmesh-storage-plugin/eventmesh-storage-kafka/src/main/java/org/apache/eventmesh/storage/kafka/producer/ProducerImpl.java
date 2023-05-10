@@ -43,7 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("deprecation")
 public class ProducerImpl extends AbstractProducer {
 
-    private KafkaProducer<String, CloudEvent> producer;
+    private final KafkaProducer<String, CloudEvent> producer;
+    private final Properties properties = new Properties();
+    private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     public ProducerImpl(Properties props) {
         super(props);
@@ -79,7 +81,7 @@ public class ProducerImpl extends AbstractProducer {
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         try {
-            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent), (metadata, exception) -> {
+            this.producer.send(new ProducerRecord<>(Objects.requireNonNull(cloudEvent.getSubject()), cloudEvent), (metadata, exception) -> {
                 if (exception != null) {
                     StorageRuntimeException onsEx = new StorageRuntimeException(exception.getMessage(), exception);
                     OnExceptionContext context = new OnExceptionContext();
