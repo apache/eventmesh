@@ -85,11 +85,12 @@ public class RegistryHandler extends AbstractHttpHandler {
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
             String result = JsonUtils.toJSONString(getRegistryResponseList);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(
                 200,
-                Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length
+                bytes.length
             );
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            out.write(bytes);
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
