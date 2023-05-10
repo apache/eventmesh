@@ -46,35 +46,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-public class RocketMQAdmin implements Admin {
+public class RocketMQAdmin extends AbstractRmqAdmin implements Admin {
 
     private final AtomicBoolean isStarted;
-
-    protected DefaultMQAdminExt adminExt;
-
-    protected String nameServerAddr;
-
-    protected String clusterName;
 
     private int numOfQueue = 4;
     private int queuePermission = 6;
 
     public RocketMQAdmin() {
         isStarted = new AtomicBoolean(false);
-
-        ConfigService configService = ConfigService.getInstance();
-        ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
-
-        nameServerAddr = clientConfiguration.getNamesrvAddr();
-        clusterName = clientConfiguration.getClusterName();
-        String accessKey = clientConfiguration.getAccessKey();
-        String secretKey = clientConfiguration.getSecretKey();
-
-        RPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
-        adminExt = new DefaultMQAdminExt(rpcHook);
-        String groupId = UUID.randomUUID().toString();
-        adminExt.setAdminExtGroup("admin_ext_group-" + groupId);
-        adminExt.setNamesrvAddr(nameServerAddr);
     }
 
     @Override
@@ -105,26 +85,25 @@ public class RocketMQAdmin implements Admin {
     @Override
     public List<TopicProperties> getTopic() throws Exception {
         try {
-            adminExt.start();
             List<TopicProperties> result = new ArrayList<>();
 
-            Set<String> topicList = adminExt.fetchAllTopicList().getTopicList();
+            Set<String> topicList = getAdminExt().fetchAllTopicList().getTopicList();
             for (String topic : topicList) {
                 long messageCount = 0;
-                TopicStatsTable topicStats = adminExt.examineTopicStats(topic);
+                TopicStatsTable topicStats = getAdminExt().examineTopicStats(topic);
                 HashMap<MessageQueue, TopicOffset> offsetTable = topicStats.getOffsetTable();
                 for (TopicOffset topicOffset : offsetTable.values()) {
                     messageCount += topicOffset.getMaxOffset() - topicOffset.getMinOffset();
                 }
                 result.add(new TopicProperties(
-                    topic, messageCount
+                        topic, messageCount
                 ));
             }
 
             result.sort(Comparator.comparing(t -> t.name));
             return result;
         } finally {
-            adminExt.shutdown();
+            shutdownExt();
         }
     }
 
@@ -134,18 +113,17 @@ public class RocketMQAdmin implements Admin {
             throw new Exception("Topic name can not be blank");
         }
         try {
-            adminExt.start();
-            Set<String> brokerAddress = CommandUtil.fetchMasterAddrByClusterName(adminExt, clusterName);
+            Set<String> brokerAddress = CommandUtil.fetchMasterAddrByClusterName(getAdminExt(), clusterName);
             for (String masterAddress : brokerAddress) {
                 TopicConfig topicConfig = new TopicConfig();
                 topicConfig.setTopicName(topicName);
                 topicConfig.setReadQueueNums(numOfQueue);
                 topicConfig.setWriteQueueNums(numOfQueue);
                 topicConfig.setPerm(queuePermission);
-                adminExt.createAndUpdateTopicConfig(masterAddress, topicConfig);
+                getAdminExt().createAndUpdateTopicConfig(masterAddress, topicConfig);
             }
         } finally {
-            adminExt.shutdown();
+            shutdownExt();
         }
     }
 
@@ -155,11 +133,10 @@ public class RocketMQAdmin implements Admin {
             throw new Exception("Topic name can not be blank.");
         }
         try {
-            adminExt.start();
-            Set<String> brokerAddress = CommandUtil.fetchMasterAddrByClusterName(adminExt, clusterName);
-            adminExt.deleteTopicInBroker(brokerAddress, topicName);
+            Set<String> brokerAddress = CommandUtil.fetchMasterAddrByClusterName(getAdminExt(), clusterName);
+            getAdminExt().deleteTopicInBroker(brokerAddress, topicName);
         } finally {
-            adminExt.shutdown();
+            shutdownExt();
         }
     }
 
@@ -171,4 +148,6 @@ public class RocketMQAdmin implements Admin {
     @Override
     public void publish(CloudEvent cloudEvent) {
     }
+
+
 }
