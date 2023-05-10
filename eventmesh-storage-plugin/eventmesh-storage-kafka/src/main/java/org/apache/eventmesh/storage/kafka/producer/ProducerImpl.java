@@ -44,8 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ProducerImpl extends AbstractProducer {
 
     private final KafkaProducer<String, CloudEvent> producer;
-    private final Properties properties = new Properties();
-    private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     public ProducerImpl(Properties props) {
         super(props);
