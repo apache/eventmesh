@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.metrics.api;
 
-import java.util.concurrent.Delayed;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- *
- */
-public interface DelayRetryable extends Delayed {
+public class MetricsPluginFactoryTest {
 
-    boolean retry() throws Exception;
+    @Test
+    public void testGetMetricsRegistry_throwException() {
+        Exception exception = Assert.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
+        Assert.assertTrue(exception.getMessage().contains("is not supported"));
+    }
 }

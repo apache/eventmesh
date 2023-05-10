@@ -19,6 +19,9 @@ package org.apache.eventmesh.storage.pravega.client;
 
 import java.nio.charset.StandardCharsets;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.format.EventFormat;
@@ -39,7 +42,7 @@ public class PravegaCloudEventWriter
     }
 
     @Override
-    public PravegaEvent setEvent(EventFormat format, byte[] value) throws CloudEventRWException {
+    public PravegaEvent setEvent(@Nullable EventFormat format, @Nonnull byte[] value) throws CloudEventRWException {
         pravegaEvent.setData(new String(value, StandardCharsets.UTF_8));
         return pravegaEvent;
     }
@@ -57,7 +60,7 @@ public class PravegaCloudEventWriter
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(String name, String value) throws CloudEventRWException {
+    public CloudEventContextWriter withContextAttribute(@Nonnull String name, @Nonnull String value) throws CloudEventRWException {
         pravegaEvent.getExtensions().put(name, value);
         return this;
     }

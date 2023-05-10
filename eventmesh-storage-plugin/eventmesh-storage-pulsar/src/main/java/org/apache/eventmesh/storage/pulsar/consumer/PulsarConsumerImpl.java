@@ -38,12 +38,14 @@ import org.apache.pulsar.client.api.SubscriptionMode;
 import org.apache.pulsar.client.api.SubscriptionType;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventDeserializationException;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
@@ -61,7 +63,7 @@ public class PulsarConsumerImpl implements Consumer {
     private PulsarClient pulsarClient;
     private EventListener eventListener;
 
-    private ConcurrentHashMap<String, org.apache.pulsar.client.api.Consumer<byte[]>> consumerMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, org.apache.pulsar.client.api.Consumer<byte[]>> consumerMap = new ConcurrentHashMap<>();
 
     /**
      * Unified configuration class corresponding to pulsar-client.properties
@@ -129,10 +131,9 @@ public class PulsarConsumerImpl implements Consumer {
             .subscriptionType(type)
             .messageListener(
                 (MessageListener<byte[]>) (ackConsumer, msg) -> {
-                    CloudEvent cloudEvent = EventFormatProvider
-                        .getInstance()
-                        .resolveFormat(JsonFormat.CONTENT_TYPE)
-                        .deserialize(msg.getData());
+                    EventFormat eventFormat = Objects.requireNonNull(
+                            EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE));
+                    CloudEvent cloudEvent = eventFormat.deserialize(msg.getData());
                     eventListener.consume(cloudEvent, consumeContext);
                     try {
                         ackConsumer.acknowledge(msg);

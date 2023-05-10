@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.AllArgsConstructor;
+import javax.annotation.Nonnull;
+
 import lombok.Getter;
 
 @AllArgsConstructor
@@ -30,7 +32,7 @@ public class EventMeshThreadFactory implements ThreadFactory {
     private final String threadNamePrefix;
     private final AtomicInteger threadIndex;
     private final boolean daemon;
-    private Integer priority;
+    private final Integer priority;
 
     public EventMeshThreadFactory(final String threadNamePrefix, final AtomicInteger threadIndex,
         final boolean daemon) {
@@ -56,7 +58,7 @@ public class EventMeshThreadFactory implements ThreadFactory {
      * @return constructed thread, or {@code null} if the request to create a thread is rejected
      */
     @Override
-    public Thread newThread(final Runnable runnable) {
+    public Thread newThread(@Nonnull final Runnable runnable) {
 
         StringBuilder threadName = new StringBuilder(threadNamePrefix);
         if (null != threadIndex) {

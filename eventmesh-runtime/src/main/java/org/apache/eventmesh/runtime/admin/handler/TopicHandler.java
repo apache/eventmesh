@@ -78,11 +78,10 @@ public class TopicHandler extends AbstractHttpHandler {
      * GET /topic Return a response that contains the list of topics
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             List<TopicProperties> topicList = admin.getTopic();
             String result = JsonUtils.toJSONString(topicList);
             httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
@@ -97,15 +96,7 @@ public class TopicHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            log.error(result, e);
         }
     }
 
@@ -113,11 +104,10 @@ public class TopicHandler extends AbstractHttpHandler {
      * POST /topic Create a topic if it doesn't exist
      */
     void post(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             CreateTopicRequest createTopicRequest = JsonUtils.parseObject(request, CreateTopicRequest.class);
             String topicName = createTopicRequest.getName();
@@ -133,15 +123,7 @@ public class TopicHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            log.error(result, e);
         }
     }
 
@@ -149,11 +131,10 @@ public class TopicHandler extends AbstractHttpHandler {
      * DELETE /topic Delete a topic if it exists
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTopicRequest deleteTopicRequest = JsonUtils.parseObject(request, DeleteTopicRequest.class);
             String topicName = deleteTopicRequest.getName();
@@ -169,15 +150,7 @@ public class TopicHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            log.error(result, e);
         }
     }
 

@@ -75,9 +75,10 @@ public class StandaloneAdmin implements Admin {
         List<TopicProperties> topicList = new ArrayList<>();
         messageContainer.keySet().forEach(topicMetadata -> {
             MessageQueue messageQueue = messageContainer.get(topicMetadata);
+            final int messageCount = messageQueue.getPutIndex() - messageQueue.getTakeIndex();
             topicList.add(new TopicProperties(
                 topicMetadata.getTopicName(),
-                messageQueue.getPutIndex() - messageQueue.getTakeIndex()
+                messageCount
             ));
         });
         topicList.sort(Comparator.comparing(t -> t.name));
