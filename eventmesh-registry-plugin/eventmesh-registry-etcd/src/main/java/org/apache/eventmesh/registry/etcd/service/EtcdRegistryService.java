@@ -35,8 +35,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -183,7 +185,7 @@ public class EtcdRegistryService implements RegistryService {
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
         throws RegistryException {
         // todo find metadata
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
@@ -205,7 +207,8 @@ public class EtcdRegistryService implements RegistryService {
             EventMeshDataInfo eventMeshDataInfo =
                 new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                     endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
-            ByteSequence etcdValue = ByteSequence.from(JsonUtils.toJSONString(eventMeshDataInfo).getBytes(Constants.DEFAULT_CHARSET));
+            ByteSequence etcdValue = ByteSequence.from(Objects.requireNonNull(JsonUtils.toJSONString(eventMeshDataInfo))
+                                                 .getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 
@@ -240,7 +243,7 @@ public class EtcdRegistryService implements RegistryService {
 
     @Override
     public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return null;
+        return Collections.emptyList();
     }
 
     public long getLeaseId() {

@@ -17,9 +17,13 @@
 
 package org.apache.eventmesh.storage.knative.cloudevent.impl;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
@@ -57,19 +61,19 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
 
     @Override
     public String end() throws CloudEventRWException {
-        if (message != null && message.getData() != null) {
+        if (ObjectUtils.allNotNull(message, message.getData())) {
             return message.getData().toString();
         }
         throw CloudEventRWException.newOther(new IllegalArgumentException("message data is null"));
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(String name, String value) throws CloudEventRWException {
+    public CloudEventContextWriter withContextAttribute(@Nullable String name, @Nullable String value) throws CloudEventRWException {
         return null;
     }
 
     @Override
-    public String setEvent(EventFormat format, byte[] value) throws CloudEventRWException {
+    public String setEvent(@Nullable EventFormat format, @Nullable byte[] value) throws CloudEventRWException {
         return null;
     }
 

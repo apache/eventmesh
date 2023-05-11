@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.opentelemetry.api.OpenTelemetry;
@@ -123,13 +124,13 @@ public class JaegerTraceService implements EventMeshTraceService {
     public Context extractFrom(final Context context, final Map<String, Object> carrier) throws TraceException {
         textMapPropagator.extract(context, carrier, new TextMapGetter<Map<String, Object>>() {
             @Override
-            public Iterable<String> keys(final Map<String, Object> carrier) {
+            public Iterable<String> keys(@Nonnull final Map<String, Object> carrier) {
                 return carrier.keySet();
             }
 
             @Nullable
             @Override
-            public String get(final @Nullable Map<String, Object> carrier, final String key) {
+            public String get(final @Nonnull Map<String, Object> carrier, final String key) {
                 return Optional.ofNullable(carrier.get(key)).map(Objects::toString).orElse(null);
             }
         });

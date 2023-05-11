@@ -26,25 +26,20 @@ import org.apache.eventmesh.storage.knative.config.ClientConfiguration;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Config(field = "clientConfiguration")
+@Slf4j
 public class KnativeConsumerImpl implements Consumer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KnativeConsumerImpl.class);
-
     private transient PullConsumerImpl pullConsumer;
-
 
     /**
      * Unified configuration class corresponding to knative-client.properties
      */
     private ClientConfiguration clientConfiguration;
-
-    private static final Logger logger = LoggerFactory.getLogger(KnativeConsumerImpl.class);
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
@@ -65,7 +60,7 @@ public class KnativeConsumerImpl implements Consumer {
         try {
             pullConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            LOG.error("unsubscribe error", e);
+            log.error("unsubscribe error", e);
         }
     }
 

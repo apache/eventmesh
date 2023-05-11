@@ -24,10 +24,10 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
-
 import java.io.Closeable;
 import java.net.InetSocketAddress;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -60,7 +60,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class TcpClient implements Closeable {
 
-    protected static final transient int CLIENTNO = (new Random()).nextInt(1000);
+    protected static transient int CLIENTNO = 0;
+    
+    static {
+        try {
+            CLIENTNO = SecureRandom.getInstanceStrong().nextInt(1000);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Failed to generate a random number!", e);
+        }
+    }
 
     protected final transient ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
