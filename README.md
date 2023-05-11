@@ -26,7 +26,7 @@
 
 ### EventMesh Architecture
 
-![EventMesh Architecture](resources/eventmesh-architecture-3.png)
+![EventMesh Architecture](resources/eventmesh-architecture-4.png)
 
 ### EventMesh Dashboard
 ![EventMesh Dashboard](resources/dashboard.png)
