@@ -19,7 +19,6 @@ package org.apache.eventmesh.registry.etcd.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -35,7 +34,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -182,13 +180,6 @@ public class EtcdRegistryService implements RegistryService {
     }
 
     @Override
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
-        throws RegistryException {
-        // todo find metadata
-        return Collections.emptyMap();
-    }
-
-    @Override
     public void registerMetadata(Map<String, String> metadataMap) {
         for (Map.Entry<String, EventMeshRegisterInfo> eventMeshRegisterInfo : eventMeshRegisterInfoMap.entrySet()) {
             EventMeshRegisterInfo registerInfo = eventMeshRegisterInfo.getValue();
@@ -239,11 +230,6 @@ public class EtcdRegistryService implements RegistryService {
                 eventMeshClusterName, eventMeshName, e);
             throw new RegistryException(e.getMessage());
         }
-    }
-
-    @Override
-    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return Collections.emptyList();
     }
 
     public long getLeaseId() {

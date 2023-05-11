@@ -48,6 +48,7 @@ public interface RegistryService {
 
     default Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
         String clusterName, String group, String purpose) throws RegistryException {
+        // todo find metadata
         return Collections.emptyMap();
     }
 
