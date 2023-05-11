@@ -27,7 +27,7 @@
 
 ### EventMesh 架构
 
-![EventMesh Architecture](resources/eventmesh-architecture-3.png)
+![EventMesh Architecture](resources/eventmesh-architecture-4.png)
 
 ### EventMesh Dashboard
 
