@@ -220,28 +220,27 @@ public class GrpcMessageProtocolResolver {
 
         return events;
     }
+    
+    private static String getTernaryOperationResult(CloudEvent cloudEvent, String protocolKey, String eventExtension){
+        return cloudEvent.getExtension(protocolKey) == null ? eventExtension : getEventExtension(cloudEvent, protocolKey);
+    }
 
     public static SimpleMessageWrapper buildSimpleMessage(CloudEvent cloudEvent) {
-        String env = cloudEvent.getExtension(ProtocolKey.ENV) == null ? "env" : getEventExtension(cloudEvent, ProtocolKey.ENV);
-        String idc = cloudEvent.getExtension(ProtocolKey.IDC) == null ? "idc" : getEventExtension(cloudEvent, ProtocolKey.IDC);
-        String ip = cloudEvent.getExtension(ProtocolKey.IP) == null ? "ip" : getEventExtension(cloudEvent, ProtocolKey.IP);
-        String pid = cloudEvent.getExtension(ProtocolKey.PID) == null ? "33" : getEventExtension(cloudEvent, ProtocolKey.PID);
-        String sys = cloudEvent.getExtension(ProtocolKey.SYS) == null ? "sys" : getEventExtension(cloudEvent, ProtocolKey.SYS);
-        String userName = cloudEvent.getExtension(ProtocolKey.USERNAME) == null ? "user" : getEventExtension(cloudEvent, ProtocolKey.USERNAME);
-        String passwd = cloudEvent.getExtension(ProtocolKey.PASSWD) == null ? "pass" : getEventExtension(cloudEvent, ProtocolKey.PASSWD);
-        String language = cloudEvent.getExtension(ProtocolKey.LANGUAGE) == null ? Constants.LANGUAGE_JAVA :
-            getEventExtension(cloudEvent, ProtocolKey.LANGUAGE);
-        String protocol = cloudEvent.getExtension(ProtocolKey.PROTOCOL_TYPE) == null ? "" :
-            getEventExtension(cloudEvent, ProtocolKey.PROTOCOL_TYPE);
-        String protocolDesc = cloudEvent.getExtension(ProtocolKey.PROTOCOL_DESC) == null ? "" :
-            getEventExtension(cloudEvent, ProtocolKey.PROTOCOL_DESC);
-        String protocolVersion = cloudEvent.getExtension(ProtocolKey.PROTOCOL_VERSION) == null ? "" :
-            getEventExtension(cloudEvent, ProtocolKey.PROTOCOL_VERSION);
-        String seqNum = cloudEvent.getExtension(ProtocolKey.SEQ_NUM) == null ? "" : getEventExtension(cloudEvent, ProtocolKey.SEQ_NUM);
-        String uniqueId = cloudEvent.getExtension(ProtocolKey.UNIQUE_ID) == null ? "" : getEventExtension(cloudEvent, ProtocolKey.UNIQUE_ID);
-        String producerGroup = cloudEvent.getExtension(ProtocolKey.PRODUCERGROUP) == null ? "" :
-            getEventExtension(cloudEvent, ProtocolKey.PRODUCERGROUP);
-        String ttl = cloudEvent.getExtension(ProtocolKey.TTL) == null ? "4000" : getEventExtension(cloudEvent, ProtocolKey.TTL);
+        String env = getTernaryOperationResult(cloudEvent, ProtocolKey.ENV, "env");
+        String idc = getTernaryOperationResult(cloudEvent, ProtocolKey.IDC, "idc");
+        String ip = getTernaryOperationResult(cloudEvent, ProtocolKey.IP, "ip");
+        String pid = getTernaryOperationResult(cloudEvent, ProtocolKey.PID, "33");
+        String sys = getTernaryOperationResult(cloudEvent, ProtocolKey.SYS, "sys");
+        String userName = getTernaryOperationResult(cloudEvent, ProtocolKey.USERNAME, "user");
+        String passwd = getTernaryOperationResult(cloudEvent, ProtocolKey.PASSWD, "pass");
+        String language = getTernaryOperationResult(cloudEvent, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
+        String protocol = getTernaryOperationResult(cloudEvent, ProtocolKey.PROTOCOL_TYPE, "");
+        String protocolDesc = getTernaryOperationResult(cloudEvent, ProtocolKey.PROTOCOL_DESC, "");
+        String protocolVersion = getTernaryOperationResult(cloudEvent, ProtocolKey.PROTOCOL_VERSION, "");
+        String seqNum = getTernaryOperationResult(cloudEvent, ProtocolKey.SEQ_NUM, "");
+        String uniqueId = getTernaryOperationResult(cloudEvent, ProtocolKey.UNIQUE_ID, "");
+        String producerGroup = getTernaryOperationResult(cloudEvent, ProtocolKey.PRODUCERGROUP, "");
+        String ttl = getTernaryOperationResult(cloudEvent, ProtocolKey.TTL, "4000");
 
         RequestHeader header = RequestHeader.newBuilder()
             .setEnv(env).setIdc(idc)
