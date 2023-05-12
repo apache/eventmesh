@@ -9,3 +9,4 @@ Add a new connector by implementting the source/sink interface using :
 
 [eventmesh-sdk-java](https://github.com/apache/eventmesh/tree/master/eventmesh-sdk-java)
 
+[eventmesh-connector-api](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors/eventmesh-connector-api)
