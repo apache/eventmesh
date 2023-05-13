@@ -36,6 +36,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class PrometheusGrpcExporter {
 
+    /**
+     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
+     */
     private Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs;
 
     static {

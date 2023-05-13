@@ -36,6 +36,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class PrometheusTcpExporter {
 
+    /**
+     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
+     */
     private Map<String[], Function<TcpSummaryMetrics, Number>> paramPairs;
 
     static {
@@ -44,23 +47,30 @@ public class PrometheusTcpExporter {
                 //retryQueueSize
                 put(join("retry.queue.size", "get size of retry queue."),
                         TcpSummaryMetrics::getRetrySize);
+
                 //client2eventMeshTPS
                 put(join("server.tps", "get tps of client to eventMesh."),
                         TcpSummaryMetrics::getClient2eventMeshTPS);
+
                 //eventMesh2mqTPS
                 put(join("mq.provider.tps", "get tps of eventMesh to mq."),
                         TcpSummaryMetrics::getEventMesh2mqTPS);
+
                 //mq2eventMeshTPS
                 put(join("mq.consumer.tps", "get tps of mq to eventMesh."),
                         TcpSummaryMetrics::getMq2eventMeshTPS);
+
                 //eventMesh2clientTPS
                 put(join("client.tps", "get tps of eventMesh to client."),
                         TcpSummaryMetrics::getEventMesh2clientTPS);
+
                 //allTPS
                 put(join("all.tps", "get all TPS."), TcpSummaryMetrics::getAllTPS);
+
                 //EventMeshTcpConnectionHandler.connections
                 put(join("connection.num", "EventMeshTcpConnectionHandler.connections."),
                         TcpSummaryMetrics::getAllConnections);
+
                 //subTopicNum
                 put(join("sub.topic.num", "get sub topic num."), TcpSummaryMetrics::getSubTopicNum);
             }
