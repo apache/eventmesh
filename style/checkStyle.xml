@@ -26,6 +26,14 @@
   <property name="severity" value="warning"/>
   <property name="fileExtensions" value="java, properties, xml, gradle"/>
   <module name="SuppressWarningsFilter" />
+  <module name="Header">
+    <property name="headerFile" value="/checkstyle-header1.txt"/>
+    <property name="fileExtensions" value="java, gradle"/>
+  </module>
+  <module name="Header">
+    <property name="headerFile" value="/checkstyle-header2.txt"/>
+    <property name="fileExtensions" value="properties"/>
+  </module>
   <module name="RegexpSingleline">
     <property name="format" value="System\..+\.println"/>
     <property name="message" value="Prohibit invoking System.*.println in source code !"/>
