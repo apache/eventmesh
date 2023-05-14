@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.DefaultEventMeshRecommendStrategyImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
@@ -179,7 +179,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
     private List<String> selectRedirectEventMesh(String group, Map<String, String> eventMeshMap,
         Map<String, Integer> clientDistributionMap, int judge,
         String eventMeshName) throws Exception {
-        EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
+        EventMeshRecommendStrategy eventMeshRecommendStrategy = new DefaultEventMeshRecommendStrategyImpl(eventMeshTCPServer);
         return eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap,
             group, judge, eventMeshName);
     }

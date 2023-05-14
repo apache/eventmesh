@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.DefaultEventMeshRecommendStrategyImpl;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -68,7 +68,7 @@ public class QueryRecommendEventMeshHandlerTest {
         // case 1: normal case
         tcpConfiguration.setEventMeshServerRegistryEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
-        try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
+        try (MockedConstruction<DefaultEventMeshRecommendStrategyImpl> ignored = mockConstruction(DefaultEventMeshRecommendStrategyImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
@@ -90,7 +90,7 @@ public class QueryRecommendEventMeshHandlerTest {
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
-        try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
+        try (MockedConstruction<DefaultEventMeshRecommendStrategyImpl> ignored = mockConstruction(DefaultEventMeshRecommendStrategyImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
