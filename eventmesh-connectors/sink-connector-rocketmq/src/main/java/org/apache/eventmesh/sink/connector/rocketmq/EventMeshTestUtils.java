@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.source.connector.rocketmq;
+package org.apache.eventmesh.sink.connector.rocketmq;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 

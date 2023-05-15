@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.source.connector.rocketmq;
+package org.apache.eventmesh.sink.connector.rocketmq;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UtilsConstants {

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.source.connector.rocketmq;
 
-import io.cloudevents.CloudEvent;
-import java.util.List;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
@@ -27,9 +25,13 @@ import org.apache.eventmesh.connector.api.data.ConnectRecord;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
 import org.apache.eventmesh.source.connector.rocketmq.connector.RocketMQSourceConnector;
 
+import java.util.List;
+
+import io.cloudevents.CloudEvent;
+
 public class RocketMQSourceWorker {
 
-    public static final String SOURCE_CONSUMER_GROUP = "DEFAULT-CONSUMER-GROUP";
+    public static final String SOURCE_GROUP = "DEFAULT-CONSUMER-GROUP";
     public static final String SOURCE_CONNECT_NAMESRVADDR = "127.0.0.1:9877";
     public static final String SOURCE_TOPIC = "TopicTest";
 
@@ -50,21 +52,19 @@ public class RocketMQSourceWorker {
 
         client.init();
 
-        RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
-
         RocketMQSourceConfig rocketMQSourceConfig = new RocketMQSourceConfig();
 
         rocketMQSourceConfig.setSourceNameserver(SOURCE_CONNECT_NAMESRVADDR);
         rocketMQSourceConfig.setSourceTopic(SOURCE_TOPIC);
-        rocketMQSourceConfig.setSourceGroup(SOURCE_CONSUMER_GROUP);
+        rocketMQSourceConfig.setSourceGroup(SOURCE_GROUP);
 
+        RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
         rocketMQSourceConnector.init(rocketMQSourceConfig);
-
         rocketMQSourceConnector.start();
 
-        while(true) {
+        while (true) {
             List<ConnectRecord> connectorRecordList = rocketMQSourceConnector.poll();
-            for(ConnectRecord connectRecord : connectorRecordList) {
+            for (ConnectRecord connectRecord : connectorRecordList) {
                 // todo:connectorRecord convert cloudEvents
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1(connectRecord.getExtension("topic"), connectRecord.getData().toString());
                 client.publish(event, 3000);
