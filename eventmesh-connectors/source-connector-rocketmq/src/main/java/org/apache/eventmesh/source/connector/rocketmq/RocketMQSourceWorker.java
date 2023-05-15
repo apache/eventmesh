@@ -52,7 +52,7 @@ public class RocketMQSourceWorker {
 
         client.init();
 
-        RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
+        final RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
 
         RocketMQSourceConfig rocketMQSourceConfig = new RocketMQSourceConfig();
 
@@ -66,7 +66,7 @@ public class RocketMQSourceWorker {
 
         while (true) {
             List<ConnectRecord> connectorRecordList = rocketMQSourceConnector.poll();
-            for(ConnectRecord connectRecord : connectorRecordList) {
+            for (ConnectRecord connectRecord : connectorRecordList) {
                 // todo:connectorRecord convert cloudEvents
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1(connectRecord.getExtension("topic"), connectRecord.getData().toString());
                 client.publish(event, 3000);
