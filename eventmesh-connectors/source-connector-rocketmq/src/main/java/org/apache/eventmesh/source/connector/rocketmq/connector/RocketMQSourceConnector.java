@@ -17,19 +17,21 @@
 
 package org.apache.eventmesh.source.connector.rocketmq.connector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.eventmesh.connector.api.config.Config;
 import org.apache.eventmesh.connector.api.data.ConnectRecord;
 import org.apache.eventmesh.connector.api.data.RecordOffset;
 import org.apache.eventmesh.connector.api.data.RecordPartition;
 import org.apache.eventmesh.connector.api.source.Source;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
+
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RocketMQSourceConnector implements Source {
 
