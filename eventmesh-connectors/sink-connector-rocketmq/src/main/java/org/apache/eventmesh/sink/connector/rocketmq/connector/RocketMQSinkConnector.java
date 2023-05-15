@@ -17,17 +17,17 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq.connector;
 
-import java.util.List;
 import org.apache.eventmesh.connector.api.config.Config;
 import org.apache.eventmesh.connector.api.data.ConnectRecord;
 import org.apache.eventmesh.connector.api.sink.Sink;
-
 import org.apache.eventmesh.sink.connector.rocketmq.config.RocketMQSinkConfig;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageAccessor;
+
+import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 

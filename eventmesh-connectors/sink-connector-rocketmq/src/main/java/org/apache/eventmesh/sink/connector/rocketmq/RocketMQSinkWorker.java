@@ -17,14 +17,6 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq;
 
-import io.cloudevents.CloudEvent;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
@@ -35,6 +27,14 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.connector.api.data.ConnectRecord;
 import org.apache.eventmesh.sink.connector.rocketmq.config.RocketMQSinkConfig;
 import org.apache.eventmesh.sink.connector.rocketmq.connector.RocketMQSinkConnector;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import io.cloudevents.CloudEvent;
+
 
 public class RocketMQSinkWorker {
 
@@ -87,7 +87,7 @@ public class RocketMQSinkWorker {
             byte[] body = Objects.requireNonNull(event.getData()).toBytes();
             //todo: recordPartition & recordOffset
             ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
-            for(String extensionName : event.getExtensionNames()) {
+            for (String extensionName : event.getExtensionNames()) {
                 connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
             }
             connectRecord.addExtension("id", event.getId());

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.source.connector.rocketmq;
 
-import io.cloudevents.CloudEvent;
-import java.util.List;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
@@ -26,6 +24,10 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.connector.api.data.ConnectRecord;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
 import org.apache.eventmesh.source.connector.rocketmq.connector.RocketMQSourceConnector;
+
+import java.util.List;
+
+import io.cloudevents.CloudEvent;
 
 public class RocketMQSourceWorker {
 
@@ -62,7 +64,7 @@ public class RocketMQSourceWorker {
 
         rocketMQSourceConnector.start();
 
-        while(true) {
+        while (true) {
             List<ConnectRecord> connectorRecordList = rocketMQSourceConnector.poll();
             for(ConnectRecord connectRecord : connectorRecordList) {
                 // todo:connectorRecord convert cloudEvents
