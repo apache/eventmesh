@@ -20,7 +20,6 @@ package org.apache.eventmesh.source.connector.rocketmq;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UtilsConstants {
 
