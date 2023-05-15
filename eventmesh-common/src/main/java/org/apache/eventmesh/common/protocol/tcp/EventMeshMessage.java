@@ -31,5 +31,6 @@ public class EventMeshMessage {
 
     private String topic;
     private Map<String, String> properties = new ConcurrentHashMap<>();
+    private Map<String, String> headers = new ConcurrentHashMap<>();
     private String body;
 }

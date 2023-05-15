@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public EventmeshRebalanceImpl(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -83,7 +83,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
             if (eventMeshDataInfoList == null || CollectionUtils.isEmpty(eventMeshDataInfoList)) {
                 log.warn("doRebalance failed,query eventmesh instances is null from registry,cluster:{}", cluster);
-                return null;
+                return Collections.emptyMap();
             }
             localEventMeshMap = new HashMap<>();
             String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
@@ -97,11 +97,11 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             if (0 == localEventMeshMap.size()) {
                 log.warn("doRebalance failed,query eventmesh instances of localIDC is null from registry,localIDC:{},cluster:{}",
                     localIdc, cluster);
-                return null;
+                return Collections.emptyMap();
             }
         } catch (Exception e) {
             log.warn("doRebalance failed,findEventMeshInfoByCluster failed,cluster:{},errMsg:{}", cluster, e);
-            return null;
+            return Collections.emptyMap();
         }
 
         return localEventMeshMap;
@@ -230,7 +230,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {
                 log.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}, purpose:{}",
                     cluster, group, purpose);
-                return null;
+                return Collections.emptyMap();
             }
 
             localEventMeshDistributeData = new HashMap<>();
@@ -245,7 +245,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             if (0 == localEventMeshDistributeData.size()) {
                 log.warn("doRebalance failed,found no distribute data of localIDC in regitry,cluster:{},group:{}, purpose:{},localIDC:{}",
                     cluster, group, purpose, localIdc);
-                return null;
+                return Collections.emptyMap();
             }
 
             log.info("before revert clientDistributionMap:{}, group:{}, purpose:{}", localEventMeshDistributeData,
@@ -256,7 +256,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                         "doRebalance failed,exist eventMesh not register but exist in "
                             + "distributionMap,cluster:{},grpup:{},purpose:{},eventMeshName:{}",
                         cluster, group, purpose, eventMeshName);
-                    return null;
+                    return Collections.emptyMap();
                 }
             }
             for (String eventMesh : eventMeshMap.keySet()) {
@@ -269,7 +269,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         } catch (Exception e) {
             log.warn("doRebalance failed,cluster:{},group:{},purpose:{},findProxyClientDistributionData failed, errMsg:{}",
                 cluster, group, purpose, e);
-            return null;
+            return Collections.emptyMap();
         }
 
         return localEventMeshDistributeData;

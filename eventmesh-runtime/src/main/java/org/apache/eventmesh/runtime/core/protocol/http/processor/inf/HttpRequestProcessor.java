@@ -18,8 +18,17 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Method;
+import java.util.Objects;
+
+import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -30,6 +39,27 @@ public interface HttpRequestProcessor {
     void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
         throws Exception;
 
-    boolean rejectRequest();
+    default boolean rejectRequest() {
+        return false;
+    }
+
+    default <T extends Header, E extends Body> void completeResponse(HttpCommand req, AsyncContext asyncContext,
+                                                                      T respHeader, EventMeshRetCode emCode,
+                                                                      String msg, Class<E> clazz) {
+        try {
+            Method method = clazz.getMethod("buildBody", Integer.class, String.class);
+            Object o = method.invoke(null, emCode.getRetCode(),
+                    StringUtils.isNotBlank(msg) ? msg : emCode.getErrMsg());
+            HttpCommand response = req.createHttpCommandResponse(respHeader, (E) o);
+            asyncContext.onComplete(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    default String getExtension(CloudEvent event, String protocolKey) {
+        Object extension = event.getExtension(protocolKey);
+        return Objects.isNull(extension) ? "" : extension.toString();
+    }
 
 }

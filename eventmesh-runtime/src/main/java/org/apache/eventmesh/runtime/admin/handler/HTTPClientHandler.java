@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
@@ -74,8 +75,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      * DELETE /client/http
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
             String url = deleteHTTPClientRequest.getUrl();
@@ -95,16 +95,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            httpExchange.sendResponseHeaders(500, 0);
+            log.error(result, e);
         }
     }
 
@@ -148,8 +140,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -159,8 +151,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {

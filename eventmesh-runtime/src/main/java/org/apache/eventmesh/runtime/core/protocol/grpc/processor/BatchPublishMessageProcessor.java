@@ -41,6 +41,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchPublishMessageProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -103,7 +104,8 @@ public class BatchPublishMessageProcessor {
 
         for (CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
-            String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) ? "" : event.getExtension(ProtocolKey.UNIQUE_ID).toString();
+            String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) 
+                ? "" : Objects.requireNonNull(event).getExtension(ProtocolKey.UNIQUE_ID).toString();
             ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
             EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 

@@ -52,7 +52,7 @@ public class Registry {
     }
 
     public static Registry getInstance(String registryPluginType) {
-        return REGISTRY_CACHE.computeIfAbsent(registryPluginType, key -> registryBuilder(key));
+        return REGISTRY_CACHE.computeIfAbsent(registryPluginType, Registry::registryBuilder);
     }
 
     private static Registry registryBuilder(String registryPluginType) {
@@ -82,13 +82,15 @@ public class Registry {
         registryService.start();
     }
 
-    public synchronized void shutdown() throws RegistryException {
+    public void shutdown() throws RegistryException {
         inited.compareAndSet(true, false);
         started.compareAndSet(true, false);
         if (!shutdown.compareAndSet(false, true)) {
             return;
         }
-        registryService.shutdown();
+        synchronized (this) {
+            registryService.shutdown();
+        }
     }
 
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException {

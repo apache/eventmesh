@@ -18,9 +18,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/grpc/proto"
 )
 
 func main() {

@@ -77,31 +77,25 @@ public class EtcdCustomService extends EtcdRegistryService {
 
     @Nullable
     public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
-
         Client client = getEtcdClient();
         String keyPrefix = KEY_PREFIX + KEY_APP + EtcdConstant.KEY_SEPARATOR + group;
         List<KeyValue> keyValues = null;
         try {
             ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
-
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
-
             keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
-
-
             if (CollectionUtils.isNotEmpty(keyValues)) {
-                for (KeyValue kv : keyValues) {
-                    EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
-                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshAppSubTopicInfo.class);
-                    return eventMeshAppSubTopicInfo;
-                }
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
+                    JsonUtils.parseObject(
+                        new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
+                        EventMeshAppSubTopicInfo.class
+                    );
+                return eventMeshAppSubTopicInfo;
             }
         } catch (Exception e) {
             logger.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             throw new RegistryException(e.getMessage());
         }
-
         return null;
-
     }
 }

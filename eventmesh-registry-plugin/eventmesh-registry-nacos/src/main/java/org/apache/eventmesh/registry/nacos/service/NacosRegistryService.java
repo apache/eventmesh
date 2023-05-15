@@ -194,7 +194,7 @@ public class NacosRegistryService implements RegistryService {
         String purpose)
         throws RegistryException {
         // todo find metadata
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
@@ -255,7 +255,7 @@ public class NacosRegistryService implements RegistryService {
 
     @Override
     public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

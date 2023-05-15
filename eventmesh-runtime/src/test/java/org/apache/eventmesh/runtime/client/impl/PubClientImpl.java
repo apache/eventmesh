@@ -134,25 +134,25 @@ public class PubClientImpl extends TCPClient implements PubClient {
         Command cmd = response.getHeader().getCommand();
         switch (request.getHeader().getCommand()) {
             case RECOMMEND_REQUEST:
-                Assert.assertEquals(cmd, Command.RECOMMEND_RESPONSE);
+                Assert.assertEquals(Command.RECOMMEND_RESPONSE, cmd);
                 break;
             case HELLO_REQUEST:
-                Assert.assertEquals(cmd, Command.HELLO_RESPONSE);
+                Assert.assertEquals(Command.HELLO_RESPONSE, cmd);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(cmd, Command.HEARTBEAT_RESPONSE);
+                Assert.assertEquals(Command.HEARTBEAT_RESPONSE, cmd);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(cmd, Command.CLIENT_GOODBYE_RESPONSE);
+                Assert.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, cmd);
                 break;
             case BROADCAST_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.BROADCAST_MESSAGE_TO_SERVER_ACK);
+                Assert.assertEquals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case ASYNC_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.ASYNC_MESSAGE_TO_SERVER_ACK);
+                Assert.assertEquals(Command.ASYNC_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case REQUEST_TO_SERVER:
-                Assert.assertEquals(cmd, Command.RESPONSE_TO_CLIENT);
+                Assert.assertEquals(Command.RESPONSE_TO_CLIENT, cmd);
                 break;
             default:
                 break;

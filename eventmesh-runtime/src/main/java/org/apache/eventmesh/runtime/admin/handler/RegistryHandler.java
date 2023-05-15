@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
@@ -83,16 +84,16 @@ public class RegistryHandler extends AbstractHttpHandler {
                 );
                 getRegistryResponseList.add(getRegistryResponse);
             }
-            getRegistryResponseList.sort(Comparator.comparing(lhs -> lhs.getEventMeshClusterName()));
+            getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
 
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -102,8 +103,8 @@ public class RegistryHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {
@@ -117,10 +118,10 @@ public class RegistryHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTION")) {
+        if ("OPTION".equals(httpExchange.getRequestMethod())) {
             preflight(httpExchange);
         }
-        if (httpExchange.getRequestMethod().equals("GET")) {
+        if ("GET".equals(httpExchange.getRequestMethod())) {
             get(httpExchange);
         }
     }

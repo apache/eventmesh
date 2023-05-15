@@ -16,11 +16,11 @@
 package http
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/consumer"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/utils"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/consumer"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/log"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"net/http"

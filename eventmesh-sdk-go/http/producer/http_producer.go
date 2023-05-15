@@ -17,8 +17,8 @@ package producer
 
 import (
 	"errors"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/common/protocol"
+	"github.com/apache/eventmesh/eventmesh-sdk-go/http/conf"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"time"
 )
