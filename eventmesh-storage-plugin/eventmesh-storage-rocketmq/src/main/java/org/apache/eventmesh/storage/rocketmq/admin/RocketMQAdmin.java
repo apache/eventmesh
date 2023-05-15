@@ -89,7 +89,7 @@ public class RocketMQAdmin extends AbstractRmqAdmin implements Admin {
                     messageCount += topicOffset.getMaxOffset() - topicOffset.getMinOffset();
                 }
                 result.add(new TopicProperties(
-                        topic, messageCount
+                    topic, messageCount
                 ));
             }
 
