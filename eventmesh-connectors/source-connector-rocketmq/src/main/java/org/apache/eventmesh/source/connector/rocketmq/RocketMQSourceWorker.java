@@ -29,7 +29,7 @@ import org.apache.eventmesh.source.connector.rocketmq.connector.RocketMQSourceCo
 
 public class RocketMQSourceWorker {
 
-    public static final String SOURCE_CONSUMER_GROUP = "DEFAULT-CONSUMER-GROUP";
+    public static final String SOURCE_GROUP = "DEFAULT-CONSUMER-GROUP";
     public static final String SOURCE_CONNECT_NAMESRVADDR = "127.0.0.1:9877";
     public static final String SOURCE_TOPIC = "TopicTest";
 
@@ -56,7 +56,7 @@ public class RocketMQSourceWorker {
 
         rocketMQSourceConfig.setSourceNameserver(SOURCE_CONNECT_NAMESRVADDR);
         rocketMQSourceConfig.setSourceTopic(SOURCE_TOPIC);
-        rocketMQSourceConfig.setSourceGroup(SOURCE_CONSUMER_GROUP);
+        rocketMQSourceConfig.setSourceGroup(SOURCE_GROUP);
 
         rocketMQSourceConnector.init(rocketMQSourceConfig);
 
