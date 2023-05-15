@@ -41,9 +41,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
 import lombok.Data;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 public class HttpCommand implements ProtocolTransportObject {
