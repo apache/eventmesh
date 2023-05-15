@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
+public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public EventmeshRebalanceImpl(EventMeshTCPServer eventMeshTCPServer) {
+    public EventMeshRebalanceImpl(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -107,11 +107,10 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         return localEventMeshMap;
     }
 
-    private void doRebalanceByGroup(String cluster, String group, String purpose, Map<String,
-        String> eventMeshMap) throws Exception {
+    private void doRebalanceByGroup(String cluster, String group, String purpose, Map<String, String> eventMeshMap) throws Exception {
         log.info("doRebalanceByGroup start, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
 
-        //query distribute data of loacl idc
+        //query distribute data of local idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose,
             eventMeshMap);
         if (MapUtils.isEmpty(clientDistributionMap)) {
@@ -130,12 +129,12 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             return;
         }
 
-        //caculate client num need to redirect in currEventMesh
-        int judge = caculateRedirectNum(currEventMeshName, group, purpose, clientDistributionMap);
+        //calculate client num need to redirect in currEventMesh
+        int judge = calculateRedirectNum(currEventMeshName, group, purpose, clientDistributionMap);
 
         if (judge > 0) {
 
-            //select redirect target eventmesh lisg
+            //select redirect target eventmesh list
             List<String> eventMeshRecommendResult = selectRedirectEventMesh(group, eventMeshMap, clientDistributionMap,
                 judge, currEventMeshName);
             if (eventMeshRecommendResult == null || eventMeshRecommendResult.size() != judge) {
@@ -184,8 +183,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             group, judge, eventMeshName);
     }
 
-    public int caculateRedirectNum(String eventMeshName, String group, String purpose,
-        Map<String, Integer> clientDistributionMap) throws Exception {
+    public int calculateRedirectNum(String eventMeshName, String group, String purpose, Map<String, Integer> clientDistributionMap) throws Exception {
         int sum = 0;
         for (Integer item : clientDistributionMap.values()) {
             sum += item;
