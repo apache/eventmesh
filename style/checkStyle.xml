@@ -24,7 +24,7 @@
 
   <property name="charset" value="UTF-8"/>
   <property name="severity" value="warning"/>
-  <property name="fileExtensions" value="java, properties, xml, gradle"/>
+  <property name="fileExtensions" value="java, properties, xml, gradle, env, sh"/>
   <module name="SuppressWarningsFilter" />
   <module name="Header">
     <property name="headerFile" value="/checkstyle-header1.txt"/>
@@ -32,7 +32,11 @@
   </module>
   <module name="Header">
     <property name="headerFile" value="/checkstyle-header2.txt"/>
-    <property name="fileExtensions" value="properties"/>
+    <property name="fileExtensions" value="properties, env"/>
+  </module>
+  <module name="Header">
+    <property name="headerFile" value="/checkstyle-header3.txt"/>
+    <property name="fileExtensions" value="sh"/>
   </module>
   <module name="RegexpSingleline">
     <property name="format" value="System\..+\.println"/>
