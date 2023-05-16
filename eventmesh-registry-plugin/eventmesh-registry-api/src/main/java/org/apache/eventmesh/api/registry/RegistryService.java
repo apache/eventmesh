@@ -26,6 +26,7 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +46,11 @@ public interface RegistryService {
 
     List<EventMeshDataInfo> findAllEventMeshInfo() throws RegistryException;
 
-    Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
-        String clusterName, String group, String purpose) throws RegistryException;
+    default Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
+        String clusterName, String group, String purpose) throws RegistryException {
+        // todo find metadata
+        return Collections.emptyMap();
+    }
 
     void registerMetadata(Map<String, String> metadataMap);
 
@@ -54,7 +58,11 @@ public interface RegistryService {
 
     boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException;
 
-    EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException;
+    default EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
+        return null;
+    }
 
-    List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException;
+    default List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
+        return Collections.emptyList();
+    }
 }

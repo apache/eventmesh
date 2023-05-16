@@ -38,7 +38,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-
 public class EventMeshTestUtils {
 
     private static final int SEQ_LENGTH = 10;

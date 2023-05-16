@@ -35,7 +35,6 @@ import java.util.Optional;
 
 import io.cloudevents.CloudEvent;
 
-
 public class RocketMQSinkWorker {
 
     public static final String SINK_GROUP = "DEFAULT-SINK-GROUP";
