@@ -80,8 +80,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
      * DELETE /client/tcp
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.parseObject(request, DeleteTCPClientRequest.class);
             String host = deleteTCPClientRequest.getHost();
@@ -113,15 +113,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
+            log.error(result, e);
         }
     }
 
@@ -129,11 +121,10 @@ public class TCPClientHandler extends AbstractHttpHandler {
      * GET /client/tcp Return a response that contains the list of clients
      */
     void list(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             // Get the list of TCP clients
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -176,16 +167,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
-                }
-            }
-        }
+            log.error(result, e);
+        } 
     }
 
     @Override
