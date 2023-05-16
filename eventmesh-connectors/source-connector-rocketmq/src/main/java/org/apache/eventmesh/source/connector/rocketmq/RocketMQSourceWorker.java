@@ -57,7 +57,7 @@ public class RocketMQSourceWorker {
         rocketMQSourceConfig.setSourceTopic(SOURCE_TOPIC);
         rocketMQSourceConfig.setSourceGroup(SOURCE_GROUP);
 
-        final RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
+        RocketMQSourceConnector rocketMQSourceConnector = new RocketMQSourceConnector();
         rocketMQSourceConnector.init(rocketMQSourceConfig);
         rocketMQSourceConnector.start();
 
