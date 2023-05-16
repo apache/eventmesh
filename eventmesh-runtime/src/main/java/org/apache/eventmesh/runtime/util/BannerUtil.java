@@ -25,40 +25,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BannerUtil {
 
-    public static final String logo =
-                       "           EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM          EMEMEMEM            EMEMEMEM           " + System.lineSeparator()
-                     + "      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEM       EMEMEMEMEMEMEME      " + System.lineSeparator()
-                     + "    EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME     EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM    " + System.lineSeparator()
-                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME  " + System.lineSeparator()
-                     + " EMEMEMEMEMEME                                     EMEMEMEMEMEME   EMEMEMEMEMEMEMEM    EMEMEMEMEMEM " + System.lineSeparator()
-                     + "EMEMEMEMEM                                       EMEMEMEMEMEM         EMEMEMEMEM          EMEMEMEMEM" + System.lineSeparator()
-                     + "EMEMEMEME                                       EMEMEMEMEME               EME              EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                                     EMEMEMEMEME                                  EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                                    EMEMEMEMEME                                   EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEME                                    EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME     EMEMEMEMEME                                      EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEME                                        EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME      EMEMEMEMEME                                         EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                            EMEMEMEMEME                                           EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                           EMEMEMEMEME                                            EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                         EMEMEMEMEMEM                                             EMEMEMEME" + System.lineSeparator()
-                     + " EMEMEMEMEM                      EMEMEMEMEME                                             EMEMEMEMEME" + System.lineSeparator()
-                     + " EMEMEMEMEMEM                  EMEMEMEMEMEM                                            EMEMEMEMEMEM " + System.lineSeparator()
-                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM  " + System.lineSeparator()
-                     + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM     EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME   " + System.lineSeparator()
-                     + "     EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM     " + System.lineSeparator()
-                     + "        EMEMEMEMEMEMEMEMEMEMEMEMEMEM       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME        ";
+    private static final String logo =
+                       "       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME        EMEMEMEME               EMEMEMEME         " + System.lineSeparator()
+                     + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME       EMEMEMEMEMEMEMEME     EMEMEMEMEMEMEMEMEM     " + System.lineSeparator()
+                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME   " + System.lineSeparator()
+                     + "EMEMEMEMEMEM                                        EMEMEMEMEM    EMEMEMEMEMEMEMEME    EMEMEMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEME                                         EMEMEMEMEM        EMEMEMEMEMEME        EMEMEMEME  " + System.lineSeparator()
+                     + "EMEMEME                                          EMEMEMEME              EMEME             EMEMEMEM  " + System.lineSeparator()
+                     + "EMEMEME                                        EMEMEMEME                                   EMEMEME  " + System.lineSeparator()
+                     + "EMEMEME                                      EMEMEMEMEM                                    EMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEM                                     EMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEM                                       EMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM         EMEMEMEMEM                                        EMEMEME  " + System.lineSeparator()
+                     + "EMEMEME                                EMEMEMEMEM                                          EMEMEME  " + System.lineSeparator()
+                     + "EMEMEME                               EMEMEMEMEM                                           EMEMEME  " + System.lineSeparator()
+                     + "EMEMEME                             EMEMEMEMEM                                             EMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEME                          EMEMEMEMEM                                            EMEMEMEME  " + System.lineSeparator()
+                     + "EMEMEMEMEMEM                     EMEMEMEMEM                                           EMEMEMEMEMEM  " + System.lineSeparator()
+                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM    " + System.lineSeparator()
+                     + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME     " + System.lineSeparator()
+                     + "       MEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME         ";
 
-    public static final String name =
-                      " ________                                 __      __       __                      __                " + System.lineSeparator()
-                    + "|        \\                               |  \\    |  \\     /  \\                    |  \\          " + System.lineSeparator()
-                    + "| EMEMEMEM__     __   ______   _______  _| EM_   | EM\\   /  EM  ______    _______ | EM____          " + System.lineSeparator()
-                    + "| EM__   |  \\   /  \\ /      \\ |       \\|   EM \\  | EME\\ /  EME /      \\  /       \\| EM    \\ " + System.lineSeparator()
-                    + "| EM  \\   \\EM\\ /  EM|  EMEMEM\\| EMEMEME\\\\EMEMEM  | EMEM\\  EMEM|  EMEMEM\\|  EMEMEME| EMEMEME\\" + System.lineSeparator()
-                    + "| EMEME    \\EM\\  EM | EM    EM| EM  | EM | EM __ | EM\\EM EM EM| EM    EM \\EM    \\ | EM  | EM    " + System.lineSeparator()
-                    + "| EM_____   \\EM EM  | EMEMEMEM| EM  | EM | EM|  \\| EM \\EME| EM| EMEMEMEM _\\EMEMEM\\| EM  | EM    " + System.lineSeparator()
-                    + "| EM     \\   \\EME    \\EM     \\| EM  | EM  \\EM  EM| EM  \\E | EM \\EM     \\|       EM| EM  | EM " + System.lineSeparator()
-                    + " \\EMEMEMEM    \\E      \\EMEMEME \\EM   \\EM   \\EMEM  \\EM      \\EM  \\EMEMEME \\EMEMEME  \\EM   \\EM";
+    private static final String name =
+                       "                      _____                 _   __  __           _            " + System.lineSeparator()
+                     + "                     | ____|_   _____ _ __ | |_|  \\/  | ___  ___| |__        " + System.lineSeparator()
+                     + "                     |  _| \\ \\ / / _ \\ '_ \\| __| |\\/| |/ _ \\/ __| '_ \\ " + System.lineSeparator()
+                     + "                     | |___ \\ V /  __/ | | | |_| |  | |  __/\\__ \\ | | |    " + System.lineSeparator()
+                     + "                     |_____| \\_/ \\___|_| |_|\\__|_|  |_|\\___||___/_| |_|";
 
     public static void generateBanner() {
         String banner =
