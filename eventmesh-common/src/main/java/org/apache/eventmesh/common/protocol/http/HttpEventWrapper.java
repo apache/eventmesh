@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PROTOCOL_DESC;
-import static org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.PROTOCOL_TYPE;
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.CONSUMERGROUP;
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.ENV;
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.ClientInstanceKey.IDC;
@@ -33,17 +30,16 @@ import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.Cloud
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.CloudEventsKey.SOURCE;
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.CloudEventsKey.SUBJECT;
 import static org.apache.eventmesh.common.protocol.http.common.ProtocolKey.CloudEventsKey.TYPE;
-import static org.apache.eventmesh.common.protocol.http.common.RequestURI.PUBLISH;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -61,7 +57,10 @@ import org.assertj.core.util.Maps;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 
 
 import lombok.Getter;
@@ -120,7 +119,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         HttpEventWrapper response = new HttpEventWrapper(this.httpMethod, this.httpVersion, this.requestURI);
         response.setReqTime(this.reqTime);
         response.setHeaderMap(responseHeaderMap);
-        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(DEFAULT_CHARSET));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -136,7 +135,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         Map<String, Object> responseBodyMap = new HashMap<>();
         responseBodyMap.put("retCode", eventMeshRetCode.getRetCode());
         responseBodyMap.put("retMessage", eventMeshRetCode.getErrMsg());
-        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(DEFAULT_CHARSET));
+        response.setBody(Objects.requireNonNull(JsonUtils.toJSONString(responseBodyMap)).getBytes(Constants.DEFAULT_CHARSET));
         response.setResTime(System.currentTimeMillis());
         return response;
     }
@@ -159,11 +158,12 @@ public class HttpEventWrapper implements ProtocolTransportObject {
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(this.body));
+        DefaultFullHttpResponse response =
+                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
-        headers.add(CONTENT_TYPE, "text/plain; charset=" + DEFAULT_CHARSET);
+        headers.add(CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(CONTENT_LENGTH, response.content().readableBytes());
-        headers.add(CONNECTION, KEEP_ALIVE);
+        headers.add(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         Optional.of(this.headerMap).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
         return response;
     }
@@ -180,8 +180,8 @@ public class HttpEventWrapper implements ProtocolTransportObject {
         sysHeaderMap.put(PASSWD, headerMap.getOrDefault(PASSWD, "pass"));
         sysHeaderMap.put(PRODUCERGROUP, headerMap.getOrDefault(PRODUCERGROUP, "em-http-producer"));
         sysHeaderMap.put(CONSUMERGROUP, headerMap.getOrDefault(CONSUMERGROUP, "em-http-consumer"));
-        sysHeaderMap.put(PROTOCOL_TYPE, "http");
-        sysHeaderMap.put(PROTOCOL_DESC, "http");
+        sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
+        sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
     }
 
     public void buildSysHeaderForCE() {
@@ -192,8 +192,8 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
         String topic = headerMap.getOrDefault("subject", "").toString();
 
-        if (requestURI.startsWith(PUBLISH.getRequestURI())) {
-            topic = requestURI.substring(PUBLISH.getRequestURI().length() + 1);
+        if (requestURI.startsWith(RequestURI.PUBLISH.getRequestURI())) {
+            topic = requestURI.substring(RequestURI.PUBLISH.getRequestURI().length() + 1);
         }
 
         if (StringUtils.isEmpty(topic)) {

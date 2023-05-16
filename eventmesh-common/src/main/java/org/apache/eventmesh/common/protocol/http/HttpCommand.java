@@ -17,13 +17,11 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
-import static org.apache.eventmesh.common.Constants.DEFAULT_CHARSET;
-
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
@@ -40,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -148,11 +147,11 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(DEFAULT_CHARSET)));
+            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
-        headers.add(CONTENT_TYPE, "text/plain; charset=" + DEFAULT_CHARSET);
+        headers.add(CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(CONTENT_LENGTH, response.content().readableBytes());
-        headers.add(CONNECTION, KEEP_ALIVE);
+        headers.add(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         Optional.of(this.getHeader().toMap()).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
         return response;
     }
