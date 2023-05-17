@@ -73,14 +73,16 @@ public class EventMeshServer {
 
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
-            if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
-            }
-            if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
-            }
-            if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+            switch (provideServerProtocol) {
+                case ConfigurationContextUtil.HTTP:
+                    BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+                    break;
+                case ConfigurationContextUtil.TCP:
+                    BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
+                    break;
+                case ConfigurationContextUtil.GRPC:
+                    BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+                    break;
             }
         }
     }
