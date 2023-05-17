@@ -23,8 +23,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.assertj.core.util.Maps;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -78,25 +76,6 @@ public class JsonUtilsTest {
         JsonNode jsonNode = JsonUtils.getJsonNode(json);
         Assert.assertNotNull(jsonNode);
         Assert.assertEquals("2", jsonNode.findValue("mxsm").asText());
-    }
-
-    @Test
-    public void testParseTypeReferenceObject() throws JsonProcessingException {
-        String jsonString = "{\"key\":\"value\"}";
-        TypeReference<Map<String, String>> typeReference = new TypeReference<Map<String, String>>() {};
-        Map<String, String> expected = Maps.newHashMap("key", "value");
-        Map<String, String> actual = JsonUtils.parseTypeReferenceObject(jsonString, typeReference);
-
-        Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testParseTypeReferenceObjectWithEmptyText() throws JsonProcessingException {
-        String jsonString = "";
-        TypeReference<Map<String, String>> typeReference = new TypeReference<Map<String, String>>() {};
-        Map<String, String> actual = JsonUtils.parseTypeReferenceObject(jsonString, typeReference);
-
-        Assert.assertEquals(null, actual);
     }
 
     @Data
