@@ -36,7 +36,7 @@
 Apache EventMesh has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
 
 - Built around the [CloudEvents](https://cloudevents.io) specification.
-- Rapidty extendsible interconnector layer such as the source or sink of Saas, CloudService, and Database etc.
+- Rapidty extendsible interconnector layer [connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors/eventmesh-connectors) such as the source or sink of Saas, CloudService, and Database etc.
 - Rapidty extendsible storage layer such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity).
 - Rapidty extendsible controller such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
 - Guaranteed at-least-once delivery.
@@ -50,7 +50,7 @@ Apache EventMesh has a vast amount of features to help users achieve their goals
 ## Roadmap
 Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the release history and new features of Apache EventMesh.
 
-## Community
+## Subprojects
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
 - [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): Serverless workflow runtime for event Orchestration on EventMesh.
 - [EventMesh-dashboard](https://github.com/apache/eventmesh-dashboard): Operation and maintenance console of EventMesh.
