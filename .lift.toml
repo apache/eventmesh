@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+build = "gradle"
 jdkVersion = "8"
 ignoreRules = ["NULL_DEREFERENCE", "no-extra-boolean-cast"]
 ignoreFiles = """
