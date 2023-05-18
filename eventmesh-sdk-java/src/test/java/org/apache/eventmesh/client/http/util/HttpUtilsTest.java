@@ -44,15 +44,16 @@ public class HttpUtilsTest {
         CloseableHttpClient client = mock(CloseableHttpClient.class);
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-
+        IOException exception = null;
         try {
             String expectedResult = "Success";
             when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.post(client, uri, requestParam);
             Assert.assertEquals(expectedResult, result);
         } catch (IOException e) {
-            e.printStackTrace();
+            exception = e;
         }
+        Assert.assertNull(exception);
     }
 
     @Test
@@ -76,13 +77,15 @@ public class HttpUtilsTest {
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.GET);
         String expectedResult = "Success";
+        IOException exception = null;
         try {
             when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.get(client, uri, requestParam);
             Assert.assertEquals(expectedResult, result);
         } catch (IOException e) {
-            e.printStackTrace();
+            exception = e;
         }
+        Assert.assertNull(exception);
     }
 
     @Test
