@@ -17,7 +17,9 @@
 
 build = "gradle assemble"
 jdkVersion = "8"
-ignoreRules = ["NULL_DEREFERENCE", "no-extra-boolean-cast"]
+disableTools = [ "errorprone" ]
+ignoreRules = [ "NULL_DEREFERENCE", "no-extra-boolean-cast" ]
 ignoreFiles = """
 
 """
+tools = [ "infer", "eslint" ]
