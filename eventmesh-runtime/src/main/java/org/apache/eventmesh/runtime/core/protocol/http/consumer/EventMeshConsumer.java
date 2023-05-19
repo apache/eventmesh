@@ -41,7 +41,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProduce
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPMessageHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.push.MessageHandler;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 

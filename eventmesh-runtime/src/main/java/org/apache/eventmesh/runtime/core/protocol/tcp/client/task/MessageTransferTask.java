@@ -38,7 +38,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventM
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.SpanKey;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;

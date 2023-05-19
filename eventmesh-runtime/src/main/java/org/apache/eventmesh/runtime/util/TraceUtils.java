@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.trace;
+package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
