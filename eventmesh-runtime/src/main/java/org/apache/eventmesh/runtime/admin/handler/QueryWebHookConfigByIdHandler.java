@@ -31,7 +31,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import java.util.Objects;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -61,7 +60,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
-            out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("get WebHookConfigOperation implementation Failed.", e);
         }
