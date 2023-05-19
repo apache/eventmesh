@@ -86,7 +86,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
 
             log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (!sessionMap.isEmpty()) {

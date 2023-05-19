@@ -31,11 +31,12 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,14 +85,12 @@ public class TCPClientHandler extends AbstractHttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.parseObject(request, DeleteTCPClientRequest.class);
-            String host = deleteTCPClientRequest.getHost();
-            int port = deleteTCPClientRequest.getPort();
 
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (!sessionMap.isEmpty()) {
-                for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                    if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
+                for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
+                    if (StringUtils.equals(entry.getKey(), deleteTCPClientRequest.toString())) {
                         EventMeshTcp2Client.serverGoodby2Client(
                             eventMeshTCPServer,
                             entry.getValue(),
@@ -100,7 +99,6 @@ public class TCPClientHandler extends AbstractHttpHandler {
                     }
                 }
             }
-
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -127,7 +125,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             // Get the list of TCP clients
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            Map<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();

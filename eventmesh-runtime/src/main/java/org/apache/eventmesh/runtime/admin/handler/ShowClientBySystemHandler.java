@@ -29,7 +29,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,7 +67,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                 log.info("showClientBySubsys,subsys:{}", subSystem);
             }
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (sessionMap != null && !sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {
                     if (session.getClient().getSubsystem().equals(subSystem)) {

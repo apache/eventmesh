@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +78,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
             }
 
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            final ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {

@@ -61,14 +61,14 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     public void handle(final HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            final ConcurrentHashMap<String, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (log.isInfoEnabled()) {
                     log.info("rejectAllClient in admin====================");
                 }
                 if (!sessionMap.isEmpty()) {
-                    for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
+                    for (final Map.Entry<String, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
                             eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {

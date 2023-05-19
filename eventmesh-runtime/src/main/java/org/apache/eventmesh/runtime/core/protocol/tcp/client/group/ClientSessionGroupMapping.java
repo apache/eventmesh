@@ -36,7 +36,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
 import java.lang.ref.WeakReference;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,13 +55,11 @@ public class ClientSessionGroupMapping {
 
     private static final Logger SESSION_LOGGER = LoggerFactory.getLogger("sessionLogger");
 
-    private final ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String/*ip:port*/, Session> sessionTable = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap =
-        new ConcurrentHashMap<String, ClientGroupWrapper>();
+    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap =
-        new ConcurrentHashMap<String, Object>();
+    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap = new ConcurrentHashMap<>(64);
 
     private EventMeshTCPServer eventMeshTCPServer;
 
@@ -83,27 +80,31 @@ public class ClientSessionGroupMapping {
     }
 
     public Session getSession(ChannelHandlerContext ctx) {
-        return getSession((InetSocketAddress) ctx.channel().remoteAddress());
+        return getSession(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
     }
 
-    public Session getSession(InetSocketAddress address) {
+    public Session getSession(String address) {
         return sessionTable.get(address);
     }
 
-    public Session createSession(UserAgent user, ChannelHandlerContext ctx) throws Exception {
-        InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
-        user.setHost(addr.getHostString());
-        user.setPort(addr.getPort());
+    public Session getOrCreateSession(UserAgent user, ChannelHandlerContext ctx) throws Exception {
+        String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+        String[] split = remoteAddress.split(":");
+        if (Objects.isNull(split) || split.length != 2) {
+            throw new Exception("Parse channel remote address ettor");
+        }
+        user.setHost(split[0]);
+        user.setPort(Integer.parseInt(split[1]));
         Session session;
-        if (!sessionTable.containsKey(addr)) {
-            log.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+        if (!sessionTable.containsKey(remoteAddress)) {
+            log.info("createSession client[{}]", remoteAddress);
             session = new Session(user, ctx, eventMeshTCPServer.getEventMeshTCPConfiguration());
             initClientGroupWrapper(user, session);
-            sessionTable.put(addr, session);
-            SESSION_LOGGER.info("session|open|succeed|user={}", user);
+            sessionTable.put(remoteAddress, session);
+            SESSION_LOGGER.info("session|open|succeed|user={},client={}", user, remoteAddress);
         } else {
-            session = sessionTable.get(addr);
-            SESSION_LOGGER.error("session|open|failed|user={}|msg={}", user, "session has been created!");
+            session = sessionTable.get(remoteAddress);
+            SESSION_LOGGER.warn("session|open|failed|user={}|msg=session has been created!", user);
         }
         return session;
     }
@@ -117,22 +118,20 @@ public class ClientSessionGroupMapping {
 
     public synchronized void closeSession(ChannelHandlerContext ctx) throws Exception {
 
-        InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
-        Session session = MapUtils.getObject(sessionTable, addr, null);
+        String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+        Session session = MapUtils.getObject(sessionTable, remoteAddress, null);
         if (session == null) {
-            final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             log.info("begin to close channel to remote address[{}]", remoteAddress);
             ctx.channel().close().addListener(
                 (ChannelFutureListener) future -> log.info("close the connection to remote address[{}] result: {}", remoteAddress,
                     future.isSuccess()));
-            SESSION_LOGGER.info("session|close|succeed|address={}|msg={}", addr, "no session was found");
+            SESSION_LOGGER.warn("session|close|succeed|address={}|msg=no session was found", remoteAddress);
             return;
         }
-
         closeSession(session);
 
         //remove session from sessionTable
-        sessionTable.remove(addr);
+        sessionTable.remove(remoteAddress);
 
         SESSION_LOGGER.info("session|close|succeed|user={}", session.getClient());
     }
@@ -140,7 +139,7 @@ public class ClientSessionGroupMapping {
     private void closeSession(Session session) throws Exception {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(session.getContext().channel());
         if (SessionState.CLOSED == session.getSessionState()) {
-            log.info("session has been closed, addr:{}", remoteAddress);
+            log.warn("session has been closed, addr:{}", remoteAddress);
             return;
         }
 
@@ -148,7 +147,7 @@ public class ClientSessionGroupMapping {
         synchronized (session) {
 
             if (SessionState.CLOSED == session.getSessionState()) {
-                log.info("session has been closed in sync, addr:{}", remoteAddress);
+                log.warn("session has been closed in sync, addr:{}", remoteAddress);
                 return;
             }
 
@@ -304,15 +303,12 @@ public class ClientSessionGroupMapping {
                     continue;
                 }
                 Session reChooseSession = clientGroupWrapper.getDownstreamDispatchStrategy()
-                    .select(clientGroupWrapper.getGroup(),
-                        downStreamMsgContext.event.getSubject(),
-                        clientGroupWrapper.groupConsumerSessions);
+                    .select(clientGroupWrapper.getGroup(), downStreamMsgContext.event.getSubject(), clientGroupWrapper.groupConsumerSessions);
                 if (reChooseSession != null) {
                     downStreamMsgContext.setSession(reChooseSession);
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
-                    log.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(),
-                        downStreamMsgContext.getSession().getClient());
+                    log.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.getSession().getClient());
                 } else {
                     log.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(),
                         downStreamMsgContext.event.getSubject());
@@ -378,7 +374,6 @@ public class ClientSessionGroupMapping {
     private void initDownStreamMsgContextCleaner() {
         eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
             () -> {
-
                 //scan non-broadcast msg
                 for (Session tmp : sessionTable.values()) {
                     for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
@@ -443,28 +438,12 @@ public class ClientSessionGroupMapping {
         log.info("ClientSessionGroupMapping shutdown......");
     }
 
-    public ConcurrentHashMap<InetSocketAddress, Session> getSessionMap() {
+    public ConcurrentHashMap<String, Session> getSessionMap() {
         return sessionTable;
     }
 
     public ConcurrentHashMap<String, ClientGroupWrapper> getClientGroupMap() {
         return clientGroupMap;
-    }
-
-    public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData() {
-        Map<String, Map<String, Integer>> result = null;
-
-        if (!clientGroupMap.isEmpty()) {
-            result = new HashMap<>();
-            for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
-                Map<String, Integer> map = new HashMap<>();
-                map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
-                map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
-                result.put(entry.getKey(), map);
-            }
-        }
-
-        return result;
     }
 
     public Map<String, Map<String, Integer>> prepareProxyClientDistributionData() {
