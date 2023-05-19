@@ -30,16 +30,13 @@ public class TopicCreateRequest {
 
     @JsonCreator
     public TopicCreateRequest(@JsonProperty("name") String topic) {
-        super();
         this.name = topic;
     }
 
-    @JsonProperty("name")
     public String getName() {
         return this.name;
     }
 
-    @JsonProperty("name")
     public void setName(String name) {
         this.name = name;
     }
