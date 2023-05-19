@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -126,11 +125,15 @@ public class ConfigurationHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (StringUtils.equals(HttpMethod.OPTIONS.toString(),httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if (StringUtils.equals(HttpMethod.GET.toString(),httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default: //do nothing
+                break;
         }
     }
 }
