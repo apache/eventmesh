@@ -17,5 +17,11 @@
 
 package org.apache.eventmesh.connector.api.config;
 
-public abstract class SourceConfig extends Config {
+import lombok.Data;
+
+@Data
+public abstract class SinkConfig extends Config {
+
+    private PubSubConfig pubSubConfig;
+
 }

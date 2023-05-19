@@ -17,5 +17,15 @@
 
 package org.apache.eventmesh.connector.api.config;
 
-public abstract class SinkConfig extends Config {
+public class Constants {
+
+    public static final String ENV_TARGET = "connectorTarget";
+
+    public static final String ENV_PORT = "connectorPort";
+
+    public static final String ENV_CONFIG_FILE = "connectorConf";
+
+    public static final int DEFAULT_ATTEMPT = 3;
+
+    public static final int DEFAULT_PORT = 8080;
 }
