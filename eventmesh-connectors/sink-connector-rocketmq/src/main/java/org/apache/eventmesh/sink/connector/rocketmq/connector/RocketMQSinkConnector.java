@@ -47,8 +47,8 @@ public class RocketMQSinkConnector implements Sink {
     public void init(Config config) throws Exception {
         // init config for rocketmq source connector
         this.sinkConfig = (RocketMQSinkConfig) config;
-        producer.setProducerGroup(sinkConfig.getSinkGroup());
-        producer.setNamesrvAddr(sinkConfig.getSinkNameserver());
+        producer.setProducerGroup(sinkConfig.getPubSubConfig().getGroup());
+        producer.setNamesrvAddr(sinkConfig.getConnectorConfig().getNameServer());
     }
 
     @Override
@@ -63,7 +63,7 @@ public class RocketMQSinkConnector implements Sink {
 
     @Override
     public String name() {
-        return this.sinkConfig.getConnectorName();
+        return this.sinkConfig.getConnectorConfig().getConnectorName();
     }
 
     @Override
@@ -83,9 +83,9 @@ public class RocketMQSinkConnector implements Sink {
         }
     }
 
-    public static Message convertRecordToMessage(ConnectRecord connectRecord) {
+    public Message convertRecordToMessage(ConnectRecord connectRecord) {
         Message message = new Message();
-        message.setTopic(connectRecord.getExtension("topic"));
+        message.setTopic(this.sinkConfig.getConnectorConfig().getTopic());
         message.setBody((byte[]) connectRecord.getData());
         for (String key : connectRecord.getExtensions().keySet()) {
             MessageAccessor.putProperty(message, key, connectRecord.getExtension(key));

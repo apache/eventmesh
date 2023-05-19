@@ -1,0 +1,13 @@
+pubSubConfig:
+    meshAddress: 127.0.0.1:10002
+    subject: TopicTest
+    idc: FT
+    env: PRD
+    group: rocketmqSource
+    appId: 5032
+    userName: rocketmqSourceUser
+    passWord: rocketmqPassWord
+connectorConfig:
+    connectorName: rocketmqSource
+    nameserver: 127.0.0.1:9877
+    topic: TopicTest
