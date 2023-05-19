@@ -48,13 +48,13 @@ public class RocketMQSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for rocketmq source connector
         this.sourceConfig = (RocketMQSourceConfig) config;
-        consumer.setConsumerGroup(sourceConfig.getSourceGroup());
-        consumer.setNamesrvAddr(sourceConfig.getSourceNameserver());
+        consumer.setConsumerGroup(sourceConfig.getPubSubConfig().getGroup());
+        consumer.setNamesrvAddr(sourceConfig.getConnectorConfig().getNameserver());
     }
 
     @Override
     public void start() throws Exception {
-        consumer.subscribe(sourceConfig.getSourceTopic(), "*");
+        consumer.subscribe(sourceConfig.getConnectorConfig().getTopic(), "*");
         consumer.start();
     }
 
@@ -65,12 +65,12 @@ public class RocketMQSourceConnector implements Source {
 
     @Override
     public String name() {
-        return this.sourceConfig.getConnectorName();
+        return this.sourceConfig.getConnectorConfig().getConnectorName();
     }
 
     @Override
     public void stop() {
-        consumer.unsubscribe(sourceConfig.getSourceTopic());
+        consumer.unsubscribe(sourceConfig.getConnectorConfig().getTopic());
         consumer.shutdown();
     }
 
