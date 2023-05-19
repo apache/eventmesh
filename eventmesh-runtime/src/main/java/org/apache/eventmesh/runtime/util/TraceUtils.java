@@ -43,7 +43,7 @@ public class TraceUtils {
                 spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
             EventMeshServer.getTrace().inject(Context.current(), map);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when prepareSpan", ex);
+            log.error("upload trace fail when prepareSpan", ex);
         }
         return span;
     }
@@ -56,7 +56,7 @@ public class TraceUtils {
             span = EventMeshServer.getTrace()
                 .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when prepareSpan", ex);
+            log.error("upload trace fail when prepareSpan", ex);
         }
         return span;
     }
@@ -75,7 +75,7 @@ public class TraceUtils {
                     .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
             }
         } catch (Throwable ex) {
-            log.warn("upload trace fail when prepareSpan", ex);
+            log.error("upload trace fail when prepareSpan", ex);
         }
         return span;
     }
@@ -87,7 +87,7 @@ public class TraceUtils {
             EventMeshServer.getTrace().addTraceInfoToSpan(span, event);
             EventMeshServer.getTrace().finishSpan(span, StatusCode.OK);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when finishSpan", ex);
+            log.error("upload trace fail when finishSpan", ex);
         }
 
     }
@@ -98,7 +98,7 @@ public class TraceUtils {
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
             EventMeshServer.getTrace().finishSpan(ctx, StatusCode.OK);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when finishSpan", ex);
+            log.error("upload trace fail when finishSpan", ex);
         }
 
     }
@@ -110,7 +110,7 @@ public class TraceUtils {
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
             EventMeshServer.getTrace().finishSpan(ctx, StatusCode.ERROR, errMsg, e);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when finishSpanWithException", ex);
+            log.error("upload trace fail when finishSpanWithException", ex);
         }
     }
 
@@ -121,7 +121,7 @@ public class TraceUtils {
             EventMeshServer.getTrace().addTraceInfoToSpan(span, map);
             EventMeshServer.getTrace().finishSpan(span, StatusCode.ERROR, errMsg, e);
         } catch (Throwable ex) {
-            log.warn("upload trace fail when finishSpanWithException", ex);
+            log.error("upload trace fail when finishSpanWithException", ex);
         }
     }
 }
