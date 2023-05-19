@@ -19,45 +19,11 @@ package org.apache.eventmesh.sink.connector.rocketmq.config;
 
 import org.apache.eventmesh.connector.api.config.SinkConfig;
 
+import lombok.Data;
+
+@Data
 public class RocketMQSinkConfig extends SinkConfig {
 
-    String connectorName;
+    public ConnectorConfig connectorConfig;
 
-    String sinkNameserver;
-
-    String sinkTopic;
-
-    String sinkGroup;
-
-    public String getConnectorName() {
-        return connectorName;
-    }
-
-    public void setConnectorName(String connectorName) {
-        this.connectorName = connectorName;
-    }
-
-    public String getSinkNameserver() {
-        return sinkNameserver;
-    }
-
-    public void setSinkNameserver(String sinkNameserver) {
-        this.sinkNameserver = sinkNameserver;
-    }
-
-    public String getSinkTopic() {
-        return sinkTopic;
-    }
-
-    public void setSinkTopic(String sinkTopic) {
-        this.sinkTopic = sinkTopic;
-    }
-
-    public String getSinkGroup() {
-        return sinkGroup;
-    }
-
-    public void setSinkGroup(String sinkGroup) {
-        this.sinkGroup = sinkGroup;
-    }
 }
