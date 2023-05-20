@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
  */
 public class MessageQueue {
 
-    public MessageEntity[] items;
+    private final MessageEntity[] items;
 
     private int takeIndex;
 
@@ -37,7 +37,7 @@ public class MessageQueue {
 
     private int count;
 
-    private final ReentrantLock lock;
+    private final ReentrantLock reentrantLock;
 
     private final Condition notEmpty;
 
@@ -53,9 +53,9 @@ public class MessageQueue {
             throw new IllegalArgumentException("capacity is illegal");
         }
         this.items = new MessageEntity[capacity];
-        this.lock = new ReentrantLock();
-        this.notEmpty = lock.newCondition();
-        this.notFull = lock.newCondition();
+        this.reentrantLock = new ReentrantLock();
+        this.notEmpty = reentrantLock.newCondition();
+        this.notFull = reentrantLock.newCondition();
     }
 
     /**
@@ -65,7 +65,7 @@ public class MessageQueue {
      */
     public void put(MessageEntity messageEntity) throws InterruptedException {
         Preconditions.checkNotNull(messageEntity);
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lockInterruptibly();
         try {
             while (count == items.length) {
@@ -84,7 +84,7 @@ public class MessageQueue {
      * @throws InterruptedException
      */
     public MessageEntity take() throws InterruptedException {
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lockInterruptibly();
         try {
             while (count == 0) {
@@ -102,7 +102,7 @@ public class MessageQueue {
      * @return MessageEntity
      */
     public MessageEntity peek() {
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lock();
         try {
             return itemAt(takeIndex);
@@ -126,7 +126,7 @@ public class MessageQueue {
      * @return MessageEntity
      */
     public MessageEntity getTail() {
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lock();
         try {
             if (count == 0) {
@@ -149,7 +149,7 @@ public class MessageQueue {
      * @return MessageEntity
      */
     public MessageEntity getByOffset(long offset) {
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lock();
         try {
             MessageEntity head = getHead();
@@ -175,7 +175,7 @@ public class MessageQueue {
     }
 
     public void removeHead() {
-        ReentrantLock lock = this.lock;
+        ReentrantLock lock = this.reentrantLock;
         lock.lock();
         try {
             if (count == 0) {
@@ -224,5 +224,9 @@ public class MessageQueue {
 
     public int getPutIndex() {
         return putIndex;
+    }
+
+    public MessageEntity[] getItems() {
+        return items;
     }
 }
