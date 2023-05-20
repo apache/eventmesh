@@ -38,4 +38,6 @@ public class PubSubConfig {
 
     private String passWord;
 
+    private String subsystem;
+
 }

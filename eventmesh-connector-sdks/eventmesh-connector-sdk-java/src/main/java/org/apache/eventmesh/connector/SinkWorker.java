@@ -92,7 +92,7 @@ public class SinkWorker implements ConnectorWorker {
             e.printStackTrace();
             log.error(e.getMessage());
         }
-        eventMeshTCPClient.subscribe(config.getPubSubConfig().getMeshTopic(), SubscriptionMode.CLUSTERING,
+        eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
             SubscriptionType.ASYNC);
         eventMeshTCPClient.registerSubBusiHandler(new EventHandler(sink));
         eventMeshTCPClient.listen();

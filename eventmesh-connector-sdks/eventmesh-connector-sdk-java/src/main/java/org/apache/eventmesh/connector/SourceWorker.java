@@ -114,7 +114,7 @@ public class SourceWorker implements ConnectorWorker {
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(config.getPubSubConfig().getMeshTopic())
+            .withSubject(config.getPubSubConfig().getSubject())
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
