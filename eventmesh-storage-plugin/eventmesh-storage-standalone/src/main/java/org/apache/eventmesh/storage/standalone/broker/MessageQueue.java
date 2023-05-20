@@ -24,11 +24,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Getter;
+
 /**
  *  Represents a message queue that stores instances of MessageEntity.
  */
 public class MessageQueue {
 
+    @Getter
     private final MessageEntity[] items;
 
     private volatile int takeIndex;
@@ -249,9 +252,5 @@ public class MessageQueue {
 
     public int getPutIndex() {
         return putIndex;
-    }
-
-    public MessageEntity[] getItems() {
-        return items;
     }
 }
