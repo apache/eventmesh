@@ -42,7 +42,7 @@ public class Application {
         try {
             config = ConfigUtil.parse(connector.configClass());
             // offset storage, memory default
-//            KVStoreFactory.setStoreConfig(config.getStoreConfig());
+            //KVStoreFactory.setStoreConfig(config.getStoreConfig());
         } catch (Exception e) {
             log.error("parse config error", e);
             return;

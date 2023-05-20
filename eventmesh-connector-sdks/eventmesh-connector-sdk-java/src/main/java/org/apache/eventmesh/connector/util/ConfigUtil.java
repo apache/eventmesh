@@ -40,14 +40,6 @@ public class ConfigUtil {
         return parseConfig(c);
     }
 
-    private static Config parseConfig(Class<? extends Config> c) throws Exception {
-        String configFile = System.getProperty(Constants.ENV_CONFIG_FILE, System.getenv(Constants.ENV_CONFIG_FILE));
-        if (configFile == null || configFile.isEmpty()) {
-            configFile = "config.yml";
-        }
-        return parse(c, configFile);
-    }
-
     private static <T> T parse(Class<T> c, String filePathName) throws Exception {
         ObjectMapper objectMapper;
         if (filePathName.endsWith("json")) {
@@ -65,5 +57,13 @@ public class ConfigUtil {
             throw new FileNotFoundException(filePathName);
         }
         return objectMapper.readValue(url, c);
+    }
+
+    private static Config parseConfig(Class<? extends Config> c) throws Exception {
+        String configFile = System.getProperty(Constants.ENV_CONFIG_FILE, System.getenv(Constants.ENV_CONFIG_FILE));
+        if (configFile == null || configFile.isEmpty()) {
+            configFile = "config.yml";
+        }
+        return parse(c, configFile);
     }
 }
