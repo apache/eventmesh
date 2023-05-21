@@ -41,7 +41,7 @@ public class WebHookOperationConstant {
 
     public static final String OPERATION_MODE_NACOS = "nacos";
 
-    public static final String EVENTMESH_HOME = "#{eventMeshHome}";
+    public static final String EVENTMESH_HOME = "${eventMeshHome}";
 
     public static String getFilePath(String filePath) {
         if (filePath.startsWith(EVENTMESH_HOME)) {
