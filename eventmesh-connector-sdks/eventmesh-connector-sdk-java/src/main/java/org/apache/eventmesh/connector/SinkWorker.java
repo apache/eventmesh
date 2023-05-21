@@ -67,7 +67,7 @@ public class SinkWorker implements ConnectorWorker {
             .group(config.getPubSubConfig().getGroup())
             .path("/")
             .port(8362)
-            .subsystem(config.getPubSubConfig().getSubsystem())
+            .subsystem(config.getPubSubConfig().getAppId())
             .pid(Integer.parseInt(SystemUtils.getProcessId()))
             .version("2.0")
             .idc(config.getPubSubConfig().getIdc())
