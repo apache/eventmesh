@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
@@ -26,16 +27,14 @@ import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 import com.sun.net.httpserver.HttpExchange;
@@ -62,10 +61,10 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      * OPTIONS /client
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
@@ -78,13 +77,13 @@ public class HTTPClientHandler extends AbstractHttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
-            String url = deleteHTTPClientRequest.getUrl();
+            String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
 
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -105,8 +104,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             // Get the list of HTTP clients
@@ -115,17 +114,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.getEnv()).orElseGet(() -> ""),
-                        Optional.ofNullable(client.getSys()).orElseGet(() -> ""),
-                        Optional.ofNullable(client.getUrl()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getEnv()).orElse(""),
+                        Optional.ofNullable(client.getSys()).orElse(""),
+                        Optional.ofNullable(client.getUrl()).orElse(""),
                         "0",
-                        Optional.ofNullable(client.getHostname()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getHostname()).orElse(""),
                         0,
-                        Optional.ofNullable(client.getApiVersion()).orElseGet(() -> ""),
-                        Optional.ofNullable(client.getIdc()).orElseGet(() -> ""),
-                        Optional.ofNullable(client.getConsumerGroup()).orElseGet(() -> ""),
+                        Optional.ofNullable(client.getApiVersion()).orElse(""),
+                        Optional.ofNullable(client.getIdc()).orElse(""),
+                        Optional.ofNullable(client.getConsumerGroup()).orElse(""),
                         "",
-                        "HTTP"
+                        EventMeshConstants.PROTOCOL_HTTP.toUpperCase()
 
                     );
                     getClientResponseList.add(getClientResponse);
@@ -140,7 +139,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -151,7 +150,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
@@ -166,14 +165,18 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            list(httpExchange);
-        }
-        if ("DELETE".equals(httpExchange.getRequestMethod())) {
-            delete(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                list(httpExchange);
+                break;
+            case DELETE:
+                delete(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }
