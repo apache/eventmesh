@@ -155,5 +155,9 @@ public class EventMeshConstants {
     public static final String ACL = "acl";
     public static final String MSG_TYPE = "msgtype";
     public static final String PERSISTENT = "persistent";
-
+    public static final String HANDLER_ORIGIN="Access-Control-Allow-Origin";
+    public static final String HANDLER_METHODS="Access-Control-Allow-Methods";
+    public static final String HANDLER_HEADERS="Access-Control-Allow-Headers";
+    public static final String HANDLER_AGE="Access-Control-Max-Age";
+    public static final String MAX_AGE="86400";
 }
