@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.sink.connector.rocketmq;
+dependencies {
+    api "org.slf4j:slf4j-api"
+    implementation "org.apache.logging.log4j:log4j-api"
+    implementation "org.apache.logging.log4j:log4j-core"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
 
-import org.apache.eventmesh.connector.Application;
-import org.apache.eventmesh.sink.connector.rocketmq.connector.RocketMQSinkConnector;
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
 
-public class RocketMQSinkWorker {
+    implementation project(":eventmesh-sdk-java")
 
-    public static void main(String[] args) throws Exception {
-
-        Application.run(RocketMQSinkConnector.class);
-
-    }
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }

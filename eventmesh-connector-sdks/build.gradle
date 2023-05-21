@@ -14,17 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.eventmesh.sink.connector.rocketmq;
-
-import org.apache.eventmesh.connector.Application;
-import org.apache.eventmesh.sink.connector.rocketmq.connector.RocketMQSinkConnector;
-
-public class RocketMQSinkWorker {
-
-    public static void main(String[] args) throws Exception {
-
-        Application.run(RocketMQSinkConnector.class);
-
-    }
-}
