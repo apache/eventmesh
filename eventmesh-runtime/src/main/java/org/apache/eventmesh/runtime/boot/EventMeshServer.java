@@ -92,9 +92,7 @@ public class EventMeshServer {
 
         //If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
         if (BOOTSTRAP_LIST.isEmpty()) {
-            BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
-            BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
         }
     }
 
