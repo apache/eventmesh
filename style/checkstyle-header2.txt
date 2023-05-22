@@ -14,4 +14,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-APP_START_JVM_OPTION:::-server -Xms128M -Xmx256M -Xmn128m -XX:SurvivorRatio=4 -Duser.language=zh
