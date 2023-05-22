@@ -27,7 +27,7 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 
 /**
- *  Represents a message queue that stores instances of MessageEntity.
+ *   This is a block queue, can get entity by offset. The queue is a FIFO data structure
  */
 public class MessageQueue {
 
@@ -42,9 +42,9 @@ public class MessageQueue {
 
     private final ReentrantLock lock;
 
-    private final Condition isEmpty;
+    private final Condition notEmpty;
 
-    private final Condition isFull;
+    private final Condition noteFull;
 
 
     public MessageQueue() {
@@ -57,8 +57,8 @@ public class MessageQueue {
         }
         this.items = new MessageEntity[capacity];
         this.lock = new ReentrantLock();
-        this.isEmpty = lock.newCondition();
-        this.isFull = lock.newCondition();
+        this.notEmpty = lock.newCondition();
+        this.noteFull = lock.newCondition();
     }
 
     /**
@@ -73,7 +73,7 @@ public class MessageQueue {
         reentrantLock.lockInterruptibly();
         try {
             while (count == items.length) {
-                isFull.await();
+                noteFull.await();
             }
             enqueue(messageEntity);
         } finally {
@@ -92,7 +92,7 @@ public class MessageQueue {
         reentrantLock.lockInterruptibly();
         try {
             while (count == 0) {
-                isEmpty.await();
+                notEmpty.await();
             }
             return dequeue();
         } finally {
@@ -198,7 +198,7 @@ public class MessageQueue {
             if (takeIndex == items.length) {
                 takeIndex = 0;
             }
-            isFull.signalAll();
+            noteFull.signalAll();
         } finally {
             reentrantLock.unlock();
         }
@@ -229,7 +229,7 @@ public class MessageQueue {
             putIndex = 0;
         }
         count++;
-        isEmpty.signalAll();
+        notEmpty.signalAll();
     }
 
     /**
@@ -242,7 +242,7 @@ public class MessageQueue {
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
-        isFull.signalAll();
+        noteFull.signalAll();
         return item;
     }
 
