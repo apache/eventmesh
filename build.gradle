@@ -81,6 +81,7 @@ allprojects {
         showViolations = true
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
+        configDirectory = file("${rootDir}/style")
     }
 
     checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
