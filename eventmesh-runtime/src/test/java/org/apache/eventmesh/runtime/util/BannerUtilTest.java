@@ -14,3 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.eventmesh.runtime.util;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class BannerUtilTest {
+
+    @Test
+    public void testGenerateBanner() {
+        try {
+            BannerUtil.generateBanner();
+        } catch (Exception e) {
+            Assert.fail("BannerUtil.generateBanner() test failed");
+        }
+    }
+}

@@ -15,7 +15,20 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.config;
+package org.apache.eventmesh.connector;
 
-public abstract class SinkConfig extends Config {
+/**
+ * Connector worker interface
+ */
+public interface ConnectorWorker {
+
+    /**
+     * Starts the worker
+     */
+    void start();
+
+    /**
+     * Stops the worker
+     */
+    void stop();
 }

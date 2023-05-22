@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq.config;
 
-import org.apache.eventmesh.connector.api.config.SinkConfig;
-
 import lombok.Data;
 
 @Data
-public class RocketMQSinkConfig extends SinkConfig {
+public class ConnectorConfig {
 
-    public ConnectorConfig connectorConfig;
+    private String connectorName;
 
+    private String nameServer;
+
+    private String topic;
 }
