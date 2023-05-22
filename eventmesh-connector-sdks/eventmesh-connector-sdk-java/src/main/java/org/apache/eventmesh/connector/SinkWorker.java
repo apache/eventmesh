@@ -67,7 +67,7 @@ public class SinkWorker implements ConnectorWorker {
             .group(config.getPubSubConfig().getGroup())
             .path("/")
             .port(8362)
-            .subsystem(config.getPubSubConfig().getSubsystem())
+            .subsystem(config.getPubSubConfig().getAppId())
             .pid(Integer.parseInt(SystemUtils.getProcessId()))
             .version("2.0")
             .idc(config.getPubSubConfig().getIdc())
@@ -92,7 +92,7 @@ public class SinkWorker implements ConnectorWorker {
             e.printStackTrace();
             log.error(e.getMessage());
         }
-        eventMeshTCPClient.subscribe(config.getPubSubConfig().getMeshTopic(), SubscriptionMode.CLUSTERING,
+        eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
             SubscriptionType.ASYNC);
         eventMeshTCPClient.registerSubBusiHandler(new EventHandler(sink));
         eventMeshTCPClient.listen();
