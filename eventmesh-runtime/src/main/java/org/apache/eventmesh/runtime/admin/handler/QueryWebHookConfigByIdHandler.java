@@ -30,7 +30,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.util.Objects;
 
 import com.sun.net.httpserver.HttpExchange;
