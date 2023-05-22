@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.config;
 
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpField;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import java.util.Properties;
 import org.assertj.core.util.Strings;
 
 import lombok.Getter;
+
 
 public class ConfigService {
 
@@ -155,7 +158,15 @@ public class ConfigService {
         configInfo.setMonitor(config.monitor());
         configInfo.setReloadMethodName(config.reloadMethodName());
 
-        Field field = clazz.getDeclaredField(configInfo.getField());
+        Field field = null;
+        try {
+            field = clazz.getDeclaredField(configInfo.getField());
+        } catch (NoSuchFieldException e) {
+            field = lookUpField(clazz, configInfo.getField());
+            if (field == null) {
+                throw e;
+            }
+        }
         configInfo.setClazz(field.getType());
 
         Config configType = field.getType().getAnnotation(Config.class);
@@ -180,4 +191,5 @@ public class ConfigService {
             configMonitorService.monitor(configInfo);
         }
     }
+
 }
