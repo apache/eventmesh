@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,7 +39,6 @@ import java.util.Objects;
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 /**
  * The config handler
