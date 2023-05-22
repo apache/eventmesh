@@ -13,20 +13,27 @@ CloudEvents - A specification for describing event data in common formats to pro
 ## Implements
 Add a new connector by implementing the source/sink interface using :
 
-[eventmesh-sdk-java](https://github.com/apache/eventmesh/tree/master/eventmesh-sdks/eventmesh-sdk-java)
+[eventmesh-connector-sdk-java](https://github.com/apache/eventmesh/tree/master/eventmesh-connector-sdks/eventmesh-connector-sdk-java)
 
-[eventmesh-connector-api](https://github.com/apache/eventmesh/tree/master/eventmesh-connector-sdks/eventmesh-connector-sdks-java)
+## Connector Status
 
-## Connector Release Status
-EventMesh uses a grading system for connectors to help you understand what to expect from a connector:
-
-|                      | Alpha                                                                                                                                                                                                            | Beta                                                                                                                                                                                                                                       | General Availability (GA)                                                                                                                                                                                      |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Expectations         | An alpha connector signifies a connector under development and helps EventMesh gather early feedback and issues reported by early adopters. We strongly discourage using alpha releases for production use cases | A beta connector is considered stable and reliable with no backwards incompatible changes but has not been validated by a broader group of users. We expect to find and fix a few issues and bugs in the release before it’s ready for GA. | A generally available connector has been deemed ready for use in a production environment and is officially supported by EventMesh. Its documentation is considered sufficient to support widespread adoption. |
-|                      |                                                                                                                                                                                                                  |                                                                                                                                                                                                                                            |                                                                                                                                                                                                                |
-| Production Readiness | No                                                                                                                                                                                                               | Yes                                                                                                                                                                                                                                        | Yes                                                                                                                                                                                                            |
-
-| Connector Name                        | Type   | Status | Support Version |
-|---------------------------------------|--------|--------|-----------------|
-| [RocketMQ](sink-connector-rocketmq)   | Sink   | Alpha  | N/A             |
-| [RocketMQ](source-connector-rocketmq) | Source | Alpha  | N/A             |
+| Connector Name                        | Type   | Support Version |
+|---------------------------------------|--------|-----------------|
+| [RocketMQ](sink-connector-rocketmq)   | Sink   | N/A             |
+| [RocketMQ](source-connector-rocketmq) | Source | N/A             |
+| ClickHouse                            | Sink   | N/A             |
+| ClickHouse                            | Source | N/A             |
+| DingTalk                              | Sink   | N/A             |
+| Email                                 | Sink   | N/A             |
+| FeiShu                                | Sink   | N/A             |
+| Github                                | Source | N/A             |
+| Http                                  | Sink   | N/A             |
+| Http                                  | Source | N/A             |
+| Jdbc                                  | Sink   | N/A             |
+| Jdbc                                  | Source | N/A             |
+| MySqlCDC                              | Source | N/A             |
+| MongoDB                               | Sink   | N/A             |
+| MongoDB                               | Source | N/A             |
+| S3File                                | Sink   | N/A             |
+| S3File                                | Source | N/A             |
+| More connectors will be added...      | Source/Sink   | N/A             |       
