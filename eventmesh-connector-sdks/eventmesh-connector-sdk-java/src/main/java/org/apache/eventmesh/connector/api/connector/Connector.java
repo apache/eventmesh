@@ -25,16 +25,47 @@ import org.apache.eventmesh.connector.api.data.ConnectRecord;
  */
 public interface Connector {
 
+    /**
+     * Returns the class type of the configuration for this Connector.
+     *
+     * @return Class type of the configuration
+     */
     Class<? extends Config> configClass();
 
+    /**
+     * Initializes the Connector with the provided configuration.
+     *
+     * @param config Configuration object
+     * @throws Exception if initialization fails
+     */
     void init(Config config) throws Exception;
 
+    /**
+     * Starts the Connector.
+     *
+     * @throws Exception if the start operation fails
+     */
     void start() throws Exception;
 
+    /**
+     * Commits the specified ConnectRecord object.
+     *
+     * @param record ConnectRecord object to commit
+     */
     void commit(ConnectRecord record);
 
+    /**
+     * Returns the name of the Connector.
+     *
+     * @return String name of the Connector
+     */
     String name();
 
+    /**
+     * Stops the Connector.
+     *
+     * @throws Exception if stopping fails
+     */
     void stop() throws Exception;
 
 }

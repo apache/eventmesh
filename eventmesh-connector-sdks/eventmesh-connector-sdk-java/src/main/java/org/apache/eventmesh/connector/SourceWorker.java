@@ -72,7 +72,7 @@ public class SourceWorker implements ConnectorWorker {
             .group(config.getPubSubConfig().getGroup())
             .path("/")
             .port(8362)
-            .subsystem(config.getPubSubConfig().getSubsystem())
+            .subsystem(config.getPubSubConfig().getAppId())
             .pid(Integer.parseInt(SystemUtils.getProcessId()))
             .version("2.0")
             .idc(config.getPubSubConfig().getIdc())
@@ -114,7 +114,7 @@ public class SourceWorker implements ConnectorWorker {
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(config.getPubSubConfig().getMeshTopic())
+            .withSubject(config.getPubSubConfig().getSubject())
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
