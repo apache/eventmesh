@@ -29,11 +29,9 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
 
-
 import org.assertj.core.util.Strings;
 
 import lombok.Getter;
-
 
 public class ConfigService {
 
