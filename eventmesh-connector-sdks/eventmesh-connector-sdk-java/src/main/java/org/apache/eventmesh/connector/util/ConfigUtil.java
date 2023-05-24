@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.connector.util;
@@ -40,14 +40,6 @@ public class ConfigUtil {
         return parseConfig(c);
     }
 
-    private static Config parseConfig(Class<? extends Config> c) throws Exception {
-        String configFile = System.getProperty(Constants.ENV_CONFIG_FILE, System.getenv(Constants.ENV_CONFIG_FILE));
-        if (configFile == null || configFile.isEmpty()) {
-            configFile = "config.yml";
-        }
-        return parse(c, configFile);
-    }
-
     private static <T> T parse(Class<T> c, String filePathName) throws Exception {
         ObjectMapper objectMapper;
         if (filePathName.endsWith("json")) {
@@ -65,5 +57,13 @@ public class ConfigUtil {
             throw new FileNotFoundException(filePathName);
         }
         return objectMapper.readValue(url, c);
+    }
+
+    private static Config parseConfig(Class<? extends Config> c) throws Exception {
+        String configFile = System.getProperty(Constants.ENV_CONFIG_FILE, System.getenv(Constants.ENV_CONFIG_FILE));
+        if (configFile == null || configFile.isEmpty()) {
+            configFile = "config.yml";
+        }
+        return parse(c, configFile);
     }
 }
