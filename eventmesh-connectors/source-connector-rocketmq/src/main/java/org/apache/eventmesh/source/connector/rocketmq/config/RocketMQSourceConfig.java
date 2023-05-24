@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.source.connector.rocketmq.config;
 
-import org.apache.eventmesh.connector.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import lombok.Data;
 

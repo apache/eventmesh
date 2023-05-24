@@ -160,5 +160,4 @@ public class EventMeshConstants {
     public static final String HANDLER_HEADERS = "Access-Control-Allow-Headers";
     public static final String HANDLER_AGE = "Access-Control-Max-Age";
     public static final String MAX_AGE = "86400";
-
 }
