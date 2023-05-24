@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.connector;
@@ -67,7 +67,7 @@ public class SinkWorker implements ConnectorWorker {
             .group(config.getPubSubConfig().getGroup())
             .path("/")
             .port(8362)
-            .subsystem(config.getPubSubConfig().getSubsystem())
+            .subsystem(config.getPubSubConfig().getAppId())
             .pid(Integer.parseInt(SystemUtils.getProcessId()))
             .version("2.0")
             .idc(config.getPubSubConfig().getIdc())
@@ -92,7 +92,7 @@ public class SinkWorker implements ConnectorWorker {
             e.printStackTrace();
             log.error(e.getMessage());
         }
-        eventMeshTCPClient.subscribe(config.getPubSubConfig().getMeshTopic(), SubscriptionMode.CLUSTERING,
+        eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
             SubscriptionType.ASYNC);
         eventMeshTCPClient.registerSubBusiHandler(new EventHandler(sink));
         eventMeshTCPClient.listen();

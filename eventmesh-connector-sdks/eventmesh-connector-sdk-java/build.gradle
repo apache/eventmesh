@@ -26,7 +26,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
 
-    implementation project(":eventmesh-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
