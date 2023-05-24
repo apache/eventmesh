@@ -13,7 +13,7 @@ CloudEvents - A specification for describing event data in common formats to pro
 ## Implements
 Add a new connector by implementing the source/sink interface using :
 
-[eventmesh-connector-sdk-java](https://github.com/apache/eventmesh/tree/master/eventmesh-connector-sdks/eventmesh-connector-sdk-java)
+[eventmesh-openconnect-java](https://github.com/apache/eventmesh/tree/master/eventmesh-openconnect/eventmesh-openconnect-java)
 
 ## Connector Status
 
