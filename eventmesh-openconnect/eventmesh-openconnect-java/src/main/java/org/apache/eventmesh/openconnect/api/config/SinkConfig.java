@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.sink.connector.rocketmq.config;
-
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+package org.apache.eventmesh.openconnect.api.config;
 
 import lombok.Data;
 
 @Data
-public class RocketMQSinkConfig extends SinkConfig {
+public abstract class SinkConfig extends Config {
 
-    public ConnectorConfig connectorConfig;
+    private PubSubConfig pubSubConfig;
 
 }

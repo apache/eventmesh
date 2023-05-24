@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.source.connector.rocketmq;
 
-import org.apache.eventmesh.connector.Application;
+import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.source.connector.rocketmq.connector.RocketMQSourceConnector;
 
 public class RocketMQSourceWorker {
