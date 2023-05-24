@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq;
 
-import org.apache.eventmesh.connector.Application;
+import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.sink.connector.rocketmq.connector.RocketMQSinkConnector;
 
 public class RocketMQSinkWorker {
