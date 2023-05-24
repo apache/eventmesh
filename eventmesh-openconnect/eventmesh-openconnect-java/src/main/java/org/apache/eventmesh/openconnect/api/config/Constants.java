@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.sink.connector.rocketmq.config;
+package org.apache.eventmesh.openconnect.api.config;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+public class Constants {
 
-import lombok.Data;
+    public static final String ENV_TARGET = "connectorTarget";
 
-@Data
-public class RocketMQSinkConfig extends SinkConfig {
+    public static final String ENV_PORT = "connectorPort";
 
-    public ConnectorConfig connectorConfig;
+    public static final String ENV_CONFIG_FILE = "connectorConf";
 
+    public static final int DEFAULT_ATTEMPT = 3;
+
+    public static final int DEFAULT_PORT = 8080;
 }

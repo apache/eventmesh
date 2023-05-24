@@ -15,15 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.sink.connector.rocketmq.config;
+package org.apache.eventmesh.openconnect;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+/**
+ * Connector worker interface
+ */
+public interface ConnectorWorker {
 
-import lombok.Data;
+    /**
+     * Starts the worker
+     */
+    void start();
 
-@Data
-public class RocketMQSinkConfig extends SinkConfig {
-
-    public ConnectorConfig connectorConfig;
-
+    /**
+     * Stops the worker
+     */
+    void stop();
 }
