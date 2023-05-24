@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq.config;
 
-import org.apache.eventmesh.connector.api.config.SinkConfig;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 import lombok.Data;
 

@@ -15,7 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.config;
+package org.apache.eventmesh.openconnect.api.connector;
 
-public abstract class Config {
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.openconnect.api.sink.Sink;
+
+public abstract class SinkConnector implements Sink {
+
+    private final SinkConfig sinkConfig;
+
+    protected SinkConnector(SinkConfig sinkConfig) {
+        this.sinkConfig = sinkConfig;
+    }
 }

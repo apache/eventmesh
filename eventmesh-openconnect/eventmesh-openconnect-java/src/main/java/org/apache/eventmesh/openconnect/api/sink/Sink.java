@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.source;
+package org.apache.eventmesh.openconnect.api.sink;
 
-import org.apache.eventmesh.connector.api.connector.Connector;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 
 import java.util.List;
 
 /**
- * Source
+ * Sink
  */
-public interface Source extends Connector {
+public interface Sink extends Connector {
 
-    List<ConnectRecord> poll();
+    void put(List<ConnectRecord> sinkRecords);
 
 }

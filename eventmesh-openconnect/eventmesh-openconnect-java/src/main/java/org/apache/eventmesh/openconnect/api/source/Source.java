@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector;
+package org.apache.eventmesh.openconnect.api.source;
+
+import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+
+import java.util.List;
 
 /**
- * Connector worker interface
+ * Source
  */
-public interface ConnectorWorker {
+public interface Source extends Connector {
 
-    /**
-     * Starts the worker
-     */
-    void start();
+    List<ConnectRecord> poll();
 
-    /**
-     * Stops the worker
-     */
-    void stop();
 }

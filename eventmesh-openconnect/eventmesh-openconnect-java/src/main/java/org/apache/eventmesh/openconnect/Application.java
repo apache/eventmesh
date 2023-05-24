@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector;
+package org.apache.eventmesh.openconnect;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.config.SinkConfig;
-import org.apache.eventmesh.connector.api.config.SourceConfig;
-import org.apache.eventmesh.connector.api.connector.Connector;
-import org.apache.eventmesh.connector.api.sink.Sink;
-import org.apache.eventmesh.connector.api.source.Source;
-import org.apache.eventmesh.connector.util.ConfigUtil;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import lombok.extern.slf4j.Slf4j;
 

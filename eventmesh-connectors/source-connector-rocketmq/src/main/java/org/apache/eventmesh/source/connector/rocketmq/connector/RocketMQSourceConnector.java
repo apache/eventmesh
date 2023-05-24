@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.source.connector.rocketmq.connector;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
-import org.apache.eventmesh.connector.api.data.RecordOffset;
-import org.apache.eventmesh.connector.api.data.RecordPartition;
-import org.apache.eventmesh.connector.api.source.Source;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;

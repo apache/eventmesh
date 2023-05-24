@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.sink.connector.rocketmq.connector;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
-import org.apache.eventmesh.connector.api.sink.Sink;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.sink.connector.rocketmq.config.RocketMQSinkConfig;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;

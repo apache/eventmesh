@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.config;
+package org.apache.eventmesh.openconnect.api.config;
 
 import lombok.Data;
 

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.connector;
+package org.apache.eventmesh.openconnect.api.connector;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 
 /**
  * Connector

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector;
+package org.apache.eventmesh.openconnect;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
@@ -25,9 +25,9 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
-import org.apache.eventmesh.connector.api.config.SourceConfig;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
-import org.apache.eventmesh.connector.api.source.Source;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.source.Source;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

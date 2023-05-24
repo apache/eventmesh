@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.config;
+package org.apache.eventmesh.openconnect.api.config;
 
 import lombok.Data;
 
 @Data
-public abstract class SourceConfig extends Config {
+public abstract class SinkConfig extends Config {
 
     private PubSubConfig pubSubConfig;
 

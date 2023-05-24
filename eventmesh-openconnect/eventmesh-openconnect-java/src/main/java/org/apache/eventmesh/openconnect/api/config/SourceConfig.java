@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.connector;
+package org.apache.eventmesh.openconnect.api.config;
 
-import org.apache.eventmesh.connector.api.config.SinkConfig;
-import org.apache.eventmesh.connector.api.sink.Sink;
+import lombok.Data;
 
-public abstract class SinkConnector implements Sink {
+@Data
+public abstract class SourceConfig extends Config {
 
-    private final SinkConfig sinkConfig;
+    private PubSubConfig pubSubConfig;
 
-    protected SinkConnector(SinkConfig sinkConfig) {
-        this.sinkConfig = sinkConfig;
-    }
 }

@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.connector;
+package org.apache.eventmesh.openconnect.api.config;
 
-import org.apache.eventmesh.connector.api.config.SourceConfig;
-import org.apache.eventmesh.connector.api.source.Source;
+public class Constants {
 
-public abstract class SourceConnector implements Source {
+    public static final String ENV_TARGET = "connectorTarget";
 
-    private final SourceConfig sourceConfig;
+    public static final String ENV_PORT = "connectorPort";
 
-    protected SourceConnector(SourceConfig sourceConfig) {
-        this.sourceConfig = sourceConfig;
-    }
+    public static final String ENV_CONFIG_FILE = "connectorConf";
+
+    public static final int DEFAULT_ATTEMPT = 3;
+
+    public static final int DEFAULT_PORT = 8080;
 }

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.util;
+package org.apache.eventmesh.openconnect.util;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.config.Constants;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.config.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;

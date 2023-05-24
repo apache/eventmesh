@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.api.sink;
+package org.apache.eventmesh.openconnect.api.connector;
 
-import org.apache.eventmesh.connector.api.connector.Connector;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.source.Source;
 
-import java.util.List;
+public abstract class SourceConnector implements Source {
 
-/**
- * Sink
- */
-public interface Sink extends Connector {
+    private final SourceConfig sourceConfig;
 
-    void put(List<ConnectRecord> sinkRecords);
-
+    protected SourceConnector(SourceConfig sourceConfig) {
+        this.sourceConfig = sourceConfig;
+    }
 }
