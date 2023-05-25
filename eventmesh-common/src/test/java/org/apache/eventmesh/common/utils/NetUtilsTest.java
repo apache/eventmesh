@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.utils;
 import org.apache.eventmesh.common.enums.HttpMethod;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -69,5 +70,13 @@ public class NetUtilsTest {
         String actual = NetUtils.parsePostBody(exchange);
         Assert.assertEquals(expected, actual);
 
+    }
+
+    @Test
+    public void testSendSuccessResponseHeaders() throws IOException {
+        HttpExchange exchange = Mockito.mock(HttpExchange.class);
+        NetUtils.sendSuccessResponseHeaders(exchange);
+        Mockito.verify(exchange, Mockito.times(1))
+                .sendResponseHeaders(Mockito.anyInt(), Mockito.anyLong());
     }
 }
