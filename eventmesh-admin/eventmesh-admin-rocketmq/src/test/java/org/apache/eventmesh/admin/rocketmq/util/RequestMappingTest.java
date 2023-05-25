@@ -39,7 +39,6 @@ public class RequestMappingTest {
         when(httpExchange.getRequestMethod()).thenReturn(HttpMethod.POST.name());
         URI requestUri = new URI("/test/123");
         when(httpExchange.getRequestURI()).thenReturn(requestUri);
-        when(httpExchange.getRequestURI().getPath()).thenReturn(requestUri.getPath());
 
         boolean result = RequestMapping.postMapping("/test/{value}", httpExchange);
         assertEquals(true, result);
