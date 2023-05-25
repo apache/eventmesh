@@ -17,21 +17,14 @@
 
 package org.apache.eventmesh.trace.pinpoint;
 
-import io.opentelemetry.sdk.resources.Resource;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.trace.api.AbstractTraceService;
-import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.eventmesh.trace.api.exception.TraceException;
 import org.apache.eventmesh.trace.pinpoint.config.PinpointConfiguration;
 import org.apache.eventmesh.trace.pinpoint.exporter.PinpointSpanExporter;
 
 import java.util.concurrent.TimeUnit;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
