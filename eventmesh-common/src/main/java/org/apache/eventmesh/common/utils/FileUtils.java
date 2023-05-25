@@ -27,7 +27,7 @@ public class FileUtils {
 
     /**
      * Get the suffix of file name.
-     * For example, /.../foo.yml -> .yml
+     * For example, "/.../foo.yml" will return ".yml"
      *
      * @param filename
      * @return
