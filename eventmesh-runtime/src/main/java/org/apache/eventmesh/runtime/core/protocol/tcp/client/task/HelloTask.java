@@ -121,9 +121,8 @@ public class HelloTask extends AbstractTask {
             throw new Exception("client version cannot be null");
         }
 
-        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
-            EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
 
+        if (!StringUtils.equalsAny(user.getPurpose(), EventMeshConstants.PURPOSE_PUB, EventMeshConstants.PURPOSE_SUB)) {
             throw new Exception("client purpose config is error");
         }
 

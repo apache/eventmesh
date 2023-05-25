@@ -27,24 +27,24 @@ import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EtcdCustomService extends EtcdRegistryService {
 
     private static final String KEY_PREFIX = "eventMesh" + EtcdConstant.KEY_SEPARATOR;
     private static final String KEY_APP = "app";
     private static final String KEY_SERVICE = "service";
-    private static final Logger logger = LoggerFactory.getLogger(EtcdCustomService.class);
 
     @Nullable
     public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
@@ -68,11 +68,11 @@ public class EtcdCustomService extends EtcdRegistryService {
                 return eventMeshServicePubTopicInfoList;
             }
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] error", e);
+            log.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] error", e);
             throw new RegistryException(e.getMessage());
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     @Nullable
@@ -93,7 +93,7 @@ public class EtcdCustomService extends EtcdRegistryService {
                 return eventMeshAppSubTopicInfo;
             }
         } catch (Exception e) {
-            logger.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
+            log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             throw new RegistryException(e.getMessage());
         }
         return null;
