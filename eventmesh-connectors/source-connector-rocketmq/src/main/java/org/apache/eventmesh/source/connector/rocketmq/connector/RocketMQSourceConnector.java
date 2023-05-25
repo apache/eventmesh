@@ -8,20 +8,20 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.source.connector.rocketmq.connector;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
-import org.apache.eventmesh.connector.api.data.RecordOffset;
-import org.apache.eventmesh.connector.api.data.RecordPartition;
-import org.apache.eventmesh.connector.api.source.Source;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
