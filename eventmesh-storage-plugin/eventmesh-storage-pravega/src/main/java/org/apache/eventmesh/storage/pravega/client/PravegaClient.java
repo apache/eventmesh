@@ -188,7 +188,7 @@ public class PravegaClient {
     }
 
     private String buildReaderId(String instanceName) {
-        return String.format("%s-reader", instanceName).replaceAll("\\(", "-").replaceAll("\\)", "-");
+        return String.format("%s-reader", instanceName).replace("\\(", "-").replace("\\)", "-");
     }
 
     private void createReaderGroup(String topic, String readerGroupName) {
