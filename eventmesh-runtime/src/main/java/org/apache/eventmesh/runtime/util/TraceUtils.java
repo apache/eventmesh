@@ -42,7 +42,7 @@ public class TraceUtils {
             span = EventMeshServer.getTrace().createSpan(
                 spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
             EventMeshServer.getTrace().inject(Context.current(), map);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);
         }
         return span;
@@ -55,7 +55,7 @@ public class TraceUtils {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
             span = EventMeshServer.getTrace()
                 .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);
         }
         return span;
@@ -74,7 +74,7 @@ public class TraceUtils {
                 span = EventMeshServer.getTrace()
                     .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
             }
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);
         }
         return span;

@@ -18,11 +18,13 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
@@ -70,10 +72,10 @@ public class EventHandler extends AbstractHttpHandler {
      * OPTIONS /event
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
@@ -99,8 +101,8 @@ public class EventHandler extends AbstractHttpHandler {
      * GET /event Return the list of event
      */
     void get(HttpExchange httpExchange) {
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
@@ -148,8 +150,8 @@ public class EventHandler extends AbstractHttpHandler {
      * POST /event Create an event
      */
     void post(HttpExchange httpExchange) {
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
@@ -179,14 +181,18 @@ public class EventHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("POST".equals(httpExchange.getRequestMethod())) {
-            post(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case POST:
+                post(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }
