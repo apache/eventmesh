@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
@@ -26,6 +27,7 @@ import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Objects;
 
 
 import com.sun.net.httpserver.HttpExchange;
@@ -65,10 +68,10 @@ public class TopicHandler extends AbstractHttpHandler {
      * OPTIONS /topic
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
@@ -80,11 +83,11 @@ public class TopicHandler extends AbstractHttpHandler {
     void get(HttpExchange httpExchange) throws IOException {
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+            httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             List<TopicProperties> topicList = admin.getTopic();
             String result = JsonUtils.toJSONString(topicList);
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -95,7 +98,7 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             log.error(result, e);
         }
     }
@@ -106,11 +109,11 @@ public class TopicHandler extends AbstractHttpHandler {
     void post(HttpExchange httpExchange) throws IOException {
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+            httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             CreateTopicRequest createTopicRequest = JsonUtils.parseObject(request, CreateTopicRequest.class);
-            String topicName = createTopicRequest.getName();
+            String topicName = Objects.requireNonNull(createTopicRequest).getName();
             admin.createTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -122,7 +125,7 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             log.error(result, e);
         }
     }
@@ -133,11 +136,11 @@ public class TopicHandler extends AbstractHttpHandler {
     void delete(HttpExchange httpExchange) throws IOException {
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+            httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteTopicRequest deleteTopicRequest = JsonUtils.parseObject(request, DeleteTopicRequest.class);
-            String topicName = deleteTopicRequest.getName();
+            String topicName = Objects.requireNonNull(deleteTopicRequest).getName();
             admin.deleteTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
@@ -149,24 +152,28 @@ public class TopicHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             log.error(result, e);
         }
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("POST".equals(httpExchange.getRequestMethod())) {
-            post(httpExchange);
-        }
-        if ("DELETE".equals(httpExchange.getRequestMethod())) {
-            delete(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case POST:
+                post(httpExchange);
+                break;
+            case DELETE:
+                delete(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }
