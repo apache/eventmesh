@@ -8,20 +8,20 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.source.connector.rocketmq.connector;
 
-import org.apache.eventmesh.connector.api.config.Config;
-import org.apache.eventmesh.connector.api.data.ConnectRecord;
-import org.apache.eventmesh.connector.api.data.RecordOffset;
-import org.apache.eventmesh.connector.api.data.RecordPartition;
-import org.apache.eventmesh.connector.api.source.Source;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.source.connector.rocketmq.config.RocketMQSourceConfig;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
@@ -48,13 +48,13 @@ public class RocketMQSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for rocketmq source connector
         this.sourceConfig = (RocketMQSourceConfig) config;
-        consumer.setConsumerGroup(sourceConfig.getSourceGroup());
-        consumer.setNamesrvAddr(sourceConfig.getSourceNameserver());
+        consumer.setConsumerGroup(sourceConfig.getPubSubConfig().getGroup());
+        consumer.setNamesrvAddr(sourceConfig.getConnectorConfig().getNameserver());
     }
 
     @Override
     public void start() throws Exception {
-        consumer.subscribe(sourceConfig.getSourceTopic(), "*");
+        consumer.subscribe(sourceConfig.getConnectorConfig().getTopic(), "*");
         consumer.start();
     }
 
@@ -65,12 +65,12 @@ public class RocketMQSourceConnector implements Source {
 
     @Override
     public String name() {
-        return this.sourceConfig.getConnectorName();
+        return this.sourceConfig.getConnectorConfig().getConnectorName();
     }
 
     @Override
     public void stop() {
-        consumer.unsubscribe(sourceConfig.getSourceTopic());
+        consumer.unsubscribe(sourceConfig.getConnectorConfig().getTopic());
         consumer.shutdown();
     }
 
