@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
@@ -91,7 +92,14 @@ public class EventMeshTcpRetryer {
             try {
                 RetryContext retryContext;
                 while ((retryContext = retrys.take()) != null) {
-                    pool.execute(retryContext::retry);
+                    final RetryContext retryCtx = retryContext;
+                    pool.execute(() -> {
+                        try {
+                            retryCtx.retry();
+                        } catch (Exception e) {
+                            log.error("retry-dispatcher error!", e);
+                        }
+                    });
                 }
             } catch (Exception e) {
                 log.error("retry-dispatcher error!", e);
