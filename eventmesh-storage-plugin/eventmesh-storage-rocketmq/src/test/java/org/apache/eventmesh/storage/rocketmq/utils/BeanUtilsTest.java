@@ -89,7 +89,7 @@ public class BeanUtilsTest {
         Assert.assertEquals("Default_Consumer_Group", config.getRmqConsumerGroup());
         Assert.assertEquals(101, config.getRmqMessageConsumeTimeout());
         Assert.assertEquals(1234567890L, config.getLongTest());
-        Assert.assertEquals(10.234, 0.000001, config.getDoubleTest());
+        Assert.assertEquals(10.234, config.getDoubleTest(), 0.000001);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class BeanUtilsTest {
         Assert.assertEquals("Default_Consumer_Group", config.getRmqConsumerGroup());
         Assert.assertEquals(101, config.getRmqMessageConsumeTimeout());
         Assert.assertEquals(1234567890L, config.getLongTest());
-        Assert.assertEquals(10.234, 0.000001, config.getDoubleTest());
+        Assert.assertEquals(10.234, config.getDoubleTest(), 0.000001);
     }
 
 }
