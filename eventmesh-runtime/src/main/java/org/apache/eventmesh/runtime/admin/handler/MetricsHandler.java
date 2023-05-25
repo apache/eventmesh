@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -27,11 +28,13 @@ import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 
 
 import com.sun.net.httpserver.HttpExchange;
@@ -57,10 +60,10 @@ public class MetricsHandler extends AbstractHttpHandler {
      * OPTIONS /metrics
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
@@ -71,8 +74,8 @@ public class MetricsHandler extends AbstractHttpHandler {
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
@@ -120,7 +123,7 @@ public class MetricsHandler extends AbstractHttpHandler {
                 tcpSummaryMetrics.getSubTopicNum()
             );
             String result = JsonUtils.toJSONString(getMetricsResponse);
-            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(200, bytes.length);
             out.write(bytes);
         } catch (Exception e) {
@@ -132,7 +135,7 @@ public class MetricsHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(500, bytes.length);
             out.write(bytes);
         } finally {
@@ -149,11 +152,15 @@ public class MetricsHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }

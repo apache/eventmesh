@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,7 +53,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    private String printClients(List<InetSocketAddress> clients) {
+    private String printClients(Collection<InetSocketAddress> clients) {
         if (clients == null || clients.isEmpty()) {
             return "no session had been closed";
         }
