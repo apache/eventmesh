@@ -19,12 +19,18 @@ package org.apache.eventmesh.storage.rocketmq.admin;
 
 import org.apache.eventmesh.api.admin.AbstractAdmin;
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.storage.rocketmq.config.ClientConfiguration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.admin.TopicOffset;
 import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.command.CommandUtil;
 
 import java.util.ArrayList;
@@ -32,6 +38,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
