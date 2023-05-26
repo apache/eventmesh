@@ -87,6 +87,8 @@ public class EventMeshServer {
                 case ConfigurationContextUtil.GRPC:
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
                     break;
+                default:
+                    //nothing to do
             }
         }
 
