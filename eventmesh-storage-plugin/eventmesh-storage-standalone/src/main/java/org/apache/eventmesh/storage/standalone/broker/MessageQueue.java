@@ -27,7 +27,7 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 
 /**
- *   This is a block queue, can get entity by offset. The queue is a FIFO data structure
+ * This is a block queue, can get entity by offset. The queue is a FIFO data structure.
  */
 public class MessageQueue {
 
@@ -44,7 +44,7 @@ public class MessageQueue {
 
     private final Condition notEmpty;
 
-    private final Condition noteFull;
+    private final Condition notFull;
 
 
     public MessageQueue() {
@@ -58,7 +58,7 @@ public class MessageQueue {
         this.items = new MessageEntity[capacity];
         this.lock = new ReentrantLock();
         this.notEmpty = lock.newCondition();
-        this.noteFull = lock.newCondition();
+        this.notFull = lock.newCondition();
     }
 
     /**
@@ -73,7 +73,7 @@ public class MessageQueue {
         reentrantLock.lockInterruptibly();
         try {
             while (count == items.length) {
-                noteFull.await();
+                notFull.await();
             }
             enqueue(messageEntity);
         } finally {
@@ -82,7 +82,7 @@ public class MessageQueue {
     }
 
     /**
-     * Retrieves and removes the head of the queue.
+     * Get the first message at this queue, waiting for the message is available if the queue is empty, this method will not remove the message
      *
      * @return The MessageEntity object at the head of the queue.
      * @throws InterruptedException if the current thread is interrupted while waiting for an element to become available in the queue.
@@ -147,7 +147,7 @@ public class MessageQueue {
     }
 
     /**
-     * Retrieves the MessageEntity object with the specified offset.
+     * Get the message by offset, since the offset is increment, so we can get the first message in this queue and calculate the index of this offset
      *
      * @param offset The offset of the MessageEntity object to be retrieved.
      * @return The MessageEntity object with the specified offset, or null if no such object exists in the queue.
@@ -160,9 +160,8 @@ public class MessageQueue {
             if (count == 0) {
                 return null;
             }
-            int headIndex = takeIndex;
             int tailIndex = putIndex - 1;
-            MessageEntity head = itemAt(headIndex);
+            MessageEntity head = itemAt(takeIndex);
             if (head.getOffset() > offset) {
                 throw new RuntimeException(String.format("The message has been deleted, offset: %s", offset));
             }
@@ -170,7 +169,7 @@ public class MessageQueue {
                 tailIndex += items.length;
             }
             MessageEntity tail = itemAt(tailIndex);
-            if (tail.getOffset() < offset) {
+            if (tail == null || tail.getOffset() < offset) {
                 return null;
             }
             int offsetDis = (int) (head.getOffset() - offset);
@@ -198,7 +197,7 @@ public class MessageQueue {
             if (takeIndex == items.length) {
                 takeIndex = 0;
             }
-            noteFull.signalAll();
+            notFull.signalAll();
         } finally {
             reentrantLock.unlock();
         }
@@ -219,7 +218,7 @@ public class MessageQueue {
     }
 
     /**
-     * Inserts the specified MessageEntity object into the queue.
+     * Insert the message at the tail of this queue, waiting for space to become available if the queue is full
      *
      * @param messageEntity The MessageEntity object to be inserted into the queue.
      */
@@ -242,7 +241,7 @@ public class MessageQueue {
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
-        noteFull.signalAll();
+        notFull.signalAll();
         return item;
     }
 
