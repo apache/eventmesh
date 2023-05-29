@@ -20,12 +20,9 @@ package org.apache.eventmesh.metrics.prometheus.utils;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 
-import lombok.experimental.UtilityClass;
-
 /**
  * Utils for metrics-prometheus module
  */
-@UtilityClass
 public class PrometheusExporterUtils {
 
     /**
@@ -37,7 +34,7 @@ public class PrometheusExporterUtils {
      * @param protocol
      * @param number
      */
-    public void observeOfValue(Meter meter, String name, String desc, String protocol, Number number) {
+    public static void observeOfValue(Meter meter, String name, String desc, String protocol, Number number) {
         if (number instanceof Long) {
             meter.longValueObserverBuilder(name)
                     .setDescription(desc)
@@ -62,7 +59,7 @@ public class PrometheusExporterUtils {
      * @param desc the description of metric
      * @return
      */
-    public String[] join(String metricName, String desc) {
+    public static String[] join(String metricName, String desc) {
         String[] array = {metricName, desc};
         return array;
     }
