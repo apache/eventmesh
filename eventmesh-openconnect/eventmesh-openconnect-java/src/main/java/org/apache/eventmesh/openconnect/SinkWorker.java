@@ -50,7 +50,6 @@ public class SinkWorker implements ConnectorWorker {
     public SinkWorker(Sink sink, SinkConfig config) throws Exception {
         this.sink = sink;
         this.config = config;
-        sink.init(config);
         eventMeshTCPClient = buildEventMeshSubClient(config);
         eventMeshTCPClient.init();
     }
