@@ -25,6 +25,8 @@ import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -94,6 +96,25 @@ public class JsonUtils {
             return OBJECT_MAPPER.readValue(text, clazz);
         } catch (JsonProcessingException e) {
             throw new JsonException("deserialize json string to object error", e);
+        }
+    }
+
+    /**
+     * parse json string to List of object.
+     *
+     * @param text  json string
+     * @param clazz object class
+     * @param <T>   object type
+     * @return object
+     */
+    public static <T> List<T> parseList(String json, Class<T> clazz) {
+        if (StringUtils.isBlank(json) || Objects.isNull(clazz)) {
+            return Collections.emptyList();
+        }
+        try {
+            return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (JsonProcessingException e) {
+            throw new JsonException("deserialize json string to object List error", e);
         }
     }
 

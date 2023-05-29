@@ -37,7 +37,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-core"
     api "com.fasterxml.jackson.core:jackson-annotations"
 
-    implementation "org.apache.httpcomponents:httpclient"
+    api "org.apache.httpcomponents:httpclient"
 
     implementation "io.netty:netty-all"
 

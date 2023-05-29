@@ -15,19 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.sink.connector.rabbitmq.connector.config;
 
-public class Constants {
+import org.apache.eventmesh.sink.connector.rabbitmq.connector.domain.RabbitDestination;
 
-    public static final String ENV_TARGET = "connectorTarget";
+import java.util.List;
 
-    public static final String ENV_PORT = "connectorPort";
+import lombok.Data;
 
-    public static final String ENV_CONFIG_FILE = "connectorConf";
+@Data
+public class RabbitSinkConnectorConfig {
 
-    public static final int DEFAULT_ATTEMPT = 3;
+    private String connectorName;
 
-    public static final int DEFAULT_PORT = 8080;
+    private String address;
 
-    public static final String QUEUE_OFFSET = "queueOffset";
+    private String userName;
+
+    private String passWord;
+
+    private String virtualHost = "/";
+
+    // Milliseconds
+    private int connectionTimeout = 10000;
+
+    // This value determines if exchanges will be created when not exist. "true" indicates no creation.
+    private boolean passive = true;
+
+    private boolean confirmListener = false;
+
+    private boolean returnListener = false;
+
+    private List<RabbitDestination> destinations;
 }

@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.source.connector.rabbitmq.utils;
 
-public class Constants {
+public class RabbitSourceConstants {
 
-    public static final String ENV_TARGET = "connectorTarget";
+    public static final String EXCHANGE = "exchange";
 
-    public static final String ENV_PORT = "connectorPort";
+    public static final String ROUTING_KEY = "routingKey";
 
-    public static final String ENV_CONFIG_FILE = "connectorConf";
+    public static final String DELIVERY_TAG = "deliveryTag";
 
-    public static final int DEFAULT_ATTEMPT = 3;
+    public static final String BASIC_PROPS = "basicProperties";
 
-    public static final int DEFAULT_PORT = 8080;
+    public static final String PUSH = "push";
 
-    public static final String QUEUE_OFFSET = "queueOffset";
+    public static final String PULL = "pull";
+
 }

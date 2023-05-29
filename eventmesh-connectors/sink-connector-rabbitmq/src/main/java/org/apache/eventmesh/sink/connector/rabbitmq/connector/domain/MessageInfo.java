@@ -15,19 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.sink.connector.rabbitmq.connector.domain;
 
-public class Constants {
+import com.rabbitmq.client.AMQP.BasicProperties;
 
-    public static final String ENV_TARGET = "connectorTarget";
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-    public static final String ENV_PORT = "connectorPort";
+@Setter
+@Getter
+@AllArgsConstructor
+public class MessageInfo {
 
-    public static final String ENV_CONFIG_FILE = "connectorConf";
+    private String exchange;
 
-    public static final int DEFAULT_ATTEMPT = 3;
+    private String routingKey;
 
-    public static final int DEFAULT_PORT = 8080;
+    private BasicProperties properties;
 
-    public static final String QUEUE_OFFSET = "queueOffset";
+    private byte[] body;
+
 }

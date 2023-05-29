@@ -15,19 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.sink.connector.rabbitmq.connector.config;
 
-public class Constants {
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
-    public static final String ENV_TARGET = "connectorTarget";
+import lombok.Data;
 
-    public static final String ENV_PORT = "connectorPort";
+@Data
+public class RabbitMQSinkConfig extends SinkConfig {
 
-    public static final String ENV_CONFIG_FILE = "connectorConf";
+    private RabbitSinkConnectorConfig connectorConfig;
 
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
-
-    public static final String QUEUE_OFFSET = "queueOffset";
 }

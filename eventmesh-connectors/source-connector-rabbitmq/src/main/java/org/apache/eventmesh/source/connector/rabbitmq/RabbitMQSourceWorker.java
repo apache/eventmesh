@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.source.connector.rabbitmq;
 
-public class Constants {
+import org.apache.eventmesh.openconnect.Application;
+import org.apache.eventmesh.source.connector.rabbitmq.connector.RabbitMQSourceConnector;
 
-    public static final String ENV_TARGET = "connectorTarget";
+public class RabbitMQSourceWorker {
 
-    public static final String ENV_PORT = "connectorPort";
-
-    public static final String ENV_CONFIG_FILE = "connectorConf";
-
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
-
-    public static final String QUEUE_OFFSET = "queueOffset";
+    public static void main(String[] args) throws Exception {
+        Application.run(RabbitMQSourceConnector.class);
+    }
 }
