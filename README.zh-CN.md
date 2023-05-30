@@ -53,7 +53,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 请前往[路线图](https://eventmesh.apache.org/docs/roadmap)查看Apache EventMesh的版本历史和新功能。.
 
-## 社区
+## 子项目
 
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache EventMesh 的官方网站资源。
 - [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): 用于在 EventMesh 上进行事件编排的无服务器工作流运行时。
@@ -63,7 +63,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ## 快速开始
 
-Here are the guidelines:
+指南:
 
 [第1步: 部署EventMesh Store](https://eventmesh.apache.org/docs/instruction/store)
 
