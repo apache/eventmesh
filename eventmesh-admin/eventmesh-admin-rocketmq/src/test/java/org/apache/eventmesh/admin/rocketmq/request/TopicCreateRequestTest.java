@@ -32,17 +32,17 @@ public class TopicCreateRequestTest {
         String name = "testTopic";
         TopicCreateRequest topicCreateRequest = new TopicCreateRequest(name);
 
-        assertEquals(name, topicCreateRequest.getName());
+        assertEquals(name, topicCreateRequest.getTopic());
     }
 
     @Test
     public void testTopicCreateRequestSetName() {
         TopicCreateRequest topicCreateRequest = new TopicCreateRequest(null);
-        assertNull(topicCreateRequest.getName());
+        assertNull(topicCreateRequest.getTopic());
 
         String name = "testTopic";
-        topicCreateRequest.setName(name);
-        assertEquals(name, topicCreateRequest.getName());
+        topicCreateRequest.setTopic(name);
+        assertEquals(name, topicCreateRequest.getTopic());
     }
 
     @Test
@@ -53,11 +53,11 @@ public class TopicCreateRequestTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(topicCreateRequest);
 
-        assertTrue(json.contains("name"));
+        assertTrue(json.contains("topic"));
 
         TopicCreateRequest deserializedRequest = objectMapper.readValue(json, TopicCreateRequest.class);
 
-        assertEquals(topic, deserializedRequest.getName());
+        assertEquals(topic, deserializedRequest.getTopic());
     }
 
 }
