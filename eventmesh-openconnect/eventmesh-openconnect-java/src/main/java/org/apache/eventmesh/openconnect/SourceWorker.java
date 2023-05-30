@@ -101,11 +101,10 @@ public class SourceWorker implements ConnectorWorker {
                     eventMeshTCPClient.publish(event, 3000);
                 }
             }
+            log.info("source worker[{}] started", source.name());
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
+            log.error("source worker[{}] start fail", source.name(), e);
         }
-        log.info("source worker started");
     }
 
     private CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
