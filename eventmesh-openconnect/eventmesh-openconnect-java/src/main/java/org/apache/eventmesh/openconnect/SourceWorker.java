@@ -55,7 +55,6 @@ public class SourceWorker implements ConnectorWorker {
     public SourceWorker(Source source, SourceConfig config) throws Exception {
         this.source = source;
         this.config = config;
-        source.init(config);
         eventMeshTCPClient = buildEventMeshPubClient(config);
         eventMeshTCPClient.init();
     }
