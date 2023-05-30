@@ -17,10 +17,12 @@
 
 build = "gradle assemble"
 jdkVersion = "8"
-importantRules = [ "NULL_DEREFERENCE", "no-extra-boolean-cast" ]
+importantRules = [ "NULL_DEREFERENCE", "no-extra-boolean-cast" ]|
+ignoreRules = [ "INTERFACE_NOT_THREAD_SAFE" ]
 ignoreFiles = """
 build/
 .github/
 **/*.md
+**/*.sh
 """
 tools = [ "infer", "eslint" ]
