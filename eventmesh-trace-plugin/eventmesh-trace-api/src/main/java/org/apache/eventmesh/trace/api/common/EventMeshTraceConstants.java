@@ -29,4 +29,7 @@ public class EventMeshTraceConstants {
     public static final String TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN = "downstream-eventmesh-client-span";
 
     public static final String TRACE_EVENTMESH_SDK_SERVER_SPAN = "eventmesh-sdk-server-span";
+
+    // Name of the service(using the instrumentationName)
+    public static final String SERVICE_NAME = "eventmesh_trace";
 }
