@@ -44,20 +44,15 @@ public class UrlMappingPattern {
 
     private Pattern compiledUrlMappingPattern;
 
-    private List<String> paramNames = new ArrayList<String>();
+    private List<String> paramNames = new ArrayList<>();
 
     public UrlMappingPattern(String pattern) {
-        super();
-        setUrlMappingPattern(pattern);
+        this.urlMappingPattern = pattern;
         compile();
     }
 
     public String getMappingPattern() {
-        return getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, "");
-    }
-
-    private String getUrlMappingPattern() {
-        return urlMappingPattern;
+        return urlMappingPattern.replaceFirst(URL_FORMAT_REGEX, "");
     }
 
     public Map<String, String> extractPathParameterValues(String url) {
@@ -74,21 +69,20 @@ public class UrlMappingPattern {
 
     public void compile() {
         acquireParamNames();
-        String parsedPattern =
-            getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
+        String parsedPattern = urlMappingPattern.replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
         parsedPattern = parsedPattern.replaceAll(URL_PARAMETER_REGEX, URL_PARAMETER_MATCH_REGEX);
         this.compiledUrlMappingPattern = Pattern.compile(parsedPattern + URL_QUERY_STRING_REGEX);
     }
 
     private void acquireParamNames() {
-        Matcher m = URL_PARAMETER_PATTERN.matcher(getUrlMappingPattern());
+        Matcher m = URL_PARAMETER_PATTERN.matcher(urlMappingPattern);
         while (m.find()) {
             paramNames.add(m.group(1));
         }
     }
 
     private Map<String, String> extractParameters(Matcher matcher) {
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>((int) (matcher.groupCount() / 0.75f + 1));
         for (int i = 0; i < matcher.groupCount(); i++) {
             String value = matcher.group(i + 1);
 
@@ -97,10 +91,6 @@ public class UrlMappingPattern {
             }
         }
         return values;
-    }
-
-    private void setUrlMappingPattern(String pattern) {
-        this.urlMappingPattern = pattern;
     }
 
     public List<String> getParamNames() {
