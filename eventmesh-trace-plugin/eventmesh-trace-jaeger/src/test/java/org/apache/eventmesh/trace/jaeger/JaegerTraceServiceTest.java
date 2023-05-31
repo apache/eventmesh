@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.trace.jaeger;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -37,23 +39,31 @@ public class JaegerTraceServiceTest {
             (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
 
-        Assert.assertNotNull(jaegerTraceService.getSdkTracerProvider());
-        Assert.assertNotNull(jaegerTraceService.getShutdownHook());
+        assertNotNull(jaegerTraceService.getSdkTracerProvider());
+        assertNotNull(jaegerTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
             assertThrows(IllegalArgumentException.class, () ->
                 Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
-        Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
+        assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
-        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         JaegerTraceService jaegerTraceService =
             (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
-        Field sdkTracerProviderField = JaegerTraceService.class.getDeclaredField("sdkTracerProvider");
+        Field sdkTracerProviderField = null;
+        try {
+            sdkTracerProviderField = JaegerTraceService.class.getDeclaredField("sdkTracerProvider");
+        } catch (NoSuchFieldException e) {
+            sdkTracerProviderField = ReflectUtils.lookUpField(JaegerTraceService.class, "sdkTracerProvider");
+            if (sdkTracerProviderField == null) {
+                throw e;
+            }
+        }
         sdkTracerProviderField.setAccessible(true);
+        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         sdkTracerProviderField.set(jaegerTraceService, mockSdkTracerProvider);
 
         jaegerTraceService.shutdown();
