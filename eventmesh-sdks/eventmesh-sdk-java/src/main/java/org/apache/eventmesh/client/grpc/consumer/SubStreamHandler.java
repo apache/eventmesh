@@ -144,6 +144,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
             latch.await();
         } catch (InterruptedException e) {
             log.error("SubStreamHandler Thread interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 
