@@ -21,6 +21,7 @@ Add a new connector by implementing the source/sink interface using :
 |---------------------------------------|--------|-----------------|
 | [RocketMQ](sink-connector-rocketmq)   | Sink   | N/A             |
 | [RocketMQ](source-connector-rocketmq) | Source | N/A             |
+| ChatGPT                               | Source | N/A             |
 | ClickHouse                            | Sink   | N/A             |
 | ClickHouse                            | Source | N/A             |
 | DingTalk                              | Sink   | N/A             |
