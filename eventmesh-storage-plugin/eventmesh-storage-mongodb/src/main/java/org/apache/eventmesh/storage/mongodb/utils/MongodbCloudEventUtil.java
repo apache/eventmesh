@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.storage.mongodb.utils;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.storage.mongodb.exception.MongodbStorageException;
 
 import java.net.URI;
@@ -44,7 +45,7 @@ public class MongodbCloudEventUtil {
             default:
                 throw new MongodbStorageException(String.format("CloudEvent version %s does not support.", version));
         }
-        builder.withData(document.remove("data").toString().getBytes())
+        builder.withData(document.remove("data").toString().getBytes(Constants.DEFAULT_CHARSET))
                 .withId(document.remove("id").toString())
                 .withSource(URI.create(document.remove("source").toString()))
                 .withType(document.remove("type").toString())
