@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.grpc.consumer;
 
 import java.io.Serializable;
+import java.util.Objects;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
@@ -123,7 +124,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
         final Subscription.Reply reply = Subscription.Reply.newBuilder()
             .setProducerGroup(clientConfig.getConsumerGroup())
-            .setTopic(simpleMessage.getTopic())
+            .setTopic(Objects.requireNonNull(simpleMessage).getTopic())
             .setContent(simpleMessage.getContent())
             .setSeqNum(simpleMessage.getSeqNum())
             .setUniqueId(simpleMessage.getUniqueId())
