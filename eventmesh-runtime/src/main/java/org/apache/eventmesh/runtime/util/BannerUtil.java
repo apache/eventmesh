@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import static org.apache.eventmesh.runtime.constants.EventMeshVersion.getCurrentVersionDesc;
+
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -51,7 +55,8 @@ public class BannerUtil {
                      + "                     / ____|_   _____ _ __ | |_|  \\/  | ___  ___| |__  " + System.lineSeparator()
                      + "                     |  __|\\ \\ / / _ | '_ \\| __| |\\/| |/ _ |/ __| '_ \\ " + System.lineSeparator()
                      + "                     | |___ \\ V /  __| | | | |_| |  | |  __|\\__ \\ | | |" + System.lineSeparator()
-                     + "                     \\ ____| \\_/ \\___|_| |_|\\__|_|  |_|\\___||___/_| |_|";
+                     + "                     \\ ____| \\_/ \\___|_| |_|\\__|_|  |_|\\___||___/_| |_|  "
+                     + (StringUtils.isNotBlank(getCurrentVersionDesc()) ? "(" + getCurrentVersionDesc() + ")" : "");
 
     public static void generateBanner() {
         String banner =
