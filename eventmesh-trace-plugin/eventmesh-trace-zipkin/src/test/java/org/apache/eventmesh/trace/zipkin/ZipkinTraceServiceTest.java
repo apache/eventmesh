@@ -19,6 +19,7 @@ package org.apache.eventmesh.trace.zipkin;
 
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
@@ -48,13 +49,20 @@ public class ZipkinTraceServiceTest {
 
     @Test
     public void testShutdown() throws Exception {
-        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-
         ZipkinTraceService zipkinTraceService =
             (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
-        Field sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
+        Field sdkTracerProviderField = null;
+        try {
+            sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
+        } catch (NoSuchFieldException e) {
+            sdkTracerProviderField = ReflectUtils.lookUpField(ZipkinTraceService.class, "sdkTracerProvider");
+            if (sdkTracerProviderField == null) {
+                throw e;
+            }
+        }
         sdkTracerProviderField.setAccessible(true);
+        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         sdkTracerProviderField.set(zipkinTraceService, mockSdkTracerProvider);
 
         zipkinTraceService.shutdown();
