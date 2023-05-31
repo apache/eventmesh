@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshVersion {
 
-    public static String CURRENT_VERSION = "";
+    private static String CURRENT_VERSION = "";
 
     private static final String VERSION_KEY = "Implementation-Version";
 
