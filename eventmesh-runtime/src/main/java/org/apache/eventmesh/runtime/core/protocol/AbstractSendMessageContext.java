@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-public abstract class AbstractSendMessageContext extends RetryContext{
+public abstract class AbstractSendMessageContext extends RetryContext {
 
     protected String bizSeqNo;
 
