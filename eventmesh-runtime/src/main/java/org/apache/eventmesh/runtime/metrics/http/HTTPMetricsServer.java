@@ -51,7 +51,7 @@ public class HTTPMetricsServer {
             eventMeshHTTPServer.getBatchMsgExecutor(),
             eventMeshHTTPServer.getSendMsgExecutor(),
             eventMeshHTTPServer.getPushMsgExecutor(),
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+            eventMeshHTTPServer.getHttpRetryer().getRetryQueue());
 
         init();
     }
@@ -171,7 +171,7 @@ public class HTTPMetricsServer {
                 eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpRetryer().size());
+                eventMeshHTTPServer.getHttpRetryer().getRetrySize());
         }
 
         if (log.isInfoEnabled()) {
