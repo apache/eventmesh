@@ -50,4 +50,12 @@ public abstract class RetryContext implements DelayRetryable {
     public long getDelay(TimeUnit unit) {
         return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
+
+    public CloudEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(CloudEvent event) {
+        this.event = event;
+    }
 }

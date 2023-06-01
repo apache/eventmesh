@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.core.protocol.AbstractSendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -31,17 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-public class SendMessageContext extends RetryContext {
+public class SendMessageContext extends AbstractSendMessageContext {
 
     public static final Logger logger = LoggerFactory.getLogger("retry");
 
-    private CloudEvent event;
-
-    private String bizSeqNo;
-
     private EventMeshProducer eventMeshProducer;
-
-    private long createTime = System.currentTimeMillis();
 
     public EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -53,36 +48,12 @@ public class SendMessageContext extends RetryContext {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public String getBizSeqNo() {
-        return bizSeqNo;
-    }
-
-    public void setBizSeqNo(String bizSeqNo) {
-        this.bizSeqNo = bizSeqNo;
-    }
-
-    public CloudEvent getEvent() {
-        return event;
-    }
-
-    public void setEvent(CloudEvent event) {
-        this.event = event;
-    }
-
     public EventMeshProducer getEventMeshProducer() {
         return eventMeshProducer;
     }
 
     public void setEventMeshProducer(EventMeshProducer eventMeshProducer) {
         this.eventMeshProducer = eventMeshProducer;
-    }
-
-    public long getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(long createTime) {
-        this.createTime = createTime;
     }
 
     @Override

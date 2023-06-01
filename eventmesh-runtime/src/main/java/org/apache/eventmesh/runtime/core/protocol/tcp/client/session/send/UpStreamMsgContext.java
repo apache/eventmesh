@@ -66,10 +66,6 @@ public class UpStreamMsgContext extends RetryContext {
         return session;
     }
 
-    public CloudEvent getEvent() {
-        return event;
-    }
-
     public long getCreateTime() {
         return createTime;
     }
