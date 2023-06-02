@@ -23,7 +23,9 @@ import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.registry.nacos.config.NacosRegistryConfiguration;
 import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,10 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.client.naming.NacosNamingService;
+import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 
 import lombok.Getter;
@@ -62,6 +66,9 @@ public class NacosRegistryService implements RegistryService {
 
     @Getter
     private String password;
+
+    @Getter
+    private NacosRegistryConfiguration nacosConfig;
 
     @Getter
     private NamingService namingService;
@@ -89,6 +96,11 @@ public class NacosRegistryService implements RegistryService {
             this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
             break;
         }
+        ConfigService configService = ConfigService.getInstance();
+        NacosRegistryConfiguration nacosConfig = configService.buildConfigInstance(NacosRegistryConfiguration.class);
+        if (nacosConfig != null) {
+            this.nacosConfig = nacosConfig;
+        }
     }
 
     @Override
@@ -98,15 +110,37 @@ public class NacosRegistryService implements RegistryService {
             return;
         }
         try {
-            Properties properties = new Properties();
-            properties.setProperty(NacosConstant.SERVER_ADDR, serverAddr);
-            properties.setProperty(NacosConstant.USERNAME, username);
-            properties.setProperty(NacosConstant.PASSWORD, password);
-            namingService = new NacosNamingService(properties);
+            Properties properties = buildProperties();
+            namingService = NacosFactory.createNamingService(properties);
         } catch (NacosException e) {
             log.error("[NacosRegistryService][start] error", e);
             throw new RegistryException(e.getMessage());
         }
+    }
+
+    private Properties buildProperties() {
+        Properties properties = new Properties();
+        properties.setProperty(NacosConstant.SERVER_ADDR, serverAddr);
+        properties.setProperty(NacosConstant.USERNAME, username);
+        properties.setProperty(NacosConstant.PASSWORD, password);
+        if (nacosConfig == null) {
+            return properties;
+        }
+        String endpoint = nacosConfig.getEndpoint();
+        if (endpoint.contains(":")) {
+            int index = endpoint.indexOf(":");
+            properties.put(PropertyKeyConst.ENDPOINT, endpoint.substring(0, index));
+            properties.put(PropertyKeyConst.ENDPOINT_PORT, endpoint.substring(index + 1));
+        } else {
+            properties.put(PropertyKeyConst.ENDPOINT, endpoint);
+        }
+        properties.put(PropertyKeyConst.ACCESS_KEY, nacosConfig.getAccessKey());
+        properties.put(PropertyKeyConst.SECRET_KEY, nacosConfig.getSecretKey());
+        properties.put(PropertyKeyConst.CLUSTER_NAME, nacosConfig.getClusterName());
+        properties.put(UtilAndComs.NACOS_NAMING_LOG_NAME, nacosConfig.getLogFileName());
+        properties.put(UtilAndComs.NACOS_NAMING_LOG_LEVEL, nacosConfig.getLogLevel());
+        properties.put(PropertyKeyConst.NAMING_POLLING_THREAD_COUNT, nacosConfig.getPollingThreadCount());
+        return properties;
     }
 
     @Override
