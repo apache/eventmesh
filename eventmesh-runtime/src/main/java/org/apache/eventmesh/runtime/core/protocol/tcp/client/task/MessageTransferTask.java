@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
@@ -134,13 +133,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            Utils.logSucceedMessageFlow(msg, session.getClient(), startTime,
-                                taskExecuteTime);
-                        }
-                    }
+                    (ChannelFutureListener) future -> Utils.logSucceedMessageFlow(msg, session.getClient(), startTime, taskExecuteTime)
                 );
 
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
