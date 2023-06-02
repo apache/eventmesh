@@ -42,29 +42,16 @@ public class ThreadPoolHelper {
         int maximumPoolSize = threadPool.getMaximumPoolSize();
         long keepAliveTime = threadPool.getKeepAliveTime(TimeUnit.MILLISECONDS);
         String rejectPolicy = threadPool.getRejectedExecutionHandler().getClass().getSimpleName();
-        if (log.isInfoEnabled()) {
-            log.info("The ThreadPool's state==================");
-            log.info("Shutdown | Terminating | Terminated: {} | {} | {}" + shutdown, terminating, terminated);
-            log.info("Active Threads: " + activeCount);
-            log.info("Completed Tasks / Tasks: {} / {}" + completedTaskCount, taskCount);
-            log.info("Queue Size: " + queueSize);
-            log.info("Core Pool Size: " + corePoolSize);
-            log.info("Maximum Pool Size: " + maximumPoolSize);
-            log.info("Keep Alive Time(ms): " + keepAliveTime);
-            log.info("The rejection policy: " + rejectPolicy);
-            log.info("========================================");
-        } else {
-            System.out.print("The ThreadPool's state==================\n");
-            System.out.print("Shutdown | Terminating | Terminated: " + shutdown + " | " + terminating + " | " + terminated + "\n");
-            System.out.print("Active Threads: " + activeCount + "\n");
-            System.out.print("Completed Tasks / Tasks: " + completedTaskCount + " / " + taskCount + "\n");
-            System.out.print("Queue Size: " + queueSize + "\n");
-            System.out.print("Core Pool Size: " + corePoolSize + "\n");
-            System.out.print("Maximum Pool Size: " + maximumPoolSize + "\n");
-            System.out.print("Keep Alive Time(ms): " + keepAliveTime + "\n");
-            System.out.print("The rejection policy: " + rejectPolicy + "\n");
-            System.out.print("========================================\n");
-        }
+        log.info("The ThreadPool's state==================");
+        log.info("Shutdown | Terminating | Terminated: {} | {} | {}" + shutdown, terminating, terminated);
+        log.info("Active Threads: " + activeCount);
+        log.info("Completed Tasks / Tasks: {} / {}" + completedTaskCount, taskCount);
+        log.info("Queue Size: " + queueSize);
+        log.info("Core Pool Size: " + corePoolSize);
+        log.info("Maximum Pool Size: " + maximumPoolSize);
+        log.info("Keep Alive Time(ms): " + keepAliveTime);
+        log.info("The rejection policy: " + rejectPolicy);
+        log.info("========================================");
     }
 
 }
