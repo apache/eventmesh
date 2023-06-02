@@ -31,26 +31,15 @@ public class ThreadPoolHelper {
             return;
         }
 
-        boolean shutdown = threadPool.isShutdown();
-        boolean terminating = threadPool.isTerminating();
-        boolean terminated = threadPool.isTerminated();
-        int activeCount = threadPool.getActiveCount();
-        long completedTaskCount = threadPool.getCompletedTaskCount();
-        long taskCount = threadPool.getTaskCount();
-        int queueSize = threadPool.getQueue().size();
-        int corePoolSize = threadPool.getCorePoolSize();
-        int maximumPoolSize = threadPool.getMaximumPoolSize();
-        long keepAliveTime = threadPool.getKeepAliveTime(TimeUnit.MILLISECONDS);
-        String rejectPolicy = threadPool.getRejectedExecutionHandler().getClass().getSimpleName();
         log.info("The ThreadPool's state==================");
-        log.info("Shutdown | Terminating | Terminated: {} | {} | {}" + shutdown, terminating, terminated);
-        log.info("Active Threads: " + activeCount);
-        log.info("Completed Tasks / Tasks: {} / {}" + completedTaskCount, taskCount);
-        log.info("Queue Size: " + queueSize);
-        log.info("Core Pool Size: " + corePoolSize);
-        log.info("Maximum Pool Size: " + maximumPoolSize);
-        log.info("Keep Alive Time(ms): " + keepAliveTime);
-        log.info("The rejection policy: " + rejectPolicy);
+        log.info("Shutdown | Terminating | Terminated: {} | {} | {}", threadPool.isShutdown(), threadPool.isTerminating(), threadPool.isTerminated());
+        log.info("Active Threads: " + threadPool.getActiveCount());
+        log.info("Completed Tasks / Tasks: {} / {}" + threadPool.getCompletedTaskCount(), threadPool.getTaskCount());
+        log.info("Queue Size: " + threadPool.getQueue().size());
+        log.info("Core Pool Size: " + threadPool.getCorePoolSize());
+        log.info("Maximum Pool Size: " + threadPool.getMaximumPoolSize());
+        log.info("Keep Alive Time(ms): " + threadPool.getKeepAliveTime(TimeUnit.MILLISECONDS));
+        log.info("The rejection policy: " + threadPool.getRejectedExecutionHandler().getClass().getSimpleName());
         log.info("========================================");
     }
 
