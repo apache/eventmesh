@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -127,19 +128,27 @@ public class NacosRegistryService implements RegistryService {
             return properties;
         }
         String endpoint = nacosConfig.getEndpoint();
-        if (endpoint.contains(":")) {
+        if (Objects.nonNull(endpoint) && endpoint.contains(":")) {
             int index = endpoint.indexOf(":");
             properties.put(PropertyKeyConst.ENDPOINT, endpoint.substring(0, index));
             properties.put(PropertyKeyConst.ENDPOINT_PORT, endpoint.substring(index + 1));
         } else {
-            properties.put(PropertyKeyConst.ENDPOINT, endpoint);
+            Optional.ofNullable(endpoint).ifPresent(value -> properties.put(PropertyKeyConst.ENDPOINT, endpoint));
+            String endpointPort = nacosConfig.getEndpointPort();
+            Optional.ofNullable(endpointPort).ifPresent(value -> properties.put(PropertyKeyConst.ENDPOINT_PORT, endpointPort));
         }
-        properties.put(PropertyKeyConst.ACCESS_KEY, nacosConfig.getAccessKey());
-        properties.put(PropertyKeyConst.SECRET_KEY, nacosConfig.getSecretKey());
-        properties.put(PropertyKeyConst.CLUSTER_NAME, nacosConfig.getClusterName());
-        properties.put(UtilAndComs.NACOS_NAMING_LOG_NAME, nacosConfig.getLogFileName());
-        properties.put(UtilAndComs.NACOS_NAMING_LOG_LEVEL, nacosConfig.getLogLevel());
-        properties.put(PropertyKeyConst.NAMING_POLLING_THREAD_COUNT, nacosConfig.getPollingThreadCount());
+        String accessKey = nacosConfig.getAccessKey();
+        Optional.ofNullable(accessKey).ifPresent(value -> properties.put(PropertyKeyConst.ACCESS_KEY, accessKey));
+        String secretKey = nacosConfig.getSecretKey();
+        Optional.ofNullable(secretKey).ifPresent(value -> properties.put(PropertyKeyConst.SECRET_KEY, secretKey));
+        String clusterName = nacosConfig.getClusterName();
+        Optional.ofNullable(clusterName).ifPresent(value -> properties.put(PropertyKeyConst.CLUSTER_NAME, clusterName));
+        String logFileName = nacosConfig.getLogFileName();
+        Optional.ofNullable(logFileName).ifPresent(value -> properties.put(UtilAndComs.NACOS_NAMING_LOG_NAME, logFileName));
+        String logLevel = nacosConfig.getLogLevel();
+        Optional.ofNullable(logLevel).ifPresent(value -> properties.put(UtilAndComs.NACOS_NAMING_LOG_LEVEL, logLevel));
+        Integer pollingThreadCount = nacosConfig.getPollingThreadCount();
+        Optional.ofNullable(pollingThreadCount).ifPresent(value -> properties.put(PropertyKeyConst.NAMING_POLLING_THREAD_COUNT, pollingThreadCount));
         return properties;
     }
 
