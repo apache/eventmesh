@@ -47,7 +47,7 @@ public class NacosRegistryConfiguration {
     private String clusterName;
 
     @ConfigFiled(field = PropertyKeyConst.NAMING_POLLING_THREAD_COUNT)
-    private Integer pollingThreadCount;
+    private Integer pollingThreadCount = Runtime.getRuntime().availableProcessors() / 2 + 1;
 
     @ConfigFiled(field = UtilAndComs.NACOS_NAMING_LOG_NAME)
     private String logFileName;
