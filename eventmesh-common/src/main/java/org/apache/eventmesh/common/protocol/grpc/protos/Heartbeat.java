@@ -551,7 +551,7 @@ public final class Heartbeat extends
         }
 
         public Builder toBuilder() {
-            return this == DEFAULT_INSTANCE
+            return this.equals(DEFAULT_INSTANCE)
                     ? new Builder() : new Builder().mergeFrom(this);
         }
 
@@ -672,7 +672,7 @@ public final class Heartbeat extends
             }
 
             public Builder mergeFrom(HeartbeatItem other) {
-                if (other == HeartbeatItem.getDefaultInstance()) return this;
+                if (other.equals(HeartbeatItem.getDefaultInstance())) return this;
                 if (!other.getTopic().isEmpty()) {
                     topic_ = other.topic_;
                     onChanged();
@@ -1178,7 +1178,7 @@ public final class Heartbeat extends
     }
 
     public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
+        return this.equals(DEFAULT_INSTANCE)
                 ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -1333,7 +1333,7 @@ public final class Heartbeat extends
         }
 
         public Builder mergeFrom(Heartbeat other) {
-            if (other == Heartbeat.getDefaultInstance()) return this;
+            if (other.equals(Heartbeat.getDefaultInstance())) return this;
             if (other.hasHeader()) {
                 mergeHeader(other.getHeader());
             }

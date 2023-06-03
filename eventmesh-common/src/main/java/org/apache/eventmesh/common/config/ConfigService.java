@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.config;
 
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpField;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.file.FileLoad;
 import org.apache.eventmesh.common.utils.FileUtils;
@@ -30,7 +32,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
-
 
 import org.assertj.core.util.Strings;
 
@@ -165,7 +166,15 @@ public class ConfigService {
         configInfo.setMonitor(config.monitor());
         configInfo.setReloadMethodName(config.reloadMethodName());
 
-        Field field = clazz.getDeclaredField(configInfo.getField());
+        Field field = null;
+        try {
+            field = clazz.getDeclaredField(configInfo.getField());
+        } catch (NoSuchFieldException e) {
+            field = lookUpField(clazz, configInfo.getField());
+            if (field == null) {
+                throw e;
+            }
+        }
         configInfo.setClazz(field.getType());
 
         Config configType = field.getType().getAnnotation(Config.class);
@@ -190,4 +199,5 @@ public class ConfigService {
             configMonitorService.monitor(configInfo);
         }
     }
+
 }
