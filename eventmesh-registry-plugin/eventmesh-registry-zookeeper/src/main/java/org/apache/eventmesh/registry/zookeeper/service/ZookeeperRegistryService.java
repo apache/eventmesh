@@ -118,6 +118,7 @@ public class ZookeeperRegistryService implements RegistryService {
             .connectString(serverAddr)
             .namespace(ZookeeperConstant.NAMESPACE);
         if (zkConfig == null) {
+            builder.retryPolicy(new ExponentialBackoffRetry(1000, 5));
             return builder.build();
         }
         builder.retryPolicy(createRetryPolicy());
