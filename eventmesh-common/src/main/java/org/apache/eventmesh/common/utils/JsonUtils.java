@@ -99,10 +99,21 @@ public class JsonUtils {
         }
     }
 
+    public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        if (bytes == null || bytes.length == 0) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readValue(bytes, clazz);
+        } catch (IOException e) {
+            throw new JsonException(String.format("parse bytes to %s error", clazz), e);
+        }
+    }
+
     /**
      * parse json string to List of object.
      *
-     * @param text  json string
+     * @param json  json string
      * @param clazz object class
      * @param <T>   object type
      * @return object
@@ -115,17 +126,6 @@ public class JsonUtils {
             return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (JsonProcessingException e) {
             throw new JsonException("deserialize json string to object List error", e);
-        }
-    }
-
-    public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
-        if (bytes == null || bytes.length == 0) {
-            return null;
-        }
-        try {
-            return OBJECT_MAPPER.readValue(bytes, clazz);
-        } catch (IOException e) {
-            throw new JsonException(String.format("parse bytes to %s error", clazz), e);
         }
     }
 
