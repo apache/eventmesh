@@ -42,8 +42,8 @@ public class BaseDataTypeConverter {
         @Override
         public Boolean convert(ConvertInfo convertInfo) {
             String value = (String) convertInfo.getValue();
-            if (Objects.equals(value.length(), 1)) {
-                return Objects.equals(convertInfo.getValue(), "1") ? Boolean.TRUE : Boolean.FALSE;
+            if (value.length() == 1) {
+                return convertInfo.getValue().equals("1") ? Boolean.TRUE : Boolean.FALSE;
             }
 
             return Boolean.valueOf((String) convertInfo.getValue());
