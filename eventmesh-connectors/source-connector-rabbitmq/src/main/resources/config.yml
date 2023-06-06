@@ -16,7 +16,7 @@
 #
 
 pubSubConfig:
-  meshAddress: 127.0.0.1:10002
+  meshAddress: 127.0.0.1:10000
   subject: TopicTest
   idc: FT
   env: PRD
