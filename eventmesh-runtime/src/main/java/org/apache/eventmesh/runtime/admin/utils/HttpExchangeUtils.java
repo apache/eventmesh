@@ -21,13 +21,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 
 public class HttpExchangeUtils {
 
     public static String streamToString(InputStream stream) throws IOException {
-        try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             StringBuilder buffer = new StringBuilder();
             int b;
