@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.storage.standalone.admin;
 
-import org.apache.eventmesh.api.admin.Admin;
+import org.apache.eventmesh.api.admin.AbstractAdmin;
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
@@ -26,45 +26,18 @@ import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-public class StandaloneAdmin implements Admin {
+public class StandaloneAdmin extends AbstractAdmin {
 
-    private final AtomicBoolean isStarted;
     private final StandaloneBroker standaloneBroker;
 
     public StandaloneAdmin() {
+        super(new AtomicBoolean(false));
         this.standaloneBroker = StandaloneBroker.getInstance();
-        this.isStarted = new AtomicBoolean(false);
-    }
-
-    @Override
-    public boolean isStarted() {
-        return isStarted.get();
-    }
-
-    @Override
-    public boolean isClosed() {
-        return !isStarted.get();
-    }
-
-    @Override
-    public void start() {
-        isStarted.compareAndSet(false, true);
-    }
-
-    @Override
-    public void shutdown() {
-        isStarted.compareAndSet(true, false);
-    }
-
-    @Override
-    public void init(Properties properties) throws Exception {
-
     }
 
     @Override

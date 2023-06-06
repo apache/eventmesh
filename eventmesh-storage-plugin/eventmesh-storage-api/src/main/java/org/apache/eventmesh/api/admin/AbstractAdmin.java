@@ -15,71 +15,53 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.rocketmq.admin;
-
-import org.apache.eventmesh.api.admin.Admin;
-import org.apache.eventmesh.api.admin.TopicProperties;
+package org.apache.eventmesh.api.admin;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-public class RocketMQAdminAdaptor implements Admin {
+public abstract class AbstractAdmin implements Admin {
 
-    private final RocketMQAdmin admin;
+    private final AtomicBoolean started;
 
-    public RocketMQAdminAdaptor() {
-        admin = new RocketMQAdmin();
+    public AbstractAdmin(AtomicBoolean started) {
+        this.started = started;
     }
 
     @Override
     public boolean isStarted() {
-        return admin.isStarted();
+        return started.get();
     }
 
     @Override
     public boolean isClosed() {
-        return admin.isClosed();
+        return !started.get();
     }
 
     @Override
     public void start() {
-        admin.start();
+        started.set(true);
     }
 
     @Override
     public void shutdown() {
-        admin.shutdown();
+        started.set(false);
     }
 
     @Override
     public void init(Properties properties) throws Exception {
-        admin.init(properties);
-    }
 
-    @Override
-    public List<TopicProperties> getTopic() throws Exception {
-        return admin.getTopic();
-    }
-
-    @Override
-    public void createTopic(String topicName) throws Exception {
-        admin.createTopic(topicName);
-    }
-
-    @Override
-    public void deleteTopic(String topicName) throws Exception {
-        admin.deleteTopic(topicName);
     }
 
     @Override
     public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
-        return admin.getEvent(topicName, offset, length);
+        return null;
     }
 
     @Override
     public void publish(CloudEvent cloudEvent) throws Exception {
-        admin.publish(cloudEvent);
     }
 }
