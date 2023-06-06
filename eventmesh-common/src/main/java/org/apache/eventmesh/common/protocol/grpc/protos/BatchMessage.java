@@ -754,7 +754,7 @@ public final class BatchMessage extends
         }
 
         public Builder toBuilder() {
-            return this.equals(DEFAULT_INSTANCE)
+            return this == DEFAULT_INSTANCE
                     ? new Builder() : new Builder().mergeFrom(this);
         }
 
@@ -909,7 +909,7 @@ public final class BatchMessage extends
             }
 
             public Builder mergeFrom(MessageItem other) {
-                if (other.equals(MessageItem.getDefaultInstance())) return this;
+                if (other == MessageItem.getDefaultInstance()) return this;
                 if (!other.getContent().isEmpty()) {
                     content_ = other.content_;
                     onChanged();
@@ -1692,7 +1692,7 @@ public final class BatchMessage extends
     }
 
     public Builder toBuilder() {
-        return this.equals(DEFAULT_INSTANCE)
+        return this == DEFAULT_INSTANCE
                 ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -1844,7 +1844,7 @@ public final class BatchMessage extends
         }
 
         public Builder mergeFrom(BatchMessage other) {
-            if (other.equals(BatchMessage.getDefaultInstance())) return this;
+            if (other == BatchMessage.getDefaultInstance()) return this;
             if (other.hasHeader()) {
                 mergeHeader(other.getHeader());
             }
