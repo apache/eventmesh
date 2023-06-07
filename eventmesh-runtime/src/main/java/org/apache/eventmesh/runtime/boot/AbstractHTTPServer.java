@@ -89,7 +89,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
@@ -135,10 +134,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private HttpConnectionHandler httpConnectionHandler;
 
     private HTTPHandler httpHandler;
-
-    static {
-        DiskAttribute.deleteOnExitTemporaryFile = false;
-    }
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
         final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
