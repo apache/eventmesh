@@ -11,6 +11,7 @@ logs
 *.log
 *.log.*
 .idea
+!/.idea/icon.png
 build
 .classpath
 .project
