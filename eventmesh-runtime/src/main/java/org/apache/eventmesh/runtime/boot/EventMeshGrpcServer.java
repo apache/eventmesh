@@ -125,9 +125,9 @@ public class EventMeshGrpcServer {
 
         server = ServerBuilder.forPort(serverPort)
             .addService(new ProducerService(this, sendMsgExecutor))
-            .addService(new ConsumerService(this, clientMgmtExecutor, replyMsgExecutor))
-            .addService(new HeartbeatService(this, clientMgmtExecutor))
-            .addService(new PublisherService(this, clientMgmtExecutor))
+            .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
+            .addService(new HeartbeatService(this, sendMsgExecutor))
+            .addService(new PublisherService(this, sendMsgExecutor))
             .build();
 
         initMetricsMonitor();

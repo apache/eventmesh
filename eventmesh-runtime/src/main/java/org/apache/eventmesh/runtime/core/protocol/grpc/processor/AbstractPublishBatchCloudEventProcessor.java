@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstructPublishBatchCloudEventProcessor implements PublishProcessor<CloudEventBatch, CloudEvent> {
+public abstract class AbstractPublishBatchCloudEventProcessor implements PublishProcessor<CloudEventBatch, CloudEvent> {
 
     private static final Logger aclLogger = LoggerFactory.getLogger("acl");
 
@@ -45,7 +45,7 @@ public abstract class AbstructPublishBatchCloudEventProcessor implements Publish
 
     protected final Acl acl;
 
-    public AbstructPublishBatchCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer, final Acl acl) {
+    public AbstractPublishBatchCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer, final Acl acl) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.acl = acl;
     }

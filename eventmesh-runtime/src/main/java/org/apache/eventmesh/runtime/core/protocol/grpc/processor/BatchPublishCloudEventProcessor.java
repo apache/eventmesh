@@ -41,7 +41,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class BatchPublishCloudEventProcessor extends AbstructPublishBatchCloudEventProcessor {
+public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEventProcessor {
 
 
     public BatchPublishCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
