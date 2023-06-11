@@ -83,6 +83,9 @@ public class HttpRetryer {
                     });
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 retryLogger.error("http-retry-dispatcher error!", e);
             }
         }, "http-retry-dispatcher");
