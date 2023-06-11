@@ -38,7 +38,6 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -156,14 +155,5 @@ public class EventMeshGrpcConsumerTest {
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setTopic("topic");
         return subscriptionItem;
-    }
-
-    @Test
-    public void testBuildSubscription() {
-        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-        subscriptionItems.add(buildMockSubscriptionItem());
-        subscriptionItems.add(buildMockSubscriptionItem());
-        Subscription subsription = eventMeshGrpcConsumer.buildSubscription(subscriptionItems, "test_url");
-        Assert.assertEquals(1, subsription.getSubscriptionItemsList().size());
     }
 }

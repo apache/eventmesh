@@ -28,13 +28,6 @@ import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils
 import org.apache.eventmesh.common.protocol.grpc.common.ProtoSupport;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
-import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
-import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -48,9 +41,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.protobuf.Any;
@@ -58,18 +49,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 
 public class ServiceUtils {
-
-    public static boolean validateHeader(RequestHeader header) {
-        return StringUtils.isNotEmpty(header.getIdc())
-            && StringUtils.isNotEmpty(header.getEnv())
-            && StringUtils.isNotEmpty(header.getIp())
-            && StringUtils.isNotEmpty(header.getPid())
-            && StringUtils.isNumeric(header.getPid())
-            && StringUtils.isNotEmpty(header.getSys())
-            && StringUtils.isNotEmpty(header.getUsername())
-            && StringUtils.isNotEmpty(header.getPassword())
-            && StringUtils.isNotEmpty(header.getLanguage());
-    }
 
     public static boolean validateCloudEventAttributes(CloudEvent cloudEvent) {
         return StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIdc(cloudEvent))
@@ -95,14 +74,6 @@ public class ServiceUtils {
             return false;
         }
         return true;
-    }
-
-    public static boolean validateMessage(SimpleMessage message) {
-        return StringUtils.isNotEmpty(message.getUniqueId())
-            && StringUtils.isNotEmpty(message.getProducerGroup())
-            && StringUtils.isNotEmpty(message.getTopic())
-            && StringUtils.isNotEmpty(message.getContent())
-            && StringUtils.isNotEmpty(message.getTtl());
     }
 
     public static boolean validateCloudEventData(CloudEvent cloudEvent) {
@@ -138,38 +109,6 @@ public class ServiceUtils {
         return true;
     }
 
-    public static boolean validateBatchMessage(BatchMessage batchMessage) {
-        if (StringUtils.isEmpty(batchMessage.getTopic()) || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
-            return false;
-        }
-        for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
-            if (StringUtils.isEmpty(item.getContent()) || StringUtils.isEmpty(item.getSeqNum())
-                || StringUtils.isEmpty(item.getTtl())
-                || StringUtils.isEmpty(item.getUniqueId())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {
-        if (GrpcType.WEBHOOK == grpcType && StringUtils.isEmpty(subscription.getUrl())) {
-            return false;
-        }
-        if (CollectionUtils.isEmpty(subscription.getSubscriptionItemsList())
-            || StringUtils.isEmpty(subscription.getConsumerGroup())) {
-            return false;
-        }
-        for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-            if (StringUtils.isEmpty(item.getTopic())
-                || item.getMode() == Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED
-                || item.getType() == Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static boolean validateSubscription(GrpcType grpcType, CloudEvent subscription) {
         if (GrpcType.WEBHOOK == grpcType && StringUtils.isEmpty(EventMeshCloudEventUtils.getURL(subscription))) {
             return false;
@@ -191,20 +130,6 @@ public class ServiceUtils {
         return true;
     }
 
-    public static boolean validateHeartBeat(Heartbeat heartbeat) {
-        if (ClientType.SUB == heartbeat.getClientType() && StringUtils.isEmpty(heartbeat.getConsumerGroup())) {
-            return false;
-        }
-        if (ClientType.PUB == heartbeat.getClientType() && StringUtils.isEmpty(heartbeat.getProducerGroup())) {
-            return false;
-        }
-        for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
-            if (StringUtils.isEmpty(item.getTopic())) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public static boolean validateHeartBeat(CloudEvent heartbeat) {
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
@@ -225,26 +150,6 @@ public class ServiceUtils {
             }
         }
         return true;
-    }
-
-    public static void sendRespAndDone(StatusCode code, EventEmitter<Response> emitter) {
-        Response response = Response.newBuilder()
-            .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg())
-            .setRespTime(String.valueOf(System.currentTimeMillis()))
-            .build();
-        emitter.onNext(response);
-        emitter.onCompleted();
-    }
-
-    public static void sendRespAndDone(StatusCode code, String message, EventEmitter<Response> emitter) {
-        Response response = Response.newBuilder()
-            .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message)
-            .setRespTime(String.valueOf(System.currentTimeMillis()))
-            .build();
-        emitter.onNext(response);
-        emitter.onCompleted();
     }
 
     public static void completed(StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
@@ -270,41 +175,6 @@ public class ServiceUtils {
             .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
                 .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
         emitter.onNext(builder.build());
-        emitter.onCompleted();
-    }
-
-    public static void sendStreamResp(RequestHeader header, StatusCode code, String message,
-        EventEmitter<SimpleMessage> emitter) {
-        Map<String, String> resp = new HashMap<>();
-        resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
-        resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message);
-
-        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.toJSONString(resp))
-            .build();
-
-        emitter.onNext(simpleMessage);
-    }
-
-    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, String message,
-        EventEmitter<SimpleMessage> emitter) {
-        sendStreamResp(header, code, message, emitter);
-        emitter.onCompleted();
-    }
-
-    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code,
-        EventEmitter<SimpleMessage> emitter) {
-        Map<String, String> resp = new HashMap<>();
-        resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
-        resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg());
-
-        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.toJSONString(resp))
-            .build();
-
-        emitter.onNext(simpleMessage);
         emitter.onCompleted();
     }
 

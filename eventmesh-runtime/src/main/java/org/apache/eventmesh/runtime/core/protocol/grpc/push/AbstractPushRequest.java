@@ -24,8 +24,6 @@ import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
-import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -78,18 +76,6 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     public abstract void tryPushRequest();
 
-    private SimpleMessage getSimpleMessage(io.cloudevents.CloudEvent cloudEvent) {
-        try {
-            String protocolType = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_TYPE)).toString();
-            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-            ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
-            return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
-        } catch (Exception e) {
-            log.error("Error in getting EventMeshMessage from CloudEvent", e);
-            return null;
-        }
-    }
-
     private CloudEvent getEventMeshCloudEvent(io.cloudevents.CloudEvent cloudEvent) {
         try {
             String protocolType = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_TYPE)).toString();
@@ -98,17 +84,6 @@ public abstract class AbstractPushRequest extends RetryContext {
             return ((EventMeshCloudEventWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
             log.error("Error in getting EventMeshMessage from CloudEvent", e);
-            return null;
-        }
-    }
-
-    private io.cloudevents.CloudEvent getCloudEvent(SimpleMessage simpleMessage) {
-        try {
-            String protocolType = Objects.requireNonNull(simpleMessage.getHeader().getProtocolType());
-            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-            return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(simpleMessage));
-        } catch (Exception e) {
-            log.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
         }
     }

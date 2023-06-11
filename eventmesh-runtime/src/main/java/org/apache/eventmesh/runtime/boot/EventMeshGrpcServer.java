@@ -33,7 +33,6 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
-import org.apache.eventmesh.runtime.core.protocol.grpc.service.ProducerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.PublisherService;
 import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
@@ -124,7 +123,6 @@ public class EventMeshGrpcServer {
         int serverPort = eventMeshGrpcConfiguration.getGrpcServerPort();
 
         server = ServerBuilder.forPort(serverPort)
-            .addService(new ProducerService(this, sendMsgExecutor))
             .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
             .addService(new HeartbeatService(this, sendMsgExecutor))
             .addService(new PublisherService(this, sendMsgExecutor))

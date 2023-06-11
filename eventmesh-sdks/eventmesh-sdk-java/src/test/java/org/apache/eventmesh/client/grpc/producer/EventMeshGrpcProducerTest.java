@@ -34,7 +34,6 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,13 +78,6 @@ public class EventMeshGrpcProducerTest {
         doReturn(CloudEvent.getDefaultInstance()).when(stub).batchPublish(
             argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getSubject(argument.getEvents(0)), "mockTopic")));
         doReturn(stub).when(stub).withDeadlineAfter(1000L, TimeUnit.MILLISECONDS);
-        doAnswer(invocation -> {
-            SimpleMessage simpleMessage = invocation.getArgument(0);
-            if (StringUtils.isEmpty(simpleMessage.getContent())) {
-                return SimpleMessage.getDefaultInstance();
-            }
-            return SimpleMessage.newBuilder(simpleMessage).build();
-        }).when(stub).requestReply(Mockito.isA(CloudEvent.class));
         when(cloudEventProducer.publish(anyList())).thenReturn(Response.builder().build());
         when(cloudEventProducer.publish(Mockito.isA(io.cloudevents.CloudEvent.class))).thenReturn(Response.builder().build());
         when(eventMeshMessageProducer.publish(anyList())).thenReturn(Response.builder().build());

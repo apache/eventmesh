@@ -21,7 +21,6 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
@@ -29,8 +28,6 @@ import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.HeartbeatItem;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc;
@@ -43,18 +40,14 @@ import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -215,49 +208,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             log.error("Error in unsubscribe.", e);
         }
         return null;
-    }
-
-    public Subscription buildSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
-        Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-
-        final Subscription.Builder builder = Subscription.newBuilder()
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
-            .setConsumerGroup(clientConfig.getConsumerGroup());
-
-        if (StringUtils.isNotEmpty(url)) {
-            builder.setUrl(url);
-        }
-
-        Set<SubscriptionItem> subscriptionItemSet = new HashSet<>();
-        subscriptionItemSet.addAll(subscriptionItems);
-
-        for (SubscriptionItem subscriptionItem : subscriptionItemSet) {
-            Subscription.SubscriptionItem.SubscriptionMode mode;
-            if (SubscriptionMode.CLUSTERING == subscriptionItem.getMode()) {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
-            } else if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.BROADCASTING;
-            } else {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED;
-            }
-
-            Subscription.SubscriptionItem.SubscriptionType type;
-            if (SubscriptionType.ASYNC == subscriptionItem.getType()) {
-                type = Subscription.SubscriptionItem.SubscriptionType.ASYNC;
-            } else if (SubscriptionType.SYNC == subscriptionItem.getType()) {
-                type = Subscription.SubscriptionItem.SubscriptionType.SYNC;
-            } else {
-                type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;
-            }
-            final Subscription.SubscriptionItem item = Subscription.SubscriptionItem.newBuilder()
-                .setTopic(subscriptionItem.getTopic())
-                .setMode(mode)
-                .setType(type)
-                .build();
-            builder.addSubscriptionItems(item);
-        }
-
-        return builder.build();
     }
 
     public synchronized void registerListener(final ReceiveMsgHook<?> listener) {

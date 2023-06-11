@@ -20,6 +20,7 @@ package org.apache.eventmesh.protocol.cloudevents.resolver.grpc;
 
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,11 @@ import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.protobuf.ProtobufFormat;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class GrpcEventMeshCloudEventProtocolResolver {
 
     private static final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE);
@@ -46,4 +52,15 @@ public class GrpcEventMeshCloudEventProtocolResolver {
             .collect(Collectors.toList());
     }
 
+    public static EventMeshCloudEventWrapper buildEventMeshCloudEvent(io.cloudevents.CloudEvent cloudEvent) {
+        if (null == cloudEvent) {
+            return new EventMeshCloudEventWrapper(null);
+        }
+        try {
+            return new EventMeshCloudEventWrapper(CloudEvent.parseFrom(eventFormat.serialize(cloudEvent)));
+        } catch (InvalidProtocolBufferException e) {
+            log.error("Build Event Mesh CloudEvent from io.cloudevents.CloudEvent error", e);
+        }
+        return null;
+    }
 }
