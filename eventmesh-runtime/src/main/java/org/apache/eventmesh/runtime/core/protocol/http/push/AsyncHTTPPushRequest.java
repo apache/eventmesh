@@ -328,7 +328,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             Map<String, Object> ret =
                 JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
-            Integer retCode = (Integer) ret.get("retCode");
+            Integer retCode = (Integer) Objects.requireNonNull((ret.get("retCode")));
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
@@ -340,7 +340,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             }
             return ClientRetCode.FAIL;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (MESSAGE_LOGGER.isWarnEnabled()) {
                 MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
