@@ -57,6 +57,9 @@ public class EventMeshGrpcClientConfig {
     @Builder.Default
     private boolean useTls = false;
 
+    @Builder.Default
+    private long timeOut = 5_000;
+
     @Override
     public String toString() {
         return "ClientConfig={ServerAddr="
@@ -78,6 +81,8 @@ public class EventMeshGrpcClientConfig {
             + ",password=***"
             + ",useTls="
             + useTls
+            + ",timeOut="
+            + timeOut
             + "}";
     }
 }

@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.core.protocol.http.push;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.MapUtils;

@@ -23,9 +23,9 @@ import org.apache.eventmesh.source.connector.rocketmq.connector.RocketMQSourceCo
 public class RocketMQSourceWorker {
 
     public static void main(String[] args) throws Exception {
-
+      
         Application.run(RocketMQSourceConnector.class);
-
+      
     }
 
 }
