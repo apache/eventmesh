@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.43.2'
-
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.cloudevents:cloudevents-json-jackson'
@@ -53,11 +51,11 @@ dependencies {
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
-    implementation "io.grpc:grpc-core:${grpcVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
