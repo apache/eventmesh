@@ -177,7 +177,7 @@ public class PrometheusHttpExporter {
 
     public void export(String name, HttpSummaryMetrics summaryMetrics) {
         Meter meter = GlobalMeterProvider.getMeter(name);
-        paramPairs.forEach((k, v) -> observeOfValue(meter, k[0], k[1], HTTP, v.apply(summaryMetrics)));
+        paramPairs.forEach((metricInfo, getMetric) -> observeOfValue(meter, metricInfo[0], metricInfo[1], HTTP, summaryMetrics, getMetric));
     }
 
 }
