@@ -15,22 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
-public class SimpleMessageWrapper implements ProtocolTransportObject {
+/**
+ * publish processor interface
+ * @param <Request>
+ * @param <Response>
+ */
+public interface PublishProcessor<Request, Response> {
 
-    private static final long serialVersionUID = 4562321593749195797L;
+    void process(Request request, EventEmitter<Response> emitter) throws Exception;
 
-    private final SimpleMessage simpleMessage;
-
-    public SimpleMessageWrapper(SimpleMessage simpleMessage) {
-        this.simpleMessage = simpleMessage;
-    }
-
-    public SimpleMessage getMessage() {
-        return simpleMessage;
-    }
 }
