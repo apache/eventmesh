@@ -218,26 +218,23 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     }
-                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.RETRY) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.NOLISTEN) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.FAIL) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
+                    switch (result) {
+                        case OK:
+                        case REMOTE_OK:
+                        case FAIL:
+                            complete();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        case RETRY:
+                        case NOLISTEN:
+                            delayRetry();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        default: // do nothing
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
