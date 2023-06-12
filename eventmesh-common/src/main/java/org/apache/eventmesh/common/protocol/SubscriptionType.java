@@ -25,7 +25,12 @@ public enum SubscriptionType {
     /**
      * ASYNC
      */
-    ASYNC("ASYNC");
+    ASYNC("ASYNC"),
+
+    /**
+     * UNRECOGNIZED
+     */
+    UNRECOGNIZED("UNRECOGNIZED");
 
     private final String type;
 

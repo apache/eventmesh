@@ -24,4 +24,11 @@ dependencies {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
     implementation("com.google.protobuf:protobuf-java:3.21.5")
+    implementation "io.cloudevents:cloudevents-protobuf"
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }

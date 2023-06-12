@@ -26,7 +26,13 @@ public enum SubscriptionMode {
     /**
      * clustering
      */
-    CLUSTERING("CLUSTERING");
+    CLUSTERING("CLUSTERING"),
+
+    /**
+     * UNRECOGNIZED
+     */
+    UNRECOGNIZED("UNRECOGNIZED")
+    ;
 
     private final String mode;
 

@@ -86,9 +86,6 @@ public final class Operation extends
         Objects.requireNonNull(input, "CodedInputStream can not be null");
         Objects.requireNonNull(extensionRegistry, "ExtensionRegistryLite can not be null");
 
-        if (extensionRegistry == null) {
-            throw new NullPointerException();
-        }
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
                 com.google.protobuf.UnknownFieldSet.newBuilder();
         try {
