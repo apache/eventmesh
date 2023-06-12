@@ -328,7 +328,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             Map<String, Object> ret =
                 JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
-            Integer retCode = (Integer) Objects.requireNonNull((ret.get("retCode")));
+            Integer retCode = (Integer) Objects.requireNonNull(ret).get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
