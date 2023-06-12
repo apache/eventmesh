@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.common.protocol;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class BatchMessageWrapper implements ProtocolTransportObject {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class HeartbeatItem {
 
-    private static final long serialVersionUID = -3296467364340663768L;
-    private final BatchMessage batchMessage;
+    private String topic;
 
-    public BatchMessageWrapper(BatchMessage batchMessage) {
-        this.batchMessage = batchMessage;
-    }
+    private String url;
 
-    public BatchMessage getMessage() {
-        return batchMessage;
-    }
 }
