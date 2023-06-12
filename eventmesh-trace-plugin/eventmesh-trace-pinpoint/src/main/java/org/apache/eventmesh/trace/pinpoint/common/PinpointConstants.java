@@ -19,8 +19,6 @@ package org.apache.eventmesh.trace.pinpoint.common;
 
 public class PinpointConstants {
 
-    public static final String SERVICE_NAME = "eventmesh_trace";
-
     public static final String REQ_IP = "req0ip";
 
     public static final String UNKNOWN_REQ_IP = "unknown";

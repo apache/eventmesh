@@ -104,10 +104,8 @@ public class SourceWorker implements ConnectorWorker {
         try {
             startConnector();
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
+            log.error("source worker[{}] start fail", source.name(), e);
         }
-        log.info("source worker started");
     }
 
     public void startPoll() {

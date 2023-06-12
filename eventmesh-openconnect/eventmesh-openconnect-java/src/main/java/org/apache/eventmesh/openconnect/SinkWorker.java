@@ -88,8 +88,8 @@ public class SinkWorker implements ConnectorWorker {
         try {
             sink.start();
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
+            log.error("sink worker[{}] start fail", sink.name(), e);
+            return;
         }
         eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
             SubscriptionType.ASYNC);
@@ -104,7 +104,6 @@ public class SinkWorker implements ConnectorWorker {
             eventMeshTCPClient.unsubscribe();
             eventMeshTCPClient.close();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("event mesh client close", e);
         }
         try {
@@ -112,11 +111,11 @@ public class SinkWorker implements ConnectorWorker {
         } catch (Exception e) {
             log.error("sink destroy error", e);
         }
-
         log.info("source worker stopped");
     }
 
     static class EventHandler implements ReceiveMsgHook<CloudEvent> {
+
         private final Sink sink;
 
         public EventHandler(Sink sink) {

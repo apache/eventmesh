@@ -64,7 +64,7 @@ public class TopicsHandler implements HttpHandler {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
                 JsonUtils.parseObject(params, TopicCreateRequest.class);
-            String topic = topicCreateRequest.getName();
+            String topic = topicCreateRequest.getTopic();
 
             if (StringUtils.isBlank(topic)) {
                 result = "Create topic failed. Parameter topic not found.";

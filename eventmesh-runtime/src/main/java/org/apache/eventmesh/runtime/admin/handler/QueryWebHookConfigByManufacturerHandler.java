@@ -73,7 +73,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(JsonUtils.toJSONString(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("get WebHookConfigOperation implementation Failed.", e);
         }
