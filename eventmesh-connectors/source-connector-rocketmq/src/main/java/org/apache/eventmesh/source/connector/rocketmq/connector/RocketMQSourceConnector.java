@@ -78,7 +78,6 @@ public class RocketMQSourceConnector implements Source {
     public List<ConnectRecord> poll() {
         List<MessageExt> messageExts = consumer.poll();
         List<ConnectRecord> connectRecords = new ArrayList<>(messageExts.size());
-        System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), messageExts);
         for (MessageExt messageExt : messageExts) {
             Long timestamp = System.currentTimeMillis();
             byte[] body = messageExt.getBody();
