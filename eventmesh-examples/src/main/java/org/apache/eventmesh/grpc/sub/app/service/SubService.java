@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -49,7 +50,7 @@ public class SubService implements InitializingBean {
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
-    private Properties properties;
+    private final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     private final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
@@ -61,6 +62,10 @@ public class SubService implements InitializingBean {
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
+
+    public SubService() throws IOException {
+        // TODO document why this constructor is empty
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -82,8 +87,6 @@ public class SubService implements InitializingBean {
 
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
-        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-
         // Wait for all messaged to be consumed
         final Thread stopThread = new Thread(() -> {
             try {
@@ -92,13 +95,13 @@ public class SubService implements InitializingBean {
                 if (log.isWarnEnabled()) {
                     log.warn("exception occurred when countDownLatch.await ", e);
                 }
+                Thread.currentThread().interrupt();
             }
 
             if (log.isInfoEnabled()) {
                 log.info("stopThread start....");
             }
 
-            //throw new RuntimeException();
         });
 
         stopThread.start();
