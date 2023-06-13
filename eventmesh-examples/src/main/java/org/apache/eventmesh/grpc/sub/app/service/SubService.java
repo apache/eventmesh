@@ -64,7 +64,7 @@ public class SubService implements InitializingBean {
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     public SubService() throws IOException {
-        // TODO document why this constructor is empty
+        // TODO document this constructor is empty
     }
 
     @Override
