@@ -17,8 +17,15 @@
 
 package org.apache.eventmesh.metrics.prometheus.utils;
 
+import org.apache.eventmesh.metrics.api.model.Metric;
+
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
+
+import lombok.SneakyThrows;
 
 /**
  * Utils for metrics-prometheus module
@@ -29,28 +36,31 @@ public class PrometheusExporterUtils {
      * Build the OpenTelemetry's Meter
      *
      * @param meter
-     * @param name
-     * @param desc
+     * @param metricName
+     * @param metricDesc
      * @param protocol
-     * @param number
+     * @param summaryMetrics
+     * @param getMetric
      */
-    public static void observeOfValue(Meter meter, String name, String desc, String protocol, Number number) {
-        if (number instanceof Long) {
-            meter.longValueObserverBuilder(name)
-                    .setDescription(desc)
-                    .setUnit(protocol)
-                    .setUpdater(result -> result.observe((long) number, Labels.empty()))
-                    .build();
-        } else if (number instanceof Double) {
-            meter.doubleValueObserverBuilder(name)
-                    .setDescription(desc)
-                    .setUnit(protocol)
-                    .setUpdater(result -> result.observe((double) number, Labels.empty()))
-                    .build();
+    @SneakyThrows
+    public static void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
+        Metric summaryMetrics, Function getMetric) {
+        Method method = getMetric.getClass().getMethod("apply", Object.class);
+        Class metricType = (Class) method.getGenericReturnType();
+        if (metricType == Long.class) {
+            meter.longValueObserverBuilder(metricName)
+                .setDescription(metricDesc)
+                .setUnit(protocol)
+                .setUpdater(result -> result.observe((long) getMetric.apply(summaryMetrics), Labels.empty()))
+                .build();
+        } else if (metricType == Double.class) {
+            meter.doubleValueObserverBuilder(metricName)
+                .setDescription(metricDesc)
+                .setUnit(protocol)
+                .setUpdater(result -> result.observe((double) getMetric.apply(summaryMetrics), Labels.empty()))
+                .build();
         }
     }
-
-
 
     /**
      * create and init an array contains 2 String.

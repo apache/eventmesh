@@ -79,7 +79,7 @@ public class PrometheusTcpExporter {
 
     public void export(final String meterName, final TcpSummaryMetrics summaryMetrics) {
         final Meter meter = GlobalMeterProvider.getMeter(meterName);
-        paramPairs.forEach((k, v) ->
-                observeOfValue(meter, METRICS_TCP_PREFIX + k[0], k[1], TCP, v.apply(summaryMetrics)));
+        paramPairs.forEach((metricInfo, getMetric) ->
+                observeOfValue(meter, METRICS_TCP_PREFIX + metricInfo[0], metricInfo[1], TCP, summaryMetrics, getMetric));
     }
 }
