@@ -42,11 +42,11 @@ public class BaseDataTypeConverter {
         @Override
         public Boolean convert(ConvertInfo convertInfo) {
             String value = (String) convertInfo.getValue();
-            if (value != null && value.length() == 1) {
-                return value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
+            if (value != null && value.length() == 1 && value.equals("1")) {
+                return Boolean.TRUE;
             }
 
-            return Boolean.valueOf(value);
+            return Boolean.FALSE;
         }
     }
 
