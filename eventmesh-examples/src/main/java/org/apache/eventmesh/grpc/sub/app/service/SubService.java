@@ -50,9 +50,17 @@ public class SubService implements InitializingBean {
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
-    private final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+    private Properties properties;
 
     private final SubscriptionItem subscriptionItem = new SubscriptionItem();
+
+    {
+        try {
+            properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        } catch (IOException e) {
+            log.error("Failed to read the file.", e);
+        }
+    }
 
     private final String localIp = IPUtils.getLocalAddress();
     private final String localPort = properties.getProperty(SERVER_PORT);
@@ -62,10 +70,6 @@ public class SubService implements InitializingBean {
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
-
-    public SubService() throws IOException {
-        // TODO document this constructor is empty
-    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
