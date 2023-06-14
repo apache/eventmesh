@@ -18,7 +18,6 @@
 package org.apache.eventmesh.client.grpc.consumer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
@@ -32,7 +31,6 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
