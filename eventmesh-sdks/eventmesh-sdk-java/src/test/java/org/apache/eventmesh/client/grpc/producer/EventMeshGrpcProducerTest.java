@@ -30,9 +30,10 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.EventMeshMessage.EventMeshMessageBuilder;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,8 +48,6 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import io.cloudevents.CloudEvent;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(PublisherServiceBlockingStub.class)
@@ -72,24 +71,17 @@ public class EventMeshGrpcProducerTest {
         producer.setPublisherClient(stub);
 
         doThrow(RuntimeException.class).when(stub).publish(
-            argThat(argument -> argument != null && StringUtils.equals(argument.getContent(),
+            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument),
                 "mockExceptionContent")));
-        doReturn(Response.getDefaultInstance()).when(stub).publish(
-            argThat(argument -> argument != null && StringUtils.equals(argument.getContent(), "mockContent")));
-        doReturn(Response.getDefaultInstance()).when(stub).batchPublish(
-            argThat(argument -> argument != null && StringUtils.equals(argument.getTopic(), "mockTopic")));
+        doReturn(CloudEvent.getDefaultInstance()).when(stub).publish(
+            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument), "mockContent")));
+        doReturn(CloudEvent.getDefaultInstance()).when(stub).batchPublish(
+            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getSubject(argument.getEvents(0)), "mockTopic")));
         doReturn(stub).when(stub).withDeadlineAfter(1000L, TimeUnit.MILLISECONDS);
-        doAnswer(invocation -> {
-            SimpleMessage simpleMessage = invocation.getArgument(0);
-            if (StringUtils.isEmpty(simpleMessage.getContent())) {
-                return SimpleMessage.getDefaultInstance();
-            }
-            return SimpleMessage.newBuilder(simpleMessage).build();
-        }).when(stub).requestReply(Mockito.isA(SimpleMessage.class));
-        when(cloudEventProducer.publish(anyList())).thenReturn(Response.getDefaultInstance());
-        when(cloudEventProducer.publish(Mockito.isA(CloudEvent.class))).thenReturn(Response.getDefaultInstance());
-        when(eventMeshMessageProducer.publish(anyList())).thenReturn(Response.getDefaultInstance());
-        when(eventMeshMessageProducer.publish(Mockito.isA(EventMeshMessage.class))).thenReturn(Response.getDefaultInstance());
+        when(cloudEventProducer.publish(anyList())).thenReturn(Response.builder().build());
+        when(cloudEventProducer.publish(Mockito.isA(io.cloudevents.CloudEvent.class))).thenReturn(Response.builder().build());
+        when(eventMeshMessageProducer.publish(anyList())).thenReturn(Response.builder().build());
+        when(eventMeshMessageProducer.publish(Mockito.isA(EventMeshMessage.class))).thenReturn(Response.builder().build());
         doAnswer(invocation -> {
             EventMeshMessage eventMeshMessage = invocation.getArgument(0);
             if (StringUtils.isEmpty(eventMeshMessage.getContent())) {
@@ -111,7 +103,7 @@ public class EventMeshGrpcProducerTest {
 
     @Test
     public void testPublishEventMeshMessage() {
-        assertThat(producer.publish(defaultEventMeshMessageBuilder().build())).isEqualTo(Response.getDefaultInstance());
+        assertThat(producer.publish(defaultEventMeshMessageBuilder().build())).isEqualTo(Response.builder().build());
     }
 
     @Test
@@ -122,11 +114,11 @@ public class EventMeshGrpcProducerTest {
     @Test
     public void testPublishGenericMessageList() {
         assertThat(producer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(
-            Response.getDefaultInstance());
+            Response.builder().build());
         EventMeshMessageBuilder eventMeshMessageBuilder = defaultEventMeshMessageBuilder();
         eventMeshMessageBuilder.prop(Collections.singletonMap(Constants.EVENTMESH_MESSAGE_CONST_TTL, "1000"));
         assertThat(producer.publish(Collections.singletonList(eventMeshMessageBuilder.build()))).isEqualTo(
-            Response.getDefaultInstance());
+            Response.builder().build());
     }
 
     @Test

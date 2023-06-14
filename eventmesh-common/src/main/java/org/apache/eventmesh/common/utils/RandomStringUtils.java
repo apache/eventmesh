@@ -19,12 +19,19 @@ package org.apache.eventmesh.common.utils;
 
 import org.apache.commons.text.RandomStringGenerator;
 
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
 public class RandomStringUtils {
 
     private static final RandomStringGenerator RANDOM_NUM_GENERATOR = new RandomStringGenerator.Builder().withinRange('0', '9').build();
 
     public static String generateNum(int length) {
         return RANDOM_NUM_GENERATOR.generate(length);
+    }
+
+    public static String generateUUID() {
+        return new UUID(ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong()).toString();
     }
 
 }

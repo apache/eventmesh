@@ -22,10 +22,11 @@ bson-3.12.11.jar
 byte-buddy-1.11.0.jar
 cache-api-1.1.1.jar
 checker-qual-3.12.0.jar
-cloudevents-api-2.2.0.jar
-cloudevents-core-2.2.0.jar
-cloudevents-json-jackson-2.2.0.jar
-cloudevents-kafka-2.2.1.jar
+cloudevents-api-2.4.2.jar
+cloudevents-core-2.4.2.jar
+cloudevents-json-jackson-2.4.2.jar
+cloudevents-kafka-2.4.2.jar
+cloudevents-protobuf-2.4.2.jar
 commons-beanutils-1.9.4.jar
 commons-cli-1.2.jar
 commons-codec-1.11.jar
@@ -48,10 +49,8 @@ error_prone_annotations-2.9.0.jar
 failureaccess-1.0.1.jar
 fastjson-1.2.83.jar
 google-auth-library-credentials-0.22.2.jar
-grpc-api-1.42.2.jar
 grpc-api-1.43.2.jar
 grpc-auth-1.39.0.jar
-grpc-context-1.42.2.jar
 grpc-context-1.43.2.jar
 grpc-core-1.43.2.jar
 grpc-grpclb-1.17.1.jar
@@ -61,7 +60,6 @@ grpc-protobuf-1.42.2.jar
 grpc-protobuf-1.43.2.jar
 grpc-protobuf-lite-1.42.2.jar
 grpc-protobuf-lite-1.43.2.jar
-grpc-stub-1.42.2.jar
 grpc-stub-1.43.2.jar
 gson-2.8.2.jar
 guava-31.0.1-jre.jar
@@ -184,10 +182,10 @@ pravega-shared-controller-api-0.11.0.jar
 pravega-shared-protocol-0.11.0.jar
 pravega-shared-security-0.11.0.jar
 proto-google-common-protos-2.0.1.jar
-protobuf-java-3.18.2.jar
 protobuf-java-3.19.2.jar
 protobuf-java-3.19.4.jar
 protobuf-java-3.21.5.jar
+protobuf-java-util-3.15.0.jar
 protobuf-java-util-3.17.2.jar
 protobuf-java-util-3.21.5.jar
 protobuf-java-util-3.5.1.jar
