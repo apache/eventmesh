@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -52,6 +53,14 @@ public class SubService implements InitializingBean {
     private Properties properties;
 
     private final SubscriptionItem subscriptionItem = new SubscriptionItem();
+
+    {
+        try {
+            properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        } catch (IOException e) {
+            log.error("Failed to read the file.", e);
+        }
+    }
 
     private final String localIp = IPUtils.getLocalAddress();
     private final String localPort = properties.getProperty(SERVER_PORT);
@@ -82,8 +91,6 @@ public class SubService implements InitializingBean {
 
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
-        properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-
         // Wait for all messaged to be consumed
         final Thread stopThread = new Thread(() -> {
             try {
@@ -92,13 +99,13 @@ public class SubService implements InitializingBean {
                 if (log.isWarnEnabled()) {
                     log.warn("exception occurred when countDownLatch.await ", e);
                 }
+                Thread.currentThread().interrupt();
             }
 
             if (log.isInfoEnabled()) {
                 log.info("stopThread start....");
             }
 
-            //throw new RuntimeException();
         });
 
         stopThread.start();
