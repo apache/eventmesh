@@ -24,7 +24,8 @@ public class RocketMQSinkWorker {
 
     public static void main(String[] args) throws Exception {
 
-        Application.run(RocketMQSinkConnector.class);
+        Application rocketmqSinkApp = new Application();
+        rocketmqSinkApp.run(RocketMQSinkConnector.class);
 
     }
 }
