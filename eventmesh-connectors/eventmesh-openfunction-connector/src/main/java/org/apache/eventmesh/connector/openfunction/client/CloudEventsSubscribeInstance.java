@@ -15,19 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.connector.openfunction.client;
 
-public class Constants {
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 
-    public static final String ENV_TARGET = "connectorTarget";
+import lombok.extern.slf4j.Slf4j;
 
-    public static final String ENV_PORT = "connectorPort";
+@Slf4j
+public class CloudEventsSubscribeInstance {
 
-    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
-
-    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
-
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
+    public static void main(String[] args) throws Exception {
+        Server server = ServerBuilder.forPort(10115).addService(new CallbackService()).build();
+        server.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                server.shutdown();
+            } catch (Exception e) {
+                log.error("exception when shutdown.", e);
+            }
+        }));
+        server.awaitTermination();
+    }
 }

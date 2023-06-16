@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -48,13 +53,19 @@ public class SourceWorker implements ConnectorWorker {
     private final Source source;
     private final SourceConfig config;
 
+    private final ExecutorService pollService = Executors.newSingleThreadExecutor();
+
+    private final ExecutorService startService = Executors.newSingleThreadExecutor();
+
+    private final BlockingQueue<ConnectRecord> queue;
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
-    private volatile boolean isRunning = true;
+    private volatile boolean isRunning = false;
 
     public SourceWorker(Source source, SourceConfig config) throws Exception {
         this.source = source;
         this.config = config;
+        queue = new LinkedBlockingQueue<>(1000);
         eventMeshTCPClient = buildEventMeshPubClient(config);
         eventMeshTCPClient.init();
     }
@@ -90,25 +101,50 @@ public class SourceWorker implements ConnectorWorker {
     public void start() {
         log.info("source worker starting {}", source.name());
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
-        try {
-            source.start();
-            while (isRunning) {
-                List<ConnectRecord> connectorRecordList = source.poll();
-                for (ConnectRecord connectRecord : connectorRecordList) {
-                    // todo: convert connectRecord to cloudevent
-                    CloudEvent event = convertRecordToEvent(connectRecord);
-                    eventMeshTCPClient.publish(event, 3000);
+        isRunning = true;
+        pollService.execute(this::startPoll);
+
+        startService.execute(
+            () -> {
+                try {
+                    startConnector();
+                } catch (Exception e) {
+                    log.error("source worker[{}] start fail", source.name(), e);
+                    throw new RuntimeException(e);
                 }
             }
-            log.info("source worker[{}] started", source.name());
-        } catch (Exception e) {
-            log.error("source worker[{}] start fail", source.name(), e);
+        );
+    }
+
+    public void startPoll() {
+        while (isRunning) {
+            ConnectRecord connectRecord = null;
+            try {
+                connectRecord = queue.poll(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                log.error("poll connect record error", e);
+            }
+            if (connectRecord == null) {
+                continue;
+            }
+            // todo: convert connectRecord to cloudevent
+            CloudEvent event = convertRecordToEvent(connectRecord);
+            eventMeshTCPClient.publish(event, 3000);
+        }
+    }
+
+    private void startConnector() throws Exception {
+        source.start();
+        while (isRunning) {
+            List<ConnectRecord> connectorRecordList = source.poll();
+            for (ConnectRecord connectRecord : connectorRecordList) {
+                queue.put(connectRecord);
+            }
         }
     }
 
     private CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
-        final Map<String, String> content = new HashMap<>();
-        content.put("content", connectRecord.getData().toString());
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
@@ -116,7 +152,7 @@ public class SourceWorker implements ConnectorWorker {
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", 10000)
             .build();
     }
@@ -131,12 +167,18 @@ public class SourceWorker implements ConnectorWorker {
             e.printStackTrace();
             log.error("source destroy error", e);
         }
+        pollService.shutdown();
+        try {
+            pollService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.error("awaitTermination error", e);
+        }
 
         try {
             eventMeshTCPClient.close();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("event mesh client close", e);
+            log.error("event mesh client close error", e);
         }
         log.info("source worker stopped");
     }
