@@ -55,6 +55,8 @@ public class SourceWorker implements ConnectorWorker {
 
     private final ExecutorService pollService = Executors.newSingleThreadExecutor();
 
+    private final ExecutorService startService = Executors.newSingleThreadExecutor();
+
     private final BlockingQueue<ConnectRecord> queue;
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
@@ -101,11 +103,17 @@ public class SourceWorker implements ConnectorWorker {
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
         isRunning = true;
         pollService.execute(this::startPoll);
-        try {
-            startConnector();
-        } catch (Exception e) {
-            log.error("source worker[{}] start fail", source.name(), e);
-        }
+
+        startService.execute(
+            () -> {
+                try {
+                    startConnector();
+                } catch (Exception e) {
+                    log.error("source worker[{}] start fail", source.name(), e);
+                    throw new RuntimeException(e);
+                }
+            }
+        );
     }
 
     public void startPoll() {
@@ -137,8 +145,6 @@ public class SourceWorker implements ConnectorWorker {
     }
 
     private CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
-        final Map<String, String> content = new HashMap<>();
-        content.put("content", connectRecord.getData().toString());
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
@@ -146,7 +152,7 @@ public class SourceWorker implements ConnectorWorker {
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", 10000)
             .build();
     }

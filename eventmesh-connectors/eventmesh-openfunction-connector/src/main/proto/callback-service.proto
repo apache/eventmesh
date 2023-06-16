@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+syntax = "proto3";
 
-public class Constants {
+package org.apache.eventmesh.cloudevents.v1;
 
-    public static final String ENV_TARGET = "connectorTarget";
+import "eventmesh-cloudevents.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
 
-    public static final String ENV_PORT = "connectorPort";
+option java_outer_classname = "EventMeshGrpcService";
+option java_package = "org.apache.eventmesh.connect.openfunction";
 
-    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
+service CallbackService {
 
-    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
+  // Subscribes events
+  rpc OnTopicEvent(CloudEvent) returns (CloudEvent);
 
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
 }
+
+
+
