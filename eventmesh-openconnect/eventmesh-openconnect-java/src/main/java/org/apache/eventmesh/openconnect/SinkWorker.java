@@ -125,6 +125,7 @@ public class SinkWorker implements ConnectorWorker {
         @Override
         public Optional<CloudEvent> handle(CloudEvent event) {
             byte[] body = Objects.requireNonNull(event.getData()).toBytes();
+            log.info("handle receive events {}", new String(event.getData().toBytes()));
             //todo: recordPartition & recordOffset
             ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
             for (String extensionName : event.getExtensionNames()) {

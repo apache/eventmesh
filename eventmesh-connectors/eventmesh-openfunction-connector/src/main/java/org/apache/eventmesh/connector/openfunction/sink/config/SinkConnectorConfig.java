@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.connector.openfunction.sink.config;
 
-public class Constants {
+import lombok.Data;
 
-    public static final String ENV_TARGET = "connectorTarget";
+@Data
+public class SinkConnectorConfig {
 
-    public static final String ENV_PORT = "connectorPort";
+    private String connectorName;
 
-    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
-
-    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
-
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
+    private String target;
 }
