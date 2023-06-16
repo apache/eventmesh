@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
@@ -25,6 +27,7 @@ import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 
@@ -63,10 +66,10 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      * OPTIONS /client
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
@@ -79,7 +82,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.parseObject(request, DeleteGrpcClientRequest.class);
-            String url = deleteGrpcClientRequest.getUrl();
+            String url = Objects.requireNonNull(deleteGrpcClientRequest).getUrl();
 
             ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
             Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
@@ -91,7 +94,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 }
             }
 
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -112,8 +115,8 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             // Get the list of gRPC clients
@@ -148,8 +151,8 @@ public class GrpcClientHandler extends AbstractHttpHandler {
             });
 
             String result = JsonUtils.toJSONString(getClientResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
@@ -159,8 +162,8 @@ public class GrpcClientHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes().length);
-            out.write(result.getBytes());
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {
@@ -174,14 +177,18 @@ public class GrpcClientHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            list(httpExchange);
-        }
-        if ("DELETE".equals(httpExchange.getRequestMethod())) {
-            delete(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                list(httpExchange);
+                break;
+            case DELETE:
+                delete(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }

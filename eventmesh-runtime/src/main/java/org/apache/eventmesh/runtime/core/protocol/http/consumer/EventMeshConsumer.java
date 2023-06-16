@@ -41,8 +41,8 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProduce
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPMessageHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.push.MessageHandler;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.MapUtils;
@@ -75,7 +75,7 @@ public class EventMeshConsumer {
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private ConsumerGroupConf consumerGroupConf;
 

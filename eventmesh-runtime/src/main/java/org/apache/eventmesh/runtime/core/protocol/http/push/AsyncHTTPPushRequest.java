@@ -51,7 +51,6 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,14 +70,14 @@ import com.google.common.collect.Sets;
 
 public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
-    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger("message");
+    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public static final Logger CMD_LOGGER = LoggerFactory.getLogger("cmd");
+    public static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     public static final Logger LOGGER = LoggerFactory.getLogger("AsyncHTTPPushRequest");
 
     public String currPushUrl;
-    private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
+    private final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
         Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
@@ -136,14 +135,12 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 content = ((HttpCommand) protocolTransportObject).getBody().toMap().get("content").toString();
             } else {
                 HttpEventWrapper httpEventWrapper = (HttpEventWrapper) protocolTransportObject;
-                Map<String, Object> sysHeaderMap = httpEventWrapper.getSysHeaderMap();
-                Set<Map.Entry<String, Object>> sysHeaderMapEntry = sysHeaderMap.entrySet();
-                content = new String(httpEventWrapper.getBody(), StandardCharsets.UTF_8);
-                for (Map.Entry<String, Object> header : sysHeaderMapEntry) {
-                    if (!builder.containsHeader(header.getKey())) {
-                        builder.addHeader(header.getKey(), header.getValue().toString());
+                content = new String(httpEventWrapper.getBody(), Constants.DEFAULT_CHARSET);
+                httpEventWrapper.getSysHeaderMap().forEach((k, v) -> {
+                    if (!builder.containsHeader(k)) {
+                        builder.addHeader(k, v.toString());
                     }
-                }
+                });
             }
 
         } catch (Exception ex) {
@@ -175,7 +172,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
             JsonUtils.toJSONString(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
-        HttpEntity httpEntity = new UrlEncodedFormEntity(body, StandardCharsets.UTF_8);
+        HttpEntity httpEntity = new UrlEncodedFormEntity(body, Constants.DEFAULT_CHARSET);
 
         builder.setEntity(httpEntity);
 
@@ -221,26 +218,23 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     }
-                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.RETRY) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.NOLISTEN) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.FAIL) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
+                    switch (result) {
+                        case OK:
+                        case REMOTE_OK:
+                        case FAIL:
+                            complete();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        case RETRY:
+                        case NOLISTEN:
+                            delayRetry();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        default: // do nothing
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
@@ -331,7 +325,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             Map<String, Object> ret =
                 JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
-            Integer retCode = (Integer) ret.get("retCode");
+            Integer retCode = (Integer) Objects.requireNonNull(ret).get(ProtocolKey.RETCODE);
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
@@ -343,7 +337,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             }
             return ClientRetCode.FAIL;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (MESSAGE_LOGGER.isWarnEnabled()) {
                 MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
@@ -369,8 +363,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public boolean retry() {
+    public void retry() {
         tryHTTPRequest();
-        return true;
     }
 }

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import io.cloudevents.CloudEvent;
@@ -92,7 +93,7 @@ public class HttpRequestProtocolResolver {
             data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
             data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
             // with data
-            return builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8)).build();
+            return builder.withData(Objects.requireNonNull(JsonUtils.toJSONString(data)).getBytes(StandardCharsets.UTF_8)).build();
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e);
         }

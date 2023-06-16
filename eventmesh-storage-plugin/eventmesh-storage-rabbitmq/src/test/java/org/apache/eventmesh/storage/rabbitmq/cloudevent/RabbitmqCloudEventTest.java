@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.rabbitmq.cloudevent;
@@ -49,7 +49,7 @@ public class RabbitmqCloudEventTest {
     public void toByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assert.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
         Assert.assertNotNull(data);
@@ -59,12 +59,12 @@ public class RabbitmqCloudEventTest {
     public void getFromByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assert.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
         Assert.assertNotNull(data);
 
         RabbitmqCloudEvent event = RabbitmqCloudEvent.getFromByteArray(data);
-        Assert.assertEquals(event.getExtensions().get("subject"), "topic");
+        Assert.assertEquals("topic", event.getExtensions().get("subject"));
     }
 }

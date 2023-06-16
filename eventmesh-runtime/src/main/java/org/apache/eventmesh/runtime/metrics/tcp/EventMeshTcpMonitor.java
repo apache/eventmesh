@@ -133,11 +133,11 @@ public class EventMeshTcpMonitor {
 
             //monitor retry queue size
             tcpSummaryMetrics.setRetrySize(eventMeshTCPServer.getEventMeshTcpRetryer().getRetrySize());
-            appLogger.info(String.format(
+            appLogger.info(
                 MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON,
                 EventMeshConstants.PROTOCOL_TCP,
                 MonitorMetricConstants.RETRY_QUEUE_SIZE,
-                tcpSummaryMetrics.getRetrySize()));
+                tcpSummaryMetrics.getRetrySize());
 
         }, 10, PRINT_THREADPOOLSTATE_INTERVAL, TimeUnit.SECONDS);
         log.info("EventMeshTcpMonitor started......");

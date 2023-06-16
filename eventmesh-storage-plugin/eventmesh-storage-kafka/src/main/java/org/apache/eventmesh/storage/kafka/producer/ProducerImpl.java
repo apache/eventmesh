@@ -24,9 +24,11 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 
 import org.apache.kafka.clients.admin.Admin;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Objects;
@@ -44,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("deprecation")
 public class ProducerImpl {
 
-    private KafkaProducer<String, CloudEvent> producer;
+    private final KafkaProducer<String, CloudEvent> producer;
     private final Properties properties = new Properties();
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
@@ -107,7 +109,7 @@ public class ProducerImpl {
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         try {
-            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent), (metadata, exception) -> {
+            this.producer.send(new ProducerRecord<>(Objects.requireNonNull(cloudEvent.getSubject()), cloudEvent), (metadata, exception) -> {
                 if (exception != null) {
                     StorageRuntimeException onsEx = new StorageRuntimeException(exception.getMessage(), exception);
                     OnExceptionContext context = new OnExceptionContext();

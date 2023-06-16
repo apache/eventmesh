@@ -27,6 +27,7 @@ header:
     - '.gitmodules'
     - '**/.gitkeep'
     - '**/.gitignore'
+    - '**/.dockerignore'
     - '**/*.md'
     - '**/*.json'
     - '**/*.ftl'
