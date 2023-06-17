@@ -45,7 +45,7 @@ public class ConnectorConfig {
     /**
      * The maximum number of records that should be returned in each batch poll.
      */
-    private Integer batchSize;
+    private Integer batchSize = 20;
 
     /**
      * The maximum ms to wait for request futures to complete.

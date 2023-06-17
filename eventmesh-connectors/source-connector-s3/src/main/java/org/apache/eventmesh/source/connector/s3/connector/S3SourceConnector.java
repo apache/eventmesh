@@ -121,7 +121,7 @@ public class S3SourceConnector implements Source {
             return Collections.EMPTY_LIST;
         }
         long startPosition = this.position;
-        long endPosition = Math.max(this.fileSize, this.position + this.eachRecordSize * this.connectorConfig.getBatchSize());
+        long endPosition = Math.min(this.fileSize, this.position + this.eachRecordSize * this.connectorConfig.getBatchSize()) - 1;
         GetObjectRequest request = GetObjectRequest.builder().bucket(this.connectorConfig.getBucket()).key(this.connectorConfig.getFileName())
             .range("bytes=" + startPosition + "-" + endPosition).build();
         ResponseBytes<GetObjectResponse> resp;
