@@ -17,6 +17,15 @@
 
 package org.apache.eventmesh.source.connector.s3;
 
+import org.apache.eventmesh.openconnect.Application;
+import org.apache.eventmesh.source.connector.s3.connector.S3SourceConnector;
+
 public class S3SourceWorker {
 
+    public static void main(String[] args) throws Exception {
+
+        Application rocketmqSourceApp = new Application();
+        rocketmqSourceApp.run(S3SourceConnector.class);
+
+    }
 }
