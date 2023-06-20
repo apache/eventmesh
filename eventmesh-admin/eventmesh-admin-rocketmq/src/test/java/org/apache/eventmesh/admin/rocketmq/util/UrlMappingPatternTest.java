@@ -23,12 +23,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class UrlMappingPatternTest {
 
@@ -86,8 +88,21 @@ public class UrlMappingPatternTest {
     }
 
     @Test
-    public void testCompile() {
-        //TODO : Fix me to test the method compile(). It is better using Mockito not PowerMockito.
+    public void testCompile() throws NoSuchFieldException, IllegalAccessException {
+        // Mock the compiledUrlMappingPattern field with reflection
+        Pattern mockedPattern = mock(Pattern.class);
+        Field compiledUrlMappingPatternField = urlMappingPattern.getClass().getDeclaredField("compiledUrlMappingPattern");
+        compiledUrlMappingPatternField.setAccessible(true);
+        compiledUrlMappingPatternField.set(urlMappingPattern, mockedPattern);
+
+        urlMappingPattern.compile();
+
+        // Verify that the compiledUrlMappingPattern field is updated
+        assertEquals(mockedPattern, compiledUrlMappingPatternField.get(urlMappingPattern));
+
+        // Verify that the mocked pattern is compiled with the expected regex
+        Mockito.verify(mockedPattern)
+            .compile("/test/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)/path/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)(?:\\?.*?)?$");
     }
 
     class TestUrlMappingPattern extends UrlMappingPattern {
