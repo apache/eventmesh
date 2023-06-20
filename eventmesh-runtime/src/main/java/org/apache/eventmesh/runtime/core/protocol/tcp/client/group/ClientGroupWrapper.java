@@ -49,9 +49,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -104,8 +106,8 @@ public class ClientGroupWrapper {
 
     private MQConsumerWrapper broadCastMsgConsumer;
 
-    private final ConcurrentHashMap<String, Set<Session>> topic2sessionInGroupMapping =
-        new ConcurrentHashMap<String, Set<Session>>();
+    private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping =
+        new ConcurrentHashMap<String, Map<String, Session>>();
 
     private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
 
@@ -129,7 +131,7 @@ public class ClientGroupWrapper {
         this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
     }
 
-    public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
+    public ConcurrentHashMap<String, Map<String, Session>> getTopic2sessionInGroupMapping() {
         return topic2sessionInGroupMapping;
     }
 
@@ -195,24 +197,22 @@ public class ClientGroupWrapper {
             return false;
         }
 
-        boolean r;
+        boolean r = false;
         try {
             this.groupLock.writeLock().lockInterruptibly();
             if (!topic2sessionInGroupMapping.containsKey(topic)) {
-                Set<Session> sessions = new HashSet<Session>();
+                Map<String, Session> sessions = new HashMap<>();
                 topic2sessionInGroupMapping.put(topic, sessions);
             }
-            r = topic2sessionInGroupMapping.get(topic).add(session);
-            if (r) {
-
+            if (r = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session) == null) {
                 if (log.isInfoEnabled()) {
-                    log.info("addSubscription success, group:{} topic:{} client:{}", group,
-                        topic, session.getClient());
+                    log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
+                        topic, session.getClient(), session.getSessionId());
                 }
             } else {
                 if (log.isWarnEnabled()) {
-                    log.warn("addSubscription fail, group:{} topic:{} client:{}", group, topic,
-                        session.getClient());
+                    log.warn("Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
+                        session.getClient(), session.getSessionId());
                 }
             }
 
@@ -243,8 +243,7 @@ public class ClientGroupWrapper {
         try {
             this.groupLock.writeLock().lockInterruptibly();
             if (topic2sessionInGroupMapping.containsKey(topic)) {
-                r = topic2sessionInGroupMapping.get(topic).remove(session);
-                if (r) {
+                if (topic2sessionInGroupMapping.get(topic).remove(session.getSessionId()) != null) {
 
                     if (log.isInfoEnabled()) {
                         log.info(
@@ -254,8 +253,8 @@ public class ClientGroupWrapper {
                 } else {
                     if (log.isWarnEnabled()) {
                         log.warn(
-                            "removeSubscription remove session failed, group:{} topic:{} client:{}",
-                            group, topic, session.getClient());
+                            "Not found session in cache, group:{} topic:{} client:{} sessionId:{}",
+                            group, topic, session.getClient(), session.getSessionId());
                     }
                 }
             }
@@ -633,7 +632,11 @@ public class ClientGroupWrapper {
         if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
             broadCastMsgConsumer.subscribe(subscriptionItem.getTopic());
         } else {
-            persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
+            if (StringUtils.isBlank(subscriptionItem.getSubExpression())) {
+                persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
+            } else {
+                persistentMsgConsumer.subscribe(subscriptionItem.getTopic(), subscriptionItem.getSubExpression());
+            }
         }
     }
 
