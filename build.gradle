@@ -498,6 +498,7 @@ subprojects {
             dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
             dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
 
+            dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
             dependency "io.grpc:grpc-stub:${grpcVersion}"
             dependency "io.grpc:grpc-netty:${grpcVersion}"

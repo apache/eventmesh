@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+dependencies {
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
-public class Constants {
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 
-    public static final String ENV_TARGET = "connectorTarget";
-
-    public static final String ENV_PORT = "connectorPort";
-
-    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
-
-    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
-
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
+    api "com.fasterxml.jackson.core:jackson-databind"
+    api "com.fasterxml.jackson.core:jackson-core"
+    api "com.fasterxml.jackson.core:jackson-annotations"
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
