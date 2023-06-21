@@ -7,8 +7,6 @@ import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
-import org.apache.eventmesh.connect.openfunction.EventMeshGrpcService;
-
 /**
  *
  */
