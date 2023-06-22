@@ -96,6 +96,7 @@ public class UrlMappingPatternTest {
 
         urlMappingPattern.compile();
 
+        // Verify that the compiledUrlMappingPattern field is updated
         Pattern compiledPattern = (Pattern) compiledUrlMappingPatternField.get(urlMappingPattern);
         assertNotNull(compiledPattern);
 
