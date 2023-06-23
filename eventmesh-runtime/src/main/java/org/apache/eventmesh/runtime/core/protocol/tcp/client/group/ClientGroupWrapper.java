@@ -632,11 +632,7 @@ public class ClientGroupWrapper {
         if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
             broadCastMsgConsumer.subscribe(subscriptionItem.getTopic());
         } else {
-            if (StringUtils.isBlank(subscriptionItem.getSubExpression())) {
-                persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
-            } else {
-                persistentMsgConsumer.subscribe(subscriptionItem.getTopic(), subscriptionItem.getSubExpression());
-            }
+            persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
         }
     }
 
