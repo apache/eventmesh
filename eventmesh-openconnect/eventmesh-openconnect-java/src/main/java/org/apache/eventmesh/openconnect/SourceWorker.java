@@ -31,9 +31,7 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
