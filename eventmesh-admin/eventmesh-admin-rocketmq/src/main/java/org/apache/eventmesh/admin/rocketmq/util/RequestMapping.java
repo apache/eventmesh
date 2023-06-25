@@ -21,37 +21,29 @@ import org.apache.eventmesh.common.enums.HttpMethod;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class RequestMapping {
 
-    public static boolean postMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.POST.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    public boolean postMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.POST.name());
     }
 
-    public static boolean getMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.GET.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    public boolean getMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.GET.name());
     }
 
-    public static boolean putMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.PUT.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    public boolean putMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.PUT.name());
     }
 
-    public static boolean deleteMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.DELETE.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
+    public boolean deleteMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.DELETE.name());
+    }
+
+    private boolean isUrlMatch(String value, HttpExchange httpExchange, String methodType) {
+        if (methodType.equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);

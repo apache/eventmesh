@@ -24,7 +24,7 @@ repositories {
     mavenCentral()
 }
 
-def grpcVersion = '1.42.2' // CURRENT_GRPC_VERSION
+def grpcVersion = '1.43.2' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.21.5'
 def protocVersion = protobufVersion
 

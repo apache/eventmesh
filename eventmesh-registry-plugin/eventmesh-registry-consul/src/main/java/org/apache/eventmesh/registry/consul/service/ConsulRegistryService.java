@@ -19,8 +19,6 @@ package org.apache.eventmesh.registry.consul.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -30,7 +28,6 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +39,7 @@ import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -57,6 +55,7 @@ public class ConsulRegistryService implements RegistryService {
 
     private String consulPort;
 
+    @Getter
     private ConsulClient consulClient;
 
     private String token;
@@ -107,6 +106,9 @@ public class ConsulRegistryService implements RegistryService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(IP_PORT_SEPARATOR);
+            if (ipPort == null || ipPort.length < 2) {
+                return false;
+            }
             NewService service = new NewService();
             service.setPort(Integer.parseInt(ipPort[1]));
             service.setAddress(ipPort[0]);
@@ -130,16 +132,6 @@ public class ConsulRegistryService implements RegistryService {
         }
         log.info("EventMesh successfully unregistered to consul");
         return true;
-    }
-
-    @Override
-    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return null;
-    }
-
-    @Override
-    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
-        return null;
     }
 
     @Override
@@ -167,17 +159,7 @@ public class ConsulRegistryService implements RegistryService {
     }
 
     @Override
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
-        throws RegistryException {
-        return Collections.emptyMap();
-    }
-
-    @Override
     public void registerMetadata(Map<String, String> metadataMap) {
 
-    }
-
-    public ConsulClient getConsulClient() {
-        return consulClient;
     }
 }

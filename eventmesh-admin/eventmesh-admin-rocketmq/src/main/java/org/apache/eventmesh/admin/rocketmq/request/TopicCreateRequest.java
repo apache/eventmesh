@@ -26,22 +26,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TopicCreateRequest {
 
-    private String name;
+    private String topic;
 
     @JsonCreator
-    public TopicCreateRequest(@JsonProperty("name") String topic) {
-        super();
-        this.name = topic;
+    public TopicCreateRequest(@JsonProperty("topic") String topic) {
+        this.topic = topic;
     }
 
-    @JsonProperty("name")
-    public String getName() {
-        return this.name;
+    public String getTopic() {
+        return this.topic;
     }
 
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
 }

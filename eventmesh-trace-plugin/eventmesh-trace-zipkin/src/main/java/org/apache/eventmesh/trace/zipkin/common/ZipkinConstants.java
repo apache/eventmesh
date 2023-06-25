@@ -19,9 +19,6 @@ package org.apache.eventmesh.trace.zipkin.common;
 
 public class ZipkinConstants {
 
-    // Name of the service(using the instrumentationName)
-    public static final String SERVICE_NAME = "eventmesh_trace";
-
     // Zipkin API Endpoints for uploading spans
     public static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
 }

@@ -29,8 +29,8 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SessionPusher {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
