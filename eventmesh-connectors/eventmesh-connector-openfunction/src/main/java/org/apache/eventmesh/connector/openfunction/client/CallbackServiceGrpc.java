@@ -30,6 +30,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 @javax.annotation.Generated(
     value = "by gRPC proto compiler (version 1.4.0)",
     comments = "Source: callback-service.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class CallbackServiceGrpc {
 
     private CallbackServiceGrpc() {
