@@ -139,7 +139,6 @@ public class SessionSender {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
                             .send(upStreamMsgContext, sendCallback);
                     } finally {
-                        session.getSender().getFailMsgCount().incrementAndGet();
                         TraceUtils.finishSpan(span, event);
                     }
                 }
