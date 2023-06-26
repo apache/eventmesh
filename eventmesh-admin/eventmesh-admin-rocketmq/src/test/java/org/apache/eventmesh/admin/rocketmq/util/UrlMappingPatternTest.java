@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class UrlMappingPatternTest {
 
@@ -91,7 +90,7 @@ public class UrlMappingPatternTest {
     @Test
     public void testCompile() throws NoSuchFieldException, IllegalAccessException {
         // Obtain compiledUrlMappingPattern field with reflection
-        Field compiledUrlMappingPatternField = urlMappingPattern.getClass().getDeclaredField("compiledUrlMappingPattern");
+        Field compiledUrlMappingPatternField = UrlMappingPattern.class.getDeclaredField("compiledUrlMappingPattern");
         compiledUrlMappingPatternField.setAccessible(true);
 
         urlMappingPattern.compile();
@@ -101,8 +100,9 @@ public class UrlMappingPatternTest {
         assertNotNull(compiledPattern);
 
         // Verify that the mocked pattern is compiled with the expected regex
-        Mockito.verify(urlMappingPattern.compiledUrlMappingPattern)
-            .compile("/test/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)/path/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)(?:\\?.*?)?$");
+        String expectedRegex = "/test/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)/path/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)(?:\\?.*?)?$";
+        Pattern expectedPattern = Pattern.compile(expectedRegex);
+        assertEquals(expectedPattern.pattern(), compiledPattern.pattern());
     }
 
     class TestUrlMappingPattern extends UrlMappingPattern {
