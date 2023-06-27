@@ -39,7 +39,7 @@ public class ConfigUtil {
         if (c == null) {
             return null;
         }
-        if (isSourceConfig(c)){
+        if (isSourceConfig(c)) {
             return parseSourceConfig(c);
         } else if (isSinkConfig(c)) {
             return parseSinkConfig(c);

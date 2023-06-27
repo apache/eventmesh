@@ -15,23 +15,26 @@
  * limitations under the License.
  */
 
+List rocketmq = [
+        "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+
+]
+
 dependencies {
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
-
-    implementation "io.grpc:grpc-core"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-stub"
-    implementation "io.grpc:grpc-netty"
-    implementation "io.grpc:grpc-netty-shaded"
-
-    api "com.fasterxml.jackson.core:jackson-databind"
-    api "com.fasterxml.jackson.core:jackson-core"
-    api "com.fasterxml.jackson.core:jackson-annotations"
-
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
-
+    implementation rocketmq
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
