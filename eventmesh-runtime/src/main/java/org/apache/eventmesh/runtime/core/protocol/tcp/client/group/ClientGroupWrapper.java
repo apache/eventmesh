@@ -66,6 +66,7 @@ import io.opentelemetry.api.trace.Span;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -88,17 +89,26 @@ public class ClientGroupWrapper {
 
     private final ReadWriteLock groupLock = new ReentrantReadWriteLock();
 
-    public Set<Session> groupConsumerSessions = new HashSet<Session>();
+    @Getter
+    private final Set<Session> groupConsumerSessions = new HashSet<Session>();
 
-    public Set<Session> groupProducerSessions = new HashSet<Session>();
+    @Getter
+    private final Set<Session> groupProducerSessions = new HashSet<Session>();
 
-    public AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
+    @Getter
+    private final AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
 
-    public AtomicBoolean started4Broadcast = new AtomicBoolean(Boolean.FALSE);
+    @Getter
+    private final AtomicBoolean started4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    public AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
+    @Getter
+    private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
 
-    public AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
+    @Getter
+    private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
+
+    @Getter
+    private final AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
     private MQConsumerWrapper persistentMsgConsumer;
 
@@ -108,8 +118,6 @@ public class ClientGroupWrapper {
         new ConcurrentHashMap<String, Set<Session>>();
 
     private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
-
-    public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
     private final MQProducerWrapper mqProducerWrapper;
 
@@ -139,6 +147,9 @@ public class ClientGroupWrapper {
             this.groupLock.readLock().lockInterruptibly();
             has = topic2sessionInGroupMapping.containsKey(topic);
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("hasSubscription error! topic[{}]", topic);
         } finally {
             this.groupLock.readLock().unlock();
@@ -218,6 +229,9 @@ public class ClientGroupWrapper {
 
             subscriptions.putIfAbsent(topic, subscriptionItem);
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("addSubscription error! topic:{} client:{}", topic, session.getClient(), e);
             throw new Exception("addSubscription fail");
         } finally {
@@ -267,6 +281,9 @@ public class ClientGroupWrapper {
                     group, topic);
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("removeSubscription error! topic:{} client:{}", topic, session.getClient(),
                 e);
         } finally {
@@ -333,6 +350,9 @@ public class ClientGroupWrapper {
                 }
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("addGroupConsumerSession error! group:{} client:{}", group,
                 session.getClient(), e);
         } finally {
@@ -360,6 +380,9 @@ public class ClientGroupWrapper {
                     session.getClient());
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("addGroupProducerSession error! group:{} client:{}", group,
                 session.getClient(), e);
         } finally {
@@ -389,6 +412,9 @@ public class ClientGroupWrapper {
                 }
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("removeGroupConsumerSession error! group:{} client:{}", group,
                 session.getClient(), e);
         } finally {
@@ -415,6 +441,9 @@ public class ClientGroupWrapper {
                     session.getClient());
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("removeGroupProducerSession error! group:{} client:{}", group,
                 session.getClient(), e);
         } finally {
@@ -670,13 +699,6 @@ public class ClientGroupWrapper {
         persistentMsgConsumer = null;
     }
 
-    public Set<Session> getGroupConsumerSessions() {
-        return groupConsumerSessions;
-    }
-
-    public Set<Session> getGroupProducerSessions() {
-        return groupProducerSessions;
-    }
 
     public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
         return eventMeshTCPConfiguration;
