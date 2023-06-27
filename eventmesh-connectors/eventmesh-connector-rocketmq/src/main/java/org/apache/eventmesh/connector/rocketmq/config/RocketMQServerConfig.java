@@ -15,23 +15,17 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.connector.rocketmq.config;
 
-    implementation "io.grpc:grpc-core"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-stub"
-    implementation "io.grpc:grpc-netty"
-    implementation "io.grpc:grpc-netty-shaded"
+import org.apache.eventmesh.openconnect.api.config.Config;
 
-    api "com.fasterxml.jackson.core:jackson-databind"
-    api "com.fasterxml.jackson.core:jackson-core"
-    api "com.fasterxml.jackson.core:jackson-annotations"
+import lombok.Data;
 
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
+@Data
+public class RocketMQServerConfig extends Config {
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    private boolean sourceEnable;
+
+    private boolean sinkEnable;
+
 }

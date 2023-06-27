@@ -29,11 +29,11 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.source.Source;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -122,7 +122,7 @@ public class SourceWorker implements ConnectorWorker {
             try {
                 connectRecord = queue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
                 log.error("poll connect record error", e);
             }
             if (connectRecord == null) {
@@ -138,8 +138,11 @@ public class SourceWorker implements ConnectorWorker {
         source.start();
         while (isRunning) {
             List<ConnectRecord> connectorRecordList = source.poll();
-            for (ConnectRecord connectRecord : connectorRecordList) {
-                queue.put(connectRecord);
+            if (CollectionUtils.isEmpty(connectorRecordList)) {
+                continue;
+            }
+            for (ConnectRecord record : connectorRecordList) {
+                queue.put(record);
             }
         }
     }
@@ -177,7 +180,6 @@ public class SourceWorker implements ConnectorWorker {
         try {
             eventMeshTCPClient.close();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("event mesh client close error", e);
         }
         log.info("source worker stopped");
