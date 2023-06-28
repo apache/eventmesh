@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit
 
 buildscript {
     repositories {
+        mavenLocal()
+        mavenCentral()
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
@@ -84,10 +86,15 @@ allprojects {
         configDirectory = file("${rootDir}/style")
     }
 
-    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
+    checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
+                  .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
 
     dependencies {
         repositories {
+            mavenLocal()
+            mavenCentral()
             maven {
                 url "https://maven.aliyun.com/repository/public"
             }
@@ -361,9 +368,9 @@ subprojects {
     }
 
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
+        maven { url "https://maven.aliyun.com/repository/public" }
     }
 
     configurations.all {
@@ -489,9 +496,11 @@ subprojects {
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.9"
 
-            dependency "io.cloudevents:cloudevents-core:2.2.0"
-            dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+            dependency "io.cloudevents:cloudevents-core:2.4.2"
+            dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
+            dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
 
+            dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
             dependency "io.grpc:grpc-stub:${grpcVersion}"
             dependency "io.grpc:grpc-netty:${grpcVersion}"

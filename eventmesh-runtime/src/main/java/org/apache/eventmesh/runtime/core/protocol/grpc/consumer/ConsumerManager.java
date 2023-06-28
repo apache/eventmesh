@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -89,8 +90,7 @@ public class ConsumerManager {
     }
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
-        return consumerTable.computeIfAbsent(consumerGroup, key ->
-            consumerTable.put(consumerGroup, new EventMeshConsumer(eventMeshGrpcServer, consumerGroup)));
+        return consumerTable.computeIfAbsent(consumerGroup, key -> new EventMeshConsumer(eventMeshGrpcServer, consumerGroup));
     }
 
     public synchronized void registerClient(final ConsumerGroupClient newClient) {

@@ -59,11 +59,11 @@ public class SessionSender {
 
     private final transient Session session;
 
-    public transient long createTime = System.currentTimeMillis();
+    public final transient long createTime = System.currentTimeMillis();
 
-    public transient AtomicLong upMsgs = new AtomicLong(0);
+    public final transient AtomicLong upMsgs = new AtomicLong(0);
 
-    public transient AtomicLong failMsgCount = new AtomicLong(0);
+    public final transient AtomicLong failMsgCount = new AtomicLong(0);
 
     private static final int TRY_PERMIT_TIME_OUT = 5;
 
@@ -220,5 +220,9 @@ public class SessionSender {
                     "exception occur while sending RR message", e);
             }
         };
+    }
+
+    public AtomicLong getFailMsgCount() {
+        return failMsgCount;
     }
 }
