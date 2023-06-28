@@ -31,20 +31,18 @@ public class BannerUtil {
                      + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME " + System.lineSeparator()
                      + "EMEMEMEMEMEM                                        EMEMEMEMEM    EMEMEMEMEMEMEMEME    EMEMEMEMEME" + System.lineSeparator()
                      + "EMEMEMEME                                         EMEMEMEMEM        EMEMEMEMEMEME        EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEME                                          EMEMEMEME              EMEME             EMEMEMEM" + System.lineSeparator()
-                     + "EMEMEME                                        EMEMEMEME                                   EMEMEME" + System.lineSeparator()
-                     + "EMEMEME                                      EMEMEMEMEM                                    EMEMEME" + System.lineSeparator()
+                     + "EMEMEME                                         EMEMEMEMEM              EMEME             EMEMEMEM" + System.lineSeparator()
+                     + "EMEMEME                                       EMEMEMEMEM                                   EMEMEME" + System.lineSeparator()
                      + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEM                                     EMEMEME" + System.lineSeparator()
                      + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEM                                       EMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM         EMEMEMEMEM                                        EMEMEME" + System.lineSeparator()
-                     + "EMEMEME                                EMEMEMEMEM                                          EMEMEME" + System.lineSeparator()
+                     + "EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEM                                         EMEMEME" + System.lineSeparator()
                      + "EMEMEME                               EMEMEMEMEM                                           EMEMEME" + System.lineSeparator()
                      + "EMEMEME                             EMEMEMEMEM                                             EMEMEME" + System.lineSeparator()
-                     + "EMEMEMEME                          EMEMEMEMEM                                            EMEMEMEME" + System.lineSeparator()
-                     + "EMEMEMEMEMEM                     EMEMEMEMEM                                           EMEMEMEMEMEM" + System.lineSeparator()
-                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM  " + System.lineSeparator()
-                     + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME   " + System.lineSeparator()
-                     + "       MEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM      EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME";
+                     + "EMEMEMEME                         EMEMEMEMEM                                             EMEMEMEME" + System.lineSeparator()
+                     + "EMEMEMEMEMEM                    EMEMEMEMEM                                            EMEMEMEMEMEM" + System.lineSeparator()
+                     + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM  " + System.lineSeparator()
+                     + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME   " + System.lineSeparator()
+                     + "       MEMEMEMEMEMEMEMEMEMEMEMEMEMEME       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME";
 
     private static final String LOGONAME =
                        "                       ____                 _   __  __           _     " + System.lineSeparator()

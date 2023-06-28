@@ -19,6 +19,8 @@ package org.apache.eventmesh.openconnect.util;
 
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.Constants;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,10 +39,16 @@ public class ConfigUtil {
         if (c == null) {
             return null;
         }
-        return parseConfig(c);
+        if (isSourceConfig(c)) {
+            return parseSourceConfig(c);
+        } else if (isSinkConfig(c)) {
+            return parseSinkConfig(c);
+        } else {
+            throw new RuntimeException("illegal config, parse config error");
+        }
     }
 
-    private static <T> T parse(Class<T> c, String filePathName) throws Exception {
+    public static <T> T parse(Class<T> c, String filePathName) throws Exception {
         ObjectMapper objectMapper;
         if (filePathName.endsWith("json")) {
             objectMapper = new ObjectMapper();
@@ -59,11 +67,33 @@ public class ConfigUtil {
         return objectMapper.readValue(url, c);
     }
 
-    private static Config parseConfig(Class<? extends Config> c) throws Exception {
-        String configFile = System.getProperty(Constants.ENV_CONFIG_FILE, System.getenv(Constants.ENV_CONFIG_FILE));
+    private static Config parseSourceConfig(Class<? extends Config> c) throws Exception {
+        String configFile = System.getProperty(Constants.ENV_SOURCE_CONFIG_FILE, System.getenv(Constants.ENV_SOURCE_CONFIG_FILE));
         if (configFile == null || configFile.isEmpty()) {
-            configFile = "config.yml";
+            configFile = "source-config.yml";
         }
         return parse(c, configFile);
+    }
+
+    private static Config parseSinkConfig(Class<? extends Config> c) throws Exception {
+        String configFile = System.getProperty(Constants.ENV_SINK_CONFIG_FILE, System.getenv(Constants.ENV_SINK_CONFIG_FILE));
+        if (configFile == null || configFile.isEmpty()) {
+            configFile = "sink-config.yml";
+        }
+        return parse(c, configFile);
+    }
+
+    public static boolean isSinkConfig(Class<?> c) {
+        if (c != null && c != Object.class) {
+            return SinkConfig.class.isAssignableFrom(c);
+        }
+        return false;
+    }
+
+    public static boolean isSourceConfig(Class<?> c) {
+        if (c != null && c != Object.class) {
+            return SourceConfig.class.isAssignableFrom(c);
+        }
+        return false;
     }
 }
