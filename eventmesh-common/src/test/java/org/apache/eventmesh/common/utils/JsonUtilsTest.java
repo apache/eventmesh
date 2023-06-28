@@ -44,7 +44,7 @@ public class JsonUtilsTest {
         jsonString = JsonUtils.toJSONString(map);
         Assert.assertEquals("{\"mxsm\":\"2\"}", jsonString);
 
-        Map<String,Object> maps = new HashMap<>();
+        Map<String, Object> maps = new HashMap<>();
         maps.put("mxsm", LocalDate.of(2013, 6, 28));
         jsonString = JsonUtils.toJSONString(maps);
         Assert.assertEquals("{\"mxsm\":\"2013-06-28\"}", jsonString);
