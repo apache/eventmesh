@@ -139,7 +139,7 @@ public class UpStreamMsgContext extends RetryContext {
                 retryContext.delay(10000);
                 Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
 
-                session.getSender().failMsgCount.incrementAndGet();
+                session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
                     System.currentTimeMillis() - createTime, new Exception(context.getException()));
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), seq));

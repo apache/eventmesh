@@ -23,17 +23,21 @@ import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.registry.consul.config.ConsulTLSConfig;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.ecwid.consul.transport.TLSConfig;
 import com.ecwid.consul.v1.ConsulClient;
-import com.ecwid.consul.v1.ConsulRawClient;
+import com.ecwid.consul.v1.ConsulRawClient.Builder;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
@@ -60,6 +64,8 @@ public class ConsulRegistryService implements RegistryService {
 
     private String token;
 
+    private ConsulTLSConfig tlsConfig;
+
     @Override
     public void init() throws RegistryException {
         if (initStatus.compareAndSet(false, true)) {
@@ -79,6 +85,8 @@ public class ConsulRegistryService implements RegistryService {
                     break;
                 }
             }
+            ConsulTLSConfig tlsConfig = ConfigService.getInstance().buildConfigInstance(ConsulTLSConfig.class);
+            this.tlsConfig = tlsConfig;
         }
     }
 
@@ -87,8 +95,28 @@ public class ConsulRegistryService implements RegistryService {
         if (!startStatus.compareAndSet(false, true)) {
             return;
         }
-        consulClient = new ConsulClient(new ConsulRawClient(consulHost, Integer.parseInt(consulPort)));
+        Builder builder = Builder.builder();
+        builder.setHost(consulHost);
+        builder.setPort(Integer.parseInt(consulPort));
+        if (tlsConfig != null
+            && Objects.nonNull(tlsConfig.getKeyStoreInstanceType())
+            && !StringUtils.isAnyBlank(
+                tlsConfig.getCertificatePassword(),
+                tlsConfig.getCertificatePath(),
+                tlsConfig.getKeyStorePassword(),
+                tlsConfig.getKeyStorePath())) {
+            builder.setTlsConfig(convertToTlsConfig(tlsConfig));
+        }
+        consulClient = new ConsulClient(builder.build());
+    }
 
+    private TLSConfig convertToTlsConfig(ConsulTLSConfig tlsConfig) {
+        return new TLSConfig(
+            tlsConfig.getKeyStoreInstanceType(),
+            tlsConfig.getCertificatePath(),
+            tlsConfig.getCertificatePassword(),
+            tlsConfig.getKeyStorePath(),
+            tlsConfig.getKeyStorePassword());
     }
 
     @Override

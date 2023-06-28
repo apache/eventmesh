@@ -26,11 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OpenFunctionSourceConnector implements Source {
+
+    private static final int DEFAULT_BATCH_SIZE = 10;
 
     private OpenFunctionSourceConfig sourceConfig;
 
@@ -74,10 +77,20 @@ public class OpenFunctionSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>();
-        ConnectRecord connectRecord = queue.poll();
-        if (connectRecord != null) {
-            connectRecords.add(connectRecord);
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+
+        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+            try {
+                ConnectRecord connectRecord = queue.poll(3, TimeUnit.SECONDS);
+                if (connectRecord == null) {
+                    break;
+                }
+                connectRecords.add(connectRecord);
+            } catch (InterruptedException e) {
+                // nothing to do
+                break;
+            }
         }
         return connectRecords;
     }
