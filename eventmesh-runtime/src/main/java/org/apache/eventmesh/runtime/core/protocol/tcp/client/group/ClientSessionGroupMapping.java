@@ -209,7 +209,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void startClientGroupProducer(ClientGroupWrapper cgw, Session session) throws Exception {
-        if (!cgw.producerStarted.get()) {
+        if (!cgw.getProducerStarted().get()) {
             cgw.startClientGroupProducer();
         }
         boolean flag = cgw.addGroupProducerSession(session);
@@ -220,15 +220,15 @@ public class ClientSessionGroupMapping {
     }
 
     private void initClientGroupConsumser(ClientGroupWrapper cgw) throws Exception {
-        if (!cgw.producerStarted.get()) {
+        if (!cgw.getProducerStarted().get()) {
             cgw.startClientGroupProducer();
         }
 
-        if (!cgw.inited4Broadcast.get()) {
+        if (!cgw.getInited4Broadcast().get()) {
             cgw.initClientGroupBroadcastConsumer();
         }
 
-        if (!cgw.inited4Persistent.get()) {
+        if (!cgw.getInited4Persistent().get()) {
             cgw.initClientGroupPersistentConsumer();
         }
     }
@@ -247,10 +247,10 @@ public class ClientSessionGroupMapping {
                 throw new Exception("addGroupConsumerSession fail");
             }
 
-            if (cgw.inited4Persistent.get() && !cgw.started4Persistent.get()) {
+            if (cgw.getInited4Persistent().get() && !cgw.getStarted4Persistent().get()) {
                 cgw.startClientGroupPersistentConsumer();
             }
-            if (cgw.inited4Broadcast.get() && !cgw.started4Broadcast.get()) {
+            if (cgw.getInited4Broadcast().get() && !cgw.getStarted4Broadcast().get()) {
                 cgw.startClientGroupBroadcastConsumer();
             }
             session.setSessionState(SessionState.RUNNING);
@@ -306,7 +306,7 @@ public class ClientSessionGroupMapping {
                 Session reChooseSession = clientGroupWrapper.getDownstreamDispatchStrategy()
                     .select(clientGroupWrapper.getGroup(),
                         downStreamMsgContext.event.getSubject(),
-                        clientGroupWrapper.groupConsumerSessions);
+                        clientGroupWrapper.getGroupConsumerSessions());
                 if (reChooseSession != null) {
                     downStreamMsgContext.setSession(reChooseSession);
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
@@ -340,18 +340,18 @@ public class ClientSessionGroupMapping {
     }
 
     private void shutdownClientGroupConsumer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.started4Broadcast.get()) {
+        if (clientGroupWrapper.getStarted4Broadcast().get()) {
             clientGroupWrapper.shutdownBroadCastConsumer();
         }
 
-        if (clientGroupWrapper.started4Persistent.get()) {
+        if (clientGroupWrapper.getStarted4Persistent().get()) {
             clientGroupWrapper.shutdownPersistentConsumer();
         }
     }
 
 
     private void shutdownClientGroupProducer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.producerStarted.get()) {
+        if (clientGroupWrapper.getProducerStarted().get()) {
             clientGroupWrapper.shutdownProducer();
         }
     }

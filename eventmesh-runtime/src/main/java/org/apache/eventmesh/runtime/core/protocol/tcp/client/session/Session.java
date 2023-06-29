@@ -41,6 +41,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -116,6 +117,10 @@ public class Session {
     @Setter
     @Getter
     protected SessionState sessionState = SessionState.CREATED;
+
+    @Setter
+    @Getter
+    private String sessionId = UUID.randomUUID().toString();
 
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
