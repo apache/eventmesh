@@ -41,7 +41,7 @@ body:
     attributes:
       label: Read the unit testing guidelines
       description: >
-        Read the [unit testing guidelines](https://github.com/apache/eventmesh/blob/master/docs/en/contribute/02-write-unit-test.md) before writing unit test code.
+        Read the [unit testing guidelines](https://eventmesh.apache.org/community/contribute/write-unit-test) before writing unit test code.
       options:
         - label: >
             I have read.
