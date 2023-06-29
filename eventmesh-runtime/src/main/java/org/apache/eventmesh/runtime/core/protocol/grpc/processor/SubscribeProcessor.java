@@ -62,12 +62,12 @@ public class SubscribeProcessor {
         Objects.requireNonNull(emitter, "emitter can not be null");
 
         if (!ServiceUtils.validateCloudEventAttributes(subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -77,7 +77,7 @@ public class SubscribeProcessor {
             if (log.isWarnEnabled()) {
                 log.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             }
-            ServiceUtils.completed(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -136,7 +136,7 @@ public class SubscribeProcessor {
                 log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
             }
         }
-        ServiceUtils.completed(StatusCode.SUCCESS, "subscribe success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void doAclCheck(final CloudEvent subscription) throws AclException {

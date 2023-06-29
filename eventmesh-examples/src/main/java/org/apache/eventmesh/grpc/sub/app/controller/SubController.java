@@ -59,7 +59,7 @@ public class SubController {
             log.info("=======receive message======= {}", content);
         }
 
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
+/*        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
             final String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
 
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
@@ -73,7 +73,7 @@ public class SubController {
                     }
                 }
             }
-        }
+        }*/
 
         subService.consumeMessage(content);
 

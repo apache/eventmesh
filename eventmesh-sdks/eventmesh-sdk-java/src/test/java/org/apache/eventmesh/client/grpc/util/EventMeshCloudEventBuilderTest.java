@@ -18,6 +18,8 @@
 
 package org.apache.eventmesh.client.grpc.util;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -166,5 +169,16 @@ public class EventMeshCloudEventBuilderTest {
         Assert.assertTrue(event1 instanceof io.cloudevents.CloudEvent);
         Object event2 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.EVENT_MESH_MESSAGE);
         Assert.assertTrue(event2 instanceof EventMeshMessage);
+
+        final Map<String, CloudEventAttributeValue> attributeValueMap = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
+        attributeValueMap.put(ProtocolKey.CONSUMERGROUP, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getConsumerGroup()).build());
+        attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("application/json").build());
+        Set<SubscriptionItem> set = new HashSet<>();
+        SubscriptionItem subscriptionItem = new SubscriptionItem("111", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+        set.add(subscriptionItem);
+        CloudEvent eventmesh2 = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
+            .setId(UUID.randomUUID().toString()).putAllAttributes(attributeValueMap).setTextData(JsonUtils.toJSONString(set)).build();
+        Object event4 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh2, EventMeshProtocolType.CLOUD_EVENTS);
+        Assert.assertTrue(event4 instanceof Set);
     }
 }

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.grpc.consumer;
 
+import java.util.Set;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.common.enums.EventMeshDataContentType;
@@ -71,7 +72,7 @@ public class SubStreamHandler<T> extends Thread {
             @Override
             public void onNext(final CloudEvent message) {
                 T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());
-                if (msg instanceof Map) {
+                if (msg instanceof Set) {
                     if (log.isInfoEnabled()) {
                         log.info("Received message from Server:{}", message);
                     }
