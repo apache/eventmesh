@@ -44,7 +44,8 @@ public class CloudEventsPublishInstance extends GrpcAbstractDemo {
             content.put("content", "testAsyncMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
-                eventMeshGrpcProducer.publish(buildCloudEvent(content));
+                eventMeshGrpcProducer.publish(buildCloudEvent(content,
+                    ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC));
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
 
