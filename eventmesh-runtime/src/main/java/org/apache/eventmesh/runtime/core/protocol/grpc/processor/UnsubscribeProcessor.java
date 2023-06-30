@@ -49,12 +49,12 @@ public class UnsubscribeProcessor {
     public void process(CloudEvent subscription, EventEmitter<CloudEvent> emitter) throws Exception {
 
         if (!ServiceUtils.validateCloudEventAttributes(subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(null, subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -111,6 +111,6 @@ public class UnsubscribeProcessor {
             log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.completed(StatusCode.SUCCESS, "unsubscribe success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "unsubscribe success", emitter);
     }
 }

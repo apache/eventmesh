@@ -60,7 +60,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
                     StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
             }
         });
     }
