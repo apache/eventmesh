@@ -203,6 +203,19 @@ public class ServiceUtils {
     }
 
     /**
+     * Sends a completed response event to the emitter for a stream with a custom message.
+     *
+     * @param cloudEvent The original CloudEvent
+     * @param code       The status code of the response
+     * @param message    The custom message for the response
+     * @param emitter    The emitter to send the event to
+     */
+    public static void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
+        sendStreamResponse(cloudEvent, code, message, emitter);
+        emitter.onCompleted();
+    }
+
+    /**
      * Sends a response event to the emitter for a stream.
      *
      * @param cloudEvent The original CloudEvent
@@ -218,19 +231,6 @@ public class ServiceUtils {
                 .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
 
         emitter.onNext(builder.build());
-    }
-
-    /**
-     * Sends a completed response event to the emitter for a stream with a custom message.
-     *
-     * @param cloudEvent The original CloudEvent
-     * @param code       The status code of the response
-     * @param message    The custom message for the response
-     * @param emitter    The emitter to send the event to
-     */
-    public static void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
-        sendStreamResponse(cloudEvent, code, message, emitter);
-        emitter.onCompleted();
     }
 
     /**
