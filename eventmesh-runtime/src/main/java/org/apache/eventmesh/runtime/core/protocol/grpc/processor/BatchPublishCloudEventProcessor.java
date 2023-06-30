@@ -85,7 +85,7 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
                 }
             });
         }
-        ServiceUtils.completed(StatusCode.SUCCESS, "batch publish success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "batch publish success", emitter);
     }
 
 

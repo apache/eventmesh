@@ -69,7 +69,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -98,7 +98,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.streamCompleted(request, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendStreamResponseCompleted(request, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -126,7 +126,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getRetCode(),
                     StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
             }
         });
     }

@@ -32,7 +32,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProc
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import io.grpc.stub.StreamObserver;
@@ -73,7 +73,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -85,8 +85,8 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         return new StreamObserver<CloudEvent>() {
             @Override
             public void onNext(CloudEvent subscription) {
-                List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-                    new TypeReference<List<SubscriptionItem>>() {
+                Set<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
+                    new TypeReference<Set<SubscriptionItem>>() {
                     });
                 if (CollectionUtils.isNotEmpty(subscriptionItems)) {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
@@ -122,7 +122,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                 streamProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
-                ServiceUtils.streamCompleted(request, StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendStreamResponseCompleted(request, StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -134,7 +134,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                 replyMessageProcessor.process(subscription, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
-                ServiceUtils.streamCompleted(subscription, StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendStreamResponseCompleted(subscription, StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -153,7 +153,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
                     StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_UNSUBSCRIBE_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_UNSUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
     }
