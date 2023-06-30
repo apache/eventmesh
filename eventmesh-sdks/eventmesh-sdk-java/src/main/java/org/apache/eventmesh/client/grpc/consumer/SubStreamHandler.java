@@ -31,6 +31,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
@@ -71,7 +72,7 @@ public class SubStreamHandler<T> extends Thread {
             @Override
             public void onNext(final CloudEvent message) {
                 T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());
-                if (msg instanceof Map) {
+                if (msg instanceof Set) {
                     if (log.isInfoEnabled()) {
                         log.info("Received message from Server:{}", message);
                     }

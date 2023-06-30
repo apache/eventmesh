@@ -79,7 +79,8 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
                         endTime - startTime, topic, seqNum, uniqueId);
                     eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
                 } catch (Exception e) {
-                    ServiceUtils.streamCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2), emitter);
+                    ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
+                        emitter);
                     long endTime = System.currentTimeMillis();
                     log.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId, e);
@@ -88,7 +89,8 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
 
             @Override
             public void onException(Throwable e) {
-                ServiceUtils.streamCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2), emitter);
+                ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
+                    emitter);
                 long endTime = System.currentTimeMillis();
                 log.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId, e);
