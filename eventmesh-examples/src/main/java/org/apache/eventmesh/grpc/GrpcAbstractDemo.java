@@ -53,10 +53,10 @@ public class GrpcAbstractDemo {
             .build();
     }
 
-    protected static CloudEvent buildCloudEvent(final Map<String, String> content) {
+    protected static CloudEvent buildCloudEvent(final Map<String, String> content, String topic) {
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+            .withSubject(topic)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
