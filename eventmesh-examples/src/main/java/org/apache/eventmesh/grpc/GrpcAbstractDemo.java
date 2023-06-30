@@ -66,10 +66,10 @@ public class GrpcAbstractDemo {
 
     }
 
-    protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content) {
+    protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content, String topic) {
         return EventMeshMessage.builder()
             .content(JsonUtils.toJSONString(content))
-            .topic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC)
+            .topic(topic)
             .uniqueId(RandomStringUtils.generateNum(30))
             .bizSeqNo(RandomStringUtils.generateNum(30))
             .build()
