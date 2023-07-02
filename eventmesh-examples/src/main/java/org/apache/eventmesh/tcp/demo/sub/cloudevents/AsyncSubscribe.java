@@ -58,7 +58,8 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
                 SubscriptionType.ASYNC);
-            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG, ExampleConstants.TAG_PREFIX + 1 + "||" + ExampleConstants.TAG_PREFIX +3,
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG,
+                ExampleConstants.TAG_PREFIX + 1 + "||" + ExampleConstants.TAG_PREFIX + 3,
                 SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(new AsyncSubscribe());
 

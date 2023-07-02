@@ -73,7 +73,7 @@ public class SyncRequest {
             log.info("begin send req-resp msg: {}", event);
         }
 
-         final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+        final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
         logResponse(response);
     }
 
