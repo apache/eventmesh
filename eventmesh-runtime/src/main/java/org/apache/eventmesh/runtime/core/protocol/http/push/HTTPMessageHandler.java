@@ -105,4 +105,9 @@ public class HTTPMessageHandler implements MessageHandler {
             return false;
         }
     }
+
+    @Override
+    public boolean syncHandle(HandleMsgContext handleMsgContext) {
+        return new SyncHTTPPushRequest(handleMsgContext).tryHTTPRequest();
+    }
 }

@@ -43,4 +43,6 @@ public interface Consumer extends LifeCycle {
     void unsubscribe(String topic);
 
     void registerEventListener(EventListener listener);
+
+    boolean isRetryEnabled();
 }

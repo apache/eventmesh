@@ -103,6 +103,11 @@ public class PravegaConsumerImpl implements Consumer {
         this.eventListener = listener;
     }
 
+    @Override
+    public boolean isRetryEnabled() {
+        return false;
+    }
+
     public PravegaStorageConfig getClientConfiguration() {
         return this.pravegaConnectorConfig;
     }

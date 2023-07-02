@@ -25,4 +25,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext
 public interface MessageHandler {
 
     boolean handle(HandleMsgContext handleMsgContext);
+
+    boolean syncHandle(HandleMsgContext handleMsgContext);
 }

@@ -173,6 +173,11 @@ public class PulsarConsumerImpl implements Consumer {
     }
 
     @Override
+    public boolean isRetryEnabled() {
+        return false;
+    }
+
+    @Override
     public boolean isStarted() {
         return this.started.get();
     }
