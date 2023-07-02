@@ -22,6 +22,8 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * EventMesh TCP subscribe client.
  * <ul>
@@ -40,6 +42,14 @@ public interface EventMeshTCPSubClient<ProtocolMessage> extends AutoCloseable {
 
     void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
         throws EventMeshException;
+
+    default void subscribe(String topic, String subExpression, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+        if (StringUtils.isBlank(subExpression)) {
+            subscribe(topic, subscriptionMode, subscriptionType);
+        } else {
+            throw new UnsupportedOperationException("Subscribing a topic by specific subExpression is not supported!");
+        }
+    }
 
     void unsubscribe() throws EventMeshException;
 

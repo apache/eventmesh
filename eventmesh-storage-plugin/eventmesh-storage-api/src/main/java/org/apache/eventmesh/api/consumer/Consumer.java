@@ -23,6 +23,8 @@ import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -39,6 +41,14 @@ public interface Consumer extends LifeCycle {
     void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
 
     void subscribe(String topic) throws Exception;
+
+    default void subscribe(String topic, String subExpression) throws Exception {
+        if (StringUtils.isBlank(subExpression)) {
+            subscribe(topic);
+        } else {
+            throw new UnsupportedOperationException("Subscribing a topic by specific subExpression is not supported!");
+        }
+    }
 
     void unsubscribe(String topic);
 

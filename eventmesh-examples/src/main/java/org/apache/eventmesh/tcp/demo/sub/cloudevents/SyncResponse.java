@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -28,9 +29,11 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
@@ -40,19 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
     public static void main(String[] args) throws Exception {
-        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+        EventMeshTCPClient<CloudEvent> client = createClient();
         try {
-            final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
-            client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             // Synchronize RR messages
@@ -65,6 +57,22 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
         }
     }
 
+    private static EventMeshTCPClient<CloudEvent> createClient() throws IOException {
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
+        final UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
+        final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory
+            .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+        client.init();
+        return client;
+    }
+
     @Override
     public Optional<CloudEvent> handle(final CloudEvent event) {
         if (event.getData() == null) {
@@ -74,7 +82,7 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
         final String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
         if (log.isInfoEnabled()) {
-            log.info("receive sync rr msg: {}|{}", event, content);
+            log.info("receive sync rr msg. CloudEvent: {}, CloudEvent's data: {}", event, content);
         }
         return Optional.of(event);
     }

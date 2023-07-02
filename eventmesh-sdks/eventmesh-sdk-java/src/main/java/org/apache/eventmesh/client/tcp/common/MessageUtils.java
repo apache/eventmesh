@@ -29,8 +29,11 @@ import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
@@ -78,6 +81,19 @@ public class MessageUtils {
         return msg;
     }
 
+    public static Package subscribe(String topic, String subExpression, SubscriptionMode subscriptionMode,
+        SubscriptionType subscriptionType) {
+        if (StringUtils.isBlank(subExpression)) {
+            return subscribe(topic, subscriptionMode, subscriptionType);
+        }
+        Package msg = new Package();
+        Header header = new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString());
+        header.putProperty(Constants.MSG_TAG, subExpression);
+        msg.setHeader(header);
+        msg.setBody(generateSubscription(topic, subExpression, subscriptionMode, subscriptionType));
+        return msg;
+    }
+
     public static Package unsubscribe() {
         final Package msg = new Package();
         msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString()));
@@ -100,6 +116,8 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            Optional.ofNullable(cloudEvent.getExtension(Constants.MSG_TAG))
+                .ifPresent((tag) -> msg.getHeader().putProperty(Constants.MSG_TAG, tag));
 
             final byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
                 .serialize((CloudEvent) message);
@@ -108,6 +126,8 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            Optional.ofNullable(((EventMeshMessage) message).getProperties().get(Constants.MSG_TAG))
+                .ifPresent((tag) -> msg.getHeader().putProperty(Constants.MSG_TAG, tag));
             msg.setBody(message);
         } else if (message instanceof Message) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);
@@ -181,6 +201,15 @@ public class MessageUtils {
         final Subscription subscription = new Subscription();
         final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
+        subscription.setTopicList(subscriptionItems);
+        return subscription;
+    }
+
+    private static Subscription generateSubscription(String topic, String subExpression, SubscriptionMode subscriptionMode,
+        SubscriptionType subscriptionType) {
+        final Subscription subscription = new Subscription();
+        final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType, subExpression));
         subscription.setTopicList(subscriptionItems);
         return subscription;
     }

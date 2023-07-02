@@ -72,6 +72,11 @@ public class RocketMQConsumerImpl implements Consumer {
     }
 
     @Override
+    public void subscribe(String topic, String subExpression) {
+        pushConsumer.subscribe(topic, subExpression);
+    }
+
+    @Override
     public boolean isStarted() {
         return pushConsumer.isStarted();
     }

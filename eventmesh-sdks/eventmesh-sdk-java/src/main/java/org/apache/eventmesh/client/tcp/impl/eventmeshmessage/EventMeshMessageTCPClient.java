@@ -31,6 +31,8 @@ import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.base.Preconditions;
 
 public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMessage> {
@@ -84,6 +86,17 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
         final SubscriptionType subscriptionType)
         throws EventMeshException {
         eventMeshMessageTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
+    }
+
+    @Override
+    public void subscribe(final String topic, final String subExpression, final SubscriptionMode subscriptionMode,
+        final SubscriptionType subscriptionType)
+        throws EventMeshException {
+        if (StringUtils.isBlank(subExpression)) {
+            subscribe(topic, subscriptionMode, subscriptionType);
+        } else {
+            eventMeshMessageTCPSubClient.subscribe(topic, subExpression, subscriptionMode, subscriptionType);
+        }
     }
 
     @Override

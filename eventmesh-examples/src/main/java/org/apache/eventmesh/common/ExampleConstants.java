@@ -36,8 +36,10 @@ public class ExampleConstants {
     public static final String EVENTMESH_HTTP_ASYNC_TEST_TOPIC = "TEST-TOPIC-HTTP-ASYNC";
     public static final String EVENTMESH_HTTP_SYNC_TEST_TOPIC = "TEST-TOPIC-HTTP-SYNC";
     public static final String EVENTMESH_TCP_ASYNC_TEST_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    public static final String EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG = "TEST-TOPIC-TCP-ASYNC-TAG";
     public static final String EVENTMESH_TCP_SYNC_TEST_TOPIC = "TEST-TOPIC-TCP-SYNC";
     public static final String EVENTMESH_TCP_BROADCAST_TEST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
+    public static final String EVENTMESH_TCP_BROADCAST_TEST_TOPIC_TAG = "TEST-TOPIC-TCP-BROADCAST-TAG";
 
     public static final String DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP = "EventMeshTest-producerGroup";
     public static final String DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP = "EventMeshTest-consumerGroup";
@@ -56,4 +58,6 @@ public class ExampleConstants {
     public static final String IDC = "FT";
     public static final String SUB_SYS = "1234";
     public static final String SERVER_PORT = "server.port";
+
+    public static final String TAG_PREFIX = "TEST_MSG_TAG_";
 }
