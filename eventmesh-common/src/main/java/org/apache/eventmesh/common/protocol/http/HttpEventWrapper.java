@@ -48,9 +48,9 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public static final long serialVersionUID = -8547334421415366981L;
 
-    private Map<String, Object> headerMap = new HashMap<>();
+    private transient Map<String, Object> headerMap = new HashMap<>();
 
-    private Map<String, Object> sysHeaderMap = new HashMap<>();
+    private transient Map<String, Object> sysHeaderMap = new HashMap<>();
 
     private byte[] body;
 
