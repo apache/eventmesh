@@ -131,4 +131,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "blacklist.ipv6")
     private List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
+
+    @ConfigFiled(field = "retry.storageEnabled")
+    private boolean eventMeshServerRetryStorageEnabled = Boolean.FALSE;
 }

@@ -119,11 +119,6 @@ public class MongodbReplicaSetConsumer implements Consumer {
         this.eventListener = listener;
     }
 
-    @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
     private void handle() {
         while (this.cursor.hasNext()) {
             ChangeStreamDocument<Document> next = cursor.next();

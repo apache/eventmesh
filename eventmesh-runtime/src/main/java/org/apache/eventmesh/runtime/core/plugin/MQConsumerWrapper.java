@@ -75,8 +75,4 @@ public class MQConsumerWrapper extends MQWrapper {
     public void updateOffset(List<CloudEvent> events, AbstractContext eventMeshConsumeConcurrentlyContext) {
         meshMQPushConsumer.updateOffset(events, eventMeshConsumeConcurrentlyContext);
     }
-
-    public boolean isRetryEnabled() {
-        return meshMQPushConsumer.isRetryEnabled();
-    }
 }

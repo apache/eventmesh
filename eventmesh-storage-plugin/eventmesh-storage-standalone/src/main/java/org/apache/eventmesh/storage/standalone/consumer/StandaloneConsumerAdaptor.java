@@ -77,9 +77,4 @@ public class StandaloneConsumerAdaptor implements Consumer {
     public void registerEventListener(EventListener listener) {
         consumer.registerEventListener(listener);
     }
-
-    @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
 }

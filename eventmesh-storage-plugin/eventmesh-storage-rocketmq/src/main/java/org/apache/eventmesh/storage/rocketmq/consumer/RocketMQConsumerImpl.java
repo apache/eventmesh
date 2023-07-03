@@ -102,11 +102,6 @@ public class RocketMQConsumerImpl implements Consumer {
     }
 
     @Override
-    public boolean isRetryEnabled() {
-        return clientConfiguration.isRetryEnabled();
-    }
-
-    @Override
     public synchronized void shutdown() {
         pushConsumer.shutdown();
     }

@@ -87,11 +87,6 @@ public class KafkaConsumerImpl implements Consumer {
     }
 
     @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
-    @Override
     public synchronized void shutdown() {
         consumer.shutdown();
     }

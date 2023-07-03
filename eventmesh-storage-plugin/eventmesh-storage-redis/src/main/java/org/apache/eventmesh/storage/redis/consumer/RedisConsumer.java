@@ -106,11 +106,6 @@ public class RedisConsumer implements Consumer {
         messageListener = new EventMeshMessageListener(listener);
     }
 
-    @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
     static class EventMeshMessageListener implements MessageListener<CloudEvent> {
 
         private final EventListener listener;

@@ -168,7 +168,8 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
+//        final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN)).toString();
+        final String token = "";
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());

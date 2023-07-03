@@ -150,7 +150,7 @@ public class EventMeshConsumer {
                     topic, event, subscriptionItem, eventMeshAsyncConsumeContext.getAbstractContext(),
                     consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
-                if (persistentMqConsumer.isRetryEnabled()) {
+                if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRetryStorageEnabled()) {
                     boolean result = httpMessageHandler.syncHandle(handleMsgContext);
                     eventMeshAsyncConsumeContext.commit(result ? EventMeshAction.CommitMessage : EventMeshAction.ReconsumeLater);
                 } else {
@@ -237,15 +237,20 @@ public class EventMeshConsumer {
                         consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId,
                         currentTopicConfig);
 
-                if (httpMessageHandler.handle(handleMsgContext)) {
-                    eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
+                if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRetryStorageEnabled()) {
+                    boolean result = httpMessageHandler.syncHandle(handleMsgContext);
+                    eventMeshAsyncConsumeContext.commit(result ? EventMeshAction.CommitMessage : EventMeshAction.ReconsumeLater);
                 } else {
-                    try {
-                        sendMessageBack(event, uniqueId, bizSeqNo);
-                    } catch (Exception e) {
-                        //ignore
+                    if (httpMessageHandler.handle(handleMsgContext)) {
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
+                    } else {
+                        try {
+                            sendMessageBack(event, uniqueId, bizSeqNo);
+                        } catch (Exception e) {
+                            //ignore
+                        }
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     }
-                    eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                 }
             } finally {
                 TraceUtils.finishSpan(span, event);

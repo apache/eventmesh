@@ -133,11 +133,6 @@ public class RabbitmqConsumer implements Consumer {
         rabbitmqConsumerHandler.setEventListener(listener);
     }
 
-    @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
     public void setRabbitmqConnectionFactory(RabbitmqConnectionFactory rabbitmqConnectionFactory) {
         this.rabbitmqConnectionFactory = rabbitmqConnectionFactory;
     }

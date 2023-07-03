@@ -70,11 +70,6 @@ public class KnativeConsumerImpl implements Consumer {
     }
 
     @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
-    @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         pullConsumer.updateOffset(cloudEvents, context);
     }

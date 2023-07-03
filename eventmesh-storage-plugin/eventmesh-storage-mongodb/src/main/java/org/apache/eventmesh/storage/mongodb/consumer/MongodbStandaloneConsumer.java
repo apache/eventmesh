@@ -130,11 +130,6 @@ public class MongodbStandaloneConsumer implements Consumer {
         this.eventListener = listener;
     }
 
-    @Override
-    public boolean isRetryEnabled() {
-        return false;
-    }
-
     private FindIterable<Document> getCursor(MongoCollection<Document> collection, String topic, int lastId) {
         Document index = new Document("$gt", lastId);
         Document ts = new Document(MongodbConstants.CAPPED_COL_CURSOR_FN, index);
