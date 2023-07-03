@@ -95,8 +95,4 @@ public class ClientConfiguration {
     @ConfigFiled(field = "secretKey")
     @Builder.Default
     private String secretKey = "";
-
-    @ConfigFiled(field = "retryEnabled")
-    @Builder.Default
-    private boolean retryEnabled = false;
 }
