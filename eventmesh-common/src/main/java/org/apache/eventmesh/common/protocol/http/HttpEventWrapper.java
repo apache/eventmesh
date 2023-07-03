@@ -56,15 +56,15 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     private String requestURI;
 
-    public String httpMethod;
+    private String httpMethod;
 
-    public String httpVersion;
+    private String httpVersion;
 
     //Command request time
-    public long reqTime;
+    private long reqTime;
 
     //Command response time
-    public long resTime;
+    private long resTime;
 
     public HttpEventWrapper() {
         this(null, null, null);
