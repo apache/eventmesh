@@ -37,7 +37,7 @@ public class EventMeshTcpRetryer {
 
     private EventMeshTCPServer eventMeshTCPServer;
 
-    private final DelayQueue<RetryContext> retrys = new DelayQueue<RetryContext>();
+    private final DelayQueue<RetryContext> retrys = new DelayQueue<>();
 
     private final ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
         3,
