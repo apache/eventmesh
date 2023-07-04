@@ -85,16 +85,26 @@ public class ClientManageController {
     }
 
 
+    /**
+     * Method to start the server and perform initialization.
+     *
+     * @throws IOException
+     */
     public void start() throws IOException {
+        // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
+        // Create an HTTP server and bind it to the specified port.
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
 
-        //todo Optimized for automatic injection
+        //TODO: Optimized for automatic injection
+
+        // Initialize the client handler and register it with the HTTP handler manager.
         initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
             eventMeshGrpcServer, eventMeshRegistry, httpHandlerManager);
 
+        // Register the handlers from the HTTP handler manager with the HTTP server.
         httpHandlerManager.registerHttpHandler(server);
         AdminController adminController = new AdminController();
         adminController.run(server);
