@@ -49,7 +49,7 @@ public class AdminController {
      */
     public void run(HttpServer server) throws IOException {
 
-        // Create a mapping from API URI path to the exchange handler on this HttpServer.
+        // Creates a mapping from API URI path to the exchange handler on this HttpServer.
         server.createContext(TOPIC_MANAGE_PATH, new TopicsHandler());
 
         log.info("EventMesh-Admin Controller server context created successfully");
