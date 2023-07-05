@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public abstract class ThreadPoolFactory {
+public class ThreadPoolFactory {
 
     private ThreadPoolFactory() {
     }
