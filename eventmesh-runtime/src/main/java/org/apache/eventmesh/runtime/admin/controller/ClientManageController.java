@@ -88,7 +88,7 @@ public class ClientManageController {
     /**
      * Method to start the server and perform initialization.
      *
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     public void start() throws IOException {
         // Get the server's admin port.
