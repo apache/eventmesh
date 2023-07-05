@@ -221,7 +221,7 @@ public class GrpcMessageProtocolResolver {
         return events;
     }
     
-    private static String getTernaryOperationResult(CloudEvent cloudEvent, String protocolKey, String eventExtension){
+    private static String getTernaryOperationResult(CloudEvent cloudEvent, String protocolKey, String eventExtension) {
         return cloudEvent.getExtension(protocolKey) == null ? eventExtension : getEventExtension(cloudEvent, protocolKey);
     }
 
