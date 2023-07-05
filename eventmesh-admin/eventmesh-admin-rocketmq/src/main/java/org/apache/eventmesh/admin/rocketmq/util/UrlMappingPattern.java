@@ -25,6 +25,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a URL mapping pattern for routing purposes.
+ * The pattern can include variable path parameters or query strings.
+ */
+
 public class UrlMappingPattern {
 
     private static final String URL_PARAMETER_REGEX = "\\{(\\w*?)\\}";
@@ -55,6 +60,13 @@ public class UrlMappingPattern {
         return urlMappingPattern.replaceFirst(URL_FORMAT_REGEX, "");
     }
 
+    /**
+     * Extracts path parameters from the given URL and returns a {@link Map} of parameter names to values.
+     *
+     * @param url the URL from which to extract path parameters
+     * @return a {@link Map} containing path parameter names and their corresponding values,
+     *         or null if the URL does not match the defined URL mapping pattern
+     */
     public Map<String, String> extractPathParameterValues(String url) {
         Matcher matcher = compiledUrlMappingPattern.matcher(url);
         if (matcher.matches()) {
@@ -81,6 +93,12 @@ public class UrlMappingPattern {
         }
     }
 
+    /**
+     * Extracts parameters from the provided {@link Matcher} object and returns a {@link Map} of parameter names to values.
+     *
+     * @param matcher the Matcher object used to match and capture parameter values
+     * @return a {@link Map} containing parameter names and their corresponding values
+     */
     private Map<String, String> extractParameters(Matcher matcher) {
         Map<String, String> values = new HashMap<>((int) (matcher.groupCount() / 0.75f + 1));
         for (int i = 0; i < matcher.groupCount(); i++) {
