@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents a request to create a new topic.
+ * A data transfer object (DTO) that represents a request to create a new topic.
  * <p>
  * This class provides a convenient way to encapsulate the topic information when creating a new topic.
  * <p>

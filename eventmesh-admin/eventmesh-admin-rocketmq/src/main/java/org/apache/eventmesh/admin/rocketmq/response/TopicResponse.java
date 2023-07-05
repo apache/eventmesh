@@ -20,6 +20,15 @@ package org.apache.eventmesh.admin.rocketmq.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A data transfer object (DTO) that represents a response containing a topic and its creation time.
+ * <p>
+ * It includes the values returned upon the creation of a new topic, an update to an existing topic,
+ * or the retrieval of a topic's details.
+ * <p>
+ * It is used to encapsulate the topic information being sent to the client from the server.
+ */
+
 public class TopicResponse {
 
     private String topic;
