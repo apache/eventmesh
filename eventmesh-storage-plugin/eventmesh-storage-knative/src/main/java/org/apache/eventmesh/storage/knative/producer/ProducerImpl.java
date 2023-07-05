@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.storage.knative.producer;
 
-import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
@@ -35,7 +34,10 @@ import org.asynchttpclient.util.HttpConstants;
 
 import io.cloudevents.CloudEvent;
 
-public class ProducerImpl extends AbstractProducer {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class ProducerImpl extends KnativeAbstractProducer {
 
     public ProducerImpl(final Properties properties) throws IOException {
         super(properties);
@@ -63,6 +65,9 @@ public class ProducerImpl extends AbstractProducer {
                 return;
             }
             throw new IllegalStateException("HTTP response code error: " + response.getStatusCode());
+        } catch (InterruptedException e) {
+            log.error("Send cloudevent message InterruptedException", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             StorageRuntimeException onsEx = ProducerImpl.this.checkProducerException(cloudEvent, e);
             OnExceptionContext context = new OnExceptionContext();
@@ -76,7 +81,6 @@ public class ProducerImpl extends AbstractProducer {
         try {
             this.send(cloudEvent, sendCallback);
         } catch (Exception e) {
-            //LOG.error("Send cloudevent message Exception", e);
             throw new StorageRuntimeException("Send cloudevent message Exception.", e);
         }
     }
@@ -89,40 +93,5 @@ public class ProducerImpl extends AbstractProducer {
     @Override
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
         this.sendAsync(cloudEvent, sendCallback);
-    }
-
-    @Override
-    public void sendOneway(CloudEvent cloudEvent) {
-        throw new StorageRuntimeException("SendOneWay is not supported");
-    }
-
-    @Override
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        throw new StorageRuntimeException("Request is not supported");
-    }
-
-    @Override
-    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        throw new StorageRuntimeException("Reply is not supported");
-    }
-
-    @Override
-    public void checkTopicExist(String topic) throws Exception {
-        throw new StorageRuntimeException("CheckTopicExist is not supported");
-    }
-
-    @Override
-    public void setExtFields() {
-        throw new StorageRuntimeException("SetExtFields is not supported");
-    }
-
-    @Override
-    public void start() {
-        started.set(true);
-    }
-
-    @Override
-    public void shutdown() {
-        started.set(false);
     }
 }

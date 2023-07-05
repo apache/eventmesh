@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SuppressWarnings("deprecation")
-public class ProducerImpl extends AbstractProducer {
+public class ProducerImpl extends RocketMQAbstractProducer {
 
     public static final int eventMeshServerAsyncAccumulationThreshold = 1000;
 
@@ -54,10 +54,7 @@ public class ProducerImpl extends AbstractProducer {
         super(properties);
     }
 
-    public Properties attributes() {
-        return properties;
-    }
-
+    @Override
     public void setExtFields() {
         super.getRocketmqProducer().setRetryTimesWhenSendFailed(0);
         super.getRocketmqProducer().setRetryTimesWhenSendAsyncFailed(0);
@@ -71,7 +68,7 @@ public class ProducerImpl extends AbstractProducer {
 
     public SendResult send(CloudEvent cloudEvent) {
         this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
+        Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         supplySysProp(msg, cloudEvent);
         String messageId = null;
@@ -88,10 +85,10 @@ public class ProducerImpl extends AbstractProducer {
         }
     }
 
-
+    @Override
     public void sendOneway(CloudEvent cloudEvent) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
+        Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         supplySysProp(msg, cloudEvent);
         try {
@@ -105,7 +102,7 @@ public class ProducerImpl extends AbstractProducer {
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
+        Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         msg = supplySysProp(msg, cloudEvent);
         try {
@@ -116,11 +113,12 @@ public class ProducerImpl extends AbstractProducer {
         }
     }
 
+    @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
         throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
+        Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
 
         supplySysProp(msg, cloudEvent);
@@ -128,20 +126,21 @@ public class ProducerImpl extends AbstractProducer {
         rocketmqProducer.request(msg, rrCallbackConvert(msg, rrCallback), timeout);
     }
 
-    public void reply(final CloudEvent cloudEvent, final SendCallback sendCallback) {
+    @Override
+    public boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
+        Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
         supplySysProp(msg, cloudEvent);
 
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
+            return true;
         } catch (Exception e) {
             log.error(String.format("Send message async Exception, %s", msg), e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         }
-
     }
 
     private Message supplySysProp(Message msg, CloudEvent cloudEvent) {
@@ -158,7 +157,7 @@ public class ProducerImpl extends AbstractProducer {
     private RequestCallback rrCallbackConvert(final Message message, final RequestReplyCallback rrCallback) {
         return new RequestCallback() {
             @Override
-            public void onSuccess(org.apache.rocketmq.common.message.Message message) {
+            public void onSuccess(Message message) {
                 // clean the message property to lowercase
                 for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                     if (StringUtils.isNotEmpty(message.getProperty(sysPropKey))) {

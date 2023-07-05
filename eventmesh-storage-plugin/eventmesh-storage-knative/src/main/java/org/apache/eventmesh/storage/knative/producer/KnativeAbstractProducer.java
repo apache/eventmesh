@@ -19,46 +19,19 @@ package org.apache.eventmesh.storage.knative.producer;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
-import org.apache.eventmesh.api.exception.StorageRuntimeException;
-import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.api.producer.AbstractProducer;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.asynchttpclient.AsyncHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import io.cloudevents.CloudEvent;
+public abstract class KnativeAbstractProducer extends AbstractProducer {
 
-public abstract class AbstractProducer implements Producer {
-
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractProducer.class);
-
-    protected final transient AtomicBoolean started = new AtomicBoolean(false);
-    protected final transient Properties properties;
     private transient AsyncHttpClient asyncHttpClient;
 
-    AbstractProducer(final Properties properties) {
-        this.properties = properties;
+    KnativeAbstractProducer(final Properties properties) {
+        super(properties);
         this.asyncHttpClient = asyncHttpClient();
-    }
-
-    StorageRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
-        if (cloudEvent.getData() == null) {
-            return new StorageRuntimeException(String.format("CloudEvent message data does not exist.", e));
-        }
-        return new StorageRuntimeException(String.format("Unknown connector runtime exception.", e));
-    }
-
-    @Override
-    public boolean isStarted() {
-        return started.get();
-    }
-
-    @Override
-    public boolean isClosed() {
-        return !this.isStarted();
     }
 
     public AsyncHttpClient getAsyncHttpClient() {
