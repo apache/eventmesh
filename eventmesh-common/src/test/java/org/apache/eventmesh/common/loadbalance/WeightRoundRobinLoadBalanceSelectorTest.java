@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.loadbalance;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +26,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 import lombok.extern.slf4j.Slf4j;
+
 
 
 @Slf4j
@@ -37,16 +37,17 @@ public class WeightRoundRobinLoadBalanceSelectorTest {
 
     @Before
     public void before() {
-        List<Weight<String>> weightList = new ArrayList<>();
-        weightList.add(new Weight<>("A", 10));
-        weightList.add(new Weight<>("B", 20));
-        weightList.add(new Weight<>("C", 30));
+        List<Weight<String>> weightList = Arrays.asList(
+                new Weight<>("A", 10),
+                new Weight<>("B", 20),
+                new Weight<>("C", 30)
+        );
         weightRoundRobinLoadBalanceSelector = new WeightRoundRobinLoadBalanceSelector<>(weightList);
     }
 
     @Test
     public void testSelect() {
-        Map<String, Integer> addressToNum = new HashMap<>();
+        Map<String, Integer> addressToNum = new HashMap<>(3);
         for (int i = 0; i < 100_000; i++) {
             String select = weightRoundRobinLoadBalanceSelector.select();
             addressToNum.put(select, addressToNum.getOrDefault(select, 0) + 1);
@@ -54,8 +55,11 @@ public class WeightRoundRobinLoadBalanceSelectorTest {
         addressToNum.forEach((key, value) -> {
             log.info("{}: {}", key, value);
         });
-        Assert.assertTrue(addressToNum.get("B") > addressToNum.get("A"));
-        Assert.assertTrue(addressToNum.get("C") > addressToNum.get("B"));
+        Assert.assertEquals(0.5, (double) addressToNum.get("A") / addressToNum.get("B"), 0.0001);
+        Assert.assertEquals(
+                (double) 1 / 3, (double) addressToNum.get("A") / addressToNum.get("C"), 0.0001);
+        Assert.assertEquals(
+                (double) 2 / 3, (double) addressToNum.get("B") / addressToNum.get("C"), 0.0001);
     }
 
     @Test

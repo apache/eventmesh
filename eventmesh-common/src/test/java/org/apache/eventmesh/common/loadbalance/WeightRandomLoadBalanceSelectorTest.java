@@ -20,8 +20,7 @@ package org.apache.eventmesh.common.loadbalance;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.summingInt;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,10 +37,11 @@ public class WeightRandomLoadBalanceSelectorTest {
 
     @Test
     public void testSelect() throws Exception {
-        List<Weight<String>> weightList = new ArrayList<>();
-        weightList.add(new Weight<>("192.168.0.1", 10));
-        weightList.add(new Weight<>("192.168.0.2", 20));
-        weightList.add(new Weight<>("192.168.0.3", 40));
+        List<Weight<String>> weightList = Arrays.asList(
+                new Weight<>("192.168.0.1", 10),
+                new Weight<>("192.168.0.2", 20),
+                new Weight<>("192.168.0.3", 40)
+        );
         WeightRandomLoadBalanceSelector<String> weightRandomLoadBalanceSelector = new WeightRandomLoadBalanceSelector<>(weightList);
         Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRandomLoadBalanceSelector.getType());
         int testRange = 100_000;
@@ -53,17 +53,22 @@ public class WeightRandomLoadBalanceSelectorTest {
             log.info("{}: {}", key, value);
         });
         log.info("addressToNum: {}", addressToNum);
-        // the error less than 5%
-        Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.2") * 2) < testRange / 20);
-        Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.1") * 4) < testRange / 20);
+        // the error rate <= 5%
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.2") / (addressToNum.get("192.168.0.1") * 2), 0.05);
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.3") / (addressToNum.get("192.168.0.2") * 2), 0.05);
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.3") / (addressToNum.get("192.168.0.1") * 4), 0.05);
     }
 
     @Test
     public void testSameWeightSelect() throws Exception {
-        List<Weight<String>> weightList = new ArrayList<>();
-        weightList.add(new Weight<>("192.168.0.1", 10));
-        weightList.add(new Weight<>("192.168.0.2", 10));
-        weightList.add(new Weight<>("192.168.0.3", 10));
+        List<Weight<String>> weightList = Arrays.asList(
+                new Weight<>("192.168.0.1", 10),
+                new Weight<>("192.168.0.2", 10),
+                new Weight<>("192.168.0.3", 10)
+        );
         WeightRandomLoadBalanceSelector<String> weightRandomLoadBalanceSelector = new WeightRandomLoadBalanceSelector<>(weightList);
         Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRandomLoadBalanceSelector.getType());
 
@@ -72,15 +77,18 @@ public class WeightRandomLoadBalanceSelectorTest {
             .mapToObj(i -> weightRandomLoadBalanceSelector.select())
             .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
-        Field field = WeightRandomLoadBalanceSelector.class.getDeclaredField("sameWeightGroup");
-        field.setAccessible(true);
-        boolean sameWeightGroup = (boolean) field.get(weightRandomLoadBalanceSelector);
+        boolean sameWeightGroup = weightRandomLoadBalanceSelector.isSameWeightGroup();
         Assert.assertTrue(sameWeightGroup);
 
         addressToNum.forEach((key, value) -> {
             log.info("{}: {}", key, value);
         });
-        // the error less than 5%
-        Assert.assertTrue(Math.abs(addressToNum.get("192.168.0.3") - addressToNum.get("192.168.0.2")) < testRange / 20);
+        // the error rate <= 5%
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.3") / addressToNum.get("192.168.0.2"), 0.05);
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.3") / addressToNum.get("192.168.0.1"), 0.05);
+        Assert.assertEquals(1,
+                (double) addressToNum.get("192.168.0.2") / addressToNum.get("192.168.0.1"), 0.05);
     }
 }

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.loadbalance;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,25 +35,24 @@ public class RandomLoadBalanceSelectorTest {
     private RandomLoadBalanceSelector<String> randomLoadBalanceSelector;
 
     @Before
-    public void befor() {
-        List<String> address = new ArrayList<>();
-        address.add("A");
-        address.add("B");
-        address.add("C");
+    public void before() {
+        List<String> address = Arrays.asList("A", "B", "C");
         randomLoadBalanceSelector = new RandomLoadBalanceSelector<>(address);
     }
 
 
     @Test
     public void testSelect() {
-        Map<String, Integer> addressToNum = new HashMap<>();
-        for (int i = 0; i < 100; i++) {
-            String select = randomLoadBalanceSelector.select();
-            addressToNum.put(select, addressToNum.getOrDefault(select, 0) + 1);
+        try {
+            Map<String, Integer> addressToNum = new HashMap<>();
+            for (int i = 0; i < 100; i++) {
+                String select = randomLoadBalanceSelector.select();
+                addressToNum.put(select, addressToNum.getOrDefault(select, 0) + 1);
+            }
+            addressToNum.forEach((key, value) -> log.info("{} : {}", key, value));
+        } catch (Exception e) {
+            Assert.fail("Test failed");
         }
-        addressToNum.forEach((key, value) -> log.info("{} : {}", key, value));
-        // just assert success if no exception
-        Assert.assertTrue(true);
     }
 
     @Test

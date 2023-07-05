@@ -74,4 +74,8 @@ public class WeightRandomLoadBalanceSelector<T> implements LoadBalanceSelector<T
     public LoadBalanceType getType() {
         return LoadBalanceType.WEIGHT_RANDOM;
     }
+
+    boolean isSameWeightGroup() {
+        return sameWeightGroup;
+    }
 }
