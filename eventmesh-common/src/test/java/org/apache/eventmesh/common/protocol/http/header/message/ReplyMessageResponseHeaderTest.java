@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
-import org.junit.Assert;
+import java.util.Map;
+
 import org.junit.Test;
 
 public class ReplyMessageResponseHeaderTest {
@@ -30,10 +31,11 @@ public class ReplyMessageResponseHeaderTest {
     public void testToMap() {
         ReplyMessageResponseHeader header = ReplyMessageResponseHeader.buildHeader(100,
             "Cluster", "127.0.0.1", "DEV", "IDC");
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(100));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER), is("Cluster"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP), is("127.0.0.1"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC), is("IDC"));
+        Map<String, Object> map = header.toMap();
+        assertEquals(100, map.get(ProtocolKey.REQUEST_CODE));
+        assertEquals("Cluster", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        assertEquals("127.0.0.1", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        assertEquals("DEV", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        assertEquals("IDC", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
     }
 }

@@ -17,18 +17,18 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 public class ReplyMessageRequestHeaderTest {
 
@@ -36,27 +36,29 @@ public class ReplyMessageRequestHeaderTest {
 
     @Before
     public void before() {
-        Map<String, Object> headerParam = new HashMap<>();
-        headerParam.put(ProtocolKey.REQUEST_CODE, "200");
-        headerParam.put(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
-        headerParam.put(ProtocolKey.VERSION, "1.0");
-        headerParam.put(ProtocolKey.ClientInstanceKey.ENV, "DEV");
-        headerParam.put(ProtocolKey.ClientInstanceKey.IDC, "IDC");
-        headerParam.put(ProtocolKey.ClientInstanceKey.SYS, "SYS");
-        headerParam.put(ProtocolKey.ClientInstanceKey.PID, "PID");
-        headerParam.put(ProtocolKey.ClientInstanceKey.IP, "127.0.0.1");
+        Map<String, Object> headerParam = ImmutableMap.of(
+                ProtocolKey.REQUEST_CODE, "200",
+                ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA,
+                ProtocolKey.VERSION, "1.0",
+                ProtocolKey.ClientInstanceKey.ENV, "DEV",
+                ProtocolKey.ClientInstanceKey.IDC, "IDC",
+                ProtocolKey.ClientInstanceKey.SYS, "SYS",
+                ProtocolKey.ClientInstanceKey.PID, "PID",
+                ProtocolKey.ClientInstanceKey.IP, "127.0.0.1"
+        );
         header = ReplyMessageRequestHeader.buildHeader(headerParam);
     }
 
     @Test
     public void testToMap() {
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is("200"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.LANGUAGE), is(Constants.LANGUAGE_JAVA));
-        Assert.assertThat(header.toMap().get(ProtocolKey.VERSION), is(ProtocolVersion.V1));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.ENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IDC), is("IDC"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS), is("SYS"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID), is("PID"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP), is("127.0.0.1"));
+        Map<String, Object> map = header.toMap();
+        assertEquals("200", map.get(ProtocolKey.REQUEST_CODE));
+        assertEquals(Constants.LANGUAGE_JAVA, map.get(ProtocolKey.LANGUAGE));
+        assertEquals(ProtocolVersion.V1, map.get(ProtocolKey.VERSION));
+        assertEquals("DEV", map.get(ProtocolKey.ClientInstanceKey.ENV));
+        assertEquals("IDC", map.get(ProtocolKey.ClientInstanceKey.IDC));
+        assertEquals("SYS", map.get(ProtocolKey.ClientInstanceKey.SYS));
+        assertEquals("PID", map.get(ProtocolKey.ClientInstanceKey.PID));
+        assertEquals("127.0.0.1", map.get(ProtocolKey.ClientInstanceKey.IP));
     }
 }

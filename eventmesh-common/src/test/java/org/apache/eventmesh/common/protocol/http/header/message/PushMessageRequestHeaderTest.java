@@ -17,18 +17,18 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 public class PushMessageRequestHeaderTest {
 
@@ -36,25 +36,27 @@ public class PushMessageRequestHeaderTest {
 
     @Before
     public void before() {
-        Map<String, Object> headerParam = new HashMap<>();
-        headerParam.put(ProtocolKey.REQUEST_CODE, 200);
-        headerParam.put(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
-        headerParam.put(ProtocolKey.VERSION, "1.0");
-        headerParam.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, "default cluster");
-        headerParam.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, "127.0.0.1");
-        headerParam.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, "DEV");
-        headerParam.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, "IDC");
+        Map<String, Object> headerParam = ImmutableMap.of(
+                ProtocolKey.REQUEST_CODE, 200,
+                ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA,
+                ProtocolKey.VERSION, "1.0",
+                ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, "default cluster",
+                ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, "127.0.0.1",
+                ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, "DEV",
+                ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, "IDC"
+        );
         header = PushMessageRequestHeader.buildHeader(headerParam);
     }
 
     @Test
     public void testToMap() {
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(200));
-        Assert.assertThat(header.toMap().get(ProtocolKey.LANGUAGE), is(Constants.LANGUAGE_JAVA));
-        Assert.assertThat(header.toMap().get(ProtocolKey.VERSION), is(ProtocolVersion.V1));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER), is("default cluster"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP), is("127.0.0.1"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC), is("IDC"));
+        Map<String, Object> map = header.toMap();
+        assertEquals(200, map.get(ProtocolKey.REQUEST_CODE));
+        assertEquals(Constants.LANGUAGE_JAVA, map.get(ProtocolKey.LANGUAGE));
+        assertEquals(ProtocolVersion.V1, map.get(ProtocolKey.VERSION));
+        assertEquals("default cluster", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        assertEquals("127.0.0.1", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        assertEquals("DEV", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        assertEquals("IDC", map.get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
     }
 }
