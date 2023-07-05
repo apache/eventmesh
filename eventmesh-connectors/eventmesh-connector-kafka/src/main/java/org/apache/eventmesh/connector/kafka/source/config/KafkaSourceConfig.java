@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.connector.kafka.source.config;
 
-import lombok.Data;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
+import lombok.Data;
 
 @Data
 public class KafkaSourceConfig extends SourceConfig {

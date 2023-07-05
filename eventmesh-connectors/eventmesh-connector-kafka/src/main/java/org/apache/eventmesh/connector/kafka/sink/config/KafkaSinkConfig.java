@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.connector.kafka.sink.config;
 
-import lombok.Data;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+
+import lombok.Data;
 
 @Data
 public class KafkaSinkConfig extends SinkConfig {

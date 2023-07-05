@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.connector.kafka.server;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.kafka.config.KafkaServerConfig;
 import org.apache.eventmesh.connector.kafka.sink.connector.KafkaSinkConnector;
 import org.apache.eventmesh.connector.kafka.source.connector.KafkaSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class KafkaConnectServer {

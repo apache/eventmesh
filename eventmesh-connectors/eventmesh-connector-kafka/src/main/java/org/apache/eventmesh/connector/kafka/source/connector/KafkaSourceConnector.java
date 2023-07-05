@@ -17,8 +17,19 @@
 
 package org.apache.eventmesh.connector.kafka.source.connector;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.kafka.CloudEventDeserializer;
+import org.apache.eventmesh.connector.kafka.source.config.KafkaSourceConfig;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.api.source.Source;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,24 +37,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.eventmesh.connector.kafka.config.KafkaServerConfig;
-import org.apache.eventmesh.connector.kafka.source.config.KafkaSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class KafkaSourceConnector implements Source {
 
     private KafkaSourceConfig sourceConfig;
 
     private KafkaConsumer<String, String> kafkaConsumer;
+
     @Override
     public Class<? extends Config> configClass() {
         return KafkaSourceConfig.class;

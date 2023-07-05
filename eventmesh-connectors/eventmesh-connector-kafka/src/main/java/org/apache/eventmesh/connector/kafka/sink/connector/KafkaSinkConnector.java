@@ -16,23 +16,25 @@
  */
 
 package org.apache.eventmesh.connector.kafka.sink.connector;
-import io.cloudevents.kafka.CloudEventSerializer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.connector.kafka.sink.config.KafkaSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.apache.kafka.common.serialization.StringSerializer;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class KafkaSinkConnector implements Sink {
@@ -49,7 +51,6 @@ public class KafkaSinkConnector implements Sink {
 
     @Override
     public void init(Config config) throws Exception {
-        // init config for rocketmq source connector
         this.sinkConfig = (KafkaSinkConfig) config;
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, sinkConfig.getConnectorConfig().getBootstrapServers());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getKeyConverter());
@@ -83,14 +84,14 @@ public class KafkaSinkConnector implements Sink {
                 ProducerRecord message = convertRecordToMessage(connectRecord);
                 producer.send(message, (metadata, exception) -> {
                     if (exception == null) {
-                        log.debug("Produced message to topic:{},partition:{},offset:{}",metadata.topic(), metadata.partition(), metadata.offset());
+                        log.debug("Produced message to topic:{},partition:{},offset:{}", metadata.topic(), metadata.partition(), metadata.offset());
                     } else {
-                        log.error("Failed to produce message:{}",exception.getMessage());
+                        log.error("Failed to produce message:{}", exception.getMessage());
                     }
                 });
             }
-        } catch (Exception e){
-            log.error("Failed to produce message:{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to produce message:{}", e.getMessage());
         }
     }
 
@@ -99,7 +100,8 @@ public class KafkaSinkConnector implements Sink {
         for (String key : connectRecord.getExtensions().keySet()) {
             headers.add(new RecordHeader(key, connectRecord.getExtension(key).getBytes(StandardCharsets.UTF_8)));
         }
-        ProducerRecord message = new ProducerRecord(this.sinkConfig.getConnectorConfig().getTopic(), null,"",new String((byte[]) connectRecord.getData(), StandardCharsets.UTF_8),headers);
+        ProducerRecord message = new ProducerRecord(this.sinkConfig.getConnectorConfig().getTopic(), null, "",
+            new String((byte[]) connectRecord.getData(), StandardCharsets.UTF_8), headers);
         return message;
     }
 }
