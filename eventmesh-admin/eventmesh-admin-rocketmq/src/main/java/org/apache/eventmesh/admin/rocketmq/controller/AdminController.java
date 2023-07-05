@@ -30,7 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class is responsible for managing the admin module.
  * <p>
- * It provides a method to run the admin module with the specified {@link HttpServer}.
+ * It provides a method to run the admin module with the specified {@link HttpServer}
+ * and handles requests related to topics management.
  */
 
 @Slf4j

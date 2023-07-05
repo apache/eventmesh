@@ -60,7 +60,8 @@ public class TopicsHandler implements HttpHandler {
      * Handles the HTTP request for creating topics.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
+     * @see HttpHandler#handle(HttpExchange)
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -84,7 +85,7 @@ public class TopicsHandler implements HttpHandler {
      * Handles the creation of a new topic.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
         String result;
