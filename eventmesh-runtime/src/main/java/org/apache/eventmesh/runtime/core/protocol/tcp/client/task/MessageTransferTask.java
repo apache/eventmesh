@@ -253,7 +253,7 @@ public class MessageTransferTask extends AbstractTask {
                         session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
-                session.getSender().failMsgCount.incrementAndGet();
+                session.getSender().getFailMsgCount().incrementAndGet();
                 MESSAGE_LOGGER
                     .error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}",
                         session.getClient(),

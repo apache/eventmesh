@@ -56,18 +56,18 @@ public abstract class AbstractPublishBatchCloudEventProcessor implements Publish
         // control flow rate limit
         if (!eventMeshGrpcServer.getMsgRateLimiter().tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             log.error("Send message speed over limit.");
-            ServiceUtils.completed(StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
 
         StatusCode cloudEventCheck = cloudEventBatchCheck(cloudEvent);
         if (cloudEventCheck != StatusCode.SUCCESS) {
-            ServiceUtils.completed(cloudEventCheck, emitter);
+            ServiceUtils.sendResponseCompleted(cloudEventCheck, emitter);
             return;
         }
         StatusCode aclCheck = this.aclCheck(cloudEvent.getEvents(0));
         if (aclCheck != StatusCode.SUCCESS) {
-            ServiceUtils.completed(aclCheck, emitter);
+            ServiceUtils.sendResponseCompleted(aclCheck, emitter);
             return;
         }
         handleCloudEvent(cloudEvent, emitter);
