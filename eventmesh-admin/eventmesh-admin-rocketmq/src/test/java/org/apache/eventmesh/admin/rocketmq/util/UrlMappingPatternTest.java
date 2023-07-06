@@ -18,11 +18,13 @@
 package org.apache.eventmesh.admin.rocketmq.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,8 +88,21 @@ public class UrlMappingPatternTest {
     }
 
     @Test
-    public void testCompile() {
-        //TODO : Fix me to test the method compile(). It is better using Mockito not PowerMockito.
+    public void testCompile() throws NoSuchFieldException, IllegalAccessException {
+        // Obtain compiledUrlMappingPattern field with reflection
+        Field compiledUrlMappingPatternField = UrlMappingPattern.class.getDeclaredField("compiledUrlMappingPattern");
+        compiledUrlMappingPatternField.setAccessible(true);
+
+        urlMappingPattern.compile();
+
+        // Verify that the compiledUrlMappingPattern field is updated
+        Pattern compiledPattern = (Pattern) compiledUrlMappingPatternField.get(urlMappingPattern);
+        assertNotNull(compiledPattern);
+
+        // Verify that the mocked pattern is compiled with the expected regex
+        String expectedRegex = "/test/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)/path/([%\\w-.\\~!$&'\\(\\)\\*\\+,;=:\\[\\]@]+?)(?:\\?.*?)?$";
+        Pattern expectedPattern = Pattern.compile(expectedRegex);
+        assertEquals(expectedPattern.pattern(), compiledPattern.pattern());
     }
 
     class TestUrlMappingPattern extends UrlMappingPattern {

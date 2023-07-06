@@ -269,8 +269,9 @@ public class EventMeshCloudEventBuilder {
 
         // This is GRPC response cloudEvent
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
+            //The SubscriptionItem collection contains the content for the subscription.
             return (T) JsonUtils.parseTypeReferenceObject(content,
-                new TypeReference<HashMap<String, String>>() {
+                new TypeReference<Set<HashMap<String, String>>>() {
 
                 });
         }
