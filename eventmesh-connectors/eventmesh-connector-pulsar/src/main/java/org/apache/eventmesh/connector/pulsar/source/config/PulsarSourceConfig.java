@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.connector.pulsar.source.config;
 
-import lombok.Data;
+
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
+import lombok.Data;
 
 @Data
 public class PulsarSourceConfig extends SourceConfig {

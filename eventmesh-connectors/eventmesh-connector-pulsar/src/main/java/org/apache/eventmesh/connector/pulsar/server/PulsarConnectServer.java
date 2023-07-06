@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.connector.pulsar.server;
 
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.connector.pulsar.config.PulsarServerConfig;
 import org.apache.eventmesh.connector.pulsar.sink.connector.PulsarSinkConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PulsarConnectServer {
