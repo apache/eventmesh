@@ -62,7 +62,7 @@ public class EventMeshTcpRetryer {
 
     public void pushRetry(RetryContext retryContext) {
         if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
-            log.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
+            log.error("pushRetry fail, retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
                 retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
@@ -102,7 +102,7 @@ public class EventMeshTcpRetryer {
                     });
                 }
             } catch (Exception e) {
-                if(e instanceof InterruptedException){
+                if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
                 log.error("retry-dispatcher error!", e);
