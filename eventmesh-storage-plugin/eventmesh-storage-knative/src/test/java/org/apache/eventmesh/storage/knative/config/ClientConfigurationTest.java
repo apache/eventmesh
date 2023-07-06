@@ -45,7 +45,7 @@ public class ClientConfigurationTest {
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.getEmurl(), "127.0.0.1");
-        Assert.assertEquals(config.getServiceAddr(), "cloudevents-player.default.127.0.0.1.sslip.io");
+        Assert.assertEquals("127.0.0.1", config.getEmurl());
+        Assert.assertEquals("cloudevents-player.default.127.0.0.1.sslip.io", config.getServiceAddr());
     }
 }
