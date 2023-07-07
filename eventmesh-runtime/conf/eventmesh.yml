@@ -136,6 +136,6 @@ eventMesh:
     ## Address of Nacos
     nacosMode:
       serverAddr: 127.0.0.1:8848
-    # Webhook eventcloud sending mode. And eventmesh connector. plugin. The type configuration is the same
+    # Webhook CloudEvent sending mode. This property is the same as the eventMesh.storage.plugin.type configuration.
     producer:
       storage: standalone
