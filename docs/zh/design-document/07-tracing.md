@@ -13,7 +13,7 @@ SpanProcessor：BatchSpanProcessor
 
 // 配置批处理跨度处理器。 此跨度处理器批量导出跨度。
 BatchSpanProcessor batchSpansProcessor =
-     BatchSpanProcessor.builder（出口商）
+     BatchSpanProcessor.builder（exporter）
          .setMaxExportBatchSize(512) // 设置要使用的最大批量大小
          .setMaxQueueSize(2048) // 设置队列大小。 这必须 >= 导出批量大小
          .setExporterTimeout(
