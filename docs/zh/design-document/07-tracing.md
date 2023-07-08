@@ -20,7 +20,7 @@ BatchSpanProcessor batchSpansProcessor =
              30, TimeUnit.SECONDS) // 设置导出在获取之前可以运行的最长时间
          // 中断
          .setScheduleDelay(5, TimeUnit.SECONDS) // 设置两次不同导出之间的时间
-         。建造（）;
+         。build（）;
 OpenTelemetrySdk.builder()
      .setTracerProvider(
          SdkTracerProvider.builder().addSpanProcessor(batchSpansProcessor).build())
