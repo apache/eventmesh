@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestH
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -82,14 +81,14 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         final SubscribeResponseHeader subscribeResponseHeader =
             SubscribeResponseHeader
                 .buildHeader(requestCode,
-                        eventMeshHttpConfiguration.getEventMeshCluster(),
-                        localAddress,
-                        eventMeshHttpConfiguration.getEventMeshEnv(),
-                        eventMeshHttpConfiguration.getEventMeshIDC());
+                    eventMeshHttpConfiguration.getEventMeshCluster(),
+                    localAddress,
+                    eventMeshHttpConfiguration.getEventMeshEnv(),
+                    eventMeshHttpConfiguration.getEventMeshIDC());
 
         //validate header
         if (StringUtils.isAnyBlank(subscribeRequestHeader.getIdc(),
-                subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
+            subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
             || !StringUtils.isNumeric(subscribeRequestHeader.getPid())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
@@ -131,7 +130,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         // validate URL
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-                    eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
+                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
                 log.error("subscriber url {} is not valid", url);
                 completeResponse(request, asyncContext, subscribeResponseHeader,
                         EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
@@ -168,11 +167,10 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             subscriptionManager.updateSubscription(clientInfo, consumerGroup, url, subTopicList);
 
             final long startTime = System.currentTimeMillis();
-            HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
             try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                        subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
+                    subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
 
                 final CompleteHandler<HttpCommand> handler = httpCommand -> {
                     try {
@@ -181,10 +179,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         }
                         eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
-                        summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                        eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHTTPReqResTimeCost(
+                            System.currentTimeMillis() - request.getReqTime());
                     } catch (Exception ex) {
                         log.error("onResponse error", ex);
                     }
+
                 };
 
                 responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
@@ -202,8 +202,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
                         subscribeRequestBody.getUrl(), e);
                 }
-                summaryMetrics.recordSendMsgFailed();
-                summaryMetrics.recordSendMsgCost(endTime - startTime);
+                eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgFailed();
+                eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgCost(endTime - startTime);
             }
         }
     }

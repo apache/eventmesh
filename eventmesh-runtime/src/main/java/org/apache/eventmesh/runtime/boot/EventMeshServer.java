@@ -21,19 +21,25 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
+import org.apache.eventmesh.runtime.metrics.EventMeshMetricsManager;
+import org.apache.eventmesh.runtime.metrics.MetricsManager;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,6 +67,8 @@ public class EventMeshServer {
     private static final String SERVER_STATE_MSG = "server state:{}";
 
     private static final ConfigService configService = ConfigService.getInstance();
+
+    private EventMeshMetricsManager eventMeshMetricsManager;
 
     public EventMeshServer() {
 
@@ -96,6 +104,12 @@ public class EventMeshServer {
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
+        List<String> metricsPluginTypes = configuration.getEventMeshMetricsPluginType();
+        if (CollectionUtils.isNotEmpty(metricsPluginTypes)) {
+            List<MetricsRegistry> metricsRegistries = metricsPluginTypes.stream().map(metric -> MetricsPluginFactory.getMetricsRegistry(metric))
+                .collect(Collectors.toList());
+            eventMeshMetricsManager = new EventMeshMetricsManager(metricsRegistries);
+        }
     }
 
     public void init() throws Exception {
@@ -128,6 +142,28 @@ public class EventMeshServer {
             if (eventMeshBootstrap instanceof EventMeshGrpcBootstrap) {
                 eventMeshGrpcServer = ((EventMeshGrpcBootstrap) eventMeshBootstrap).getEventMeshGrpcServer();
             }
+        }
+
+        if (Objects.nonNull(eventMeshTCPServer)) {
+            MetricsManager metricsManager = eventMeshTCPServer.getEventMeshTcpMetricsManager();
+            this.eventMeshMetricsManager.addMetricManager(metricsManager);
+            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+        }
+
+        if (Objects.nonNull(eventMeshGrpcServer)) {
+            MetricsManager metricsManager = eventMeshGrpcServer.getMetricsManager();
+            this.eventMeshMetricsManager.addMetricManager(metricsManager);
+            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+        }
+
+        if (Objects.nonNull(eventMeshHTTPServer)) {
+            MetricsManager metricsManager = eventMeshHTTPServer.getEventMeshHttpMetricsManager();
+            this.eventMeshMetricsManager.addMetricManager(metricsManager);
+            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+        }
+
+        if (Objects.nonNull(eventMeshMetricsManager)) {
+            eventMeshMetricsManager.init();
         }
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
@@ -169,6 +205,11 @@ public class EventMeshServer {
             clientManageController.start();
         }
         producerTopicManager.start();
+
+        if (Objects.nonNull(eventMeshMetricsManager)) {
+            eventMeshMetricsManager.start();
+        }
+
         serviceState = ServiceState.RUNNING;
         if (log.isInfoEnabled()) {
             log.info(SERVER_STATE_MSG, serviceState);
@@ -201,6 +242,10 @@ public class EventMeshServer {
         }
         producerTopicManager.shutdown();
         ConfigurationContextUtil.clear();
+
+        if (Objects.nonNull(eventMeshMetricsManager)) {
+            eventMeshMetricsManager.shutdown();
+        }
         serviceState = ServiceState.STOPPED;
 
         if (log.isInfoEnabled()) {

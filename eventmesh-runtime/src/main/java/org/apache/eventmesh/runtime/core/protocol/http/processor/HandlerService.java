@@ -27,7 +27,7 @@ import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -75,7 +75,7 @@ public class HandlerService {
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
     @Setter
-    private HTTPMetricsServer metrics;
+    private EventMeshHttpMetricsManager metrics;
 
     @Setter
     private HTTPTrace httpTrace;
@@ -236,7 +236,7 @@ public class HandlerService {
 
         httpEventWrapper.setBody(requestBody);
 
-        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        metrics.getHttpMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
 
         return httpEventWrapper;
     }
@@ -298,7 +298,7 @@ public class HandlerService {
         }
 
         private void postHandler(ConnectionType type) {
-            metrics.getSummaryMetrics().recordHTTPRequest();
+            metrics.getHttpMetrics().recordHTTPRequest();
             if (httpLogger.isDebugEnabled()) {
                 httpLogger.debug("{}", request);
             }
@@ -314,7 +314,7 @@ public class HandlerService {
         }
 
         private void preHandler() {
-            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
+            metrics.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
             if (httpLogger.isDebugEnabled()) {
                 httpLogger.debug("{}", response);
             }
@@ -323,8 +323,8 @@ public class HandlerService {
         private void error() {
             log.error(this.exception.getMessage(), this.exception);
             this.traceOperation.exceptionTrace(this.exception, this.traceMap);
-            metrics.getSummaryMetrics().recordHTTPDiscard();
-            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
+            metrics.getHttpMetrics().recordHTTPDiscard();
+            metrics.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
@@ -381,7 +381,7 @@ public class HandlerService {
          * @param count
          */
         public void recordSendBatchMsgFailed(int count) {
-            metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
+            metrics.getHttpMetrics().recordSendBatchMsgFailed(1);
         }
 
     }

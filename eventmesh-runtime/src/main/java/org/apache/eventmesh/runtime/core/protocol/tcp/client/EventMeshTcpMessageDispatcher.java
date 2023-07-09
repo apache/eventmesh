@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -65,10 +66,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     protected void channelRead0(ChannelHandlerContext ctx, Package pkg) throws Exception {
         long startTime = System.currentTimeMillis();
         validateMsg(pkg);
-
-        eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()
-            .getClient2eventMeshMsgNum().incrementAndGet();
-
+        eventMeshTCPServer.getEventMeshTcpMetricsManager().client2eventMeshMsgNumIncrement(IPUtils.parseChannelRemoteAddr(ctx.channel()));
         Command cmd = pkg.getHeader().getCmd();
         try {
             Runnable task;

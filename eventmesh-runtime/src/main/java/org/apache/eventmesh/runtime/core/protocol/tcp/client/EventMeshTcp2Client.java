@@ -24,11 +24,12 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 
@@ -38,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,10 +97,10 @@ public class EventMeshTcp2Client {
     }
 
     public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, ClientSessionGroupMapping mapping,
-        EventMeshTcpMonitor eventMeshTcpMonitor) {
+        EventMeshTcpMetricsManager eventMeshTcpMetricsManager) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
-        eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
+        eventMeshTcpMetricsManager.eventMesh2clientMsgNumIncrement(IPUtils.parseChannelRemoteAddr(ctx.channel()));
         log.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(new ChannelFutureListener() {
             @Override

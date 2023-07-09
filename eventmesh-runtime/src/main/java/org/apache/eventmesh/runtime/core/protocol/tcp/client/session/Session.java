@@ -185,10 +185,7 @@ public class Session {
                             MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                         } else {
                             Objects.requireNonNull(clientGroupWrapper.get())
-                                .getEventMeshTcpMonitor()
-                                .getTcpSummaryMetrics()
-                                .getEventMesh2clientMsgNum()
-                                .incrementAndGet();
+                                .getEventMeshTcpMetricsManager().eventMesh2clientMsgNumIncrement(null);
                         }
                     }
                 }
@@ -236,7 +233,7 @@ public class Session {
         if (!Objects.equals(context, session.context)) {
             return false;
         }
-        
+
         return Objects.equals(sessionState, session.sessionState);
 
     }

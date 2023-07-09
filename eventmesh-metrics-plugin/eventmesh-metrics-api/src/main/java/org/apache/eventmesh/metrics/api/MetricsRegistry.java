@@ -21,6 +21,10 @@ import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.Collection;
+
 /**
  * The top-level interface of metrics registry, used to register different metrics. It should have multiple sub implementation, e.g. JVM, Prometheus,
  * i.g.
@@ -46,6 +50,17 @@ public interface MetricsRegistry {
      * @param metric
      */
     void register(Metric metric);
+
+    /**
+     * Register Metrics, if the metric is already exist, it will do nothing.
+     *
+     * @param metrics
+     */
+    default void register(Collection<Metric> metrics) {
+        if (CollectionUtils.isNotEmpty(metrics)) {
+            metrics.forEach(metric -> register(metric));
+        }
+    }
 
     /**
      * Remove a metric, if the metric is not exist, it will do nothing.

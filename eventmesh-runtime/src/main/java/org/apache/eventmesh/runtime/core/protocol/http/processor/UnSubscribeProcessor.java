@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeReques
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -37,6 +36,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -111,7 +111,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         final String consumerGroup = unSubscribeRequestBody.getConsumerGroup();
         final String unSubscribeUrl = unSubscribeRequestBody.getUrl();
         final List<String> unSubTopicList = unSubscribeRequestBody.getTopics();
-        HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
+        HttpMetrics summaryMetrics = eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics();
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
             try {
                 if (log.isDebugEnabled()) {

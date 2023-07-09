@@ -263,7 +263,7 @@ public class EventMeshConsumer {
                     log.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic,
                         bizSeqNo, uniqueId);
                 }
-                eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
+                eventMeshGrpcServer.getMetricsManager().recordReceiveMsgFromQueue();
             }
 
             final EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;

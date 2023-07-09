@@ -38,7 +38,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSession
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
@@ -76,7 +76,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private transient EventMeshTcpRetryer eventMeshTcpRetryer;
 
-    private transient EventMeshTcpMonitor eventMeshTcpMonitor;
+    private EventMeshTcpMetricsManager eventMeshTcpMetricsManager;
 
     private final transient EventMeshServer eventMeshServer;
 
@@ -101,7 +101,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private transient AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     private transient RateLimiter rateLimiter;
-
 
     public void setClientSessionGroupMapping(final ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
@@ -185,9 +184,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
             try {
                 int port = eventMeshTCPConfiguration.getEventMeshTcpServerPort();
-                ChannelFuture f = bootstrap.bind(port).sync();
+                ChannelFuture cf = bootstrap.bind(port).sync();
                 log.info("EventMeshTCPServer[port={}] started.....", port);
-                f.channel().closeFuture().sync();
+                cf.channel().closeFuture().sync();
             } catch (Exception e) {
                 log.error("EventMeshTCPServer RemotingServer Start Err!", e);
                 try {
@@ -226,12 +225,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
-        Optional.ofNullable(eventMeshTCPConfiguration.getEventMeshMetricsPluginType())
-            .ifPresent(
-                metricsPlugins -> metricsPlugins.forEach(
-                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
-        eventMeshTcpMonitor = new EventMeshTcpMonitor(this, metricsRegistries);
-        eventMeshTcpMonitor.init();
+        Optional.ofNullable(eventMeshTCPConfiguration.getEventMeshMetricsPluginType()).ifPresent(
+            metricsPlugins -> metricsPlugins.forEach(pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+        eventMeshTcpMetricsManager = new EventMeshTcpMetricsManager(this, metricsRegistries);
 
         if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this,
@@ -252,7 +248,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         eventMeshTcpRetryer.start();
 
-        eventMeshTcpMonitor.start();
+        //eventMeshTcpMetricsManager.start();
 
         if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
@@ -291,8 +287,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         }
 
         eventMeshTcpRetryer.shutdown();
-
-        eventMeshTcpMonitor.shutdown();
 
         shutdownThreadPool();
         if (log.isInfoEnabled()) {
@@ -386,8 +380,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         return eventMeshTcpRetryer;
     }
 
-    public EventMeshTcpMonitor getEventMeshTcpMonitor() {
-        return eventMeshTcpMonitor;
+    public EventMeshTcpMetricsManager getEventMeshTcpMetricsManager() {
+        return eventMeshTcpMetricsManager;
     }
 
     public EventMeshServer getEventMeshServer() {

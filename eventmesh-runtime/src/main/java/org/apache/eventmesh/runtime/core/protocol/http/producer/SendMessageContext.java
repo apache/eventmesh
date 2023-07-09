@@ -144,7 +144,7 @@ public class SendMessageContext extends RetryContext {
             @Override
             public void onException(OnExceptionContext context) {
                 log.warn("", context.getException());
-                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendBatchMsgFailed(1);
+                eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendBatchMsgFailed(1);
             }
 
         });

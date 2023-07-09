@@ -45,6 +45,8 @@ public abstract class AbstractRemotingServer {
 
     private int port;
 
+    private String bindAddress;
+
     private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
 
     public EventLoopGroup getBossGroup() {
@@ -61,6 +63,14 @@ public abstract class AbstractRemotingServer {
 
     public int getPort() {
         return port;
+    }
+
+    public String getBindAddress() {
+        return bindAddress;
+    }
+
+    public void setBindAddress(String bindAddress) {
+        this.bindAddress = bindAddress;
     }
 
     public void setBossGroup(final EventLoopGroup bossGroup) {

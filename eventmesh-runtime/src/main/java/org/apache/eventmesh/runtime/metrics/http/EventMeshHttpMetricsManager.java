@@ -18,65 +18,76 @@
 package org.apache.eventmesh.runtime.metrics.http;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.MetricsConstants;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
+import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.metrics.MetricsManager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HTTPMetricsServer {
+public class EventMeshHttpMetricsManager implements MetricsManager {
 
-    private final transient EventMeshHTTPServer eventMeshHTTPServer;
+    private  Map<String, String> labelMap = new HashMap<>();
 
-    private final transient List<MetricsRegistry> metricsRegistries;
+    private final  EventMeshHTTPServer eventMeshHTTPServer;
 
-    private final transient HttpSummaryMetrics summaryMetrics;
+    private final  List<MetricsRegistry> metricsRegistries;
 
-    public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
+    private final  HttpMetrics httpMetrics;
+
+    public EventMeshHttpMetricsManager(final EventMeshHTTPServer eventMeshHTTPServer,
         final List<MetricsRegistry> metricsRegistries) {
         Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
         Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
-        this.summaryMetrics = new HttpSummaryMetrics(
+        init();
+        this.httpMetrics = new HttpMetrics(
             eventMeshHTTPServer.getBatchMsgExecutor(),
             eventMeshHTTPServer.getSendMsgExecutor(),
             eventMeshHTTPServer.getPushMsgExecutor(),
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
-
-        init();
+            eventMeshHTTPServer.getHttpRetryer().getFailedQueue(),
+            labelMap);
     }
 
     private void init() {
-        metricsRegistries.forEach(MetricsRegistry::start);
+        boolean useTls = eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerUseTls();
+        String eventMeshServerIp = this.eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp();
+        int httpServerPort = this.eventMeshHTTPServer.getEventMeshHttpConfiguration().getHttpServerPort();
+        this.labelMap.put(MetricsConstants.HTTP_HTTP_SCHEME, useTls ? "https" : "http");
+        this.labelMap.put(MetricsConstants.HTTP_HTTP_FLAVOR, "1.1");
+        this.labelMap.put(MetricsConstants.HTTP_NET_HOST_NAME, Optional.ofNullable(eventMeshServerIp).orElse(IPUtils.getLocalAddress()));
+        this.labelMap.put(MetricsConstants.HTTP_NET_HOST_PORT, Integer.toString(httpServerPort));
+        this.labelMap.put(MetricsConstants.RPC_SYSTEM, "HTTP");
+        this.labelMap.put(MetricsConstants.RPC_SERVICE, this.eventMeshHTTPServer.getClass().getName());
         if (log.isInfoEnabled()) {
             log.info("HTTPMetricsServer initialized.");
         }
     }
 
+    @Override
     public void start() {
-        metricsRegistries.forEach(metricsRegistry -> {
-            metricsRegistry.register(summaryMetrics);
-            if (log.isInfoEnabled()) {
-                log.info("Register httpMetrics to {}", metricsRegistry.getClass().getName());
-            }
-        });
 
         metricsSchedule.scheduleAtFixedRate(() -> {
             try {
-                summaryMetrics.snapshotHTTPTPS();
-                summaryMetrics.snapshotSendBatchMsgTPS();
-                summaryMetrics.snapshotSendMsgTPS();
-                summaryMetrics.snapshotPushMsgTPS();
+                httpMetrics.snapshotHTTPTPS();
+                httpMetrics.snapshotSendBatchMsgTPS();
+                httpMetrics.snapshotSendMsgTPS();
+                httpMetrics.snapshotPushMsgTPS();
             } catch (Exception ex) {
                 log.error("eventMesh snapshot tps metrics err", ex);
             }
@@ -84,7 +95,7 @@ public class HTTPMetricsServer {
 
         metricsSchedule.scheduleAtFixedRate(() -> {
             try {
-                logPrintServerMetrics(summaryMetrics, eventMeshHTTPServer);
+                logPrintServerMetrics(httpMetrics, eventMeshHTTPServer);
             } catch (Exception ex) {
                 log.error("eventMesh print metrics err", ex);
             }
@@ -95,12 +106,9 @@ public class HTTPMetricsServer {
         }
     }
 
+    @Override
     public void shutdown() {
         metricsSchedule.shutdown();
-        metricsRegistries.forEach(MetricsRegistry::showdown);
-        if (log.isInfoEnabled()) {
-            log.info("HTTPMetricsServer shutdown.");
-        }
     }
 
     private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
@@ -108,10 +116,10 @@ public class HTTPMetricsServer {
 
     // todo: move this into standalone metrics plugin
 
-    private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
+    private void logPrintServerMetrics(final HttpMetrics summaryMetrics,
         final EventMeshHTTPServer eventMeshHTTPServer) {
         if (log.isInfoEnabled()) {
-            log.info("===========================================SERVER METRICS==================================================");
+            log.info("===========================================HTTP SERVER METRICS==================================================");
 
             log.info("maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
                 summaryMetrics.maxHTTPTPS(),
@@ -183,7 +191,17 @@ public class HTTPMetricsServer {
         summaryMetrics.send2MQStatInfoClear();
     }
 
-    public HttpSummaryMetrics getSummaryMetrics() {
-        return summaryMetrics;
+    public HttpMetrics getHttpMetrics() {
+        return httpMetrics;
+    }
+
+    @Override
+    public List<Metric> getMetrics() {
+        return new ArrayList<>(httpMetrics.getMetrics());
+    }
+
+    @Override
+    public String getMetricManagerName() {
+        return this.getClass().getName();
     }
 }

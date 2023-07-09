@@ -56,7 +56,7 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     //======================================= New add config =================================
 
     @ConfigFiled(field = "global.scheduler")
-    private int eventMeshTcpGlobalScheduler = 5;
+    private int eventMeshTcpGlobalScheduler = Math.max(Runtime.getRuntime().availableProcessors(), 4);
 
     @ConfigFiled(field = "tcp.taskHandleExecutorPoolSize")
     private int eventMeshTcpTaskHandleExecutorPoolSize = Runtime.getRuntime().availableProcessors();

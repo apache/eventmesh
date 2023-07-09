@@ -33,8 +33,8 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
+import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMetricsManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.PublisherService;
-import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -93,7 +93,7 @@ public class EventMeshGrpcServer {
 
     private final EventMeshServer eventMeshServer;
 
-    private EventMeshGrpcMonitor eventMeshGrpcMonitor;
+    private EventMeshGrpcMetricsManager eventMeshGrpcMetricsManager;
 
     public EventMeshGrpcServer(final EventMeshServer eventMeshServer, final EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshServer = eventMeshServer;
@@ -146,7 +146,7 @@ public class EventMeshGrpcServer {
             this.register();
         }
 
-        eventMeshGrpcMonitor.start();
+        eventMeshGrpcMetricsManager.start();
         log.info("---------------EventMeshGRPCServer running-------------------");
     }
 
@@ -166,7 +166,7 @@ public class EventMeshGrpcServer {
             this.unRegister();
         }
 
-        eventMeshGrpcMonitor.shutdown();
+        eventMeshGrpcMetricsManager.shutdown();
         log.info("---------------EventMeshGRPCServer stopped-------------------");
     }
 
@@ -240,8 +240,8 @@ public class EventMeshGrpcServer {
         return httpClientPool.get(RandomUtils.nextInt(size, 2 * size) % size);
     }
 
-    public EventMeshGrpcMonitor getMetricsMonitor() {
-        return eventMeshGrpcMonitor;
+    public EventMeshGrpcMetricsManager getMetricsManager() {
+        return eventMeshGrpcMetricsManager;
     }
 
     private void initThreadPool() {
@@ -286,12 +286,9 @@ public class EventMeshGrpcServer {
 
     private void initMetricsMonitor() throws Exception {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
-        Optional.ofNullable(eventMeshGrpcConfiguration.getEventMeshMetricsPluginType())
-            .ifPresent(
-                metricsPlugins -> metricsPlugins.forEach(
-                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
-        eventMeshGrpcMonitor = new EventMeshGrpcMonitor(this, metricsRegistries);
-        eventMeshGrpcMonitor.init();
+        Optional.ofNullable(eventMeshGrpcConfiguration.getEventMeshMetricsPluginType()).ifPresent(
+            metricsPlugins -> metricsPlugins.forEach(pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+        eventMeshGrpcMetricsManager = new EventMeshGrpcMetricsManager(this, metricsRegistries);
     }
 
     private void shutdownThreadPools() {
@@ -320,5 +317,9 @@ public class EventMeshGrpcServer {
 
     public Acl getAcl() {
         return acl;
+    }
+
+    public Server getServer() {
+        return server;
     }
 }

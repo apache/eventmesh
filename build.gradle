@@ -474,8 +474,6 @@ subprojects {
             dependency 'io.opentelemetry:opentelemetry-sdk:1.24.0'
             dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.24.0'
             dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.24.0-alpha'
-            //dependency 'io.prometheus:simpleclient:0.8.1'
-            //dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
             dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.24.0'
             dependency 'io.opentelemetry:opentelemetry-semconv:1.24.0-alpha'
             dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.24.0'

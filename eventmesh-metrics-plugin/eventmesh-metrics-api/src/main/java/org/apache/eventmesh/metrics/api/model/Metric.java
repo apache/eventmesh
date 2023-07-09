@@ -22,4 +22,11 @@ package org.apache.eventmesh.metrics.api.model;
  */
 public interface Metric {
 
+    void setInstrumentFurther(InstrumentFurther further);
+
+    InstrumentFurther getInstrumentFurther();
+
+    String getName();
+
+    InstrumentType getInstrumentType();
 }
