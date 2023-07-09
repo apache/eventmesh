@@ -26,8 +26,9 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * httpHandlerManager
+ * This class manages the registration of {@link HttpHandler} for an HttpServer.
  */
+
 public class HttpHandlerManager {
 
     private final List<HttpHandler> httpHandlers = new ArrayList<>();
@@ -36,6 +37,16 @@ public class HttpHandlerManager {
         this.httpHandlers.add(httpHandler);
     }
 
+    /**
+     * Registers multiple HTTP handlers to a given HttpServer.
+     * <p>
+     * Each HTTP handler is annotated with the @EventHttpHandler annotation,
+     * which specifies the path where the handler should be registered.
+     *
+     * @param server A HttpServer object that is bound to an IP address and port number
+     *               and listens for incoming TCP connections from clients on this address.
+     *               The registered HTTP handlers will be associated with this server.
+     */
     public void registerHttpHandler(HttpServer server) {
         httpHandlers.forEach(httpHandler -> {
             EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
