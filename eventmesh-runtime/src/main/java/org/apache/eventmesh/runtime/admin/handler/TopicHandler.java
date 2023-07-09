@@ -199,7 +199,7 @@ public class TopicHandler extends AbstractHttpHandler {
     /**
      * Handles the HTTP requests for {@code /topic}.
      * <p>
-     * It delegates the handling to {@code preflight()}, {@code get()}, {@code post()}, or {@code delete()} methods
+     * It delegates the handling to {@code preflight()}, {@code get()}, {@code post()} or {@code delete()} methods
      * based on the request method type (OPTIONS, GET, POST or DELETE).
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
