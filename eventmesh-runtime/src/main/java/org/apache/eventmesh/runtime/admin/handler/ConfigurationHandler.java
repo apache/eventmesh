@@ -41,8 +41,18 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * The config handler
+ * This class handles the {@code /configuration} endpoint,
+ * corresponding to the {@code eventmesh-dashboard} path {@code /}.
+ * <p>
+ * This handler is responsible for retrieving the current configuration information of the EventMesh node,
+ * including service name, service environment, and listening ports for various protocols.
+ * <p>
+ * It is an implementation of the {@link AbstractHttpHandler} class
+ * and the {@link #handle} method is implemented by the HttpHandler.
+ *
+ * @see com.sun.net.httpserver.HttpHandler
  */
+
 @Slf4j
 @EventHttpHandler(path = "/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
@@ -51,6 +61,15 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
+    /**
+     * Constructs a new ConfigurationHandler with the provided configurations and HTTP handler manager.
+     *
+     * @param eventMeshTCPConfiguration the TCP configuration for EventMesh
+     * @param eventMeshHTTPConfiguration the HTTP configuration for EventMesh
+     * @param eventMeshGrpcConfiguration the gRPC configuration for EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public ConfigurationHandler(
         EventMeshTCPConfiguration eventMeshTCPConfiguration,
         EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
@@ -64,7 +83,13 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * OPTIONS /configuration
+     * Handles the OPTIONS request for {@code /configuration}.
+     * <p>
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object
+     * and sends a 200 status code.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
@@ -77,7 +102,12 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /config Return a response that contains the EventMesh configuration
+     * Handles the GET request for {@code /configuration}.
+     * <p>
+     * This method retrieves the EventMesh configuration information and returns it as a JSON response.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
@@ -123,6 +153,15 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         }
     }
 
+    /**
+     * Handles the HTTP requests for {@code /configuration}.
+     * <p>
+     * It delegates the handling to {@code preflight()} or {@code get()} methods
+     * based on the request method type (OPTIONS or GET).
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
