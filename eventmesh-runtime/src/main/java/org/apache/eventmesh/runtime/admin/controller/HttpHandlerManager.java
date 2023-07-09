@@ -26,7 +26,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * This class manages the registration of {@link HttpHandler} for an {@link HttpServer}.
+ * This class manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+ * for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
  */
 
 public class HttpHandlerManager {
