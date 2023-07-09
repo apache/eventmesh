@@ -26,9 +26,9 @@ import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
 import org.apache.eventmesh.runtime.metrics.tcp.TcpMetrics;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;

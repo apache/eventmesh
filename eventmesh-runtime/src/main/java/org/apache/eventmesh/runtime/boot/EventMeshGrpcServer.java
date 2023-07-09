@@ -33,8 +33,8 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
-import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMetricsManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.PublisherService;
+import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMetricsManager;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import org.apache.commons.lang3.RandomUtils;

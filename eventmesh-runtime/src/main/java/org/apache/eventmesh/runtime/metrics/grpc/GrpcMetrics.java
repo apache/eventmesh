@@ -83,7 +83,7 @@ public class GrpcMetrics {
 
         InstrumentFurther furtherTopic = new InstrumentFurther();
         furtherTopic.setUnit(MetricInstrumentUnit.SINGLETON);
-        furtherTopic.setDescription("Number of TCP client subscribe for topic");
+        furtherTopic.setDescription("Number of grpc client subscribe for topic");
         furtherTopic.setName(GRPC_METRICS_NAME_PREFIX + "sub.topic.num");
         subTopicGauge = new ObservableLongGaugeMetric(furtherTopic, METRIC_NAME, buildSubTopicSupplier());
         subTopicGauge.putAll(commonAttributes);
