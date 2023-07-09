@@ -46,11 +46,8 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * This handler is responsible for retrieving the current configuration information of the EventMesh node,
  * including service name, service environment, and listening ports for various protocols.
- * <p>
- * It is an implementation of the {@link AbstractHttpHandler} class
- * and the {@link #handle} method is implemented by the HttpHandler.
  *
- * @see com.sun.net.httpserver.HttpHandler
+ * @see AbstractHttpHandler
  */
 
 @Slf4j
@@ -83,10 +80,10 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the OPTIONS request for {@code /configuration}.
+     * Handles the OPTIONS request first for {@code /configuration}.
      * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object
-     * and sends a 200 status code.
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
+     * the {@link HttpExchange} object and sends a 200 status code.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -158,6 +155,8 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      * <p>
      * It delegates the handling to {@code preflight()} or {@code get()} methods
      * based on the request method type (OPTIONS or GET).
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
