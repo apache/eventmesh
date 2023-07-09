@@ -58,6 +58,14 @@ public class MetricsHandler extends AbstractHttpHandler {
     private final HttpSummaryMetrics httpSummaryMetrics;
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
+    /**
+     * Constructs a new instance with the provided EventMesh server instance and HTTP handler manager.
+     *
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
+     * @param eventMeshTcpServer the TCP server instance of EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshTCPServer eventMeshTcpServer,
         HttpHandlerManager httpHandlerManager) {

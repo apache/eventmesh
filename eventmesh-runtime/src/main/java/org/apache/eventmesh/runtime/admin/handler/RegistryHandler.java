@@ -60,7 +60,7 @@ public class RegistryHandler extends AbstractHttpHandler {
     private final Registry eventMeshRegistry;
 
     /**
-     * Constructs a new {@link RegistryHandler} instance with the specified {@link Registry} and {@link HttpHandlerManager}.
+     * Constructs a new instance with the specified {@link Registry} and {@link HttpHandlerManager}.
      *
      * @param eventMeshRegistry  The {@link Registry} instance used for retrieving EventMesh cluster information.
      * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}

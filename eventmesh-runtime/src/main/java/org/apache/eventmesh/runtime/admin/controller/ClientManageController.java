@@ -83,10 +83,10 @@ public class ClientManageController {
     /**
      * Constructs a new ClientManageController with the given server instance.
      *
-     * @param eventMeshTCPServer the TCP server for EventMesh
-     * @param eventMeshHTTPServer the HTTP server for EventMesh
-     * @param eventMeshGrpcServer the gRPC server for EventMesh
-     * @param eventMeshRegistry the registry adaptor for EventMesh
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
+     * @param eventMeshGrpcServer the gRPC server instance of EventMesh
+     * @param eventMeshRegistry the registry adaptor of EventMesh
      */
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
         EventMeshHTTPServer eventMeshHTTPServer,

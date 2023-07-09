@@ -59,7 +59,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     /**
-     * Constructs a new ConfigurationHandler with the provided configurations and HTTP handler manager.
+     * Constructs a new instance with the provided configurations and HTTP handler manager.
      *
      * @param eventMeshTCPConfiguration the TCP configuration for EventMesh
      * @param eventMeshHTTPConfiguration the HTTP configuration for EventMesh
