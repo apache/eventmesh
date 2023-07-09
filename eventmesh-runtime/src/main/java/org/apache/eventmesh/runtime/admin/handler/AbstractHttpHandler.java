@@ -24,8 +24,12 @@ import com.sun.net.httpserver.HttpHandler;
 import lombok.Data;
 
 /**
- * AbstractHttpHandler
+ * An abstract class that implements the {@link HttpHandler} interface
+ * and provides basic functionality for HTTP request handling.
+ * <p>
+ * Subclasses should extend this class to implement specific HTTP request handling logic.
  */
+
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 

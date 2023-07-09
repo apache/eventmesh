@@ -33,6 +33,11 @@ public class HttpHandlerManager {
 
     private final List<HttpHandler> httpHandlers = new ArrayList<>();
 
+    /**
+     * Registers an HTTP handler.
+     *
+     * @param httpHandler The {@link HttpHandler} to be registered.
+     */
     public void register(HttpHandler httpHandler) {
         this.httpHandlers.add(httpHandler);
     }
