@@ -64,9 +64,9 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshHTTPServer  the HTTP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler} for an
+     *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public HTTPClientHandler(
         EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
@@ -105,14 +105,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      */
     void delete(HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Parse the request body string into a DeleteHTTPClientRequest object
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
             String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
 
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+                // Find the client that matches the url to be deleted
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
+            // Set the response headers and send a 200 status code empty response
             httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
