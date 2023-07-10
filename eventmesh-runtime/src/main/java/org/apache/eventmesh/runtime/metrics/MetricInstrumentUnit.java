@@ -30,4 +30,6 @@ public abstract class MetricInstrumentUnit {
 
     public static final String MILLISECONDS = "ms";
 
+    public static final String PERCENT = "%";
+
 }

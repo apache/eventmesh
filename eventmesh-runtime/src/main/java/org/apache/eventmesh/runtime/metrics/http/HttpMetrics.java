@@ -290,7 +290,7 @@ public class HttpMetrics {
 
         //avg body decode cost time of http
         InstrumentFurther furtherHttpDecode = new InstrumentFurther();
-        furtherHttpDecode.setUnit(MetricInstrumentUnit.TPS);
+        furtherHttpDecode.setUnit(MetricInstrumentUnit.MILLISECONDS);
         furtherHttpDecode.setDescription("Avg body decode cost time of http");
         furtherHttpDecode.setName(HTTP_METRICS_NAME_PREFIX + "body.decode.cost.avg");
         avgHttpBodyDecodeCostMetric = new ObservableDoubleGaugeMetric(furtherHttpDecode, METRIC_NAME, () -> this.avgHTTPBodyDecodeCost());
@@ -353,7 +353,7 @@ public class HttpMetrics {
 
         //Send batch message fail rate.
         InstrumentFurther furtherSumBatchFailRate = new InstrumentFurther();
-        furtherSumBatchFailRate.setUnit(MetricInstrumentUnit.TPS);
+        furtherSumBatchFailRate.setUnit(MetricInstrumentUnit.PERCENT);
         furtherSumBatchFailRate.setDescription("Send batch message fail rate.");
         furtherSumBatchFailRate.setName(HTTP_METRICS_NAME_PREFIX + "batch.send.message.fail.rate");
         sumBatchFailRateMetric = new ObservableDoubleGaugeMetric(furtherSumBatchFailRate, METRIC_NAME, () -> this.getSendBatchMsgFailRate());
@@ -378,9 +378,9 @@ public class HttpMetrics {
         avgSendMsgTpsMetric.putAll(labelMap);
         metrics.put("avgSendMsgTpsMetric", avgSendMsgTpsMetric);
 
-        //Send batch message fail rate.
+        //Send message fail rate.
         InstrumentFurther furtherSumFailRate = new InstrumentFurther();
-        furtherSumFailRate.setUnit(MetricInstrumentUnit.TPS);
+        furtherSumFailRate.setUnit(MetricInstrumentUnit.PERCENT);
         furtherSumFailRate.setDescription("Send message fail rate.");
         furtherSumFailRate.setName(HTTP_METRICS_NAME_PREFIX + "send.message.fail.rate");
         sumFailRateMetric = new ObservableDoubleGaugeMetric(furtherSumFailRate, METRIC_NAME, () -> this.getSendBatchMsgFailRate());
@@ -399,7 +399,7 @@ public class HttpMetrics {
         //Avg of push message tps.
         InstrumentFurther furtherAvgPushMsgTps = new InstrumentFurther();
         furtherAvgPushMsgTps.setUnit(MetricInstrumentUnit.TPS);
-        furtherAvgPushMsgTps.setDescription("Max of push message tps.");
+        furtherAvgPushMsgTps.setDescription("Avg of push message tps.");
         furtherAvgPushMsgTps.setName(HTTP_METRICS_NAME_PREFIX + "push.message.tps.avg");
         avgPushMsgTpsMetric = new ObservableDoubleGaugeMetric(furtherAvgPushMsgTps, METRIC_NAME, () -> this.avgPushMsgTPS());
         avgPushMsgTpsMetric.putAll(labelMap);
@@ -407,7 +407,7 @@ public class HttpMetrics {
 
         //Http push message fail rate.
         InstrumentFurther furtherPushSumFailRate = new InstrumentFurther();
-        furtherPushSumFailRate.setUnit(MetricInstrumentUnit.TPS);
+        furtherPushSumFailRate.setUnit(MetricInstrumentUnit.PERCENT);
         furtherPushSumFailRate.setDescription("Http push message fail rate.");
         furtherPushSumFailRate.setName(HTTP_METRICS_NAME_PREFIX + "push.message.fail.rate");
         pushSumFailRateMetric = new ObservableDoubleGaugeMetric(furtherPushSumFailRate, METRIC_NAME, () -> this.getHttpPushMsgFailRate());
@@ -416,7 +416,7 @@ public class HttpMetrics {
 
         //Max of http push latency.
         InstrumentFurther furtherMaxClientLatency = new InstrumentFurther();
-        furtherMaxClientLatency.setUnit(MetricInstrumentUnit.TPS);
+        furtherMaxClientLatency.setUnit(MetricInstrumentUnit.MILLISECONDS);
         furtherMaxClientLatency.setDescription("Max of http push latency.");
         furtherMaxClientLatency.setName(HTTP_METRICS_NAME_PREFIX + "push.latency.max");
         maxClientLatencyMetric = new ObservableDoubleGaugeMetric(furtherMaxClientLatency, METRIC_NAME, () -> this.maxHTTPPushLatency());
@@ -425,7 +425,7 @@ public class HttpMetrics {
 
         //Avg of http push latency.
         InstrumentFurther furtherAvgClientLatency = new InstrumentFurther();
-        furtherAvgClientLatency.setUnit(MetricInstrumentUnit.TPS);
+        furtherAvgClientLatency.setUnit(MetricInstrumentUnit.MILLISECONDS);
         furtherAvgClientLatency.setDescription("Avg of http push latency.");
         furtherAvgClientLatency.setName(HTTP_METRICS_NAME_PREFIX + "push.latency.avg");
         avgClientLatencyMetric = new ObservableDoubleGaugeMetric(furtherAvgClientLatency, METRIC_NAME, () -> this.avgHTTPPushLatency());
@@ -434,7 +434,7 @@ public class HttpMetrics {
 
         //Size of batch message queue.
         InstrumentFurther furtherBatchMsgQ = new InstrumentFurther();
-        furtherBatchMsgQ.setUnit(MetricInstrumentUnit.TPS);
+        furtherBatchMsgQ.setUnit(MetricInstrumentUnit.SINGLETON);
         furtherBatchMsgQ.setDescription("Size of batch message queue.");
         furtherBatchMsgQ.setName(HTTP_METRICS_NAME_PREFIX + "batch.message.queue.size");
         batchMsgQMetric = new ObservableLongGaugeMetric(furtherBatchMsgQ, METRIC_NAME, () -> this.getBatchMsgQueueSize());
@@ -443,7 +443,7 @@ public class HttpMetrics {
 
         //Size of send message queue.
         InstrumentFurther furtherSendMsgQ = new InstrumentFurther();
-        furtherSendMsgQ.setUnit(MetricInstrumentUnit.TPS);
+        furtherSendMsgQ.setUnit(MetricInstrumentUnit.SINGLETON);
         furtherSendMsgQ.setDescription("Size of send message queue.");
         furtherSendMsgQ.setName(HTTP_METRICS_NAME_PREFIX + "send.message.queue.size");
         sendMsgQMetric = new ObservableLongGaugeMetric(furtherSendMsgQ, METRIC_NAME, () -> this.getSendMsgQueueSize());
@@ -452,7 +452,7 @@ public class HttpMetrics {
 
         //Size of push message queue.
         InstrumentFurther furtherPushMsgQ = new InstrumentFurther();
-        furtherPushMsgQ.setUnit(MetricInstrumentUnit.TPS);
+        furtherPushMsgQ.setUnit(MetricInstrumentUnit.SINGLETON);
         furtherPushMsgQ.setDescription("Size of push message queue.");
         furtherPushMsgQ.setName(HTTP_METRICS_NAME_PREFIX + "push.message.queue.size");
         pushMsgQMetric = new ObservableLongGaugeMetric(furtherPushMsgQ, METRIC_NAME, () -> this.getPushMsgQueueSize());
@@ -461,7 +461,7 @@ public class HttpMetrics {
 
         //Size of  http retry queue.
         InstrumentFurther furtherHttpRetryQ = new InstrumentFurther();
-        furtherHttpRetryQ.setUnit(MetricInstrumentUnit.TPS);
+        furtherHttpRetryQ.setUnit(MetricInstrumentUnit.SINGLETON);
         furtherHttpRetryQ.setDescription("Size of http retry queue.");
         furtherHttpRetryQ.setName(HTTP_METRICS_NAME_PREFIX + "retry.queue.size");
         httpRetryQMetric = new ObservableLongGaugeMetric(furtherHttpRetryQ, METRIC_NAME, () -> this.getHttpRetryQueueSize());
@@ -471,7 +471,7 @@ public class HttpMetrics {
 
         //Avg of batch send message cost.
         InstrumentFurther furtherBatchAvgSend2MQCost = new InstrumentFurther();
-        furtherBatchAvgSend2MQCost.setUnit(MetricInstrumentUnit.TPS);
+        furtherBatchAvgSend2MQCost.setUnit(MetricInstrumentUnit.MILLISECONDS);
         furtherBatchAvgSend2MQCost.setDescription("Avg of batch send message cost.");
         furtherBatchAvgSend2MQCost.setName(HTTP_METRICS_NAME_PREFIX + "batch.send.message.cost.avg");
         batchAvgSend2MQCostMetric = new ObservableDoubleGaugeMetric(furtherBatchAvgSend2MQCost, METRIC_NAME, () -> this.avgBatchSendMsgCost());
