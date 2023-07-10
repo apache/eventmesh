@@ -33,6 +33,19 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the HTTP requests of {@code /webhook/insertWebHookConfig} endpoint
+ * to insert WebHook configurations.
+ * <p>
+ * It calls the
+ * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#insertWebHookConfig(WebHookConfig) insertWebHookConfig}
+ * implementation method of
+ * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#insertWebHookConfig WebHookConfigOperation}
+ * interface to insert configurations into the system.
+ *
+ * @see AbstractHttpHandler
+ */
+
 @SuppressWarnings("restriction")
 @Slf4j
 @EventHttpHandler(path = "/webhook/insertWebHookConfig")
@@ -40,11 +53,28 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
 
     private final WebHookConfigOperation operation;
 
+    /**
+     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     *
+     * @param operation the WebHookConfigOperation implementation used to insert the WebHook config
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public InsertWebHookConfigHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
     }
 
+    /**
+     * Handles the HTTP requests by inserting a WebHook configuration.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     *
+     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#insertWebHookConfig(WebHookConfig)
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
@@ -54,6 +84,7 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Insert the WebHookConfig and get the operation result code
             Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
