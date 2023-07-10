@@ -78,8 +78,9 @@ public class GrpcRetryer {
                     });
                 }
             } catch (Exception e) {
-                if (e instanceof InterruptedException)
+                if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
+                }
                 log.error("grpc-retry-dispatcher error!", e);
             }
         }, "grpc-retry-dispatcher");
