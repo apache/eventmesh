@@ -33,6 +33,19 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the HTTP requests of {@code /webhook/updateWebHookConfig} endpoint
+ * to update WebHook configurations.
+ * <p>
+ * It calls the
+ * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#updateWebHookConfig(WebHookConfig) updateWebHookConfig}
+ * implementation method of
+ * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#updateWebHookConfig WebHookConfigOperation}
+ * interface to update configurations of the system.
+ *
+ * @see AbstractHttpHandler
+ */
+
 @SuppressWarnings("restriction")
 @Slf4j
 @EventHttpHandler(path = "/webhook/updateWebHookConfig")
@@ -40,11 +53,28 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
 
     private final WebHookConfigOperation operation;
 
+    /**
+     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     *
+     * @param operation the WebHookConfigOperation implementation used to update the WebHook config
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public UpdateWebHookConfigHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
     }
 
+    /**
+     * Handles the HTTP requests by updating a WebHook configuration.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     *
+     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#updateWebHookConfig(WebHookConfig)
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
@@ -54,6 +84,7 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Update the WebHookConfig and get the operation result code
             Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
