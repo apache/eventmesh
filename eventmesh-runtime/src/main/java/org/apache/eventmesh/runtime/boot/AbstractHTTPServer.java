@@ -620,6 +620,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         }
 
         final long bodyDecodeStart = System.currentTimeMillis();
+        byte[] requestBody = null;
 
         final FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
         final Map<String, Object> bodyMap = new HashMap<>();
@@ -636,8 +637,16 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     bodyMap.putAll(Objects.requireNonNull(JsonUtils.parseTypeReferenceObject(new String(body, Constants.DEFAULT_CHARSET),
                         new TypeReference<Map<String, Object>>() {
                         })));
+                    requestBody = JsonUtils.toJSONString(bodyMap).getBytes(StandardCharsets.UTF_8);
                 }
-            } else {
+            } else if (StringUtils.equals(httpRequest.headers().get("Content-Type"), "application/x-protobuf")) {
+                int length = fullHttpRequest.content().readableBytes();
+                if (length > 0) {
+                    byte[] body = new byte[length];
+                    fullHttpRequest.content().readBytes(body);
+                    requestBody = body;
+                }
+            }else {
                 final HttpPostRequestDecoder decoder =
                     new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
                 for (final InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
@@ -647,13 +656,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     }
                 }
                 decoder.destroy();
+                requestBody = JsonUtils.toJSONString(bodyMap).getBytes(StandardCharsets.UTF_8);
             }
 
         } else {
             throw new MethodNotSupportedException("UnSupported Method " + fullHttpRequest.method());
         }
 
-        httpEventWrapper.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(StandardCharsets.UTF_8));
+        httpEventWrapper.setBody(requestBody);
 
         metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
 
