@@ -91,6 +91,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         currPushUrl = getUrl();
 
         if (StringUtils.isBlank(currPushUrl)) {
+            LOGGER.warn("tryHTTPRequest fail, getUrl is null, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
+                this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId());
             return;
         }
 
@@ -144,7 +146,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             }
 
         } catch (Exception ex) {
-            LOGGER.error("Failed to convert EventMeshMessage from CloudEvent", ex);
+            LOGGER.warn("cloudevent to HttpEventWrapper occur except, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
+                this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId(), ex);
             return;
         }
 
@@ -207,17 +210,14 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     try {
                         res = EntityUtils.toString(response.getEntity(), Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                     } catch (IOException e) {
+                        LOGGER.warn("handleResponse exception", e);
                         handleMsgContext.finish();
                         return new Object();
                     }
                     ClientRetCode result = processResponseContent(res);
-                    if (MESSAGE_LOGGER.isInfoEnabled()) {
-                        MESSAGE_LOGGER.info(
-                            "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}",
+                    MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                    }
                     switch (result) {
                         case OK:
                         case REMOTE_OK:
