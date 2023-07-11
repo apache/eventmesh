@@ -117,8 +117,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-        String url = requestBodyMap.get(EventMeshConstants.URL).toString();
-        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
+//        String url = requestBodyMap.get(EventMeshConstants.URL).toString();
         String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // SubscriptionItem
@@ -146,32 +145,32 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // validate URL
-        try {
-            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
-                httpLogger.error("subscriber url {} is not valid", url);
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                    responseBodyMap, null);
-                return;
-            }
-        } catch (Exception e) {
-            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
-            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
-            return;
-        }
-
-        CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
-        // obtain webhook delivery agreement for Abuse Protection
-        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
-            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
-
-        if (!isWebhookAllowed) {
-            httpLogger.error("subscriber url {} is not allowed by the target system", url);
-            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
-            return;
-        }
+//        try {
+//            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
+//                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
+//                httpLogger.error("subscriber url {} is not valid", url);
+//                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+//                    responseBodyMap, null);
+//                return;
+//            }
+//        } catch (Exception e) {
+//            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
+//            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+//                responseBodyMap, null);
+//            return;
+//        }
+//
+//        CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
+//        // obtain webhook delivery agreement for Abuse Protection
+//        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
+//            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
+//
+//        if (!isWebhookAllowed) {
+//            httpLogger.error("subscriber url {} is not allowed by the target system", url);
+//            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+//                responseBodyMap, null);
+//            return;
+//        }
 
         long startTime = System.currentTimeMillis();
         try {
@@ -187,11 +186,12 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String targetMesh = requestBodyMap.get("remoteMesh") == null ? "" : requestBodyMap.get("remoteMesh").toString();
 
             // Get mesh address from registry
-            String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
+            String meshAddress = getTargetMesh(eventMeshHttpConfiguration.getMeshGroup(), subscriptionList);
             if (StringUtils.isNotBlank(meshAddress)) {
                 targetMesh = meshAddress;
             }
 
+            CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
@@ -213,10 +213,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
-            httpLogger.error(
-                "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                    + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                JsonUtils.toJSONString(subscriptionList), url, e);
+            httpLogger.error("subscribe Remote|cost={}ms|topic={}", endTime - startTime,
+                JsonUtils.toJSONString(subscriptionList), e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
                 responseBodyMap, null);
         }
