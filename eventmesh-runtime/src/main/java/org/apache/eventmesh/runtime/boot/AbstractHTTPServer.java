@@ -227,6 +227,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 } catch (Exception ex) {
                     log.error("HTTPServer shutdown error!", ex);
                 }
+                System.exit(-1);
             }
         };
 
