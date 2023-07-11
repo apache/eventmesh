@@ -58,7 +58,7 @@ public class HttpRequestProtocolResolver {
                 HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
             String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT,
-                HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
+                "").toString();
 
             // with attributes
             builder.withId(id)
