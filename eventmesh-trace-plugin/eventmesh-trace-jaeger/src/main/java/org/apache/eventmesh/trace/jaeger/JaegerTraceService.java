@@ -34,16 +34,18 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Config(field = "jaegerConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
 public class JaegerTraceService extends AbstractTraceService {
 
     /**
      * Unified configuration class corresponding to jaeger.properties
      */
+    @Getter
+    @Setter
     private transient JaegerConfiguration jaegerConfiguration;
 
     @Override
