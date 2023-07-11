@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.protocol.http.resolver;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
@@ -30,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import io.cloudevents.CloudEvent;
@@ -58,14 +56,15 @@ public class HttpRequestProtocolResolver {
                 HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
             String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT,
-                "").toString();
+                HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
+            String dataContentType = requestHeaderMap.getOrDefault(HttpProtocolConstant.DATA_CONTENT_TYPE, HttpProtocolConstant.APPLICATION_JSON).toString();
             // with attributes
             builder.withId(id)
                 .withType(type)
                 .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
                 .withSubject(subject)
-                .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
+                .withDataContentType(dataContentType);
 
             // with extensions
             for (Map.Entry<String, Object> extension : sysHeaderMap.entrySet()) {
@@ -81,19 +80,24 @@ public class HttpRequestProtocolResolver {
 
             byte[] requestBody = httpEventWrapper.getBody();
 
-            Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody, Constants.DEFAULT_CHARSET),
-                new TypeReference<HashMap<String, Object>>() {
+            if (StringUtils.equals(dataContentType, HttpProtocolConstant.APPLICATION_JSON)) {
+                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
                 });
 
-            String requestURI = httpEventWrapper.getRequestURI();
+                String requestURI = httpEventWrapper.getRequestURI();
 
-            Map<String, Object> data = new HashMap<>();
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
-            // with data
-            return builder.withData(Objects.requireNonNull(JsonUtils.toJSONString(data)).getBytes(StandardCharsets.UTF_8)).build();
+                Map<String, Object> data = new HashMap<>();
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
+                // with data
+                builder = builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8));
+            } else if (StringUtils.equals(dataContentType, HttpProtocolConstant.PROTOBUF)) {
+                // with data
+                builder = builder.withData(requestBody);
+            }
+            return builder.build();
         } catch (Exception e) {
             throw new ProtocolHandleException(e.getMessage(), e);
         }
