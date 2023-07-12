@@ -40,7 +40,7 @@ jobs:
           close-issue-message: 'Considering the lack of activity, this issue will now be closed as stale. Thank you for your contribution.'
           close-pr-message: 'Considering the lack of activity, this pull request will now be closed as stale. Thank you for your contribution.'
           close-issue-reason: not_planned
-          exempt-issue-labels: 'pinned,discussion,help wanted'
+          exempt-issue-labels: 'pinned,discussion,help wanted,weopen-star,GLCC,summer of code'
           exempt-pr-labels: 'help wanted'
           # exempt-assignees: '' # Assignees on issues/PRs exempted from stale
           # exempt-all-assignees: true # Exempt all issues/PRs with assignees from stale
