@@ -62,7 +62,7 @@ public class WebhookUtil {
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
             String allowedOrigin = null;
 
-            if(response.getLastHeader(ALLOWED_ORIGIN_HEADER) != null){
+            if (response.getLastHeader(ALLOWED_ORIGIN_HEADER) != null) {
                 allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             }
             return StringUtils.isEmpty(allowedOrigin)
