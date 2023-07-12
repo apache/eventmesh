@@ -374,25 +374,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     zipkin-reporter 2.16.3: https://github.com/openzipkin/zipkin-reporter-java, Apache 2.0
     zipkin-sender-okhttp3 2.16.3: https://github.com/openzipkin/zipkin-reporter-java, Apache 2.0
     zookeeper 3.4.6: https://github.com/apache/zookeeper, Apache 2.0
-    cloud.google.com/go v0.34.0 Apache-2.0
-    github.com/OneOfOne/xxhash v1.2.2 Apache-2.0
-    github.com/census-instrumentation/opencensus-proto v0.2.1 Apache-2.0
-    github.com/cloudevents/sdk-go/v2 v2.6.0 Apache-2.0
-    github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 Apache-2.0
-    github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1 Apache-2.0
-    github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021 Apache-2.0
-    github.com/envoyproxy/protoc-gen-validate v0.1.0 Apache-2.0
-    github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b Apache-2.0
-    github.com/golang/mock v1.1.1 Apache-2.0
-    github.com/google/gofuzz v1.0.0 Apache-2.0
-    github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 Apache-2.0
-    github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 Apache-2.0
-    github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 Apache-2.0
-    go.opentelemetry.io/proto/otlp v0.7.0 Apache-2.0
-    google.golang.org/appengine v1.4.0 Apache-2.0
-    google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 Apache-2.0
-    google.golang.org/grpc v1.45.0 Apache-2.0
-    gopkg.in/yaml.v2 v2.3.0 Apache-2.0
 
 ========================================================================
 BSD licenses
@@ -450,27 +431,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT
     reactive-streams 1.0.3: https://github.com/reactive-streams/reactive-streams-jvm, MIT
     slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT
-    github.com/BurntSushi/toml v0.3.1 MIT
-    github.com/antihax/optional v1.0.0 MIT
-    github.com/cespare/xxhash v1.1.0 MIT
-    github.com/cespare/xxhash/v2 v2.1.1 MIT
-    github.com/client9/misspell v0.3.4 MIT
-    github.com/creack/pty v1.1.9 MIT
-    github.com/deckarep/golang-set v1.7.1
-    github.com/ghodss/yaml v1.0.0 MIT
-    github.com/json-iterator/go v1.1.10 MIT
-    github.com/kr/pty v1.1.1 MIT
-    github.com/kr/text v0.2.0 MIT
-    github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e MIT
-    github.com/panjf2000/ants v1.3.0 MIT
-    github.com/sony/sonyflake v1.0.0 MIT
-    github.com/stretchr/objx v0.1.1 MIT
-    github.com/stretchr/testify v1.7.0 MIT
-    github.com/valyala/bytebufferpool v1.0.0 MIT
-    go.uber.org/atomic v1.4.0 MIT
-    go.uber.org/multierr v1.1.0 MIT
-    go.uber.org/zap v1.10.0 MIT
-    honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc MIT
 
 ========================================================================
 BSD-3-Clause licenses
@@ -480,32 +440,6 @@ The following components are provided under the BSD-3-Clause License. See projec
 The text of each license is also included at licenses/license-[project].txt.
 
     jline 0.9.94: https://github.com/jline, BSD-3-Clause
-    github.com/golang/protobuf v1.5.2 BSD-3-Clause
-    github.com/google/go-cmp v0.5.5 BSD-3-Clause
-    github.com/google/uuid v1.3.0 BSD-3-Clause
-    github.com/grpc-ecosystem/grpc-gateway v1.16.0 BSD-3-Clause
-    github.com/pmezard/go-difflib v1.0.0 BSD-3-Clause
-    github.com/rogpeppe/fastuuid v1.2.0 BSD-3-Clause
-    github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72 BSD-3-Clause
-    golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 BSD-3-Clause
-    golang.org/x/exp v0.0.0-20190121172915-509febef88a4 BSD-3-Clause
-    golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 BSD-3-Clause
-    golang.org/x/net v0.0.0-20200822124328-c89045814202 BSD-3-Clause
-    golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d BSD-3-Clause
-    golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e BSD-3-Clause
-    golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd BSD-3-Clause
-    golang.org/x/text v0.3.0 BSD-3-Clause
-    golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 BSD-3-Clause
-    golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 BSD-3-Clause
-
-========================================================================
-ISC licenses
-========================================================================
-
-The following components are provided under the ISC License. See project link for details.
-The text of each license is also included at licenses/license-[project].txt.
-
-    github.com/davecgh/go-spew v1.1.1 ISC
 
 ========================================================================
 BSD-2-Clause licenses
@@ -516,17 +450,6 @@ The text of each license is also included at licenses/license-[project].txt.
 
     jodd-bean 5.1.6: https://github.com/oblac/jodd-util, BSD-2-Clause
     jodd-core 5.1.6: https://github.com/oblac/jodd, BSD-2-Clause
-    github.com/pkg/errors v0.9.1 BSD-2-Clause
-    gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f BSD-2-Clause
-
-========================================================================
-MIT and Apache licenses
-========================================================================
-
-The following components are provided under the MIT and Apache License. See project link for details.
-The text of each license is also included at licenses/license-[project].txt.
-
-    gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c MIT and Apache
 
 ========================================================================
 MPL & GPL & Apache licenses
