@@ -142,7 +142,7 @@ public class HttpSummaryMetrics implements Metric {
     }
 
     public void snapshotHTTPTPS() {
-        try{
+        try {
             lock.lock();
             Integer tps = httpRequestPerSecond.intValue();
             httpRequestTPSSnapshots.add(tps);
@@ -150,27 +150,27 @@ public class HttpSummaryMetrics implements Metric {
             if (httpRequestTPSSnapshots.size() > STATIC_PERIOD / 1000) {
                 httpRequestTPSSnapshots.removeFirst();
             }
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
 
     public float maxHTTPTPS() {
-        try{
+        try {
             lock.lock();
             float tps = Collections.max(httpRequestTPSSnapshots);
             return tps;
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
 
     public float avgHTTPTPS() {
-        try{
+        try {
             lock.lock();
             float tps = avg(httpRequestTPSSnapshots);
             return tps;
-        }finally {
+        } finally {
             lock.unlock();
         }
     }

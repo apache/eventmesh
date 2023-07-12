@@ -58,7 +58,8 @@ public class HttpRequestProtocolResolver {
             String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT,
                 HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
-            String dataContentType = requestHeaderMap.getOrDefault(HttpProtocolConstant.DATA_CONTENT_TYPE, HttpProtocolConstant.APPLICATION_JSON).toString();
+            String dataContentType = requestHeaderMap.getOrDefault(HttpProtocolConstant.DATA_CONTENT_TYPE,
+                HttpProtocolConstant.APPLICATION_JSON).toString();
             // with attributes
             builder.withId(id)
                 .withType(type)
@@ -81,8 +82,8 @@ public class HttpRequestProtocolResolver {
             byte[] requestBody = httpEventWrapper.getBody();
 
             if (StringUtils.equals(dataContentType, HttpProtocolConstant.APPLICATION_JSON)) {
-                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
-                });
+                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
+                    new TypeReference<HashMap<String, Object>>() {});
 
                 String requestURI = httpEventWrapper.getRequestURI();
 

@@ -33,7 +33,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.AbstractEventProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -117,7 +116,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-//        String url = requestBodyMap.get(EventMeshConstants.URL).toString();
+        //String url = requestBodyMap.get(EventMeshConstants.URL).toString();
         String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // SubscriptionItem
@@ -145,32 +144,32 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // validate URL
-//        try {
-//            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-//                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
-//                httpLogger.error("subscriber url {} is not valid", url);
-//                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-//                    responseBodyMap, null);
-//                return;
-//            }
-//        } catch (Exception e) {
-//            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
-//            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-//                responseBodyMap, null);
-//            return;
-//        }
-//
-//        CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
-//        // obtain webhook delivery agreement for Abuse Protection
-//        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
-//            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
-//
-//        if (!isWebhookAllowed) {
-//            httpLogger.error("subscriber url {} is not allowed by the target system", url);
-//            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-//                responseBodyMap, null);
-//            return;
-//        }
+        //        try {
+        //            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
+        //                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
+        //                httpLogger.error("subscriber url {} is not valid", url);
+        //                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        //                    responseBodyMap, null);
+        //                return;
+        //            }
+        //        } catch (Exception e) {
+        //            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
+        //            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        //                responseBodyMap, null);
+        //            return;
+        //        }
+        //
+        //        CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
+        //        // obtain webhook delivery agreement for Abuse Protection
+        //        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
+        //            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
+        //
+        //        if (!isWebhookAllowed) {
+        //            httpLogger.error("subscriber url {} is not allowed by the target system", url);
+        //            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        //                responseBodyMap, null);
+        //            return;
+        //        }
 
         long startTime = System.currentTimeMillis();
         try {

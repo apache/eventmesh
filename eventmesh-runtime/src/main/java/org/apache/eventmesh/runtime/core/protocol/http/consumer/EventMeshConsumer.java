@@ -132,9 +132,11 @@ public class EventMeshConsumer {
                 if (currentTopicConfig == null) {
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
-                        log.warn("no ConsumerGroupTopicConf found, sendMessageBack success, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}", consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId);
+                        log.warn("no ConsumerGroupTopicConf found, sendMessageBack success, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                            consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId);
                     } catch (Exception ex) {
-                        log.warn("sendMessageBack fail, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}", consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId, ex);
+                        log.warn("sendMessageBack fail, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                            consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId, ex);
                     }
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     return;

@@ -146,7 +146,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             }
 
         } catch (Exception ex) {
-            LOGGER.warn("cloudevent to HttpEventWrapper occur except, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
+            LOGGER.warn("cloudevent to HttpEventWrapper occur except, group:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                this.handleMsgContext.getConsumerGroup(),
                 this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId(), ex);
             return;
         }
