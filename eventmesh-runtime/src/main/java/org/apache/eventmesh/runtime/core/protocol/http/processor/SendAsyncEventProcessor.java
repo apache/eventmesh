@@ -101,11 +101,11 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         requestWrapper.buildSysHeaderForCE();
 
         final String bizNo = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.BIZSEQNO,
-            RandomStringUtils.generateNum(30)).toString();
+            RandomStringUtils.generateNum(32)).toString();
         final String uniqueId = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.UNIQUEID,
-            RandomStringUtils.generateNum(30)).toString();
+            RandomStringUtils.generateNum(32)).toString();
         final String ttl = requestHeaderMap.getOrDefault(Constants.EVENTMESH_MESSAGE_CONST_TTL,
-            4 * 1000).toString();
+            14400000).toString();
 
         requestWrapper.getSysHeaderMap().putIfAbsent(ProtocolKey.ClientInstanceKey.BIZSEQNO, bizNo);
         requestWrapper.getSysHeaderMap().putIfAbsent(ProtocolKey.ClientInstanceKey.UNIQUEID, uniqueId);
