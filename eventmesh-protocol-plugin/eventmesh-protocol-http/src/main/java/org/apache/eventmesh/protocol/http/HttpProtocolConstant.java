@@ -21,11 +21,9 @@ public enum HttpProtocolConstant {
     ;
     public static final String PROTOCOL_NAME = "http";
 
-    public static final String DATA_CONTENT_TYPE = "application/json";
-
     public static final String CONSTANTS_DEFAULT_SOURCE = "/";
     public static final String CONSTANTS_DEFAULT_TYPE = "http_request";
-    public static final String CONSTANTS_DEFAULT_SUBJECT = "TOPIC-HTTP-REQUEST";
+    public static final String CONSTANTS_DEFAULT_SUBJECT = "";
 
     public static final String CONSTANTS_KEY_ID = "id";
     public static final String CONSTANTS_KEY_SOURCE = "source";
@@ -35,4 +33,9 @@ public enum HttpProtocolConstant {
     public static final String CONSTANTS_KEY_BODY = "body";
     public static final String CONSTANTS_KEY_PATH = "path";
     public static final String CONSTANTS_KEY_METHOD = "method";
+
+    public static final String DATA_CONTENT_TYPE = "Content-Type";
+
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String PROTOBUF = "application/x-protobuf";
 }

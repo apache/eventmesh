@@ -30,6 +30,7 @@ public class AclProperties {
     private Integer requestCode;
     private String requestURI;
     private String token;
+    private String version;
     private Map<String, Object> extendedFields = new ConcurrentHashMap<>();
 
     public String getClientIp() {
@@ -104,5 +105,11 @@ public class AclProperties {
         return extendedFields.get(key);
     }
 
+    public String getVersion() {
+        return version;
+    }
 
+    public void setVersion(String version) {
+        this.version = version;
+    }
 }

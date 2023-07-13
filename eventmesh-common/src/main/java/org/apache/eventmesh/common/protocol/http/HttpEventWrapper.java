@@ -66,6 +66,8 @@ public class HttpEventWrapper implements ProtocolTransportObject {
     //Command response time
     public long resTime;
 
+    private HttpResponseStatus httpResponseStatus = HttpResponseStatus.OK;
+
     public HttpEventWrapper() {
         this(null, null, null);
     }
@@ -180,7 +182,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
             Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
@@ -223,6 +225,10 @@ public class HttpEventWrapper implements ProtocolTransportObject {
             topic = "TEST-HTTP-TOPIC";
         }
         sysHeaderMap.put(ProtocolKey.CloudEventsKey.SUBJECT, topic);
+    }
+
+    public void setHttpResponseStatus(HttpResponseStatus httpResponseStatus) {
+        this.httpResponseStatus = httpResponseStatus;
     }
 
 }
