@@ -21,22 +21,19 @@ import lombok.Data;
 
 @Data
 public class SinkConnectorConfig {
-    private String connectorName;
-    private String tasksMax;
-    private String topic;
-    private String bootstrapServers;
-    private String groupID;
-    private String keyConverter;
-    private String valueConverter;
-    private String offsetFlushIntervalMS;
-    private String offsetStorageTopic;
-    private String offsetStorageReplicationFactor;
-    private String configStorageTopic;
-    private String configStorageReplicationFactor;
-    private String statusStorageTopic;
-    private String statusStorageReplicationFactor;
-    private String offsetCommitTimeoutMS;
-    private String offsetCommitIntervalMS;
-    private String heartbeatIntervalMS;
-    private String sessionTimeoutMS;
+
+    private String connectorName = "kafkaSink";
+    private String topic = "TopicTest";
+    private String ack = "all";
+    private String bootstrapServers = "127.0.0.1:9092";
+    private String keyConverter = "org.apache.kafka.common.serialization.StringSerializer";
+    private String valueConverter = "org.apache.kafka.common.serialization.StringSerializer";
+    private String maxRequestSize = "1048576";
+    private String bufferMemory = "33554432";
+    private String batchSize = "16384";
+    private String lingerMs = "0";
+    private String requestTimeoutMs = "30000";
+    private String maxInFightRequestsPerConnection = "5";
+    private String retries = "0";
+    private String compressionType = "none";
 }

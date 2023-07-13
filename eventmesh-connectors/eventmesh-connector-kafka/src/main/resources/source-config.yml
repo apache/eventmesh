@@ -29,3 +29,4 @@ connectorConfig:
     bootstrapServers: 127.0.0.1:9090
     topic: TopicTest
     groupID: kafkaSource
+    maxPollRecords: 1000
