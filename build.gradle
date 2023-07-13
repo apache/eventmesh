@@ -512,7 +512,7 @@ subprojects {
             dependency "com.github.seancfoley:ipaddress:5.3.3"
             dependency "com.google.code.gson:gson:2.8.2"
 
-            dependency "org.yaml:snakeyaml:1.30"
+            dependency "org.yaml:snakeyaml:2.0"
             dependency "org.javassist:javassist:3.24.0-GA"
 
             dependency "com.alibaba.nacos:nacos-client:2.2.1"
