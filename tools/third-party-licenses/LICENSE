@@ -240,7 +240,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
     failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
-    fastjson 1.2.76: https://github.com/alibaba/fastjson, Apache 2.0
+    fastjson 1.2.83: https://github.com/alibaba/fastjson, Apache 2.0
     guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
     guice 4.2.2: https://github.com/google/guice, Apache 2.0
     grpc-api 1.43.2: https://github.com/grpc/grpc-java, Apache-2.0
@@ -367,7 +367,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     simpleclient 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_common 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_httpserver 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-    snakeyaml 1.30: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
+    snakeyaml 2.0: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
     truth 0.30: https://github.com/google/truth, Apache 2.0
     validation-api 1.1.0.Final: https://github.com/jakartaee/validation, Apache 2.0
     zipkin 2.23.2: https://github.com/openzipkin/zipkin, Apache 2.0
