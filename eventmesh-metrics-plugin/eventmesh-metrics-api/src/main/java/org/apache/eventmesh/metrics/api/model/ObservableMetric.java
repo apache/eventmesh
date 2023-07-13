@@ -25,11 +25,32 @@ import java.util.function.Supplier;
  */
 public interface ObservableMetric<Key, Value, Instrument> extends Metric {
 
+    /**
+     * Puts a key-value pair into the metric.
+     *
+     * @param key   the key to put
+     * @param value the value to put
+     */
     void put(Key key, Value value);
 
+    /**
+     * Puts all key-value pairs from a map into the metric.
+     *
+     * @param attributes the map containing key-value pairs
+     */
     void putAll(Map<Key, Value> attributes);
 
+    /**
+     * Retrieves all attributes of the metric.
+     *
+     * @return a map containing all attributes
+     */
     Map<Key, Value> getAttributes();
 
+    /**
+     * Retrieves the supplier of the instrument associated with the metric.
+     *
+     * @return the supplier of the instrument
+     */
     Supplier<Instrument> supplier();
 }

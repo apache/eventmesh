@@ -48,6 +48,9 @@ import io.opentelemetry.sdk.metrics.View;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * Registering and handling Prometheus metrics.
+ */
 @UtilityClass
 public class PrometheusMetricsRegistryManager {
 
@@ -55,15 +58,31 @@ public class PrometheusMetricsRegistryManager {
 
     private static final Map<String/*metric name*/, Set<Metric>> metricCache = new ConcurrentHashMap<>(16);
 
+    /**
+     * Registers a metric in the metric cache.
+     *
+     * @param metric The metric to register.
+     */
     public static void registerMetric(final Metric metric) {
         Set<Metric> metrics = metricCache.computeIfAbsent(metric.getName(), (k) -> new HashSet<>());
         metrics.add(metric);
     }
 
+    /**
+     * Retrieves the metrics associated with a given metric name.
+     *
+     * @param metricName The name of the metric.
+     * @return The set of metrics associated with the metric name.
+     */
     protected static Set<Metric> getMetrics(final String metricName) {
         return metricCache.get(metricName);
     }
 
+    /**
+     * Creates and associates metrics with a Prometheus meter using the provided OpenTelemetry instance.
+     *
+     * @param openTelemetry The OpenTelemetry instance.
+     */
     public static void createMetric(final OpenTelemetry openTelemetry) {
 
         metricCache.values().stream().flatMap(metricSet -> metricSet.stream()).forEach(metric -> {
@@ -73,16 +92,24 @@ public class PrometheusMetricsRegistryManager {
                 instrumentFurther = new InstrumentFurther();
             }
 
+            // Handle observable metrics
             if (metric instanceof ObservableMetric) {
                 handleObservableMetric((ObservableMetric<String, String, ?>) metric, meter, instrumentFurther);
                 return;
             }
-            if (metric instanceof SyncMetric<?>) {
+
+            // Handle sync metrics
+            if (metric instanceof SyncMetric) {
                 handleMetric((SyncMetric<?>) metric, meter, instrumentFurther);
             }
         });
     }
 
+    /**
+     * Retrieves the list of metrics and their corresponding views.
+     *
+     * @return The list of metric views.
+     */
     public static List<Pair<InstrumentSelector, View>> getMetricsView() {
         Collection<Set<Metric>> metricSetCollection = metricCache.values();
         return metricSetCollection.stream().map(
@@ -99,6 +126,13 @@ public class PrometheusMetricsRegistryManager {
             }).filter(pair -> pair != null).collect(Collectors.toList())).flatMap(viewSet -> viewSet.stream()).collect(Collectors.toList());
     }
 
+    /**
+     * Handles the creation of a sync metric based on its instrument type.
+     *
+     * @param metric            The sync metric.
+     * @param meter             The Prometheus meter.
+     * @param instrumentFurther Additional instrument information.
+     */
     private static void handleMetric(final SyncMetric metric, final Meter meter, final InstrumentFurther instrumentFurther) {
         InstrumentType instrumentType = metric.getInstrumentType();
         switch (instrumentType) {
@@ -158,6 +192,13 @@ public class PrometheusMetricsRegistryManager {
         }
     }
 
+    /**
+     * Handles the observable metric based on the type of the instrument.
+     *
+     * @param observableMetric     The observable metric that needs to be handled.
+     * @param meter                The meter object used to build the instrument.
+     * @param instrumentFurther    The instrument further which contains the name, description and unit of the instrument.
+     */
     private static void handleObservableMetric(final ObservableMetric<String, String, ?> observableMetric, final Meter meter,
         final InstrumentFurther instrumentFurther) {
         InstrumentType instrumentType = observableMetric.getInstrumentType();
@@ -221,6 +262,12 @@ public class PrometheusMetricsRegistryManager {
         }
     }
 
+    /**
+     * Builds the attributes for an ObservableMetric.
+     *
+     * @param observableMetric The ObservableMetric from which to retrieve the attributes.
+     * @return The built attributes.
+     */
     private static Attributes buildAttributes(ObservableMetric<String, String, ?> observableMetric) {
         Map<String, String> attributes = observableMetric.getAttributes();
         AttributesBuilder builder = Attributes.builder();

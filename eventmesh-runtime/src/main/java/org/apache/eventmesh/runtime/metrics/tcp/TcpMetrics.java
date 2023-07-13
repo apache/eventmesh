@@ -147,7 +147,7 @@ public class TcpMetrics {
         metrics.put("mq2eventMeshTPSGauge", mq2eventMeshTPSGauge);
 
         InstrumentFurther furtherRetrySize = new InstrumentFurther();
-        furtherRetrySize.setUnit(MetricInstrumentUnit.TPS);
+        furtherRetrySize.setUnit(MetricInstrumentUnit.SINGLETON);
         furtherRetrySize.setDescription("Size of retry queue.");
         furtherRetrySize.setName(TPC_METRICS_NAME_PREFIX + "retry.queue.size");
         retrySizeGauge = new ObservableLongGaugeMetric(furtherRetrySize, METRIC_NAME, buildRetrySizeSupplier());

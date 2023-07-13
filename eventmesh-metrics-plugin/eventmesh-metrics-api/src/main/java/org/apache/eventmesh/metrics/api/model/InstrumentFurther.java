@@ -21,6 +21,9 @@ import java.util.Map;
 
 import lombok.Data;
 
+/**
+ * Represents an instrument with a name, description, unit, and additional properties.
+ */
 @Data
 public class InstrumentFurther {
 

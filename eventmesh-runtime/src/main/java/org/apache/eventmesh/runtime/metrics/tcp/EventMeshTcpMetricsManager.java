@@ -56,7 +56,7 @@ public class EventMeshTcpMetricsManager implements MetricsManager {
         this.tcpMetrics = new TcpMetrics(eventMeshTCPServer, labelMap);
         this.metricsRegistries = Preconditions.checkNotNull(metricsRegistries);
         this.calculator = new TcpMetricsCalculator(eventMeshTCPServer, tcpMetrics);
-        
+
 
     }
 
@@ -85,19 +85,19 @@ public class EventMeshTcpMetricsManager implements MetricsManager {
         Map<String, String> attributes = new HashMap<>(labelMap);
         attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.TCP.name());
         attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
-        GeneralMetricsManager.client2eventMeshMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementClientToEventMeshMsgNum(attributes);
     }
 
     public void eventMesh2mqMsgNumIncrement() {
         tcpMetrics.getEventMesh2mqMsgNum().getAndIncrement();
         Map<String, String> attributes = new HashMap<>(labelMap);
-        GeneralMetricsManager.eventMesh2mqMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementEventMeshToMQMsgNum(attributes);
     }
 
     public void mq2eventMeshMsgNumIncrement() {
         tcpMetrics.getMq2eventMeshMsgNum().getAndIncrement();
         Map<String, String> attributes = new HashMap<>(labelMap);
-        GeneralMetricsManager.mq2eventMeshMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementMQToEventMeshMsgNum(attributes);
     }
 
     public void eventMesh2clientMsgNumIncrement(final String clientAddress) {
@@ -105,7 +105,7 @@ public class EventMeshTcpMetricsManager implements MetricsManager {
         Map<String, String> attributes = new HashMap<>(labelMap);
         attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.TCP.name());
         attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
-        GeneralMetricsManager.eventMesh2clientMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementEventMeshToClientMsgNum(attributes);
     }
 
     public TcpMetrics getTcpMetrics() {
@@ -124,7 +124,7 @@ public class EventMeshTcpMetricsManager implements MetricsManager {
     }
 
     @Override
-    public String getMetricManagerName() {
+    public String getName() {
         return this.getClass().getName();
     }
 }

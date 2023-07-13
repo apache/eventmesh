@@ -92,7 +92,7 @@ public class EventMeshGrpcMetricsManager implements MetricsManager {
         Map<String, String> attributes = new HashMap<>(labelMap);
         attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.GRPC.name());
         attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
-        GeneralMetricsManager.client2eventMeshMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementClientToEventMeshMsgNum(attributes);
     }
 
     public void recordReceiveMsgFromClient(final int count, String clientAddress) {
@@ -100,19 +100,19 @@ public class EventMeshGrpcMetricsManager implements MetricsManager {
         Map<String, String> attributes = new HashMap<>(labelMap);
         attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.GRPC.name());
         attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
-        GeneralMetricsManager.client2eventMeshMsgNumIncrement(attributes, count);
+        GeneralMetricsManager.incrementClientToEventMeshMsgNum(attributes, count);
     }
 
     public void recordSendMsgToQueue() {
         grpcMetrics.getEventMesh2MqMsgNum().incrementAndGet();
         Map<String, String> attributes = new HashMap<>(labelMap);
-        GeneralMetricsManager.eventMesh2mqMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementEventMeshToMQMsgNum(attributes);
     }
 
     public void recordReceiveMsgFromQueue() {
         grpcMetrics.getMq2EventMeshMsgNum().incrementAndGet();
         Map<String, String> attributes = new HashMap<>(labelMap);
-        GeneralMetricsManager.mq2eventMeshMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementMQToEventMeshMsgNum(attributes);
     }
 
     public void recordSendMsgToClient(final String clientAddress) {
@@ -120,7 +120,7 @@ public class EventMeshGrpcMetricsManager implements MetricsManager {
         Map<String, String> attributes = new HashMap<>(labelMap);
         attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.TCP.name());
         attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
-        GeneralMetricsManager.eventMesh2clientMsgNumIncrement(attributes);
+        GeneralMetricsManager.incrementEventMeshToClientMsgNum(attributes);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class EventMeshGrpcMetricsManager implements MetricsManager {
     }
 
     @Override
-    public String getMetricManagerName() {
+    public String getName() {
         return this.getClass().getName();
     }
 }

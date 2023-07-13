@@ -24,13 +24,33 @@ import java.util.List;
 /**
  * metric manager interface
  */
+
+/**
+ * MetricsManager is an interface for managing metrics.
+ */
 public interface MetricsManager {
 
+    /**
+     * Retrieves the list of metrics.
+     *
+     * @return The list of metrics.
+     */
     List<Metric> getMetrics();
 
-    String getMetricManagerName();
+    /**
+     * Retrieves the name of the MetricsManager.
+     *
+     * @return The name of the MetricsManager.
+     */
+    String getName();
 
+    /**
+     * Starts the MetricsManager.
+     */
     void start();
 
+    /**
+     * Shuts down the MetricsManager.
+     */
     void shutdown();
 }

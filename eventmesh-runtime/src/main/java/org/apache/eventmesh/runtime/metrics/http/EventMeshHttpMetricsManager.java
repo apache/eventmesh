@@ -201,7 +201,7 @@ public class EventMeshHttpMetricsManager implements MetricsManager {
     }
 
     @Override
-    public String getMetricManagerName() {
+    public String getName() {
         return this.getClass().getName();
     }
 }
