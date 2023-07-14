@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminWebHookConfigOperationManager {
 
-    private static final transient Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
+    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
         = new HashMap<>();
 
     static {
@@ -67,16 +67,19 @@ public class AdminWebHookConfigOperationManager {
 
         final Constructor<? extends WebHookConfigOperation> constructor =
             WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
-        final boolean oldAccesssible = constructor.isAccessible();
+        // Save the original accessibility of constructor
+        final boolean oldAccessible = constructor.isAccessible();
         try {
             constructor.setAccessible(true);
             final Properties operationProperties = adminConfiguration.getOperationProperties();
             if (log.isInfoEnabled()) {
                 log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
             }
+            // Affects which implementation of the WebHookConfigOperation interface is used.
             this.webHookConfigOperation = constructor.newInstance(operationProperties);
         } finally {
-            constructor.setAccessible(oldAccesssible);
+            // Restore the original accessibility of constructor
+            constructor.setAccessible(oldAccessible);
         }
 
     }

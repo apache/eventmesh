@@ -18,8 +18,10 @@
 package org.apache.eventmesh.openconnect.api.config;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public abstract class SinkConfig extends Config {
 
     private PubSubConfig pubSubConfig;
