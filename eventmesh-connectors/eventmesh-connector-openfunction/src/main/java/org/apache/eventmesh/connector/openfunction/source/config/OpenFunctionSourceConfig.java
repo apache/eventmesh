@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.openfunction.source.config;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class OpenFunctionSourceConfig extends SourceConfig {
 
     public SourceConnectorConfig sourceConnectorConfig;

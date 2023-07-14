@@ -28,19 +28,21 @@ import java.util.concurrent.TimeUnit;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * https://github.com/pinpoint-apm/pinpoint
  */
 @Config(field = "pinpointConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
 public class PinpointTraceService extends AbstractTraceService {
 
     /**
      * Unified configuration class corresponding to pinpoint.properties
      */
+    @Getter
+    @Setter
     private transient PinpointConfiguration pinpointConfiguration;
 
     @Override
