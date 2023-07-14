@@ -62,7 +62,7 @@ public class GrpcRetryer {
 
         dispatcher = new Thread(() -> {
             try {
-                DelayRetryable retryObj = null;
+                DelayRetryable retryObj;
                 while (!Thread.currentThread().isInterrupted()
                     && (retryObj = failed.take()) != null) {
                     final DelayRetryable delayRetryable = retryObj;
@@ -78,6 +78,9 @@ public class GrpcRetryer {
                     });
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 log.error("grpc-retry-dispatcher error!", e);
             }
         }, "grpc-retry-dispatcher");

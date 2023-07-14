@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -59,6 +60,9 @@ public class HTTPClientPool {
 
     private static final int DEFAULT_MAX_TOTAL = 200;
     private static final int DEFAULT_IDLETIME_SECONDS = 30;
+
+    private static final int CONNECT_TIMEOUT = 5000;
+    private static final int SOCKET_TIMEOUT = 5000;
 
     private transient PoolingHttpClientConnectionManager connectionManager;
 
@@ -115,7 +119,13 @@ public class HTTPClientPool {
             connectionManager.setMaxTotal(maxTotal);
         }
 
+        RequestConfig config = RequestConfig.custom()
+            .setConnectTimeout(CONNECT_TIMEOUT)
+            .setConnectionRequestTimeout(CONNECT_TIMEOUT)
+            .setSocketTimeout(SOCKET_TIMEOUT).build();
+
         return HttpClients.custom()
+            .setDefaultRequestConfig(config)
             .setConnectionManager(connectionManager)
             .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
             .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)

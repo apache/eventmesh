@@ -78,7 +78,7 @@ public class RocketMQSinkConnector implements Sink {
             try {
                 SendResult sendResult = producer.send(message);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("[RocketMQSinkConnector] sendResult has error : ", e);
             }
         }
     }

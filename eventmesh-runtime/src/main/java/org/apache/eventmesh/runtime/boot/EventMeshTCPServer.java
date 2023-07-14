@@ -195,6 +195,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 } catch (Exception ex) {
                     log.error("EventMeshTCPServer RemotingServer shutdown Err!", ex);
                 }
+                System.exit(-1);
             }
         };
 

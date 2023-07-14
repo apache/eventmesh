@@ -206,9 +206,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * @return any null then true
      */
     protected boolean validatedRequestBodyMap(Map<String, Object> requestBodyMap) {
-        return requestBodyMap.get(EventMeshConstants.URL) == null
-            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
-            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
+        return requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null;
 
     }
 

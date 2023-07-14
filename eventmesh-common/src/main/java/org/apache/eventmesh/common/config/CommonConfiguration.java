@@ -124,6 +124,6 @@ public class CommonConfiguration {
             this.eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
         }
 
-        meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshCluster, this.sysID);
+        meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshIDC, this.eventMeshCluster, this.sysID);
     }
 }
