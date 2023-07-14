@@ -60,15 +60,19 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
      *
      * @param receiveConfiguration receiveConfiguration
      */
-    public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration)
-        throws FileNotFoundException, NacosException {
+    public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration) throws NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
-        if (OPERATION_MODE_FILE.equals(operationMode)) {
-            new WebhookFileListener(receiveConfiguration.getFilePath(), cacheWebHookConfig);
-        } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
-            nacosModeInit(receiveConfiguration.getOperationProperties());
+        switch (operationMode) {
+            case OPERATION_MODE_FILE:
+                new WebhookFileListener(receiveConfiguration.getFilePath(), cacheWebHookConfig);
+                break;
+            case OPERATION_MODE_NACOS:
+                nacosModeInit(receiveConfiguration.getOperationProperties());
+                break;
+            default:
+                break;
         }
     }
 
@@ -78,17 +82,22 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
 
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
-        if (OPERATION_MODE_FILE.equals(operationMode)) {
-            return cacheWebHookConfig.get(ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath()));
-        } else if (OPERATION_MODE_NACOS.equals(operationMode)) {
-            try {
-                final String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName()
-                        + DATA_ID_EXTENSION,
-                    GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
-                return JsonUtils.parseObject(content, WebHookConfig.class);
-            } catch (NacosException e) {
-                log.error("queryWebHookConfigById failed", e);
-            }
+        switch (operationMode) {
+            case OPERATION_MODE_FILE:
+                return cacheWebHookConfig.get(ClassUtils.convertResourcePathToClassName(webHookConfig.getCallbackPath()));
+            case OPERATION_MODE_NACOS:
+                try {
+                    final String content = nacosConfigService.getConfig(
+                        webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
+                        GROUP_PREFIX + webHookConfig.getManufacturerName(),
+                        TIMEOUT_MS);
+                    return JsonUtils.parseObject(content, WebHookConfig.class);
+                } catch (NacosException e) {
+                    log.error("queryWebHookConfigById failed", e);
+                }
+                break;
+            default:
+                break;
         }
         return null;
     }
