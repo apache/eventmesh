@@ -36,6 +36,21 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint
+ * and returns the corresponding configuration information based on the WebHook configuration ID.
+ * <p>
+ * The implementation of
+ * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigById WebHookConfigOperation}
+ * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
+ * <p>
+ * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigById(WebHookConfig) queryWebHookConfigById}
+ * method as implementation to insert WebHook configurations into the system.
+ *
+ * @see AbstractHttpHandler
+ */
+
 @SuppressWarnings("restriction")
 @Slf4j
 @EventHttpHandler(path = "/webhook/queryWebHookConfigById")
@@ -43,12 +58,30 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
     private final WebHookConfigOperation operation;
 
+    /**
+     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     * QueryWebHookConfigByIdHandler handler = new QueryWebHookConfigByIdHandler(new ConfigImpl1());
+     * handler.handle(); // 使用 ConfigImpl1 的 queryWebHookConfigById
+     *
+     * @param operation the WebHookConfigOperation implementation used to query the WebHook config
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public QueryWebHookConfigByIdHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
     }
 
-
+    /**
+     * Handles the HTTP requests by inserting a WebHook configuration.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     *
+     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigById(WebHookConfig)
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
