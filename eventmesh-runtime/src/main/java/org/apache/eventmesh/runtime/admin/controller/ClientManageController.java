@@ -58,6 +58,13 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class is responsible for managing the client connections
+ * and initializing the client handlers.
+ * <p>
+ * It starts the AdminController for managing the event store or MQ.
+ */
+
 @SuppressWarnings("restriction")
 @Slf4j
 public class ClientManageController {
@@ -73,6 +80,14 @@ public class ClientManageController {
     @Setter
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
+    /**
+     * Constructs a new ClientManageController with the given server instance.
+     *
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
+     * @param eventMeshGrpcServer the gRPC server instance of EventMesh
+     * @param eventMeshRegistry the registry adaptor of EventMesh
+     */
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
         EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshGrpcServer eventMeshGrpcServer,
@@ -81,10 +96,13 @@ public class ClientManageController {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.eventMeshRegistry = eventMeshRegistry;
-
     }
 
-
+    /**
+     * Invoke this method to start this controller on the specified port.
+     *
+     * @throws IOException if an I/O error occurs while starting the server
+     */
     public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
