@@ -38,15 +38,25 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint
- * and returns the corresponding configuration information based on the WebHook configuration ID.
+ * and returns the corresponding configuration information
+ * based on the WebHook callback path in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
  * The implementation of
- * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigById WebHookConfigOperation}
+ * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigById WebHookConfigOperation}
  * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
  * <p>
  * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
- * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigById(WebHookConfig) queryWebHookConfigById}
- * method as implementation to insert WebHook configurations into the system.
+ * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#queryWebHookConfigById FileWebHookConfigOperation}
+ * method as implementation to retrieve the WebHook configuration from a file;
+ * <p>
+ * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#queryWebHookConfigById NacosWebHookConfigOperation}
+ * method as implementation to retrieve the WebHook configuration from Nacos.
+ * <p>
+ * After this, the {@linkplain org.apache.eventmesh.webhook.receive.WebHookController#execute WebHookController}
+ * will use
+ * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigById HookConfigOperationManager}
+ * to retrieve existing WebHook configuration by callback path when processing received WebHook data from manufacturers.
  *
  * @see AbstractHttpHandler
  */
@@ -60,8 +70,6 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
     /**
      * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
-     * QueryWebHookConfigByIdHandler handler = new QueryWebHookConfigByIdHandler(new ConfigImpl1());
-     * handler.handle(); // 使用 ConfigImpl1 的 queryWebHookConfigById
      *
      * @param operation the WebHookConfigOperation implementation used to query the WebHook config
      * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
@@ -73,14 +81,12 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by inserting a WebHook configuration.
+     * Handles the HTTP requests by retrieving a WebHook configuration.
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
-     *
-     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigById(WebHookConfig)
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -92,6 +98,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Retrieve the WebHookConfig and get the operation result code
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
             out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
