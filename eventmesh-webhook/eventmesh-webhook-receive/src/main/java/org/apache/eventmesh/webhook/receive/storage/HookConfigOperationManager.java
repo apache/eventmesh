@@ -43,7 +43,17 @@ import com.alibaba.nacos.api.exception.NacosException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class manages the operations related to WebHook configurations.
+ * This class manages the operations related to WebHook configurations. Mainly used by
+ * {@linkplain org.apache.eventmesh.webhook.receive.WebHookController#execute WebHookController}
+ * to retrieve existing WebHook configuration by callback path when processing received WebHook data from manufacturers.
+ * <p>
+ * This class is initialized together with the {@linkplain org.apache.eventmesh.webhook.receive.WebHookController WebHookController}
+ * during the initialization phase of the {@code EventMeshHTTPServer}.
+ * Differs from the other two implementations that implement the
+ * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation} interface,
+ * which are located in the {@code org.apache.eventmesh.webhook.admin} package.
+ *
+ * @see WebHookConfigOperation
  */
 
 @Slf4j
@@ -87,10 +97,11 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
     }
 
     /**
-     * Retrieves a WebHook configuration according to its ID.
+     * Retrieves a WebHook configuration according to its WebHook callback path in
+     * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
      *
-     * @param webHookConfig The WebHookConfig object containing the ID.
-     * @return The retrieved WebHookConfig object.
+     * @param webHookConfig The WebHookConfig object containing the callback path.
+     * @return The retrieved WebHookConfig object which contains full configuration.
      */
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
@@ -112,10 +123,10 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
     /**
      * Retrieves a list of WebHook configurations for a specific manufacturer.
      *
-     * @param webHookConfig The WebHookConfig object containing the manufacturer details.
+     * @param webHookConfig The WebHookConfig object containing the manufacturer name.
      * @param pageNum       The page number for pagination.
      * @param pageSize      The page size for pagination.
-     * @return The list of WebHookConfig objects.
+     * @return The list of WebHookConfig objects which each contains full configuration.
      */
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
