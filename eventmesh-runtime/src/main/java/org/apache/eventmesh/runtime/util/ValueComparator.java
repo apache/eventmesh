@@ -23,6 +23,8 @@ import java.util.Map;
 
 public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
 
+    private static final long serialVersionUID = -8734777387846774249L;
+
     @Override
     public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
         if (x.getValue().intValue() != y.getValue().intValue()) {
