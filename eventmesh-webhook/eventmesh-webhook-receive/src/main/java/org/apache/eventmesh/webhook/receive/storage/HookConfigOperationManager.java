@@ -29,7 +29,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.utils.ClassUtils;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
