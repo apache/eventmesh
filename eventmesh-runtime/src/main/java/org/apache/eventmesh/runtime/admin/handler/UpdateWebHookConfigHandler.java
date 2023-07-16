@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/updateWebHookConfig} endpoint
- * and update an existing WebHook configuration
+ * and updates an existing WebHook configuration
  * according to the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
  * The implementation of

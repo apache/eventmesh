@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/insertWebHookConfig} endpoint
- * and add a new WebHook configuration
+ * and adds a new WebHook configuration
  * according to the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig},
  * if there isn't an existing duplicate configuration already.
  * <p>

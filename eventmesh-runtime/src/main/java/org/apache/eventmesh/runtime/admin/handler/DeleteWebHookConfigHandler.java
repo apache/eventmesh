@@ -35,13 +35,24 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/deleteWebHookConfig} endpoint
- * to delete WebHook configurations.
+ * and deletes an existing WebHook configuration
+ * according to the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
- * It calls the
- * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#deleteWebHookConfig(WebHookConfig) deleteWebHookConfig}
- * implementation method of
- * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#deleteWebHookConfig WebHookConfigOperation}
- * interface to delete configurations of the system.
+ * The implementation of
+ * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#deleteWebHookConfig WebHookConfigOperation}
+ * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
+ * <p>
+ * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#deleteWebHookConfig FileWebHookConfigOperation}
+ * method as implementation to delete the WebHook configuration file;
+ * <p>
+ * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#deleteWebHookConfig NacosWebHookConfigOperation}
+ * method as implementation to delete the WebHook configuration from Nacos.
+ * <p>
+ * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#deleteWebHookConfig HookConfigOperationManager}
+ * which implements the {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
+ * interface, does not participate in the implementation of this endpoint.
  *
  * @see AbstractHttpHandler
  */
@@ -84,7 +95,7 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Delete the WebHookConfig and get the operation result code
+            // Delete the existing WebHookConfig and get the operation result code
             Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
