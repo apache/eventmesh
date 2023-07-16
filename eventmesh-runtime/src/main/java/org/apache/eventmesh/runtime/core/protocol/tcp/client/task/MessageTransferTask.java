@@ -181,13 +181,12 @@ public class MessageTransferTask extends AbstractTask {
 
     private CloudEvent addTimestamp(CloudEvent event, Command cmd, long sendTime) {
         if (cmd == RESPONSE_TO_SERVER) {
-            event = getCloudEvent(event, sendTime, EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP,
+            return getCloudEvent(event, sendTime, EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP,
                 EventMeshConstants.RSP_SEND_EVENTMESH_IP);
         } else {
-            event = getCloudEvent(event, sendTime, EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
+            return getCloudEvent(event, sendTime, EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
                 EventMeshConstants.REQ_SEND_EVENTMESH_IP);
         }
-        return event;
     }
 
     private CloudEvent getCloudEvent(CloudEvent event, long sendTime, String times, String mq, String ip) {
