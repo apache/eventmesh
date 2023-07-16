@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint
  * and returns the corresponding WebHook configuration information
- * based on the WebHook callback path in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
+ * based on the WebHook callback path specified in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
  * The implementation of
  * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigById WebHookConfigOperation}
@@ -93,7 +93,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
-        // get requestBody and resolve to WebHookConfig
+        // Get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
