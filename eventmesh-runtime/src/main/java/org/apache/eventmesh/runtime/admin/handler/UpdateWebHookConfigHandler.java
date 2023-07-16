@@ -35,13 +35,24 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/updateWebHookConfig} endpoint
- * to update WebHook configurations.
+ * and update an existing WebHook configuration
+ * according to the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
- * It calls the
- * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#updateWebHookConfig(WebHookConfig) updateWebHookConfig}
- * implementation method of
- * {@link org.apache.eventmesh.webhook.api.WebHookConfigOperation#updateWebHookConfig WebHookConfigOperation}
- * interface to update configurations of the system.
+ * The implementation of
+ * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#updateWebHookConfig WebHookConfigOperation}
+ * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
+ * <p>
+ * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#updateWebHookConfig FileWebHookConfigOperation}
+ * method as implementation to update the WebHook configuration in a file;
+ * <p>
+ * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#updateWebHookConfig NacosWebHookConfigOperation}
+ * method as implementation to update the WebHook configuration in Nacos.
+ * <p>
+ * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#updateWebHookConfig HookConfigOperationManager}
+ * which implements the {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
+ * interface, does not participate in the implementation of this endpoint.
  *
  * @see AbstractHttpHandler
  */
@@ -84,7 +95,7 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Update the WebHookConfig and get the operation result code
+            // Update the existing WebHookConfig and get the operation result code
             Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
