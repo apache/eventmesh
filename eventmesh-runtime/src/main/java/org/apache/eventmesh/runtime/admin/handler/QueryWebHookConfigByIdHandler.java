@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint
- * and returns the corresponding configuration information
+ * and returns the corresponding WebHook configuration information
  * based on the WebHook callback path in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
  * The implementation of
