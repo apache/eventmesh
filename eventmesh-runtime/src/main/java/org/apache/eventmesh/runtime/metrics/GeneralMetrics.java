@@ -25,9 +25,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
-
-@Data
 public class GeneralMetrics {
 
     private static final String METRIC_NAME = "general";
