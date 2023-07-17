@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
+import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
@@ -141,6 +142,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         }
     }
 
+    @Sharable
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
