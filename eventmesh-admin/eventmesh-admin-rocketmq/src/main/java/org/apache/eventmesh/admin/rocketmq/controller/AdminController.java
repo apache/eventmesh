@@ -28,14 +28,30 @@ import com.sun.net.httpserver.HttpServer;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class is responsible for managing the admin module.
+ * <p>
+ * It provides a method to run the admin module with the specified {@link HttpServer}
+ * and handles requests related to topics management.
+ */
+
 @Slf4j
 public class AdminController {
 
     public AdminController() {
     }
 
+    /**
+     * Invoke this method to run the admin module.
+     *
+     * @param server A HttpServer is bound to an IP address and port number
+     *               and listens for incoming TCP connections from clients on this address.
+     * @throws IOException
+     * @see HttpServer
+     */
     public void run(HttpServer server) throws IOException {
 
+        // Creates a mapping from API URI path to the exchange handler on this HttpServer.
         server.createContext(TOPIC_MANAGE_PATH, new TopicsHandler());
 
         log.info("EventMesh-Admin Controller server context created successfully");

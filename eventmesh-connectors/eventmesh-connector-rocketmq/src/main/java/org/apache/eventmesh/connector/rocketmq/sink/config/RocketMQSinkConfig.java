@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.rocketmq.sink.config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class RocketMQSinkConfig extends SinkConfig {
 
     public SinkConnectorConfig connectorConfig;
