@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
+import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
@@ -138,6 +139,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         }
     }
 
+    @Sharable
     private class CloudEventTCPPubHandler extends AbstractEventMeshTCPPubHandler<CloudEvent> {
 
         public CloudEventTCPPubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
