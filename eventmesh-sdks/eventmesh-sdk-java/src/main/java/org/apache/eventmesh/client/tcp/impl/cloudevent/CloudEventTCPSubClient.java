@@ -35,8 +35,8 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
