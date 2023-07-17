@@ -83,7 +83,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
-        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
+        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP.getKey(), remoteAddr);
 
         // build sys header
         requestWrapper.buildSysHeaderForClient();

@@ -145,9 +145,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 return;
             }
 
-            String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
-            String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
-            String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+            String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey());
+            String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
+            String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
             //validate event-extension
             if (StringUtils.isAnyBlank(idc, pid, sys)
@@ -202,9 +202,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 continue;
             }
 
-            String user = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.USERNAME);
-            String pass = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.PASSWD);
-            String subsystem = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.SYS);
+            String user = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.USERNAME.getKey());
+            String pass = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
+            String subsystem = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
             //do acl check
             if (httpConfiguration.isEventMeshServerSecurityEnable()) {

@@ -111,8 +111,8 @@ public class EventMeshConsumer {
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
             try {
                 String topic = event.getSubject();
-                String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO)).toString();
-                String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID)).toString();
+                String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey())).toString();
+                String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID.getKey())).toString();
 
                 event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -195,8 +195,8 @@ public class EventMeshConsumer {
                     .build();
 
                 String topic = event.getSubject();
-                String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO);
-                String uniqueId = getEventExtension(event, ProtocolKey.ClientInstanceKey.UNIQUEID);
+                String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey());
+                String uniqueId = getEventExtension(event, ProtocolKey.ClientInstanceKey.UNIQUEID.getKey());
 
                 if (messageLogger.isDebugEnabled()) {
                     messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
