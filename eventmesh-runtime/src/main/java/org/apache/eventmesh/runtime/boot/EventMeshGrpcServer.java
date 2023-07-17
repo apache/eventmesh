@@ -42,7 +42,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -276,7 +276,7 @@ public class EventMeshGrpcServer {
     }
 
     private void initHttpClientPool() {
-        httpClientPool = new LinkedList<>();
+        httpClientPool = new ArrayList<>();
         int clientPool = RandomUtils.nextInt(MIN_LIMIT, MAX_LIMIT);
         for (int i = 0; i < clientPool; i++) {
             CloseableHttpClient client = HttpClients.createDefault();

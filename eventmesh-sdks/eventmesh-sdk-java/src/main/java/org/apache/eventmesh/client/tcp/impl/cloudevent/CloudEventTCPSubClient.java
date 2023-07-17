@@ -36,7 +36,7 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
 
-    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private ReceiveMsgHook<CloudEvent> callback;
 
     public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
