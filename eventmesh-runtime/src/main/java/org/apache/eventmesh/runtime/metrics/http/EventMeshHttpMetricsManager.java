@@ -19,10 +19,12 @@ package org.apache.eventmesh.runtime.metrics.http;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.MetricsConstants;
+import org.apache.eventmesh.common.enums.ProtocolType;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.metrics.GeneralMetricsManager;
 import org.apache.eventmesh.runtime.metrics.MetricsManager;
 
 import java.util.ArrayList;
@@ -105,6 +107,39 @@ public class EventMeshHttpMetricsManager implements MetricsManager {
             log.info("HTTPMetricsServer started.");
         }
     }
+
+    public void recordReceiveMsgFromClient(final String clientAddress) {
+
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.GRPC.name());
+        attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
+        GeneralMetricsManager.incrementClientToEventMeshMsgNum(attributes);
+    }
+
+    public void recordReceiveMsgFromClient(final int count, String clientAddress) {
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.GRPC.name());
+        attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
+        GeneralMetricsManager.incrementClientToEventMeshMsgNum(attributes, count);
+    }
+
+    public void recordSendMsgToQueue() {
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        GeneralMetricsManager.incrementEventMeshToMQMsgNum(attributes);
+    }
+
+    public void recordReceiveMsgFromQueue() {
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        GeneralMetricsManager.incrementMQToEventMeshMsgNum(attributes);
+    }
+
+    public void recordSendMsgToClient(final String clientAddress) {
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.TCP.name());
+        attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
+        GeneralMetricsManager.incrementEventMeshToClientMsgNum(attributes);
+    }
+
 
     @Override
     public void shutdown() {
