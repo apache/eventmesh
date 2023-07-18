@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
@@ -48,9 +49,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+@EventMeshTrace(isEnable = true)
 public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    private final Logger httpLogger = LoggerFactory.getLogger("http");
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -117,7 +119,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
                     faildTopic.add(deleteTopic);
                 }
             }
-            if (faildTopic.size() > 0) {
+            if (!faildTopic.isEmpty()) {
 
                 Map<String, Object> responseBodyMap = new HashMap<>();
                 StringBuilder sb = new StringBuilder();
