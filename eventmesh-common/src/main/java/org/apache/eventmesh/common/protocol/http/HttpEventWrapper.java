@@ -207,6 +207,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
             headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
         sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
         sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
+        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.TOKEN, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.TOKEN, "token"));
     }
 
     public void buildSysHeaderForCE() {
