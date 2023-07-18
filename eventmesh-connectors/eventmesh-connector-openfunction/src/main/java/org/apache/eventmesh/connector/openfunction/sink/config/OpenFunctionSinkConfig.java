@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.openfunction.sink.config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class OpenFunctionSinkConfig extends SinkConfig {
 
     public SinkConnectorConfig sinkConnectorConfig;

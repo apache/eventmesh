@@ -116,10 +116,7 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
             }
             return EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(reply, PROTOCOL_TYPE);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (log.isErrorEnabled()) {
-                log.error("Error in RequestReply message {}", message, e);
-            }
+            log.error("Error in RequestReply message {}", message, e);
         }
         return null;
     }

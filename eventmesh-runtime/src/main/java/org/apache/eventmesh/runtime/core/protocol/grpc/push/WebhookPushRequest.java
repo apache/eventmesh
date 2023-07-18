@@ -201,10 +201,17 @@ public class WebhookPushRequest extends AbstractPushRequest {
                     "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
                         + "|uniqueId={}|cost={}", result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
-                if (result == ClientRetCode.OK || result == ClientRetCode.FAIL) {
-                    complete();
-                } else if (result == ClientRetCode.RETRY || result == ClientRetCode.NOLISTEN) {
-                    delayRetry();
+                switch (result) {
+                    case OK:
+                    case FAIL:
+                        complete();
+                        break;
+                    case RETRY:
+                    case NOLISTEN:
+                        delayRetry();
+                        break;
+                    default:
+                        //do nothing
                 }
             }
             return new Object();
@@ -237,27 +244,23 @@ public class WebhookPushRequest extends AbstractPushRequest {
         List<String> localIdcUrl = MapUtils.getObject(urls,
             eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIdcUrl)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(localIdcUrl.get((startIdx + retryTimes) % localIdcUrl.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return localIdcUrl;
-            } else {
-                MESSAGE_LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
-        }
-
-        if (CollectionUtils.isNotEmpty(totalUrls)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(totalUrls.get((startIdx + retryTimes) % totalUrls.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return totalUrls;
-            } else {
-                MESSAGE_LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
+            return getStringList(localIdcUrl);
+        } else if (CollectionUtils.isNotEmpty(totalUrls)) {
+            return getStringList(totalUrls);
         }
         MESSAGE_LOGGER.error("No event emitters from subscriber, no message returning.");
         return Collections.emptyList();
+    }
+
+    private List<String> getStringList(List<String> stringList) {
+        switch (subscriptionMode) {
+            case CLUSTERING:
+                return Collections.singletonList(stringList.get((startIdx + retryTimes) % stringList.size()));
+            case BROADCASTING:
+                return stringList;
+            default:
+                MESSAGE_LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                return Collections.emptyList();
+        }
     }
 }

@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.rocketmq.config;
 import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class RocketMQServerConfig extends Config {
 
     private boolean sourceEnable;

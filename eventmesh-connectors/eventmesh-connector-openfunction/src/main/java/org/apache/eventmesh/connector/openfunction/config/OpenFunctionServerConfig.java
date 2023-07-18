@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.openfunction.config;
 import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class OpenFunctionServerConfig extends Config {
 
     private int serverPort;
