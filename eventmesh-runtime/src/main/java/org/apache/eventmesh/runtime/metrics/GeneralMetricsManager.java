@@ -99,7 +99,7 @@ public class GeneralMetricsManager {
      * @param attributes The map of attributes.
      * @return The built attributes.
      */
-    private static Attributes buildAttributes(final Map<String, String> attributes) {
+    public static Attributes buildAttributes(final Map<String, String> attributes) {
         if (MapUtils.isEmpty(attributes)) {
             return EMPTY_ATTRIBUTES;
         }

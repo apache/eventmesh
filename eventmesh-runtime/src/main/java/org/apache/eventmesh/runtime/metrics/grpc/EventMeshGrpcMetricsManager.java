@@ -123,6 +123,13 @@ public class EventMeshGrpcMetricsManager implements MetricsManager {
         GeneralMetricsManager.incrementEventMeshToClientMsgNum(attributes);
     }
 
+    public void recordGrpcPublishHandleCost(long costTime, String clientAddress) {
+        Map<String, String> attributes = new HashMap<>(labelMap);
+        attributes.put(MetricsConstants.CLIENT_PROTOCOL_TYPE, ProtocolType.TCP.name());
+        attributes.put(MetricsConstants.CLIENT_ADDRESS, Optional.ofNullable(clientAddress).orElse(MetricsConstants.UNKOWN));
+        grpcMetrics.recordGrpcPublishHandleCost(costTime, GeneralMetricsManager.buildAttributes(attributes));
+    }
+
     @Override
     public void shutdown() {
         scheduleTask.cancel(true);

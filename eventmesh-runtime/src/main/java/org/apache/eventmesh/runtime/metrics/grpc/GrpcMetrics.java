@@ -17,18 +17,32 @@
 
 package org.apache.eventmesh.runtime.metrics.grpc;
 
+import org.apache.eventmesh.common.Pair;
+import org.apache.eventmesh.metrics.api.model.DoubleHistogramMetric;
 import org.apache.eventmesh.metrics.api.model.InstrumentFurther;
 import org.apache.eventmesh.metrics.api.model.Metric;
+import org.apache.eventmesh.metrics.api.model.NoopDoubleHistogram;
 import org.apache.eventmesh.metrics.api.model.ObservableDoubleGaugeMetric;
 import org.apache.eventmesh.metrics.api.model.ObservableLongGaugeMetric;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.metrics.MetricInstrumentUnit;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.View;
 
 public class GrpcMetrics {
 
@@ -36,6 +50,9 @@ public class GrpcMetrics {
 
     private static final String METRIC_NAME = "GRPC";
 
+    private static double ms = 1;
+
+    private static double s = 1000 * ms;
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -52,6 +69,8 @@ public class GrpcMetrics {
     private volatile long retrySize;
     private volatile long subscribeTopicNum;
 
+    private final DoubleHistogram grpcPublishHandleCost = new NoopDoubleHistogram();
+
     private ObservableDoubleGaugeMetric mq2eventMeshTPSGauge;
 
     private ObservableDoubleGaugeMetric client2eventMeshTPSGauge;
@@ -63,6 +82,8 @@ public class GrpcMetrics {
     private ObservableLongGaugeMetric retrySizeGauge;
 
     private ObservableLongGaugeMetric subTopicGauge;
+
+    private DoubleHistogramMetric grpcPublishHandleCostHistogram;
 
     private final Map<String, Metric> metrics = new HashMap<>(32);
 
@@ -128,6 +149,37 @@ public class GrpcMetrics {
         retrySizeGauge = new ObservableLongGaugeMetric(furtherRetrySize, METRIC_NAME, buildRetrySizeSupplier());
         retrySizeGauge.putAll(commonAttributes);
         metrics.put("retrySizeGauge", retrySizeGauge);
+
+        InstrumentFurther furtherGrpcPublishHandleCost = new InstrumentFurther();
+        furtherGrpcPublishHandleCost.setUnit(MetricInstrumentUnit.MILLISECONDS);
+        furtherGrpcPublishHandleCost.setDescription("Grpc publish handle cost time");
+        String grpcPublishHandleCostName = GRPC_METRICS_NAME_PREFIX + "publish.handle.cost";
+        furtherGrpcPublishHandleCost.setName(grpcPublishHandleCostName);
+        Pair<InstrumentSelector, View> pair = buildGrpcPublishHandleCostMetricsView(grpcPublishHandleCostName);
+        furtherGrpcPublishHandleCost.putExt(InstrumentFurther.INSTRUMENT_VIEW, pair);
+        grpcPublishHandleCostHistogram = new DoubleHistogramMetric(furtherGrpcPublishHandleCost, METRIC_NAME);
+        metrics.put("grpcPublishHandleCost", grpcPublishHandleCostHistogram);
+    }
+
+    private Pair<InstrumentSelector, View> buildGrpcPublishHandleCostMetricsView(String metricName) {
+        List<Double> latencyBuckets = Arrays.asList(
+            1 * ms, 3 * ms, 5 * ms,
+            10 * ms, 30 * ms, 50 * ms,
+            100 * ms, 300 * ms, 500 * ms,
+            1 * s, 3 * s, 5 * s, 10 * s);
+        View view = View.builder()
+            .setAggregation(Aggregation.explicitBucketHistogram(latencyBuckets))
+            .build();
+        InstrumentSelector selector = InstrumentSelector.builder()
+            .setType(InstrumentType.HISTOGRAM)
+            .setName(metricName)
+            .build();
+
+        return new Pair<>(selector, view);
+    }
+
+    public void recordGrpcPublishHandleCost(long time, Attributes attributes) {
+        grpcPublishHandleCostHistogram.getInstrument().record(time, attributes);
     }
 
     /**
@@ -151,10 +203,23 @@ public class GrpcMetrics {
     }
 
     public void refreshTpsMetrics(long intervalMills) {
-        client2EventMeshTPS = 1000 * client2EventMeshMsgNum.get() / intervalMills;
-        eventMesh2ClientTPS = 1000 * eventMesh2ClientMsgNum.get() / intervalMills;
-        eventMesh2MqTPS = 1000 * eventMesh2MqMsgNum.get() / intervalMills;
-        mq2EventMeshTPS = 1000 * mq2EventMeshMsgNum.get() / intervalMills;
+        BigDecimal intervalMillisBD = BigDecimal.valueOf(intervalMills);
+        // Calculate TPS for client2EventMesh messages
+        client2EventMeshTPS = BigDecimal.valueOf(1000).multiply(BigDecimal.valueOf(client2EventMeshMsgNum.get()))
+            .divide(intervalMillisBD, 2, RoundingMode.HALF_UP).doubleValue();
+
+        // Calculate TPS for eventMesh2Client messages
+        eventMesh2ClientTPS = BigDecimal.valueOf(1000).multiply(BigDecimal.valueOf(eventMesh2ClientMsgNum.get()))
+            .divide(intervalMillisBD, 2, RoundingMode.HALF_UP).doubleValue();
+
+        // Calculate TPS for eventMesh2Mq messages
+        eventMesh2MqTPS = BigDecimal.valueOf(1000).multiply(BigDecimal.valueOf(eventMesh2MqMsgNum.get()))
+            .divide(intervalMillisBD, 2, RoundingMode.HALF_UP).doubleValue();
+
+        // Calculate TPS for mq2EventMesh messages
+        mq2EventMeshTPS = BigDecimal.valueOf(1000).multiply(BigDecimal.valueOf(mq2EventMeshMsgNum.get()))
+            .divide(intervalMillisBD, 2, RoundingMode.HALF_UP).doubleValue();
+
     }
 
     public Collection<Metric> getMetrics() {

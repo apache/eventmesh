@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.metrics.api.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Data;
@@ -35,6 +36,10 @@ public class InstrumentFurther {
 
     private String unit;
 
-    private Map<String, Object> ext;
+    private Map<String, Object> ext = new HashMap<>();
+
+    public void putExt(String key, Object value) {
+        ext.put(key, value);
+    }
 
 }
