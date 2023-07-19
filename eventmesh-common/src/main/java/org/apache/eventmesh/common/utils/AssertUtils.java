@@ -21,41 +21,43 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Assert
  */
 public final class AssertUtils {
 
     /**
-     * assert obj not null
+     * Assert actual is not null
      *
-     * @param obj     obj
+     * @param actual  Object to test
      * @param message error message
      */
-    public static void notNull(final Object obj, final String message) {
-        isTrue(Objects.nonNull(obj), message);
+    public static void notNull(final Object actual, final String message) {
+        isTrue(Objects.nonNull(actual), message);
     }
 
     /**
-     * assert test is true
+     * Assert actual is true
      *
-     * @param test    test
+     * @param actual  boolean to test
      * @param message error message
      */
-    public static void isTrue(final Boolean test, final String message) {
-        if (!Boolean.TRUE.equals(test)) {
+    public static void isTrue(final Boolean actual, final String message) {
+        if (!Boolean.TRUE.equals(actual)) {
             throw new IllegalArgumentException(message);
         }
     }
 
     /**
-     * assert str is not black
+     * Assert actual is not blank
      *
-     * @param str     str
-     * @param message message
+     * @param actual  String to test
+     * @param message error message
      */
-    public static void notBlack(final String str, final String message) {
-        isTrue(StringUtils.isNoneBlank(str), message);
+    public static void notBlank(final String actual, final String message) {
+        isTrue(StringUtils.isNoneBlank(actual), message);
     }
 
 

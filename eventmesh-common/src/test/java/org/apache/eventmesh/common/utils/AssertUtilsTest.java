@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * test {@link AssertUtils}
  */
-public class AssertTest {
+public class AssertUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNotNull() {
@@ -33,4 +33,6 @@ public class AssertTest {
     public void testIsTrue() {
         AssertUtils.isTrue(false, "error message");
     }
+
+
 }
