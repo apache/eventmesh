@@ -33,6 +33,4 @@ public class AssertUtilsTest {
     public void testIsTrue() {
         AssertUtils.isTrue(false, "error message");
     }
-
-
 }
