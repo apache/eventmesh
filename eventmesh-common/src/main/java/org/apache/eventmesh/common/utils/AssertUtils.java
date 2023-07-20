@@ -27,35 +27,35 @@ import java.util.Objects;
 public final class AssertUtils {
 
     /**
-     * Assert actual is not null
+     * Assert obj is not null
      *
-     * @param actual  Object to test
+     * @param obj  Object to test
      * @param message error message
      */
-    public static void notNull(final Object actual, final String message) {
-        isTrue(Objects.nonNull(actual), message);
+    public static void notNull(final Object obj, final String message) {
+        isTrue(Objects.nonNull(obj), message);
     }
 
     /**
-     * Assert actual is true
+     * Assert condition is true
      *
-     * @param actual  boolean to test
+     * @param condition  boolean to test
      * @param message error message
      */
-    public static void isTrue(final Boolean actual, final String message) {
-        if (!Boolean.TRUE.equals(actual)) {
+    public static void isTrue(final Boolean condition, final String message) {
+        if (!Boolean.TRUE.equals(condition)) {
             throw new IllegalArgumentException(message);
         }
     }
 
     /**
-     * Assert actual is not blank
+     * Assert str is not blank
      *
-     * @param actual  String to test
+     * @param str  String to test
      * @param message error message
      */
-    public static void notBlank(final String actual, final String message) {
-        isTrue(StringUtils.isNoneBlank(actual), message);
+    public static void notBlank(final String str, final String message) {
+        isTrue(StringUtils.isNoneBlank(str), message);
     }
 
 
