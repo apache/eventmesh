@@ -36,8 +36,8 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubClient<EventMeshMessage> {
 
-    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private ReceiveMsgHook<EventMeshMessage> callback;
 
     public EventMeshMessageTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
