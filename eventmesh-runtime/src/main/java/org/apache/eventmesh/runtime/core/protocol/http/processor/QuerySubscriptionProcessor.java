@@ -41,7 +41,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-@EventMeshTrace(isEnable = true)
+@EventMeshTrace
 public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
     private final Logger httpLogger = LoggerFactory.getLogger("http");

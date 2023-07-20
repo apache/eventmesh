@@ -49,7 +49,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-@EventMeshTrace(isEnable = true)
+@EventMeshTrace
 public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
     private final Logger httpLogger = LoggerFactory.getLogger("http");
