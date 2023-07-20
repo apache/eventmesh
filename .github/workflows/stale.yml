@@ -34,9 +34,10 @@ jobs:
       - uses: actions/stale@v8
         with:
           days-before-stale: 60
-          days-before-close: 7
-          stale-issue-message: 'This issue has been automatically marked as stale because it has been open for 60 days with no activity. It will be closed if no further activity occurs within 7 days.'
-          stale-pr-message: 'This pull request has been automatically marked as stale because it has been open for 60 days with no activity. It will be closed if no further activity occurs within 7 days.'
+          days-before-close: 14
+          days-before-pr-close: -1 # Never close a PR
+          stale-issue-message: 'This issue has been automatically marked as stale because it has been open for 90 days with no activity. It will be closed if no further activity occurs within 14 days. Thank you for your contribution.'
+          stale-pr-message: 'This pull request has been automatically marked as stale because it has been open for 90 days with no activity. Your contribution is appreciated, and to ensure its progress, please engage actively with the community. Kindly consider reaching out and communicating with the community members. Thank you for your valuable input.'
           close-issue-message: 'Considering the lack of activity, this issue will now be closed as stale. Thank you for your contribution.'
           close-pr-message: 'Considering the lack of activity, this pull request will now be closed as stale. Thank you for your contribution.'
           close-issue-reason: not_planned
