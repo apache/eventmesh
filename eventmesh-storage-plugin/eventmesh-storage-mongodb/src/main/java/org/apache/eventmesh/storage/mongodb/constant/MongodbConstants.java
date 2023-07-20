@@ -24,5 +24,14 @@ public class MongodbConstants {
     public static final String SEQUENCE_COLLECTION_NAME = "pub_sub_seq";
     public static final String SEQUENCE_KEY_FN = "topic";
     public static final String SEQUENCE_VALUE_FN = "value";
+    public static final String DOC_KEY_VERSION = "version";
+    public static final String DOC_KEY_DATA = "data";
+    public static final String DOC_KEY_ID = "id";
+    public static final String DOC_KEY_SOURCE = "source";
+    public static final String DOC_KEY_TYPE = "type";
+    public static final String DOC_KEY_DATA_CONTENT_TYPE = "datacontenttype";
+    public static final String DOC_KEY_SUBJECT = "subject";
+
+
 
 }
