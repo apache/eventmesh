@@ -183,13 +183,13 @@ public class ReplyMessageRequestHeader extends Header {
         String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
             ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
         header.setLanguage(lan);
-        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
-        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
-        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
-        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
-        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
+        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV.getKey()));
+        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC.getKey()));
+        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS.getKey()));
+        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID.getKey()));
+        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP.getKey()));
+        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME.getKey()));
+        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD.getKey()));
         return header;
     }
 
@@ -199,13 +199,13 @@ public class ReplyMessageRequestHeader extends Header {
         map.put(ProtocolKey.REQUEST_CODE, code);
         map.put(ProtocolKey.LANGUAGE, language);
         map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
-        map.put(ProtocolKey.ClientInstanceKey.PID, pid);
-        map.put(ProtocolKey.ClientInstanceKey.IP, ip);
-        map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
-        map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
+        map.put(ProtocolKey.ClientInstanceKey.ENV.getKey(), env);
+        map.put(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc);
+        map.put(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys);
+        map.put(ProtocolKey.ClientInstanceKey.PID.getKey(), pid);
+        map.put(ProtocolKey.ClientInstanceKey.IP.getKey(), ip);
+        map.put(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username);
+        map.put(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd);
         return map;
     }
 

@@ -28,12 +28,12 @@ public class AbstractRequestHeaderTest {
         Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
         Assert.assertTrue(header.toMap().containsKey(ProtocolKey.LANGUAGE));
         Assert.assertTrue(header.toMap().containsKey(ProtocolKey.VERSION));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.ENV));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IDC));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.SYS));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PID));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IP));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.USERNAME));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PASSWD));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.ENV.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IDC.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.SYS.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PID.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IP.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.USERNAME.getKey()));
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PASSWD.getKey()));
     }
 }

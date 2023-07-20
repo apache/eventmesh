@@ -120,9 +120,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
-        String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
-        String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+        String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey());
+        String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
+        String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
         //validate event-extension
         if (StringUtils.isAnyBlank(idc, pid, sys)
@@ -149,9 +149,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         //do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
-            String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
-            String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+            String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME.getKey());
+            String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
+            String subsystem = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
             int requestCode = Integer.parseInt(request.getRequestCode());
             try {
                 this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);

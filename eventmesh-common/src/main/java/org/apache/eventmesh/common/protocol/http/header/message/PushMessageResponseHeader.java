@@ -175,13 +175,13 @@ public class PushMessageResponseHeader extends Header {
         map.put(ProtocolKey.REQUEST_CODE, code);
         map.put(ProtocolKey.LANGUAGE, language);
         map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
-        map.put(ProtocolKey.ClientInstanceKey.PID, pid);
-        map.put(ProtocolKey.ClientInstanceKey.IP, ip);
-        map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
-        map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
+        map.put(ProtocolKey.ClientInstanceKey.ENV.getKey(), env);
+        map.put(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc);
+        map.put(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys);
+        map.put(ProtocolKey.ClientInstanceKey.PID.getKey(), pid);
+        map.put(ProtocolKey.ClientInstanceKey.IP.getKey(), ip);
+        map.put(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username);
+        map.put(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd);
         return map;
     }
 }
