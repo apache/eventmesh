@@ -84,7 +84,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
             // Retrieve the query string from the request URI and parses it into a key-value pair Map
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            // Extract the 'group' and 'purpose' parameters from the query string.
+            // Extract the 'group' and 'purpose' parameters from the query string
             String group = queryStringInfo.get(EventMeshConstants.MANAGE_GROUP);
             String purpose = queryStringInfo.get(EventMeshConstants.MANAGE_PURPOSE);
             // If either of them is missing, respond an error message indicating that the parameters are illegal.
