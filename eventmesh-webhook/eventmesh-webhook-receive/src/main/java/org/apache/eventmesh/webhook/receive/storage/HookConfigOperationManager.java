@@ -29,7 +29,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.utils.ClassUtils;
 import org.apache.eventmesh.webhook.receive.config.ReceiveConfiguration;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +78,7 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
      * @param receiveConfiguration The ReceiveConfiguration object containing the operation mode and related properties.
      * @throws NacosException        If there is an error with the Nacos configuration service.
      */
-    public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration)
-        throws NacosException {
+    public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration) throws NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
