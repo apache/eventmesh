@@ -366,13 +366,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         final ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
 
-        CreateTopicProcessor createTopicProcessor = new CreateTopicProcessor(this);
+        final CreateTopicProcessor createTopicProcessor = new CreateTopicProcessor(this);
         this.getHandlerService().register(createTopicProcessor, clientManageExecutor);
 
-        DeleteTopicProcessor deleteTopicProcessor = new DeleteTopicProcessor(this);
+        final DeleteTopicProcessor deleteTopicProcessor = new DeleteTopicProcessor(this);
         this.getHandlerService().register(deleteTopicProcessor, clientManageExecutor);
 
-        QuerySubscriptionProcessor querySubscriptionProcessor = new QuerySubscriptionProcessor(this);
+        final QuerySubscriptionProcessor querySubscriptionProcessor = new QuerySubscriptionProcessor(this);
         this.getHandlerService().register(querySubscriptionProcessor, clientManageExecutor);
 
     }
