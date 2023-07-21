@@ -26,8 +26,12 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriter;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -52,6 +56,15 @@ public class SourceWorker implements ConnectorWorker {
 
     private final Source source;
     private final SourceConfig config;
+
+    /**
+     * Used to write the position of source data source.
+     */
+    private final OffsetStorageWriter offsetStorageWriter;
+
+    private final OffsetStorageReader offsetStorageReader;
+
+    private final OffsetManagementService offsetManagementService;
 
     private final ExecutorService pollService = Executors.newSingleThreadExecutor();
 
