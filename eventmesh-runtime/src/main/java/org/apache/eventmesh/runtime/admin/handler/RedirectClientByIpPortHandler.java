@@ -115,7 +115,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's host and port match the given ip and port
+                    // Iterate through the sessionMap to find matching sessions where the client's host and port match the given IP and port
                     for (Session session : sessionMap.values()) {
                         // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
                         // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
