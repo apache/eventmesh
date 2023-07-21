@@ -38,39 +38,65 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the HTTP requests of {@code /clientManage/showClientBySystem} endpoint,
+ * which is used to display connected clients information
+ * under a specific sub system by sub system id.
+ * <p>
+ * Parameters:
+ * <ul>
+ *     <li>client's sub system id: {@code subsystem} | Example: {@code 5023}</li>
+ * </ul>
+ *
+ * @see AbstractHttpHandler
+ */
+
 @Slf4j
 @EventHttpHandler(path = "/clientManage/showClientBySystem")
 public class ShowClientBySystemHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     /**
-     * print clientInfo by subsys
-     *
-     * @param httpExchange
-     * @throws IOException
+     * Handles the HTTP requests by rejecting matching clients.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Retrieve the query string from the request URI and parses it into a key-value pair Map
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+            // Extract parameter from the query string
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
             if (log.isInfoEnabled()) {
                 log.info("showClientBySubsys,subsys:{}", subSystem);
             }
+            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (sessionMap != null && !sessionMap.isEmpty()) {
+                // Iterate through the sessionMap to find matching sessions where the client's sub system id matches the given param
                 for (Session session : sessionMap.values()) {
+                    // For each matching session found, append the client's information to the result
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
@@ -81,6 +107,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                 }
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
+            // Serialize the result and write it to the response output stream to be sent back to the client
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         }
     }
