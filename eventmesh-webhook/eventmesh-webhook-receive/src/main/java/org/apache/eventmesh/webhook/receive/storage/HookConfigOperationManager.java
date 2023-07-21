@@ -77,11 +77,10 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
      *                       using the properties specified in operationProperties.
      *
      * @param receiveConfiguration The ReceiveConfiguration object containing the operation mode and related properties.
-     * @throws FileNotFoundException If the file specified in the operation mode is not found.
      * @throws NacosException        If there is an error with the Nacos configuration service.
      */
     public HookConfigOperationManager(final ReceiveConfiguration receiveConfiguration)
-        throws FileNotFoundException, NacosException {
+        throws NacosException {
 
         this.operationMode = receiveConfiguration.getOperationMode();
 
