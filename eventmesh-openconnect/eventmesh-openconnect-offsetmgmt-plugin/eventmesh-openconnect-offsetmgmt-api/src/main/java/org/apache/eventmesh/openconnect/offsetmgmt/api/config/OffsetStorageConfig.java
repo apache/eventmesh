@@ -17,5 +17,10 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.config;
 
+import lombok.Data;
+
+@Data
 public class OffsetStorageConfig {
+
+    private String offsetStorageType;
 }

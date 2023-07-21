@@ -28,3 +28,5 @@ sourceConnectorConfig:
     connectorName: rocketmqSource
     nameserver: 127.0.0.1:9877
     topic: TopicTest
+offsetStorageConfig:
+    offsetStorageType: nacos
