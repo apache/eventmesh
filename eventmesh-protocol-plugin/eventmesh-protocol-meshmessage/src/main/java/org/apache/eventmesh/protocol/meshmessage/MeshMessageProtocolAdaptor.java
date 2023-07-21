@@ -37,12 +37,11 @@ import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocolResolver;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
@@ -77,19 +76,20 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
-        org.apache.eventmesh.common.protocol.http.header.Header header,
-        Body body) throws ProtocolHandleException {
+                                               org.apache.eventmesh.common.protocol.http.header.Header header,
+                                               Body body) throws ProtocolHandleException {
 
-        if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestProtocolResolver.buildEvent(header, body);
-        } else {
-            throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
+        switch (RequestCode.valueOf(requestCode)) {
+            case MSG_BATCH_SEND:
+                return SendMessageBatchProtocolResolver.buildEvent(header, body);
+            case MSG_BATCH_SEND_V2:
+                return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
+            case MSG_SEND_SYNC:
+                return SendMessageRequestProtocolResolver.buildEvent(header, body);
+            case MSG_SEND_ASYNC:
+                return SendMessageRequestProtocolResolver.buildEvent(header, body);
+            default:
+                throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
         }
 
     }
@@ -108,31 +108,32 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         validateCloudEvent(cloudEvent);
         String protocolDesc =
-            cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+                cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
-        if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP, protocolDesc)) {
-            HttpCommand httpCommand = new HttpCommand();
-            Body body = new Body() {
-                final Map<String, Object> map = new HashMap<>();
+        switch (Objects.requireNonNull(protocolDesc)) {
+            case MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP:
+                HttpCommand httpCommand = new HttpCommand();
+                Body body = new Body() {
+                    final Map<String, Object> map = new HashMap<>();
 
-                @Override
-                public Map<String, Object> toMap() {
-                    if (cloudEvent.getData() == null) {
+                    @Override
+                    public Map<String, Object> toMap() {
+                        if (cloudEvent.getData() == null) {
+                            return map;
+                        }
+                        map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                         return map;
                     }
-                    map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
-                    return map;
-                }
-            };
-            body.toMap();
-            httpCommand.setBody(body);
-            return httpCommand;
-        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_TCP, protocolDesc)) {
-            return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
-        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT, protocolDesc)) {
-            return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
-        } else {
-            throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
+                };
+                body.toMap();
+                httpCommand.setBody(body);
+                return httpCommand;
+            case MeshMessageProtocolConstant.PROTOCOL_DESC_TCP:
+                return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
+            case MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT:
+                return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
+            default:
+                throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
         }
     }
 
