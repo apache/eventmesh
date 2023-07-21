@@ -49,20 +49,10 @@ public class Application {
         Config config;
         try {
             config = ConfigUtil.parse(connector.configClass());
-            // offset storage, memory default
-            //KVStoreFactory.setStoreConfig(config.getStoreConfig());
         } catch (Exception e) {
             log.error("parse config error", e);
             return;
         }
-
-
-
-        // spi load offsetMgmt
-        String offsetMgmtPluginType = "";
-        OffsetManagementService offsetManagementService =
-            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
-        offsetManagementService.initialize(config);
 
         try {
             connector.init(config);

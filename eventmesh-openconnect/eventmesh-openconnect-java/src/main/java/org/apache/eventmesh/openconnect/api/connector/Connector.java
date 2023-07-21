@@ -18,7 +18,7 @@
 package org.apache.eventmesh.openconnect.api.connector;
 
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 /**
  * Connector

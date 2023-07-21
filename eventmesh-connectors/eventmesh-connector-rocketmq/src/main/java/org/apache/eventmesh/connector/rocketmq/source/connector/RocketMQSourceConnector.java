@@ -19,10 +19,10 @@ package org.apache.eventmesh.connector.rocketmq.source.connector;
 
 import org.apache.eventmesh.connector.rocketmq.source.config.RocketMQSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;

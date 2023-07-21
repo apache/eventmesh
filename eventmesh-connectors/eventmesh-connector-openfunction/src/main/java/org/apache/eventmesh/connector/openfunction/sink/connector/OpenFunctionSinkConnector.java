@@ -19,8 +19,8 @@ package org.apache.eventmesh.connector.openfunction.sink.connector;
 
 import org.apache.eventmesh.connector.openfunction.sink.config.OpenFunctionSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

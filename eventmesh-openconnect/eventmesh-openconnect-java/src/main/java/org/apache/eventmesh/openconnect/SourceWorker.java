@@ -28,10 +28,12 @@ import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriter;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -57,12 +59,9 @@ public class SourceWorker implements ConnectorWorker {
     private final Source source;
     private final SourceConfig config;
 
-    /**
-     * Used to write the position of source data source.
-     */
-    private final OffsetStorageWriter offsetStorageWriter;
-
-    private final OffsetStorageReader offsetStorageReader;
+//    private final OffsetStorageWriter offsetStorageWriter;
+//
+//    private final OffsetStorageReader offsetStorageReader;
 
     private final OffsetManagementService offsetManagementService;
 
@@ -81,6 +80,12 @@ public class SourceWorker implements ConnectorWorker {
         queue = new LinkedBlockingQueue<>(1000);
         eventMeshTCPClient = buildEventMeshPubClient(config);
         eventMeshTCPClient.init();
+        // spi load offsetMgmt
+        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
+        String offsetMgmtPluginType = offsetStorageConfig.getOffsetStorageType();
+        offsetManagementService =
+            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+        offsetManagementService.initialize(offsetStorageConfig);
     }
 
     private EventMeshTCPClient<CloudEvent> buildEventMeshPubClient(SourceConfig config) {
