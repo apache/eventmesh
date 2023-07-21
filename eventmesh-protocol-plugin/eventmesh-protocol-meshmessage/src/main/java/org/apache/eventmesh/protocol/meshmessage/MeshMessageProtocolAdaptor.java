@@ -84,7 +84,6 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             case MSG_BATCH_SEND_V2:
                 return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
             case MSG_SEND_SYNC:
-                return SendMessageRequestProtocolResolver.buildEvent(header, body);
             case MSG_SEND_ASYNC:
                 return SendMessageRequestProtocolResolver.buildEvent(header, body);
             default:
@@ -107,7 +106,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         validateCloudEvent(cloudEvent);
         String protocolDesc =
-                cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+            cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         switch (Objects.requireNonNull(protocolDesc)) {
             case MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP:
