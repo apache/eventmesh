@@ -107,7 +107,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             }
             log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
                 destEventMeshIp, destEventMeshPort);
-            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
+            // Retrieve the mapping between Sessions and their corresponding client address
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             StringBuilder redirectResult = new StringBuilder();

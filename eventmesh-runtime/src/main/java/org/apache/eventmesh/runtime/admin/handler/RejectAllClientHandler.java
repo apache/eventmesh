@@ -79,7 +79,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     @Override
     public void handle(final HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
+            // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();

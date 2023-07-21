@@ -105,7 +105,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 return;
             }
             log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
-            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
+            // Retrieve the mapping between Sessions and their corresponding client address
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();

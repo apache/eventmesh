@@ -111,7 +111,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                     subSystem, destEventMeshIp, destEventMeshPort);
             }
 
-            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
+            // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final StringBuilder redirectResult = new StringBuilder();

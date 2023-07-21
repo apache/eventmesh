@@ -70,7 +70,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by rejecting matching clients.
+     * Handles the HTTP requests by displaying clients information.
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      * @param httpExchange the exchange containing the request from the client and used to send the response
@@ -90,7 +90,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             if (log.isInfoEnabled()) {
                 log.info("showClientBySubsys,subsys:{}", subSystem);
             }
-            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
+            // Retrieve the mapping between Sessions and their corresponding client address
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (sessionMap != null && !sessionMap.isEmpty()) {
