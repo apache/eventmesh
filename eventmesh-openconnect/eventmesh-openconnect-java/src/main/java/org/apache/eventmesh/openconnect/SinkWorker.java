@@ -135,6 +135,7 @@ public class SinkWorker implements ConnectorWorker {
             connectRecord.addExtension("topic", event.getSubject());
             connectRecord.addExtension("source", event.getSource().toString());
             connectRecord.addExtension("type", event.getType());
+            connectRecord.addExtension("datacontenttype", event.getDataContentType());
             List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(connectRecord);
             sink.put(connectRecords);

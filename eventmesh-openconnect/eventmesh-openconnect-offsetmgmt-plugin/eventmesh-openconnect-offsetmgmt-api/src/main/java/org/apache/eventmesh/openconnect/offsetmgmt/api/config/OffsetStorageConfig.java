@@ -15,20 +15,7 @@
  * limitations under the License.
  */
 
-dependencies {
-    api "org.slf4j:slf4j-api"
-    implementation "org.apache.logging.log4j:log4j-api"
-    implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+package org.apache.eventmesh.openconnect.offsetmgmt.api.config;
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-
-    api project (":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+public class OffsetStorageConfig {
 }

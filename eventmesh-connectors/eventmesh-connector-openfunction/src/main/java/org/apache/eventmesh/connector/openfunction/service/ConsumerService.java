@@ -48,7 +48,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
     public OpenFunctionServerConfig config;
 
-    private final transient ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", 10115).usePlaintext().build();
+    private final transient ManagedChannel channel = ManagedChannelBuilder.forAddress(config.getTargetAddress(), config.getTargetPort()).usePlaintext().build();
 
     private CallbackServiceBlockingStub publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
 

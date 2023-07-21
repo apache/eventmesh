@@ -23,7 +23,9 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class Application {
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
     public void run(Class<? extends Connector> clazz) throws Exception {
+
         Connector connector;
         try {
             connector = clazz.getDeclaredConstructor().newInstance();
@@ -52,6 +55,15 @@ public class Application {
             log.error("parse config error", e);
             return;
         }
+
+
+
+        // spi load offsetMgmt
+        String offsetMgmtPluginType = "";
+        OffsetManagementService offsetManagementService =
+            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+        offsetManagementService.initialize(config);
+
         try {
             connector.init(config);
             CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
