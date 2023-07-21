@@ -39,12 +39,30 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the HTTP requests of {@code /clientManage/rejectAllClient} endpoint,
+ * which is used to reject ALL client connections belonging to the current EventMesh server node.
+ * <p>
+ * CAUTION: USE WITH CARE
+ * <p>
+ * It uses the {@link EventMeshTcp2Client#serverGoodby2Client} method to close the matching client connection.
+ *
+ * @see AbstractHttpHandler
+ */
+
 @Slf4j
 @EventHttpHandler(path = "/clientManage/rejectAllClient")
 public class RejectAllClientHandler extends AbstractHttpHandler {
 
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
         final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
@@ -52,14 +70,16 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * remove all clients accessed by eventMesh
-     *
-     * @param httpExchange
-     * @throws IOException
+     * Handles the HTTP requests by rejecting all clients.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     @Override
     public void handle(final HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
@@ -68,9 +88,11 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                     log.info("rejectAllClient in admin====================");
                 }
                 if (!sessionMap.isEmpty()) {
+                    // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
                             eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                        // If the rejection is successful, add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
@@ -85,6 +107,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
+            // Serialize the successfully rejected client addresses and write it to the response output stream to be sent back to the client
             out.write(String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
                 NetUtils.addressToString(successRemoteAddrs)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
