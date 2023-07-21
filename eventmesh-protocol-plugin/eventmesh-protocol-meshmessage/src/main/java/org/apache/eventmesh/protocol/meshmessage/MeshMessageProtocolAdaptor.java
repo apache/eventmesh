@@ -37,7 +37,6 @@ import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocolResolver;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +120,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                         if (cloudEvent.getData() == null) {
                             return map;
                         }
-                        map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                        map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(),
+                                Constants.DEFAULT_CHARSET));
                         return map;
                     }
                 };
