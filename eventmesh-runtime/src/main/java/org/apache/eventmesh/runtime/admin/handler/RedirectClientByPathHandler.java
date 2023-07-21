@@ -113,7 +113,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's path match the given param
+                    // Iterate through the sessionMap to find matching sessions where the client's path matches the given param
                     for (Session session : sessionMap.values()) {
                         // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
                         // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.

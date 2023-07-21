@@ -42,30 +42,63 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * redirect subsystem for subsys and dcn
+ * This class handles the HTTP requests of {@code /clientManage/redirectClientBySubSystem} endpoint,
+ * which is used to redirect matching clients to a target EventMesh server node
+ * based on the provided client sub system id in a Data Communication Network (DCN).
+ * <p>
+ * The request must specify the client's sub system id and target EventMesh node's IP and port.
+ * <p>
+ * Parameters:
+ * <ul>
+ *     <li>client's sub system id: {@code subsystem} | Example: {@code 5023}</li>
+ *     <li>target EventMesh node's IP: {@code desteventmeshIp}</li>
+ *     <li>target EventMesh node's port: {@code desteventmeshport}</li>
+ * </ul>
+ * It uses the {@link EventMeshTcp2Client#redirectClient2NewEventMesh} method to redirect the matching client.
+ *
+ * @see AbstractHttpHandler
  */
+
 @Slf4j
 @EventHttpHandler(path = "/clientManage/redirectClientBySubSystem")
 public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
 
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer,
         final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
+    /**
+     * Handles the HTTP requests by redirecting matching clients to a target EventMesh server node.
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(final HttpExchange httpExchange) throws IOException {
         Objects.requireNonNull(httpExchange, "httpExchange can not be null");
 
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Retrieve the query string from the request URI and parses it into a key-value pair Map
             final Map<String, String> queryStringInfo = NetUtils.formData2Dic(httpExchange.getRequestURI().getQuery());
+            // Extract parameters from the query string
             final String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
             final String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
             final String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
+            // Check the validity of the parameters
             if (!StringUtils.isNumeric(subSystem)
                 || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
                 || !StringUtils.isNumeric(destEventMeshPort)) {
@@ -78,12 +111,16 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                     subSystem, destEventMeshIp, destEventMeshPort);
             }
 
+            // Retrieve the mapping between EventMesh TCP Server's ClientSessionGroupMapping and Session objects
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
+                    // Iterate through the sessionMap to find matching sessions where the client's sub system id matches the given param
                     for (final Session session : sessionMap.values()) {
+                        // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
+                        // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             redirectResult.append('|')
                                 .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
@@ -106,6 +143,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
+            // Serialize the result of redirection and write it to the response output stream to be sent back to the client
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                         +
                         "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
