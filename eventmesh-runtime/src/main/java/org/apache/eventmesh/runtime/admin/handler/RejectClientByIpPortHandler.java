@@ -80,7 +80,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by redirecting matching clients to a target EventMesh server node.
+     * Handles the HTTP requests by rejecting matching clients.
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      * @param httpExchange the exchange containing the request from the client and used to send the response
@@ -132,7 +132,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the result of redirection and write it to the response output stream to be sent back to the client
+            // Serialize the successfully rejected client addresses and write it to the response output stream to be sent back to the client
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
                 NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);
