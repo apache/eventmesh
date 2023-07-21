@@ -41,6 +41,11 @@ import lombok.extern.slf4j.Slf4j;
  * and returns the corresponding WebHook configuration information
  * based on the WebHook callback path specified in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
+ * Parameters:
+ * <ul>
+ *     <li>WebHook callback path: {@code callbackPath} | Example: {@code /webhook/github/eventmesh/all}</li>
+ *     <li>WebHook manufacturer name: {@code manufacturerName} | Example: {@code github}</li>
+ * </ul>
  * The implementation of
  * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigById WebHookConfigOperation}
  * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.

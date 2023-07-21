@@ -28,7 +28,7 @@ public class WebHookConfig {
     private String callbackPath;
 
     /**
-     * manufacturer name, like GitHub
+     * manufacturer name, like github
      */
     private String manufacturerName;
 

@@ -42,6 +42,11 @@ import lombok.extern.slf4j.Slf4j;
  * which is used to calculate and return the recommended EventMesh server node to the client
  * based on the provided {@code group} and {@code purpose} parameters.
  * <p>
+ * Parameters:
+ * <ul>
+ *     <li>client group: {@code group} | Example: {@code EventmeshTestGroup}</li>
+ *     <li>client purpose: {@code purpose} | Example: {@code sub}</li>
+ * </ul>
  * It uses an {@link EventMeshRecommendStrategy} which is implemented by {@link EventMeshRecommendImpl}
  * to calculate the recommended EventMesh server node.
  *
