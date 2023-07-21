@@ -88,7 +88,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
 
             String newLine = System.getProperty("line.separator");
             log.info("showListeningClientByTopic,topic:{}=================", topic);
-            // Retrieve the mappings of client sub system to client group
+            // Retrieve the mappings of client subsystem to client group
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
             if (!clientGroupMap.isEmpty()) {

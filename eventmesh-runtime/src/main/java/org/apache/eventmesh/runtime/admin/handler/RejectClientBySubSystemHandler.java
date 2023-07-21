@@ -45,13 +45,13 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class handles the HTTP requests of {@code /clientManage/rejectClientBySubSystem} endpoint,
  * which is used to reject a client connection
- * that matches the provided client sub system id in a Data Communication Network (DCN).
+ * that matches the provided client subsystem id in a Data Communication Network (DCN).
  * <p>
- * The request must specify the client's sub system id.
+ * The request must specify the client's subsystem id.
  * <p>
  * Parameters:
  * <ul>
- *     <li>client's sub system id: {@code subsystem} | Example: {@code 5023}</li>
+ *     <li>client's subsystem id: {@code subsystem} | Example: {@code 5023}</li>
  * </ul>
  * It uses the {@link EventMeshTcp2Client#serverGoodby2Client} method to close the matching client connection.
  *
@@ -119,7 +119,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's sub system id matches the given param
+                    // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                     for (Session session : sessionMap.values()) {
                         // For each matching session found, call the serverGoodby2Client method to reject the client connection
                         if (session.getClient().getSubsystem().equals(subSystem)) {

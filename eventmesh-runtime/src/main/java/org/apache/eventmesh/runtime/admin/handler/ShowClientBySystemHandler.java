@@ -41,11 +41,11 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class handles the HTTP requests of {@code /clientManage/showClientBySystem} endpoint,
  * which is used to display connected clients information
- * under a specific sub system by sub system id.
+ * under a specific subsystem by subsystem id.
  * <p>
  * Parameters:
  * <ul>
- *     <li>client's sub system id: {@code subsystem} | Example: {@code 5023}</li>
+ *     <li>client's subsystem id: {@code subsystem} | Example: {@code 5023}</li>
  * </ul>
  *
  * @see AbstractHttpHandler
@@ -94,7 +94,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (sessionMap != null && !sessionMap.isEmpty()) {
-                // Iterate through the sessionMap to find matching sessions where the client's sub system id matches the given param
+                // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                 for (Session session : sessionMap.values()) {
                     // For each matching session found, append the client's information to the result
                     if (session.getClient().getSubsystem().equals(subSystem)) {

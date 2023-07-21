@@ -44,13 +44,13 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class handles the HTTP requests of {@code /clientManage/redirectClientBySubSystem} endpoint,
  * which is used to redirect matching clients to a target EventMesh server node
- * based on the provided client sub system id in a Data Communication Network (DCN).
+ * based on the provided client subsystem id in a Data Communication Network (DCN).
  * <p>
- * The request must specify the client's sub system id and target EventMesh node's IP and port.
+ * The request must specify the client's subsystem id and target EventMesh node's IP and port.
  * <p>
  * Parameters:
  * <ul>
- *     <li>client's sub system id: {@code subsystem} | Example: {@code 5023}</li>
+ *     <li>client's subsystem id: {@code subsystem} | Example: {@code 5023}</li>
  *     <li>target EventMesh node's IP: {@code desteventmeshIp}</li>
  *     <li>target EventMesh node's port: {@code desteventmeshport}</li>
  * </ul>
@@ -117,7 +117,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
             final StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's sub system id matches the given param
+                    // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                     for (final Session session : sessionMap.values()) {
                         // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
                         // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
