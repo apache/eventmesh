@@ -92,7 +92,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
                             eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
-                        // If the rejection is successful, add the remote client address to a list of successfully rejected addresses
+                        // Add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
@@ -107,7 +107,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the successfully rejected client addresses and write it to the response output stream to be sent back to the client
+            // Serialize the successfully rejected client addresses into output stream
             out.write(String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
                 NetUtils.addressToString(successRemoteAddrs)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

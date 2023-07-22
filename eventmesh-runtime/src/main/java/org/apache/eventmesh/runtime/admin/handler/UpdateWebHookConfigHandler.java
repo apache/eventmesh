@@ -95,7 +95,7 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Update the existing WebHookConfig and get the operation result code
+            // Update the existing WebHookConfig
             Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

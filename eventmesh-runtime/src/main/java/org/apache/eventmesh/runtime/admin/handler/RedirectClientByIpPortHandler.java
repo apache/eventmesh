@@ -89,7 +89,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -115,10 +115,10 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's host and port match the given IP and port
+                    // Iterate through the sessionMap to find matching sessions where the client's IP and port match the given ones
                     for (Session session : sessionMap.values()) {
-                        // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
-                        // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
+                        // For each matching session found, redirect the client
+                        // to the new EventMesh node specified by given EventMesh IP and port.
                         if (session.getClient().getHost().equals(ip) && String.valueOf(
                             session.getClient().getPort()).equals(port)) {
                             redirectResult.append("|");
@@ -140,7 +140,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the result of redirection and write it to the response output stream to be sent back to the client
+            // Serialize the result of redirection into output stream
             result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",

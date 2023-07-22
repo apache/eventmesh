@@ -101,7 +101,6 @@ public class ShowClientHandler extends AbstractHttpHandler {
             }
 
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the result and write it to the response output stream to be sent back to the client
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("ShowClientHandler fail...", e);

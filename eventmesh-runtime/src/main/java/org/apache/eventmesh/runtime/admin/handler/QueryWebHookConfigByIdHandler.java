@@ -103,7 +103,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the WebHookConfig and get the operation result code
+            // Retrieve the WebHookConfig by callback path
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
             out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

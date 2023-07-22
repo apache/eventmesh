@@ -111,7 +111,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the WebHookConfig list and get the operation result code
+            // Retrieve the WebHookConfig list by manufacturer name
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
             out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

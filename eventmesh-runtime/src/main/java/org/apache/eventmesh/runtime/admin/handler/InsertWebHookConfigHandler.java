@@ -94,7 +94,7 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Add the WebHookConfig if no existing duplicate configuration is found and get the operation result code
+            // Add the WebHookConfig if no existing duplicate configuration is found
             Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

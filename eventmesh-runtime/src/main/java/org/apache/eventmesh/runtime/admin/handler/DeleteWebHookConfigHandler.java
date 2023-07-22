@@ -95,7 +95,7 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Delete the existing WebHookConfig and get the operation result code
+            // Delete the existing WebHookConfig
             Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

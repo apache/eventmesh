@@ -80,7 +80,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameter from the query string
@@ -107,7 +107,6 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                 }
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the result and write it to the response output stream to be sent back to the client
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         }
     }

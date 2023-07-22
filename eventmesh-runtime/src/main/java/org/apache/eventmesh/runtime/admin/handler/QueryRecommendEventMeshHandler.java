@@ -82,17 +82,17 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Check whether the registry is enabled in the EventMesh TCP configuration
+            // Check whether the registry is enabled
             if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            // Extract the 'group' and 'purpose' parameters from the query string
+            // Extract parameters from the query string
             String group = queryStringInfo.get(EventMeshConstants.MANAGE_GROUP);
             String purpose = queryStringInfo.get(EventMeshConstants.MANAGE_PURPOSE);
-            // If either of them is missing, respond an error message indicating that the parameters are illegal.
+            // Check the validity of the parameters
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
@@ -100,11 +100,10 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
                 return;
             }
 
-            // If both 'group' and 'purpose' parameters are provided
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             // Calculate the recommended EventMesh node according to the given group and purpose
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
-            // Serialize the result and write it to the response output stream to be sent back to the client
+            // Serialize the result into output stream
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             NetUtils.sendSuccessResponseHeaders(httpExchange);

@@ -98,7 +98,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result;
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameter from the query string
@@ -121,11 +121,11 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                     for (Session session : sessionMap.values()) {
-                        // For each matching session found, call the serverGoodby2Client method to reject the client connection
+                        // Reject client connection for each matching session found
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session,
                                 clientSessionGroupMapping);
-                            // If the rejection is successful, add the remote client address to a list of successfully rejected addresses
+                            // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -142,7 +142,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the successfully rejected client addresses and write it to the response output stream to be sent back to the client
+            // Serialize the successfully rejected client addresses into output stream
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
                 +
                 "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);

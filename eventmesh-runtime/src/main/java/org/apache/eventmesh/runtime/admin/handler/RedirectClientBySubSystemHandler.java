@@ -91,7 +91,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
         Objects.requireNonNull(httpExchange, "httpExchange can not be null");
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             final Map<String, String> queryStringInfo = NetUtils.formData2Dic(httpExchange.getRequestURI().getQuery());
             // Extract parameters from the query string
             final String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
@@ -119,8 +119,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                     for (final Session session : sessionMap.values()) {
-                        // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
-                        // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
+                        // For each matching session found, redirect the client
+                        // to the new EventMesh node specified by given EventMesh IP and port.
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             redirectResult.append('|')
                                 .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
@@ -143,7 +143,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the result of redirection and write it to the response output stream to be sent back to the client
+            // Serialize the result of redirection into output stream
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                         +
                         "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",

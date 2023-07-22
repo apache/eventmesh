@@ -90,7 +90,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -113,11 +113,11 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap to find matching sessions where the remote client address matches the given IP and port
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                        // For each matching session found, call the serverGoodby2Client method to reject the client connection
+                        // Reject client connection for each matching session found
                         if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer,
                                 entry.getValue(), clientSessionGroupMapping);
-                            // If the rejection is successful, add the remote client address to a list of successfully rejected addresses
+                            // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -132,7 +132,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the successfully rejected client addresses and write it to the response output stream to be sent back to the client
+            // Serialize the successfully rejected client addresses into output stream
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
                 NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);

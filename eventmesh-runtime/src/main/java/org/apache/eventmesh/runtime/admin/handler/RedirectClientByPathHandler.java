@@ -88,7 +88,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the query string from the request URI and parses it into a key-value pair Map
+            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -115,8 +115,8 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap to find matching sessions where the client's path matches the given param
                     for (Session session : sessionMap.values()) {
-                        // For each matching session found, it calls the redirectClient2NewEventMesh method to redirect the client
-                        // to the new EventMesh node specified by destEventMeshIp and destEventMeshPort.
+                        // For each matching session found, redirect the client
+                        // to the new EventMesh node specified by given EventMesh IP and port.
                         if (session.getClient().getPath().contains(path)) {
                             redirectResult.append("|");
                             redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
@@ -137,7 +137,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the result of redirection and write it to the response output stream to be sent back to the client
+            // Serialize the result of redirection into output stream
             result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
