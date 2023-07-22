@@ -34,6 +34,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +93,7 @@ public class HeartbeatProcessor {
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
             new TypeReference<List<HeartbeatItem>>() {
             });
+        Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             ConsumerGroupClient hbClient = ConsumerGroupClient.builder()
                 .env(env)

@@ -15,22 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
+package org.apache.eventmesh.connector.kafka.source.config;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
+import lombok.Data;
 
-    private static final long serialVersionUID = -8734777387846774249L;
+@Data
+public class SourceConnectorConfig {
 
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
-    }
+    private String connectorName = "kafkaSource";
+    private String topic = "TopicTest";
+    private String bootstrapServers = "127.0.0.1:9092";
+    private String groupID = "kafkaSource";
+    private String keyConverter = "org.apache.kafka.common.serialization.StringSerializer";
+    private String valueConverter = "org.apache.kafka.common.serialization.StringSerializer";
+    private String autoCommitIntervalMS = "1000";
+    private String enableAutoCommit = "false";
+    private String sessionTimeoutMS = "3000";
+    private String maxPollRecords = "1000";
+    private int pollTimeOut = 100;
 }

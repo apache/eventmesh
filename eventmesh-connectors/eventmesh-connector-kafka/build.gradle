@@ -15,22 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
-
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
-
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
-
-    private static final long serialVersionUID = -8734777387846774249L;
-
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
-    }
+dependencies {
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation 'io.cloudevents:cloudevents-kafka:2.4.2'
+    implementation 'org.apache.kafka:kafka-clients:3.0.0'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }

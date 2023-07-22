@@ -15,22 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.connector.kafka.sink.config;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
+import lombok.Data;
 
-    private static final long serialVersionUID = -8734777387846774249L;
+@Data
+public class KafkaSinkConfig extends SinkConfig {
 
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
-    }
+    public SinkConnectorConfig connectorConfig;
+
 }
