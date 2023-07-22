@@ -33,7 +33,7 @@ public class WebHookConfig {
     private String manufacturerName;
 
     /**
-     * manufacturer domain name ,like www.github.com
+     * manufacturer domain name, like www.github.com
      */
     private String manufacturerDomain;
 
