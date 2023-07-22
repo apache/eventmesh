@@ -138,7 +138,7 @@ public class EventMeshGrpcConsumerTest {
             }
         });
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()));
-        assertThat(eventMeshGrpcConsumer.getSubscriptionMap().size()).hasSize(1);
+        assertThat(eventMeshGrpcConsumer.getSubscriptionMap()).hasSize(1);
 
         assertThat(result).hasSize(1).first().isInstanceOf(CloudEventV1.class);
         CloudEventV1 v1 = (CloudEventV1) result.get(0);
