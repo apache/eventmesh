@@ -33,6 +33,11 @@ public class WebHookConfig {
     private String manufacturerName;
 
     /**
+     * manufacturer domain name ,like www.github.com
+     */
+    private String manufacturerDomain;
+
+    /**
      * webhook event name ,like rep-push
      */
     private String manufacturerEventName;

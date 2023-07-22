@@ -107,6 +107,7 @@ public class WebHookProcessorTest {
         WebHookConfig config = new WebHookConfig();
         config.setCallbackPath("/webhook/github/eventmesh/all");
         config.setManufacturerName("github");
+        config.setManufacturerDomain("www.github.com");
         config.setManufacturerEventName("ForkEvent");
         config.setContentType("application/json");
         config.setSecret("secret");

@@ -42,6 +42,7 @@ public class FileWebHookConfigOperationTest {
         WebHookConfig config = new WebHookConfig();
         config.setCallbackPath("/webhook/github/eventmesh/all");
         config.setManufacturerName("github");
+        config.setManufacturerDomain("www.github.com");
         config.setManufacturerEventName("all");
         config.setSecret("eventmesh");
         config.setCloudEventName("github-eventmesh");
