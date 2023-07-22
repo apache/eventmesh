@@ -181,19 +181,24 @@ public class MessageTransferTask extends AbstractTask {
 
     private CloudEvent addTimestamp(CloudEvent event, Command cmd, long sendTime) {
         if (cmd == RESPONSE_TO_SERVER) {
-            return getCloudEvent(event, sendTime, EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP,
+            return buildCloudEventWithTimestamps(event,
+                EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP,
+                EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP, sendTime,
                 EventMeshConstants.RSP_SEND_EVENTMESH_IP);
         } else {
-            return getCloudEvent(event, sendTime, EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
+            return buildCloudEventWithTimestamps(event,
+                EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP,
+                EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, sendTime,
                 EventMeshConstants.REQ_SEND_EVENTMESH_IP);
         }
     }
 
-    private CloudEvent getCloudEvent(CloudEvent event, long sendTime, String times, String mq, String ip) {
+    private CloudEvent buildCloudEventWithTimestamps(CloudEvent event, String client2EventMeshTime,
+        String eventMesh2MqTime, long sendTime, String eventMeshIP) {
         return CloudEventBuilder.from(event)
-            .withExtension(times, String.valueOf(startTime))
-            .withExtension(mq, String.valueOf(sendTime))
-            .withExtension(ip, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
+            .withExtension(client2EventMeshTime, String.valueOf(startTime))
+            .withExtension(eventMesh2MqTime, String.valueOf(sendTime))
+            .withExtension(eventMeshIP, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
             .build();
     }
 
