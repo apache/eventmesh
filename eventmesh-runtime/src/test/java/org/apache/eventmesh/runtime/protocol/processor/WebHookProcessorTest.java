@@ -111,7 +111,6 @@ public class WebHookProcessorTest {
         config.setManufacturerEventName("ForkEvent");
         config.setContentType("application/json");
         config.setSecret("secret");
-        config.setCloudEventSource("github");
         config.setCloudEventName("github-eventmesh");
         config.setCloudEventIdGenerateMode("uuid");
         return config;

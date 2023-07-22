@@ -46,7 +46,6 @@ public class FileWebHookConfigOperationTest {
         config.setManufacturerEventName("all");
         config.setSecret("eventmesh");
         config.setCloudEventName("github-eventmesh");
-        config.setCloudEventSource("github");
 
         try {
             FileWebHookConfigOperation fileWebHookConfigOperation = new FileWebHookConfigOperation(properties);

@@ -88,11 +88,6 @@ public class WebHookConfig {
     private String dataContentType = "application/json";
 
     /**
-     * source of event
-     */
-    private String cloudEventSource;
-
-    /**
      * id of cloudEvent ,like uuid/manufacturerEventId
      */
     private String cloudEventIdGenerateMode = "manufacturerEventId";
