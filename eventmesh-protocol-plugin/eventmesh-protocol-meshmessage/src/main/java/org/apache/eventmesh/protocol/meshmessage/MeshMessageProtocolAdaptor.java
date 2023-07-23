@@ -119,8 +119,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                         if (cloudEvent.getData() == null) {
                             return map;
                         }
-                        map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(),
-                                Constants.DEFAULT_CHARSET));
+                        map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT,
+                            new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET));
                         return map;
                     }
                 };
