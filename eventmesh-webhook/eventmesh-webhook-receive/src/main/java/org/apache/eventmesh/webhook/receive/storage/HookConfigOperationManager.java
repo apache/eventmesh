@@ -48,9 +48,6 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * This class is initialized together with the {@linkplain org.apache.eventmesh.webhook.receive.WebHookController WebHookController}
  * during the initialization phase of the {@code EventMeshHTTPServer}.
- * Differs from the other two implementations that implement the
- * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation} interface,
- * which are located in the {@code org.apache.eventmesh.webhook.admin} package.
  *
  * @see WebHookConfigOperation
  */

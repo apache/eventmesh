@@ -20,7 +20,17 @@ package org.apache.eventmesh.webhook.api;
 import java.util.List;
 
 /**
- * WebHookConfigOperation
+ * This interface has three implementation classes, among which
+ * {@code FileWebHookConfigOperation} and {@code NacosWebHookConfigOperation}
+ * serve the {@code /webhook/deleteWebHookConfig} endpoint.
+ * <p>
+ * They correspond to the persistent configuration of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}
+ * for {@code file} and {@code Nacos}, respectively.
+ * <p>
+ * However, the {@code HookConfigOperationManager}, which is located in the {@link org.apache.eventmesh.webhook.receive.storage}
+ * package, differs from the other two implementations which are located in the {@link org.apache.eventmesh.webhook.admin}
+ * package. Refer to {@code org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByIdHandler}
+ * for the reasons and details.
  */
 public interface WebHookConfigOperation {
 
