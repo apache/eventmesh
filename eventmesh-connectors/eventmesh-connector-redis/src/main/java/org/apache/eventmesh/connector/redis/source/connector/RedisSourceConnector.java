@@ -17,5 +17,45 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
-public class RedisSourceConnector {
+import java.util.List;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.source.Source;
+
+public class RedisSourceConnector implements Source {
+
+    @Override
+    public Class<? extends Config> configClass() {
+        return null;
+    }
+
+    @Override
+    public void init(Config config) throws Exception {
+
+    }
+
+    @Override
+    public void start() throws Exception {
+
+    }
+
+    @Override
+    public void commit(ConnectRecord record) {
+
+    }
+
+    @Override
+    public String name() {
+        return null;
+    }
+
+    @Override
+    public void stop() throws Exception {
+
+    }
+
+    @Override
+    public List<ConnectRecord> poll() {
+        return null;
+    }
 }

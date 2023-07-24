@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.redis.server;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.redis.config.RedisServerConfig;
 import org.apache.eventmesh.connector.redis.sink.connector.RedisSinkConnector;
+import org.apache.eventmesh.connector.redis.source.connector.RedisSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
