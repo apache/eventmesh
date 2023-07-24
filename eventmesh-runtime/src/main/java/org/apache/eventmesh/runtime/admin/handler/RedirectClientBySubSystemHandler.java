@@ -79,9 +79,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by redirecting matching clients to a target EventMesh server node.
-     * <p>
-     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     * Handles requests by redirecting matching clients to a target EventMesh server node.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request

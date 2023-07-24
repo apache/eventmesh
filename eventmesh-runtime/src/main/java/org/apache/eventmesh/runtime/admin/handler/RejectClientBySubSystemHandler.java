@@ -88,9 +88,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by rejecting matching clients.
-     * <p>
-     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     * Handles requests by rejecting matching clients.
+     *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
      */

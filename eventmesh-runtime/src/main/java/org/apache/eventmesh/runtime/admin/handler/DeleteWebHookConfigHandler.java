@@ -77,14 +77,12 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
     }
 
     /**
-     * Handles the HTTP requests by deleting a WebHook configuration.
-     * <p>
-     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     * Handles requests by deleting a WebHook configuration.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
      *
-     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#deleteWebHookConfig(WebHookConfig)
+     * @see org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#deleteWebHookConfig
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
