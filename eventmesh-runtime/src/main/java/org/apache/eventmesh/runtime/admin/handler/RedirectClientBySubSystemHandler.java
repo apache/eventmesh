@@ -89,7 +89,6 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
         Objects.requireNonNull(httpExchange, "httpExchange can not be null");
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Parse the query string from the request URI
             final Map<String, String> queryStringInfo = NetUtils.formData2Dic(httpExchange.getRequestURI().getQuery());
             // Extract parameters from the query string
             final String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
@@ -141,7 +140,6 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the result of redirection into output stream
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                         +
                         "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",

@@ -89,7 +89,6 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -131,7 +130,6 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the successfully rejected client addresses into output stream
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
                 NetUtils.addressToString(successRemoteAddrs));
             NetUtils.sendSuccessResponseHeaders(httpExchange);

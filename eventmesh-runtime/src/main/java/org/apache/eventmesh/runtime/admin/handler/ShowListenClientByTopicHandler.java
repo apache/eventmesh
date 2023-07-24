@@ -79,7 +79,6 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameter from the query string

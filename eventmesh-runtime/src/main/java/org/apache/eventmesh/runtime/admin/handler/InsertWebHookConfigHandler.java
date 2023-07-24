@@ -87,7 +87,7 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
 
-        // Get requestBody and resolve to WebHookConfig
+        // Resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 

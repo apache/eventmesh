@@ -87,7 +87,6 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string

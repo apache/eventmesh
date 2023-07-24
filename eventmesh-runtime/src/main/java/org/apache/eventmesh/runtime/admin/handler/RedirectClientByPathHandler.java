@@ -86,7 +86,6 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -135,7 +134,6 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            // Serialize the result of redirection into output stream
             result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",

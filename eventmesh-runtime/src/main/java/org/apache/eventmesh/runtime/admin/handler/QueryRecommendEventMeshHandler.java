@@ -80,11 +80,9 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            // Check whether the registry is enabled
             if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
-            // Parse the query string from the request URI
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             // Extract parameters from the query string
@@ -101,7 +99,6 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             // Calculate the recommended EventMesh node according to the given group and purpose
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
-            // Serialize the result into output stream
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             NetUtils.sendSuccessResponseHeaders(httpExchange);

@@ -100,7 +100,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
-        // Get requestBody and resolve to WebHookConfig
+        // Resolve to WebHookConfig
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
         Objects.requireNonNull(node, "JsonNode can not be null");
 

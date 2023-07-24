@@ -96,7 +96,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
         NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
-        // Get requestBody and resolve to WebHookConfig
+        // Resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
         WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
 

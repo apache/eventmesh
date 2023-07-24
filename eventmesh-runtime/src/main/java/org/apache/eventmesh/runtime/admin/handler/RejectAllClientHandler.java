@@ -106,7 +106,6 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
-            // Serialize the successfully rejected client addresses into output stream
             out.write(String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
                 NetUtils.addressToString(successRemoteAddrs)).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
