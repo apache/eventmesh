@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.connector.redis.sink.config;
 
-    implementation 'org.redisson:redisson:3.23.1'
+import lombok.Data;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+@Data
+public class RedisSinkConfig {
+
+    public SinkConnectorConfig connectorConfig;
+
 }
