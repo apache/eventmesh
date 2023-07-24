@@ -58,8 +58,8 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * The
  * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigByManufacturer HookConfigOperationManager}
- * which implements the {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
- * interface, does not participate in the implementation of this endpoint.
+ * , another implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
+ * interface, is not used for this endpoint.
  *
  * @see AbstractHttpHandler
  */
