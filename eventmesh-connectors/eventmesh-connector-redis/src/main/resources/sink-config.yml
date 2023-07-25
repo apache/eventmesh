@@ -26,6 +26,6 @@ pubSubConfig:
     passWord: redisPassWord
 connectorConfig:
     connectorName: redisSink
-    server: 127.0.0.1:9876
+    server: redis://127.0.0.1:6379
     topic: TopicTest
 

@@ -17,17 +17,20 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+
+import java.util.List;
+
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.TransportMode;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
 
 @Slf4j
 public class RedisSinkConnector implements Sink {
@@ -47,7 +50,6 @@ public class RedisSinkConnector implements Sink {
     public void init(Config config) throws Exception {
         this.sinkConfig = (RedisSinkConfig) config;
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
-        redisConfig.setTransportMode(TransportMode.EPOLL);
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
         this.redissonClient = Redisson.create(redisConfig);
     }

@@ -21,16 +21,17 @@ import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.redisson.Redisson;
-import org.redisson.api.RTopic;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.TransportMode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.redisson.Redisson;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.TransportMode;
 
 public class RedisSourceConnector implements Source {
 
@@ -53,7 +54,6 @@ public class RedisSourceConnector implements Source {
     public void init(Config config) throws Exception {
         this.sourceConfig = (RedisSourceConfig) config;
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
-        redisConfig.setTransportMode(TransportMode.EPOLL);
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
         this.redissonClient = Redisson.create(redisConfig);
         this.queue = new LinkedBlockingQueue<>(1000);

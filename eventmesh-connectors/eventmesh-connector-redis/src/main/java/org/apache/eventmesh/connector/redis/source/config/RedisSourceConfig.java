@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.connector.redis.source.config;
 
-import lombok.Data;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
+import lombok.Data;
 
 @Data
 public class RedisSourceConfig extends SourceConfig {
