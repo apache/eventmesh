@@ -20,7 +20,7 @@ pubSubConfig:
     subject: TopicTest
     idc: FT
     env: PRD
-    group: kafkaSink
+    group: redisSink
     appId: 5031
     userName: redisSinkUser
     passWord: redisPassWord

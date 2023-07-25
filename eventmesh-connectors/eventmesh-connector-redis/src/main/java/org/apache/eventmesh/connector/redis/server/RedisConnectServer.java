@@ -33,13 +33,13 @@ public class RedisConnectServer {
         RedisServerConfig serverConfig = ConfigUtil.parse(RedisServerConfig.class, "server-config.yml");
 
         if (serverConfig.isSourceEnable()) {
-            Application kafkaSourceApp = new Application();
-            kafkaSourceApp.run(RedisSourceConnector.class);
+            Application redisSourceApp = new Application();
+            redisSourceApp.run(RedisSourceConnector.class);
         }
 
         if (serverConfig.isSinkEnable()) {
-            Application kafkaSinkApp = new Application();
-            kafkaSinkApp.run(RedisSinkConnector.class);
+            Application redisSinkApp = new Application();
+            redisSinkApp.run(RedisSinkConnector.class);
         }
     }
 }
