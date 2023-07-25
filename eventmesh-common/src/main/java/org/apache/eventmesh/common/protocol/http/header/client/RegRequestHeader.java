@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.utils.HttpConvertsUtils;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,20 +52,21 @@ public class RegRequestHeader extends Header {
     private String passwd;
 
     public static RegRequestHeader buildHeader(Map<String, Object> headerParam) {
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
         RegRequestHeader header = new RegRequestHeader();
-        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
-        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-            ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
-        header.setLanguage(lan);
-        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
-        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
-        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
-        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
-        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
-        return header;
+        // header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
+        // header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+        // String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
+        //     ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+        // header.setLanguage(lan);
+        // header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
+        // header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
+        // header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
+        // header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
+        // header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
+        // header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
+        // header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
+        return (RegRequestHeader) httpConvertsUtils.httpHeaderConverts(header, headerParam);
     }
 
     public String getCode() {
@@ -149,18 +151,20 @@ public class RegRequestHeader extends Header {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.LANGUAGE, language);
-        map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
-        map.put(ProtocolKey.ClientInstanceKey.PID, pid);
-        map.put(ProtocolKey.ClientInstanceKey.IP, ip);
-        map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
-        map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
-        return map;
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
+        ProtocolKey protocolKey = new ProtocolKey();
+        // Map<String, Object> map = new HashMap<String, Object>();
+        // map.put(ProtocolKey.REQUEST_CODE, code);
+        // map.put(ProtocolKey.LANGUAGE, language);
+        // map.put(ProtocolKey.VERSION, version);
+        // map.put(ProtocolKey.ClientInstanceKey.ENV, env);
+        // map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
+        // map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
+        // map.put(ProtocolKey.ClientInstanceKey.PID, pid);
+        // map.put(ProtocolKey.ClientInstanceKey.IP, ip);
+        // map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
+        // map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
+        return httpConvertsUtils.httpMapConverts(this, protocolKey);
     }
 
     @Override

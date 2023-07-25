@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.utils.HttpConvertsUtils;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -175,39 +176,43 @@ public class SendMessageBatchRequestHeader extends Header {
     }
 
     public static SendMessageBatchRequestHeader buildHeader(final Map<String, Object> headerParam) {
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
         SendMessageBatchRequestHeader header = new SendMessageBatchRequestHeader();
-        header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
-        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        header.setProtocolType(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_TYPE));
-        header.setProtocolVersion(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_VERSION));
-        header.setProtocolDesc(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_DESC));
-        String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-            ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
-        header.setLanguage(lan);
-        header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
-        header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
-        header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
-        header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
-        header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
-        return header;
+        // header.setCode(MapUtils.getString(headerParam, ProtocolKey.REQUEST_CODE));
+        // header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+        // header.setProtocolType(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_TYPE));
+        // header.setProtocolVersion(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_VERSION));
+        // header.setProtocolDesc(MapUtils.getString(headerParam, ProtocolKey.PROTOCOL_DESC));
+        // String lan = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
+        //     ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+        // header.setLanguage(lan);
+        // header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
+        // header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
+        // header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
+        // header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
+        // header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
+        // header.setUsername(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.USERNAME));
+        // header.setPasswd(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PASSWD));
+        return (SendMessageBatchRequestHeader) httpConvertsUtils.httpHeaderConverts(header, headerParam);
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.LANGUAGE, language);
-        map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
-        map.put(ProtocolKey.ClientInstanceKey.PID, pid);
-        map.put(ProtocolKey.ClientInstanceKey.IP, ip);
-        map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
-        map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
-        return map;
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
+        // SendMessageBatchRequestHeader header = new SendMessageBatchRequestHeader();
+        ProtocolKey protocolKey = new ProtocolKey();
+        // Map<String, Object> map = new HashMap<String, Object>();
+        // map.put(ProtocolKey.REQUEST_CODE, code);
+        // map.put(ProtocolKey.LANGUAGE, language);
+        // map.put(ProtocolKey.VERSION, version);
+        // map.put(ProtocolKey.ClientInstanceKey.ENV, env);
+        // map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
+        // map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
+        // map.put(ProtocolKey.ClientInstanceKey.PID, pid);
+        // map.put(ProtocolKey.ClientInstanceKey.IP, ip);
+        // map.put(ProtocolKey.ClientInstanceKey.USERNAME, username);
+        // map.put(ProtocolKey.ClientInstanceKey.PASSWD, passwd);
+        return httpConvertsUtils.httpMapConverts(this, protocolKey);
     }
 
     @Override

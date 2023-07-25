@@ -29,13 +29,21 @@ public enum ProtocolVersion {
     }
 
     public static ProtocolVersion get(String version) {
-        if (V1.version.equals(version)) {
-            return V1;
-        } else if (V2.version.equals(version)) {
-            return V2;
-        } else {
-            return null;
+        switch (ProtocolVersion.valueOf(version)) {
+            case V1:
+                return V1;
+            case V2:
+                return V2;
+            default:
+                return null;
         }
+        // if (V1.version.equals(version)) {
+        //     return V1;
+        // } else if (V2.version.equals(version)) {
+        //     return V2;
+        // } else {
+        //     return null;
+        // }
     }
 
     public String getVersion() {

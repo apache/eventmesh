@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.utils.HttpConvertsUtils;
 
 import org.apache.commons.collections4.MapUtils;
 
@@ -104,28 +105,32 @@ public class PushMessageRequestHeader extends Header {
     }
 
     public static PushMessageRequestHeader buildHeader(final Map<String, Object> headerParam) {
-        PushMessageRequestHeader pushMessageRequestHeader = new PushMessageRequestHeader();
-        pushMessageRequestHeader.setCode(MapUtils.getIntValue(headerParam, ProtocolKey.REQUEST_CODE));
-        pushMessageRequestHeader.setLanguage(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA));
-        pushMessageRequestHeader.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        pushMessageRequestHeader.setEventMeshCluster(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
-        pushMessageRequestHeader.setEventMeshIp(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
-        pushMessageRequestHeader.setEventMeshEnv(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
-        pushMessageRequestHeader.setEventMeshIdc(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
-        return pushMessageRequestHeader;
+        PushMessageRequestHeader header = new PushMessageRequestHeader();
+        header.setCode(MapUtils.getIntValue(headerParam, ProtocolKey.REQUEST_CODE));
+        header.setLanguage(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA));
+        header.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+        header.setEventMeshCluster(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        header.setEventMeshIp(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        header.setEventMeshEnv(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        header.setEventMeshIdc(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
+        return (PushMessageRequestHeader) new HttpConvertsUtils().httpHeaderConverts(header, headerParam);
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.LANGUAGE, language);
-        map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        return map;
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
+        // PushMessageRequestHeader header = new PushMessageRequestHeader();
+        ProtocolKey protocolKey = new ProtocolKey();
+        ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey = new ProtocolKey.EventMeshInstanceKey();
+        // Map<String, Object> map = new HashMap<String, Object>();
+        // map.put(ProtocolKey.REQUEST_CODE, code);
+        // map.put(ProtocolKey.LANGUAGE, language);
+        // map.put(ProtocolKey.VERSION, version);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
+        return httpConvertsUtils.httpMapConverts(this, protocolKey, eventMeshInstanceKey);
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.protocol.http.header.message;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.utils.HttpConvertsUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,12 +108,16 @@ public class SendMessageBatchResponseHeader extends Header {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        return map;
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
+        // SendMessageBatchResponseHeader header = new SendMessageBatchResponseHeader();
+        ProtocolKey protocolKey = new ProtocolKey();
+        ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey = new ProtocolKey.EventMeshInstanceKey();
+        // Map<String, Object> map = new HashMap<String, Object>();
+        // map.put(ProtocolKey.REQUEST_CODE, code);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
+        return httpConvertsUtils.httpMapConverts(this, protocolKey, eventMeshInstanceKey);
     }
 }

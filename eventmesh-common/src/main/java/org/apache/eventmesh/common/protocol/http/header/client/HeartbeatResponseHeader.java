@@ -20,10 +20,18 @@ package org.apache.eventmesh.common.protocol.http.header.client;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.utils.HttpConvertsUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Setter
+@Getter
+@ToString
 public class HeartbeatResponseHeader extends Header {
 
     private int code;
@@ -36,45 +44,45 @@ public class HeartbeatResponseHeader extends Header {
 
     private String eventMeshIdc;
 
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getEventMeshCluster() {
-        return eventMeshCluster;
-    }
-
-    public void setEventMeshCluster(String eventMeshCluster) {
-        this.eventMeshCluster = eventMeshCluster;
-    }
-
-    public String getEventMeshIp() {
-        return eventMeshIp;
-    }
-
-    public void setEventMeshIp(String eventMeshIp) {
-        this.eventMeshIp = eventMeshIp;
-    }
-
-    public String getEventMeshEnv() {
-        return eventMeshEnv;
-    }
-
-    public void setEventMeshEnv(String eventMeshEnv) {
-        this.eventMeshEnv = eventMeshEnv;
-    }
-
-    public String getEventMeshIdc() {
-        return eventMeshIdc;
-    }
-
-    public void setEventMeshIdc(String eventMeshIdc) {
-        this.eventMeshIdc = eventMeshIdc;
-    }
+    // public int getCode() {
+    //     return code;
+    // }
+    //
+    // public void setCode(int code) {
+    //     this.code = code;
+    // }
+    //
+    // public String getEventMeshCluster() {
+    //     return eventMeshCluster;
+    // }
+    //
+    // public void setEventMeshCluster(String eventMeshCluster) {
+    //     this.eventMeshCluster = eventMeshCluster;
+    // }
+    //
+    // public String getEventMeshIp() {
+    //     return eventMeshIp;
+    // }
+    //
+    // public void setEventMeshIp(String eventMeshIp) {
+    //     this.eventMeshIp = eventMeshIp;
+    // }
+    //
+    // public String getEventMeshEnv() {
+    //     return eventMeshEnv;
+    // }
+    //
+    // public void setEventMeshEnv(String eventMeshEnv) {
+    //     this.eventMeshEnv = eventMeshEnv;
+    // }
+    //
+    // public String getEventMeshIdc() {
+    //     return eventMeshIdc;
+    // }
+    //
+    // public void setEventMeshIdc(String eventMeshIdc) {
+    //     this.eventMeshIdc = eventMeshIdc;
+    // }
 
     public static HeartbeatResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
         String eventMeshIp, String eventMeshEnv,
@@ -88,26 +96,30 @@ public class HeartbeatResponseHeader extends Header {
         return heartbeatResponseHeader;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("heartbeatResponseHeader={")
-            .append("code=").append(code).append(",")
-            .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-            .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-            .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-            .append("eventMeshIp=").append(eventMeshIp).append("}");
-        return sb.toString();
-    }
+    // @Override
+    // public String toString() {
+    //     StringBuilder sb = new StringBuilder();
+    //     sb.append("heartbeatResponseHeader={")
+    //         .append("code=").append(code).append(",")
+    //         .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+    //         .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+    //         .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+    //         .append("eventMeshIp=").append(eventMeshIp).append("}");
+    //     return sb.toString();
+    // }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        return map;
+        HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();
+        // HeartbeatResponseHeader header = this;
+        ProtocolKey protocolKey = new ProtocolKey();
+        ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey = new ProtocolKey.EventMeshInstanceKey();
+        // Map<String, Object> map = new HashMap<String, Object>();
+        // map.put(ProtocolKey.REQUEST_CODE, code);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
+        // map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
+        return httpConvertsUtils.httpMapConverts(this, protocolKey, eventMeshInstanceKey);
     }
 }
