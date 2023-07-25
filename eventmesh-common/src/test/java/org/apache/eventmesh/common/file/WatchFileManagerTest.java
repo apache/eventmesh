@@ -19,6 +19,12 @@ package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import lombok.extern.slf4j.Slf4j;
+
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -31,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class WatchFileManagerTest {
+    private static final Logger LOGGER = LogManager.getLogger(WatchFileManagerTest.class);
 
     @Test
     public void testWatchFile() throws IOException, InterruptedException {
@@ -50,17 +57,15 @@ public class WatchFileManagerTest {
         };
         WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
 
-        try (FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
-            FileWriter fw = new FileWriter(file)) {
-
+        try (final BufferedReader reader = new BufferedReader(new FileReader(file));
+            final FileWriter fw = new FileWriter(file)) {
             Properties properties = new Properties();
-            properties.load(br);
-
+            properties.load(reader);
             properties.setProperty("eventMesh.server.newAdd", "newAdd");
             properties.store(fw, "newAdd");
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch (IOException e) {
+            LOGGER.error("WatchFileManagerTest caught exception: " + e.getMessage(), e);
         }
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
