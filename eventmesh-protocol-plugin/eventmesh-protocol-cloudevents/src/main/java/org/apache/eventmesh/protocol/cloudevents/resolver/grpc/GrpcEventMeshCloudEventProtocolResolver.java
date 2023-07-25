@@ -17,14 +17,13 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.grpc;
 
-
-import java.util.Objects;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.cloudevents.core.format.EventFormat;
