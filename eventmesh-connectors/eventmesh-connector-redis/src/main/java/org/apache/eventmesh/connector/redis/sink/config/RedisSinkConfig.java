@@ -18,9 +18,10 @@
 package org.apache.eventmesh.connector.redis.sink.config;
 
 import lombok.Data;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 @Data
-public class RedisSinkConfig {
+public class RedisSinkConfig extends SinkConfig {
 
     public SinkConnectorConfig connectorConfig;
 

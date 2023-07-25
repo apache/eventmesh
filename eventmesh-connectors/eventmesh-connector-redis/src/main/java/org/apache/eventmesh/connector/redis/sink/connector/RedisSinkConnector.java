@@ -18,28 +18,43 @@
 package org.apache.eventmesh.connector.redis.sink.connector;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.redisson.Redisson;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.TransportMode;
 
 import java.util.List;
 
 @Slf4j
 public class RedisSinkConnector implements Sink {
 
+    private RTopic topic;
+
+    private RedisSinkConfig sinkConfig;
+
+    private RedissonClient redissonClient;
+
     @Override
     public Class<? extends Config> configClass() {
-        return null;
+        return RedisSinkConfig.class;
     }
 
     @Override
     public void init(Config config) throws Exception {
-
+        this.sinkConfig = (RedisSinkConfig) config;
+        org.redisson.config.Config redisConfig = new org.redisson.config.Config();
+        redisConfig.setTransportMode(TransportMode.EPOLL);
+        redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
+        this.redissonClient = Redisson.create(redisConfig);
     }
 
     @Override
     public void start() throws Exception {
-
+        this.topic = redissonClient.getTopic(sinkConfig.connectorConfig.getTopic());
     }
 
     @Override
@@ -49,16 +64,22 @@ public class RedisSinkConnector implements Sink {
 
     @Override
     public String name() {
-        return null;
+        return this.sinkConfig.getConnectorConfig().getConnectorName();
     }
 
     @Override
     public void stop() throws Exception {
-
+        this.redissonClient.shutdown();
     }
 
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
-
+        for (ConnectRecord connectRecord : sinkRecords) {
+            try {
+                long publish = topic.publish(connectRecord);
+            } catch (Exception e) {
+                log.error("[RedisSinkConnector] sendResult has error : ", e);
+            }
+        }
     }
 }
