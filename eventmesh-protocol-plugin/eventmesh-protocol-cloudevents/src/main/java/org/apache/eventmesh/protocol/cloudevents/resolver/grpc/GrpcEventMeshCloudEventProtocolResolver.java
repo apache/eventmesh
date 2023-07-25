@@ -18,6 +18,7 @@
 package org.apache.eventmesh.protocol.cloudevents.resolver.grpc;
 
 
+import java.util.Objects;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
@@ -40,15 +41,14 @@ public class GrpcEventMeshCloudEventProtocolResolver {
     private static final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE);
 
     public static io.cloudevents.CloudEvent buildEvent(CloudEvent cloudEvent) {
-        io.cloudevents.CloudEvent event = eventFormat.deserialize(cloudEvent.toByteArray());
-        return event;
+        return Objects.requireNonNull(eventFormat).deserialize(cloudEvent.toByteArray());
     }
 
     public static List<io.cloudevents.CloudEvent> buildBatchEvents(CloudEventBatch cloudEventBatch) {
         if (cloudEventBatch == null || cloudEventBatch.getEventsCount() < 1) {
             return new ArrayList<>(0);
         }
-        return cloudEventBatch.getEventsList().stream().map(cloudEvent -> eventFormat.deserialize(cloudEvent.toByteArray()))
+        return cloudEventBatch.getEventsList().stream().map(cloudEvent -> Objects.requireNonNull(eventFormat).deserialize(cloudEvent.toByteArray()))
             .collect(Collectors.toList());
     }
 
@@ -57,7 +57,7 @@ public class GrpcEventMeshCloudEventProtocolResolver {
             return new EventMeshCloudEventWrapper(null);
         }
         try {
-            return new EventMeshCloudEventWrapper(CloudEvent.parseFrom(eventFormat.serialize(cloudEvent)));
+            return new EventMeshCloudEventWrapper(CloudEvent.parseFrom(Objects.requireNonNull(eventFormat).serialize(cloudEvent)));
         } catch (InvalidProtocolBufferException e) {
             log.error("Build Event Mesh CloudEvent from io.cloudevents.CloudEvent error", e);
         }
