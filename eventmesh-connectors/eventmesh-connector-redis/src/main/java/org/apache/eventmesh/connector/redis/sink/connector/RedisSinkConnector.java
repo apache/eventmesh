@@ -17,19 +17,15 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
-
-import java.util.List;
-
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.TransportMode;
-
-import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
