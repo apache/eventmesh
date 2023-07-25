@@ -17,26 +17,54 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
-import java.util.List;
+import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.redisson.Redisson;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.TransportMode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class RedisSourceConnector implements Source {
 
+    private static final int DEFAULT_BATCH_SIZE = 10;
+
+    private RTopic topic;
+
+    private RedisSourceConfig sourceConfig;
+
+    private RedissonClient redissonClient;
+
+    private BlockingQueue<ConnectRecord> queue;
+
     @Override
     public Class<? extends Config> configClass() {
-        return null;
+        return RedisSourceConfig.class;
     }
 
     @Override
     public void init(Config config) throws Exception {
-
+        this.sourceConfig = (RedisSourceConfig) config;
+        org.redisson.config.Config redisConfig = new org.redisson.config.Config();
+        redisConfig.setTransportMode(TransportMode.EPOLL);
+        redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
+        this.redissonClient = Redisson.create(redisConfig);
+        this.queue = new LinkedBlockingQueue<>(1000);
     }
 
     @Override
     public void start() throws Exception {
-
+        this.topic = redissonClient.getTopic(sourceConfig.connectorConfig.getTopic());
+        this.topic.addListener(ConnectRecord.class, (channel, msg) -> {
+            queue.add(msg);
+        });
     }
 
     @Override
@@ -46,16 +74,29 @@ public class RedisSourceConnector implements Source {
 
     @Override
     public String name() {
-        return null;
+        return this.sourceConfig.getConnectorConfig().getConnectorName();
     }
 
     @Override
     public void stop() throws Exception {
-
+        this.topic.removeAllListeners();
+        this.redissonClient.shutdown();
     }
 
     @Override
     public List<ConnectRecord> poll() {
-        return null;
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+            try {
+                ConnectRecord connectRecord = queue.poll(3, TimeUnit.SECONDS);
+                if (connectRecord == null) {
+                    break;
+                }
+                connectRecords.add(connectRecord);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        return connectRecords;
     }
 }

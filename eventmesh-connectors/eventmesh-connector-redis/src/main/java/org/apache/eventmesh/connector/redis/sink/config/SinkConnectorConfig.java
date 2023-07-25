@@ -22,4 +22,9 @@ import lombok.Data;
 @Data
 public class SinkConnectorConfig {
 
+    private String connectorName;
+
+    private String server;
+
+    private String topic;
 }

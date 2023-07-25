@@ -22,4 +22,10 @@ import lombok.Data;
 @Data
 public class SourceConnectorConfig {
 
+    private String connectorName;
+
+    private String server;
+
+    private String topic;
+
 }
