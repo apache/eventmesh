@@ -22,7 +22,6 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.EVENT_ME
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE_NAME;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
 
-
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -31,8 +30,8 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -212,7 +211,7 @@ public class EventMeshConsumer {
         }
     }
 
-    public void unsubscribe(final Subscription.SubscriptionItem subscriptionItem) throws Exception {
+    public void unsubscribe(final SubscriptionItem subscriptionItem) throws Exception {
         final SubscriptionMode mode = subscriptionItem.getMode();
         final String topic = subscriptionItem.getTopic();
         if (SubscriptionMode.CLUSTERING == mode) {

@@ -196,6 +196,7 @@ public class Acl {
         aclProperties.setPwd(userAgent.getPassword());
         aclProperties.setSubsystem(userAgent.getSubsystem());
         aclProperties.setRequestCode(requestCode);
+        aclProperties.setVersion(userAgent.getVersion());
         if (StringUtils.isNotBlank(topic)) {
             aclProperties.setTopic(topic);
         }

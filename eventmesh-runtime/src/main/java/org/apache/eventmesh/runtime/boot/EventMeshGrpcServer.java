@@ -33,7 +33,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
-import org.apache.eventmesh.runtime.core.protocol.grpc.service.ProducerService;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.PublisherService;
 import org.apache.eventmesh.runtime.metrics.grpc.EventMeshGrpcMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 
@@ -41,8 +41,8 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -123,9 +123,9 @@ public class EventMeshGrpcServer {
         int serverPort = eventMeshGrpcConfiguration.getGrpcServerPort();
 
         server = ServerBuilder.forPort(serverPort)
-            .addService(new ProducerService(this, sendMsgExecutor))
-            .addService(new ConsumerService(this, clientMgmtExecutor, replyMsgExecutor))
-            .addService(new HeartbeatService(this, clientMgmtExecutor))
+            .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
+            .addService(new HeartbeatService(this, sendMsgExecutor))
+            .addService(new PublisherService(this, sendMsgExecutor))
             .build();
 
         initMetricsMonitor();
@@ -276,7 +276,7 @@ public class EventMeshGrpcServer {
     }
 
     private void initHttpClientPool() {
-        httpClientPool = new LinkedList<>();
+        httpClientPool = new ArrayList<>();
         int clientPool = RandomUtils.nextInt(MIN_LIMIT, MAX_LIMIT);
         for (int i = 0; i < clientPool; i++) {
             CloseableHttpClient client = HttpClients.createDefault();

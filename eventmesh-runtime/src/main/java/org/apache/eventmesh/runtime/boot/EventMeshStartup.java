@@ -19,9 +19,9 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.util.BannerUtil;
 
 import java.io.File;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +35,7 @@ public class EventMeshStartup {
                 .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
 
             EventMeshServer server = new EventMeshServer();
+            BannerUtil.generateBanner();
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

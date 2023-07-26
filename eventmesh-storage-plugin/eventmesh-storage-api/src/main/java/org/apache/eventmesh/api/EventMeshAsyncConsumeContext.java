@@ -17,19 +17,13 @@
 
 package org.apache.eventmesh.api;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
     private AbstractContext abstractContext;
-
-    public AbstractContext getAbstractContext() {
-        return abstractContext;
-    }
-
-    public void setAbstractContext(AbstractContext abstractContext) {
-        this.abstractContext = abstractContext;
-    }
-
-    public abstract void commit(EventMeshAction action);
 
 }

@@ -20,8 +20,6 @@ package org.apache.eventmesh.registry.zookeeper.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -42,13 +40,14 @@ import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -58,11 +57,13 @@ public class ZookeeperRegistryService implements RegistryService {
 
     private final AtomicBoolean startStatus = new AtomicBoolean(false);
 
+    @Getter
     private String serverAddr;
 
-    public CuratorFramework zkClient = null;
+    @Getter
+    public CuratorFramework zkClient;
 
-    private Map<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
+    private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
     @Override
     public void init() throws RegistryException {
@@ -71,7 +72,7 @@ public class ZookeeperRegistryService implements RegistryService {
             log.warn("[ZookeeperRegistryService] has been init");
             return;
         }
-        eventMeshRegisterInfoMap = new HashMap<>(ConfigurationContextUtil.KEYS.size());
+        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
             if (null == commonConfiguration) {
@@ -219,14 +220,6 @@ public class ZookeeperRegistryService implements RegistryService {
         return eventMeshDataInfoList;
     }
 
-
-    @Override
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
-        throws RegistryException {
-        // todo find metadata
-        return null;
-    }
-
     @Override
     public void registerMetadata(Map<String, String> metadataMap) {
         for (Map.Entry<String, EventMeshRegisterInfo> eventMeshRegisterInfo : eventMeshRegisterInfoMap.entrySet()) {
@@ -240,6 +233,9 @@ public class ZookeeperRegistryService implements RegistryService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
+            if (null == ipPort || ipPort.length < 2) {
+                return false;
+            }
             String ip = ipPort[0];
             int port = Integer.parseInt(ipPort[1]);
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
@@ -288,16 +284,6 @@ public class ZookeeperRegistryService implements RegistryService {
         return true;
     }
 
-    @Override
-    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
-        return null;
-    }
-
-    @Override
-    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return null;
-    }
-
     private String formatInstancePath(String clusterName, String serviceName, String endPoint) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
             .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
@@ -307,13 +293,5 @@ public class ZookeeperRegistryService implements RegistryService {
     private String formatServicePath(String clusterName, String serviceName) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
             .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
-    }
-
-    public String getServerAddr() {
-        return serverAddr;
-    }
-
-    public CuratorFramework getZkClient() {
-        return zkClient;
     }
 }

@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -67,10 +66,10 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
             ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
             if (!clientGroupMap.isEmpty()) {
                 for (ClientGroupWrapper cgw : clientGroupMap.values()) {
-                    Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
-                    if (listenSessionSet != null && !listenSessionSet.isEmpty()) {
+                    Map<String, Session> listenSessions = cgw.getTopic2sessionInGroupMapping().get(topic);
+                    if (listenSessions != null && !listenSessions.isEmpty()) {
                         result.append(String.format("group:%s", cgw.getGroup())).append(newLine);
-                        for (Session session : listenSessionSet) {
+                        for (Session session : listenSessions.values()) {
                             UserAgent userAgent = session.getClient();
                             result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
                                     .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))

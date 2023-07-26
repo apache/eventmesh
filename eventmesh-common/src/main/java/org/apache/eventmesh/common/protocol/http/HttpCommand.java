@@ -57,9 +57,9 @@ public class HttpCommand implements ProtocolTransportObject {
 
     public String httpVersion;
 
-    public Header header;
+    private transient Header header;
 
-    public Body body;
+    private transient Body body;
 
     //Command request time
     public long reqTime;
@@ -167,6 +167,20 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
+        HttpHeaders headers = response.headers();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
+        headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        Optional.of(this.getHeader().toMap()).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
+        return response;
+    }
+
+    public DefaultFullHttpResponse httpResponse(HttpResponseStatus httpResponseStatus) throws Exception {
+        if (cmdType == CmdType.REQ) {
+            return null;
+        }
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
             Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);

@@ -38,8 +38,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventM
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.SpanKey;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
@@ -134,13 +133,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            Utils.logSucceedMessageFlow(msg, session.getClient(), startTime,
-                                taskExecuteTime);
-                        }
-                    }
+                    (ChannelFutureListener) future -> Utils.logSucceedMessageFlow(msg, session.getClient(), startTime, taskExecuteTime)
                 );
 
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
@@ -260,7 +253,7 @@ public class MessageTransferTask extends AbstractTask {
                         session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
-                session.getSender().failMsgCount.incrementAndGet();
+                session.getSender().getFailMsgCount().incrementAndGet();
                 MESSAGE_LOGGER
                     .error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}",
                         session.getClient(),

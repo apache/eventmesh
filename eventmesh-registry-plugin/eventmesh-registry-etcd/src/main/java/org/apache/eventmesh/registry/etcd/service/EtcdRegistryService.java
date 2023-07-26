@@ -19,8 +19,6 @@ package org.apache.eventmesh.registry.etcd.service;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -36,12 +34,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +51,7 @@ import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 
-
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -72,9 +70,10 @@ public class EtcdRegistryService implements RegistryService {
 
     private String password;
 
+    @Getter
     private Client etcdClient;
 
-    private Map<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
+    private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
     private ScheduledExecutorService etcdRegistryMonitorExecutorService;
 
@@ -84,7 +83,7 @@ public class EtcdRegistryService implements RegistryService {
         if (!initStatus.compareAndSet(false, true)) {
             return;
         }
-        eventMeshRegisterInfoMap = new HashMap<>(ConfigurationContextUtil.KEYS.size());
+        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
             if (null == commonConfiguration) {
@@ -181,13 +180,6 @@ public class EtcdRegistryService implements RegistryService {
     }
 
     @Override
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
-        throws RegistryException {
-        // todo find metadata
-        return Collections.emptyMap();
-    }
-
-    @Override
     public void registerMetadata(Map<String, String> metadataMap) {
         for (Map.Entry<String, EventMeshRegisterInfo> eventMeshRegisterInfo : eventMeshRegisterInfoMap.entrySet()) {
             EventMeshRegisterInfo registerInfo = eventMeshRegisterInfo.getValue();
@@ -238,20 +230,6 @@ public class EtcdRegistryService implements RegistryService {
                 eventMeshClusterName, eventMeshName, e);
             throw new RegistryException(e.getMessage());
         }
-    }
-
-    @Override
-    public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfoByGroup(String group) throws RegistryException {
-        return null;
-    }
-
-    @Override
-    public List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws RegistryException {
-        return Collections.emptyList();
-    }
-
-    public Client getEtcdClient() {
-        return etcdClient;
     }
 
     public long getLeaseId() {

@@ -63,25 +63,38 @@ public class EventMeshServer {
     private static final ConfigService configService = ConfigService.getInstance();
 
     public EventMeshServer() {
+
+        //Initialize configuration
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
         AssertUtils.notNull(this.configuration, "configuration is null");
+
+        //Initialize acl, registry, trace and storageResource
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
-
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
+        //Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (final String provideServerProtocol : provideServerProtocols) {
-            if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+            switch (provideServerProtocol) {
+                case ConfigurationContextUtil.HTTP:
+                    BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+                    break;
+                case ConfigurationContextUtil.TCP:
+                    BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
+                    break;
+                case ConfigurationContextUtil.GRPC:
+                    BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+                    break;
+                default:
+                    //nothing to do
             }
-            if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
-            }
-            if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
-            }
+        }
+
+        //If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
+        if (BOOTSTRAP_LIST.isEmpty()) {
+            BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
     }
 

@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
@@ -36,9 +37,9 @@ public class EventMeshTcpRetryer {
 
     private EventMeshTCPServer eventMeshTCPServer;
 
-    private DelayQueue<RetryContext> retrys = new DelayQueue<RetryContext>();
+    private final DelayQueue<RetryContext> retrys = new DelayQueue<>();
 
-    private ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
+    private final ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
         3,
         60000,
         TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
@@ -61,7 +62,7 @@ public class EventMeshTcpRetryer {
 
     public void pushRetry(RetryContext retryContext) {
         if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
-            log.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
+            log.error("pushRetry fail, retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
                 retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
@@ -91,9 +92,19 @@ public class EventMeshTcpRetryer {
             try {
                 RetryContext retryContext;
                 while ((retryContext = retrys.take()) != null) {
-                    pool.execute(retryContext::retry);
+                    final RetryContext retryCtx = retryContext;
+                    pool.execute(() -> {
+                        try {
+                            retryCtx.retry();
+                        } catch (Exception e) {
+                            log.error("retry-dispatcher error!", e);
+                        }
+                    });
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 log.error("retry-dispatcher error!", e);
             }
         }, "retry-dispatcher");
@@ -116,6 +127,5 @@ public class EventMeshTcpRetryer {
     }
 
     public void printRetryThreadPoolState() {
-        //ThreadPoolHelper.printState(pool);
     }
 }

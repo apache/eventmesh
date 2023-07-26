@@ -27,7 +27,7 @@
 
 ### EventMesh 架构
 
-![EventMesh Architecture](resources/eventmesh-architecture-3.png)
+![EventMesh Architecture](resources/eventmesh-architecture-4.png)
 
 ### EventMesh Dashboard
 
@@ -38,7 +38,7 @@
 Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以下是一些EventMesh的关键特点：
 
 - 基于 [CloudEvents](https://cloudevents.io) 规范构建。
-- 快速可扩展的Connector，例如作为Saas、CloudService和数据库等的source 或sink。.
+- 快速可扩展的Connector，[connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors)，例如作为Saas、CloudService和数据库等的source 或sink。.
 - 快速可扩展的存储层，使用 [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity)和[Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), 和 [RDMS](https://en.wikipedia.org/wiki/Relational_database)（正在进行中）集成。
 - 快速可扩展的控制器，例如 [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
 - 至少一次的可靠性投递。
@@ -53,7 +53,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 请前往[路线图](https://eventmesh.apache.org/docs/roadmap)查看Apache EventMesh的版本历史和新功能。.
 
-## 社区
+## 子项目
 
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache EventMesh 的官方网站资源。
 - [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): 用于在 EventMesh 上进行事件编排的无服务器工作流运行时。
@@ -63,7 +63,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ## 快速开始
 
-Here are the guidelines:
+指南:
 
 [第1步: 部署EventMesh Store](https://eventmesh.apache.org/docs/instruction/store)
 

@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
@@ -61,7 +62,7 @@ public class GrpcRetryer {
 
         dispatcher = new Thread(() -> {
             try {
-                DelayRetryable retryObj = null;
+                DelayRetryable retryObj;
                 while (!Thread.currentThread().isInterrupted()
                     && (retryObj = failed.take()) != null) {
                     final DelayRetryable delayRetryable = retryObj;
@@ -77,6 +78,9 @@ public class GrpcRetryer {
                     });
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 log.error("grpc-retry-dispatcher error!", e);
             }
         }, "grpc-retry-dispatcher");

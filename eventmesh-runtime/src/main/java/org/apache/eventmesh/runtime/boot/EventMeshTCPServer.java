@@ -35,8 +35,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnect
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpExceptionHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpMessageDispatcher;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventmeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
@@ -195,6 +195,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 } catch (Exception ex) {
                     log.error("EventMeshTCPServer RemotingServer shutdown Err!", ex);
                 }
+                System.exit(-1);
             }
         };
 
@@ -234,7 +235,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this,
-                new EventmeshRebalanceImpl(this));
+                new EventMeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
 

@@ -41,6 +41,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -52,6 +53,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -61,110 +64,66 @@ public class Session {
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 
+    @Setter
+    @Getter
     private UserAgent client;
 
+    @Setter
+    @Getter
     private InetSocketAddress remoteAddress;
 
+    @Setter
+    @Getter
     protected ChannelHandlerContext context;
 
+    @Setter
+    @Getter
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
 
+    @Setter
+    @Getter
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
+    @Setter
+    @Getter
     private SessionPusher pusher;
 
+    @Setter
+    @Getter
     private SessionSender sender;
 
     private final long createTime = System.currentTimeMillis();
 
+    @Setter
+    @Getter
     private long lastHeartbeatTime = System.currentTimeMillis();
 
-    private long isolateTime = 0;
+    @Setter
+    @Getter
+    private long isolateTime;
 
+    @Setter
+    @Getter
     private SessionContext sessionContext = new SessionContext(this);
 
-    private boolean listenRspSend = false;
+    private boolean listenRspSend;
 
     private final ReentrantLock listenRspLock = new ReentrantLock();
 
-    private String listenRequestSeq = null;
+    @Setter
+    @Getter
+    private String listenRequestSeq;
 
+    @Setter
+    @Getter
     protected SessionState sessionState = SessionState.CREATED;
 
-    public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public void setRemoteAddress(InetSocketAddress remoteAddress) {
-        this.remoteAddress = remoteAddress;
-    }
-
-    public long getLastHeartbeatTime() {
-        return lastHeartbeatTime;
-    }
+    @Setter
+    @Getter
+    private String sessionId = UUID.randomUUID().toString();
 
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
-    }
-
-    public SessionState getSessionState() {
-        return sessionState;
-    }
-
-    public void setSessionState(SessionState sessionState) {
-        this.sessionState = sessionState;
-    }
-
-    public void setClient(UserAgent client) {
-        this.client = client;
-    }
-
-    public SessionPusher getPusher() {
-        return pusher;
-    }
-
-    public void setPusher(SessionPusher pusher) {
-        this.pusher = pusher;
-    }
-
-    public SessionSender getSender() {
-        return sender;
-    }
-
-    public void setSender(SessionSender sender) {
-        this.sender = sender;
-    }
-
-    public void setLastHeartbeatTime(long lastHeartbeatTime) {
-        this.lastHeartbeatTime = lastHeartbeatTime;
-    }
-
-    public SessionContext getSessionContext() {
-        return sessionContext;
-    }
-
-    public void setSessionContext(SessionContext sessionContext) {
-        this.sessionContext = sessionContext;
-    }
-
-    public ChannelHandlerContext getContext() {
-        return context;
-    }
-
-    public void setContext(ChannelHandlerContext context) {
-        this.context = context;
-    }
-
-    public UserAgent getClient() {
-        return client;
-    }
-
-    public String getListenRequestSeq() {
-        return listenRequestSeq;
-    }
-
-    public void setListenRequestSeq(String listenRequestSeq) {
-        this.listenRequestSeq = listenRequestSeq;
     }
 
     public void subscribe(List<SubscriptionItem> items) throws Exception {
@@ -299,14 +258,6 @@ public class Session {
         return result;
     }
 
-    public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
-        return clientGroupWrapper;
-    }
-
-    public void setClientGroupWrapper(WeakReference<ClientGroupWrapper> clientGroupWrapper) {
-        this.clientGroupWrapper = clientGroupWrapper;
-    }
-
     public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.client = client;
         this.context = context;
@@ -314,14 +265,6 @@ public class Session {
         this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
         this.sender = new SessionSender(this);
         this.pusher = new SessionPusher(this);
-    }
-
-    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
-        return eventMeshTCPConfiguration;
-    }
-
-    public void setEventMeshTCPConfiguration(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
@@ -338,14 +281,6 @@ public class Session {
 
             listenRspLock.unlock();
         }
-    }
-
-    public long getIsolateTime() {
-        return isolateTime;
-    }
-
-    public void setIsolateTime(long isolateTime) {
-        this.isolateTime = isolateTime;
     }
 
     public boolean isAvailable(String topic) {

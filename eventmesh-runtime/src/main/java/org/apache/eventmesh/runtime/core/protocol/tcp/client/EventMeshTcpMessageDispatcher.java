@@ -35,8 +35,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransfe
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.RecommendTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import java.util.concurrent.TimeUnit;

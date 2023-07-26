@@ -17,11 +17,8 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +72,7 @@ public class SendMessageResponseBody extends Body {
         sb.append("sendMessageResponseBody={")
             .append("retCode=").append(retCode).append(",")
             .append("retMsg=").append(retMsg).append(",")
-            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("resTime=").append(resTime).append("}");
         return sb.toString();
     }
 

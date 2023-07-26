@@ -33,9 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 public class Subscribe {
 
     @Getter
-    private String topicName;
-    private StandaloneBroker standaloneBroker;
-    private EventListener listener;
+    private final String topicName;
+    private final StandaloneBroker standaloneBroker;
+    private final EventListener listener;
     @Getter
     private volatile boolean isRunning;
     @Getter
@@ -73,18 +73,14 @@ public class Subscribe {
                             switch (action) {
                                 case CommitMessage:
                                     // update offset
-                                    log.info("message commit, topic: {}, current offset:{}", topicName,
-                                        offset.get());
-                                    break;
-                                case ReconsumeLater:
-                                    // don't update offset
+                                    log.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
                                     break;
                                 case ManualAck:
                                     // update offset
                                     offset.incrementAndGet();
-                                    log
-                                        .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
+                                    log.info("message ack, topic: {}, current offset:{}", topicName, offset.get());
                                     break;
+                                case ReconsumeLater:
                                 default:
 
                             }

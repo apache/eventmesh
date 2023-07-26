@@ -25,8 +25,8 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.RetryContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.Utils;
 
@@ -43,15 +43,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpStreamMsgContext extends RetryContext {
 
-    private Session session;
+    private final Session session;
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
-    private Header header;
+    private final Header header;
 
-    private long startTime;
+    private final long startTime;
 
-    private long taskExecuteTime;
+    private final long taskExecuteTime;
 
     public UpStreamMsgContext(Session session, CloudEvent event, Header header, long startTime, long taskExecuteTime) {
         this.seq = header.getSeq();
@@ -139,7 +139,7 @@ public class UpStreamMsgContext extends RetryContext {
                 retryContext.delay(10000);
                 Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
 
-                session.getSender().failMsgCount.incrementAndGet();
+                session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
                     System.currentTimeMillis() - createTime, new Exception(context.getException()));
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), seq));

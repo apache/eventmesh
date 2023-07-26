@@ -41,8 +41,8 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProduce
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPMessageHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.push.MessageHandler;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.MapUtils;
@@ -130,15 +130,16 @@ public class EventMeshConsumer {
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
                 if (currentTopicConfig == null) {
-                    log.error("no topicConfig found, consumerGroup:{} topic:{}",
-                        consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
-                        eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
-                        return;
+                        log.warn("no ConsumerGroupTopicConf found, sendMessageBack success, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                            consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId);
                     } catch (Exception ex) {
-                        //ignore
+                        log.warn("sendMessageBack fail, consumerGroup:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                            consumerGroupConf.getConsumerGroup(), topic, bizSeqNo, uniqueId, ex);
                     }
+                    eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
+                    return;
                 }
 
                 SubscriptionItem subscriptionItem =
@@ -157,6 +158,7 @@ public class EventMeshConsumer {
                         sendMessageBack(event, uniqueId, bizSeqNo);
                     } catch (Exception e) {
                         //ignore
+                        log.warn("sendMessageBack fail,topic:{}, bizSeqNo={}, uniqueId={}", topic, bizSeqNo, uniqueId, e);
                     }
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                 }

@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+
 import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
@@ -47,7 +49,6 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -103,71 +104,46 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         //validate event
         if (!ObjectUtils.allNotNull(event, event.getSource(), event.getSpecVersion())
             || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
-        final String idc = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.IDC))
-            .toString();
-        final String pid = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID))
-            .toString();
-        final String sys = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS))
-            .toString();
+        final String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
+        final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
+        final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
 
         //validate event-extension
         if (StringUtils.isAnyBlank(idc, pid, sys) || !StringUtils.isNumeric(pid)) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
-        final String bizNo =
-            Objects.requireNonNull(event.getExtension(SendMessageRequestBody.BIZSEQNO)).toString();
-        final String uniqueId =
-            Objects.requireNonNull(event.getExtension(SendMessageRequestBody.UNIQUEID)).toString();
-        final String producerGroup =
-            Objects.requireNonNull(event.getExtension(SendMessageRequestBody.PRODUCERGROUP))
-                .toString();
+        final String bizNo = getExtension(event, SendMessageRequestBody.BIZSEQNO);
+        final String uniqueId = getExtension(event, SendMessageRequestBody.UNIQUEID);
+        final String producerGroup = getExtension(event, SendMessageRequestBody.PRODUCERGROUP);
         final String topic = event.getSubject();
-        final String ttl =
-            Objects.requireNonNull(event.getExtension(SendMessageRequestBody.TTL)).toString();
+        final String ttl = getExtension(event, SendMessageRequestBody.TTL);
 
         //validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic, ttl) || event.getData() == null) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
         //do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            final String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
-            final String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
+            final String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
+            final String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
             final int requestCode = Integer.parseInt(request.getRequestCode());
 
             try {
                 this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, sys, topic, requestCode);
             } catch (Exception e) {
-                responseEventMeshCommand = request.createHttpCommandResponse(
-                    sendMessageResponseHeader,
-                    SendMessageResponseBody
-                        .buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(),
-                            e.getMessage()));
-                asyncContext.onComplete(responseEventMeshCommand);
-
+                completeResponse(request, asyncContext, sendMessageResponseHeader,
+                        EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageResponseBody.class);
                 if (log.isWarnEnabled()) {
                     log.warn("CLIENT HAS NO PERMISSION,SendSyncMessageProcessor send failed", e);
                 }
@@ -178,30 +154,23 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         final HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         // control flow rate limit
         if (!eventMeshHTTPServer.getMsgRateLimiter()
-            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS,
-                TimeUnit.MILLISECONDS)) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
+            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR, null, SendMessageResponseBody.class);
             summaryMetrics.recordHTTPDiscard();
-            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        final String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
+        final String content = new String(Objects.requireNonNull(event.getData()).toBytes(), Constants.DEFAULT_CHARSET);
         int eventMeshEventSize = eventMeshHttpConfiguration.getEventMeshEventSize();
         if (content.length() > eventMeshEventSize) {
             if (log.isErrorEnabled()) {
                 log.error("Event size exceeds the limit: {}", eventMeshEventSize);
             }
-
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                    "Event size exceeds the limit: " + eventMeshEventSize));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                    "Event size exceeds the limit: " + eventMeshEventSize,
+                    SendMessageResponseBody.class);
             return;
         }
 
@@ -209,12 +178,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.isStarted()) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
@@ -234,13 +199,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             if (log.isErrorEnabled()) {
                 log.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             }
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg()
-                            + EventMeshUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
@@ -283,7 +243,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                             .build();
 
                         final String rtnMsg = new String(Objects.requireNonNull(newEvent.getData()).toBytes(),
-                            StandardCharsets.UTF_8);
+                            Constants.DEFAULT_CHARSET);
 
                         final HttpCommand succ = request.createHttpCommandResponse(
                             sendMessageResponseHeader,
@@ -329,14 +289,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {
-            final HttpCommand err = request.createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg()
-                            + EventMeshUtil.stackTrace(ex, 2)));
-            asyncContext.onComplete(err);
-
+            completeResponse(request, asyncContext, sendMessageResponseHeader,
+                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR,
+                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
+                    SendMessageResponseBody.class);
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10_000));
             final long endTime = System.currentTimeMillis();
             summaryMetrics.recordSendMsgFailed();
@@ -350,10 +306,5 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         return;
-    }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
     }
 }

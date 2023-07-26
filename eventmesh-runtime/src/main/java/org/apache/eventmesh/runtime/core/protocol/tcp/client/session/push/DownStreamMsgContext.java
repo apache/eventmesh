@@ -22,8 +22,8 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.RetryContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.ServerGlobal;
 
@@ -47,12 +47,12 @@ public class DownStreamMsgContext extends RetryContext {
     @Setter
     private Session session;
 
-    private AbstractContext consumeConcurrentlyContext;
+    private final AbstractContext consumeConcurrentlyContext;
 
-    private MQConsumerWrapper consumer;
+    private final MQConsumerWrapper consumer;
 
     @Getter
-    private SubscriptionItem subscriptionItem;
+    private final SubscriptionItem subscriptionItem;
 
     private long lastPushTime;
 
@@ -60,7 +60,7 @@ public class DownStreamMsgContext extends RetryContext {
 
     private final long expireTime;
 
-    public boolean msgFromOtherEventMesh;
+    public final boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
         AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,

@@ -76,7 +76,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         if (log.isInfoEnabled()) {
             log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                 RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
+                    EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         }
 
@@ -94,24 +94,16 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         if (StringUtils.isAnyBlank(unSubscribeRequestHeader.getIdc(), unSubscribeRequestHeader.getPid(),
                 unSubscribeRequestHeader.getSys())
             || !StringUtils.isNumeric(unSubscribeRequestHeader.getPid())) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                unSubscribeResponseHeader,
-                UnSubscribeResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, unSubscribeResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, UnSubscribeResponseBody.class);
             return;
         }
 
         //validate body
         if (StringUtils.isAnyBlank(unSubscribeRequestBody.getUrl(), unSubscribeRequestBody.getConsumerGroup())
             || CollectionUtils.isEmpty(unSubscribeRequestBody.getTopics())) {
-            responseEventMeshCommand = request.createHttpCommandResponse(
-                unSubscribeResponseHeader,
-                UnSubscribeResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            completeResponse(request, asyncContext, unSubscribeResponseHeader,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, UnSubscribeResponseBody.class);
             return;
         }
 
@@ -198,18 +190,14 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                             localConsumerGroupMap.get(consumerGroup));
 
-                    responseEventMeshCommand =
-                            request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+                    responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                     asyncContext.onComplete(responseEventMeshCommand, handler);
 
                 } catch (Exception e) {
-                    final HttpCommand err = request.createHttpCommandResponse(
-                        unSubscribeResponseHeader,
-                        UnSubscribeResponseBody
-                            .buildBody(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
-                                EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg()
-                                    + EventMeshUtil.stackTrace(e, 2)));
-                    asyncContext.onComplete(err);
+                    completeResponse(request, asyncContext, unSubscribeResponseHeader,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                            UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
                         endTime - startTime,
@@ -233,13 +221,10 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     localConsumerGroupMap.keySet()
                         .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
-                    final HttpCommand err = request.createHttpCommandResponse(
-                        unSubscribeResponseHeader,
-                        UnSubscribeResponseBody
-                            .buildBody(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
-                                EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg()
-                                    + EventMeshUtil.stackTrace(e, 2)));
-                    asyncContext.onComplete(err);
+                    completeResponse(request, asyncContext, unSubscribeResponseHeader,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR,
+                            EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                            UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                             + "|topic={}|url={}", endTime - startTime,
@@ -250,11 +235,6 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 }
             }
         }
-    }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
     }
 
     private void registerClient(final UnSubscribeRequestHeader unSubscribeRequestHeader,
