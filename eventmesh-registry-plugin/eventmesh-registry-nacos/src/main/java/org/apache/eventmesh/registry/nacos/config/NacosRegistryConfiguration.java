@@ -46,6 +46,9 @@ public class NacosRegistryConfiguration {
     @ConfigFiled(field = PropertyKeyConst.CLUSTER_NAME)
     private String clusterName;
 
+    @ConfigFiled(field = PropertyKeyConst.NAMESPACE)
+    private String namespace;
+
     @ConfigFiled(field = PropertyKeyConst.NAMING_POLLING_THREAD_COUNT)
     private Integer pollingThreadCount = Runtime.getRuntime().availableProcessors() / 2 + 1;
 
