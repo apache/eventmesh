@@ -19,12 +19,6 @@ package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import lombok.extern.slf4j.Slf4j;
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -37,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class WatchFileManagerTest {
-    private static final Logger LOGGER = LogManager.getLogger(WatchFileManagerTest.class);
 
     @Test
     public void testWatchFile() throws IOException, InterruptedException {
