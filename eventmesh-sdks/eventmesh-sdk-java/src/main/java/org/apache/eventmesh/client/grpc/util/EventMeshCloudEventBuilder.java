@@ -190,21 +190,21 @@ public class EventMeshCloudEventBuilder {
 
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(message);
 
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.ENV, clientConfig.getEnv());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.IDC, clientConfig.getIdc());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()));
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PID, Long.toString(ThreadUtils.getPID()));
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, "grpc-cloud-event");
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_VERSION, message.getSpecVersion().toString());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.USERNAME, clientConfig.getUserName());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PASSWD, clientConfig.getPassword());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.TTL, Constants.DEFAULT_EVENTMESH_MESSAGE_TTL);
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.ENV, clientConfig.getEnv());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.IDC, clientConfig.getIdc());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()));
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PID, Long.toString(ThreadUtils.getPID()));
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, "grpc-cloud-event");
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_VERSION, message.getSpecVersion().toString());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.USERNAME, clientConfig.getUserName());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PASSWD, clientConfig.getPassword());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
+        buildCloudEvent(message, cloudEventBuilder, ProtocolKey.TTL, Constants.DEFAULT_EVENTMESH_MESSAGE_TTL);
 
         try {
             return CloudEvent.parseFrom(eventProtoFormat.serialize(cloudEventBuilder.build()));
@@ -214,7 +214,7 @@ public class EventMeshCloudEventBuilder {
         return null;
     }
 
-    private static void builderCloudEvent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder, String protocolKey, String key) {
+    private static void buildCloudEvent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder, String protocolKey, String key) {
         if (Objects.isNull(message.getExtension(protocolKey))) {
             cloudEventBuilder.withExtension(protocolKey, key);
         }
