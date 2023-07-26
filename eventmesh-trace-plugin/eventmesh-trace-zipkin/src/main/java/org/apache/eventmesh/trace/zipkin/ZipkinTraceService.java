@@ -34,7 +34,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -42,7 +43,8 @@ import lombok.Data;
  */
 @Config(field = "zipkinConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
+@Getter
+@Setter
 public class ZipkinTraceService extends AbstractTraceService {
 
     /**

@@ -115,9 +115,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-        String unSubscribeUrl = requestBodyMap.get(EventMeshConstants.URL).toString();
-        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
-        String topic = requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC).toString();
+        String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC).toString());
 
         long startTime = System.currentTimeMillis();
         try {
@@ -156,7 +154,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
                 return subscriptionItem;
             }).collect(Collectors.toList());
             // Get mesh address from registry
-            String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
+            String meshAddress = getTargetMesh(meshGroup, subscriptionList);
             if (StringUtils.isNotBlank(meshAddress)) {
                 targetMesh = meshAddress;
             }
@@ -182,10 +180,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             }
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
-            httpLogger.error(
-                "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                    + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                topic, unSubscribeUrl, e);
+            httpLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}", endTime - startTime, topic, e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                 responseBodyMap, null);
         }

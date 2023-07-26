@@ -34,10 +34,13 @@ import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageV2Processor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.CreateTopicProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.DeleteTopicProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.QuerySubscriptionProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
@@ -362,6 +365,15 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         final ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
+
+        final CreateTopicProcessor createTopicProcessor = new CreateTopicProcessor(this);
+        this.getHandlerService().register(createTopicProcessor, clientManageExecutor);
+
+        final DeleteTopicProcessor deleteTopicProcessor = new DeleteTopicProcessor(this);
+        this.getHandlerService().register(deleteTopicProcessor, clientManageExecutor);
+
+        final QuerySubscriptionProcessor querySubscriptionProcessor = new QuerySubscriptionProcessor(this);
+        this.getHandlerService().register(querySubscriptionProcessor, clientManageExecutor);
 
     }
 
