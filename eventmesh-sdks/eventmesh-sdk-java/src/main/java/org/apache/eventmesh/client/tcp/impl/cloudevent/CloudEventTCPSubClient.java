@@ -44,6 +44,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 
 import com.google.common.base.Preconditions;
@@ -141,6 +142,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         }
     }
 
+    @Sharable
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
