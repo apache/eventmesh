@@ -191,7 +191,7 @@ public class EventMeshCloudEventBuilder {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(message);
 
         builderCloudEvent(message, cloudEventBuilder, ProtocolKey.ENV, clientConfig.getEnv());
-        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.IDC, clientConfig.getEnv());
+        builderCloudEvent(message, cloudEventBuilder, ProtocolKey.IDC, clientConfig.getIdc());
         builderCloudEvent(message, cloudEventBuilder, ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()));
         builderCloudEvent(message, cloudEventBuilder, ProtocolKey.PID, Long.toString(ThreadUtils.getPID()));
         builderCloudEvent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
