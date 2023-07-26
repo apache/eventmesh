@@ -17,18 +17,22 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
+import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.source.Source;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.api.source.Source;
+
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
+
+
 
 public class RedisSourceConnector implements Source {
 
