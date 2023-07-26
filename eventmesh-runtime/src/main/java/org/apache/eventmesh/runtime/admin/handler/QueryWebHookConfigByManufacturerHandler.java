@@ -67,7 +67,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
         Objects.requireNonNull(node, "JsonNode can not be null");
 
-        WebHookConfig webHookConfig = JsonUtils.parseObject(node.get("webHookConfig").toString(), WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.parseObject(node.toString(), WebHookConfig.class);
         Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
         Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
 
