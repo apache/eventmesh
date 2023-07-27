@@ -34,7 +34,7 @@ import lombok.ToString;
 public class RegResponseHeader extends Header {
 
     //response code, as same as the request code
-    private Integer code;
+    private int code;
 
     //The cluster name of the EventMesh that processes the request
     private String eventMeshCluster;
