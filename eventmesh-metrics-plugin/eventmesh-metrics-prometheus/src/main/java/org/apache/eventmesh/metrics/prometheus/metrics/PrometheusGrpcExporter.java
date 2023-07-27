@@ -20,46 +20,33 @@ package org.apache.eventmesh.metrics.prometheus.metrics;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.GRPC;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.METRICS_GRPC_PREFIX;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
-import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
 
 import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.Meter;
+public class PrometheusGrpcExporter extends PrometheusExporter<GrpcSummaryMetrics> {
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class PrometheusGrpcExporter {
-
-    /**
-     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
-     */
-    private Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs;
-
-    static {
-        paramPairs = new HashMap<String[], Function<GrpcSummaryMetrics, Number>>() {
-            {
-                put(join("sub.topic.num", "get sub topic num."), GrpcSummaryMetrics::getSubscribeTopicNum);
-                put(join("retry.queue.size", "get size of retry queue."), GrpcSummaryMetrics::getRetrySize);
-
-                put(join("server.tps", "get size of retry queue."), GrpcSummaryMetrics::getClient2EventMeshTPS);
-                put(join("client.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2ClientTPS);
-
-                put(join("mq.provider.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2MqTPS);
-                put(join("mq.consumer.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getMq2EventMeshTPS);
-            }
-        };
+    public PrometheusGrpcExporter() {
+        paramPairs.put(join("sub.topic.num", "get sub topic num."), GrpcSummaryMetrics::getSubscribeTopicNum);
+        paramPairs.put(join("retry.queue.size", "get size of retry queue."), GrpcSummaryMetrics::getRetrySize);
+        paramPairs.put(join("server.tps", "get size of retry queue."), GrpcSummaryMetrics::getClient2EventMeshTPS);
+        paramPairs.put(join("client.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2ClientTPS);
+        paramPairs.put(join("mq.provider.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2MqTPS);
+        paramPairs.put(join("mq.consumer.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getMq2EventMeshTPS);
     }
 
-    public static void export(final String meterName, final GrpcSummaryMetrics summaryMetrics) {
-        final Meter meter = GlobalMeterProvider.getMeter(meterName);
+    @Override
+    public String getMetricName(String[] metricInfo) {
+        return METRICS_GRPC_PREFIX + metricInfo[0];
+    }
 
-        paramPairs.forEach((metricInfo, getMetric) ->
-            observeOfValue(meter, METRICS_GRPC_PREFIX + metricInfo[0], metricInfo[1], GRPC, summaryMetrics, getMetric));
+    @Override
+    public String getMetricDescription(String[] metricInfo) {
+        return metricInfo[1];
+    }
+
+    @Override
+    public String getProtocol() {
+        return GRPC.getValue();
     }
 }

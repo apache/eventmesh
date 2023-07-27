@@ -25,10 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import lombok.extern.slf4j.Slf4j;
-
 // todo: split this class
-@Slf4j
 public class HttpSummaryMetrics implements Metric {
 
     private static final int STATIC_PERIOD = 30 * 1000;
@@ -121,11 +118,11 @@ public class HttpSummaryMetrics implements Metric {
     }
 
 
-    public float avgHTTPCost() {
+    public float getAvgHTTPCost() {
         return (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
     }
 
-    public long maxHTTPCost() {
+    public long getMaxHTTPCost() {
         return maxCost.longValue();
     }
 
@@ -155,7 +152,7 @@ public class HttpSummaryMetrics implements Metric {
         }
     }
 
-    public float maxHTTPTPS() {
+    public float getMaxHTTPTPS() {
         try {
             lock.lock();
             float tps = Collections.max(httpRequestTPSSnapshots);
@@ -165,7 +162,7 @@ public class HttpSummaryMetrics implements Metric {
         }
     }
 
-    public float avgHTTPTPS() {
+    public float getAvgHTTPTPS() {
         try {
             lock.lock();
             float tps = avg(httpRequestTPSSnapshots);
@@ -197,7 +194,7 @@ public class HttpSummaryMetrics implements Metric {
         httpDecodeTimeCost = httpDecodeTimeCost + cost;
     }
 
-    public float avgHTTPBodyDecodeCost() {
+    public float getAvgHTTPBodyDecodeCost() {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
 
@@ -215,11 +212,11 @@ public class HttpSummaryMetrics implements Metric {
         }
     }
 
-    public float maxSendBatchMsgTPS() {
+    public float getMaxSendBatchMsgTPS() {
         return Collections.max(sendBatchMsgTPSSnapshots);
     }
 
-    public float avgSendBatchMsgTPS() {
+    public float getAvgSendBatchMsgTPS() {
         return avg(sendBatchMsgTPSSnapshots);
     }
 
@@ -263,11 +260,11 @@ public class HttpSummaryMetrics implements Metric {
         }
     }
 
-    public float maxSendMsgTPS() {
+    public float getMaxSendMsgTPS() {
         return Collections.max(sendMsgTPSSnapshots);
     }
 
-    public float avgSendMsgTPS() {
+    public float getAvgSendMsgTPS() {
         return avg(sendMsgTPSSnapshots);
     }
 
@@ -333,19 +330,19 @@ public class HttpSummaryMetrics implements Metric {
         }
     }
 
-    public float avgHTTPPushLatency() {
+    public float getAvgHTTPPushLatency() {
         return (wholePushRequestNum.longValue() == 0L) ? 0f : wholePushCost / wholePushRequestNum.longValue();
     }
 
-    public float maxHTTPPushLatency() {
+    public float getMaxHTTPPushLatency() {
         return maxHttpPushLatency.floatValue();
     }
 
-    public float maxPushMsgTPS() {
+    public float getMaxPushMsgTPS() {
         return Collections.max(pushMsgTPSSnapshots);
     }
 
-    public float avgPushMsgTPS() {
+    public float getAvgPushMsgTPS() {
         return avg(pushMsgTPSSnapshots);
     }
 
@@ -384,7 +381,7 @@ public class HttpSummaryMetrics implements Metric {
         batchSend2MQWholeCost = batchSend2MQWholeCost + cost;
     }
 
-    public float avgBatchSendMsgCost() {
+    public float getAvgBatchSendMsgCost() {
         return (batchSend2MQNum.intValue() == 0) ? 0f : batchSend2MQWholeCost / batchSend2MQNum.intValue();
     }
 
@@ -393,7 +390,7 @@ public class HttpSummaryMetrics implements Metric {
         send2MQWholeCost = send2MQWholeCost + cost;
     }
 
-    public float avgSendMsgCost() {
+    public float getAvgSendMsgCost() {
         return (send2MQNum.intValue() == 0) ? 0f : send2MQWholeCost / send2MQNum.intValue();
     }
 
@@ -402,7 +399,7 @@ public class HttpSummaryMetrics implements Metric {
         reply2MQWholeCost = reply2MQWholeCost + cost;
     }
 
-    public float avgReplyMsgCost() {
+    public float getAvgReplyMsgCost() {
         return (reply2MQNum.intValue() == 0) ? 0f : reply2MQWholeCost / reply2MQNum.intValue();
     }
 
