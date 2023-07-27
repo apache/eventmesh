@@ -33,6 +33,11 @@ public class WebHookConfig {
     private String manufacturerName;
 
     /**
+     * manufacturer domain name, like www.github.com
+     */
+    private String manufacturerDomain;
+
+    /**
      * webhook event name, like rep-push
      */
     private String manufacturerEventName;
@@ -81,11 +86,6 @@ public class WebHookConfig {
      * roll out data format -> CloudEvent serialization mode If HTTP protocol is used, the request header contentType needs to be marked
      */
     private String dataContentType = "application/json";
-
-    /**
-     * source of event
-     */
-    private String cloudEventSource;
 
     /**
      * id of cloudEvent, like uuid/manufacturerEventId
