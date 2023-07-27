@@ -45,9 +45,9 @@ public class ProtocolKey {
         IP("ip", IPUtils.getLocalAddress()),
         USERNAME("username", "eventmesh"),
         PASSWD("passwd", "pass"),
-        BIZSEQNO("bizseqno","bizseqno"),
+        BIZSEQNO("bizseqno", "bizseqno"),
         UNIQUEID("uniqueid", "uniqueid"),
-        PRODUCERGROUP("producergroup","em-http-producer"),
+        PRODUCERGROUP("producergroup", "em-http-producer"),
         CONSUMERGROUP("consumergroup", "em-http-consumer"),
 
         TOKEN("token", "token");

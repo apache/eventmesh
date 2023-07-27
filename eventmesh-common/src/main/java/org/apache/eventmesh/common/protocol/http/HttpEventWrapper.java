@@ -22,9 +22,7 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -208,20 +206,6 @@ public class HttpEventWrapper implements ProtocolTransportObject {
                         headerMap.getOrDefault(clientInstanceKey.getKey(), clientInstanceKey.getValue()));
             }
         }
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.ENV, "env"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IDC, "idc"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress()));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PID, ThreadUtils.getPID()));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.SYS, "1234"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PASSWD, "pass"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP,
-        //     headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, "em-http-producer"));
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP,
-        //     headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
-        // sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
-        // sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
-        // sysHeaderMap.put(ProtocolKey.ClientInstanceKey.TOKEN, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.TOKEN, "token"));
     }
 
     public void buildSysHeaderForCE() {

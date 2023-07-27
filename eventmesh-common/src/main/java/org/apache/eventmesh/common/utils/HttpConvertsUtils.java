@@ -42,12 +42,14 @@ public class HttpConvertsUtils {
         Field[] headerFields = headerClass.getDeclaredFields();
         Field[] protocolKeyFields = protocolKeyClass.getDeclaredFields();
         for (Field headerField : headerFields) {
+            headerField.setAccessible(true);
             try {
                 final String headerFieldName = headerField.getName();
-                final String headerFieldValue = headerField.get(header).toString();
+                final Object headerFieldValue = headerField.get(header);
                 for (Field protocolKeyField : protocolKeyFields) {
+                    protocolKeyField.setAccessible(true);
                     final String protocolKeyValue = protocolKeyField.get(protocolKey).toString();
-                    //
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, protocolKeyValue)) {
                         map.put(protocolKeyValue, headerFieldValue);
                     }
@@ -55,6 +57,7 @@ public class HttpConvertsUtils {
 
                 EnumSet<ProtocolKey.ClientInstanceKey> clientInstanceKeys = EnumSet.allOf(ProtocolKey.ClientInstanceKey.class);
                 for (ProtocolKey.ClientInstanceKey clientInstanceKey : clientInstanceKeys) {
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, clientInstanceKey.getKey())) {
                         map.put(clientInstanceKey.getKey(), headerFieldValue);
                     }
@@ -66,7 +69,8 @@ public class HttpConvertsUtils {
         return map;
     }
 
-    public Map<String, Object> httpMapConverts(Header header, ProtocolKey protocolKey, ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey) {
+    public Map<String, Object> httpMapConverts(Header header, ProtocolKey protocolKey,
+                                               ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey) {
         Map<String, Object> map = new HashMap<>();
         Class<? extends Header> headerClass = header.getClass();
         Class<?> protocolKeyClass = protocolKey.getClass();
@@ -75,18 +79,23 @@ public class HttpConvertsUtils {
         Field[] protocolKeyFields = protocolKeyClass.getDeclaredFields();
         Field[] eventMeshInstanceKeyFields = eventMeshInstanceKeyClass.getDeclaredFields();
         for (Field headerField : headerFields) {
+            headerField.setAccessible(true);
             try {
                 final String headerFieldName = headerField.getName();
-                final String headerFieldValue = headerField.get(header).toString();
+                final Object headerFieldValue = headerField.get(header);
                 for (Field protocolKeyField : protocolKeyFields) {
+                    protocolKeyField.setAccessible(true);
                     final String protocolKeyFieldValue = protocolKeyField.get(protocolKey).toString();
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, protocolKeyFieldValue)) {
                         map.put(protocolKeyFieldValue, headerFieldValue);
                     }
                 }
 
                 for (Field eventMeshInstanceKeyField : eventMeshInstanceKeyFields) {
-                    final String eventMeshInstanceKeyValue = eventMeshInstanceKeyField.get(protocolKey).toString();
+                    eventMeshInstanceKeyField.setAccessible(true);
+                    final String eventMeshInstanceKeyValue = eventMeshInstanceKeyField.get(eventMeshInstanceKey).toString();
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, eventMeshInstanceKeyValue)) {
                         map.put(eventMeshInstanceKeyValue, headerFieldValue);
                     }
@@ -109,26 +118,11 @@ public class HttpConvertsUtils {
             headerField.setAccessible(true);
             String headerFieldName = headerField.getName();
             try {
-                for (Field protocolKeyField : protocolKeyFields) {
-                    switch (headerFieldName) {
-                        case ProtocolKey.PROTOCOL_VERSION:
-                            headerField.set(header, ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-                            break;
-                        case ProtocolKey.LANGUAGE:
-                            String language = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-                                ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
-                            headerField.set(header, language);
-                            break;
-                        default:
-                            if (StringUtils.equalsIgnoreCase(headerFieldName, protocolKeyField.getName())) {
-                                headerField.set(header, MapUtils.getString(headerParam, protocolKeyField.get(protocolKey).toString()));
-                            }
-                            break;
-                    }
-                }
+                setFiledValue(header, headerParam, protocolKey, protocolKeyFields, headerField, headerFieldName);
 
                 EnumSet<ProtocolKey.ClientInstanceKey> clientInstanceKeys = EnumSet.allOf(ProtocolKey.ClientInstanceKey.class);
                 for (ProtocolKey.ClientInstanceKey clientInstanceKey : clientInstanceKeys) {
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, clientInstanceKey.getKey())) {
                         headerField.set(header, MapUtils.getString(headerParam, clientInstanceKey.getKey()));
                     }
@@ -139,4 +133,78 @@ public class HttpConvertsUtils {
         }
         return header;
     }
+
+    public Header httpHeaderConverts(Header header, Map<String, Object> headerParam, ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey) {
+        Class<? extends Header> headerClass = header.getClass();
+        ProtocolKey protocolKey = new ProtocolKey();
+        Class<? extends ProtocolKey> protocolKeyClass = protocolKey.getClass();
+        Class<?> eventMeshInstanceKeyClass = eventMeshInstanceKey.getClass();
+        Field[] protocolKeyFields = protocolKeyClass.getDeclaredFields();
+        Field[] headerFields = headerClass.getDeclaredFields();
+        Field[] eventMeshInstanceKeyFields = eventMeshInstanceKeyClass.getDeclaredFields();
+        for (Field headerField : headerFields) {
+            headerField.setAccessible(true);
+            String headerFieldName = headerField.getName();
+            try {
+                setFiledValue(header, headerParam, protocolKey, protocolKeyFields, headerField, headerFieldName);
+
+                for (Field eventMeshInstanceKeyField : eventMeshInstanceKeyFields) {
+                    eventMeshInstanceKeyField.setAccessible(true);
+                    final String eventMeshInstanceKeyValue = eventMeshInstanceKeyField.get(eventMeshInstanceKey).toString();
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
+                    if (StringUtils.equalsIgnoreCase(headerFieldName, eventMeshInstanceKeyValue)) {
+                        headerField.set(header, MapUtils.getString(headerParam, eventMeshInstanceKeyValue));
+                    }
+                }
+
+            } catch (IllegalAccessException e) {
+                log.error("http header builder conversion failed.", e);
+            }
+        }
+        return header;
+    }
+
+    private void setFiledValue(Header header, Map<String, Object> headerParam, ProtocolKey protocolKey,
+                               Field[] protocolKeyFields, Field headerField,
+                               String headerFieldName) throws IllegalAccessException {
+        for (Field protocolKeyField : protocolKeyFields) {
+            protocolKeyField.setAccessible(true);
+            switch (headerFieldName) {
+                case ProtocolKey.VERSION:
+                    headerField.set(header, ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+                    break;
+                case ProtocolKey.LANGUAGE:
+                    String language = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
+                        ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+                    headerField.set(header, language);
+                    break;
+                default:
+                    String protocolKeyValue = protocolKeyField.get(protocolKey).toString();
+                    // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
+                    if (StringUtils.equalsIgnoreCase(headerFieldName, protocolKeyValue)) {
+                        Object value = getValue(headerParam, protocolKeyValue);
+                        headerField.set(header, value);
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * map.get(key) gets the value and determines the data type for the corresponding operation.
+     * @param headerParam map
+     * @param protocolKeyValue key
+     * @return value
+     */
+    private Object getValue(Map<String, Object> headerParam, String protocolKeyValue) {
+        Object mapValue = headerParam.get(protocolKeyValue);
+        Object value = null;
+        if (mapValue instanceof Integer) {
+            value = MapUtils.getIntValue(headerParam, protocolKeyValue);
+        } else if (mapValue instanceof String) {
+            value = MapUtils.getString(headerParam, protocolKeyValue);
+        }
+        return value;
+    }
+
 }
