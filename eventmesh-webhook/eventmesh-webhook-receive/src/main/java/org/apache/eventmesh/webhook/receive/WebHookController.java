@@ -114,7 +114,7 @@ public class WebHookController {
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
             .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
-            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+            .cloudEventSource(webHookConfig.getManufacturerDomain())
             .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent
