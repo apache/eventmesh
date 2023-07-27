@@ -32,7 +32,7 @@ public class MetricsPluginFactory {
      * @param metricsRegistryType
      * @return
      */
-    public static MetricsRegistry getMetricsRegistry(String metricsRegistryType) {
+    public MetricsRegistry getMetricsRegistry(String metricsRegistryType) {
         checkNotNull(metricsRegistryType, "MetricsRegistryType cannot be null");
 
         MetricsRegistry metricsRegistry = EventMeshExtensionFactory.getExtension(MetricsRegistry.class, metricsRegistryType);

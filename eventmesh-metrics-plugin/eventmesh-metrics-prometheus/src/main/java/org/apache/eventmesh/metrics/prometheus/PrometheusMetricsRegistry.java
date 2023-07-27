@@ -47,11 +47,7 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
     /**
      * Unified configuration class corresponding to prometheus.properties
      */
-    private final PrometheusConfiguration prometheusConfiguration;
-
-    public PrometheusMetricsRegistry(final PrometheusConfiguration prometheusConfiguration) {
-        this.prometheusConfiguration = prometheusConfiguration;
-    }
+    private PrometheusConfiguration prometheusConfiguration;
 
     @Override
     public void start() {
