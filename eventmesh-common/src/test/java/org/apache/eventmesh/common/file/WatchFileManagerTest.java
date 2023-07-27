@@ -52,10 +52,10 @@ public class WatchFileManagerTest {
 
         try (final BufferedReader reader = new BufferedReader(new FileReader(file));
              final FileWriter fw = new FileWriter(file)) {
-             Properties properties = new Properties();
-             properties.load(reader);
-             properties.setProperty("eventMesh.server.newAdd", "newAdd");
-             properties.store(fw, "newAdd");
+            Properties properties = new Properties();
+            properties.load(reader);
+            properties.setProperty("eventMesh.server.newAdd", "newAdd");
+            properties.store(fw, "newAdd");
         }
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
