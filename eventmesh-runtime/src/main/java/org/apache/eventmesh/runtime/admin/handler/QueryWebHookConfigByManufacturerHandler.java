@@ -97,8 +97,8 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
     public void handle(HttpExchange httpExchange) throws IOException {
         Objects.requireNonNull(httpExchange, "httpExchange can not be null");
 
-        NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
+        NetUtils.sendSuccessResponseHeaders(httpExchange);
 
         // Resolve to WebHookConfig
         JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
