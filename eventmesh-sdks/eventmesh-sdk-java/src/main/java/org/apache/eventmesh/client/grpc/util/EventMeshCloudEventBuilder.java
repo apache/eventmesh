@@ -214,7 +214,8 @@ public class EventMeshCloudEventBuilder {
         return null;
     }
 
-    private static void buildCloudEventIfAbsent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder, String extension, String value) {
+    private static void buildCloudEventIfAbsent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder,
+                                                String extension, String value) {
         if (Objects.isNull(message.getExtension(extension))) {
             cloudEventBuilder.withExtension(extension, value);
         }
