@@ -65,6 +65,7 @@ public class AdminWebHookConfigOperationManager {
             throw new IllegalStateException("operationMode is not supported.");
         }
 
+        // Affects which implementation of the WebHookConfigOperation interface is used.
         final Constructor<? extends WebHookConfigOperation> constructor =
             WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
         // Save the original accessibility of constructor
@@ -75,7 +76,6 @@ public class AdminWebHookConfigOperationManager {
             if (log.isInfoEnabled()) {
                 log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
             }
-            // Affects which implementation of the WebHookConfigOperation interface is used.
             this.webHookConfigOperation = constructor.newInstance(operationProperties);
         } finally {
             // Restore the original accessibility of constructor
