@@ -26,24 +26,26 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utils for metrics-prometheus module
  */
+@UtilityClass
 public class PrometheusExporterUtils {
 
     /**
      * Build the OpenTelemetry's Meter
      *
-     * @param meter
-     * @param metricName
-     * @param metricDesc
-     * @param protocol
-     * @param summaryMetrics
-     * @param getMetric
+     * @param meter the meter
+     * @param metricName the metric name
+     * @param metricDesc the metric description
+     * @param protocol the protocol
+     * @param summaryMetrics the summary metrics
+     * @param getMetric the current metric
      */
     @SneakyThrows
-    public static void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
+    public void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
         Metric summaryMetrics, Function getMetric) {
         Method method = getMetric.getClass().getMethod("apply", Object.class);
         Class metricType = (Class) method.getGenericReturnType();
@@ -63,15 +65,14 @@ public class PrometheusExporterUtils {
     }
 
     /**
-     * create and init an array contains 2 String.
+     * Create and init an array contains 2 String.
      *
      * @param metricName the metric name
      * @param desc the description of metric
-     * @return
+     * @return the joined parameters
      */
-    public static String[] join(String metricName, String desc) {
-        String[] array = {metricName, desc};
-        return array;
+    public String[] join(String metricName, String desc) {
+        return new String[]{metricName, desc};
     }
 
 }

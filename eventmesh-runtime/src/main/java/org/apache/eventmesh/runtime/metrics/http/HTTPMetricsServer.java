@@ -114,11 +114,11 @@ public class HTTPMetricsServer {
             log.info("===========================================SERVER METRICS==================================================");
 
             log.info("maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
-                summaryMetrics.maxHTTPTPS(),
-                summaryMetrics.avgHTTPTPS(),
-                summaryMetrics.maxHTTPCost(),
-                summaryMetrics.avgHTTPCost(),
-                summaryMetrics.avgHTTPBodyDecodeCost(),
+                summaryMetrics.getMaxHTTPTPS(),
+                summaryMetrics.getAvgHTTPTPS(),
+                summaryMetrics.getMaxHTTPCost(),
+                summaryMetrics.getAvgHTTPCost(),
+                summaryMetrics.getAvgHTTPBodyDecodeCost(),
                 summaryMetrics.getHttpDiscard());
         }
 
@@ -126,8 +126,8 @@ public class HTTPMetricsServer {
 
         if (log.isInfoEnabled()) {
             log.info("maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
-                summaryMetrics.maxSendBatchMsgTPS(),
-                summaryMetrics.avgSendBatchMsgTPS(),
+                summaryMetrics.getMaxSendBatchMsgTPS(),
+                summaryMetrics.getAvgSendBatchMsgTPS(),
                 summaryMetrics.getSendBatchMsgNumSum(),
                 summaryMetrics.getSendBatchMsgFailNumSum(),
                 summaryMetrics.getSendBatchMsgFailRate(),
@@ -139,8 +139,8 @@ public class HTTPMetricsServer {
 
         if (log.isInfoEnabled()) {
             log.info("maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
-                summaryMetrics.maxSendMsgTPS(),
-                summaryMetrics.avgSendMsgTPS(),
+                summaryMetrics.getMaxSendMsgTPS(),
+                summaryMetrics.getAvgSendMsgTPS(),
                 summaryMetrics.getSendMsgNumSum(),
                 summaryMetrics.getSendMsgFailNumSum(),
                 summaryMetrics.getSendMsgFailRate(),
@@ -154,13 +154,13 @@ public class HTTPMetricsServer {
         if (log.isInfoEnabled()) {
             log.info(
                 "maxPushMsgTPS: {}, avgPushMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, maxClientLatency: {}, avgClientLatency: {}",
-                summaryMetrics.maxPushMsgTPS(),
-                summaryMetrics.avgPushMsgTPS(),
+                summaryMetrics.getMaxPushMsgTPS(),
+                summaryMetrics.getAvgPushMsgTPS(),
                 summaryMetrics.getHttpPushMsgNumSum(),
                 summaryMetrics.getHttpPushFailNumSum(),
                 summaryMetrics.getHttpPushMsgFailRate(),
-                summaryMetrics.maxHTTPPushLatency(),
-                summaryMetrics.avgHTTPPushLatency()
+                summaryMetrics.getMaxHTTPPushLatency(),
+                summaryMetrics.getAvgHTTPPushLatency()
             );
         }
 
@@ -176,9 +176,9 @@ public class HTTPMetricsServer {
 
         if (log.isInfoEnabled()) {
             log.info("batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
-                summaryMetrics.avgBatchSendMsgCost(),
-                summaryMetrics.avgSendMsgCost(),
-                summaryMetrics.avgReplyMsgCost());
+                summaryMetrics.getAvgBatchSendMsgCost(),
+                summaryMetrics.getAvgSendMsgCost(),
+                summaryMetrics.getAvgReplyMsgCost());
         }
         summaryMetrics.send2MQStatInfoClear();
     }

@@ -20,16 +20,21 @@ package org.apache.eventmesh.metrics.prometheus.utils;
 /**
  * Constants in metrics-prometheus module
  */
-public class PrometheusExporterConstants {
+public enum PrometheusExporterConstants {
 
-    public static final String HTTP = "HTTP";
+    HTTP("HTTP"),
+    GRPC("GRPC"),
+    TCP("TCP"),
+    METRICS_GRPC_PREFIX("eventmesh.grpc."),
+    METRICS_TCP_PREFIX("eventmesh.tcp.");
 
-    public static final String GRPC = "GRPC";
+    private final String value;
 
-    public static final String TCP = "TCP";
+    PrometheusExporterConstants(String value) {
+        this.value = value;
+    }
 
-    public static final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
-
-    public static final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
-
+    public String getValue() {
+        return value;
+    }
 }

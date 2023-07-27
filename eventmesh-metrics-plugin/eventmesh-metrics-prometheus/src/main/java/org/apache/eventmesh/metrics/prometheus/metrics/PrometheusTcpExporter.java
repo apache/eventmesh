@@ -20,66 +20,49 @@ package org.apache.eventmesh.metrics.prometheus.metrics;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.METRICS_TCP_PREFIX;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.TCP;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
-import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
 
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+public class PrometheusTcpExporter extends PrometheusExporter<TcpSummaryMetrics> {
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.Meter;
-
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class PrometheusTcpExporter {
-
-    /**
-     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
-     */
-    private Map<String[], Function<TcpSummaryMetrics, Number>> paramPairs;
-
-    static {
-        paramPairs = new HashMap<String[], Function<TcpSummaryMetrics, Number>>() {
-            {
-                //retryQueueSize
-                put(join("retry.queue.size", "get size of retry queue."),
-                        TcpSummaryMetrics::getRetrySize);
-
-                //client2eventMeshTPS
-                put(join("server.tps", "get tps of client to eventMesh."),
-                        TcpSummaryMetrics::getClient2eventMeshTPS);
-
-                //eventMesh2mqTPS
-                put(join("mq.provider.tps", "get tps of eventMesh to mq."),
-                        TcpSummaryMetrics::getEventMesh2mqTPS);
-
-                //mq2eventMeshTPS
-                put(join("mq.consumer.tps", "get tps of mq to eventMesh."),
-                        TcpSummaryMetrics::getMq2eventMeshTPS);
-
-                //eventMesh2clientTPS
-                put(join("client.tps", "get tps of eventMesh to client."),
-                        TcpSummaryMetrics::getEventMesh2clientTPS);
-
-                //allTPS
-                put(join("all.tps", "get all TPS."), TcpSummaryMetrics::getAllTPS);
-
-                //EventMeshTcpConnectionHandler.connections
-                put(join("connection.num", "EventMeshTcpConnectionHandler.connections."),
-                        TcpSummaryMetrics::getAllConnections);
-
-                //subTopicNum
-                put(join("sub.topic.num", "get sub topic num."), TcpSummaryMetrics::getSubTopicNum);
-            }
-        };
+    public PrometheusTcpExporter() {
+        //retryQueueSize
+        paramPairs.put(join("retry.queue.size", "get size of retry queue."),
+            TcpSummaryMetrics::getRetrySize);
+        //client2eventMeshTPS
+        paramPairs.put(join("server.tps", "get tps of client to eventMesh."),
+            TcpSummaryMetrics::getClient2eventMeshTPS);
+        //eventMesh2mqTPS
+        paramPairs.put(join("mq.provider.tps", "get tps of eventMesh to mq."),
+            TcpSummaryMetrics::getEventMesh2mqTPS);
+        //mq2eventMeshTPS
+        paramPairs.put(join("mq.consumer.tps", "get tps of mq to eventMesh."),
+            TcpSummaryMetrics::getMq2eventMeshTPS);
+        //eventMesh2clientTPS
+        paramPairs.put(join("client.tps", "get tps of eventMesh to client."),
+            TcpSummaryMetrics::getEventMesh2clientTPS);
+        //allTPS
+        paramPairs.put(join("all.tps", "get all TPS."), TcpSummaryMetrics::getAllTPS);
+        //EventMeshTcpConnectionHandler.connections
+        paramPairs.put(join("connection.num", "EventMeshTcpConnectionHandler.connections."),
+            TcpSummaryMetrics::getAllConnections);
+        //subTopicNum
+        paramPairs.put(join("sub.topic.num", "get sub topic num."), TcpSummaryMetrics::getSubTopicNum);
     }
 
-    public void export(final String meterName, final TcpSummaryMetrics summaryMetrics) {
-        final Meter meter = GlobalMeterProvider.getMeter(meterName);
-        paramPairs.forEach((metricInfo, getMetric) ->
-                observeOfValue(meter, METRICS_TCP_PREFIX + metricInfo[0], metricInfo[1], TCP, summaryMetrics, getMetric));
+    @Override
+    protected String getMetricName(String[] metricInfo) {
+        return METRICS_TCP_PREFIX + metricInfo[0];
     }
+
+    @Override
+    protected String getMetricDescription(String[] metricInfo) {
+        return metricInfo[1];
+    }
+
+    @Override
+    protected String getProtocol() {
+        return TCP.getValue();
+    }
+
 }

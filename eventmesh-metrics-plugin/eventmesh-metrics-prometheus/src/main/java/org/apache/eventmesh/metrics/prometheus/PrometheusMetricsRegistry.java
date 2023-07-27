@@ -24,6 +24,7 @@ import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.metrics.prometheus.config.PrometheusConfiguration;
+import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusGrpcExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusHttpExporter;
 import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
@@ -40,12 +41,17 @@ import lombok.extern.slf4j.Slf4j;
 @Config(field = "prometheusConfiguration")
 public class PrometheusMetricsRegistry implements MetricsRegistry {
 
+    private static final String METER_NAME = "apache-eventmesh";
     private volatile HTTPServer prometheusHttpServer;
 
     /**
      * Unified configuration class corresponding to prometheus.properties
      */
-    private PrometheusConfiguration prometheusConfiguration;
+    private final PrometheusConfiguration prometheusConfiguration;
+
+    public PrometheusMetricsRegistry(final PrometheusConfiguration prometheusConfiguration) {
+        this.prometheusConfiguration = prometheusConfiguration;
+    }
 
     @Override
     public void start() {
@@ -80,16 +86,20 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
         if (metric == null) {
             throw new IllegalArgumentException("Metric cannot be null");
         }
+
         if (metric instanceof HttpSummaryMetrics) {
-            PrometheusHttpExporter.export("apache-eventmesh", (HttpSummaryMetrics) metric);
+            PrometheusExporter<HttpSummaryMetrics> prometheusHttpExporter = new PrometheusHttpExporter();
+            prometheusHttpExporter.export(METER_NAME, metric);
         }
 
         if (metric instanceof TcpSummaryMetrics) {
-            PrometheusTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
+            PrometheusExporter<TcpSummaryMetrics> prometheusTcpExporter = new PrometheusTcpExporter();
+            prometheusTcpExporter.export(METER_NAME, metric);
         }
 
         if (metric instanceof GrpcSummaryMetrics) {
-            PrometheusGrpcExporter.export("apache-eventmesh", (GrpcSummaryMetrics) metric);
+            PrometheusExporter<GrpcSummaryMetrics> prometheusGrpcExporter = new PrometheusGrpcExporter();
+            prometheusGrpcExporter.export(METER_NAME, metric);
         }
     }
 

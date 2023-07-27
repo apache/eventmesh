@@ -19,9 +19,6 @@ package org.apache.eventmesh.metrics.api.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Data;
-
-@Data
 public class TcpSummaryMetrics implements Metric {
 
     private AtomicInteger client2eventMeshMsgNum;
