@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
+import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
@@ -56,6 +57,7 @@ public class RedisSourceConnector implements Source {
         this.sourceConfig = (RedisSourceConfig) config;
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
+        redisConfig.setCodec(CloudEventCodec.getInstance());
         this.redissonClient = Redisson.create(redisConfig);
         this.queue = new LinkedBlockingQueue<>(1000);
     }

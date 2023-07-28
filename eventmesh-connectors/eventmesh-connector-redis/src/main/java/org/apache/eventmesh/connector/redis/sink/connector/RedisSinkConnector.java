@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
+import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
@@ -50,6 +51,7 @@ public class RedisSinkConnector implements Sink {
         this.sinkConfig = (RedisSinkConfig) config;
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
+        redisConfig.setCodec(CloudEventCodec.getInstance());
         this.redissonClient = Redisson.create(redisConfig);
     }
 
