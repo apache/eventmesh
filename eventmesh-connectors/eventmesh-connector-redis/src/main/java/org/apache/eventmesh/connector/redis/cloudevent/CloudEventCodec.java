@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.connector.redis.cloudevent;
 
+import org.redisson.client.codec.BaseCodec;
+import org.redisson.client.protocol.Decoder;
+import org.redisson.client.protocol.Encoder;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.jackson.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.redisson.client.codec.BaseCodec;
-import org.redisson.client.protocol.Decoder;
-import org.redisson.client.protocol.Encoder;
 
 
 public class CloudEventCodec extends BaseCodec {
