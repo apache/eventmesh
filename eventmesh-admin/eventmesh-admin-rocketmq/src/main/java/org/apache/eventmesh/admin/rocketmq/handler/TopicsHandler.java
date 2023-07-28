@@ -24,6 +24,7 @@ import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
+import org.apache.eventmesh.admin.rocketmq.service.RocketMQService;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -55,6 +56,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TopicsHandler implements HttpHandler {
+
+    public RocketMQService service;
+
+    public TopicsHandler() {
+        this.service = new RocketMQService();
+    }
 
     /**
      * Handles the HTTP request for creating topics.
@@ -105,8 +112,8 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
 
-            //TBD: A new rocketmq service will be implemented for creating topics
-            TopicResponse topicResponse = null; // Temporary variable for topic response
+            TopicResponse topicResponse = service.createTopic(topic);
+
             if (topicResponse != null) {
                 log.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);

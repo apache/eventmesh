@@ -43,10 +43,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TopicsHandler implements HttpHandler {
 
-    public RedisService redisService;
+    public RedisService service;
 
     public TopicsHandler() {
-        this.redisService = new RedisService();
+        this.service = new RedisService();
     }
 
     /**
@@ -98,7 +98,7 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
 
-            TopicResponse topicResponse = redisService.createTopic(topic);
+            TopicResponse topicResponse = service.createTopic(topic);
 
             if (topicResponse != null) {
                 log.info("create a new topic: {}", topic);

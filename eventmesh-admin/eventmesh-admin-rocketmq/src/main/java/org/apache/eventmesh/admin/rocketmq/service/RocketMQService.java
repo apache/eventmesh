@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.redis.service;
+package org.apache.eventmesh.admin.rocketmq.service;
 
-import static org.apache.eventmesh.admin.redis.Constants.PLUGIN_NAME;
+import static org.apache.eventmesh.admin.rocketmq.Constants.PLUGIN_NAME;
 
-import org.apache.eventmesh.admin.redis.response.TopicResponse;
+import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.common.Constants;
@@ -29,11 +29,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RedisService {
+public class RocketMQService {
 
     private final Admin redisAdmin;
 
-    public RedisService() {
+    public RocketMQService() {
         this.redisAdmin = StoragePluginFactory.getMeshMQAdmin(PLUGIN_NAME);
     }
 
@@ -48,4 +48,5 @@ public class RedisService {
         }
         return topicResponse;
     }
+
 }

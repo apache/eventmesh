@@ -18,6 +18,7 @@
 package org.apache.eventmesh.admin.redis;
 
 public class Constants {
+
     public static final String PLUGIN_NAME = "redis";
 
     public static final String TOPIC_MANAGE_PATH = "/topicManage";
