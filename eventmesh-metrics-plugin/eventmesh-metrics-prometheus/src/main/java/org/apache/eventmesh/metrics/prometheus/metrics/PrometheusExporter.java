@@ -36,10 +36,11 @@ public abstract class PrometheusExporter<T> {
     protected final Map<String[], Function<T, Number>> paramPairs = new HashMap<>();
 
     protected abstract String getMetricName(String[] metricInfo);
-
-    protected abstract String getMetricDescription(String[] metricInfo);
-
     protected abstract String getProtocol();
+
+    protected String getMetricDescription(String[] metricInfo) {
+        return metricInfo[1];
+    }
 
     public void export(final String meterName, final Metric metric) {
         final Meter meter = GlobalMeterProvider.getMeter(meterName);

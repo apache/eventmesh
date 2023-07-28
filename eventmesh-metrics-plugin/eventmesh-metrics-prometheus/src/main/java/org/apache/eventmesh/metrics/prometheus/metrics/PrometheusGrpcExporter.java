@@ -41,11 +41,6 @@ public class PrometheusGrpcExporter extends PrometheusExporter<GrpcSummaryMetric
     }
 
     @Override
-    public String getMetricDescription(String[] metricInfo) {
-        return metricInfo[1];
-    }
-
-    @Override
     public String getProtocol() {
         return GRPC.getValue();
     }

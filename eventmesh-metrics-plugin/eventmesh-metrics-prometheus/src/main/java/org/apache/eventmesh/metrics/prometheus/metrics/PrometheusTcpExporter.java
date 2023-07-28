@@ -56,11 +56,6 @@ public class PrometheusTcpExporter extends PrometheusExporter<TcpSummaryMetrics>
     }
 
     @Override
-    protected String getMetricDescription(String[] metricInfo) {
-        return metricInfo[1];
-    }
-
-    @Override
     protected String getProtocol() {
         return TCP.getValue();
     }

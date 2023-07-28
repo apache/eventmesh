@@ -132,11 +132,6 @@ public class PrometheusHttpExporter extends PrometheusExporter<HttpSummaryMetric
     }
 
     @Override
-    protected String getMetricDescription(String[] metricInfo) {
-        return metricInfo[1];
-    }
-
-    @Override
     protected String getProtocol() {
         return HTTP.getValue();
     }
