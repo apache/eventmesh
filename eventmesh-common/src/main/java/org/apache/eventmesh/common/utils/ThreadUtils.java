@@ -34,7 +34,7 @@ public class ThreadUtils {
             long timeout = ThreadLocalRandom.current().nextLong(min, max + 1);
             timeUnit.sleep(timeout);
         } catch (InterruptedException ignore) {
-            Thread.currentThread().interrupt;
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -51,7 +51,7 @@ public class ThreadUtils {
         try {
             sleepWithThrowException(timeout, timeUnit);
         } catch (InterruptedException ignore) {
-            Thread.currentThread().interrupt;
+            Thread.currentThread().interrupt();
         }
     }
 
