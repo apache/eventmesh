@@ -1,0 +1,141 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+eventMesh:
+  server:
+    ############################### eventMesh-runtime ENV #################################
+    idc: DEFAULT
+    env: PRD
+    provide:
+      protocols: HTTP,TCP,GRPC
+    cluster: COMMON
+    name: EVENTMESH-runtime
+    http:
+      port: 10105
+      # flow control, include the global level and session level
+      msgReqnumPerSecond: 15000
+    grpc:
+      port: 10205
+    ########################## eventMesh tcp configuration ############################
+    tcp:
+      enabled: true
+      port: 10002
+      readerIdleSeconds: 120
+      writerIdleSeconds: 120
+      allIdleSeconds: 120
+      clientMaxNum: 10000
+      # client isolation time if the message send failure
+      pushFailIsolateTimeInMills: 30000
+      # rebalance internal
+      RebalanceIntervalInMills: 30000
+      # flow control, include the global level and session level
+      msgReqnumPerSecond: 15000
+      taskHandleExecutorPoolSize: 8
+    session:
+      # session expire time about client
+      expiredInMills: 60000
+      # flow control, include the global level and session level
+      upstreamBufferSize: 20
+    # for single event publish, maximum size allowed per event
+    maxEventSize: 1000
+    # for batch event publish, maximum number of events allowed in one batch
+    maxEventBatchSize: 10
+    global:
+      # thread number about global scheduler
+      scheduler: 5
+    # retry
+    retry:
+      async:
+        pushRetryTimes: 3
+        pushRetryDelayInMills: 500
+      sync:
+        pushRetryTimes: 3
+        pushRetryDelayInMills: 500
+      pushRetryQueueSize: 10000
+    # admin
+    admin:
+      http:
+        port: 10106
+    # registry
+    registry:
+      registerIntervalInMills: 10000
+      fetchRegistryAddrIntervalInMills: 20000
+#    # auto-ack
+#    defibus:
+#      client:
+#        consumeTimeoutInMin: 5
+    # sleep interval between closing client of different group in server graceful shutdown
+    gracefulShutdown:
+      sleepIntervalInMills: 1000
+    rebalanceRedirect:
+      sleepIntervalInMills: 200
+    # ip address blacklist
+    blacklist:
+      ipv4: 0.0.0.0/8,127.0.0.0/8,169.254.0.0/16,255.255.255.255/32
+      ipv6: ::/128,::1/128,ff00::/8
+    security:
+      enabled: false
+    trace:
+      enabled: false
+  sysid: 0000
+  # connector plugin
+  connector:
+    plugin:
+      type: standalone
+  # storage plugin
+  storage:
+    plugin:
+      type: standalone
+  # security plugin
+  security:
+    plugin:
+      type: security
+    validation:
+      type:
+        token: false
+    publickey: ''
+  # registry plugin
+  registry:
+    plugin:
+      enabled: false
+      type: nacos
+      server-addr: 127.0.0.1:8848
+      username: nacos
+      password: nacos
+  # metrics plugin, if you have multiple plugin, you can use ',' to split
+  metrics:
+    plugin: prometheus
+  # trace plugin
+  trace:
+    plugin: zipkin
+  # webhook
+  webHook:
+    admin:
+      # Start webhook admin service
+      start: true
+    # Webhook event configuration storage mode. Currently, only file and Nacos are supported
+    operationMode: file
+    fileMode:
+      # The file storage path of the file storage mode. If ${eventmeshhome} is written, it is in the eventmesh root directory
+      filePath: ${eventMeshHome}/webhook
+    # Nacos storage mode, and the configuration naming rule is eventmesh webHook. nacosMode. {nacos native configuration key} please see the specific configuration [nacos github api](https://github.com/alibaba/nacos/blob/develop/api/src/main/java/com/alibaba/nacos/api/SystemPropertyKeyConst.java)
+    ## Address of Nacos
+    nacosMode:
+      serverAddr: 127.0.0.1:8848
+    # Webhook CloudEvent sending mode. This property is the same as the eventMesh.storage.plugin.type configuration.
+    producer:
+      storage: standalone

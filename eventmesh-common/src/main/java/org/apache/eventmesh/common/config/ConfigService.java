@@ -19,6 +19,10 @@ package org.apache.eventmesh.common.config;
 
 import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpField;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.file.FileLoad;
+import org.apache.eventmesh.common.utils.FileUtils;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -138,11 +142,17 @@ public class ConfigService {
         } else {
             File file = new File(filePath);
             if (!file.exists()) {
-                throw new RuntimeException("file is not exists");
+                if (StringUtils.isBlank(filePath = FileUtils.tryToFindOtherPropFile(filePath, file))) {
+                    throw new RuntimeException("file is not exists");
+                }
+                // Update the default or old value's suffix of related field in ConfigService and ConfigInfo.
+                path = path.replace(FileUtils.getExtension(path), FileUtils.getExtension(filePath));
+                configInfo.setPath(path);
+                this.rootPath = path;
             }
         }
 
-        String suffix = path.substring(path.lastIndexOf('.') + 1);
+        String suffix = path.substring(path.lastIndexOf(Constants.DOT) + 1);
         configInfo.setFilePath(filePath);
         configInfo.setResourceUrl(resourceUrl);
         object = FileLoad.getFileLoad(suffix).getConfig(configInfo);
