@@ -17,11 +17,31 @@
 
 package org.apache.eventmesh.admin.redis.service;
 
-import org.apache.eventmesh.admin.redis.response.TopicResponse;
+import static org.apache.eventmesh.admin.redis.Constants.PLUGIN_NAME;
 
+import org.apache.eventmesh.admin.redis.response.TopicResponse;
+import org.apache.eventmesh.api.admin.Admin;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RedisService {
 
+    private final Admin redisAdmin;
+
+    public RedisService() {
+        this.redisAdmin = StoragePluginFactory.getMeshMQAdmin(PLUGIN_NAME);
+    }
+
     public TopicResponse createTopic(String topic) {
-        return null;
+        TopicResponse topicResponse = null;
+        try {
+            redisAdmin.createTopic(topic);
+            topicResponse = new TopicResponse(topic, String.valueOf(System.currentTimeMillis()));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return topicResponse;
     }
 }

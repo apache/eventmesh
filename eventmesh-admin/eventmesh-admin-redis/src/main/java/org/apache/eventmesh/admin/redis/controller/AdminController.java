@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.admin.redis.controller;
 
-import java.io.IOException;
+import static org.apache.eventmesh.admin.redis.Constants.TOPIC_MANAGE_PATH;
 
+import org.apache.eventmesh.admin.redis.handler.TopicsHandler;
+
+import java.io.IOException;
 
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.admin.redis.handler.TopicsHandler;
-
-import static org.apache.eventmesh.admin.redis.Constants.TOPIC_MANAGE_PATH;
 
 @Slf4j
 public class AdminController {

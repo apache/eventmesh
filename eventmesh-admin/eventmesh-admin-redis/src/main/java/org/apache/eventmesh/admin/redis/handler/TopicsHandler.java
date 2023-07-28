@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.admin.redis.handler;
 
+import static org.apache.eventmesh.admin.redis.Constants.APPLICATION_JSON;
+import static org.apache.eventmesh.admin.redis.Constants.CONTENT_TYPE;
+import static org.apache.eventmesh.admin.redis.Constants.TOPIC_ERROR;
+import static org.apache.eventmesh.admin.redis.Constants.TOPIC_MANAGE_PATH;
+
 import org.apache.eventmesh.admin.redis.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.redis.response.TopicResponse;
 import org.apache.eventmesh.admin.redis.service.RedisService;
@@ -35,13 +40,14 @@ import com.sun.net.httpserver.HttpHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
-import static org.apache.eventmesh.admin.redis.Constants.APPLICATION_JSON;
-import static org.apache.eventmesh.admin.redis.Constants.CONTENT_TYPE;
-import static org.apache.eventmesh.admin.redis.Constants.TOPIC_ERROR;
-import static org.apache.eventmesh.admin.redis.Constants.TOPIC_MANAGE_PATH;
-
 @Slf4j
 public class TopicsHandler implements HttpHandler {
+
+    public RedisService redisService;
+
+    public TopicsHandler() {
+        this.redisService = new RedisService();
+    }
 
     /**
      * Handles the HTTP request for creating topics.
@@ -92,9 +98,8 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
 
-            RedisService redisService = new RedisService();
-
             TopicResponse topicResponse = redisService.createTopic(topic);
+
             if (topicResponse != null) {
                 log.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
@@ -117,5 +122,4 @@ public class TopicsHandler implements HttpHandler {
             log.error(result, e);
         }
     }
-
 }
