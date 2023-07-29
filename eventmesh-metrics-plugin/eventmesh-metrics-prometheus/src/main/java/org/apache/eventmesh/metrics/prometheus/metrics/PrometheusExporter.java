@@ -28,7 +28,7 @@ import java.util.function.Function;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
 
-public abstract class PrometheusExporter<T> {
+public abstract class PrometheusExporter<T extends Metric> {
 
     /**
      * The map is composed of a String array (the Key) and a lambda Function (the Value)
