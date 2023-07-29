@@ -31,7 +31,10 @@ import io.opentelemetry.api.metrics.Meter;
 public abstract class PrometheusExporter<T> {
 
     /**
-     * Map structure : [metric name, description of name] the map variable to get corresponding metric
+     * The map is composed of a String array (the Key) and a lambda Function (the Value)
+     * Key: [metric name, description of the metric], Value: the method to get corresponding metric
+     * The Key is initialized by inserting the [metric name] (index 0)
+     * and the [description of the metric] (index 1), in the String array.
      */
     protected final Map<String[], Function<T, Number>> paramPairs = new HashMap<>();
 
