@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.consumer;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +38,13 @@ public class SubscriptionManager {
 
     private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
+    private final ConcurrentHashMap<String /**group@topic*/, List<ClientContext>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
     public ConcurrentHashMap<String, ConsumerGroupConf> getLocalConsumerGroupMapping() {
         return localConsumerGroupMapping;
     }
 
-    public ConcurrentHashMap<String, List<Client>> getLocalClientInfoMapping() {
+    public ConcurrentHashMap<String, List<ClientContext>> getLocalClientInfoMapping() {
         return localClientInfoMapping;
     }
 
@@ -53,35 +53,35 @@ public class SubscriptionManager {
         for (final SubscriptionItem subscription : subscriptionItems) {
             final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 
-            List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
+            List<ClientContext> localClientContexts = localClientInfoMapping.get(groupTopicKey);
 
-            if (localClients == null) {
+            if (localClientContexts == null) {
                 localClientInfoMapping.putIfAbsent(groupTopicKey, new ArrayList<>());
-                localClients = localClientInfoMapping.get(groupTopicKey);
+                localClientContexts = localClientInfoMapping.get(groupTopicKey);
             }
 
             boolean isContains = false;
-            for (final Client localClient : localClients) {
+            for (final ClientContext localClientContext : localClientContexts) {
                 //TODO: compare the whole Client would be better?
-                if (StringUtils.equals(localClient.getUrl(), url)) {
+                if (StringUtils.equals(localClientContext.getUrl(), url)) {
                     isContains = true;
-                    localClient.setLastUpTime(new Date());
+                    localClientContext.setLastUpTime(new Date());
                     break;
                 }
             }
 
             if (!isContains) {
-                Client client = new Client();
-                client.setEnv(clientInfo.getEnv());
-                client.setIdc(clientInfo.getIdc());
-                client.setSys(clientInfo.getSys());
-                client.setIp(clientInfo.getIp());
-                client.setPid(clientInfo.getPid());
-                client.setConsumerGroup(consumerGroup);
-                client.setTopic(subscription.getTopic());
-                client.setUrl(url);
-                client.setLastUpTime(new Date());
-                localClients.add(client);
+                ClientContext clientContext = new ClientContext();
+                clientContext.setEnv(clientInfo.getEnv());
+                clientContext.setIdc(clientInfo.getIdc());
+                clientContext.setSys(clientInfo.getSys());
+                clientContext.setIp(clientInfo.getIp());
+                clientContext.setPid(clientInfo.getPid());
+                clientContext.setConsumerGroup(consumerGroup);
+                clientContext.setTopic(subscription.getTopic());
+                clientContext.setUrl(url);
+                clientContext.setLastUpTime(new Date());
+                localClientContexts.add(clientContext);
             }
         }
     }
@@ -89,10 +89,10 @@ public class SubscriptionManager {
     public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
         String url, List<SubscriptionItem> subscriptionList) {
         for (final SubscriptionItem subscription : subscriptionList) {
-            final List<Client> groupTopicClients = localClientInfoMapping
+            final List<ClientContext> groupTopicClientContexts = localClientInfoMapping
                 .get(consumerGroup + "@" + subscription.getTopic());
 
-            if (CollectionUtils.isEmpty(groupTopicClients)) {
+            if (CollectionUtils.isEmpty(groupTopicClientContexts)) {
                 log.error("group {} topic {} clients is empty", consumerGroup, subscription);
             }
 
@@ -124,7 +124,7 @@ public class SubscriptionManager {
             if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
                 consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
             }
-            //TODO: idcUrl list is not thread-safe
+            // TODO: idcUrl list is not thread-safe
             consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
         }
     }

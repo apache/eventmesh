@@ -26,7 +26,7 @@ import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMonitor;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -74,39 +74,28 @@ public class HandlerService {
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
     @Setter
-    private HTTPMetricsServer metrics;
-
+    private EventMeshHttpMonitor metrics;
     @Setter
     private HTTPTrace httpTrace;
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
-
-    public void init() {
-        log.info("HandlerService start ");
-    }
-
     public void register(HttpProcessor httpProcessor, ThreadPoolExecutor threadPoolExecutor) {
         for (String path : httpProcessor.paths()) {
-            this.register(path, httpProcessor, threadPoolExecutor);
+            if (httpProcessorMap.containsKey(path)) {
+                throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
+                        path, httpProcessor.getClass().getSimpleName()));
+            }
+            ProcessorWrapper processorWrapper = new ProcessorWrapper();
+            processorWrapper.threadPoolExecutor = threadPoolExecutor;
+            if (httpProcessor instanceof AsyncHttpProcessor) {
+                processorWrapper.async = (AsyncHttpProcessor) httpProcessor;
+            }
+            processorWrapper.httpProcessor = httpProcessor;
+            processorWrapper.traceEnabled = httpProcessor.getClass().getAnnotation(EventMeshTrace.class).isEnable();
+            httpProcessorMap.put(path, processorWrapper);
+            log.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
         }
-    }
-
-    public void register(String path, HttpProcessor httpProcessor, ThreadPoolExecutor threadPoolExecutor) {
-
-        if (httpProcessorMap.containsKey(path)) {
-            throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
-                path, httpProcessor.getClass().getSimpleName()));
-        }
-        ProcessorWrapper processorWrapper = new ProcessorWrapper();
-        processorWrapper.threadPoolExecutor = threadPoolExecutor;
-        if (httpProcessor instanceof AsyncHttpProcessor) {
-            processorWrapper.async = (AsyncHttpProcessor) httpProcessor;
-        }
-        processorWrapper.httpProcessor = httpProcessor;
-        processorWrapper.traceEnabled = httpProcessor.getClass().getAnnotation(EventMeshTrace.class).isEnable();
-        httpProcessorMap.put(path, processorWrapper);
-        log.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
     }
 
     public boolean isProcessorWrapper(HttpRequest httpRequest) {

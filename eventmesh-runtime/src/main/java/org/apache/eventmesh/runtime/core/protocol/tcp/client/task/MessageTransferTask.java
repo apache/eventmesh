@@ -33,9 +33,9 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer.EventMeshTcpSendResult;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer.EventMeshTcpSendStatus;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -128,7 +128,7 @@ public class MessageTransferTask extends AbstractTask {
                 this.acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(), cmd.getValue());
             }
 
-            if (!eventMeshTCPServer.getRateLimiter()
+            if (!eventMeshTCPServer.getMsgRateLimiter()
                 .tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
 
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
@@ -138,7 +138,7 @@ public class MessageTransferTask extends AbstractTask {
 
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
 
-                log.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getRateLimiter().getRate());
+                log.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getMsgRateLimiter().getRate());
                 return;
             }
 
@@ -250,7 +250,7 @@ public class MessageTransferTask extends AbstractTask {
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
                 Objects.requireNonNull(
-                        session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
+                        session.getClientGroupWrapper().get()).getTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();

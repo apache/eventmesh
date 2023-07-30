@@ -33,7 +33,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -101,22 +101,22 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, HeartbeatResponseBody.class);
             return;
         }
-        final ConcurrentHashMap<String, List<Client>> tmpMap = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<String, List<ClientContext>> tmpMap = new ConcurrentHashMap<>();
         final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
 
         for (final HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
-            final Client client = new Client();
-            client.setEnv(heartbeatRequestHeader.getEnv());
-            client.setIdc(heartbeatRequestHeader.getIdc());
-            client.setSys(heartbeatRequestHeader.getSys());
-            client.setIp(heartbeatRequestHeader.getIp());
-            client.setPid(heartbeatRequestHeader.getPid());
-            client.setConsumerGroup(heartbeatRequestBody.getConsumerGroup());
-            client.setTopic(heartbeatEntity.topic);
-            client.setUrl(heartbeatEntity.url);
-            client.setLastUpTime(new Date());
+            final ClientContext clientContext = new ClientContext();
+            clientContext.setEnv(heartbeatRequestHeader.getEnv());
+            clientContext.setIdc(heartbeatRequestHeader.getIdc());
+            clientContext.setSys(heartbeatRequestHeader.getSys());
+            clientContext.setIp(heartbeatRequestHeader.getIp());
+            clientContext.setPid(heartbeatRequestHeader.getPid());
+            clientContext.setConsumerGroup(heartbeatRequestBody.getConsumerGroup());
+            clientContext.setTopic(heartbeatEntity.topic);
+            clientContext.setUrl(heartbeatEntity.url);
+            clientContext.setLastUpTime(new Date());
 
-            if (StringUtils.isAnyBlank(client.getTopic(), client.getUrl())) {
+            if (StringUtils.isAnyBlank(clientContext.getTopic(), clientContext.getUrl())) {
                 continue;
             }
 
@@ -128,7 +128,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                         heartbeatRequestHeader.getUsername(),
                         heartbeatRequestHeader.getPasswd(),
                         heartbeatRequestHeader.getSys(),
-                        client.getTopic(),
+                        clientContext.getTopic(),
                         Integer.parseInt(heartbeatRequestHeader.getCode()));
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, heartbeatResponseHeader,
@@ -140,24 +140,24 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 }
             }
 
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> clients = tmpMap.computeIfAbsent(groupTopicKey, k -> new ArrayList<>());
+            final String groupTopicKey = clientContext.getConsumerGroup() + "@" + clientContext.getTopic();
+            List<ClientContext> clientContexts = tmpMap.computeIfAbsent(groupTopicKey, k -> new ArrayList<>());
 
-            clients.add(client);
+            clientContexts.add(clientContext);
 
         }
 
-        ConcurrentHashMap<String, List<Client>> clientInfoMap =
+        ConcurrentHashMap<String, List<ClientContext>> clientInfoMap =
                 eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping();
         synchronized (clientInfoMap) {
-            for (final Map.Entry<String, List<Client>> groupTopicClientMapping : tmpMap.entrySet()) {
-                final List<Client> localClientList = clientInfoMap.get(groupTopicClientMapping.getKey());
-                if (CollectionUtils.isEmpty(localClientList)) {
+            for (final Map.Entry<String, List<ClientContext>> groupTopicClientMapping : tmpMap.entrySet()) {
+                final List<ClientContext> localClientContextList = clientInfoMap.get(groupTopicClientMapping.getKey());
+                if (CollectionUtils.isEmpty(localClientContextList)) {
                     clientInfoMap.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
                 } else {
-                    final List<Client> tmpClientList = groupTopicClientMapping.getValue();
-                    supplyClientInfoList(tmpClientList, localClientList);
-                    clientInfoMap.put(groupTopicClientMapping.getKey(), localClientList);
+                    final List<ClientContext> tmpClientContextList = groupTopicClientMapping.getValue();
+                    supplyClientInfoList(tmpClientContextList, localClientContextList);
+                    clientInfoMap.put(groupTopicClientMapping.getKey(), localClientContextList);
                 }
 
             }
@@ -195,21 +195,21 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
     }
 
-    private void supplyClientInfoList(final List<Client> tmpClientList, final List<Client> localClientList) {
-        Objects.requireNonNull(tmpClientList, "tmpClientList can not be null");
-        Objects.requireNonNull(localClientList, "localClientList can not be null");
+    private void supplyClientInfoList(final List<ClientContext> tmpClientContextList, final List<ClientContext> localClientContextList) {
+        Objects.requireNonNull(tmpClientContextList, "tmpClientList can not be null");
+        Objects.requireNonNull(localClientContextList, "localClientList can not be null");
 
-        for (final Client tmpClient : tmpClientList) {
+        for (final ClientContext tmpClientContext : tmpClientContextList) {
             boolean isContains = false;
-            for (final Client localClient : localClientList) {
-                if (StringUtils.equals(localClient.getUrl(), tmpClient.getUrl())) {
+            for (final ClientContext localClientContext : localClientContextList) {
+                if (StringUtils.equals(localClientContext.getUrl(), tmpClientContext.getUrl())) {
                     isContains = true;
-                    localClient.setLastUpTime(tmpClient.getLastUpTime());
+                    localClientContext.setLastUpTime(tmpClientContext.getLastUpTime());
                     break;
                 }
             }
             if (!isContains) {
-                localClientList.add(tmpClient);
+                localClientContextList.add(tmpClientContext);
             }
         }
     }

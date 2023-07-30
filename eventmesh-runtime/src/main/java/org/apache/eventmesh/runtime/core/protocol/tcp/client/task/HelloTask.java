@@ -40,7 +40,6 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -89,16 +88,14 @@ public class HelloTask extends AbstractTask {
             validateUserAgent(user);
             session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                pkg.getHeader().getSeq()));
+                    pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
-                .getHeader().getSeq()));
+                    .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
+                    (ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
                             Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
                         } else {
@@ -107,7 +104,6 @@ public class HelloTask extends AbstractTask {
                         log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
                         eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                     }
-                }
             );
         }
     }

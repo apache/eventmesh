@@ -26,7 +26,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -54,7 +54,7 @@ public final class HttpClientGroupMapping {
     private final transient Map<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
         new ConcurrentHashMap<>();
 
-    private final transient Map<String /**group@topic*/, List<Client>> localClientInfoMapping =
+    private final transient Map<String /**group@topic*/, List<ClientContext>> localClientInfoMapping =
         new ConcurrentHashMap<>();
 
     private final transient Set<String> localTopicSet = new HashSet<String>(16);
@@ -78,7 +78,7 @@ public final class HttpClientGroupMapping {
         return localTopicSet;
     }
 
-    public Map<String, List<Client>> getLocalClientInfoMapping() {
+    public Map<String, List<ClientContext>> getLocalClientInfoMapping() {
         return localClientInfoMapping;
     }
 
@@ -377,26 +377,26 @@ public final class HttpClientGroupMapping {
         Objects.requireNonNull(url, "url can not be null");
 
         for (final SubscriptionItem item : subscriptionItems) {
-            final Client client = new Client();
-            client.setEnv(subscribeRequestHeader.getEnv());
-            client.setIdc(subscribeRequestHeader.getIdc());
-            client.setSys(subscribeRequestHeader.getSys());
-            client.setIp(subscribeRequestHeader.getIp());
-            client.setPid(subscribeRequestHeader.getPid());
-            client.setConsumerGroup(consumerGroup);
-            client.setTopic(item.getTopic());
-            client.setUrl(url);
-            client.setLastUpTime(new Date());
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(
-                    groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
+            final ClientContext clientContext = new ClientContext();
+            clientContext.setEnv(subscribeRequestHeader.getEnv());
+            clientContext.setIdc(subscribeRequestHeader.getIdc());
+            clientContext.setSys(subscribeRequestHeader.getSys());
+            clientContext.setIp(subscribeRequestHeader.getIp());
+            clientContext.setPid(subscribeRequestHeader.getPid());
+            clientContext.setConsumerGroup(consumerGroup);
+            clientContext.setTopic(item.getTopic());
+            clientContext.setUrl(url);
+            clientContext.setLastUpTime(new Date());
+            final String groupTopicKey = clientContext.getConsumerGroup() + "@" + clientContext.getTopic();
+            List<ClientContext> localClientContexts = localClientInfoMapping.computeIfAbsent(
+                    groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<ClientContext>() {
                         private static final long serialVersionUID = -529919988844134656L;
                         {
-                            add(client);
+                            add(clientContext);
                         }
                     }));
-            localClients.stream().filter(o -> StringUtils.equals(o.getUrl(), client.getUrl())).findFirst()
-                .ifPresent(o -> o.setLastUpTime(client.getLastUpTime()));
+            localClientContexts.stream().filter(o -> StringUtils.equals(o.getUrl(), clientContext.getUrl())).findFirst()
+                .ifPresent(o -> o.setLastUpTime(clientContext.getLastUpTime()));
         }
     }
 
@@ -437,26 +437,26 @@ public final class HttpClientGroupMapping {
         Objects.requireNonNull(url, "url can not be null");
 
         for (final String topic : topicList) {
-            final Client client = new Client();
-            client.setEnv(unSubscribeRequestHeader.getEnv());
-            client.setIdc(unSubscribeRequestHeader.getIdc());
-            client.setSys(unSubscribeRequestHeader.getSys());
-            client.setIp(unSubscribeRequestHeader.getIp());
-            client.setPid(unSubscribeRequestHeader.getPid());
-            client.setConsumerGroup(consumerGroup);
-            client.setTopic(topic);
-            client.setUrl(url);
-            client.setLastUpTime(new Date());
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(
-                                    groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
+            final ClientContext clientContext = new ClientContext();
+            clientContext.setEnv(unSubscribeRequestHeader.getEnv());
+            clientContext.setIdc(unSubscribeRequestHeader.getIdc());
+            clientContext.setSys(unSubscribeRequestHeader.getSys());
+            clientContext.setIp(unSubscribeRequestHeader.getIp());
+            clientContext.setPid(unSubscribeRequestHeader.getPid());
+            clientContext.setConsumerGroup(consumerGroup);
+            clientContext.setTopic(topic);
+            clientContext.setUrl(url);
+            clientContext.setLastUpTime(new Date());
+            final String groupTopicKey = clientContext.getConsumerGroup() + "@" + clientContext.getTopic();
+            List<ClientContext> localClientContexts = localClientInfoMapping.computeIfAbsent(
+                                    groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<ClientContext>() {
                                         private static final long serialVersionUID = -529919988844134656L;
                                         {
-                                            add(client);
+                                            add(clientContext);
                                         }
                                     }));
-            localClients.stream().filter(o -> StringUtils.equals(o.getUrl(), client.getUrl())).findFirst()
-                .ifPresent(o -> o.setLastUpTime(client.getLastUpTime()));
+            localClientContexts.stream().filter(o -> StringUtils.equals(o.getUrl(), clientContext.getUrl())).findFirst()
+                .ifPresent(o -> o.setLastUpTime(clientContext.getLastUpTime()));
         }
     }
 }

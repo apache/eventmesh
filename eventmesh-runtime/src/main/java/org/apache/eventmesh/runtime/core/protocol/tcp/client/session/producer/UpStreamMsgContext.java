@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -137,7 +137,7 @@ public class UpStreamMsgContext extends RetryContext {
                 // retry
                 // reset delay time
                 retryContext.delay(10000);
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),

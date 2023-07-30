@@ -46,7 +46,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
     }
 
     @Override
-    public String calculateRecommendEventMesh(final String group, final String purpose) throws Exception {
+    public String calculateRecommendEventMesh(final String group, final String purpose) {
         List<EventMeshDataInfo> eventMeshDataInfoList;
 
         if (StringUtils.isAnyBlank(group, purpose)) {

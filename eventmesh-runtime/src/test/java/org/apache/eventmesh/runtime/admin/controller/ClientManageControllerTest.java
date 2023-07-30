@@ -30,7 +30,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMonitor;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
@@ -59,7 +59,7 @@ public class ClientManageControllerTest {
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
         HttpSummaryMetrics httpSummaryMetrics = mock(HttpSummaryMetrics.class);
-        HTTPMetricsServer metrics = mock(HTTPMetricsServer.class);
+        EventMeshHttpMonitor metrics = mock(EventMeshHttpMonitor.class);
 
         EventMeshHTTPServer eventMeshHTTPServer = mock(EventMeshHTTPServer.class);
         when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);

@@ -149,7 +149,7 @@ public class Utils {
      * @param fullReq request parameter
      * @return http header
      */
-    public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+    public static Map<String, Object> parseHttpRequestHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),

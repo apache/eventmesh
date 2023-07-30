@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;

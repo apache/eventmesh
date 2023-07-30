@@ -129,7 +129,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
             // local unSubscription url
             String unsubscribeUrl = "http://" + localAddress + ":"
-                + eventMeshHttpConfiguration.getHttpServerPort()
+                + eventMeshHttpConfiguration.getEventMeshHttpServerPort()
                 + RequestURI.PUBLISH_BRIDGE.getRequestURI();
 
             Map<String, Object> remoteBodyMap = new HashMap<>();

@@ -45,7 +45,7 @@ public class HTTPTrace {
 
     public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel, boolean traceEnabled) {
 
-        final Map<String, Object> headerMap = Utils.parseHttpHeader(httpRequest);
+        final Map<String, Object> headerMap = Utils.parseHttpRequestHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
             false);
         return new TraceOperation(span, null, traceEnabled);

@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import java.util.Date;
 
-public class Client {
+public class ClientContext {
 
     private String env;
 

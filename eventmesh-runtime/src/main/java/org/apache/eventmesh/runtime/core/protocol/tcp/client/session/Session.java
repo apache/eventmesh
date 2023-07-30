@@ -28,10 +28,10 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.consumer.DownStreamMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.consumer.SessionPusher;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer.EventMeshTcpSendResult;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.producer.SessionSender;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 
@@ -60,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Session {
 
-    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE + "Logger");
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 

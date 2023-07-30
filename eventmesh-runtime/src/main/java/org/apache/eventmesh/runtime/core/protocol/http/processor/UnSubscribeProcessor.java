@@ -35,7 +35,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -133,29 +133,29 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             registerClient(unSubscribeRequestHeader, consumerGroup, unSubTopicList, unSubscribeUrl);
 
             for (final String unSubTopic : unSubTopicList) {
-                final List<Client> groupTopicClients = subscriptionManager.getLocalClientInfoMapping()
+                final List<ClientContext> groupTopicClientContexts = subscriptionManager.getLocalClientInfoMapping()
                     .get(consumerGroup + "@" + unSubTopic);
 
-                final Iterator<Client> clientIterator = groupTopicClients.iterator();
+                final Iterator<ClientContext> clientIterator = groupTopicClientContexts.iterator();
                 while (clientIterator.hasNext()) {
-                    final Client client = clientIterator.next();
-                    if (StringUtils.equals(client.getPid(), pid)
-                        && StringUtils.equals(client.getUrl(), unSubscribeUrl)) {
+                    final ClientContext clientContext = clientIterator.next();
+                    if (StringUtils.equals(clientContext.getPid(), pid)
+                        && StringUtils.equals(clientContext.getUrl(), unSubscribeUrl)) {
                         if (log.isWarnEnabled()) {
-                            log.warn("client {} start unsubscribe", JsonUtils.toJSONString(client));
+                            log.warn("client {} start unsubscribe", JsonUtils.toJSONString(clientContext));
                         }
                         clientIterator.remove();
                     }
                 }
-                if (CollectionUtils.isNotEmpty(groupTopicClients)) {
+                if (CollectionUtils.isNotEmpty(groupTopicClientContexts)) {
                     //change url
                     final Map<String, List<String>> idcUrls = new HashMap<>();
                     final Set<String> clientUrls = new HashSet<>();
-                    for (final Client client : groupTopicClients) {
+                    for (final ClientContext clientContext : groupTopicClientContexts) {
                         // remove subscribed url
-                        if (!StringUtils.equals(unSubscribeUrl, client.getUrl())) {
-                            clientUrls.add(client.getUrl());
-                            idcUrls.computeIfAbsent(client.getIdc(), k -> new ArrayList<>());
+                        if (!StringUtils.equals(unSubscribeUrl, clientContext.getUrl())) {
+                            clientUrls.add(clientContext.getUrl());
+                            idcUrls.computeIfAbsent(clientContext.getIdc(), k -> new ArrayList<>());
                         }
 
                     }
@@ -242,37 +242,37 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         final List<String> topicList,
         final String url) {
         for (final String topic : topicList) {
-            final Client client = new Client();
-            client.setEnv(unSubscribeRequestHeader.getEnv());
-            client.setIdc(unSubscribeRequestHeader.getIdc());
-            client.setSys(unSubscribeRequestHeader.getSys());
-            client.setIp(unSubscribeRequestHeader.getIp());
-            client.setPid(unSubscribeRequestHeader.getPid());
-            client.setConsumerGroup(consumerGroup);
-            client.setTopic(topic);
-            client.setUrl(url);
-            client.setLastUpTime(new Date());
+            final ClientContext clientContext = new ClientContext();
+            clientContext.setEnv(unSubscribeRequestHeader.getEnv());
+            clientContext.setIdc(unSubscribeRequestHeader.getIdc());
+            clientContext.setSys(unSubscribeRequestHeader.getSys());
+            clientContext.setIp(unSubscribeRequestHeader.getIp());
+            clientContext.setPid(unSubscribeRequestHeader.getPid());
+            clientContext.setConsumerGroup(consumerGroup);
+            clientContext.setTopic(topic);
+            clientContext.setUrl(url);
+            clientContext.setLastUpTime(new Date());
 
-            final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            ConcurrentHashMap<String, List<Client>> localClientInfoMap = eventMeshHTTPServer.getSubscriptionManager()
+            final String groupTopicKey = clientContext.getConsumerGroup() + "@" + clientContext.getTopic();
+            ConcurrentHashMap<String, List<ClientContext>> localClientInfoMap = eventMeshHTTPServer.getSubscriptionManager()
                     .getLocalClientInfoMapping();
             if (localClientInfoMap.containsKey(groupTopicKey)) {
-                final List<Client> localClients = localClientInfoMap.get(groupTopicKey);
+                final List<ClientContext> localClientContexts = localClientInfoMap.get(groupTopicKey);
                 boolean isContains = false;
-                for (final Client localClient : localClients) {
-                    if (StringUtils.equals(localClient.getUrl(), client.getUrl())) {
+                for (final ClientContext localClientContext : localClientContexts) {
+                    if (StringUtils.equals(localClientContext.getUrl(), clientContext.getUrl())) {
                         isContains = true;
-                        localClient.setLastUpTime(client.getLastUpTime());
+                        localClientContext.setLastUpTime(clientContext.getLastUpTime());
                         break;
                     }
                 }
                 if (!isContains) {
-                    localClients.add(client);
+                    localClientContexts.add(clientContext);
                 }
             } else {
-                final List<Client> clients = new ArrayList<>();
-                clients.add(client);
-                localClientInfoMap.put(groupTopicKey, clients);
+                final List<ClientContext> clientContexts = new ArrayList<>();
+                clientContexts.add(clientContext);
+                localClientInfoMap.put(groupTopicKey, clientContexts);
             }
         }
     }
