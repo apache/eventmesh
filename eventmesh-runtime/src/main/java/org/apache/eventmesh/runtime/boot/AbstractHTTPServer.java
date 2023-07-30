@@ -488,7 +488,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             if (StringUtils.isBlank(requestHeaders.get(ProtocolKey.VERSION))) {
                 requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
             }
-            requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
+
+
+            requestHeaders.set(ProtocolKey.ClientInstanceKey.IP.getKey(),
                     RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
             requestHeaders.set(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.getEventMeshServerIp());
         }

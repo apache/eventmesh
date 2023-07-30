@@ -35,10 +35,10 @@ public class PushMessageResponseHeaderTest {
         Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(100));
         Assert.assertThat(header.toMap().get(ProtocolKey.LANGUAGE), is(Constants.LANGUAGE_JAVA));
         Assert.assertThat(header.toMap().get(ProtocolKey.VERSION), is(ProtocolVersion.V1));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.ENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IDC), is("IDC"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS), is("SYSID"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID), is("PID"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP), is("127.0.0.1"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.ENV.getKey()), is("DEV"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IDC.getKey()), is("IDC"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS.getKey()), is("SYSID"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID.getKey()), is("PID"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP.getKey()), is("127.0.0.1"));
     }
 }

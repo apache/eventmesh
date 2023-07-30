@@ -83,7 +83,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
-        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
+        userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP.getKey(), remoteAddr);
 
         // build sys header
         requestWrapper.buildSysHeaderForClient();
@@ -129,9 +129,9 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         //do acl check
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
+            String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME.getKey()).toString();
+            String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD.getKey()).toString();
+            String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString();
             for (SubscriptionItem item : subscriptionList) {
                 try {
                     this.acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(), requestWrapper.getRequestURI());
