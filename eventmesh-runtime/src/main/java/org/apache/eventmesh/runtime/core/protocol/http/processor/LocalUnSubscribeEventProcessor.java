@@ -83,7 +83,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // user request header
-        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP.getKey(), remoteAddr);
 
         // build sys header
         requestWrapper.buildSysHeaderForClient();
@@ -124,7 +124,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
             }
         )).orElseGet(Collections::emptyList);
 
-        final String pid = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString();
+        final String pid = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString();
 
         synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
             boolean isChange = true;
@@ -253,11 +253,11 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final Map<String, Object> requestHeaderMap = requestWrapper.getSysHeaderMap();
         for (final String topic : topicList) {
             final Client client = new Client();
-            client.setEnv(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV).toString());
-            client.setIdc(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString());
-            client.setSys(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString());
-            client.setIp(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP).toString());
-            client.setPid(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+            client.setEnv(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV.getKey()).toString());
+            client.setIdc(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC.getKey()).toString());
+            client.setSys(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString());
+            client.setIp(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP.getKey()).toString());
+            client.setPid(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString());
             client.setConsumerGroup(consumerGroup);
             client.setTopic(topic);
             client.setUrl(url);

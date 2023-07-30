@@ -100,9 +100,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
-        String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
-        String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+        String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey());
+        String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
+        String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
         //validate HEADER
         if (StringUtils.isAnyBlank(idc, pid, sys)
