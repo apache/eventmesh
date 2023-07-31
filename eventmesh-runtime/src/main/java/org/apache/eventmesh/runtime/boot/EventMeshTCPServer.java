@@ -30,10 +30,10 @@ import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.processor.rebalance.EventMeshRebalanceImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.processor.rebalance.EventMeshRebalanceService;
+import org.apache.eventmesh.runtime.core.protocol.tcp.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
@@ -123,6 +123,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
         adminWebHookConfigOperationManage.init();
 
+        registerTCPRequestProcessor();
         if (log.isInfoEnabled()) {
             log.info("--------------------------EventMeshTCPServer Inited");
         }
@@ -200,6 +201,10 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
         }
+    }
+
+    private void registerTCPRequestProcessor() {
+
     }
 
     private void initThreadPool() {

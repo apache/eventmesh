@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.WebHookProcessor;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 import org.apache.eventmesh.webhook.receive.WebHookMQProducer;

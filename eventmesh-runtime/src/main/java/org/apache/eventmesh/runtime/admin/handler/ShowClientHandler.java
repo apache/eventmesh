@@ -22,8 +22,8 @@ import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
 import java.io.OutputStream;

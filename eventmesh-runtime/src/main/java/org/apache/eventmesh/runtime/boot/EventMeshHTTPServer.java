@@ -31,26 +31,26 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageV2Processor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.CreateTopicProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.DeleteTopicProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.QuerySubscriptionProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribeEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessageProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncRemoteEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.CreateTopicProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.DeleteTopicProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.LocalSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.LocalUnSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.ProcessorWrapperHandler;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.QuerySubscriptionProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.RemoteSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.RemoteUnSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.SendAsyncEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.SendAsyncRemoteEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.event.WebHookProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.AdminMetricsProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.BatchSendMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.BatchSendMessageV2Processor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.HeartBeatProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.ReplyMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SendAsyncMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SendSyncMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SubscribeProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.request.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
@@ -161,7 +161,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager = new ProducerManager(this);
         producerManager.init();
 
-        super.setHandlerService(new HandlerService());
+        super.setHandlerService(new ProcessorWrapperHandler());
         super.getHandlerService().setMetrics(this.getMetrics());
 
         //get the trace-plugin
@@ -256,7 +256,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         }
     }
 
-    public void registerHTTPRequestProcessor() {
+    private void registerHTTPRequestProcessor() {
         final BatchSendMessageProcessor batchSendMessageProcessor = new BatchSendMessageProcessor(this);
         registerProcessor(RequestCode.MSG_BATCH_SEND.getRequestCode(), batchSendMessageProcessor, batchMsgExecutor);
 

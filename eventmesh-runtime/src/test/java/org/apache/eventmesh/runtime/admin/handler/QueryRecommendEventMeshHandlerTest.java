@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.processor.recommend.EventMeshRecommendImpl;
 
 import org.apache.commons.lang3.StringUtils;
 

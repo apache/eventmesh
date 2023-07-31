@@ -25,7 +25,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -58,7 +58,7 @@ public final class HttpClientGroupMapping {
     private final transient Map<String /**group@topic*/, List<ClientContext>> localClientInfoMapping =
         new ConcurrentHashMap<>();
 
-    private final transient Set<String> localTopicSet = new HashSet<String>(16);
+    private final transient Set<String> localTopicSet = new HashSet<>(16);
 
     private static final transient ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
 

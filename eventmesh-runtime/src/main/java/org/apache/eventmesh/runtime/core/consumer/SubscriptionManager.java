@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.consumer;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.ClientContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

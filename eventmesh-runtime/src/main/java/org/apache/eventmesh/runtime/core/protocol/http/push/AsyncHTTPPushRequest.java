@@ -185,8 +185,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
 
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
-            eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
-            urlAuthType);
+            eventMeshHttpConfiguration.getEventMeshWebhookOrigin(), urlAuthType);
 
         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordPushMsg();
 
@@ -195,8 +194,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         addToWaitingMap(this);
 
         if (CMD_LOGGER.isInfoEnabled()) {
-            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                localAddress, currPushUrl);
+            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode, localAddress, currPushUrl);
         }
 
         try {

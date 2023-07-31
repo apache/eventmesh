@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 
 import org.apache.commons.lang3.StringUtils;
 

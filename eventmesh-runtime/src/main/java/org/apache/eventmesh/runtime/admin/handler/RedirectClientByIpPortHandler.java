@@ -23,9 +23,9 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
