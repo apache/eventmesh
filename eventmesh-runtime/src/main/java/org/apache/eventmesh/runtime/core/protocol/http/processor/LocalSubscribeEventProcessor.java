@@ -167,7 +167,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
+        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping()) {
             ClientInfo clientInfo = getClientInfo(requestWrapper);
             SubscriptionManager subscriptionManager = eventMeshHTTPServer.getSubscriptionManager();
             subscriptionManager.registerClient(clientInfo, consumerGroup, subscriptionList, url);

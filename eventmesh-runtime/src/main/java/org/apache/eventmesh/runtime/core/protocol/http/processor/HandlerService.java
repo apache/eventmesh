@@ -233,7 +233,7 @@ public class HandlerService {
 
         private Map<String, Object> traceMap;
 
-        private CloudEvent ce;
+        private CloudEvent cloudEvent;
 
 
         public void run() {
@@ -265,6 +265,13 @@ public class HandlerService {
             }
         }
 
+        private void preHandler() {
+            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
+            if (httpLogger.isDebugEnabled()) {
+                httpLogger.debug("{}", response);
+            }
+        }
+
         private void postHandler() {
             metrics.getSummaryMetrics().recordHTTPRequest();
             if (httpLogger.isDebugEnabled()) {
@@ -273,15 +280,8 @@ public class HandlerService {
             if (Objects.isNull(response)) {
                 this.response = HttpResponseUtils.createSuccess();
             }
-            this.traceOperation.endTrace(ce);
+            this.traceOperation.endTrace(cloudEvent);
             HandlerService.this.sendResponse(ctx, this.request, this.response);
-        }
-
-        private void preHandler() {
-            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            if (httpLogger.isDebugEnabled()) {
-                httpLogger.debug("{}", response);
-            }
         }
 
         private void error() {
@@ -292,16 +292,7 @@ public class HandlerService {
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
-
-        public void setResponseJsonBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
-        }
-
-        public void setResponseTextBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseTextBody(body, ctx));
-        }
-
-        public void sendResponse(HttpResponse response) {
+        private void sendResponse(HttpResponse response) {
             this.response = response;
             this.postHandler();
         }
@@ -339,6 +330,14 @@ public class HandlerService {
                 this.response = HttpResponseUtils.createInternalServerError();
                 this.error();
             }
+        }
+
+        public void setResponseJsonBody(String body) {
+            this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
+        }
+
+        public void setResponseTextBody(String body) {
+            this.sendResponse(HttpResponseUtils.setResponseTextBody(body, ctx));
         }
 
         /**

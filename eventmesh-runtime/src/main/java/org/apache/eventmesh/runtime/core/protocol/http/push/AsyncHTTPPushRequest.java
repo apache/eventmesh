@@ -181,7 +181,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.setEntity(httpEntity);
 
         // for CloudEvents Webhook spec
-        String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
+        String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConfMapping()
             .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
 
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),

@@ -148,7 +148,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         }
 
         ConcurrentHashMap<String, List<ClientContext>> clientInfoMap =
-                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping();
+                eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping();
         synchronized (clientInfoMap) {
             for (final Map.Entry<String, List<ClientContext>> groupTopicClientMapping : tmpMap.entrySet()) {
                 final List<ClientContext> localClientContextList = clientInfoMap.get(groupTopicClientMapping.getKey());

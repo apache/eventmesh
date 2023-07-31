@@ -27,8 +27,8 @@ public class ConsumerGroupConf implements Serializable {
     //eg . 5013-1A0
     private String consumerGroup;
 
-    private final ConcurrentHashMap<String/*topic*/, ConsumerGroupTopicConf> consumerGroupTopicConf
-        = new ConcurrentHashMap<String, ConsumerGroupTopicConf>();
+    private final ConcurrentHashMap<String/*topic*/, ConsumerGroupTopicConf> consumerGroupTopicConfMapping
+        = new ConcurrentHashMap<>();
 
     public ConsumerGroupConf(String consumerGroup) {
         this.consumerGroup = consumerGroup;
@@ -42,8 +42,8 @@ public class ConsumerGroupConf implements Serializable {
         this.consumerGroup = consumerGroup;
     }
 
-    public Map<String, ConsumerGroupTopicConf> getConsumerGroupTopicConf() {
-        return consumerGroupTopicConf;
+    public Map<String, ConsumerGroupTopicConf> getConsumerGroupTopicConfMapping() {
+        return consumerGroupTopicConfMapping;
     }
 
     @Override
@@ -58,12 +58,12 @@ public class ConsumerGroupConf implements Serializable {
 
         return consumerGroup.equals(that.consumerGroup)
             &&
-            Objects.equals(consumerGroupTopicConf, that.consumerGroupTopicConf);
+            Objects.equals(consumerGroupTopicConfMapping, that.consumerGroupTopicConfMapping);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerGroup, consumerGroupTopicConf);
+        return Objects.hash(consumerGroup, consumerGroupTopicConfMapping);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ConsumerGroupConf implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupConfig={")
             .append("groupName=").append(consumerGroup).append(",")
-            .append(",consumerGroupTopicConf=").append(consumerGroupTopicConf).append("}");
+            .append(",consumerGroupTopicConf=").append(consumerGroupTopicConfMapping).append("}");
         return sb.toString();
     }
 }

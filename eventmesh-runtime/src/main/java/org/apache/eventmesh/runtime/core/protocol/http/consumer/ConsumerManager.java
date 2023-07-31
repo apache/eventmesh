@@ -163,7 +163,7 @@ public class ConsumerManager {
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().put(event.getTopic(), event.getNewTopicConf());
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().put(event.getTopic(), event.getNewTopicConf());
                     break;
                 }
                 case CHANGE: {
@@ -171,7 +171,7 @@ public class ConsumerManager {
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().replace(event.getTopic(), event.getNewTopicConf());
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().replace(event.getTopic(), event.getNewTopicConf());
                     break;
                 }
                 case DELETE: {
@@ -179,7 +179,7 @@ public class ConsumerManager {
                     if (Objects.isNull(manager)) {
                         return;
                     }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.getTopic());
+                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().remove(event.getTopic());
                     break;
                 }
                 default:

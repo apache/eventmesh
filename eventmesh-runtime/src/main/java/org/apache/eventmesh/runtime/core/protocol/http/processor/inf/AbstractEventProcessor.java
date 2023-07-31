@@ -95,7 +95,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     new HashMap<>(1 << 4);
                 for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                    consumerGroupConf.getConsumerGroupTopicConfMapping().entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();

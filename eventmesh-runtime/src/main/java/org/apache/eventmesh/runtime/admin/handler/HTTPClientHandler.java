@@ -110,7 +110,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
             String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
 
-            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping().values()) {
                 // Find the client that matches the url to be deleted
                 clientContextList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
@@ -150,7 +150,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             // Get the list of HTTP clients
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
 
-            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping().values()) {
                 // Convert each Client object to GetClientResponse and add to getClientResponseList
                 for (ClientContext clientContext : clientContextList) {
                     GetClientResponse getClientResponse = new GetClientResponse(

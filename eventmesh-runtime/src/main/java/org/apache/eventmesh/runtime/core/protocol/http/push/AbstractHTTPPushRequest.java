@@ -30,6 +30,7 @@ import org.apache.commons.collections4.MapUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,7 +44,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public long lastPushTime = System.currentTimeMillis();
 
-    public final Map<String /** IDC*/, List<String>> urls;
+    public final Map<String, CopyOnWriteArrayList<String>> urls;
 
     public final List<String> totalUrls;
 

@@ -125,7 +125,7 @@ public class EventMeshConsumer {
                     messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                 }
 
-                ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConf(),
+                ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConfMapping(),
                     topic, null);
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
@@ -143,7 +143,7 @@ public class EventMeshConsumer {
                 }
 
                 SubscriptionItem subscriptionItem =
-                    consumerGroupConf.getConsumerGroupTopicConf().get(topic).getSubscriptionItem();
+                    consumerGroupConf.getConsumerGroupTopicConfMapping().get(topic).getSubscriptionItem();
                 HandleMsgContext handleMsgContext = new HandleMsgContext(
                     EventMeshUtil.buildPushMsgSeqNo(),
                     consumerGroupConf.getConsumerGroup(),
@@ -207,7 +207,7 @@ public class EventMeshConsumer {
                 }
 
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(
-                    consumerGroupConf.getConsumerGroupTopicConf(), topic, null);
+                    consumerGroupConf.getConsumerGroupTopicConfMapping(), topic, null);
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
                     (EventMeshAsyncConsumeContext) context;
 
@@ -224,7 +224,7 @@ public class EventMeshConsumer {
                 }
 
                 SubscriptionItem subscriptionItem =
-                    consumerGroupConf.getConsumerGroupTopicConf().get(topic)
+                    consumerGroupConf.getConsumerGroupTopicConfMapping().get(topic)
                         .getSubscriptionItem();
                 HandleMsgContext handleMsgContext =
                     new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(),

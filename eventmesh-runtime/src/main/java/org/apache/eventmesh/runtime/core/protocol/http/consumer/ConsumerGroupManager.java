@@ -62,7 +62,7 @@ public class ConsumerGroupManager {
     }
 
     private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
-        for (Map.Entry<String, ConsumerGroupTopicConf> conf : consumerGroupConfig.getConsumerGroupTopicConf().entrySet()) {
+        for (Map.Entry<String, ConsumerGroupTopicConf> conf : consumerGroupConfig.getConsumerGroupTopicConfMapping().entrySet()) {
             eventMeshConsumer.subscribe(conf.getKey(), conf.getValue().getSubscriptionItem());
         }
     }
@@ -96,9 +96,9 @@ public class ConsumerGroupManager {
 
     public void unsubscribe(String consumerGroup) throws Exception {
         if (StringUtils.equals(consumerGroupConfig.getConsumerGroup(), consumerGroup)) {
-            Set<String> topics = consumerGroupConfig.getConsumerGroupTopicConf().keySet();
+            Set<String> topics = consumerGroupConfig.getConsumerGroupTopicConfMapping().keySet();
             for (String topic : topics) {
-                ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConfig.getConsumerGroupTopicConf().get(topic);
+                ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConfig.getConsumerGroupTopicConfMapping().get(topic);
                 eventMeshConsumer.unsubscribe(topic, consumerGroupTopicConf.getSubscriptionItem().getMode());
             }
         }

@@ -20,10 +20,10 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -44,7 +44,7 @@ public class ConsumerGroupTopicConf implements Serializable {
     /**
      * PUSH URL Map key:IDC value:URL list in IDC
      */
-    private Map<String, List<String>> idcUrls = Maps.newConcurrentMap();
+    private Map<String, CopyOnWriteArrayList<String>> idcUrls = Maps.newConcurrentMap();
 
     /**
      * ALL IDC URLs
@@ -113,11 +113,11 @@ public class ConsumerGroupTopicConf implements Serializable {
         this.subscriptionItem = subscriptionItem;
     }
 
-    public Map<String, List<String>> getIdcUrls() {
+    public Map<String, CopyOnWriteArrayList<String>> getIdcUrls() {
         return idcUrls;
     }
 
-    public void setIdcUrls(final Map<String, List<String>> idcUrls) {
+    public void setIdcUrls(final Map<String, CopyOnWriteArrayList<String>> idcUrls) {
         this.idcUrls = idcUrls;
     }
 

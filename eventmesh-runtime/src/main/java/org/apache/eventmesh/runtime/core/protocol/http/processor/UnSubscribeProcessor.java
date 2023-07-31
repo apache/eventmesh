@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -127,13 +128,13 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         SubscriptionManager subscriptionManager = eventMeshHTTPServer.getSubscriptionManager();
         ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMap =
                 subscriptionManager.getLocalConsumerGroupMapping();
-        synchronized (subscriptionManager.getLocalClientInfoMapping()) {
+        synchronized (subscriptionManager.getLocalClientContextMapping()) {
             boolean isChange = true;
 
             registerClient(unSubscribeRequestHeader, consumerGroup, unSubTopicList, unSubscribeUrl);
 
             for (final String unSubTopic : unSubTopicList) {
-                final List<ClientContext> groupTopicClientContexts = subscriptionManager.getLocalClientInfoMapping()
+                final List<ClientContext> groupTopicClientContexts = subscriptionManager.getLocalClientContextMapping()
                     .get(consumerGroup + "@" + unSubTopic);
 
                 final Iterator<ClientContext> clientIterator = groupTopicClientContexts.iterator();
@@ -149,13 +150,13 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 }
                 if (CollectionUtils.isNotEmpty(groupTopicClientContexts)) {
                     //change url
-                    final Map<String, List<String>> idcUrls = new HashMap<>();
+                    final Map<String, CopyOnWriteArrayList<String>> idcUrls = new HashMap<>();
                     final Set<String> clientUrls = new HashSet<>();
                     for (final ClientContext clientContext : groupTopicClientContexts) {
                         // remove subscribed url
                         if (!StringUtils.equals(unSubscribeUrl, clientContext.getUrl())) {
                             clientUrls.add(clientContext.getUrl());
-                            idcUrls.computeIfAbsent(clientContext.getIdc(), k -> new ArrayList<>());
+                            idcUrls.computeIfAbsent(clientContext.getIdc(), k -> new CopyOnWriteArrayList<>());
                         }
 
                     }
@@ -163,7 +164,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     synchronized (localConsumerGroupMap) {
                         final ConsumerGroupConf consumerGroupConf = localConsumerGroupMap.get(consumerGroup);
 
-                        final Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
+                        final Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConfMapping();
                         for (final Map.Entry<String, ConsumerGroupTopicConf> topicConf : map.entrySet()) {
                             // only modify the topic to subscribe
                             if (StringUtils.equals(unSubTopic, topicConf.getKey())) {
@@ -215,7 +216,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                             request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                     asyncContext.onComplete(responseEventMeshCommand, handler);
                     // clean ClientInfo
-                    subscriptionManager.getLocalClientInfoMapping().keySet()
+                    subscriptionManager.getLocalClientContextMapping().keySet()
                         .removeIf(s -> StringUtils.contains(s, consumerGroup));
                     // clean ConsumerGroupInfo
                     localConsumerGroupMap.keySet()
@@ -255,7 +256,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
 
             final String groupTopicKey = clientContext.getConsumerGroup() + "@" + clientContext.getTopic();
             ConcurrentHashMap<String, List<ClientContext>> localClientInfoMap = eventMeshHTTPServer.getSubscriptionManager()
-                    .getLocalClientInfoMapping();
+                    .getLocalClientContextMapping();
             if (localClientInfoMap.containsKey(groupTopicKey)) {
                 final List<ClientContext> localClientContexts = localClientInfoMap.get(groupTopicKey);
                 boolean isContains = false;
