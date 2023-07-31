@@ -21,10 +21,10 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
+import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupMetadata;
+import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,7 +60,7 @@ public final class HttpClientGroupMapping {
 
     private final transient Set<String> localTopicSet = new HashSet<>(16);
 
-    private static final transient ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
+    private static final ReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
 
     private HttpClientGroupMapping() {
 

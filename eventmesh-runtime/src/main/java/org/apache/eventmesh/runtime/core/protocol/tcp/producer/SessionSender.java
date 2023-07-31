@@ -65,7 +65,7 @@ public class SessionSender {
 
     public final transient AtomicLong failMsgCount = new AtomicLong(0);
 
-    private static final int TRY_PERMIT_TIME_OUT = 5;
+    public static final int TRY_PERMIT_TIME_OUT = 5;
 
     @Override
     public String toString() {

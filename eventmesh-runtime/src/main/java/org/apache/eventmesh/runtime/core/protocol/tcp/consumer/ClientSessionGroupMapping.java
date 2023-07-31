@@ -26,7 +26,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.dispatch.FreePriorityDispatchStrategy;
-import org.apache.eventmesh.runtime.core.protocol.tcp.push.DownStreamMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;

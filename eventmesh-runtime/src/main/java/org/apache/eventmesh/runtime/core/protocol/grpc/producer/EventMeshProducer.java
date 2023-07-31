@@ -22,8 +22,8 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.Properties;

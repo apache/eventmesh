@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.consumer;
 
-import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
@@ -34,8 +33,8 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.dispatch.DownstreamDispatchStrategy;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.producer.UpStreamMsgContext;
-import org.apache.eventmesh.runtime.core.protocol.tcp.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
@@ -92,10 +91,10 @@ public class ClientGroupWrapper {
     private final ReadWriteLock groupLock = new ReentrantReadWriteLock();
 
     @Getter
-    private final Set<Session> groupConsumerSessions = new HashSet<Session>();
+    private final Set<Session> groupConsumerSessions = new HashSet<>();
 
     @Getter
-    private final Set<Session> groupProducerSessions = new HashSet<Session>();
+    private final Set<Session> groupProducerSessions = new HashSet<>();
 
     @Getter
     private final AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
@@ -116,8 +115,7 @@ public class ClientGroupWrapper {
 
     private MQConsumerWrapper broadCastMsgConsumer;
 
-    private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping =
-        new ConcurrentHashMap<String, Map<String, Session>>();
+    private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping = new ConcurrentHashMap<>();
 
     private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
 
@@ -467,7 +465,7 @@ public class ClientGroupWrapper {
 
         persistentMsgConsumer.init(keyValue);
 
-        EventListener listener = (CloudEvent event, AsyncConsumeContext context) -> {
+        EventListener listener = (event, context) -> {
             String protocolVersion =
                 Objects.requireNonNull(event.getSpecVersion()).toString();
 

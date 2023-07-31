@@ -24,19 +24,13 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
+import org.apache.eventmesh.common.utils.AssertUtils;
+import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.GoodbyeTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.HeartBeatTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.HelloTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.ListenTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.MessageAckTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.MessageTransferTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.RecommendTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.SubscribeTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.processor.UnSubscribeTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.processor.TcpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
@@ -45,7 +39,10 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,6 +85,9 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     private transient GlobalTrafficShapingHandler globalTrafficShapingHandler;
     private TcpConnectionHandler tcpConnectionHandler;
     private TcpDispatcher tcpDispatcher;
+
+    private final Map<Command, Pair<TcpRequestProcessor, ThreadPoolExecutor>> tcpRequestProcessorTable =
+            new ConcurrentHashMap<>(64);
 
     private final transient AtomicBoolean started = new AtomicBoolean(false);
 
@@ -156,8 +156,13 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         started.compareAndSet(true, false);
     }
 
-    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
+
+    public void registerProcessor(final Command command, final TcpRequestProcessor processor,
+                                  final ThreadPoolExecutor executor) {
+        AssertUtils.notNull(command, "command can't be null");
+        AssertUtils.notNull(processor, "processor can't be null");
+        AssertUtils.notNull(executor, "executor can't be null");
+        this.tcpRequestProcessorTable.put(command, new Pair<>(processor, executor));
     }
 
 
@@ -218,8 +223,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
             Command cmd = pkg.getHeader().getCmd();
             try {
-                Runnable task;
-
                 if (isNeedTrace(cmd)) {
                     pkg.getHeader().getProperties()
                             .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
@@ -233,23 +236,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
                 }
 
-                // todo failover?
-                if (Command.RECOMMEND_REQUEST == cmd) {
+                if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
                     if (messageLogger.isInfoEnabled()) {
                         messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     }
-                    task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
-                    return;
-                }
-
-                if (Command.HELLO_REQUEST == cmd) {
-                    if (messageLogger.isInfoEnabled()) {
-                        messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
-                    }
-                    task = new HelloTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
-                    return;
+                    processHttpCommandRequest(pkg, ctx, startTime, cmd);
                 }
 
                 if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx) == null) {
@@ -267,7 +258,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                             "this eventMesh tcp session will be closed, may be reboot or version change!");
                 }
 
-                dispatch(ctx, pkg, startTime, cmd);
+                processHttpCommandRequest(pkg, ctx, startTime, cmd);
             } catch (Exception e) {
                 log.error("exception occurred while pkg|cmd={}|pkg={}", cmd, pkg, e);
 
@@ -283,14 +274,25 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
         }
 
+
+        private void processHttpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
+                                               final long startTime, final Command cmd) {
+
+
+            Pair<TcpRequestProcessor, ThreadPoolExecutor> pair = tcpRequestProcessorTable.get(cmd);
+            pair.getObject2().submit(() -> {
+                TcpRequestProcessor processor = pair.getObject1();
+
+                processor.process(pkg, ctx, startTime);
+
+            });
+        }
+
         private boolean isNeedTrace(Command cmd) {
-            if (eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
-                    && cmd != null && (Command.REQUEST_TO_SERVER == cmd
+            return eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
+                    && (Command.REQUEST_TO_SERVER == cmd
                     || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
-                return true;
-            }
-            return false;
+                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
         }
 
         private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
@@ -360,43 +362,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
         }
 
-        private void dispatch(ChannelHandlerContext ctx, Package pkg, long startTime, Command cmd)
-                throws Exception {
-            Runnable task;
-            switch (cmd) {
-                case HEARTBEAT_REQUEST:
-                    task = new HeartBeatTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case CLIENT_GOODBYE_REQUEST:
-                case SERVER_GOODBYE_RESPONSE:
-                    task = new GoodbyeTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case SUBSCRIBE_REQUEST:
-                    task = new SubscribeTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case UNSUBSCRIBE_REQUEST:
-                    task = new UnSubscribeTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case LISTEN_REQUEST:
-                    task = new ListenTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case REQUEST_TO_SERVER:
-                case RESPONSE_TO_SERVER:
-                case ASYNC_MESSAGE_TO_SERVER:
-                case BROADCAST_MESSAGE_TO_SERVER:
-                    task = new MessageTransferTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                case RESPONSE_TO_CLIENT_ACK:
-                case ASYNC_MESSAGE_TO_CLIENT_ACK:
-                case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                case REQUEST_TO_CLIENT_ACK:
-                    task = new MessageAckTask(pkg, ctx, startTime, eventMeshTCPServer);
-                    break;
-                default:
-                    throw new Exception("unknown cmd");
-            }
-            eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
-        }
+
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -501,5 +467,9 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
+    }
+
+    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
     }
 }

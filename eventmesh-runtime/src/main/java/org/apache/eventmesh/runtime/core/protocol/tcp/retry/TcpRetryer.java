@@ -21,7 +21,7 @@ import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
-import org.apache.eventmesh.runtime.core.protocol.tcp.push.DownStreamMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import java.util.concurrent.ArrayBlockingQueue;

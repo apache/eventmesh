@@ -29,8 +29,10 @@ import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
+import org.apache.eventmesh.runtime.core.producer.ProducerManager;
+import org.apache.eventmesh.runtime.core.protocol.http.consumer.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.event.CreateTopicProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.event.DeleteTopicProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.event.LocalSubscribeEventProcessor;
@@ -51,8 +53,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SendAsy
 import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SendSyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.request.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.request.UnSubscribeProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
@@ -75,43 +75,29 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshHTTPServer extends AbstractHTTPServer {
-
     private final EventMeshServer eventMeshServer;
-
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private final Registry registry;
-
     private final Acl acl;
-
     public final EventBus eventBus = new EventBus();
 
     private ConsumerManager consumerManager;
-
-    private SubscriptionManager subscriptionManager;
-
     private ProducerManager producerManager;
+    private SubscriptionManager subscriptionManager;
 
     private HttpRetryer httpRetryer;
 
     private ThreadPoolExecutor batchMsgExecutor;
-
     private ThreadPoolExecutor sendMsgExecutor;
-
     private ThreadPoolExecutor remoteMsgExecutor;
-
     private ThreadPoolExecutor replyMsgExecutor;
-
     private ThreadPoolExecutor pushMsgExecutor;
-
     private ThreadPoolExecutor clientManageExecutor;
-
     private ThreadPoolExecutor adminExecutor;
-
     private ThreadPoolExecutor webhookExecutor;
 
     private transient RateLimiter msgRateLimiter;
-
     private transient RateLimiter batchRateLimiter;
 
     private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
@@ -158,7 +144,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         consumerManager = new ConsumerManager(this);
         consumerManager.init();
 
-        producerManager = new ProducerManager(this);
+        producerManager = new ProducerManager(eventMeshHttpConfiguration);
         producerManager.init();
 
         super.setHandlerService(new ProcessorWrapperHandler());
@@ -171,8 +157,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             super.setUseTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable());
             super.getHandlerService().setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable()));
         }
-
-
 
         registerHTTPRequestProcessor();
         this.initWebhook();

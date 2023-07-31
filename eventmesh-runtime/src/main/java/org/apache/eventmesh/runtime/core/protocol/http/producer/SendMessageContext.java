@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.core.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -116,7 +117,7 @@ public class SendMessageContext extends RetryContext {
         sb.append("sendMessageContext={")
             .append("bizSeqNo=").append(bizSeqNo)
             .append(",retryTimes=").append(retryTimes)
-            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
+            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.getProducerGroupConfig().getGroupName() : null)
             .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
