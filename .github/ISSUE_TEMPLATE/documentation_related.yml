@@ -56,12 +56,12 @@ body:
         - label: Yes I am willing to submit a PR!
 
   - type: checkboxes
-      attributes:
-        label: Code of Conduct
-        description: >
-          The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it..
-        options:
-          - label: I agree to follow this project's [Code of Conduct](https://www.apache.org/foundation/policies/conduct) *
+    attributes:
+      label: Code of Conduct
+      description: >
+        The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it..
+      options:
+        - label: I agree to follow this project's [Code of Conduct](https://www.apache.org/foundation/policies/conduct) *
 
   - type: markdown
     attributes:
