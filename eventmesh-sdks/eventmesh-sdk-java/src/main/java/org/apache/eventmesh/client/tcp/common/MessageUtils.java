@@ -120,37 +120,11 @@ public class MessageUtils {
     }
 
     public static UserAgent generateSubClient(UserAgent agent) {
-        return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .group(agent.getGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
-            .build();
+        return getUserAgent(agent, EventMeshCommon.USER_AGENT_PURPOSE_SUB);
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
-        return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .group(agent.getGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
-            .build();
+        return getUserAgent(agent, EventMeshCommon.USER_AGENT_PURPOSE_PUB);
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
@@ -184,5 +158,22 @@ public class MessageUtils {
 
     private static Package getPackage(Command command, Package in) {
         return getPackage(command, in.getHeader().getSeq(), in.getBody());
+    }
+
+    private static UserAgent getUserAgent(UserAgent agent, String purpose) {
+        return UserAgent.builder()
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .group(agent.getGroup())
+            .purpose(purpose)
+            .build();
     }
 }
