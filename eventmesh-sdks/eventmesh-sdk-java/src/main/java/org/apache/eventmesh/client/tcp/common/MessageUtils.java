@@ -46,54 +46,40 @@ public class MessageUtils {
     private static final int SEQ_LENGTH = 10;
 
     public static Package hello(UserAgent user) {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, null, generateRandomString()));
+        final Package msg = getPackage(Command.HELLO_REQUEST);
         msg.setBody(user);
         return msg;
     }
 
     public static Package heartBeat() {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.HEARTBEAT_REQUEST, 0, null, generateRandomString()));
-        return msg;
+        return getPackage(Command.HEARTBEAT_REQUEST);
     }
 
     public static Package goodbye() {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.CLIENT_GOODBYE_REQUEST, 0, null, generateRandomString()));
-        return msg;
+        return getPackage(Command.CLIENT_GOODBYE_REQUEST);
     }
 
     public static Package listen() {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.LISTEN_REQUEST, 0, null, generateRandomString()));
-        return msg;
+        return getPackage(Command.LISTEN_REQUEST);
     }
 
     public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
         SubscriptionType subscriptionType) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString()));
+        Package msg = getPackage(Command.SUBSCRIBE_REQUEST);
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
         return msg;
     }
 
     public static Package unsubscribe() {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString()));
-        return msg;
+        return getPackage(Command.UNSUBSCRIBE_REQUEST);
     }
 
     public static Package asyncMessageAck(Package in) {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
-        msg.setBody(in.getBody());
-        return msg;
+        return getPackage(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, in);
     }
 
     public static Package buildPackage(Object message, Command command) {
-        final Package msg = new Package();
-        msg.setHeader(new Header(command, 0, null, generateRandomString()));
+        final Package msg = getPackage(command);
         if (message instanceof CloudEvent) {
             final CloudEvent cloudEvent = (CloudEvent) message;
             Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
@@ -122,24 +108,15 @@ public class MessageUtils {
     }
 
     public static Package broadcastMessageAck(Package in) {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
-        msg.setBody(in.getBody());
-        return msg;
+        return getPackage(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, in);
     }
 
     public static Package requestToClientAck(Package in) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.REQUEST_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
-        msg.setBody(in.getBody());
-        return msg;
+        return getPackage(Command.REQUEST_TO_CLIENT_ACK, in);
     }
 
     public static Package responseToClientAck(Package in) {
-        final Package msg = new Package();
-        msg.setHeader(new Header(Command.RESPONSE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
-        msg.setBody(in.getBody());
-        return msg;
+        return getPackage(Command.RESPONSE_TO_CLIENT_ACK, in);
     }
 
     public static UserAgent generateSubClient(UserAgent agent) {
@@ -190,5 +167,22 @@ public class MessageUtils {
         IntStream.range(0, MessageUtils.SEQ_LENGTH).forEach(i -> builder.append((char) ThreadLocalRandom.current().nextInt(48, 57)));
 
         return builder.toString();
+    }
+
+    private static Package getPackage(Command command) {
+        final Package msg = new Package();
+        msg.setHeader(new Header(command, 0, null, generateRandomString()));
+        return msg;
+    }
+
+    private static Package getPackage(Command command, String seq, Object body) {
+        final Package msg = new Package();
+        msg.setHeader(new Header(command, 0, null, seq));
+        msg.setBody(body);
+        return msg;
+    }
+
+    private static Package getPackage(Command command, Package in) {
+        return getPackage(command, in.getHeader().getSeq(), in.getBody());
     }
 }
