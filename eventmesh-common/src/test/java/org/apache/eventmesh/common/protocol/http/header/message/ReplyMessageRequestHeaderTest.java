@@ -40,11 +40,11 @@ public class ReplyMessageRequestHeaderTest {
         headerParam.put(ProtocolKey.REQUEST_CODE, "200");
         headerParam.put(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         headerParam.put(ProtocolKey.VERSION, "1.0");
-        headerParam.put(ProtocolKey.ClientInstanceKey.ENV, "DEV");
-        headerParam.put(ProtocolKey.ClientInstanceKey.IDC, "IDC");
-        headerParam.put(ProtocolKey.ClientInstanceKey.SYS, "SYS");
-        headerParam.put(ProtocolKey.ClientInstanceKey.PID, "PID");
-        headerParam.put(ProtocolKey.ClientInstanceKey.IP, "127.0.0.1");
+        headerParam.put(ProtocolKey.ClientInstanceKey.ENV.getKey(), "DEV");
+        headerParam.put(ProtocolKey.ClientInstanceKey.IDC.getKey(), "IDC");
+        headerParam.put(ProtocolKey.ClientInstanceKey.SYS.getKey(), "SYS");
+        headerParam.put(ProtocolKey.ClientInstanceKey.PID.getKey(), "PID");
+        headerParam.put(ProtocolKey.ClientInstanceKey.IP.getKey(), "127.0.0.1");
         header = ReplyMessageRequestHeader.buildHeader(headerParam);
     }
 
@@ -53,10 +53,10 @@ public class ReplyMessageRequestHeaderTest {
         Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is("200"));
         Assert.assertThat(header.toMap().get(ProtocolKey.LANGUAGE), is(Constants.LANGUAGE_JAVA));
         Assert.assertThat(header.toMap().get(ProtocolKey.VERSION), is(ProtocolVersion.V1));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.ENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IDC), is("IDC"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS), is("SYS"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID), is("PID"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP), is("127.0.0.1"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.ENV.getKey()), is("DEV"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IDC.getKey()), is("IDC"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS.getKey()), is("SYS"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID.getKey()), is("PID"));
+        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP.getKey()), is("127.0.0.1"));
     }
 }

@@ -149,6 +149,8 @@ public class NacosRegistryService implements RegistryService {
         Optional.ofNullable(logLevel).ifPresent(value -> properties.put(UtilAndComs.NACOS_NAMING_LOG_LEVEL, logLevel));
         Integer pollingThreadCount = nacosConfig.getPollingThreadCount();
         Optional.ofNullable(pollingThreadCount).ifPresent(value -> properties.put(PropertyKeyConst.NAMING_POLLING_THREAD_COUNT, pollingThreadCount));
+        String namespace = nacosConfig.getNamespace();
+        Optional.ofNullable(namespace).ifPresent(value -> properties.put(PropertyKeyConst.NAMESPACE, namespace));
         return properties;
     }
 
