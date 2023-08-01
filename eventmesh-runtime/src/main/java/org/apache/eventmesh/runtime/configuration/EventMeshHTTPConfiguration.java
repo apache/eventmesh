@@ -37,7 +37,7 @@ import inet.ipaddr.IPAddress;
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "http.port", notNull = true, beNumber = true)
-    private int httpServerPort = 10105;
+    private int eventMeshHttpServerPort = 10105;
 
     @ConfigFiled(field = "batchmsg.batch.enabled")
     private boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;

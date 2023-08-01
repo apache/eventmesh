@@ -29,9 +29,9 @@ import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,12 +70,12 @@ public class TCPClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public TCPClientHandler(
-        EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager
+            EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager
     ) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -110,7 +110,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
      * @throws IOException if an I/O error occurs while handling the request
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        
+
         try (OutputStream out = httpExchange.getResponseBody()) {
             // Parse the request body string into a DeleteTCPClientRequest object
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
@@ -118,17 +118,17 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String host = Objects.requireNonNull(deleteTCPClientRequest).getHost();
             int port = deleteTCPClientRequest.getPort();
 
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
             if (!sessionMap.isEmpty()) {
                 for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                     // Find the Session object that matches the host and port to be deleted
                     if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
                         // Call the serverGoodby2Client method in EventMeshTcp2Client to disconnect the client's connection
                         EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer,
-                            entry.getValue(),
-                            clientSessionGroupMapping
+                                eventMeshTCPServer.getTcpThreadPoolGroup(),
+                                entry.getValue(),
+                                sessionManager
                         );
                     }
                 }
@@ -166,24 +166,24 @@ public class TCPClientHandler extends AbstractHttpHandler {
             httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
             httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             // Get the list of connected TCP clients
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            Map<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
             // Convert each Session object to GetClientResponse and add to getClientResponseList
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();
                 GetClientResponse getClientResponse = new GetClientResponse(
-                    Optional.ofNullable(userAgent.getEnv()).orElse(""),
-                    Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
-                    Optional.ofNullable(userAgent.getPath()).orElse(""),
-                    String.valueOf(userAgent.getPid()),
-                    Optional.ofNullable(userAgent.getHost()).orElse(""),
-                    userAgent.getPort(),
-                    Optional.ofNullable(userAgent.getVersion()).orElse(""),
-                    Optional.ofNullable(userAgent.getIdc()).orElse(""),
-                    Optional.ofNullable(userAgent.getGroup()).orElse(""),
-                    Optional.ofNullable(userAgent.getPurpose()).orElse(""),
-                    "TCP"
+                        Optional.ofNullable(userAgent.getEnv()).orElse(""),
+                        Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
+                        Optional.ofNullable(userAgent.getPath()).orElse(""),
+                        String.valueOf(userAgent.getPid()),
+                        Optional.ofNullable(userAgent.getHost()).orElse(""),
+                        userAgent.getPort(),
+                        Optional.ofNullable(userAgent.getVersion()).orElse(""),
+                        Optional.ofNullable(userAgent.getIdc()).orElse(""),
+                        Optional.ofNullable(userAgent.getGroup()).orElse(""),
+                        Optional.ofNullable(userAgent.getPurpose()).orElse(""),
+                        "TCP"
                 );
                 getClientResponseList.add(getClientResponse);
             }
@@ -211,7 +211,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             log.error(result, e);
-        } 
+        }
     }
 
     /**

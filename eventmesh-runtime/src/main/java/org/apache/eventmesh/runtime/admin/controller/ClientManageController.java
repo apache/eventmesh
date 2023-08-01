@@ -64,7 +64,6 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * It starts the AdminController for managing the event store or MQ.
  */
-
 @SuppressWarnings("restriction")
 @Slf4j
 public class ClientManageController {
@@ -125,6 +124,8 @@ public class ClientManageController {
         server.start();
         log.info("ClientManageController start success, port:{}", port);
     }
+
+    // todo : shutdown
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
         EventMeshHTTPServer eventMeshHTTPServer,

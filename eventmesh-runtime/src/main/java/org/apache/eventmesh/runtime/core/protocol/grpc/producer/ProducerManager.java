@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.producer;
 
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
-import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
 

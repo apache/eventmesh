@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,7 +72,7 @@ public class Utils {
                         logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                         if (session != null) {
-                            Objects.requireNonNull(session.getClientGroupWrapper().get())
+                            Objects.requireNonNull(session.getPubSubManager().get())
                                 .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
                     }
@@ -149,7 +149,7 @@ public class Utils {
      * @param fullReq request parameter
      * @return http header
      */
-    public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+    public static Map<String, Object> parseHttpRequestHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),

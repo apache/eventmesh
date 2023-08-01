@@ -50,8 +50,11 @@ public class AsyncContext<T> {
         Preconditions.checkState(Objects.nonNull(response), "response cant be null");
         Preconditions.checkState(Objects.nonNull(handler), "handler cant be null");
         this.response = response;
-        CompletableFuture.runAsync(() -> handler.onResponse(response), asyncContextExecutor);
-        this.complete = Boolean.TRUE;
+        CompletableFuture.runAsync(() -> {
+            handler.onResponse(response);
+            this.complete = Boolean.TRUE;
+        }, asyncContextExecutor);
+
     }
 
     public boolean isComplete() {

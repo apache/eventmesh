@@ -23,9 +23,9 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -112,8 +112,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
 
             log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
             // Retrieve the mapping between Sessions and their corresponding client address
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (!sessionMap.isEmpty()) {
@@ -121,8 +121,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     for (Session session : sessionMap.values()) {
                         // Reject client connection for each matching session found
                         if (session.getClient().getSubsystem().equals(subSystem)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session,
-                                clientSessionGroupMapping);
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
+                                    sessionManager);
                             // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);

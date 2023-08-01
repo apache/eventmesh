@@ -23,8 +23,8 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
+import org.apache.eventmesh.runtime.core.protocol.tcp.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.runtime.core.protocol.tcp.recommend.EventMeshRecommendStrategy;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -21,7 +21,7 @@ import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.metrics.MonitorMetricConstants;
 
 import java.net.InetSocketAddress;
@@ -84,7 +84,7 @@ public class EventMeshTcpMonitor {
         });
 
         int delay = 60 * 1000;
-        monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((() -> {
+        monitorTpsTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate((() -> {
             int msgNum = tcpSummaryMetrics.client2eventMeshMsgNum();
             tcpSummaryMetrics.resetClient2EventMeshMsgNum();
             tcpSummaryMetrics.setClient2eventMeshTPS((int) 1000.0d * msgNum / period);
@@ -121,13 +121,13 @@ public class EventMeshTcpMonitor {
                 topicSet.addAll(session.getSessionContext().getSubscribeTopics().keySet());
             }
             tcpSummaryMetrics.setSubTopicNum(topicSet.size());
-            tcpSummaryMetrics.setAllConnections(eventMeshTCPServer.getEventMeshTcpConnectionHandler().getConnectionCount());
+            tcpSummaryMetrics.setAllConnections(eventMeshTCPServer.getTcpConnectionHandler().getConnectionCount());
             printAppLogger(tcpSummaryMetrics);
 
 
         }), delay, period, TimeUnit.MILLISECONDS);
 
-        monitorThreadPoolTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate(() -> {
+        monitorThreadPoolTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
             eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
             eventMeshTCPServer.getEventMeshTcpRetryer().printRetryThreadPoolState();
 

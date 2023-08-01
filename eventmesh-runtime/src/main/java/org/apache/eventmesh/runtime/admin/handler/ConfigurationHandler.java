@@ -125,7 +125,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     // TCP Configuration
                     eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
                     // HTTP Configuration
-                    eventMeshHTTPConfiguration.getHttpServerPort(),
+                    eventMeshHTTPConfiguration.getEventMeshHttpServerPort(),
                     eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
                     // gRPC Configuration
                     eventMeshGrpcConfiguration.getGrpcServerPort(),

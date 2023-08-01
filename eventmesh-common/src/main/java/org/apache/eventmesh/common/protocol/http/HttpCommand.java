@@ -118,7 +118,7 @@ public class HttpCommand implements ProtocolTransportObject {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-            .append(cmdType).append(",")
+            .append("cmdType=").append(cmdType).append(",")
             .append(httpMethod).append("/").append(httpVersion).append(",")
             .append("requestCode=").append(requestCode).append(",")
             .append("opaque=").append(opaque).append(",");

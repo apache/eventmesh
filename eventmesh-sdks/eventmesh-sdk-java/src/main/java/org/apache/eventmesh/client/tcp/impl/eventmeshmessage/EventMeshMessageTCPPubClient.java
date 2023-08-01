@@ -55,7 +55,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     @Override
     public void init() throws EventMeshException {
         try {
-            open(new EventMeshTCPPubHandler(contexts));
+            open(new EventMeshMessageTCPPubHandler(contexts));
             hello();
             heartbeat();
         } catch (Exception e) {
@@ -141,9 +141,9 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         }
     }
 
-    private class EventMeshTCPPubHandler extends AbstractEventMeshTCPPubHandler<EventMeshMessage> {
+    private class EventMeshMessageTCPPubHandler extends AbstractEventMeshTCPPubHandler<EventMeshMessage> {
 
-        public EventMeshTCPPubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
+        public EventMeshMessageTCPPubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
             super(contexts);
         }
 

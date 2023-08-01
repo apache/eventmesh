@@ -28,7 +28,7 @@ import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -110,9 +110,9 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.parseObject(request, DeleteHTTPClientRequest.class);
             String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
 
-            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping().values()) {
                 // Find the client that matches the url to be deleted
-                clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
+                clientContextList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
 
             // Set the response headers and send a 200 status code empty response
@@ -150,19 +150,19 @@ public class HTTPClientHandler extends AbstractHttpHandler {
             // Get the list of HTTP clients
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
 
-            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+            for (List<ClientContext> clientContextList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientContextMapping().values()) {
                 // Convert each Client object to GetClientResponse and add to getClientResponseList
-                for (Client client : clientList) {
+                for (ClientContext clientContext : clientContextList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.getEnv()).orElse(""),
-                        Optional.ofNullable(client.getSys()).orElse(""),
-                        Optional.ofNullable(client.getUrl()).orElse(""),
+                        Optional.ofNullable(clientContext.getEnv()).orElse(""),
+                        Optional.ofNullable(clientContext.getSys()).orElse(""),
+                        Optional.ofNullable(clientContext.getUrl()).orElse(""),
                         "0",
-                        Optional.ofNullable(client.getHostname()).orElse(""),
+                        Optional.ofNullable(clientContext.getHostname()).orElse(""),
                         0,
-                        Optional.ofNullable(client.getApiVersion()).orElse(""),
-                        Optional.ofNullable(client.getIdc()).orElse(""),
-                        Optional.ofNullable(client.getConsumerGroup()).orElse(""),
+                        Optional.ofNullable(clientContext.getApiVersion()).orElse(""),
+                        Optional.ofNullable(clientContext.getIdc()).orElse(""),
+                        Optional.ofNullable(clientContext.getConsumerGroup()).orElse(""),
                         "",
                         EventMeshConstants.PROTOCOL_HTTP.toUpperCase()
 
