@@ -217,7 +217,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             new SendMessageContext(bizNo, event, batchEventMeshProducer, eventMeshHTTPServer);
 
         try {
-            batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+            batchEventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     long batchEndTime = System.currentTimeMillis();

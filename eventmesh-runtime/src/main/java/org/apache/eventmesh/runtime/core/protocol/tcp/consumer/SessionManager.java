@@ -52,43 +52,69 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ClientSessionGroupMapping {
+public class SessionManager {
 
     private static final Logger SESSION_LOGGER = LoggerFactory.getLogger("tcpSessionLogger");
 
-    private final ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
+    private EventMeshTCPServer eventMeshTCPServer;
 
-    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap =
+    private final ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, PubSubManager> clientGroupMap =
             new ConcurrentHashMap<>();
 
     private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap =
             new ConcurrentHashMap<>();
 
-    private EventMeshTCPServer eventMeshTCPServer;
-
-    public ClientSessionGroupMapping(EventMeshTCPServer eventMeshTCPServer) {
+    public SessionManager(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    public EventMeshTCPServer getEventMeshTCPServer() {
-        return eventMeshTCPServer;
+    public void init() throws Exception {
+        initSessionCleaner();
+        initDownStreamMsgContextCleaner();
+        log.info("ClientSessionGroupMapping inited......");
     }
 
-    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
+    public void start() throws Exception {
+        log.info("ClientSessionGroupMapping started......");
     }
 
-    public ClientGroupWrapper getClientGroupWrapper(String sysId) {
-        return MapUtils.getObject(clientGroupMap, sysId, null);
+    public void shutdown() throws Exception {
+        log.info("begin to close sessions gracefully");
+        for (PubSubManager pubSubManager : clientGroupMap.values()) {
+            for (Session subSession : pubSubManager.getGroupConsumerSessions()) {
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), subSession, this);
+                } catch (Exception e) {
+                    log.error("say goodbye to subSession error! {}", subSession, e);
+                }
+            }
+
+            for (Session pubSession : pubSubManager.getGroupProducerSessions()) {
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), pubSession, this);
+                } catch (Exception e) {
+                    log.error("say goodbye to pubSession error! {}", pubSession, e);
+                }
+            }
+
+            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills(), TimeUnit.MILLISECONDS);
+
+        }
+
+        ThreadUtils.sleep(1, TimeUnit.SECONDS);
+
+        sessionTable.values().parallelStream().forEach(itr -> {
+            try {
+                EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), itr, this);
+            } catch (Exception e) {
+                log.error("say goodbye to session error! {}", itr, e);
+            }
+        });
+        ThreadUtils.randomPause(50);
+        log.info("ClientSessionGroupMapping shutdown......");
     }
 
-    public Session getSession(ChannelHandlerContext ctx) {
-        return getSession((InetSocketAddress) ctx.channel().remoteAddress());
-    }
-
-    public Session getSession(InetSocketAddress address) {
-        return sessionTable.get(address);
-    }
 
     public Session createSession(UserAgent user, ChannelHandlerContext ctx) throws Exception {
         InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
@@ -98,7 +124,7 @@ public class ClientSessionGroupMapping {
         if (!sessionTable.containsKey(addr)) {
             log.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
             session = new Session(user, ctx, eventMeshTCPServer.getEventMeshTCPConfiguration());
-            initClientGroupWrapper(user, session);
+            initPubSubManager(user, session);
             sessionTable.put(addr, session);
             SESSION_LOGGER.info("session|open|succeed|user={}", user);
         } else {
@@ -112,7 +138,7 @@ public class ClientSessionGroupMapping {
         if (!EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
             throw new Exception("client purpose config is not sub");
         }
-        startClientGroupConsumer(session);
+        startCotnsumer(session);
     }
 
     public synchronized void closeSession(ChannelHandlerContext ctx) throws Exception {
@@ -155,9 +181,9 @@ public class ClientSessionGroupMapping {
             session.setSessionState(SessionState.CLOSED);
 
             if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
-                cleanClientGroupWrapperByCloseSub(session);
+                cleanPubSubManagerByCloseSub(session);
             } else if (EventMeshConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
-                cleanClientGroupWrapperByClosePub(session);
+                cleanPubSubManagerByClosePub(session);
             } else {
                 log.error("client purpose config is error:{}", session.getClient().getPurpose());
             }
@@ -171,14 +197,14 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String group,
-                                                           EventMeshTCPServer eventMeshTCPServer,
-                                                           DownstreamDispatchStrategy downstreamDispatchStrategy) {
-        return new ClientGroupWrapper(sysId, group, eventMeshTCPServer,
+    private PubSubManager constructPubSubManager(String sysId, String group,
+                                                 EventMeshTCPServer eventMeshTCPServer,
+                                                 DownstreamDispatchStrategy downstreamDispatchStrategy) {
+        return new PubSubManager(sysId, group, eventMeshTCPServer,
                 downstreamDispatchStrategy);
     }
 
-    private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
+    private void initPubSubManager(UserAgent user, Session session) throws Exception {
         if (!lockMap.containsKey(user.getGroup())) {
             Object obj = lockMap.putIfAbsent(user.getGroup(), new Object());
             if (obj == null) {
@@ -187,60 +213,61 @@ public class ClientSessionGroupMapping {
         }
         synchronized (lockMap.get(user.getGroup())) {
             if (!clientGroupMap.containsKey(user.getGroup())) {
-                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getGroup(),
+                PubSubManager manager = constructPubSubManager(user.getSubsystem(), user.getGroup(),
                         eventMeshTCPServer, new FreePriorityDispatchStrategy());
-                clientGroupMap.put(user.getGroup(), cgw);
+                clientGroupMap.put(user.getGroup(), manager);
                 log.info("create new ClientGroupWrapper, group:{}", user.getGroup());
             }
 
-            ClientGroupWrapper cgw = clientGroupMap.get(user.getGroup());
+            PubSubManager manager = clientGroupMap.get(user.getGroup());
 
             if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())) {
-                startClientGroupProducer(cgw, session);
+                initProducer(manager);
+                startProducer(manager, session);
             } else if (EventMeshConstants.PURPOSE_SUB.equals(user.getPurpose())) {
-                initClientGroupConsumser(cgw);
+                initConsumser(manager);
             } else {
                 log.error("unknown client purpose:{}", user.getPurpose());
                 throw new Exception("client purpose config is error");
             }
 
-            session.setClientGroupWrapper(new WeakReference<>(cgw));
+            session.setPubSubManager(new WeakReference<>(manager));
         }
     }
 
-    private void startClientGroupProducer(ClientGroupWrapper cgw, Session session) throws Exception {
-        if (!cgw.getProducerStarted().get()) {
-            cgw.startClientGroupProducer();
-        }
-        boolean flag = cgw.addGroupProducerSession(session);
+    private void initProducer(PubSubManager manager) throws Exception {
+        manager.initProducer();
+    }
+
+    private void startProducer(PubSubManager manager, Session session) throws Exception {
+
+        manager.startProducer();
+
+        boolean flag = manager.addGroupProducerSession(session);
         if (!flag) {
             throw new Exception("addGroupProducerSession fail");
         }
         session.setSessionState(SessionState.RUNNING);
     }
 
-    private void initClientGroupConsumser(ClientGroupWrapper cgw) throws Exception {
-        if (!cgw.getProducerStarted().get()) {
-            cgw.startClientGroupProducer();
+    private void initConsumser(PubSubManager manager) throws Exception {
+        if (!manager.getInited4Broadcast().get()) {
+            manager.initClientGroupBroadcastConsumer();
         }
 
-        if (!cgw.getInited4Broadcast().get()) {
-            cgw.initClientGroupBroadcastConsumer();
-        }
-
-        if (!cgw.getInited4Persistent().get()) {
-            cgw.initClientGroupPersistentConsumer();
+        if (!manager.getInited4Persistent().get()) {
+            manager.initClientGroupPersistentConsumer();
         }
     }
 
-    private void startClientGroupConsumer(Session session) throws Exception {
+    private void startCotnsumer(Session session) throws Exception {
         String subsystem = session.getClient().getSubsystem();
         if (!lockMap.containsKey(subsystem)) {
             lockMap.putIfAbsent(subsystem, new Object());
         }
         synchronized (lockMap.get(subsystem)) {
             log.info("readySession session[{}]", session);
-            ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
+            PubSubManager cgw = session.getPubSubManager().get();
 
             boolean flag = cgw != null && cgw.addGroupConsumerSession(session);
             if (!flag) {
@@ -257,33 +284,18 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void cleanClientGroupWrapperByCloseSub(Session session) throws Exception {
-        cleanSubscriptionInSession(session);
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
-        clientGroupWrapper.removeGroupConsumerSession(session);
-        handleUnackMsgsInSession(session);
-        cleanClientGroupWrapperCommon(clientGroupWrapper);
-    }
-
-    private void cleanClientGroupWrapperByClosePub(Session session) throws Exception {
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
-        clientGroupWrapper.removeGroupProducerSession(session);
-        cleanClientGroupWrapperCommon(clientGroupWrapper);
-    }
-
-    /**
-     * clean subscription of the session
-     *
-     * @param session
-     */
-    private void cleanSubscriptionInSession(Session session) throws Exception {
-        for (SubscriptionItem item : session.getSessionContext().getSubscribeTopics().values()) {
-            ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
-            clientGroupWrapper.removeSubscription(item, session);
-            if (!clientGroupWrapper.hasSubscription(item.getTopic())) {
-                clientGroupWrapper.unsubscribe(item);
-            }
+    private void shutdownConsumer(PubSubManager pubSubManager) throws Exception {
+        if (pubSubManager.getStarted4Broadcast().get()) {
+            pubSubManager.shutdownBroadCastConsumer();
         }
+
+        if (pubSubManager.getStarted4Persistent().get()) {
+            pubSubManager.shutdownPersistentConsumer();
+        }
+    }
+
+    private void shutdownProducer(PubSubManager pubSubManager) throws Exception {
+        pubSubManager.shutdownProducer();
     }
 
     /**
@@ -293,8 +305,8 @@ public class ClientSessionGroupMapping {
      */
     private void handleUnackMsgsInSession(Session session) {
         ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
-        if (unAckMsg.size() > 0 && !clientGroupWrapper.getGroupConsumerSessions().isEmpty()) {
+        PubSubManager pubSubManager = Objects.requireNonNull(session.getPubSubManager().get());
+        if (unAckMsg.size() > 0 && !pubSubManager.getGroupConsumerSessions().isEmpty()) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
                 if (SubscriptionMode.BROADCASTING == downStreamMsgContext.getSubscriptionItem().getMode()) {
@@ -303,10 +315,10 @@ public class ClientSessionGroupMapping {
                             session.getClient());
                     continue;
                 }
-                Session reChooseSession = clientGroupWrapper.getDownstreamDispatchStrategy()
-                        .select(clientGroupWrapper.getGroup(),
+                Session reChooseSession = pubSubManager.getDownstreamDispatchStrategy()
+                        .select(pubSubManager.getGroup(),
                                 downStreamMsgContext.event.getSubject(),
-                                clientGroupWrapper.getGroupConsumerSessions());
+                                pubSubManager.getGroupConsumerSessions());
                 if (reChooseSession != null) {
                     downStreamMsgContext.setSession(reChooseSession);
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
@@ -321,45 +333,58 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void cleanClientGroupWrapperCommon(ClientGroupWrapper clientGroupWrapper) throws Exception {
+    private void cleanPubSubManagerByCloseSub(Session session) throws Exception {
+        cleanSubscriptionInSession(session);
+        PubSubManager pubSubManager = Objects.requireNonNull(session.getPubSubManager().get());
+        pubSubManager.removeGroupConsumerSession(session);
+        handleUnackMsgsInSession(session);
+        cleanClientGroupWrapperCommon(pubSubManager);
+    }
 
-        if (CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions())) {
-            shutdownClientGroupConsumer(clientGroupWrapper);
+    private void cleanPubSubManagerByClosePub(Session session) throws Exception {
+        PubSubManager pubSubManager = Objects.requireNonNull(session.getPubSubManager().get());
+        pubSubManager.removeGroupProducerSession(session);
+        cleanClientGroupWrapperCommon(pubSubManager);
+    }
+
+    /**
+     * clean subscription of the session
+     *
+     * @param session
+     */
+    private void cleanSubscriptionInSession(Session session) throws Exception {
+        for (SubscriptionItem item : session.getSessionContext().getSubscribeTopics().values()) {
+            PubSubManager pubSubManager = Objects.requireNonNull(session.getPubSubManager().get());
+            pubSubManager.removeSubscription(item, session);
+            if (!pubSubManager.hasSubscription(item.getTopic())) {
+                pubSubManager.unsubscribe(item);
+            }
+        }
+    }
+
+    private void cleanClientGroupWrapperCommon(PubSubManager pubSubManager) throws Exception {
+
+        if (CollectionUtils.isEmpty(pubSubManager.getGroupConsumerSessions())) {
+            shutdownConsumer(pubSubManager);
         }
 
         log.info("GroupProducerSessions size:{}",
-                clientGroupWrapper.getGroupProducerSessions().size());
-        if ((CollectionUtils.isEmpty(clientGroupWrapper.getGroupConsumerSessions()))
-                && (CollectionUtils.isEmpty(clientGroupWrapper.getGroupProducerSessions()))) {
-            shutdownClientGroupProducer(clientGroupWrapper);
+                pubSubManager.getGroupProducerSessions().size());
+        if ((CollectionUtils.isEmpty(pubSubManager.getGroupConsumerSessions()))
+                && (CollectionUtils.isEmpty(pubSubManager.getGroupProducerSessions()))) {
+            shutdownProducer(pubSubManager);
 
-            clientGroupMap.remove(clientGroupWrapper.getGroup());
-            lockMap.remove(clientGroupWrapper.getGroup());
-            log.info("remove clientGroupWrapper group[{}]", clientGroupWrapper.getGroup());
+            clientGroupMap.remove(pubSubManager.getGroup());
+            lockMap.remove(pubSubManager.getGroup());
+            log.info("remove clientGroupWrapper group[{}]", pubSubManager.getGroup());
         }
     }
 
-    private void shutdownClientGroupConsumer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.getStarted4Broadcast().get()) {
-            clientGroupWrapper.shutdownBroadCastConsumer();
-        }
-
-        if (clientGroupWrapper.getStarted4Persistent().get()) {
-            clientGroupWrapper.shutdownPersistentConsumer();
-        }
-    }
-
-
-    private void shutdownClientGroupProducer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.getProducerStarted().get()) {
-            clientGroupWrapper.shutdownProducer();
-        }
-    }
 
     private void initSessionCleaner() {
         final int SessionExpired = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills();
 
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(() -> {
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
             for (Session tmp : sessionTable.values()) {
                 if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > SessionExpired) {
                     try {
@@ -376,7 +401,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(() -> {
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
 
             //scan non-broadcast msg
             for (Session tmp : sessionTable.values()) {
@@ -395,59 +420,20 @@ public class ClientSessionGroupMapping {
         }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);
     }
 
+    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData() {
+        Map<String, Map<String, Integer>> result = null;
 
-    public void init() throws Exception {
-        initSessionCleaner();
-        initDownStreamMsgContextCleaner();
-        log.info("ClientSessionGroupMapping inited......");
-    }
-
-    public void start() throws Exception {
-        log.info("ClientSessionGroupMapping started......");
-    }
-
-    public void shutdown() throws Exception {
-        log.info("begin to close sessions gracefully");
-        for (ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()) {
-            for (Session subSession : clientGroupWrapper.getGroupConsumerSessions()) {
-                try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
-                } catch (Exception e) {
-                    log.error("say goodbye to subSession error! {}", subSession, e);
-                }
+        if (!clientGroupMap.isEmpty()) {
+            result = new HashMap<>();
+            for (Map.Entry<String, PubSubManager> entry : clientGroupMap.entrySet()) {
+                Map<String, Integer> map = new HashMap<>();
+                map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
+                result.put(entry.getKey(), map);
             }
-
-            for (Session pubSession : clientGroupWrapper.getGroupProducerSessions()) {
-                try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
-                } catch (Exception e) {
-                    log.error("say goodbye to pubSession error! {}", pubSession, e);
-                }
-            }
-
-            ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getGracefulShutdownSleepIntervalInMills(), TimeUnit.MILLISECONDS);
-
         }
 
-        ThreadUtils.sleep(1, TimeUnit.SECONDS);
-
-        sessionTable.values().parallelStream().forEach(itr -> {
-            try {
-                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer, itr, this);
-            } catch (Exception e) {
-                log.error("say goodbye to session error! {}", itr, e);
-            }
-        });
-        ThreadUtils.randomPause(50);
-        log.info("ClientSessionGroupMapping shutdown......");
-    }
-
-    public ConcurrentHashMap<InetSocketAddress, Session> getSessionMap() {
-        return sessionTable;
-    }
-
-    public ConcurrentHashMap<String, ClientGroupWrapper> getClientGroupMap() {
-        return clientGroupMap;
+        return result;
     }
 
     public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData() {
@@ -455,7 +441,7 @@ public class ClientSessionGroupMapping {
 
         if (!clientGroupMap.isEmpty()) {
             result = new HashMap<>();
-            for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
+            for (Map.Entry<String, PubSubManager> entry : clientGroupMap.entrySet()) {
                 Map<String, Integer> map = new HashMap<>();
                 map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
                 map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
@@ -466,19 +452,33 @@ public class ClientSessionGroupMapping {
         return result;
     }
 
-    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData() {
-        Map<String, Map<String, Integer>> result = null;
-
-        if (!clientGroupMap.isEmpty()) {
-            result = new HashMap<>();
-            for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
-                Map<String, Integer> map = new HashMap<>();
-                map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
-                map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
-                result.put(entry.getKey(), map);
-            }
-        }
-
-        return result;
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
     }
+
+    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+
+    public PubSubManager getClientGroupWrapper(String sysId) {
+        return MapUtils.getObject(clientGroupMap, sysId, null);
+    }
+
+    public Session getSession(ChannelHandlerContext ctx) {
+        return getSession((InetSocketAddress) ctx.channel().remoteAddress());
+    }
+
+    public Session getSession(InetSocketAddress address) {
+        return sessionTable.get(address);
+    }
+
+    public ConcurrentHashMap<InetSocketAddress, Session> getSessionMap() {
+        return sessionTable;
+    }
+
+    public ConcurrentHashMap<String, PubSubManager> getClientGroupMap() {
+        return clientGroupMap;
+    }
+
+
 }

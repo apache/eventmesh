@@ -319,7 +319,7 @@ public class EventMeshConsumer {
         final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, sendMessageBack,
             eventMeshHTTPServer);
 
-        sendMessageBack.send(sendMessageBackContext, new SendCallback() {
+        sendMessageBack.send(sendMessageBackContext.getEvent(), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
             }

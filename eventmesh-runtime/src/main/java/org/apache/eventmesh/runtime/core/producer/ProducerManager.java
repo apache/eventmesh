@@ -29,7 +29,7 @@ public class ProducerManager {
 
     private final CommonConfiguration commonConfiguration;
 
-    private final ConcurrentHashMap<String /** groupName*/, EventMeshProducer> producerTable = new ConcurrentHashMap<String, EventMeshProducer>();
+    private final ConcurrentHashMap<String /** groupName*/, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
 
     public ProducerManager(CommonConfiguration commonConfiguration) {
         this.commonConfiguration = commonConfiguration;
@@ -85,12 +85,12 @@ public class ProducerManager {
         return eventMeshProducer;
     }
 
-    public synchronized EventMeshProducer createEventMeshProducer(ProducerGroupConf producerGroupConfig) throws Exception {
+    private synchronized EventMeshProducer createEventMeshProducer(ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
-        EventMeshProducer eventMeshProducer = new EventMeshProducer();
-        eventMeshProducer.init(commonConfiguration, producerGroupConfig);
+        EventMeshProducer eventMeshProducer = new EventMeshProducer(producerGroupConfig, commonConfiguration);
+        eventMeshProducer.init();
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }

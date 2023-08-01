@@ -24,8 +24,8 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.boot.TCPThreadPoolGroup;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
@@ -45,9 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshTcp2Client {
 
-    public static InetSocketAddress serverGoodby2Client(EventMeshTCPServer eventMeshTCPServer,
+    public static InetSocketAddress serverGoodby2Client(TCPThreadPoolGroup tcpThreadPoolGroup,
         Session session,
-        ClientSessionGroupMapping mapping) {
+        SessionManager mapping) {
         log.info("serverGoodby2Client client[{}]", session.getClient());
         try {
             long startTime = System.currentTimeMillis();
@@ -55,7 +55,7 @@ public class EventMeshTcp2Client {
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(),
                 "graceful normal quit from eventmesh", null));
 
-            eventMeshTCPServer.getScheduler().submit(new Runnable() {
+            tcpThreadPoolGroup.getScheduler().submit(new Runnable() {
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
@@ -64,7 +64,7 @@ public class EventMeshTcp2Client {
             });
             InetSocketAddress address = (InetSocketAddress) session.getContext().channel().remoteAddress();
 
-            closeSessionIfTimeout(eventMeshTCPServer, session, mapping);
+            closeSessionIfTimeout(tcpThreadPoolGroup, session, mapping);
             return address;
         } catch (Exception e) {
             log.error("exception occur while serverGoodby2Client", e);
@@ -72,14 +72,14 @@ public class EventMeshTcp2Client {
         }
     }
 
-    public static InetSocketAddress goodBye2Client(EventMeshTCPServer eventMeshTCPServer, Session session,
+    public static InetSocketAddress goodBye2Client(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
         String errMsg, int eventMeshStatus,
-        ClientSessionGroupMapping mapping) {
+        SessionManager mapping) {
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, eventMeshStatus, errMsg, null));
-            eventMeshTCPServer.getScheduler().schedule(new Runnable() {
+            tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
@@ -87,7 +87,7 @@ public class EventMeshTcp2Client {
                 }
             }, 1 * 1000, TimeUnit.MILLISECONDS);
 
-            closeSessionIfTimeout(eventMeshTCPServer, session, mapping);
+            closeSessionIfTimeout(tcpThreadPoolGroup, session, mapping);
 
             return session.getRemoteAddress();
         } catch (Exception e) {
@@ -96,7 +96,7 @@ public class EventMeshTcp2Client {
         }
     }
 
-    public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, ClientSessionGroupMapping mapping,
+    public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, SessionManager mapping,
         EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
@@ -104,7 +104,7 @@ public class EventMeshTcp2Client {
         log.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(new ChannelFutureListener() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
+            public void operationComplete(ChannelFuture future) {
                 Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
                 try {
                     mapping.closeSession(ctx);
@@ -115,8 +115,8 @@ public class EventMeshTcp2Client {
         });
     }
 
-    public static String redirectClient2NewEventMesh(EventMeshTCPServer eventMeshTCPServer, String newEventMeshIp,
-        int port, Session session, ClientSessionGroupMapping mapping) {
+    public static String redirectClient2NewEventMesh(TCPThreadPoolGroup tcpThreadPoolGroup, String newEventMeshIp,
+                                                     int port, Session session, SessionManager mapping) {
         log.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(), newEventMeshIp + ":"
             + port);
         try {
@@ -125,14 +125,14 @@ public class EventMeshTcp2Client {
             Package pkg = new Package();
             pkg.setHeader(new Header(REDIRECT_TO_CLIENT, OPStatus.SUCCESS.getCode(), null, null));
             pkg.setBody(new RedirectInfo(newEventMeshIp, port));
-            eventMeshTCPServer.getScheduler().schedule(new Runnable() {
+            tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
                     Utils.writeAndFlush(pkg, startTime, taskExecuteTime, session.getContext(), session);
                 }
             }, 5 * 1000, TimeUnit.MILLISECONDS);
-            closeSessionIfTimeout(eventMeshTCPServer, session, mapping);
+            closeSessionIfTimeout(tcpThreadPoolGroup, session, mapping);
             return session.getRemoteAddress() + "--->" + newEventMeshIp + ":" + port;
         } catch (Exception e) {
             log.error("exception occur while redirectClient2NewEventMesh", e);
@@ -140,9 +140,9 @@ public class EventMeshTcp2Client {
         }
     }
 
-    public static void closeSessionIfTimeout(EventMeshTCPServer eventMeshTCPServer, Session session,
-        ClientSessionGroupMapping mapping) {
-        eventMeshTCPServer.getScheduler().schedule(new Runnable() {
+    public static void closeSessionIfTimeout(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
+        SessionManager mapping) {
+        tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
             @Override
             public void run() {
                 try {

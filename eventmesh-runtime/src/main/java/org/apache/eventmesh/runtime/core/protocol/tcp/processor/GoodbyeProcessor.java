@@ -74,10 +74,11 @@ public class GoodbyeProcessor implements TcpRequestProcessor {
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()),
                 pkg.getHeader().getSeq()));
         } finally {
-            this.eventMeshTCPServer.getScheduler().submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
+            this.eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler()
+                    .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
         }
         EventMeshTcp2Client
-            .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
+            .closeSessionIfTimeout(eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 
 

@@ -137,7 +137,7 @@ public class UpStreamMsgContext extends RetryContext {
                 // retry
                 // reset delay time
                 retryContext.delay(10000);
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getTcpRetryer().pushRetry(retryContext);
+                Objects.requireNonNull(session.getPubSubManager().get()).getTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),

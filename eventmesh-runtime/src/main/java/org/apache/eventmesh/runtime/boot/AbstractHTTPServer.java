@@ -93,38 +93,39 @@ import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 
 
+/**
+ * HTTP serves as the runtime module server for the protocol
+ *
+ */
 @Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
-    private ProcessorWrapperHandler processorWrapperHandler;
+    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private EventMeshHttpMonitor metrics;
 
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
-
-    private final transient boolean useTLS;
-
-    private Boolean useTrace = false; //Determine whether trace is enabled
-
-    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
-    private final transient ThreadPoolExecutor asyncContextCompleteHandler =
-            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
-
-    private static final int MAX_CONNECTIONS = 20_000;
-
     static {
         DiskAttribute.deleteOnExitTemporaryFile = false;
     }
+
+    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    private final transient boolean useTLS;
+    private Boolean useTrace = false; //Determine whether trace is enabled
+    private static final int MAX_CONNECTIONS = 20_000;
 
     protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>>
             httpRequestProcessorTable = new ConcurrentHashMap<>(64);
 
     private HttpConnectionHandler httpConnectionHandler;
+    private HttpDispatcher httpDispatcher;
 
-    private HTTPHandler httpHandler;
+    private ProcessorWrapperHandler processorWrapperHandler;
+    private final transient ThreadPoolExecutor asyncContextCompleteHandler =
+            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
+
+    private final HTTPThreadPoolGroup httpThreadPoolGroup;
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
                               final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -132,11 +133,17 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.setPort(port);
         this.useTLS = useTLS;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
+        this.httpThreadPoolGroup = new HTTPThreadPoolGroup(eventMeshHttpConfiguration);
     }
 
     private void initSharableHandlers() {
         httpConnectionHandler = new HttpConnectionHandler();
-        httpHandler = new HTTPHandler();
+        httpDispatcher = new HttpDispatcher();
+    }
+
+    public void init() throws Exception {
+        super.init("eventMesh-http");
+        httpThreadPoolGroup.initThreadPool();
     }
 
     @Override
@@ -144,7 +151,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         initSharableHandlers();
 
-        final Runnable runnable = () -> {
+        final Thread thread = new Thread(() -> {
             final ServerBootstrap bootstrap = new ServerBootstrap();
             try {
                 bootstrap.group(this.getBossGroup(), this.getIoGroup())
@@ -169,9 +176,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
                 System.exit(-1);
             }
-        };
-
-        final Thread thread = new Thread(runnable, "EventMesh-http-server");
+        }, "EventMesh-http-server");
         thread.setDaemon(true);
         thread.start();
         started.compareAndSet(false, true);
@@ -180,9 +185,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     @Override
     public void shutdown() throws Exception {
         super.shutdown();
+        httpThreadPoolGroup.shutdownThreadPool();
         started.compareAndSet(true, false);
     }
 
+    /**
+     * Registers the processors required by the runtime module
+     */
     public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor,
                                   final ThreadPoolExecutor executor) {
         AssertUtils.notNull(requestCode, "requestCode can't be null");
@@ -190,7 +199,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         AssertUtils.notNull(executor, "executor can't be null");
         this.httpRequestProcessorTable.put(requestCode.toString(), new Pair<>(processor, executor));
     }
-
 
     /**
      * Validate request, return error status.
@@ -276,7 +284,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     @Sharable
-    private class HTTPHandler extends ChannelInboundHandlerAdapter {
+    private class HttpDispatcher extends ChannelInboundHandlerAdapter {
 
         /**
          * Is called for each message of type {@link HttpRequest}.
@@ -546,15 +554,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     new HttpResponseEncoder(),
                     httpConnectionHandler,
                     new HttpObjectAggregator(Integer.MAX_VALUE),
-                    httpHandler);
+                    httpDispatcher);
         }
     }
-
 
     public void setUseTrace(final Boolean useTrace) {
         this.useTrace = useTrace;
     }
-
 
     public Boolean getUseTrace() {
         return useTrace;
@@ -576,4 +582,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return processorWrapperHandler;
     }
 
+    public HTTPThreadPoolGroup getHttpThreadPoolGroup() {
+        return httpThreadPoolGroup;
+    }
 }

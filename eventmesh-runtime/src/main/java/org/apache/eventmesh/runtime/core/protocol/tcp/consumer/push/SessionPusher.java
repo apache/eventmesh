@@ -109,7 +109,7 @@ public class SessionPusher {
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            Objects.requireNonNull(session.getClientGroupWrapper().get())
+            Objects.requireNonNull(session.getPubSubManager().get())
                 .getEventMeshTcpMonitor()
                 .getTcpSummaryMetrics()
                 .getEventMesh2clientMsgNum()
@@ -140,7 +140,7 @@ public class SessionPusher {
                                 ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
                                 : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
                             downStreamMsgContext.delay(delayTime);
-                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getTcpRetryer().pushRetry(downStreamMsgContext);
+                            Objects.requireNonNull(session.getPubSubManager().get()).getTcpRetryer().pushRetry(downStreamMsgContext);
                         } else {
                             deliveredMsgsCount.incrementAndGet();
                             log.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,

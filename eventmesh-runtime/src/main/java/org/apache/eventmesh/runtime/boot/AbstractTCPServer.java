@@ -29,7 +29,7 @@ import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.processor.TcpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
@@ -72,15 +72,17 @@ import io.opentelemetry.api.trace.Span;
 
 import lombok.extern.slf4j.Slf4j;
 
-
+/**
+ * TCP serves as the runtime module server for the protocol
+ *
+ */
 @Slf4j
 public class AbstractTCPServer extends AbstractRemotingServer {
-    private EventMeshTCPServer eventMeshTCPServer;
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private ClientSessionGroupMapping clientSessionGroupMapping;
+    private SessionManager sessionManager;
 
-    private EventMeshTcpMonitor eventMeshTcpMonitor;
+    private EventMeshTcpMonitor metrics;
 
     private transient GlobalTrafficShapingHandler globalTrafficShapingHandler;
     private TcpConnectionHandler tcpConnectionHandler;
@@ -91,9 +93,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     private final transient AtomicBoolean started = new AtomicBoolean(false);
 
+    private final TCPThreadPoolGroup tcpThreadPoolGroup;
 
     public AbstractTCPServer(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.tcpThreadPoolGroup = new TCPThreadPoolGroup(eventMeshTCPConfiguration);
     }
 
     private void initSharableHandlers() {
@@ -101,12 +105,16 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         tcpDispatcher = new TcpDispatcher();
     }
 
+    public void init() throws Exception {
+        super.init("eventMesh-tcp");
+        tcpThreadPoolGroup.initThreadPool();
+    }
 
     @Override
     public void start() throws Exception {
         initSharableHandlers();
 
-        Runnable runnable = () -> {
+        Thread thread = new Thread(() -> {
             final ServerBootstrap bootstrap = new ServerBootstrap();
 
             bootstrap.group(this.getBossGroup(), this.getIoGroup())
@@ -139,9 +147,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
                 System.exit(-1);
             }
-        };
-
-        Thread thread = new Thread(runnable, "eventMesh-tcp-server");
+        }, "eventMesh-tcp-server");
         thread.start();
 
         started.compareAndSet(false, true);
@@ -152,11 +158,16 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     @Override
     public void shutdown() throws Exception {
         super.shutdown();
+        tcpThreadPoolGroup.shutdownThreadPool();
         globalTrafficShapingHandler.release();
         started.compareAndSet(true, false);
     }
 
 
+    /**
+     * Registers the processors required by the runtime module
+     *
+     */
     public void registerProcessor(final Command command, final TcpRequestProcessor processor,
                                   final ThreadPoolExecutor executor) {
         AssertUtils.notNull(command, "command can't be null");
@@ -165,12 +176,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         this.tcpRequestProcessorTable.put(command, new Pair<>(processor, executor));
     }
 
-
     private class TcpServerInitializer extends ChannelInitializer<SocketChannel> {
 
         @Override
         protected void initChannel(SocketChannel ch) {
-            globalTrafficShapingHandler = newGTSHandler(eventMeshTCPServer.getScheduler(), eventMeshTCPConfiguration.getCtc().getReadLimit());
+            globalTrafficShapingHandler = newGTSHandler(tcpThreadPoolGroup.getScheduler(), eventMeshTCPConfiguration.getCtc().getReadLimit());
             ch.pipeline()
                     .addLast(getWorkerGroup(), new Codec.Encoder())
                     .addLast(getWorkerGroup(), new Codec.Decoder())
@@ -219,7 +229,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             long startTime = System.currentTimeMillis();
             validateMsg(pkg);
 
-            eventMeshTcpMonitor.getTcpSummaryMetrics().getClient2eventMeshMsgNum().incrementAndGet();
+            metrics.getTcpSummaryMetrics().getClient2eventMeshMsgNum().incrementAndGet();
 
             Command cmd = pkg.getHeader().getCmd();
             try {
@@ -228,7 +238,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                             .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
                             eventMeshTCPConfiguration.getEventMeshServerIp());
-                    Session session = clientSessionGroupMapping.getSession(ctx);
+                    Session session = sessionManager.getSession(ctx);
 
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SYS, session.getClient().getSubsystem());
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_IP, session.getClient().getHost());
@@ -241,9 +251,10 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                         messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     }
                     processHttpCommandRequest(pkg, ctx, startTime, cmd);
+                    return;
                 }
 
-                if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx) == null) {
+                if (sessionManager.getSession(ctx) == null) {
                     if (messageLogger.isInfoEnabled()) {
                         messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
                     }
@@ -252,7 +263,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
                 logMessageFlow(ctx, pkg, cmd);
 
-                if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx)
+                if (sessionManager.getSession(ctx)
                         .getSessionState() == SessionState.CLOSED) {
                     throw new Exception(
                             "this eventMesh tcp session will be closed, may be reboot or version change!");
@@ -341,10 +352,10 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             if (pkg.getBody() instanceof EventMeshMessage) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
                         EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
-                        clientSessionGroupMapping.getSession(ctx).getClient());
+                        sessionManager.getSession(ctx).getClient());
             } else {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
-                        clientSessionGroupMapping.getSession(ctx).getClient());
+                        sessionManager.getSession(ctx).getClient());
             }
         }
 
@@ -366,7 +377,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            Session session = clientSessionGroupMapping.getSession(ctx);
+            Session session = sessionManager.getSession(ctx);
             UserAgent client = session == null ? null : session.getClient();
             log.error("exceptionCaught, push goodbye to client|user={},errMsg={}", client, cause.fillInStackTrace());
             String errMsg;
@@ -377,10 +388,10 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
 
             if (session != null) {
-                EventMeshTcp2Client.goodBye2Client(eventMeshTCPServer, session, errMsg, OPStatus.FAIL.getCode(),
-                        clientSessionGroupMapping);
+                EventMeshTcp2Client.goodBye2Client(tcpThreadPoolGroup, session, errMsg, OPStatus.FAIL.getCode(),
+                        sessionManager);
             } else {
-                EventMeshTcp2Client.goodBye2Client(ctx, errMsg, clientSessionGroupMapping, eventMeshTcpMonitor);
+                EventMeshTcp2Client.goodBye2Client(ctx, errMsg, sessionManager, metrics);
             }
         }
 
@@ -425,7 +436,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             connections.decrementAndGet();
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             log.info("client|tcp|channelInactive|remoteAddress={}|msg={}", remoteAddress, "");
-            clientSessionGroupMapping.closeSession(ctx);
+            sessionManager.closeSession(ctx);
             super.channelInactive(ctx);
         }
 
@@ -437,7 +448,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                     log.info("client|tcp|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass().getName());
-                    clientSessionGroupMapping.closeSession(ctx);
+                    sessionManager.closeSession(ctx);
                 }
             }
 
@@ -449,27 +460,37 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         }
     }
 
+
+
     public TcpConnectionHandler getTcpConnectionHandler() {
         return tcpConnectionHandler;
     }
 
-    public EventMeshTcpMonitor getEventMeshTcpMonitor() {
-        return eventMeshTcpMonitor;
+    public EventMeshTcpMonitor getMetrics() {
+        return metrics;
     }
 
-    public void setEventMeshTcpMonitor(EventMeshTcpMonitor eventMeshTcpMonitor) {
-        this.eventMeshTcpMonitor = eventMeshTcpMonitor;
+    public void setMetrics(EventMeshTcpMonitor metrics) {
+        this.metrics = metrics;
     }
 
-    public ClientSessionGroupMapping getClientSessionGroupMapping() {
-        return clientSessionGroupMapping;
+    public SessionManager getClientSessionGroupMapping() {
+        return sessionManager;
     }
 
-    public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
-        this.clientSessionGroupMapping = clientSessionGroupMapping;
+    public void setClientSessionGroupMapping(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
     }
 
-    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
+    public TcpDispatcher getTcpDispatcher() {
+        return tcpDispatcher;
+    }
+
+    public void setTcpDispatcher(TcpDispatcher tcpDispatcher) {
+        this.tcpDispatcher = tcpDispatcher;
+    }
+
+    public TCPThreadPoolGroup getTcpThreadPoolGroup() {
+        return tcpThreadPoolGroup;
     }
 }

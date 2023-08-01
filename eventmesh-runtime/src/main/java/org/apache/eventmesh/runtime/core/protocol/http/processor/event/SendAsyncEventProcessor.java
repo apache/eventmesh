@@ -256,7 +256,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             handlerSpecific.getTraceOperation().createClientTraceOperation(EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
 
-            eventMeshProducer.send(sendMessageContext, new SendCallback() {
+            eventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
 
                 @Override
                 public void onSuccess(final SendResult sendResult) {

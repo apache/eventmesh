@@ -136,7 +136,7 @@ public class SendMessageContext extends RetryContext {
         }
 
         retryTimes++;
-        eventMeshProducer.send(this, new SendCallback() {
+        eventMeshProducer.send(event, new SendCallback() {
 
             @Override
             public void onSuccess(SendResult sendResult) {

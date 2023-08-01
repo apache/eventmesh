@@ -263,7 +263,7 @@ public class SendMessageProcessor implements TcpRequestProcessor {
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
                 Objects.requireNonNull(
-                        session.getClientGroupWrapper().get()).getTcpRetryer()
+                        session.getPubSubManager().get()).getTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();

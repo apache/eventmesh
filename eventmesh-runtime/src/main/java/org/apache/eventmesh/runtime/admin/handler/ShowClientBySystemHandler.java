@@ -24,7 +24,7 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
@@ -89,8 +89,8 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                 log.info("showClientBySubsys,subsys:{}", subSystem);
             }
             // Retrieve the mapping between Sessions and their corresponding client address
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
             if (sessionMap != null && !sessionMap.isEmpty()) {
                 // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
                 for (Session session : sessionMap.values()) {

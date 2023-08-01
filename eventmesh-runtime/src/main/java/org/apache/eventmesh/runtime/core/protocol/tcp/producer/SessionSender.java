@@ -111,7 +111,7 @@ public class SessionSender {
                             event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        Objects.requireNonNull(session.getClientGroupWrapper().get())
+                        Objects.requireNonNull(session.getPubSubManager().get())
                             .request(upStreamMsgContext, initSyncRRCallback(header,
                                 startTime, taskExecuteTime, event), ttl);
                         upstreamBuff.release();
@@ -127,7 +127,7 @@ public class SessionSender {
                     }
 
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
-                    Objects.requireNonNull(session.getClientGroupWrapper().get()).reply(upStreamMsgContext);
+                    Objects.requireNonNull(session.getPubSubManager().get()).reply(upStreamMsgContext);
                     upstreamBuff.release();
                 } else {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
@@ -136,14 +136,14 @@ public class SessionSender {
                             event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        Objects.requireNonNull(session.getClientGroupWrapper().get())
+                        Objects.requireNonNull(session.getPubSubManager().get())
                             .send(upStreamMsgContext, sendCallback);
                     } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 }
 
-                Objects.requireNonNull(session.getClientGroupWrapper().get())
+                Objects.requireNonNull(session.getPubSubManager().get())
                     .getEventMeshTcpMonitor()
                     .getTcpSummaryMetrics()
                     .getEventMesh2mqMsgNum()
@@ -178,7 +178,7 @@ public class SessionSender {
                     .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP,
                         session.getEventMeshTCPConfiguration().getEventMeshServerIp())
                     .build();
-                Objects.requireNonNull(session.getClientGroupWrapper().get())
+                Objects.requireNonNull(session.getPubSubManager().get())
                     .getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
 

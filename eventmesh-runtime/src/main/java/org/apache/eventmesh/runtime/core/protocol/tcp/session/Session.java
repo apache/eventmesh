@@ -27,7 +27,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientGroupWrapper;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.PubSubManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.SessionPusher;
 import org.apache.eventmesh.runtime.core.protocol.tcp.producer.EventMeshTcpSendResult;
@@ -78,7 +78,7 @@ public class Session {
 
     @Setter
     @Getter
-    private WeakReference<ClientGroupWrapper> clientGroupWrapper;
+    private WeakReference<PubSubManager> pubSubManager;
 
     @Setter
     @Getter
@@ -122,19 +122,18 @@ public class Session {
     @Getter
     private String sessionId = UUID.randomUUID().toString();
 
-    public void notifyHeartbeat(long heartbeatTime) throws Exception {
+    public void notifyHeartbeat(long heartbeatTime)  {
         this.lastHeartbeatTime = heartbeatTime;
     }
 
     public void subscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.getSubscribeTopics().putIfAbsent(item.getTopic(), item);
-            Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
+            Objects.requireNonNull(pubSubManager.get()).subscribe(item);
 
-            Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
-                .checkTopicExist(item.getTopic());
+            // todo check topic whether exist in broker
 
-            Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
+            Objects.requireNonNull(pubSubManager.get()).addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
         }
     }
@@ -142,10 +141,10 @@ public class Session {
     public void unsubscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.getSubscribeTopics().remove(item.getTopic());
-            Objects.requireNonNull(clientGroupWrapper.get()).removeSubscription(item, this);
+            Objects.requireNonNull(pubSubManager.get()).removeSubscription(item, this);
 
-            if (!Objects.requireNonNull(clientGroupWrapper.get()).hasSubscription(item.getTopic())) {
-                Objects.requireNonNull(clientGroupWrapper.get()).unsubscribe(item);
+            if (!Objects.requireNonNull(pubSubManager.get()).hasSubscription(item.getTopic())) {
+                Objects.requireNonNull(pubSubManager.get()).unsubscribe(item);
                 SUBSCRIB_LOGGER.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
             }
         }
@@ -184,7 +183,7 @@ public class Session {
                         if (!future.isSuccess()) {
                             MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                         } else {
-                            Objects.requireNonNull(clientGroupWrapper.get())
+                            Objects.requireNonNull(pubSubManager.get())
                                 .getEventMeshTcpMonitor()
                                 .getTcpSummaryMetrics()
                                 .getEventMesh2clientMsgNum()
@@ -202,7 +201,7 @@ public class Session {
     public String toString() {
         return "Session{"
             +
-            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+            "sysId=" + Objects.requireNonNull(pubSubManager.get()).getSysId()
             +
             ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
             +

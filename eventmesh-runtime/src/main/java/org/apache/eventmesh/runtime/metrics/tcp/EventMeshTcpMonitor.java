@@ -84,7 +84,7 @@ public class EventMeshTcpMonitor {
         });
 
         int delay = 60 * 1000;
-        monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((() -> {
+        monitorTpsTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate((() -> {
             int msgNum = tcpSummaryMetrics.client2eventMeshMsgNum();
             tcpSummaryMetrics.resetClient2EventMeshMsgNum();
             tcpSummaryMetrics.setClient2eventMeshTPS((int) 1000.0d * msgNum / period);
@@ -127,7 +127,7 @@ public class EventMeshTcpMonitor {
 
         }), delay, period, TimeUnit.MILLISECONDS);
 
-        monitorThreadPoolTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate(() -> {
+        monitorThreadPoolTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
             eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
             eventMeshTCPServer.getEventMeshTcpRetryer().printRetryThreadPoolState();
 

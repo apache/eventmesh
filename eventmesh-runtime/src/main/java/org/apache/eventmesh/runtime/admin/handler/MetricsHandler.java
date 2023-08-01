@@ -71,7 +71,7 @@ public class MetricsHandler extends AbstractHttpHandler {
         HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
-        this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
+        this.tcpSummaryMetrics = eventMeshTcpServer.getMetrics().getTcpSummaryMetrics();
     }
 
     /**

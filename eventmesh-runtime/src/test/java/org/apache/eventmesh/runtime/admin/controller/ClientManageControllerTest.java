@@ -67,8 +67,8 @@ public class ClientManageControllerTest {
 
         EventMeshTcpMonitor eventMeshTcpMonitor = mock(EventMeshTcpMonitor.class);
         TcpSummaryMetrics tcpSummaryMetrics = mock(TcpSummaryMetrics.class);
-        when(eventMeshTCPServer.getEventMeshTcpMonitor()).thenReturn(eventMeshTcpMonitor);
-        when(eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()).thenReturn(tcpSummaryMetrics);
+        when(eventMeshTCPServer.getMetrics()).thenReturn(eventMeshTcpMonitor);
+        when(eventMeshTCPServer.getMetrics().getTcpSummaryMetrics()).thenReturn(tcpSummaryMetrics);
 
         AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManager.class);
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);

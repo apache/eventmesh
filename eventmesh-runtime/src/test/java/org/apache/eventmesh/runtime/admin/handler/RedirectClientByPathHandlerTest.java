@@ -31,7 +31,7 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +70,7 @@ public class RedirectClientByPathHandlerTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final HttpExchange mockExchange = mock(HttpExchange.class);
 
-        ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
+        SessionManager mapping = mock(SessionManager.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
         RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);

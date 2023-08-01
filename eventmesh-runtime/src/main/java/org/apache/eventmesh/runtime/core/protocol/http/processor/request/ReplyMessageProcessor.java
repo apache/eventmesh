@@ -208,7 +208,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
             sendMessageContext.setEvent(clone);
-            eventMeshProducer.reply(sendMessageContext, new SendCallback() {
+            eventMeshProducer.reply(sendMessageContext.getEvent(), new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     HttpCommand succ = request.createHttpCommandResponse(

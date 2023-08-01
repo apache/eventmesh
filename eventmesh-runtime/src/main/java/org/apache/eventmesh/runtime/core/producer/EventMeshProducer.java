@@ -21,8 +21,8 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,65 +30,77 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.cloudevents.CloudEvent;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshProducer {
 
     protected AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
-
     protected AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
 
-    public AtomicBoolean getInited() {
-        return inited;
-    }
-
-    public AtomicBoolean getStarted() {
-        return started;
-    }
-
-    public boolean isStarted() {
-        return started.get();
-    }
-
-    private ProducerGroupConf producerGroupConfig;
-
-    private CommonConfiguration commonConfiguration;
+    private final ProducerGroupConf producerGroupConfig;
+    private final CommonConfiguration commonConfiguration;
 
     private MQProducerWrapper mqProducerWrapper;
 
-    public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
+    public EventMeshProducer(ProducerGroupConf producerGroupConfig, CommonConfiguration commonConfiguration) {
+        this.producerGroupConfig = producerGroupConfig;
+        this.commonConfiguration = commonConfiguration;
     }
 
-    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
+    public void send(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        mqProducerWrapper.send(cloudEvent, sendCallback);
+    }
+
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
         throws Exception {
-        mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
+        mqProducerWrapper.request(cloudEvent, rrCallback, timeout);
     }
 
-    public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.reply(sendMsgContext.getEvent(), sendCallback);
+    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        mqProducerWrapper.reply(cloudEvent, sendCallback);
         return true;
     }
 
-    public void init(CommonConfiguration commonConfiguration,
-                     ProducerGroupConf producerGroupConfig) throws Exception {
+    public void init() throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-        this.producerGroupConfig = producerGroupConfig;
-        this.commonConfiguration = commonConfiguration;
 
         Properties keyValue = new Properties();
-        keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
+        keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
                 commonConfiguration.getEventMeshCluster()));
         if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
             keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
         }
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", commonConfiguration.getEventMeshIDC());
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, commonConfiguration.getEventMeshIDC());
+        mqProducerWrapper = new MQProducerWrapper(commonConfiguration.getEventMeshStoragePluginType());
+        mqProducerWrapper.init(keyValue);
+        log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
+    }
+
+
+    public void initTcp(String clientSysId, String group) throws Exception {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
+
+        Properties keyValue = new Properties();
+        keyValue.put(EventMeshConstants.PRODUCER_GROUP, group);
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
+                .buildMeshTcpClientID(clientSysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE,
+                        commonConfiguration.getEventMeshCluster()));
+        if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
+            keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
+        }
+
+        //TODO for defibus
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, commonConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(commonConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
@@ -96,7 +108,6 @@ public class EventMeshProducer {
 
 
     public void start() throws Exception {
-
         if (!started.compareAndSet(false, true)) {
             return;
         }
@@ -125,15 +136,23 @@ public class EventMeshProducer {
         return sb.toString();
     }
 
-    public CommonConfiguration getCommonConfiguration() {
-        return commonConfiguration;
-    }
-
     public ProducerGroupConf getProducerGroupConfig() {
         return producerGroupConfig;
     }
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
+    }
+
+    public AtomicBoolean getInited() {
+        return inited;
+    }
+
+    public AtomicBoolean getStarted() {
+        return started;
+    }
+
+    public boolean isStarted() {
+        return started.get();
     }
 }

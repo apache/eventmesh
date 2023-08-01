@@ -137,9 +137,9 @@ public class DownStreamMsgContext extends RetryContext {
             Session rechoosen;
             String topic = this.event.getSubject();
             if (SubscriptionMode.BROADCASTING != this.subscriptionItem.getMode()) {
-                rechoosen = Objects.requireNonNull(this.session.getClientGroupWrapper().get())
-                    .getDownstreamDispatchStrategy().select(Objects.requireNonNull(this.session.getClientGroupWrapper().get()).getSysId(),
-                        topic, Objects.requireNonNull(this.session.getClientGroupWrapper().get()).getGroupConsumerSessions());
+                rechoosen = Objects.requireNonNull(this.session.getPubSubManager().get())
+                    .getDownstreamDispatchStrategy().select(Objects.requireNonNull(this.session.getPubSubManager().get()).getSysId(),
+                        topic, Objects.requireNonNull(this.session.getPubSubManager().get()).getGroupConsumerSessions());
             } else {
                 rechoosen = this.session;
             }

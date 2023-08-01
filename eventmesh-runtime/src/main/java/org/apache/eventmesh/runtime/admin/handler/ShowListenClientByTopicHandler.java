@@ -24,8 +24,8 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientGroupWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.PubSubManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
@@ -87,11 +87,11 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
             String newLine = System.getProperty("line.separator");
             log.info("showListeningClientByTopic,topic:{}=================", topic);
             // Retrieve the mappings of client subsystem to client group
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
+            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            ConcurrentHashMap<String, PubSubManager> clientGroupMap = sessionManager.getClientGroupMap();
             if (!clientGroupMap.isEmpty()) {
                 // Iterate through the client group to get matching sessions in the group by given topic
-                for (ClientGroupWrapper cgw : clientGroupMap.values()) {
+                for (PubSubManager cgw : clientGroupMap.values()) {
                     Map<String, Session> listenSessions = cgw.getTopic2sessionInGroupMapping().get(topic);
                     if (listenSessions != null && !listenSessions.isEmpty()) {
                         result.append(String.format("group:%s", cgw.getGroup())).append(newLine);

@@ -253,7 +253,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             Span clientSpan = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
             try {
-                eventMeshProducer.send(sendMessageContext, new SendCallback() {
+                eventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
 
                     @Override
                     public void onSuccess(SendResult sendResult) {

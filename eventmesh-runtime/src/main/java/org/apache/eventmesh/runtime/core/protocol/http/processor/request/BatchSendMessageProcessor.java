@@ -247,7 +247,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 // TODO: Detect the maximum length of messages for different producers.
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 sendMessageContext.setEventList(eventlist);
-                batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+                batchEventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
                     }
@@ -263,7 +263,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         } else {
             for (CloudEvent event : eventList) {
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
-                batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+                batchEventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
 

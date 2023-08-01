@@ -224,7 +224,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         };
 
         try {
-            eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
+            eventMeshProducer.request(sendMessageContext.getEvent(), new RequestReplyCallback() {
                 @Override
                 public void onSuccess(final CloudEvent event) {
                     if (log.isInfoEnabled()) {

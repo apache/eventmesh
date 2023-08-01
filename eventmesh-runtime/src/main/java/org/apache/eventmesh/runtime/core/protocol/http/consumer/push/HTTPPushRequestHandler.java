@@ -68,7 +68,7 @@ public class HTTPPushRequestHandler implements Pushable {
 
     public HTTPPushRequestHandler(EventMeshConsumer eventMeshConsumer) {
         this.eventMeshConsumer = eventMeshConsumer;
-        this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().getPushMsgExecutor();
+        this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor();
         waitingRequests.put(this.eventMeshConsumer.getConsumerGroupConf().getConsumerGroup(), Sets.newConcurrentHashSet());
         SCHEDULER.scheduleAtFixedRate(this::checkTimeout, 0, 1000, TimeUnit.MILLISECONDS);
     }
@@ -101,7 +101,7 @@ public class HTTPPushRequestHandler implements Pushable {
             return true;
         } catch (RejectedExecutionException e) {
             log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
-                handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
+                handleMsgContext.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
     }
