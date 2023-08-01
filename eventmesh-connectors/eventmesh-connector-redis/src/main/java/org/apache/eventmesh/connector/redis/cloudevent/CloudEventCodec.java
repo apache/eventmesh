@@ -26,7 +26,9 @@ import io.cloudevents.jackson.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
-
+/**
+ * TODO: Duplicate with org.apache.eventmesh.storage.redis.cloudevent.CloudEventCodec
+ */
 public class CloudEventCodec extends BaseCodec {
 
     private static final CloudEventCodec INSTANCE = new CloudEventCodec();
