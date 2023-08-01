@@ -96,9 +96,7 @@ public class HelloTask extends AbstractTask {
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                 .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
+                    (ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
                             Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
                         } else {
@@ -107,7 +105,6 @@ public class HelloTask extends AbstractTask {
                         log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
                         eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                     }
-                }
             );
         }
     }
