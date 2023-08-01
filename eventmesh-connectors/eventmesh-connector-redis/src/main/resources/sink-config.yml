@@ -27,5 +27,5 @@ pubSubConfig:
 connectorConfig:
     connectorName: redisSink
     server: redis://127.0.0.1:6379
-    topic: TopicTest
+    topic: SinkTopic
 
