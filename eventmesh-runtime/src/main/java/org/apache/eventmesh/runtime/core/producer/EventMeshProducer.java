@@ -23,14 +23,13 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,17 +49,17 @@ public class EventMeshProducer {
         this.commonConfiguration = commonConfiguration;
     }
 
-    public void send(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.send(cloudEvent, sendCallback);
+    public void send(RetryContext context, SendCallback sendCallback) throws Exception {
+        mqProducerWrapper.send(context.getEvent(), sendCallback);
     }
 
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
+    public void request(RetryContext context, RequestReplyCallback rrCallback, long timeout)
         throws Exception {
-        mqProducerWrapper.request(cloudEvent, rrCallback, timeout);
+        mqProducerWrapper.request(context.getEvent(), rrCallback, timeout);
     }
 
-    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.reply(cloudEvent, sendCallback);
+    public boolean reply(RetryContext context, SendCallback sendCallback) throws Exception {
+        mqProducerWrapper.reply(context.getEvent(), sendCallback);
         return true;
     }
 
@@ -85,7 +84,7 @@ public class EventMeshProducer {
     }
 
 
-    public void initTcp(String clientSysId, String group) throws Exception {
+    public void initTcp(String sysId, String group) throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
@@ -93,7 +92,7 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, group);
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
-                .buildMeshTcpClientID(clientSysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE,
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE,
                         commonConfiguration.getEventMeshCluster()));
         if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
             keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());

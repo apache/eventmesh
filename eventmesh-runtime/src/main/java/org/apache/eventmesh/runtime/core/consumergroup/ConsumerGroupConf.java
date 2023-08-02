@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumer.consumergroup;
+package org.apache.eventmesh.runtime.core.consumergroup;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -24,26 +24,36 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConsumerGroupConf implements Serializable {
 
+    private String sysId;
     //eg . 5013-1A0
-    private String consumerGroup;
+    private String groupName;
 
     private final ConcurrentHashMap<String/*topic*/, ConsumerGroupTopicConf> consumerGroupTopicConfMapping
         = new ConcurrentHashMap<>();
 
-    public ConsumerGroupConf(String consumerGroup) {
-        this.consumerGroup = consumerGroup;
+    public ConsumerGroupConf(String groupName) {
+        this.groupName = groupName;
     }
 
-    public String getConsumerGroup() {
-        return consumerGroup;
+    public ConsumerGroupConf(String sysId, String groupName) {
+        this.sysId = sysId;
+        this.groupName = groupName;
     }
 
-    public void setConsumerGroup(String consumerGroup) {
-        this.consumerGroup = consumerGroup;
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public Map<String, ConsumerGroupTopicConf> getConsumerGroupTopicConfMapping() {
         return consumerGroupTopicConfMapping;
+    }
+
+    public String getSysId() {
+        return sysId;
     }
 
     @Override
@@ -55,23 +65,23 @@ public class ConsumerGroupConf implements Serializable {
             return false;
         }
         ConsumerGroupConf that = (ConsumerGroupConf) o;
-
-        return consumerGroup.equals(that.consumerGroup)
-            &&
-            Objects.equals(consumerGroupTopicConfMapping, that.consumerGroupTopicConfMapping);
+        return Objects.equals(sysId, that.sysId)
+                && Objects.equals(groupName, that.groupName)
+                && Objects.equals(consumerGroupTopicConfMapping, that.consumerGroupTopicConfMapping);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerGroup, consumerGroupTopicConfMapping);
+        return Objects.hash(sysId, groupName, consumerGroupTopicConfMapping);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("consumerGroupConfig={")
-            .append("groupName=").append(consumerGroup).append(",")
-            .append(",consumerGroupTopicConf=").append(consumerGroupTopicConfMapping).append("}");
-        return sb.toString();
+        return "ConsumerGroupConf{"
+                + "sysId='" + sysId + '\''
+                + ", groupName='" + groupName + '\''
+                + ", consumerGroupTopicConfMapping=" + consumerGroupTopicConfMapping
+                + '}';
     }
+
 }

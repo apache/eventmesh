@@ -39,6 +39,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
@@ -176,7 +177,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+        EventMeshProducer eventMeshProducer =
+                eventMeshHTTPServer.getProducerManager().getEventMeshProducer(new ProducerGroupConf(producerGroup));
 
         if (!eventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
@@ -253,7 +255,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             Span clientSpan = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
             try {
-                eventMeshProducer.send(sendMessageContext.getEvent(), new SendCallback() {
+                eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                     @Override
                     public void onSuccess(SendResult sendResult) {

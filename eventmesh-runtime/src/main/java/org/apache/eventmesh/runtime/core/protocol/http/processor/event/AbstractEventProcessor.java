@@ -34,10 +34,10 @@ import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupMetadata;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicMetadata;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import org.apache.commons.collections4.MapUtils;

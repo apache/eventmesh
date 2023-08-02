@@ -103,7 +103,7 @@ public class EventMeshTcpMonitor {
 
             //count topics subscribed by client in this eventMesh
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap =
-                eventMeshTCPServer.getClientSessionGroupMapping().getSessionMap();
+                eventMeshTCPServer.getSessionManager().getSessionTable();
             Iterator<Session> sessionIterator = sessionMap.values().iterator();
             Set<String> topicSet = new HashSet<>();
             while (sessionIterator.hasNext()) {

@@ -21,7 +21,6 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,18 +55,18 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public final int ttl;
 
-    public final HandleMsgContext handleMsgContext;
+    public final PushRequestContext pushRequestContext;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
-    public AbstractHTTPPushRequest(HandleMsgContext handleMsgContext) {
-        this.eventMeshHTTPServer = handleMsgContext.getEventMeshHTTPServer();
-        this.handleMsgContext = handleMsgContext;
-        this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
-        this.totalUrls = Lists.newArrayList(handleMsgContext.getConsumeTopicConfig().getUrls());
-        this.eventMeshHttpConfiguration = handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
-        this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
-        this.ttl = handleMsgContext.getTtl();
+    public AbstractHTTPPushRequest(PushRequestContext pushRequestContext) {
+        this.eventMeshHTTPServer = pushRequestContext.getEventMeshHTTPServer();
+        this.pushRequestContext = pushRequestContext;
+        this.urls = pushRequestContext.getConsumeTopicConfig().getIdcUrls();
+        this.totalUrls = Lists.newArrayList(pushRequestContext.getConsumeTopicConfig().getUrls());
+        this.eventMeshHttpConfiguration = pushRequestContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
+        this.retryer = pushRequestContext.getEventMeshHTTPServer().getHttpRetryer();
+        this.ttl = pushRequestContext.getTtl();
         this.startIdx = ThreadLocalRandom.current().nextInt(0, totalUrls.size());
     }
 
@@ -75,8 +74,8 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     }
 
     public void delayRetry(long delayTime) {
-        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
-            retryTimes++;
+        if (getRetryTimes() < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
+            increaseRetryTimes();
             delay(delayTime);
             retryer.pushRetry(this);
         } else {
@@ -85,9 +84,9 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     }
 
     public void delayRetry() {
-        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
-            retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
+        if (getRetryTimes() < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
+            increaseRetryTimes();
+            delay((long) getRetryTimes() * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
             retryer.pushRetry(this);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
@@ -98,16 +97,16 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         List<String> localIDCUrl = MapUtils.getObject(urls,
             eventMeshHttpConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
-            return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
+            return localIDCUrl.get((startIdx + getRetryTimes()) % localIDCUrl.size());
         }
 
-        List<String> otherIDCUrl = new ArrayList<String>();
+        List<String> otherIDCUrl = new ArrayList<>();
         for (List<String> tmp : urls.values()) {
             otherIDCUrl.addAll(tmp);
         }
 
         if (CollectionUtils.isNotEmpty(otherIDCUrl)) {
-            return otherIDCUrl.get((startIdx + retryTimes) % otherIDCUrl.size());
+            return otherIDCUrl.get((startIdx + getRetryTimes()) % otherIDCUrl.size());
         }
 
         return null;

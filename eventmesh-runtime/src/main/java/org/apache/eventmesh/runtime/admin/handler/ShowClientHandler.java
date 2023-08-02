@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
@@ -76,12 +76,12 @@ public class ShowClientHandler extends AbstractHttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String newLine = System.getProperty("line.separator");
             log.info("showAllClient=================");
-            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
+            ClientManager clientManager = eventMeshTCPServer.getSessionManager();
 
             // Store the subsystem and the corresponding client count.
             HashMap<String, AtomicInteger> statMap = new HashMap<String, AtomicInteger>();
 
-            Map<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            Map<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             if (!sessionMap.isEmpty()) {
                 // Iterate through each Session to count the clients in each subsystem.
                 for (Session session : sessionMap.values()) {

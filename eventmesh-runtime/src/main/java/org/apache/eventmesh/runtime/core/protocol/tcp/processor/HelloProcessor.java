@@ -89,7 +89,7 @@ public class HelloProcessor implements TcpRequestProcessor {
             }
 
             validateUserAgent(user);
-            session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
+            session = eventMeshTCPServer.getSessionManager().createSession(user, ctx);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                     pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
@@ -105,7 +105,7 @@ public class HelloProcessor implements TcpRequestProcessor {
                             Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                         }
                         log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
-                        eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                        eventMeshTCPServer.getSessionManager().closeSession(ctx);
                     }
             );
         }

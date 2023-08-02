@@ -28,8 +28,8 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -208,8 +208,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
             } else {
                 //remove
                 try {
-                    eventMeshHTTPServer.getConsumerManager()
-                        .notifyConsumerManager(consumerGroup, null);
+                    eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup, null);
                     responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
                     responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 

@@ -105,9 +105,9 @@ public abstract class AbstractPushRequest extends RetryContext {
     }
 
     protected void delayRetry() {
-        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
-            retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
+        if (getRetryTimes() < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
+            increaseRetryTimes();
+            delay((long) getRetryTimes() * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
             grpcRetryer.pushRetry(this);
         } else {
             complete();

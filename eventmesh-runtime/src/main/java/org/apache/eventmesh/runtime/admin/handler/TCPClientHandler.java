@@ -30,7 +30,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
@@ -118,8 +118,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String host = Objects.requireNonNull(deleteTCPClientRequest).getHost();
             int port = deleteTCPClientRequest.getPort();
 
-            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            ClientManager clientManager = eventMeshTCPServer.getSessionManager();
+            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             if (!sessionMap.isEmpty()) {
                 for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                     // Find the Session object that matches the host and port to be deleted
@@ -128,7 +128,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
                         EventMeshTcp2Client.serverGoodby2Client(
                                 eventMeshTCPServer.getTcpThreadPoolGroup(),
                                 entry.getValue(),
-                                sessionManager
+                                clientManager
                         );
                     }
                 }
@@ -166,8 +166,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
             httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
             httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
             // Get the list of connected TCP clients
-            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
-            Map<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            ClientManager clientManager = eventMeshTCPServer.getSessionManager();
+            Map<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             List<GetClientResponse> getClientResponseList = new ArrayList<>();
             // Convert each Session object to GetClientResponse and add to getClientResponseList
             for (Session session : sessionMap.values()) {

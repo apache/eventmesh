@@ -35,10 +35,6 @@ public class SendMessageContext extends RetryContext {
 
     public static final Logger logger = LoggerFactory.getLogger("retry");
 
-    private CloudEvent event;
-
-    private String bizSeqNo;
-
     private EventMeshProducer eventMeshProducer;
 
     private long createTime = System.currentTimeMillis();
@@ -47,26 +43,9 @@ public class SendMessageContext extends RetryContext {
 
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
         EventMeshGrpcServer eventMeshGrpcServer) {
-        this.bizSeqNo = bizSeqNo;
-        this.event = event;
+        super(event, bizSeqNo);
         this.eventMeshProducer = eventMeshProducer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
-    }
-
-    public String getBizSeqNo() {
-        return bizSeqNo;
-    }
-
-    public void setBizSeqNo(String bizSeqNo) {
-        this.bizSeqNo = bizSeqNo;
-    }
-
-    public CloudEvent getEvent() {
-        return event;
-    }
-
-    public void setEvent(CloudEvent event) {
-        this.event = event;
     }
 
     public EventMeshProducer getEventMeshProducer() {
@@ -89,12 +68,12 @@ public class SendMessageContext extends RetryContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
-            .append("bizSeqNo=").append(bizSeqNo)
-            .append(",retryTimes=").append(retryTimes)
+            .append("bizSeqNo=").append(getSeq())
+            .append(",retryTimes=").append(getRetryTimes())
             .append(",producer=")
             .append(eventMeshProducer != null ? eventMeshProducer : null)
             .append(",executeTime=")
-            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append(DateFormatUtils.format(getExecuteTime(), Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
             .append(",createTime=")
             .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
@@ -107,12 +86,12 @@ public class SendMessageContext extends RetryContext {
             return;
         }
 
-        if (retryTimes > 0) { //retry once
+        if (getRetryTimes() > 0) { //retry once
             logger.error("Exception happends during retry. The retryTimes > 0.");
             return;
         }
 
-        retryTimes++;
+        increaseRetryTimes();
         eventMeshProducer.send(this, new SendCallback() {
 
             @Override

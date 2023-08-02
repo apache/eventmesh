@@ -22,7 +22,7 @@ import java.util.Objects;
 public class ProducerGroupConf {
 
     private String groupName;
-
+    private String sysId;
     private String token;
 
     public ProducerGroupConf(String groupName) {
@@ -34,12 +34,22 @@ public class ProducerGroupConf {
         this.token = token;
     }
 
+    public ProducerGroupConf(String groupName, String sysId, String token) {
+        this.sysId = sysId;
+        this.groupName = groupName;
+        this.token = token;
+    }
+
     public String getGroupName() {
         return groupName;
     }
 
     public String getToken() {
         return token;
+    }
+
+    public String getSysId() {
+        return sysId;
     }
 
     @Override

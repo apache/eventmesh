@@ -24,7 +24,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -109,8 +109,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
             }
 
             // Retrieve the mapping between Sessions and their corresponding client address
-            final SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
-            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            final ClientManager clientManager = eventMeshTCPServer.getSessionManager();
+            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             final StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
@@ -122,7 +122,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                             redirectResult.append('|')
                                 .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, sessionManager));
+                                    session, clientManager));
                         }
                     }
                 }

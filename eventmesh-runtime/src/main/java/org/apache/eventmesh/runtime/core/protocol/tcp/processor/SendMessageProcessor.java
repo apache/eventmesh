@@ -83,7 +83,7 @@ public class SendMessageProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Command cmd = pkg.getHeader().getCmd();
 
@@ -263,7 +263,7 @@ public class SendMessageProcessor implements TcpRequestProcessor {
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
                 Objects.requireNonNull(
-                        session.getPubSubManager().get()).getTcpRetryer()
+                        session.getSessionMap().get()).getTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();

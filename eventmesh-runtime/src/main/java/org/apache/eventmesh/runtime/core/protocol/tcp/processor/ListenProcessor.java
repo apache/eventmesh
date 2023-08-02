@@ -53,13 +53,13 @@ public class ListenProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Header header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq());
         session.setListenRequestSeq(pkg.getHeader().getSeq());
         try {
             synchronized (session) {
-                eventMeshTCPServer.getClientSessionGroupMapping().readySession(session);
+                eventMeshTCPServer.getSessionManager().readySession(session);
             }
         } catch (Exception e) {
             log.error("ListenTask failed|user={}|errMsg={}", session.getClient(), e);

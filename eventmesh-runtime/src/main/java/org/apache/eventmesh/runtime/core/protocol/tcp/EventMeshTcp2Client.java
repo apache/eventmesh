@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.runtime.boot.TCPThreadPoolGroup;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.SessionState;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
@@ -47,7 +47,7 @@ public class EventMeshTcp2Client {
 
     public static InetSocketAddress serverGoodby2Client(TCPThreadPoolGroup tcpThreadPoolGroup,
         Session session,
-        SessionManager mapping) {
+        ClientManager mapping) {
         log.info("serverGoodby2Client client[{}]", session.getClient());
         try {
             long startTime = System.currentTimeMillis();
@@ -74,7 +74,7 @@ public class EventMeshTcp2Client {
 
     public static InetSocketAddress goodBye2Client(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
         String errMsg, int eventMeshStatus,
-        SessionManager mapping) {
+        ClientManager mapping) {
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
@@ -96,7 +96,7 @@ public class EventMeshTcp2Client {
         }
     }
 
-    public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, SessionManager mapping,
+    public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, ClientManager mapping,
         EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
@@ -116,7 +116,7 @@ public class EventMeshTcp2Client {
     }
 
     public static String redirectClient2NewEventMesh(TCPThreadPoolGroup tcpThreadPoolGroup, String newEventMeshIp,
-                                                     int port, Session session, SessionManager mapping) {
+                                                     int port, Session session, ClientManager mapping) {
         log.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(), newEventMeshIp + ":"
             + port);
         try {
@@ -141,7 +141,7 @@ public class EventMeshTcp2Client {
     }
 
     public static void closeSessionIfTimeout(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
-        SessionManager mapping) {
+        ClientManager mapping) {
         tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
             @Override
             public void run() {

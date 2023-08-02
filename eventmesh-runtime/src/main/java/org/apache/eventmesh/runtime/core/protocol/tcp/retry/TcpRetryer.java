@@ -61,8 +61,8 @@ public class TcpRetryer {
     public void pushRetry(RetryContext retryContext) {
         if (retryContexts.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
             log.error("pushRetry fail, retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
-                    retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
+                    eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.getRetryTimes(),
+                    retryContext.getSeq(), EventMeshUtil.getMessageBizSeq(retryContext.getEvent()));
             return;
         }
 
@@ -74,15 +74,15 @@ public class TcpRetryer {
                     eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgAsyncRetryTimes();
         }
 
-        if (retryContext.retryTimes >= maxRetryTimes) {
+        if (retryContext.getRetryTimes() >= maxRetryTimes) {
             log.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes,
-                    retryContext.retryTimes, retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
+                    retryContext.getRetryTimes(), retryContext.getSeq(), EventMeshUtil.getMessageBizSeq(retryContext.getEvent()));
             return;
         }
 
         retryContexts.offer(retryContext);
-        log.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", retryContext.seq, retryContext.retryTimes,
-                EventMeshUtil.getMessageBizSeq(retryContext.event));
+        log.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", retryContext.getSeq(), retryContext.getRetryTimes(),
+                EventMeshUtil.getMessageBizSeq(retryContext.getEvent()));
     }
 
     public void init() {
