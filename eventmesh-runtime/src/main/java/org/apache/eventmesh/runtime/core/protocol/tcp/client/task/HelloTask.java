@@ -40,10 +40,8 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,9 +94,7 @@ public class HelloTask extends AbstractTask {
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                 .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
+                    (ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
                             Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
                         } else {
@@ -107,7 +103,6 @@ public class HelloTask extends AbstractTask {
                         log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
                         eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                     }
-                }
             );
         }
     }
