@@ -58,7 +58,7 @@ public class GoodbyeProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Package msg = new Package();
         try {
@@ -78,7 +78,7 @@ public class GoodbyeProcessor implements TcpRequestProcessor {
                     .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
         }
         EventMeshTcp2Client
-            .closeSessionIfTimeout(eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());
+            .closeSessionIfTimeout(eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getSessionManager());
     }
 
 

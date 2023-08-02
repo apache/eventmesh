@@ -31,7 +31,7 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,8 +70,8 @@ public class RedirectClientByPathHandlerTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final HttpExchange mockExchange = mock(HttpExchange.class);
 
-        SessionManager mapping = mock(SessionManager.class);
-        when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
+        ClientManager mapping = mock(ClientManager.class);
+        when(eventMeshTCPServer.getSessionManager()).thenReturn(mapping);
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
         RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);
 
@@ -82,7 +82,7 @@ public class RedirectClientByPathHandlerTest {
         when(agent.getPath()).thenReturn("path");
         when(session.getClient()).thenReturn(agent);
         sessionMap.put(new InetSocketAddress(8080), session);
-        when(mapping.getSessionMap()).thenReturn(sessionMap);
+        when(mapping.getSessionTable()).thenReturn(sessionMap);
 
         // mock uri
         URI uri = mock(URI.class);

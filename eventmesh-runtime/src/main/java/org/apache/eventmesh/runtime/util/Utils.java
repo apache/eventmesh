@@ -72,7 +72,7 @@ public class Utils {
                         logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                         if (session != null) {
-                            Objects.requireNonNull(session.getPubSubManager().get())
+                            Objects.requireNonNull(session.getSessionMap().get())
                                 .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
                     }

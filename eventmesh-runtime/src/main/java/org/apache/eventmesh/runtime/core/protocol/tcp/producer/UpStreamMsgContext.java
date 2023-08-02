@@ -54,9 +54,8 @@ public class UpStreamMsgContext extends RetryContext {
     private final long taskExecuteTime;
 
     public UpStreamMsgContext(Session session, CloudEvent event, Header header, long startTime, long taskExecuteTime) {
-        this.seq = header.getSeq();
+        super(event, header.getSeq());
         this.session = session;
-        this.event = event;
         this.header = header;
         this.startTime = startTime;
         this.taskExecuteTime = taskExecuteTime;
@@ -66,9 +65,6 @@ public class UpStreamMsgContext extends RetryContext {
         return session;
     }
 
-    public CloudEvent getEvent() {
-        return event;
-    }
 
     public long getCreateTime() {
         return createTime;
@@ -76,32 +72,32 @@ public class UpStreamMsgContext extends RetryContext {
 
     @Override
     public String toString() {
-        return "UpStreamMsgContext{seq=" + seq
-            + ",topic=" + event.getSubject()
+        return "UpStreamMsgContext{seq=" + getSeq()
+            + ",topic=" + getEvent().getSubject()
             + ",client=" + session.getClient()
-            + ",retryTimes=" + retryTimes
+            + ",retryTimes=" + getRetryTimes()
             + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}"
-            + ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT);
+            + ",executeTime=" + DateFormatUtils.format(getExecuteTime(), EventMeshConstants.DATE_FORMAT);
     }
 
     @Override
     public void retry() {
-        log.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
-            EventMeshUtil.getMessageBizSeq(this.event));
+        log.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", getSeq(), getRetryTimes(),
+            EventMeshUtil.getMessageBizSeq(getEvent()));
 
         try {
             Command replyCmd = getReplyCmd(header.getCmd());
             long sendTime = System.currentTimeMillis();
 
-            retryTimes++;
+            increaseRetryTimes();
 
             // check session availability
             if (session.isRunning()) {
-                EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, event,
-                    createSendCallback(replyCmd, taskExecuteTime, event, this), startTime, taskExecuteTime);
+                EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, getEvent(),
+                    createSendCallback(replyCmd, taskExecuteTime, getEvent(), this), startTime, taskExecuteTime);
 
                 if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
-                    log.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
+                    log.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), getEvent(),
                         session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
                     throw new Exception(sendStatus.getDetail());
@@ -124,7 +120,7 @@ public class UpStreamMsgContext extends RetryContext {
                     System.currentTimeMillis() - createTime);
                 if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command
                     .ASYNC_MESSAGE_TO_SERVER_ACK) {
-                    msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), seq));
+                    msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), getSeq()));
                     msg.setBody(event);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
                 }
@@ -137,12 +133,12 @@ public class UpStreamMsgContext extends RetryContext {
                 // retry
                 // reset delay time
                 retryContext.delay(10000);
-                Objects.requireNonNull(session.getPubSubManager().get()).getTcpRetryer().pushRetry(retryContext);
+                Objects.requireNonNull(session.getSessionMap().get()).getTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
                     System.currentTimeMillis() - createTime, new Exception(context.getException()));
-                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), seq));
+                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), getSeq()));
                 msg.setBody(event);
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
             }

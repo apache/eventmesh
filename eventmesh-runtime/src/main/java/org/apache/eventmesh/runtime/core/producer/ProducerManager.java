@@ -19,11 +19,15 @@ package org.apache.eventmesh.runtime.core.producer;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * As a unique production manager for each server
+ *
+ */
 @Slf4j
 public class ProducerManager {
 
@@ -43,19 +47,23 @@ public class ProducerManager {
         log.info("producerManager started......");
     }
 
-    public EventMeshProducer getEventMeshProducer(String producerGroup) throws Exception {
+    public EventMeshProducer getEventMeshProducer(ProducerGroupConf producerGroupConf) throws Exception {
+        String groupName = producerGroupConf.getGroupName();
+
         EventMeshProducer eventMeshProducer;
-        if (!producerTable.containsKey(producerGroup)) {
+
+        if (!producerTable.containsKey(groupName)) {
             synchronized (producerTable) {
-                if (!producerTable.containsKey(producerGroup)) {
-                    ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup);
+                if (!producerTable.containsKey(groupName)) {
+                    ProducerGroupConf producerGroupConfig =
+                            new ProducerGroupConf(groupName, producerGroupConf.getSysId(), producerGroupConf.getToken());
                     eventMeshProducer = createEventMeshProducer(producerGroupConfig);
                     eventMeshProducer.start();
                 }
             }
         }
 
-        eventMeshProducer = producerTable.get(producerGroup);
+        eventMeshProducer = producerTable.get(groupName);
 
         if (!eventMeshProducer.isStarted()) {
             eventMeshProducer.start();
@@ -64,33 +72,19 @@ public class ProducerManager {
         return eventMeshProducer;
     }
 
-    public EventMeshProducer getEventMeshProducer(String producerGroup, String token) throws Exception {
-        EventMeshProducer eventMeshProducer;
-        if (!producerTable.containsKey(producerGroup)) {
-            synchronized (producerTable) {
-                if (!producerTable.containsKey(producerGroup)) {
-                    ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup, token);
-                    eventMeshProducer = createEventMeshProducer(producerGroupConfig);
-                    eventMeshProducer.start();
-                }
-            }
-        }
-
-        eventMeshProducer = producerTable.get(producerGroup);
-
-        if (!eventMeshProducer.getStarted().get()) {
-            eventMeshProducer.start();
-        }
-
-        return eventMeshProducer;
-    }
 
     private synchronized EventMeshProducer createEventMeshProducer(ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
         EventMeshProducer eventMeshProducer = new EventMeshProducer(producerGroupConfig, commonConfiguration);
-        eventMeshProducer.init();
+
+        if (Objects.nonNull(producerGroupConfig.getSysId())) {
+            eventMeshProducer.initTcp(producerGroupConfig.getSysId(), producerGroupConfig.getGroupName());
+        } else {
+            eventMeshProducer.init();
+        }
+
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }

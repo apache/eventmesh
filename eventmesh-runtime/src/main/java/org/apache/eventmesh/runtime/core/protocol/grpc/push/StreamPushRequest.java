@@ -102,7 +102,7 @@ public class StreamPushRequest extends AbstractPushRequest {
             eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
+                return Collections.singletonList(emitterList.get((startIdx + getRetryTimes()) % emitterList.size()));
             } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return emitterList;
             } else {
@@ -113,7 +113,7 @@ public class StreamPushRequest extends AbstractPushRequest {
 
         if (CollectionUtils.isNotEmpty(totalEmitters)) {
             if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(totalEmitters.get((startIdx + retryTimes) % totalEmitters.size()));
+                return Collections.singletonList(totalEmitters.get((startIdx + getRetryTimes()) % totalEmitters.size()));
             } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return totalEmitters;
             } else {

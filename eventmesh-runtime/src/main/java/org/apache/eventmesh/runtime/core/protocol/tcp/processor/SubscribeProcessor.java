@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
@@ -61,7 +62,7 @@ public class SubscribeProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         final long taskExecuteTime = System.currentTimeMillis();
 
         final Package msg = new Package();
@@ -95,6 +96,7 @@ public class SubscribeProcessor implements TcpRequestProcessor {
 
             synchronized (session) {
                 session.subscribe(subscriptionItems);
+                eventMeshTCPServer.getConsumerManager().notifyConsumerManager(group, new ConsumerGroupConf(subsystem, group));
                 if (log.isInfoEnabled()) {
                     log.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
                 }

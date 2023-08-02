@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumer;
+package org.apache.eventmesh.runtime.core.local;
 
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ClientContext;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,7 +51,7 @@ public class SubscriptionManager {
     }
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
-        final List<SubscriptionItem> subscriptionItems, final String url) {
+                               final List<SubscriptionItem> subscriptionItems, final String url) {
         for (final SubscriptionItem subscription : subscriptionItems) {
             final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 

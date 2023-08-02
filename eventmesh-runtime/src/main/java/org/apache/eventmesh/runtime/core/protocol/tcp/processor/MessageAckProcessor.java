@@ -49,7 +49,7 @@ public class MessageAckProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         String seq = pkg.getHeader().getSeq();
         Command cmd = pkg.getHeader().getCmd();

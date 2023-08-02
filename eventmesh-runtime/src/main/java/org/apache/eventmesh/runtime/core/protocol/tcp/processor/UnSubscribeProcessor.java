@@ -56,15 +56,17 @@ public class UnSubscribeProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Package msg = new Package();
         try {
             synchronized (session) {
                 ConcurrentHashMap<String, SubscriptionItem> subscribeTopics = session.getSessionContext().getSubscribeTopics();
+
                 if (MapUtils.isNotEmpty(subscribeTopics)) {
                     List<SubscriptionItem> topics = new ArrayList<>(subscribeTopics.values());
                     session.unsubscribe(topics);
+                    eventMeshTCPServer.getConsumerManager().notifyConsumerManager(session.getClient().getGroup(), null);
                     MESSAGE_LOGGER.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);
                 }
             }
@@ -72,9 +74,8 @@ public class UnSubscribeProcessor implements TcpRequestProcessor {
                 .getSeq()));
         } catch (Exception e) {
             MESSAGE_LOGGER.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
-            msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                +
-                "unSubscribing", pkg.getHeader().getSeq()));
+            msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(),
+                    "exception while unSubscribing", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }

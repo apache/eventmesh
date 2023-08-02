@@ -29,7 +29,7 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
+import org.apache.eventmesh.runtime.core.local.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.event.CreateTopicProcessor;
@@ -83,7 +83,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final Registry registry;
     private final Acl acl;
-    public final EventBus eventBus = new EventBus();
+    private final EventBus eventBus = new EventBus();
 
     private ConsumerManager consumerManager;
     private ProducerManager producerManager;

@@ -25,9 +25,10 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.PubSubManager;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.push.SessionPusher;
 import org.apache.eventmesh.runtime.core.protocol.tcp.producer.EventMeshTcpSendResult;
@@ -52,7 +53,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Session {
 
-    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE + "Logger");
+    protected static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private static final Logger SUBSCRIB_LOGGER = LoggerFactory.getLogger("subscribeLogger");
 
@@ -78,7 +78,7 @@ public class Session {
 
     @Setter
     @Getter
-    private WeakReference<PubSubManager> pubSubManager;
+    private WeakReference<SessionManager> sessionMap;
 
     @Setter
     @Getter
@@ -87,13 +87,11 @@ public class Session {
     @Setter
     @Getter
     private SessionPusher pusher;
-
     @Setter
     @Getter
     private SessionSender sender;
 
     private final long createTime = System.currentTimeMillis();
-
     @Setter
     @Getter
     private long lastHeartbeatTime = System.currentTimeMillis();
@@ -122,18 +120,30 @@ public class Session {
     @Getter
     private String sessionId = UUID.randomUUID().toString();
 
+    public Session(UserAgent client, ChannelHandlerContext context,
+                   EventMeshTCPServer eventMeshTCPServer) throws Exception {
+        this.client = client;
+        this.context = context;
+        this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
+        this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
+        this.sender =
+                new SessionSender(this, eventMeshTCPServer.getProducerManager().getEventMeshProducer(
+                        new ProducerGroupConf(client.getGroup(), client.getSubsystem())));
+        this.pusher = new SessionPusher(this);
+    }
+
     public void notifyHeartbeat(long heartbeatTime)  {
         this.lastHeartbeatTime = heartbeatTime;
     }
 
     public void subscribe(List<SubscriptionItem> items) throws Exception {
+
         for (SubscriptionItem item : items) {
             sessionContext.getSubscribeTopics().putIfAbsent(item.getTopic(), item);
-            Objects.requireNonNull(pubSubManager.get()).subscribe(item);
 
             // todo check topic whether exist in broker
 
-            Objects.requireNonNull(pubSubManager.get()).addSubscription(item, this);
+            Objects.requireNonNull(sessionMap.get()).getSubscriptionMap().addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
         }
     }
@@ -141,12 +151,10 @@ public class Session {
     public void unsubscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.getSubscribeTopics().remove(item.getTopic());
-            Objects.requireNonNull(pubSubManager.get()).removeSubscription(item, this);
+            Objects.requireNonNull(sessionMap.get()).getSubscriptionMap().removeSubscription(item, this);
 
-            if (!Objects.requireNonNull(pubSubManager.get()).hasSubscription(item.getTopic())) {
-                Objects.requireNonNull(pubSubManager.get()).unsubscribe(item);
-                SUBSCRIB_LOGGER.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
-            }
+            SUBSCRIB_LOGGER.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
+
         }
     }
 
@@ -179,11 +187,11 @@ public class Session {
             context.writeAndFlush(pkg).addListener(
                 new ChannelFutureListener() {
                     @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
+                    public void operationComplete(ChannelFuture future) {
                         if (!future.isSuccess()) {
                             MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                         } else {
-                            Objects.requireNonNull(pubSubManager.get())
+                            Objects.requireNonNull(sessionMap.get())
                                 .getEventMeshTcpMonitor()
                                 .getTcpSummaryMetrics()
                                 .getEventMesh2clientMsgNum()
@@ -201,7 +209,7 @@ public class Session {
     public String toString() {
         return "Session{"
             +
-            "sysId=" + Objects.requireNonNull(pubSubManager.get()).getSysId()
+            "sysId=" + Objects.requireNonNull(sessionMap.get()).getSysId()
             +
             ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
             +
@@ -257,14 +265,7 @@ public class Session {
         return result;
     }
 
-    public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.client = client;
-        this.context = context;
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
-        this.sender = new SessionSender(this);
-        this.pusher = new SessionPusher(this);
-    }
+
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
         if (!listenRspSend && listenRspLock.tryLock()) {

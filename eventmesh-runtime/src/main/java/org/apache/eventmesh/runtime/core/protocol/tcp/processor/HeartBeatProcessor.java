@@ -58,7 +58,7 @@ public class HeartBeatProcessor implements TcpRequestProcessor {
 
     @Override
     public void process(Package pkg, ChannelHandlerContext ctx, long startTime) {
-        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {

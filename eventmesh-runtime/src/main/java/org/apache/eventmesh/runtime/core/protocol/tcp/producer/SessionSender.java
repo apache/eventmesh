@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.Command;
@@ -28,6 +30,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.TraceUtils;
@@ -58,6 +61,7 @@ public class SessionSender {
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final transient Session session;
+    private EventMeshProducer eventMeshProducer;
 
     public final transient long createTime = System.currentTimeMillis();
 
@@ -84,8 +88,9 @@ public class SessionSender {
 
     private final Semaphore upstreamBuff;
 
-    public SessionSender(Session session) {
+    public SessionSender(Session session, EventMeshProducer eventMeshProducer) {
         this.session = session;
+        this.eventMeshProducer = eventMeshProducer;
         this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().getEventMeshTcpSessionUpstreamBufferSize());
     }
 
@@ -111,9 +116,7 @@ public class SessionSender {
                             event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        Objects.requireNonNull(session.getPubSubManager().get())
-                            .request(upStreamMsgContext, initSyncRRCallback(header,
-                                startTime, taskExecuteTime, event), ttl);
+                        eventMeshProducer.request(upStreamMsgContext, initSyncRRCallback(header, startTime, taskExecuteTime, event), ttl);
                         upstreamBuff.release();
                     } finally {
                         TraceUtils.finishSpan(span, event);
@@ -127,7 +130,22 @@ public class SessionSender {
                     }
 
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
-                    Objects.requireNonNull(session.getPubSubManager().get()).reply(upStreamMsgContext);
+                    eventMeshProducer.reply(upStreamMsgContext, new SendCallback() {
+                        @Override
+                        public void onSuccess(SendResult sendResult) {
+
+                        }
+
+                        @Override
+                        public void onException(OnExceptionContext context) {
+                            String bizSeqNo = (String) upStreamMsgContext.getEvent()
+                                    .getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS);
+                            log.error("reply err! topic:{}, bizSeqNo:{}, client:{}",
+                                    upStreamMsgContext.getEvent().getSubject(), bizSeqNo,
+                                    session.getClient(), context.getException());
+                        }
+                    });
+
                     upstreamBuff.release();
                 } else {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
@@ -136,14 +154,13 @@ public class SessionSender {
                             event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        Objects.requireNonNull(session.getPubSubManager().get())
-                            .send(upStreamMsgContext, sendCallback);
+                        eventMeshProducer.send(upStreamMsgContext, sendCallback);
                     } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 }
 
-                Objects.requireNonNull(session.getPubSubManager().get())
+                Objects.requireNonNull(session.getSessionMap().get())
                     .getEventMeshTcpMonitor()
                     .getTcpSummaryMetrics()
                     .getEventMesh2mqMsgNum()
@@ -178,7 +195,7 @@ public class SessionSender {
                     .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP,
                         session.getEventMeshTCPConfiguration().getEventMeshServerIp())
                     .build();
-                Objects.requireNonNull(session.getPubSubManager().get())
+                Objects.requireNonNull(session.getSessionMap().get())
                     .getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
 

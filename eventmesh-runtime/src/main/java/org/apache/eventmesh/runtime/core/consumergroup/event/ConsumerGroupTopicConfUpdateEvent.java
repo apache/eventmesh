@@ -15,32 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumer.consumergroup.event;
+package org.apache.eventmesh.runtime.core.consumergroup.event;
 
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 
 import lombok.Data;
 
 @Data
-public class ConsumerGroupStateEvent {
+public class ConsumerGroupTopicConfUpdateEvent {
 
+    /**
+     * target topic
+     */
+    private String topic;
     private String consumerGroup;
 
-    private ConsumerGroupStateAction action;
+    private ConsumerGroupTopicConf newTopicConf;
 
-    private ConsumerGroupConf consumerGroupConfig;
+    private ConsumerGroupTopicConfChangeAction action;
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("consumerGroupStateEvent={")
-            .append("consumerGroup=").append(consumerGroup)
-            .append(",action=").append(action).append("}");
+        sb.append("consumerGroupTopicConfChangeEvent={")
+            .append("consumerGroup=").append(consumerGroup).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("action=").append(action).append("}");
         return sb.toString();
     }
 
-
-    public enum ConsumerGroupStateAction {
+    public enum ConsumerGroupTopicConfChangeAction {
         NEW,
         CHANGE,
         DELETE

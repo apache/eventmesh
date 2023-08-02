@@ -38,6 +38,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
@@ -144,7 +145,8 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+        EventMeshProducer eventMeshProducer =
+                eventMeshHTTPServer.getProducerManager().getEventMeshProducer(new ProducerGroupConf(producerGroup));
 
         if (!eventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
@@ -208,7 +210,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
             sendMessageContext.setEvent(clone);
-            eventMeshProducer.reply(sendMessageContext.getEvent(), new SendCallback() {
+            eventMeshProducer.reply(sendMessageContext, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     HttpCommand succ = request.createHttpCommandResponse(

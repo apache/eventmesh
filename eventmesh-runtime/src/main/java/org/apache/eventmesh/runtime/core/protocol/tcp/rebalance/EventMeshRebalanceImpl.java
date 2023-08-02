@@ -55,7 +55,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         long startTime = System.currentTimeMillis();
         log.info("doRebalance start===========startTime:{}", startTime);
 
-        Set<String> groupSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().keySet();
+        Set<String> groupSet = eventMeshTCPServer.getSessionManager().getClientGroupMap().keySet();
         if (CollectionUtils.isEmpty(groupSet)) {
             log.warn("doRebalance failed,eventmesh has no group, please check eventmeshData");
             return;
@@ -154,9 +154,9 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         log.info("doRebalance redirect start---------------------group:{},judge:{}", group, judge);
         Set<Session> sessionSet = null;
         if (EventMeshConstants.PURPOSE_SUB.equals(purpose)) {
-            sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
+            sessionSet = eventMeshTCPServer.getSessionManager().getClientGroupMap().get(group).getConsumerMap().getGroupConsumerSessions();
         } else if (EventMeshConstants.PURPOSE_PUB.equals(purpose)) {
-            sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupProducerSessions();
+            sessionSet = eventMeshTCPServer.getSessionManager().getClientGroupMap().get(group).getProducerMap().getGroupProducerSessions();
         } else {
             log.warn("doRebalance failed,param is illegal, group:{}, purpose:{}", group, purpose);
             return;
@@ -168,7 +168,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
             String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
             String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
             String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(), newProxyIp,
-                Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
+                Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getSessionManager());
             log.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
             ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getSleepIntervalInRebalanceRedirectMills(), TimeUnit.MILLISECONDS);
         }
@@ -183,7 +183,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
             group, judge, eventMeshName);
     }
 
-    public int calculateRedirectNum(String eventMeshName, String group, String purpose, Map<String, Integer> clientDistributionMap) throws Exception {
+    public int calculateRedirectNum(String eventMeshName, String group, String purpose, Map<String, Integer> clientDistributionMap) {
         int sum = 0;
         for (Integer item : clientDistributionMap.values()) {
             sum += item;

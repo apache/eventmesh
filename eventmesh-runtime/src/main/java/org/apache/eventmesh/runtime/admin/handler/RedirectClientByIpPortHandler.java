@@ -24,7 +24,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,8 +107,8 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             log.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
                 port, destEventMeshIp, destEventMeshPort);
             // Retrieve the mapping between Sessions and their corresponding client address
-            SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            ClientManager clientManager = eventMeshTCPServer.getSessionManager();
+            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
@@ -121,7 +121,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                             redirectResult.append("|");
                             redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, sessionManager));
+                                    session, clientManager));
                         }
                     }
                 }

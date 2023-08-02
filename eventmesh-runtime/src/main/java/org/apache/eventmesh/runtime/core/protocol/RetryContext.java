@@ -26,13 +26,19 @@ import io.cloudevents.CloudEvent;
 
 public abstract class RetryContext implements DelayRetryable {
 
-    public CloudEvent event;
+    private CloudEvent event;
 
-    public String seq;
+    private String seq;
 
-    public int retryTimes;
+    private int retryTimes;
 
-    public long executeTime = System.currentTimeMillis();
+    private long executeTime = System.currentTimeMillis();
+
+    public RetryContext() {}
+
+    public RetryContext(CloudEvent event) {
+        this.event = event;
+    }
 
     public RetryContext delay(long delay) {
         this.executeTime = System.currentTimeMillis() + (retryTimes + 1) * delay;
@@ -49,5 +55,46 @@ public abstract class RetryContext implements DelayRetryable {
     @Override
     public long getDelay(TimeUnit unit) {
         return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    }
+
+    public void increaseRetryTimes() {
+        retryTimes++;
+    }
+
+    public RetryContext(CloudEvent event, String seq) {
+        this.event = event;
+        this.seq = seq;
+    }
+
+    public CloudEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(CloudEvent event) {
+        this.event = event;
+    }
+
+    public String getSeq() {
+        return seq;
+    }
+
+    public void setSeq(String seq) {
+        this.seq = seq;
+    }
+
+    public int getRetryTimes() {
+        return retryTimes;
+    }
+
+    public void setRetryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
+    }
+
+    public long getExecuteTime() {
+        return executeTime;
+    }
+
+    public void setExecuteTime(long executeTime) {
+        this.executeTime = executeTime;
     }
 }

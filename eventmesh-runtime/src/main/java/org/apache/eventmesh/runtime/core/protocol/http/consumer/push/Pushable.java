@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer.push;
 
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-
 /**
  * The tag implementation class can push messages to the client
  */
 public interface Pushable {
 
-    boolean push(HandleMsgContext handleMsgContext);
+    boolean push(PushRequestContext pushRequestContext);
 }

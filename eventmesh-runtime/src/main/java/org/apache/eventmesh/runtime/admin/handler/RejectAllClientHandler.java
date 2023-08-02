@@ -23,7 +23,7 @@ import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.consumer.SessionManager;
+import org.apache.eventmesh.runtime.core.protocol.tcp.session.ClientManager;
 import org.apache.eventmesh.runtime.core.protocol.tcp.session.Session;
 
 import java.io.IOException;
@@ -79,8 +79,8 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     public void handle(final HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
             // Retrieve the mapping between Sessions and their corresponding client address
-            final SessionManager sessionManager = eventMeshTCPServer.getClientSessionGroupMapping();
-            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = sessionManager.getSessionMap();
+            final ClientManager clientManager = eventMeshTCPServer.getSessionManager();
+            final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientManager.getSessionTable();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
                 if (log.isInfoEnabled()) {
@@ -90,7 +90,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                     // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer.getTcpThreadPoolGroup(), entry.getValue(), sessionManager);
+                            eventMeshTCPServer.getTcpThreadPoolGroup(), entry.getValue(), clientManager);
                         // Add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);

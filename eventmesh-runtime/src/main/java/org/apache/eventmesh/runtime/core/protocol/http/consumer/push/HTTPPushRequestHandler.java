@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.core.protocol.http.consumer.push;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.consumer.EventMeshConsumer;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
@@ -55,12 +54,45 @@ public class HTTPPushRequestHandler implements Pushable {
 
     private final transient ThreadPoolExecutor pushExecutor;
 
+    @Override
+    public boolean push(final PushRequestContext pushRequestContext) {
+        if (MapUtils.getObject(waitingRequests, pushRequestContext.getConsumerGroup(), Sets.newConcurrentHashSet()).size()
+            > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
+            log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
+                    + "consumerGroup:{}, threshold:{}",
+                pushRequestContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
+            return false;
+        }
+
+        try {
+            pushExecutor.submit(() -> {
+                String protocolVersion = Objects.requireNonNull(pushRequestContext.getEvent().getSpecVersion()).toString();
+
+                Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
+                        pushRequestContext.getEvent()),
+                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+
+                try {
+                    new AsyncHTTPPushRequest(pushRequestContext, waitingRequests).tryHTTPRequest();
+                } finally {
+                    TraceUtils.finishSpan(span, pushRequestContext.getEvent());
+                }
+
+            });
+            return true;
+        } catch (RejectedExecutionException e) {
+            log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
+                pushRequestContext.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(), e);
+            return false;
+        }
+    }
+
     private void checkTimeout() {
         waitingRequests.forEach((key, value) ->
-            value.forEach(r -> {
-                r.timeout();
-                waitingRequests.get(r.handleMsgContext.getConsumerGroup()).remove(r);
-            })
+                value.forEach(r -> {
+                    r.timeout();
+                    waitingRequests.get(r.pushRequestContext.getConsumerGroup()).remove(r);
+                })
         );
 
     }
@@ -69,40 +101,7 @@ public class HTTPPushRequestHandler implements Pushable {
     public HTTPPushRequestHandler(EventMeshConsumer eventMeshConsumer) {
         this.eventMeshConsumer = eventMeshConsumer;
         this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor();
-        waitingRequests.put(this.eventMeshConsumer.getConsumerGroupConf().getConsumerGroup(), Sets.newConcurrentHashSet());
+        waitingRequests.put(this.eventMeshConsumer.getConsumerGroupConf().getGroupName(), Sets.newConcurrentHashSet());
         SCHEDULER.scheduleAtFixedRate(this::checkTimeout, 0, 1000, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public boolean push(final HandleMsgContext handleMsgContext) {
-        if (MapUtils.getObject(waitingRequests, handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet()).size()
-            > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
-            log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
-                    + "consumerGroup:{}, threshold:{}",
-                handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
-            return false;
-        }
-
-        try {
-            pushExecutor.submit(() -> {
-                String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getSpecVersion()).toString();
-
-                Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                        handleMsgContext.getEvent()),
-                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
-
-                try {
-                    new AsyncHTTPPushRequest(handleMsgContext, waitingRequests).tryHTTPRequest();
-                } finally {
-                    TraceUtils.finishSpan(span, handleMsgContext.getEvent());
-                }
-
-            });
-            return true;
-        } catch (RejectedExecutionException e) {
-            log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
-                handleMsgContext.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(), e);
-            return false;
-        }
     }
 }

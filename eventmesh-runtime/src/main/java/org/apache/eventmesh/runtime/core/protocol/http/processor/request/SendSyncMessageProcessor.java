@@ -39,6 +39,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.producer.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
@@ -174,7 +175,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         final EventMeshProducer eventMeshProducer =
-            eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+            eventMeshHTTPServer.getProducerManager().getEventMeshProducer(new ProducerGroupConf(producerGroup));
 
         if (!eventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
@@ -224,7 +225,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         };
 
         try {
-            eventMeshProducer.request(sendMessageContext.getEvent(), new RequestReplyCallback() {
+            eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
                 @Override
                 public void onSuccess(final CloudEvent event) {
                     if (log.isInfoEnabled()) {

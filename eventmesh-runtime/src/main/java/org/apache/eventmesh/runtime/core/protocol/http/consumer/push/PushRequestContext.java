@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.http.consumer;
+package org.apache.eventmesh.runtime.core.protocol.http.consumer.push;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
@@ -23,8 +23,8 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.EventMeshConsumer;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -42,7 +42,7 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HandleMsgContext {
+public class PushRequestContext {
 
     public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
@@ -76,18 +76,12 @@ public class HandleMsgContext {
 
     private Map<String, String> props;
 
-    public HandleMsgContext(final String msgRandomNo,
-        final String consumerGroup,
-        final EventMeshConsumer eventMeshConsumer,
-        final String topic,
-        final CloudEvent event,
-        final SubscriptionItem subscriptionItem,
-        final AbstractContext context,
-        final ConsumerGroupConf consumerGroupConfig,
-        final EventMeshHTTPServer eventMeshHTTPServer,
-        final String bizSeqNo,
-        final String uniqueId,
-        final ConsumerGroupTopicConf consumeTopicConfig) {
+    public PushRequestContext(final String msgRandomNo, final String consumerGroup,
+                              final EventMeshConsumer eventMeshConsumer, final String topic,
+                              final CloudEvent event, final SubscriptionItem subscriptionItem,
+                              final AbstractContext context, final ConsumerGroupConf consumerGroupConfig,
+                              final EventMeshHTTPServer eventMeshHTTPServer, final String bizSeqNo,
+                              final String uniqueId, final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
@@ -110,6 +104,15 @@ public class HandleMsgContext {
             props = new HashMap<>();
         }
         props.put(key, val);
+    }
+
+    public void finish() {
+        if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
+            MESSAGE_LOGGER.info("messageAcked|group={}|topic={}|bizSeq={}|uniqId={}|msgRandomNo={}|queueId={}|queueOffset={}",
+                    consumerGroup, topic, bizSeqNo, uniqueId, msgRandomNo, event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_ID),
+                    event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
+        }
     }
 
     public String getProp(final String key) {
@@ -206,15 +209,6 @@ public class HandleMsgContext {
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {
         return eventMeshHTTPServer;
-    }
-
-    public void finish() {
-        if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
-            MESSAGE_LOGGER.info("messageAcked|group={}|topic={}|bizSeq={}|uniqId={}|msgRandomNo={}|queueId={}|queueOffset={}",
-                consumerGroup, topic, bizSeqNo, uniqueId, msgRandomNo, event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_ID),
-                event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
-            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
-        }
     }
 
     public String getUniqueId() {

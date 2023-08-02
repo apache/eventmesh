@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumer.consumergroup;
+package org.apache.eventmesh.runtime.core.consumergroup;
 
 import java.util.Map;
 

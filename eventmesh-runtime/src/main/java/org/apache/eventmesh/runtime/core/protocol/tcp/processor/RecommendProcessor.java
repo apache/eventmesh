@@ -73,7 +73,7 @@ public class RecommendProcessor implements TcpRequestProcessor {
                     .getHeader().getSeq()));
 
         } finally {
-            Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+            Session session = eventMeshTCPServer.getSessionManager().getSession(ctx);
             writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
             //session.write2Client(res);
         }

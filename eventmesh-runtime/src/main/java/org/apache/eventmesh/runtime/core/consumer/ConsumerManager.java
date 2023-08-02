@@ -19,40 +19,47 @@ package org.apache.eventmesh.runtime.core.consumer;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.event.ConsumerGroupStateEvent;
-import org.apache.eventmesh.runtime.core.consumer.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupManager;
+import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupTopicConfUpdateEvent;
+import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupUpdateEvent;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * As a unique consumption manager for each server
+ */
 @Slf4j
 public class ConsumerManager {
 
-    private final EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventBus eventBus;
     /**
      * consumerGroup to ConsumerGroupManager.
      */
     private final ConcurrentHashMap<String, ConsumerGroupManager> consumerTable = new ConcurrentHashMap<>(64);
 
-
     public ConsumerManager(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.eventBus = eventMeshHTTPServer.getEventBus();
+    }
+
+    public ConsumerManager(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.eventBus = eventMeshTCPServer.getEventBus();
     }
 
     public void init() throws Exception {
-        eventMeshHTTPServer.getEventBus().register(this);
+        eventBus.register(this);
         log.info("consumerManager inited......");
     }
 
@@ -60,41 +67,8 @@ public class ConsumerManager {
         log.info("consumerManager started......");
     }
 
-    /**
-     * notify ConsumerManager groupLevel
-     */
-    public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig) throws Exception {
-
-        ConsumerGroupManager cgm = getConsumer(consumerGroup);
-
-        if (latestConsumerGroupConfig == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE);
-            notification.setConsumerGroup(consumerGroup);
-            eventMeshHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (cgm == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW);
-            notification.setConsumerGroup(consumerGroup);
-            notification.setConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
-            eventMeshHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.setAction(ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE);
-            notification.setConsumerGroup(consumerGroup);
-            notification.setConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
-            eventMeshHTTPServer.getEventBus().post(notification);
-        }
-    }
-
     public void shutdown() {
-        eventMeshHTTPServer.getEventBus().unregister(this);
+        eventBus.unregister(this);
         for (ConsumerGroupManager consumerGroupManager : consumerTable.values()) {
             try {
                 consumerGroupManager.shutdown();
@@ -105,86 +79,64 @@ public class ConsumerManager {
         log.info("consumerManager shutdown......");
     }
 
-    public boolean contains(String consumerGroup) {
-        return consumerTable.containsKey(consumerGroup);
-    }
-
     /**
-     * add consumer
+     * notify ConsumerManager groupLevel
      *
-     * @param consumerGroup
-     * @param consumerGroupConfig
-     * @throws Exception
+     * @see org.apache.eventmesh.runtime.core.consumer.ConsumerManager#handleConsumerGroupUpdateEvent(ConsumerGroupUpdateEvent)
      */
-    public synchronized void addConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
-        ConsumerGroupManager cgm = new ConsumerGroupManager(eventMeshHTTPServer, consumerGroupConfig);
-        cgm.init();
-        cgm.start();
-        consumerTable.put(consumerGroup, cgm);
-    }
+    public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig) throws Exception {
 
-    /**
-     * restart consumer
-     */
-    public synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
-        if (consumerTable.containsKey(consumerGroup)) {
-            ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
-            cgm.refresh(consumerGroupConfig);
+        ConsumerGroupManager cgm = getConsumer(consumerGroup);
+
+        if (latestConsumerGroupConfig == null) {
+            ConsumerGroupUpdateEvent notification = new ConsumerGroupUpdateEvent();
+            notification.setAction(ConsumerGroupUpdateEvent.ConsumerGroupUpdateAction.DELETE);
+            notification.setConsumerGroup(consumerGroup);
+            eventBus.post(notification);
+            return;
         }
-    }
 
-    /**
-     * get consumer
-     */
-    public ConsumerGroupManager getConsumer(String consumerGroup) {
-        return consumerTable.get(consumerGroup);
-    }
-
-    /**
-     * delete consumer
-     *
-     * @param consumerGroup
-     */
-    public synchronized void delConsumer(String consumerGroup) throws Exception {
-        log.info("start delConsumer with consumerGroup {}", consumerGroup);
-        if (consumerTable.containsKey(consumerGroup)) {
-            ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
-            log.info("start unsubscribe topic with consumer group manager {}", JsonUtils.toJSONString(cgm));
-            cgm.unsubscribe(consumerGroup);
-            cgm.shutdown();
+        if (cgm == null) {
+            ConsumerGroupUpdateEvent notification = new ConsumerGroupUpdateEvent();
+            notification.setAction(ConsumerGroupUpdateEvent.ConsumerGroupUpdateAction.NEW);
+            notification.setConsumerGroup(consumerGroup);
+            notification.setNewConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
+            eventBus.post(notification);
+            return;
         }
-        log.info("end delConsumer with consumerGroup {}", consumerGroup);
+
+        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
+            ConsumerGroupUpdateEvent notification = new ConsumerGroupUpdateEvent();
+            notification.setAction(ConsumerGroupUpdateEvent.ConsumerGroupUpdateAction.CHANGE);
+            notification.setConsumerGroup(consumerGroup);
+            notification.setNewConsumerGroupConfig(EventMeshUtil.cloneObject(latestConsumerGroupConfig));
+            eventBus.post(notification);
+        }
     }
 
     @Subscribe
-    public void handleConsumerGroupTopicConfChangeEvent(ConsumerGroupTopicConfChangeEvent event) {
+    public void handleConsumerGroupTopicConfUpdateEvent(ConsumerGroupTopicConfUpdateEvent event) {
         try {
             log.info("onChange event:{}", event);
+
+            ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
+            if (Objects.isNull(manager)) {
+                return;
+            }
+
             switch (event.getAction()) {
-                case NEW: {
-                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
-                    if (Objects.isNull(manager)) {
-                        return;
-                    }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().put(event.getTopic(), event.getNewTopicConf());
+                case NEW:
+                    manager.getConsumerGroupConfig()
+                            .getConsumerGroupTopicConfMapping().put(event.getTopic(), event.getNewTopicConf());
                     break;
-                }
-                case CHANGE: {
-                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
-                    if (Objects.isNull(manager)) {
-                        return;
-                    }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().replace(event.getTopic(), event.getNewTopicConf());
+                case CHANGE:
+                    manager.getConsumerGroupConfig()
+                            .getConsumerGroupTopicConfMapping().replace(event.getTopic(), event.getNewTopicConf());
                     break;
-                }
-                case DELETE: {
-                    ConsumerGroupManager manager = getConsumer(event.getConsumerGroup());
-                    if (Objects.isNull(manager)) {
-                        return;
-                    }
-                    manager.getConsumerGroupConfig().getConsumerGroupTopicConfMapping().remove(event.getTopic());
+                case DELETE:
+                    manager.getConsumerGroupConfig()
+                            .getConsumerGroupTopicConfMapping().remove(event.getTopic());
                     break;
-                }
                 default:
                     //do nothing
             }
@@ -194,16 +146,16 @@ public class ConsumerManager {
     }
 
     @Subscribe
-    public void handleConsumerGroupStateEvent(ConsumerGroupStateEvent event) {
+    public void handleConsumerGroupUpdateEvent(ConsumerGroupUpdateEvent event) {
         try {
             log.info("onChange event:{}", event);
 
             switch (event.getAction()) {
                 case NEW:
-                    addConsumer(event.getConsumerGroup(), event.getConsumerGroupConfig());
+                    addConsumer(event.getConsumerGroup(), event.getNewConsumerGroupConfig());
                     break;
                 case CHANGE:
-                    restartConsumer(event.getConsumerGroup(), event.getConsumerGroupConfig());
+                    restartConsumer(event.getConsumerGroup(), event.getNewConsumerGroupConfig());
                     break;
                 case DELETE:
                     delConsumer(event.getConsumerGroup());
@@ -216,81 +168,58 @@ public class ConsumerManager {
         }
     }
 
-    private static class ConsumerGroupManager {
+    /**
+     * add consumer
+     */
+    private synchronized void addConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
+        ConsumerGroupManager cgm;
 
-        private final AtomicBoolean started = new AtomicBoolean(false);
-
-        private final AtomicBoolean inited = new AtomicBoolean(false);
-
-        private final EventMeshHTTPServer eventMeshHTTPServer;
-
-        private final EventMeshConsumer eventMeshConsumer;
-
-        private ConsumerGroupConf consumerGroupConfig;
-
-        public ConsumerGroupManager(final EventMeshHTTPServer eventMeshHTTPServer, final ConsumerGroupConf consumerGroupConfig) {
-            this.eventMeshHTTPServer = eventMeshHTTPServer;
-            this.consumerGroupConfig = consumerGroupConfig;
-            this.eventMeshConsumer = new EventMeshConsumer(eventMeshHTTPServer, consumerGroupConfig);
+        // todo: Avoid relying on different servers?
+        if (Objects.nonNull(eventMeshHTTPServer)) {
+            cgm = new ConsumerGroupManager(new EventMeshConsumer(eventMeshHTTPServer, consumerGroupConfig));
+        } else {
+            cgm = new ConsumerGroupManager(new EventMeshConsumer(eventMeshTCPServer, consumerGroupConfig));
         }
 
-        public void init() throws Exception {
-            if (!inited.compareAndSet(false, true)) {
-                return;
-            }
-            eventMeshConsumer.init();
+        cgm.init();
+        cgm.start();
+        consumerTable.put(consumerGroup, cgm);
+    }
+
+    /**
+     * restart consumer
+     */
+    private synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
+        if (consumerTable.containsKey(consumerGroup)) {
+            ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
+            cgm.refresh(consumerGroupConfig);
         }
+    }
 
-        public void start() throws Exception {
-            if (!started.compareAndSet(false, true)) {
-                return;
-            }
-            setupEventMeshConsumer(consumerGroupConfig);
-            eventMeshConsumer.start();
+    /**
+     * delete consumer
+     */
+    private synchronized void delConsumer(String consumerGroup) throws Exception {
+        log.info("start delConsumer with consumerGroup {}", consumerGroup);
+        if (consumerTable.containsKey(consumerGroup)) {
+            ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
+            log.info("start unsubscribe topic with consumer group manager {}", JsonUtils.toJSONString(cgm));
+            cgm.unsubscribe(consumerGroup);
+            cgm.shutdown();
         }
+        log.info("end delConsumer with consumerGroup {}", consumerGroup);
+    }
 
-        private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
-            for (Map.Entry<String, ConsumerGroupTopicConf> conf : consumerGroupConfig.getConsumerGroupTopicConfMapping().entrySet()) {
-                eventMeshConsumer.subscribe(conf.getKey(), conf.getValue().getSubscriptionItem());
-            }
-        }
 
-        public void shutdown() throws Exception {
-            if (!started.compareAndSet(true, false)) {
-                return;
-            }
-            eventMeshConsumer.shutdown();
-        }
+    public boolean contains(String consumerGroup) {
+        return consumerTable.containsKey(consumerGroup);
+    }
 
-        public synchronized void refresh(final ConsumerGroupConf consumerGroupConfig) throws Exception {
-
-            if (consumerGroupConfig == null || this.consumerGroupConfig.equals(consumerGroupConfig)) {
-                return;
-            }
-
-            if (started.get()) {
-                shutdown();
-            }
-
-            this.consumerGroupConfig = consumerGroupConfig;
-            this.eventMeshConsumer.setConsumerGroupConf(consumerGroupConfig);
-            init();
-            start();
-        }
-
-        public ConsumerGroupConf getConsumerGroupConfig() {
-            return consumerGroupConfig;
-        }
-
-        public void unsubscribe(String consumerGroup) throws Exception {
-            if (StringUtils.equals(consumerGroupConfig.getConsumerGroup(), consumerGroup)) {
-                Set<String> topics = consumerGroupConfig.getConsumerGroupTopicConfMapping().keySet();
-                for (String topic : topics) {
-                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConfig.getConsumerGroupTopicConfMapping().get(topic);
-                    eventMeshConsumer.unsubscribe(topic, consumerGroupTopicConf.getSubscriptionItem().getMode());
-                }
-            }
-        }
+    /**
+     * get consumer
+     */
+    private ConsumerGroupManager getConsumer(String consumerGroup) {
+        return consumerTable.get(consumerGroup);
     }
 
 }

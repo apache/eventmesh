@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumer.consumergroup;
+package org.apache.eventmesh.runtime.core.consumergroup;
 
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
