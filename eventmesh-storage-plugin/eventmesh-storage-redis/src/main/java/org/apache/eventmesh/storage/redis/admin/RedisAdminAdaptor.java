@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
-
 public class RedisAdminAdaptor implements Admin {
 
     private final RedisAdmin admin;

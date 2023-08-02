@@ -53,8 +53,11 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-http'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-webhook'
+
+include 'eventmesh-admin:eventmesh-admin-api'
 include 'eventmesh-admin:eventmesh-admin-redis'
 include 'eventmesh-admin:eventmesh-admin-rocketmq'
+
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage'
 include 'eventmesh-metrics-plugin'
