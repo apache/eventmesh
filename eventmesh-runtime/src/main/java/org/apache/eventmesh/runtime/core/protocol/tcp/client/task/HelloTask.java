@@ -17,8 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
-
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -32,20 +34,12 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
+import java.util.Arrays;
 
-
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
 @Slf4j
 public class HelloTask extends AbstractTask {
