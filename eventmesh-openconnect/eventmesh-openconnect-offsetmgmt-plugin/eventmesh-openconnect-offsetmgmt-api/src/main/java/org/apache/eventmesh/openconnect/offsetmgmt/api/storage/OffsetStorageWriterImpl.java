@@ -37,7 +37,7 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
 
     private final String connectorName;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private OffsetManagementService positionManagementService;
+    private OffsetManagementService offsetManagementService;
     /**
      * Offset data in Connect format
      */
@@ -47,9 +47,9 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
     // Unique ID for each flush request to handle callbacks after timeouts
     private long currentFlushId = 0;
 
-    public OffsetStorageWriterImpl(String connectorName, OffsetManagementService positionManagementService) {
+    public OffsetStorageWriterImpl(String connectorName, OffsetManagementService offsetManagementService) {
         this.connectorName = connectorName;
-        this.positionManagementService = positionManagementService;
+        this.offsetManagementService = offsetManagementService;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
     /**
      * do flush offset
      */
-    public Future doFlush() {
+    public Future<Void> doFlush() {
         final long flushId = currentFlushId;
         return sendOffsetFuture(flushId);
     }
@@ -155,10 +155,10 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
                 if (flushId != currentFlushId) {
                     return null;
                 }
-                positionManagementService.putPosition(toFlush);
-                log.debug("Submitting {} entries to backing store. The offsets are: {}", data.size(), toFlush);
-                positionManagementService.persist();
-                positionManagementService.synchronize(true);
+                offsetManagementService.putPosition(toFlush);
+                log.debug("Submitting {} entries to backing store. The offsets are: {}", toFlush.size(), toFlush);
+                offsetManagementService.persist();
+                offsetManagementService.synchronize(true);
                 // persist finished
                 toFlush = null;
                 currentFlushId++;

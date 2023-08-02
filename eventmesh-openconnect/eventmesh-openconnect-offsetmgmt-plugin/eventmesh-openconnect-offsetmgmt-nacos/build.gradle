@@ -16,16 +16,11 @@
  */
 
 dependencies {
-    api project(":eventmesh-spi")
+    implementation "com.alibaba.nacos:nacos-client"
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api")
     implementation project(":eventmesh-common")
-
+    testImplementation "org.mockito:mockito-core"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-inline"
 }

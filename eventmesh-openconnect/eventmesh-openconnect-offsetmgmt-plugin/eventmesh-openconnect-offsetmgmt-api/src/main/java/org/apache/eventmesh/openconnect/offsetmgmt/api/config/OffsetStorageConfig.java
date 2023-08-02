@@ -17,10 +17,16 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.config;
 
+import java.util.Map;
+
 import lombok.Data;
 
 @Data
 public class OffsetStorageConfig {
 
     private String offsetStorageType;
+
+    private String offsetStorageAddr;
+
+    private Map<String, String> extensions;
 }

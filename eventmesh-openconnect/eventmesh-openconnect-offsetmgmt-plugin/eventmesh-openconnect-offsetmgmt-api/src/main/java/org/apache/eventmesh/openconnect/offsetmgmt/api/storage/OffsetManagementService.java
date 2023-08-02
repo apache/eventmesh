@@ -63,7 +63,7 @@ public interface OffsetManagementService {
     /**
      * Synchronize to other nodes.
      */
-    void synchronize(boolean increment);
+    void synchronize();
 
     /**
      * Get the current position table.
