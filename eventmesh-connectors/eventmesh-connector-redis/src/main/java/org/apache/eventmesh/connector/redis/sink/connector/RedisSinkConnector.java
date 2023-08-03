@@ -17,19 +17,24 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
+import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 
-import lombok.extern.slf4j.Slf4j;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RedisSinkConnector implements Sink {
@@ -50,6 +55,7 @@ public class RedisSinkConnector implements Sink {
         this.sinkConfig = (RedisSinkConfig) config;
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
+        redisConfig.setCodec(CloudEventCodec.getInstance());
         this.redissonClient = Redisson.create(redisConfig);
     }
 
@@ -76,11 +82,40 @@ public class RedisSinkConnector implements Sink {
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
+            CloudEvent event = convertRecordToEvent(connectRecord);
             try {
-                long publish = topic.publish(connectRecord);
+                long publish = topic.publish(event);
             } catch (Exception e) {
                 log.error("[RedisSinkConnector] sendResult has error : ", e);
             }
         }
+    }
+
+    public CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
+        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
+                .withData((byte[]) connectRecord.getData());
+        connectRecord.getExtensions().keySet().forEach(s -> {
+            switch (s) {
+                case "id":
+                    cloudEventBuilder.withId(connectRecord.getExtension(s));
+                    break;
+                case "topic":
+                    cloudEventBuilder.withSubject(connectRecord.getExtension(s));
+                    break;
+                case "source":
+                    try {
+                        cloudEventBuilder.withSource(new URI(connectRecord.getExtension(s)));
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "type":
+                    cloudEventBuilder.withType(connectRecord.getExtension(s));
+                    break;
+                default:
+                    cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
+            }
+        });
+        return cloudEventBuilder.build();
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.redis.cloudevent;
+package org.apache.eventmesh.connector.redis.cloudevent;
 
 import org.redisson.client.codec.BaseCodec;
 import org.redisson.client.protocol.Decoder;
@@ -26,6 +26,9 @@ import io.cloudevents.jackson.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
+/**
+ * TODO: Duplicate with org.apache.eventmesh.storage.redis.cloudevent.CloudEventCodec
+ */
 public class CloudEventCodec extends BaseCodec {
 
     private static final CloudEventCodec INSTANCE = new CloudEventCodec();
