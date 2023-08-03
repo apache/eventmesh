@@ -82,7 +82,7 @@ public class ConsumerManager {
     /**
      * notify ConsumerManager groupLevel
      *
-     * @see org.apache.eventmesh.runtime.core.consumer.ConsumerManager#handleConsumerGroupUpdateEvent(ConsumerGroupUpdateEvent)
+     * @see #handleConsumerGroupUpdateEvent
      */
     public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig) throws Exception {
 
