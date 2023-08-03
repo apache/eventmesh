@@ -20,6 +20,8 @@ dependencies {
 
     implementation 'org.redisson:redisson:3.17.3'
 
+    api 'io.cloudevents:cloudevents-json-jackson'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
