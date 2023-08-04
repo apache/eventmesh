@@ -70,7 +70,7 @@ public interface OffsetManagementService {
      *
      * @return
      */
-    Map<ConnectorRecordPartition, RecordOffset> getPositionTable();
+    Map<ConnectorRecordPartition, RecordOffset> getPositionMap();
 
     RecordOffset getPosition(ConnectorRecordPartition partition);
 

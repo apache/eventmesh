@@ -158,7 +158,7 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
                 offsetManagementService.putPosition(toFlush);
                 log.debug("Submitting {} entries to backing store. The offsets are: {}", toFlush.size(), toFlush);
                 offsetManagementService.persist();
-                offsetManagementService.synchronize(true);
+                offsetManagementService.synchronize();
                 // persist finished
                 toFlush = null;
                 currentFlushId++;
