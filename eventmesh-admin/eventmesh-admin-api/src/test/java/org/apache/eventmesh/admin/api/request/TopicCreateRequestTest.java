@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.admin.api.request;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TopicCreateRequestTest {
 

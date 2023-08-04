@@ -17,16 +17,18 @@
 
 package org.apache.eventmesh.admin.api.util;
 
-import com.sun.net.httpserver.HttpExchange;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.apache.eventmesh.common.enums.HttpMethod;
-import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
+
+import com.sun.net.httpserver.HttpExchange;
 
 public class RequestMappingTest {
 
