@@ -78,7 +78,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                                                org.apache.eventmesh.common.protocol.http.header.Header header,
                                                Body body) throws ProtocolHandleException {
 
-        switch (RequestCode.valueOf(requestCode)) {
+        switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:
                 return SendMessageBatchProtocolResolver.buildEvent(header, body);
             case MSG_BATCH_SEND_V2:
