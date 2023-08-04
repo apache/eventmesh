@@ -17,7 +17,7 @@
 
 pubSubConfig:
     meshAddress: 127.0.0.1:10000
-    subject: TEST-TOPIC-TCP-ASYNC
+    subject: TEST-TOPIC-FUNCTION
     idc: FT
     env: PRD
     group: openFunctionSink
