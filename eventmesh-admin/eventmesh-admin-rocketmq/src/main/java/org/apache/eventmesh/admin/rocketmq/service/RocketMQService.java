@@ -19,7 +19,8 @@ package org.apache.eventmesh.admin.rocketmq.service;
 
 import static org.apache.eventmesh.admin.rocketmq.Constants.PLUGIN_NAME;
 
-import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
+import org.apache.eventmesh.admin.api.response.TopicResponse;
+import org.apache.eventmesh.admin.api.service.AdminService;
 import org.apache.eventmesh.api.admin.Admin;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.common.Constants;
@@ -29,7 +30,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RocketMQService {
+public class RocketMQService implements AdminService {
 
     private final Admin redisAdmin;
 
@@ -37,6 +38,7 @@ public class RocketMQService {
         this.redisAdmin = StoragePluginFactory.getMeshMQAdmin(PLUGIN_NAME);
     }
 
+    @Override
     public TopicResponse createTopic(String topic) {
         TopicResponse topicResponse = null;
         try {

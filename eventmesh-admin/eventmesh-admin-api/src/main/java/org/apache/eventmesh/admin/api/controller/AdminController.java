@@ -19,6 +19,7 @@ package org.apache.eventmesh.admin.api.controller;
 
 import static org.apache.eventmesh.admin.api.Constants.TOPIC_MANAGE_PATH;
 
+import org.apache.eventmesh.admin.api.factory.AdminPluginFactory;
 import org.apache.eventmesh.admin.api.handler.TopicHandler;
 
 import java.io.IOException;
@@ -44,7 +45,8 @@ public class AdminController {
     public void run(HttpServer server) throws IOException {
 
         // Creates a mapping from API URI path to the exchange handler on this HttpServer.
-        server.createContext(TOPIC_MANAGE_PATH, new TopicHandler());
+        server.createContext(TOPIC_MANAGE_PATH,
+                new TopicHandler(AdminPluginFactory.getMeshMQAdmin("redis")));
 
         log.info("EventMesh-Admin Controller server context created successfully");
     }

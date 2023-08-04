@@ -45,6 +45,10 @@ public class TopicHandler implements HttpHandler {
 
     public AdminService service;
 
+    public TopicHandler(AdminService service) {
+        this.service = service;
+    }
+
     /**
      * Handles the HTTP request for creating topics.
      *

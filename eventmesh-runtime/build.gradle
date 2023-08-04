@@ -48,8 +48,9 @@ dependencies {
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
 
+    implementation project(":eventmesh-admin:eventmesh-admin-api")
+    implementation project(":eventmesh-admin:eventmesh-admin-redis")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
-//    implementation project(":eventmesh-admin:eventmesh-admin-redis")
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
 

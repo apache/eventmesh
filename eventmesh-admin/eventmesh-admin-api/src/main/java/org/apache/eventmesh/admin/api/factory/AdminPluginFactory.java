@@ -15,35 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.redis.request;
+package org.apache.eventmesh.admin.api.factory;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.eventmesh.admin.api.service.AdminService;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class TopicCreateRequest {
+public class AdminPluginFactory {
 
-    private String topic;
-
-    /**
-     * Constructs a new instance of {@link TopicCreateRequest}.
-     *
-     * @param topic the topic for the request
-     */
-    @JsonCreator
-    public TopicCreateRequest(@JsonProperty("topic") String topic) {
-        this.topic = topic;
+    public static AdminService getMeshMQAdmin(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(AdminService.class, connectorPluginName);
     }
-
-    public String getTopic() {
-        return this.topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
 }

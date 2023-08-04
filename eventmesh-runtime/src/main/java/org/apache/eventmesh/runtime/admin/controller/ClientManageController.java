@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.admin.api.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
 import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.EventHandler;

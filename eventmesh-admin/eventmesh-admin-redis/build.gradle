@@ -17,12 +17,7 @@
 
 dependencies {
     implementation project(":eventmesh-common")
-
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-
+    implementation project(":eventmesh-admin:eventmesh-admin-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     compileOnly 'org.projectlombok:lombok'
