@@ -106,7 +106,7 @@ public class ClientManageController {
     public void start() throws IOException {
         // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
-        String pluginName = eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshStoragePluginType();
+        String pluginName = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType();
         // Create an HTTP server and bind it to the specified port.
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
