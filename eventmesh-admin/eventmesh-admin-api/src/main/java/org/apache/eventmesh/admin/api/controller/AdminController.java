@@ -31,7 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminController {
 
-    public AdminController() {
+    private final TopicHandler topicHandler;
+
+    public AdminController(String adminPluginName) {
+        this.topicHandler = new TopicHandler(AdminPluginFactory.getMeshMQAdmin(adminPluginName));
     }
 
     /**
@@ -45,8 +48,7 @@ public class AdminController {
     public void run(HttpServer server) throws IOException {
 
         // Creates a mapping from API URI path to the exchange handler on this HttpServer.
-        server.createContext(TOPIC_MANAGE_PATH,
-                new TopicHandler(AdminPluginFactory.getMeshMQAdmin("redis")));
+        server.createContext(TOPIC_MANAGE_PATH, topicHandler);
 
         log.info("EventMesh-Admin Controller server context created successfully");
     }

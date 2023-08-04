@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.admin.api.controller.AdminController;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;

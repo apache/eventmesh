@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.admin.api.util;
 
-import com.sun.net.httpserver.HttpExchange;
-import lombok.experimental.UtilityClass;
 import org.apache.eventmesh.common.enums.HttpMethod;
+
+import com.sun.net.httpserver.HttpExchange;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * This class provides utility methods for handling HTTP request mappings.
  */
-
 @UtilityClass
 public class RequestMapping {
 

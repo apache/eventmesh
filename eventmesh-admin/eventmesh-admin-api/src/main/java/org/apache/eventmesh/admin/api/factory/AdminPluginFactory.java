@@ -22,7 +22,7 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 public class AdminPluginFactory {
 
-    public static AdminService getMeshMQAdmin(String connectorPluginName) {
-        return EventMeshExtensionFactory.getExtension(AdminService.class, connectorPluginName);
+    public static AdminService getMeshMQAdmin(String adminPluginName) {
+        return EventMeshExtensionFactory.getExtension(AdminService.class, adminPluginName);
     }
 }
