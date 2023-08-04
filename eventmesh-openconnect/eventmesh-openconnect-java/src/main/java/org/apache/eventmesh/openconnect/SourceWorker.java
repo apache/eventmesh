@@ -154,6 +154,7 @@ public class SourceWorker implements ConnectorWorker {
         while (isRunning) {
             ConnectRecord connectRecord = null;
             try {
+                // todo: need to read the offset first
                 connectRecord = queue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

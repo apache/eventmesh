@@ -26,32 +26,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
 public class OffsetStorageReaderImpl implements OffsetStorageReader {
 
-    private final String namespace;
+    private final String connectorName;
 
     private OffsetManagementService offsetManagementService;
 
-    public OffsetStorageReaderImpl(String namespace, OffsetManagementService offsetManagementService) {
-        this.namespace = namespace;
+    public OffsetStorageReaderImpl(String connectorName, OffsetManagementService offsetManagementService) {
+        this.connectorName = connectorName;
         this.offsetManagementService = offsetManagementService;
     }
 
     @Override
     public RecordOffset readOffset(RecordPartition partition) {
-        ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(namespace, partition.getPartition());
-        return offsetManagementService.getPositionTable().get(connectorRecordPartition);
+        ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartition());
+        return offsetManagementService.getPositionMap().get(connectorRecordPartition);
     }
 
     @Override
     public Map<RecordPartition, RecordOffset> readOffsets(Collection<RecordPartition> partitions) {
         Map<RecordPartition, RecordOffset> result = new HashMap<>();
-        Map<ConnectorRecordPartition, RecordOffset> allData = offsetManagementService.getPositionTable();
+        Map<ConnectorRecordPartition, RecordOffset> allData = offsetManagementService.getPositionMap();
         for (RecordPartition key : partitions) {
-            ConnectorRecordPartition extendRecordPartition = new ConnectorRecordPartition(namespace, key.getPartition());
-            if (allData.containsKey(extendRecordPartition)) {
-                result.put(key, allData.get(extendRecordPartition));
+            ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, key.getPartition());
+            if (allData.containsKey(connectorRecordPartition)) {
+                result.put(key, allData.get(connectorRecordPartition));
             }
         }
         return result;

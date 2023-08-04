@@ -51,6 +51,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.client.naming.NacosNamingService;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -84,7 +85,14 @@ public class NacosConfigService implements OffsetManagementService {
 
             @Override
             public void receiveConfigInfo(String configInfo) {
-
+                log.info("receive configInfo: {}", configInfo);
+                Map<ConnectorRecordPartition, RecordOffset> partitionRecordOffsetMap = JacksonUtils.toObj(configInfo,
+                    new TypeReference<Map<ConnectorRecordPartition, RecordOffset>>() {
+                    });
+                // 整理configInfo 并更新内存中的offset
+                partitionRecordOffsetMap.forEach(
+                    (connectorRecordPartition, recordOffset) -> mergeOffset(connectorRecordPartition, recordOffset)
+                );
             }
         };
 
@@ -92,6 +100,23 @@ public class NacosConfigService implements OffsetManagementService {
             configService.addListener(dataId, group, listener);
         } catch (NacosException e) {
             log.error("nacos start error", e);
+        }
+    }
+
+    // merge the updated connectorRecord & recordOffset to memory store
+    public void mergeOffset(ConnectorRecordPartition connectorRecordPartition, RecordOffset recordOffset) {
+        if (null == connectorRecordPartition || connectorRecordPartition.getPartition().isEmpty()) {
+            return;
+        }
+        if (positionStore.getKVMap().containsKey(connectorRecordPartition)) {
+            RecordOffset existedOffset = positionStore.getKVMap().get(connectorRecordPartition);
+            // update
+            if (!recordOffset.equals(existedOffset)) {
+                positionStore.put(connectorRecordPartition, recordOffset);
+            }
+        } else {
+            // add new position
+            positionStore.put(connectorRecordPartition, recordOffset);
         }
     }
 
@@ -127,13 +152,13 @@ public class NacosConfigService implements OffsetManagementService {
     }
 
     @Override
-    public Map<ConnectorRecordPartition, RecordOffset> getPositionTable() {
-        return null;
+    public Map<ConnectorRecordPartition, RecordOffset> getPositionMap() {
+        return positionStore.getKVMap();
     }
 
     @Override
     public RecordOffset getPosition(ConnectorRecordPartition partition) {
-        return null;
+        return positionStore.get(partition);
     }
 
     @Override
@@ -148,7 +173,12 @@ public class NacosConfigService implements OffsetManagementService {
 
     @Override
     public void removePosition(List<ConnectorRecordPartition> partitions) {
-
+        if (null == partitions) {
+            return;
+        }
+        for (ConnectorRecordPartition partition : partitions) {
+            positionStore.remove(partition);
+        }
     }
 
     @Override
