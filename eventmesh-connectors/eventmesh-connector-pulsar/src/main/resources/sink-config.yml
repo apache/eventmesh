@@ -20,12 +20,11 @@ pubSubConfig:
     subject: TopicTest
     idc: FT
     env: PRD
-    group: redisSink
+    group: pulsarSink
     appId: 5031
-    userName: redisSinkUser
-    passWord: redisPassWord
-connectorConfig:
-    connectorName: redisSink
-    server: redis://127.0.0.1:6379
-    topic: SinkTopic
-
+    userName: pulsarSinkUser
+    passWord: pulsarPassWord
+sinkConnectorConfig:
+    connectorName: pulsarSink
+    serviceUrl: 127.0.0.1:6650
+    topic: TopicTest

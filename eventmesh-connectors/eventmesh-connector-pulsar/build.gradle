@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
+List pulsar = [
+        "org.apache.pulsar:pulsar-client:$pulsar_version"
+]
 dependencies {
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
-
-    implementation 'org.redisson:redisson:3.17.3'
-
-    api 'io.cloudevents:cloudevents-json-jackson'
-
+    implementation pulsar
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

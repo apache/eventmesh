@@ -15,17 +15,5 @@
 # limitations under the License.
 #
 
-pubSubConfig:
-    meshAddress: 127.0.0.1:10000
-    subject: TopicTest
-    idc: FT
-    env: PRD
-    group: redisSink
-    appId: 5031
-    userName: redisSinkUser
-    passWord: redisPassWord
-connectorConfig:
-    connectorName: redisSink
-    server: redis://127.0.0.1:6379
-    topic: SinkTopic
-
+sourceEnable: true
+sinkEnable: true

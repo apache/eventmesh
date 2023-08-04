@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.connector.pulsar.sink.config;
 
-    implementation 'org.redisson:redisson:3.17.3'
 
-    api 'io.cloudevents:cloudevents-json-jackson'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+
+import lombok.Data;
+
+@Data
+public class PulsarSinkConfig extends SinkConfig {
+
+    public SinkConnectorConfig connectorConfig;
+
 }
