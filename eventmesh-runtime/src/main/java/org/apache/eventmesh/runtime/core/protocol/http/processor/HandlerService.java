@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -153,7 +154,8 @@ public class HandlerService {
 
     private void sendResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
         ReferenceCountUtil.release(httpRequest);
-        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+        ChannelFuture future = ctx.writeAndFlush(response);
+        future.addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
                     RemotingHelper.parseChannelRemoteAddr(f.channel()));
@@ -162,6 +164,7 @@ public class HandlerService {
                 }
             }
         });
+        future.addListener(ChannelFutureListener.CLOSE);
     }
 
     private HttpEventWrapper parseHttpRequest(HttpRequest httpRequest) throws IOException {
