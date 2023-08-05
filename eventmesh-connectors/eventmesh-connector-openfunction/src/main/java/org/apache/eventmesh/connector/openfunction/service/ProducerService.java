@@ -44,11 +44,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBase {
 
-    public OpenFunctionSourceConnector openFunctionSourceConnector;
+    private final OpenFunctionSourceConnector openFunctionSourceConnector;
 
-    public BlockingQueue<ConnectRecord> queue;
+    private final BlockingQueue<ConnectRecord> queue;
 
-    public OpenFunctionServerConfig config;
+    private final OpenFunctionServerConfig config;
 
     public ProducerService(OpenFunctionSourceConnector openFunctionSourceConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSourceConnector = openFunctionSourceConnector;
@@ -85,7 +85,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
                     .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
 
         responseObserver.onNext(builder.build());
