@@ -42,11 +42,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
 
-    public OpenFunctionSinkConnector openFunctionSinkConnector;
+    private final OpenFunctionSinkConnector openFunctionSinkConnector;
 
-    public BlockingQueue<ConnectRecord> queue;
+    private final BlockingQueue<ConnectRecord> queue;
 
-    public OpenFunctionServerConfig config;
+    private final OpenFunctionServerConfig config;
 
     private final transient ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", 10115).usePlaintext().build();
 
