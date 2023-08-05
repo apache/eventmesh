@@ -32,17 +32,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RocketMQService implements AdminService {
 
-    private final Admin redisAdmin;
+    private final Admin rocketmqAdmin;
 
     public RocketMQService() {
-        this.redisAdmin = StoragePluginFactory.getMeshMQAdmin(PLUGIN_NAME);
+        this.rocketmqAdmin = StoragePluginFactory.getMeshMQAdmin(PLUGIN_NAME);
     }
 
     @Override
     public TopicResponse createTopic(String topic) {
         TopicResponse topicResponse = null;
         try {
-            redisAdmin.createTopic(topic);
+            rocketmqAdmin.createTopic(topic);
             topicResponse = new TopicResponse(topic,
                     DateFormatUtils.format(System.currentTimeMillis(), Constants.DATE_FORMAT_INCLUDE_MILLISECONDS));
         } catch (Exception e) {
