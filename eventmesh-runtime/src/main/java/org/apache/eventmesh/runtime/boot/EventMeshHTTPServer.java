@@ -142,10 +142,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
                 && eventMeshHttpConfiguration.isEventMeshServerTraceEnable()) {
-
             super.setUseTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable());
-            super.getHandlerService().setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable()));
         }
+        super.getHandlerService().setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable()));
 
         registerHTTPRequestProcessor();
 
