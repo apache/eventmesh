@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 
 import org.slf4j.Logger;
@@ -32,16 +34,19 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MessageAckTask extends AbstractTask {
-
+public class MessageAckProcessor implements TcpProcessor {
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private EventMeshTCPServer eventMeshTCPServer;
+    private final Acl acl;
 
-    public MessageAckTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+    public MessageAckProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
+        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         String seq = pkg.getHeader().getSeq();
         Command cmd = pkg.getHeader().getCmd();

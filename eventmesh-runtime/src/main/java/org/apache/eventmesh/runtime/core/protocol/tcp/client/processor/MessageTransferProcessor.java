@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+import static org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender.TRY_PERMIT_TIME_OUT;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -33,6 +34,7 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
@@ -63,21 +65,30 @@ import io.opentelemetry.context.Context;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MessageTransferTask extends AbstractTask {
-
+public class MessageTransferProcessor implements TcpProcessor {
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
-
-    private static final int TRY_PERMIT_TIME_OUT = 5;
-
+    private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;
 
-    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+    private Package pkg;
+    private ChannelHandlerContext ctx;
+    private Session session;
+    private long startTime;
+
+    public MessageTransferProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
         this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
+        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+
+        this.pkg = pkg;
+        this.ctx = ctx;
+        this.session = session;
+        this.startTime = startTime;
+
         long taskExecuteTime = System.currentTimeMillis();
         Command cmd = pkg.getHeader().getCmd();
 

@@ -113,7 +113,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         // Reject client connection for each matching session found
                         if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer,
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                 entry.getValue(), clientSessionGroupMapping);
                             // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {

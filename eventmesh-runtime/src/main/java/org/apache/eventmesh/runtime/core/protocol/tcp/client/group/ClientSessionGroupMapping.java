@@ -357,7 +357,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initSessionCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
                 for (Session tmp : sessionTable.values()) {
                     if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
@@ -376,7 +376,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
 
                 //scan non-broadcast msg
@@ -412,7 +412,7 @@ public class ClientSessionGroupMapping {
         for (ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()) {
             for (Session subSession : clientGroupWrapper.getGroupConsumerSessions()) {
                 try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), subSession, this);
                 } catch (Exception e) {
                     log.error("say goodbye to subSession error! {}", subSession, e);
                 }
@@ -420,7 +420,7 @@ public class ClientSessionGroupMapping {
 
             for (Session pubSession : clientGroupWrapper.getGroupProducerSessions()) {
                 try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), pubSession, this);
                 } catch (Exception e) {
                     log.error("say goodbye to pubSession error! {}", pubSession, e);
                 }
@@ -434,7 +434,7 @@ public class ClientSessionGroupMapping {
 
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
-                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer, itr, this);
+                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer.getTcpThreadPoolGroup(), itr, this);
             } catch (Exception e) {
                 log.error("say goodbye to session error! {}", itr, e);
             }

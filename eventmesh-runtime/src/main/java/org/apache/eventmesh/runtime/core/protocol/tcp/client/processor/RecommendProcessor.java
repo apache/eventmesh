@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.RECOMMEND_RESPONSE;
 import static org.apache.eventmesh.runtime.util.Utils.writeAndFlush;
@@ -24,10 +24,12 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,16 +38,20 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class RecommendTask extends AbstractTask {
-
+public class RecommendProcessor implements TcpProcessor {
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public RecommendTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+    private EventMeshTCPServer eventMeshTCPServer;
+    private final Acl acl;
+
+    public RecommendProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
+        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {

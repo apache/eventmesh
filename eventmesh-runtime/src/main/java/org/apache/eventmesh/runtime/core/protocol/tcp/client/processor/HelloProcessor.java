@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
@@ -46,19 +46,20 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HelloTask extends AbstractTask {
+public class HelloProcessor implements TcpProcessor {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
+    private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;
 
-    public HelloTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+    public HelloProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
         this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         Session session = null;

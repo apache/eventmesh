@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.CLIENT_GOODBYE_RESPONSE;
 
@@ -23,8 +23,10 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.Utils;
 
 import java.util.Arrays;
@@ -35,14 +37,19 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class GoodbyeTask extends AbstractTask {
+public class GoodbyeProcessor implements TcpProcessor {
 
-    public GoodbyeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+    private EventMeshTCPServer eventMeshTCPServer;
+    private final Acl acl;
+
+    public GoodbyeProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
+        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Package msg = new Package();
         try {
@@ -58,9 +65,10 @@ public class GoodbyeTask extends AbstractTask {
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()),
                 pkg.getHeader().getSeq()));
         } finally {
-            this.eventMeshTCPServer.getScheduler().submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
+            this.eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler()
+                    .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
         }
         EventMeshTcp2Client
-            .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
+            .closeSessionIfTimeout(this.eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }
