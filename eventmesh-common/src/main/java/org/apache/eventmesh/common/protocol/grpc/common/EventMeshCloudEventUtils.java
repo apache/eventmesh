@@ -42,20 +42,20 @@ public abstract class EventMeshCloudEventUtils {
 
     }
 
-    public static String getEnv(CloudEvent cloudEvent) {
-        return getEnv(cloudEvent, null);
-    }
-
-    public static String getEnv(CloudEvent cloudEvent, String defaultValue) {
-        return getValue(cloudEvent, defaultValue, ProtocolKey.ENV);
-    }
-
     private static String getValue(CloudEvent cloudEvent, String defaultValue, String protocolKey) {
         try {
             return cloudEvent.getAttributesOrThrow(protocolKey).getCeString();
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    public static String getEnv(CloudEvent cloudEvent) {
+        return getEnv(cloudEvent, null);
+    }
+
+    public static String getEnv(CloudEvent cloudEvent, String defaultValue) {
+        return getValue(cloudEvent, defaultValue, ProtocolKey.ENV);
     }
 
     public static String getIdc(CloudEvent cloudEvent) {
