@@ -37,4 +37,8 @@ Add a new connector by implementing the source/sink interface using :
 | MongoDB                               | Source | N/A             |
 | S3File                                | Sink   | N/A             |
 | S3File                                | Source | N/A             |
+| Knative                               | Sink   | N/A             |
+| Knative                               | Source | N/A             |
+| Pravega                               | Sink   | N/A             |
+| Pravega                               | Source | N/A             |
 | More connectors will be added...      | Source/Sink   | N/A             |       

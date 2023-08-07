@@ -24,6 +24,8 @@ import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+
 /**
  *
  */
@@ -40,16 +42,16 @@ public final class CallbackServiceGrpc {
 
     // Static method descriptors that strictly reflect the proto.
     @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
-    public static final io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent,
-        org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent> METHOD_ON_TOPIC_EVENT =
-        io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent, org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent>newBuilder()
+    public static final io.grpc.MethodDescriptor<CloudEvent,
+        CloudEvent> METHOD_ON_TOPIC_EVENT =
+        io.grpc.MethodDescriptor.<CloudEvent, CloudEvent>newBuilder()
             .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
             .setFullMethodName(generateFullMethodName(
                 "org.apache.eventmesh.cloudevents.v1.CallbackService", "OnTopicEvent"))
             .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.getDefaultInstance()))
+                CloudEvent.getDefaultInstance()))
             .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.getDefaultInstance()))
+                CloudEvent.getDefaultInstance()))
             .build();
 
     /**
@@ -85,8 +87,8 @@ public final class CallbackServiceGrpc {
          * Subscribes events
          * </pre>
          */
-        public void onTopicEvent(org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent request,
-            io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent> responseObserver) {
+        public void onTopicEvent(CloudEvent request,
+            io.grpc.stub.StreamObserver<CloudEvent> responseObserver) {
             asyncUnimplementedUnaryCall(METHOD_ON_TOPIC_EVENT, responseObserver);
         }
 
@@ -97,8 +99,8 @@ public final class CallbackServiceGrpc {
                     METHOD_ON_TOPIC_EVENT,
                     asyncUnaryCall(
                         new MethodHandlers<
-                            org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent,
-                            org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent>(
+                            CloudEvent,
+                            CloudEvent>(
                             this, METHODID_ON_TOPIC_EVENT)))
                 .build();
         }
@@ -129,8 +131,8 @@ public final class CallbackServiceGrpc {
          * Subscribes events
          * </pre>
          */
-        public void onTopicEvent(org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent request,
-            io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent> responseObserver) {
+        public void onTopicEvent(CloudEvent request,
+            io.grpc.stub.StreamObserver<CloudEvent> responseObserver) {
             asyncUnaryCall(
                 getChannel().newCall(METHOD_ON_TOPIC_EVENT, getCallOptions()), request, responseObserver);
         }
@@ -161,8 +163,8 @@ public final class CallbackServiceGrpc {
          * Subscribes events
          * </pre>
          */
-        public org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent onTopicEvent(
-            org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent request) {
+        public CloudEvent onTopicEvent(
+            CloudEvent request) {
             return blockingUnaryCall(
                 getChannel(), METHOD_ON_TOPIC_EVENT, getCallOptions(), request);
         }
@@ -193,8 +195,8 @@ public final class CallbackServiceGrpc {
          * Subscribes events
          * </pre>
          */
-        public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent> onTopicEvent(
-            org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent request) {
+        public com.google.common.util.concurrent.ListenableFuture<CloudEvent> onTopicEvent(
+            CloudEvent request) {
             return futureUnaryCall(
                 getChannel().newCall(METHOD_ON_TOPIC_EVENT, getCallOptions()), request);
         }
@@ -221,8 +223,8 @@ public final class CallbackServiceGrpc {
         public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
             switch (methodId) {
                 case METHODID_ON_TOPIC_EVENT:
-                    serviceImpl.onTopicEvent((org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent) request,
-                        (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent>) responseObserver);
+                    serviceImpl.onTopicEvent((CloudEvent) request,
+                        (io.grpc.stub.StreamObserver<CloudEvent>) responseObserver);
                     break;
                 default:
                     throw new AssertionError();
