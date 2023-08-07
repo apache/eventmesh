@@ -17,6 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +64,10 @@ public class WebhookProtocolTransportObjectTest {
 
     @Test
     public void testSetBody() {
-        webhookProtocolTransportObject.setBody(new byte[]{(byte) 0});
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("user","tom");
+        bodyMap.put("password","123456");
+        webhookProtocolTransportObject.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET));
     }
 
     @Test
