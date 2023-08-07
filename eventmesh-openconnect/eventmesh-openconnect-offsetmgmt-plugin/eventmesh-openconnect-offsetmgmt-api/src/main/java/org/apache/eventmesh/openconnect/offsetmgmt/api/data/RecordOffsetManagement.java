@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
@@ -26,9 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -119,7 +116,8 @@ public class RecordOffsetManagement {
         }
         // Clear out all empty deques from the map to keep it from growing indefinitely
         records.values().removeIf(Deque::isEmpty);
-        return new CommittableOffsets(offsets, totalCommittableMessages, totalUncommittableMessages, records.size(), largestDequeSize, largestDequePartition);
+        return new CommittableOffsets(offsets, totalCommittableMessages, totalUncommittableMessages,
+            records.size(), largestDequeSize, largestDequePartition);
     }
 
 
@@ -253,7 +251,8 @@ public class RecordOffsetManagement {
             if (result) {
                 messageAcked();
             } else {
-                log.warn("Attempted to remove record from submitted queue for partition {}, but the record has not been submitted or has already been removed", position.getPartition());
+                log.warn("Attempted to remove record from submitted queue for partition {}, "
+                    + "but the record has not been submitted or has already been removed", position.getPartition());
             }
             return result;
         }
