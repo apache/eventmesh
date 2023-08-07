@@ -32,7 +32,7 @@ public class WebhookProtocolTransportObjectTest {
 
     @Test
     public void testSetCloudEventId() {
-        webhookProtocolTransportObject.setCloudEventId("1");
+        webhookProtocolTransportObject.setCloudEventId("d0b29520-2bba-11ee-877b-2b18ac132e64");
     }
 
     @Test
