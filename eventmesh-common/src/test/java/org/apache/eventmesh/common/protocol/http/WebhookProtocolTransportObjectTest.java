@@ -65,8 +65,8 @@ public class WebhookProtocolTransportObjectTest {
     @Test
     public void testSetBody() {
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("user","tom");
-        bodyMap.put("password","123456");
+        bodyMap.put("user", "tom");
+        bodyMap.put("password", "123456");
         webhookProtocolTransportObject.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET));
     }
 
