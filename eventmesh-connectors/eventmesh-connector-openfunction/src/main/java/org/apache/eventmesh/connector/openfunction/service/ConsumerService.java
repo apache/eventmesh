@@ -25,7 +25,8 @@ import org.apache.eventmesh.connector.openfunction.client.CallbackServiceGrpc;
 import org.apache.eventmesh.connector.openfunction.client.CallbackServiceGrpc.CallbackServiceBlockingStub;
 import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConfig;
 import org.apache.eventmesh.connector.openfunction.sink.connector.OpenFunctionSinkConnector;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,19 +47,16 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
     private final BlockingQueue<ConnectRecord> queue;
 
-    private final OpenFunctionServerConfig config;
-
-    private final transient ManagedChannel channel = ManagedChannelBuilder.forAddress(config.getTargetAddress(), config.getTargetPort()).usePlaintext().build();
-
-    private CallbackServiceBlockingStub publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
-
-    private final ExecutorService handleService = Executors.newSingleThreadExecutor();
+    private final CallbackServiceBlockingStub publisherClient;
 
 
     public ConsumerService(OpenFunctionSinkConnector openFunctionSinkConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSinkConnector = openFunctionSinkConnector;
         this.queue = openFunctionSinkConnector.queue();
-        this.config = serverConfig;
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(serverConfig.getTargetAddress(),
+            serverConfig.getTargetPort()).usePlaintext().build();
+        this.publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
+        ExecutorService handleService = Executors.newSingleThreadExecutor();
         handleService.execute(this::startHandleConsumeEvents);
     }
 

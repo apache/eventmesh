@@ -23,9 +23,7 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
-import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
