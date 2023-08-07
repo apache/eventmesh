@@ -37,17 +37,17 @@ public class WebhookProtocolTransportObjectTest {
 
     @Test
     public void testSetEventType() {
-        webhookProtocolTransportObject.setEventType("eventType");
+        webhookProtocolTransportObject.setEventType("github.all");
     }
 
     @Test
     public void testSetCloudEventName() {
-        webhookProtocolTransportObject.setCloudEventName("cloudEventName");
+        webhookProtocolTransportObject.setCloudEventName("github-eventmesh");
     }
 
     @Test
     public void testSetCloudEventSource() {
-        webhookProtocolTransportObject.setCloudEventSource("cloudEventSource");
+        webhookProtocolTransportObject.setCloudEventSource("www.github.com");
     }
 
     @Test
