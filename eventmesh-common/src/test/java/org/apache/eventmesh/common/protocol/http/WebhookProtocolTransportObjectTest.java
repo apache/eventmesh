@@ -18,16 +18,21 @@
 package org.apache.eventmesh.common.protocol.http;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class WebhookProtocolTransportObjectTest {
 
-    WebhookProtocolTransportObject webhookProtocolTransportObject = new WebhookProtocolTransportObject("cloudEventId", "eventType",
-        "cloudEventName", "cloudEventSource", "dataContentType", new byte[] {(byte) 0});
+    private WebhookProtocolTransportObject webhookProtocolTransportObject;
+
+    @Before
+    public void setUp() {
+        webhookProtocolTransportObject = WebhookProtocolTransportObject.builder().build();
+    }
 
     @Test
     public void testSetCloudEventId() {
-        webhookProtocolTransportObject.setCloudEventId("cloudEventId");
+        webhookProtocolTransportObject.setCloudEventId("1");
     }
 
     @Test
@@ -47,7 +52,7 @@ public class WebhookProtocolTransportObjectTest {
 
     @Test
     public void testSetDataContentType() {
-        webhookProtocolTransportObject.setDataContentType("dataContentType");
+        webhookProtocolTransportObject.setDataContentType("application/json");
     }
 
     @Test
