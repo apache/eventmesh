@@ -275,7 +275,7 @@ public abstract class EventMeshCloudEventUtils {
     public static String getDataContent(final CloudEvent cloudEvent, String defaultValue) {
         String dataContentType = getDataContentType(cloudEvent);
         if (ProtoSupport.isTextContent(dataContentType)) {
-            return Optional.of(cloudEvent.getTextData()).orElse(defaultValue);
+            return Optional.of(cloudEvent.getTextData()).get();
         }
         if (ProtoSupport.isProtoContent(dataContentType)) {
             Any protoData = cloudEvent.getProtoData();
@@ -292,7 +292,7 @@ public abstract class EventMeshCloudEventUtils {
         if (Objects.isNull(cloudEvent)) {
             return new HashMap<>(0);
         }
-        Map<String, CloudEventAttributeValue> attributesMap = Optional.of(cloudEvent.getAttributesMap()).orElse(new HashMap<>(0));
+        Map<String, CloudEventAttributeValue> attributesMap = Optional.of(cloudEvent.getAttributesMap()).get();
         Map<String, String> convertedAttributes = new HashMap<>(attributesMap.size());
         attributesMap.forEach((key, value) -> {
             if (Objects.isNull(value)) {
