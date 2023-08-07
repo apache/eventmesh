@@ -51,7 +51,7 @@ public class WebhookFileListener {
     private final transient Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
     private final transient Map<WatchKey, String> watchKeyPathMap = new ConcurrentHashMap<>(); // WatchKey's path
     private transient String filePath;
-    private final transient Map<String, WebHookConfig> cacheWebHookConfig;
+    private transient Map<String, WebHookConfig> cacheWebHookConfig;
 
     public WebhookFileListener(final String filePath, final Map<String, WebHookConfig> cacheWebHookConfig) {
         this.filePath = WebHookOperationConstant.getFilePath(filePath);
@@ -143,7 +143,6 @@ public class WebhookFileListener {
                 WatchKey key = null;
                 try {
                     assert service != null;
-                    // The code will block here until a file system event occurs
                     key = service.take();
                 } catch (InterruptedException e) {
                     log.error("Interrupted", e);
