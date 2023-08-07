@@ -187,7 +187,7 @@ public abstract class TcpClient implements Closeable {
     protected Package io(Package msg, long timeout) throws Exception {
         Object key = RequestContext.key(msg);
         RequestContext context = RequestContext.context(key, msg);
-        if (!contexts.contains(context)) {
+        if (!contexts.containsValue(context)) {
             contexts.put(key, context);
         } else {
             if (log.isInfoEnabled()) {

@@ -42,6 +42,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.protobuf.Any;
@@ -86,13 +87,13 @@ public class ServiceUtils {
         }
         final String dataContentType = EventMeshCloudEventUtils.getDataContentType(cloudEvent);
         if (ProtoSupport.isTextContent(dataContentType)) {
-            return flag & (StringUtils.isNotEmpty(cloudEvent.getTextData()));
+            return flag && (StringUtils.isNotEmpty(cloudEvent.getTextData()));
         }
         if (ProtoSupport.isProtoContent(dataContentType)) {
-            return flag & (cloudEvent.getProtoData() != Any.getDefaultInstance());
+            return flag && (cloudEvent.getProtoData() != Any.getDefaultInstance());
         }
 
-        return flag & (cloudEvent.getBinaryData() != ByteString.EMPTY);
+        return flag && (cloudEvent.getBinaryData() != ByteString.EMPTY);
     }
 
     public static boolean validateCloudEventBatchData(CloudEventBatch cloudEventBatch) {
@@ -144,6 +145,7 @@ public class ServiceUtils {
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
             new TypeReference<List<HeartbeatItem>>() {
             });
+        Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             if (StringUtils.isEmpty(item.getTopic())) {
                 return false;

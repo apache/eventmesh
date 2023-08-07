@@ -22,13 +22,12 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -194,19 +193,19 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public void buildSysHeaderForClient() {
         // sys attributes
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.ENV, "env"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IDC, "idc"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress()));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PID, ThreadUtils.getPID()));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.SYS, "1234"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PASSWD, "pass"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP,
-            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, "em-http-producer"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP,
-            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
         sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
         sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
+        EnumSet<ProtocolKey.ClientInstanceKey> clientInstanceKeys = EnumSet.allOf(ProtocolKey.ClientInstanceKey.class);
+        for (ProtocolKey.ClientInstanceKey clientInstanceKey : clientInstanceKeys) {
+            switch (clientInstanceKey) {
+                case BIZSEQNO:
+                case UNIQUEID:
+                    break;
+                default:
+                    sysHeaderMap.put(clientInstanceKey.getKey(),
+                        headerMap.getOrDefault(clientInstanceKey.getKey(), clientInstanceKey.getValue()));
+            }
+        }
     }
 
     public void buildSysHeaderForCE() {

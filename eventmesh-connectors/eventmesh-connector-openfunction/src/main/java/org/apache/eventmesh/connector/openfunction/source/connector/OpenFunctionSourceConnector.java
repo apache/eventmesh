@@ -88,8 +88,10 @@ public class OpenFunctionSourceConnector implements Source {
                 }
                 connectRecords.add(connectRecord);
             } catch (InterruptedException e) {
-                // nothing to do
-                break;
+                Thread currentThread = Thread.currentThread();
+                log.warn("[OpenFunctionSourceConnector] Interrupting thread {} due to exception {}",
+                    currentThread.getName(), e.getMessage());
+                currentThread.interrupt();
             }
         }
         return connectRecords;
