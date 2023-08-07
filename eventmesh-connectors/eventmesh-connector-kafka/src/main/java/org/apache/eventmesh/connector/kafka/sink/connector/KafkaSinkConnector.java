@@ -19,8 +19,8 @@ package org.apache.eventmesh.connector.kafka.sink.connector;
 
 import org.apache.eventmesh.connector.kafka.sink.config.KafkaSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;

@@ -21,8 +21,8 @@ package org.apache.eventmesh.connector.pulsar.sink.connector;
 
 import org.apache.eventmesh.connector.pulsar.sink.config.PulsarSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.pulsar.client.api.MessageId;
 import org.apache.pulsar.client.api.Producer;
