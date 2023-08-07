@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.nacos;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
@@ -26,35 +24,18 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.MemoryBasedKeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.checkerframework.checker.units.qual.C;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.client.naming.NacosNamingService;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -77,25 +58,6 @@ public class NacosConfigService implements OffsetManagementService {
 
     @Override
     public void start() {
-        listener = new Listener() {
-            @Override
-            public Executor getExecutor() {
-                return null;
-            }
-
-            @Override
-            public void receiveConfigInfo(String configInfo) {
-                log.info("receive configInfo: {}", configInfo);
-                Map<ConnectorRecordPartition, RecordOffset> partitionRecordOffsetMap = JacksonUtils.toObj(configInfo,
-                    new TypeReference<Map<ConnectorRecordPartition, RecordOffset>>() {
-                    });
-                // 整理configInfo 并更新内存中的offset
-                partitionRecordOffsetMap.forEach(
-                    (connectorRecordPartition, recordOffset) -> mergeOffset(connectorRecordPartition, recordOffset)
-                );
-            }
-        };
-
         try {
             configService.addListener(dataId, group, listener);
         } catch (NacosException e) {
@@ -189,20 +151,27 @@ public class NacosConfigService implements OffsetManagementService {
         this.positionStore = new MemoryBasedKeyValueStore<>();
         try {
             configService = NacosFactory.createConfigService(serverAddr);
-            listener = new Listener() {
-                @Override
-                public Executor getExecutor() {
-                    return null;
-                }
-
-                @Override
-                public void receiveConfigInfo(String configInfo) {
-                    System.out.println("receive changed config: " + configInfo);
-                }
-            };
         } catch (NacosException e) {
             log.error("nacos init error", e);
         }
+        this.listener = new Listener() {
+            @Override
+            public Executor getExecutor() {
+                return null;
+            }
+
+            @Override
+            public void receiveConfigInfo(String configInfo) {
+                log.info("receive configInfo: {}", configInfo);
+                Map<ConnectorRecordPartition, RecordOffset> partitionRecordOffsetMap = JacksonUtils.toObj(configInfo,
+                    new TypeReference<Map<ConnectorRecordPartition, RecordOffset>>() {
+                    });
+                // update the offset in memory store
+                partitionRecordOffsetMap.forEach(
+                    (connectorRecordPartition, recordOffset) -> mergeOffset(connectorRecordPartition, recordOffset)
+                );
+            }
+        };
 
     }
 
