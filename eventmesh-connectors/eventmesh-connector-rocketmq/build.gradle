@@ -33,7 +33,7 @@ List rocketmq = [
 ]
 
 dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation rocketmq
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
