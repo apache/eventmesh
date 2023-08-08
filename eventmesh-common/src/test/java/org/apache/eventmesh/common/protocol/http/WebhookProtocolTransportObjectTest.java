@@ -85,7 +85,7 @@ public class WebhookProtocolTransportObjectTest {
         Assert.assertNotNull(body);
         String bodyJson = new String(body);
         Map map = JsonUtils.parseObject(bodyJson, Map.class);
-        Assert.assertEquals(bodyMap,map);
+        Assert.assertEquals(bodyMap, map);
 
     }
 
