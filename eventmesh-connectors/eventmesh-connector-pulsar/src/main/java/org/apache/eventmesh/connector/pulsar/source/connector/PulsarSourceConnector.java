@@ -20,9 +20,9 @@ package org.apache.eventmesh.connector.pulsar.source.connector;
 
 import org.apache.eventmesh.connector.pulsar.source.config.PulsarSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;

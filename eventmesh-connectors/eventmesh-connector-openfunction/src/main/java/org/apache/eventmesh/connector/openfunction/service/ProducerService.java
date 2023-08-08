@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConfig;
 import org.apache.eventmesh.connector.openfunction.source.connector.OpenFunctionSourceConnector;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

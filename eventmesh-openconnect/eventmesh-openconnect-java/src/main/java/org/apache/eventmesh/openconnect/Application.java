@@ -36,6 +36,7 @@ public class Application {
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
     public void run(Class<? extends Connector> clazz) throws Exception {
+
         Connector connector;
         try {
             connector = clazz.getDeclaredConstructor().newInstance();
@@ -46,12 +47,11 @@ public class Application {
         Config config;
         try {
             config = ConfigUtil.parse(connector.configClass());
-            // offset storage, memory default
-            //KVStoreFactory.setStoreConfig(config.getStoreConfig());
         } catch (Exception e) {
             log.error("parse config error", e);
             return;
         }
+
         try {
             connector.init(config);
             CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
