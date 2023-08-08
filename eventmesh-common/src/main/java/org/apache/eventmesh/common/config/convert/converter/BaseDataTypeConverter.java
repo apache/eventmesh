@@ -20,8 +20,6 @@ package org.apache.eventmesh.common.config.convert.converter;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
 
-import java.util.Objects;
-
 /**
  * Config field conversion class for base data types
  */
