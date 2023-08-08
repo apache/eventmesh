@@ -35,8 +35,6 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,16 +87,16 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         org.apache.eventmesh.common.protocol.http.header.Header header,
         Body body) throws ProtocolHandleException {
 
-        if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestProtocolResolver.buildEvent(header, body);
-        } else if (String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestProtocolResolver.buildEvent(header, body);
-        } else {
-            throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
+        switch (RequestCode.valueOf(requestCode)) {
+            case MSG_BATCH_SEND:
+                return SendMessageBatchProtocolResolver.buildEvent(header, body);
+            case MSG_BATCH_SEND_V2:
+                return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
+            case MSG_SEND_SYNC:
+            case MSG_SEND_ASYNC:
+                return SendMessageRequestProtocolResolver.buildEvent(header, body);
+            default:
+                throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
         }
 
     }
@@ -117,36 +115,37 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         Preconditions.checkNotNull(cloudEvent, "cloudEvent cannot be null");
         String protocolDesc = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_DESC)).toString();
-        if (StringUtils.equals("http", protocolDesc)) {
-            HttpCommand httpCommand = new HttpCommand();
-            Body body = new Body() {
-                final Map<String, Object> map = new HashMap<>();
+        switch (protocolDesc) {
+            case "http":
+                HttpCommand httpCommand = new HttpCommand();
+                Body body = new Body() {
+                    final Map<String, Object> map = new HashMap<>();
 
-                @Override
-                public Map<String, Object> toMap() {
-                    byte[] eventByte =
-                        Objects.requireNonNull(EventFormatProvider.getInstance()
-                            .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
-                    map.put("content", new String(eventByte, Constants.DEFAULT_CHARSET));
-                    return map;
-                }
-            };
-            body.toMap();
-            httpCommand.setBody(body);
-            return httpCommand;
-        } else if (StringUtils.equals("tcp", protocolDesc)) {
-            Package pkg = new Package();
-            String dataContentType = cloudEvent.getDataContentType();
-            Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
-            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
-            Preconditions.checkNotNull(eventFormat,
-                String.format("DateContentType:%s is not supported", dataContentType));
-            pkg.setBody(eventFormat.serialize(cloudEvent));
-            return pkg;
-        } else if (StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT, protocolDesc)) {
-            return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
-        } else {
-            throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
+                    @Override
+                    public Map<String, Object> toMap() {
+                        byte[] eventByte =
+                            Objects.requireNonNull(EventFormatProvider.getInstance()
+                                .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
+                        map.put("content", new String(eventByte, Constants.DEFAULT_CHARSET));
+                        return map;
+                    }
+                };
+                body.toMap();
+                httpCommand.setBody(body);
+                return httpCommand;
+            case "tcp":
+                Package pkg = new Package();
+                String dataContentType = cloudEvent.getDataContentType();
+                Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
+                EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
+                Preconditions.checkNotNull(eventFormat,
+                    String.format("DateContentType:%s is not supported", dataContentType));
+                pkg.setBody(eventFormat.serialize(cloudEvent));
+                return pkg;
+            case CloudEventsProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT:
+                return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
+            default:
+                throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
         }
 
     }
