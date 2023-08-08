@@ -33,13 +33,10 @@ public class WebhookProtocolTransportObjectTest {
 
     private WebhookProtocolTransportObject webhookProtocolTransportObject;
 
-    private WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder webhookProtocolTransportObjectBuilder;
-
     @Before
     public void setUp() {
         webhookProtocolTransportObject = new WebhookProtocolTransportObject("cloudEventId", "eventType",
             "cloudEventName", "cloudEventSource", "dataContentType", new byte[]{(byte) 0});
-        webhookProtocolTransportObjectBuilder = WebhookProtocolTransportObject.builder();
     }
 
     @Test
@@ -74,6 +71,38 @@ public class WebhookProtocolTransportObjectTest {
 
     @Test
     public void testSetBody() {
+        byte[] originalBody = webhookProtocolTransportObject.getBody();
+        byte[] body = builderBody();
+        Assert.assertNotEquals(body, originalBody);
+        webhookProtocolTransportObject.setBody(body);
+        byte[] responseBody = webhookProtocolTransportObject.getBody();
+        Assert.assertNotNull(responseBody);
+        Assert.assertEquals(body, responseBody);
+    }
+
+    @Test
+    public void testBuilder() {
+        WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder builder =
+            new WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder();
+        builder.cloudEventId("d0b29520-2bba-11ee-877b-2b18ac132e64");
+        builder.eventType("github.all");
+        builder.cloudEventName("github-eventmesh");
+        builder.cloudEventSource("www.github.com");
+        builder.dataContentType("application/json");
+        byte[] body = builderBody();
+        builder.body(body);
+        WebhookProtocolTransportObject webhookProtocolTransportObject = builder.build();
+        Assert.assertNotNull(webhookProtocolTransportObject);
+        Assert.assertEquals("github.all", webhookProtocolTransportObject.getEventType());
+        Assert.assertEquals("d0b29520-2bba-11ee-877b-2b18ac132e64", webhookProtocolTransportObject.getCloudEventId());
+        Assert.assertEquals("www.github.com", webhookProtocolTransportObject.getCloudEventSource());
+        Assert.assertEquals("application/json", webhookProtocolTransportObject.getDataContentType());
+        Assert.assertEquals("application/json", webhookProtocolTransportObject.getDataContentType());
+        Assert.assertEquals(body, webhookProtocolTransportObject.getBody());
+
+    }
+
+    private byte[] builderBody() {
         Map<String, Object> hookMap = new HashMap<>();
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("insecureSsl", "0");
@@ -86,19 +115,6 @@ public class WebhookProtocolTransportObjectTest {
         bodyMap.put("zen", "Design for failure.");
         bodyMap.put("hook", hookMap);
         bodyMap.put("hookId", 425906842);
-        byte[] originalBody = webhookProtocolTransportObject.getBody();
-        byte[] body = Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET);
-        Assert.assertNotEquals(body, originalBody);
-        webhookProtocolTransportObject.setBody(body);
-        byte[] responseBody = webhookProtocolTransportObject.getBody();
-        Assert.assertNotNull(responseBody);
-        Assert.assertEquals(body, responseBody);
-    }
-
-    @Test
-    public void testBuilder() {
-        WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder result = WebhookProtocolTransportObject.builder();
-        Assert.assertNotNull(result);
-        Assert.assertNotEquals(webhookProtocolTransportObjectBuilder, result);
+        return Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET);
     }
 }
