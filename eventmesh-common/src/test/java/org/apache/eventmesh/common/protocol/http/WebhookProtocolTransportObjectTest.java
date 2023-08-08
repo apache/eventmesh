@@ -35,7 +35,8 @@ public class WebhookProtocolTransportObjectTest {
 
     @Before
     public void setUp() {
-        webhookProtocolTransportObject = WebhookProtocolTransportObject.builder().build();
+        webhookProtocolTransportObject = new WebhookProtocolTransportObject("cloudEventId", "eventType",
+            "cloudEventName", "cloudEventSource", "dataContentType", new byte[]{(byte) 0});
     }
 
     @Test
