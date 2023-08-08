@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,41 +33,60 @@ public class WebhookProtocolTransportObjectTest {
 
     @Before
     public void setUp() {
-        webhookProtocolTransportObject = new WebhookProtocolTransportObject("cloudEventId", "eventType",
-            "cloudEventName", "cloudEventSource", "dataContentType", new byte[] {(byte) 0});
+        webhookProtocolTransportObject = WebhookProtocolTransportObject.builder().build();
     }
 
     @Test
     public void testSetCloudEventId() {
         webhookProtocolTransportObject.setCloudEventId("d0b29520-2bba-11ee-877b-2b18ac132e64");
+        Assert.assertEquals("d0b29520-2bba-11ee-877b-2b18ac132e64",webhookProtocolTransportObject.getCloudEventId());
     }
 
     @Test
     public void testSetEventType() {
         webhookProtocolTransportObject.setEventType("github.all");
+        Assert.assertEquals("github.all",webhookProtocolTransportObject.getEventType());
     }
 
     @Test
     public void testSetCloudEventName() {
         webhookProtocolTransportObject.setCloudEventName("github-eventmesh");
+        Assert.assertEquals("github-eventmesh",webhookProtocolTransportObject.getCloudEventName());
     }
 
     @Test
     public void testSetCloudEventSource() {
         webhookProtocolTransportObject.setCloudEventSource("www.github.com");
+        Assert.assertEquals("www.github.com",webhookProtocolTransportObject.getCloudEventSource());
     }
 
     @Test
     public void testSetDataContentType() {
         webhookProtocolTransportObject.setDataContentType("application/json");
+        Assert.assertEquals("application/json",webhookProtocolTransportObject.getDataContentType());
     }
 
     @Test
     public void testSetBody() {
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("user", "tom");
-        bodyMap.put("password", "123456");
+        Map<String, Object> hookMap = new HashMap<>();
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("insecureSsl", "0");
+        configMap.put("url", "http://eventmesh.example.com:10106/webhook/github/eventmesh/all");
+        hookMap.put("type", "Repository");
+        hookMap.put("name", "web");
+        hookMap.put("events", Collections.singletonList("*"));
+        hookMap.put("config", configMap);
+        bodyMap.put("zen", "Design for failure.");
+        bodyMap.put("hook", hookMap);
+        bodyMap.put("hookId", 425906842);
         webhookProtocolTransportObject.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET));
+        byte[] body = webhookProtocolTransportObject.getBody();
+        Assert.assertNotNull(body);
+        String bodyJson = new String(body);
+        Map map = JsonUtils.parseObject(bodyJson, Map.class);
+        Assert.assertEquals(bodyMap,map);
+
     }
 
     @Test
