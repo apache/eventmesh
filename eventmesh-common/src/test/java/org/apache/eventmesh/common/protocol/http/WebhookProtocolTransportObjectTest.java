@@ -33,10 +33,13 @@ public class WebhookProtocolTransportObjectTest {
 
     private WebhookProtocolTransportObject webhookProtocolTransportObject;
 
+    private WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder webhookProtocolTransportObjectBuilder;
+
     @Before
     public void setUp() {
         webhookProtocolTransportObject = new WebhookProtocolTransportObject("cloudEventId", "eventType",
             "cloudEventName", "cloudEventSource", "dataContentType", new byte[]{(byte) 0});
+        webhookProtocolTransportObjectBuilder = WebhookProtocolTransportObject.builder();
     }
 
     @Test
@@ -96,5 +99,6 @@ public class WebhookProtocolTransportObjectTest {
     public void testBuilder() {
         WebhookProtocolTransportObject.WebhookProtocolTransportObjectBuilder result = WebhookProtocolTransportObject.builder();
         Assert.assertNotNull(result);
+        Assert.assertNotEquals(webhookProtocolTransportObjectBuilder, result);
     }
 }
