@@ -83,13 +83,11 @@ public class WebhookProtocolTransportObjectTest {
         bodyMap.put("zen", "Design for failure.");
         bodyMap.put("hook", hookMap);
         bodyMap.put("hookId", 425906842);
-        webhookProtocolTransportObject.setBody(Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET));
-        byte[] body = webhookProtocolTransportObject.getBody();
-        Assert.assertNotNull(body);
-        String bodyJson = new String(body);
-        Map map = JsonUtils.parseObject(bodyJson, Map.class);
-        Assert.assertEquals(bodyMap, map);
-
+        byte[] body = Objects.requireNonNull(JsonUtils.toJSONString(bodyMap)).getBytes(Constants.DEFAULT_CHARSET);
+        webhookProtocolTransportObject.setBody(body);
+        byte[] responseBody = webhookProtocolTransportObject.getBody();
+        Assert.assertNotNull(responseBody);
+        Assert.assertEquals(body, responseBody);
     }
 
     @Test
