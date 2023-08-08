@@ -47,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -149,13 +148,15 @@ public class HandlerService {
     }
 
     private void sendResponse(ChannelHandlerContext ctx, HttpRequest request, HttpResponse response) {
-        this.sendResponse(ctx, request, response, true);
+        this.sendPersistentResponse(ctx, request, response, true);
     }
 
-    private void sendResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
+    /**
+     * persistent connection
+     */
+    private void sendPersistentResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
         ReferenceCountUtil.release(httpRequest);
-        ChannelFuture future = ctx.writeAndFlush(response);
-        future.addListener((ChannelFutureListener) f -> {
+        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
                     RemotingHelper.parseChannelRemoteAddr(f.channel()));
@@ -164,7 +165,19 @@ public class HandlerService {
                 }
             }
         });
-        future.addListener(ChannelFutureListener.CLOSE);
+    }
+
+    /**
+     * short-lived connection
+     */
+    private void sendShortResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response) {
+        ReferenceCountUtil.release(httpRequest);
+        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+            if (!f.isSuccess()) {
+                httpLogger.warn("send response to [{}] with short-lived connection fail, will close this channel",
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+            }
+        }).addListener(ChannelFutureListener.CLOSE);
     }
 
     private HttpEventWrapper parseHttpRequest(HttpRequest httpRequest) throws IOException {
@@ -271,6 +284,11 @@ public class HandlerService {
                 response = processorWrapper.httpProcessor.handler(request);
 
                 this.postHandler();
+                if (processorWrapper.httpProcessor instanceof ShortHttpProcessor) {
+                    sendShortResponse(ctx, this.request, this.response);
+                    return;
+                }
+                HandlerService.this.sendResponse(ctx, this.request, this.response);
             } catch (Throwable e) {
                 exception = e;
                 // todo: according exception to generate response
@@ -288,7 +306,6 @@ public class HandlerService {
                 this.response = HttpResponseUtils.createSuccess();
             }
             this.traceOperation.endTrace(ce);
-            HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
         private void preHandler() {

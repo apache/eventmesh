@@ -34,7 +34,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import lombok.Setter;
 
 @EventMeshTrace(isEnable = true)
-public class WebHookProcessor implements HttpProcessor {
+public class WebHookProcessor implements ShortHttpProcessor {
 
     @Setter
     private WebHookController webHookController;
