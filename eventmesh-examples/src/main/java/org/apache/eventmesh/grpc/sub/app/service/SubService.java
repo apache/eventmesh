@@ -21,6 +21,7 @@ import static org.apache.eventmesh.common.ExampleConstants.ENV;
 import static org.apache.eventmesh.common.ExampleConstants.IDC;
 import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
 import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+import static org.apache.eventmesh.util.Utils.getURL;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
@@ -28,7 +29,6 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 
@@ -62,11 +62,10 @@ public class SubService implements InitializingBean {
         }
     }
 
-    private final String localIp = IPUtils.getLocalAddress();
     private final String localPort = properties.getProperty(SERVER_PORT);
     private final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
     private final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-    private final String url = "http://" + localIp + ":" + localPort + "/sub/test";
+    private final String url = getURL(localPort, "/sub/test");
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
@@ -114,7 +113,7 @@ public class SubService implements InitializingBean {
     @PreDestroy
     public void cleanup() {
         if (log.isInfoEnabled()) {
-            log.info("start destory ....");
+            log.info("start destroy ....");
         }
 
         try {
@@ -129,7 +128,7 @@ public class SubService implements InitializingBean {
         }
 
         if (log.isInfoEnabled()) {
-            log.info("end destory.");
+            log.info("end destroy...");
         }
     }
 
