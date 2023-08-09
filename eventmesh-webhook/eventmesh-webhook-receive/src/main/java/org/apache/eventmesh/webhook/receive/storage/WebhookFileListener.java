@@ -155,17 +155,15 @@ public class WebhookFileListener {
                     // manufacturer change
                     final String path = flashPath.concat("/").concat(event.context().toString());
                     final File file = new File(path);
-                    if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
-                        if (file.isFile()) {
-                            cacheInit(file);
-                        } else {
-                            try {
-                                key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-                                watchKeyPathMap.put(key, path);
-                            } catch (IOException e) {
-                                log.error("registerWatchKey failed", e);
-                            }
+                    if (!file.isFile() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
+                        try {
+                            key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                            watchKeyPathMap.put(key, path);
+                        } catch (IOException e) {
+                            log.error("registerWatchKey failed", e);
                         }
+                    } else if (file.isFile() && ENTRY_MODIFY == event.kind()) {
+                        cacheInit(file);
                     } else if (ENTRY_DELETE == event.kind()) {
                         if (file.isDirectory()) {
                             watchKeyPathMap.remove(key);
