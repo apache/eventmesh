@@ -88,7 +88,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (!webhookConfigFile.exists()) {
             if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
             }
             return 0;
         }
@@ -100,7 +100,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (!webhookConfigFile.exists()) {
             if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
             }
             return 0;
         }
@@ -115,7 +115,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (!webhookConfigFile.exists()) {
             if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
             }
             return null;
         }
