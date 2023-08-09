@@ -89,7 +89,7 @@ public class RemoteSubscribeInstance {
 
     private static RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), IPUtils.getLocalAddress())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT);
     }
