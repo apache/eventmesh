@@ -24,7 +24,16 @@ pubSubConfig:
     appId: 5032
     userName: rocketmqSourceUser
     passWord: rocketmqPassWord
-sourceConnectorConfig:
+connectorConfig:
     connectorName: rocketmqSource
     nameserver: 127.0.0.1:9877
     topic: TopicTest
+offsetStorageConfig:
+    offsetStorageType: nacos
+    offsetStorageAddr: 127.0.0.1:8848
+    extensions: {
+                    #same with connectorName
+                    dataId: rocketmqSource,
+                    #same with group
+                    group: rocketmqSource
+    }

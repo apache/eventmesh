@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.data;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
 import java.util.Set;
 
