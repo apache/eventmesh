@@ -15,25 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.data;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
-import java.util.Map;
 import java.util.Objects;
 
-public class RecordOffset {
+public class RecordPosition {
 
-    /**
-     * if pull message from mq key=queueOffset,
-     * value=queueOffset value
-     */
-    private final Map<String, ?> offset;
+    private final RecordPartition recordPartition;
 
-    public RecordOffset(Map<String, ?> offset) {
-        this.offset = offset;
+    private final RecordOffset recordOffset;
+
+    public RecordPosition(
+        RecordPartition recordPartition, RecordOffset recordOffset) {
+        this.recordPartition = recordPartition;
+        this.recordOffset = recordOffset;
     }
 
-    public Map<String, ?> getOffset() {
-        return offset;
+    public RecordPartition getPartition() {
+        return recordPartition;
+    }
+
+    public RecordOffset getOffset() {
+        return recordOffset;
     }
 
     @Override
@@ -41,22 +44,15 @@ public class RecordOffset {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RecordOffset)) {
+        if (!(o instanceof RecordPosition)) {
             return false;
         }
-        RecordOffset offset1 = (RecordOffset) o;
-        return Objects.equals(offset, offset1.offset);
+        RecordPosition position = (RecordPosition) o;
+        return recordPartition.equals(position.recordPartition) && recordOffset.equals(position.recordOffset);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(offset);
-    }
-
-    @Override
-    public String toString() {
-        return "RecordOffset{"
-             + "offset=" + offset
-             + "}";
+        return Objects.hash(recordPartition, recordOffset);
     }
 }

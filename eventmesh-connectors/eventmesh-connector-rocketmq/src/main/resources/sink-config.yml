@@ -24,7 +24,7 @@ pubSubConfig:
     appId: 5031
     userName: rocketmqSinkUser
     passWord: rocketmqPassWord
-sinkConnectorConfig:
+connectorConfig:
     connectorName: rocketmqSink
     nameServer: 127.0.0.1:9876
     topic: TopicTest
