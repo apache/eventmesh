@@ -154,7 +154,6 @@ public class HttpConvertsUtils {
                     final String eventMeshInstanceKeyValue = eventMeshInstanceKeyField.get(eventMeshInstanceKey).toString();
                     // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, eventMeshInstanceKeyValue)) {
-                        MapUtils.getString(headerParam, eventMeshInstanceKeyValue);
                         headerField.set(header, MapUtils.getString(headerParam, eventMeshInstanceKeyValue));
                     }
                 }
