@@ -153,6 +153,6 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.CRATE_TOPIC.getRequestURI()};
+        return new String[]{RequestURI.CREATE_TOPIC.getRequestURI()};
     }
 }
