@@ -60,7 +60,7 @@ public class RemoteSubscribeInstance {
         try {
             properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         } catch (IOException e) {
-           log.error("Failed to read the file.", e);
+            log.error("Failed to read the file.", e);
         }
     }
 
