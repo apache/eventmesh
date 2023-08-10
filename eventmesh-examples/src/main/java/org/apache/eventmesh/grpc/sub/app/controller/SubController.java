@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.grpc.sub.app.controller;
 
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.grpc.sub.app.service.SubService;
 
