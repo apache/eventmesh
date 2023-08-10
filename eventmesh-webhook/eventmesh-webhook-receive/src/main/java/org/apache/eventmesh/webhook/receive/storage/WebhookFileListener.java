@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -154,6 +155,7 @@ public class WebhookFileListener {
                     // manufacturer path
                     final String path = flashPath.concat("/").concat(event.context().toString());
                     final File file = new File(path);
+                    CountDownLatch latch = new CountDownLatch(1);
                     if (!file.isFile() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
                         // If it is a folder, re-register the listener
                         try {
@@ -165,6 +167,8 @@ public class WebhookFileListener {
                     } else if (file.isFile() && ENTRY_MODIFY == event.kind()) {
                         // If it is a file, cache it only when it is modified to wait for complete file writes
                         try {
+                            // Wait for the notification of file write completion before initializing the cache
+                            latch.await();
                             cacheInit(file);
                         } catch (Exception e) {
                             log.error("cacheInit failed", e);

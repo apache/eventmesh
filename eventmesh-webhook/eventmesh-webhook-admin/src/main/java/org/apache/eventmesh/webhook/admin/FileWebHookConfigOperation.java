@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -173,16 +174,26 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
+        CountDownLatch latch = new CountDownLatch(1);
         try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
-            // lock this file, and will auto release after fos close
+            // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
             fos.getChannel().lock();
             bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
+            // Notify that file write has been completed
+            latch.countDown();
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
                 log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             }
             return false;
+        }
+        try {
+            // Wait for write to complete, then return
+            latch.await();
+        } catch (InterruptedException e) {
+            log.error("Latch await interrupted", e);
+            Thread.currentThread().interrupt();
         }
         return true;
     }
