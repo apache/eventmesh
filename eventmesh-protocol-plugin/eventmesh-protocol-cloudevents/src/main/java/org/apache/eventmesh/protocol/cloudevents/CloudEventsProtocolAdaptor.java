@@ -87,7 +87,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         org.apache.eventmesh.common.protocol.http.header.Header header,
         Body body) throws ProtocolHandleException {
 
-        switch (RequestCode.valueOf(requestCode)) {
+        switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:
                 return SendMessageBatchProtocolResolver.buildEvent(header, body);
             case MSG_BATCH_SEND_V2:
@@ -98,7 +98,6 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             default:
                 throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
         }
-
     }
 
     @Override

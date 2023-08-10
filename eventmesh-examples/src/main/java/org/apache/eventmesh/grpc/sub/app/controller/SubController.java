@@ -43,9 +43,7 @@ public class SubController {
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(final HttpServletRequest request) {
-        final String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
         final String content = request.getParameter("content");
-
         if (log.isInfoEnabled()) {
             log.info("=======receive message======= {}", content);
         }
