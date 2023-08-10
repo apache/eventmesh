@@ -29,6 +29,7 @@ include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-connectors:eventmesh-connector-rocketmq'
 include 'eventmesh-connectors:eventmesh-connector-redis'
+include 'eventmesh-connectors:eventmesh-connector-mongodb'
 include 'eventmesh-connectors:eventmesh-connector-openfunction'
 include 'eventmesh-connectors:eventmesh-connector-pulsar'
 include 'eventmesh-connectors:eventmesh-connector-kafka'
