@@ -96,14 +96,12 @@ public class WebhookFileListener {
      */
     private void cacheInit(final File webhookConfigFile) {
         final StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
-            StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()), StandardCharsets.UTF_8)) {
             while (br.ready()) {
                 fileContent.append(br.readLine());
             }
-
         } catch (IOException e) {
-            log.error("cacheInit failed", e);
+            log.error("cacheInit buffer read failed", e);
         }
         final WebHookConfig webHookConfig = JsonUtils.parseObject(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
@@ -150,12 +148,14 @@ public class WebhookFileListener {
                 }
 
                 assert key != null;
+                // A newly created config file will be captured for two events, ENTRY_CREATE and ENTRY_MODIFY
                 for (final WatchEvent<?> event : key.pollEvents()) {
                     final String flashPath = watchKeyPathMap.get(key);
-                    // manufacturer change
+                    // manufacturer path
                     final String path = flashPath.concat("/").concat(event.context().toString());
                     final File file = new File(path);
                     if (!file.isFile() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
+                        // If it is a folder, re-register the listener
                         try {
                             key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                             watchKeyPathMap.put(key, path);
@@ -163,7 +163,12 @@ public class WebhookFileListener {
                             log.error("registerWatchKey failed", e);
                         }
                     } else if (file.isFile() && ENTRY_MODIFY == event.kind()) {
-                        cacheInit(file);
+                        // If it is a file, cache it only when it is modified to wait for complete file writes
+                        try {
+                            cacheInit(file);
+                        } catch (Exception e) {
+                            log.error("cacheInit failed", e);
+                        }
                     } else if (ENTRY_DELETE == event.kind()) {
                         if (file.isDirectory()) {
                             watchKeyPathMap.remove(key);
@@ -172,6 +177,7 @@ public class WebhookFileListener {
                         }
                     }
                 }
+                // Reset the WatchKey to receive subsequent file system events
                 if (!key.reset()) {
                     break;
                 }
