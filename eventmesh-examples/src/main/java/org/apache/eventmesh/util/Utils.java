@@ -18,6 +18,7 @@
 package org.apache.eventmesh.util;
 
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.lang3.SystemUtils;
 
@@ -90,6 +91,15 @@ public class Utils {
             properties.load(inputStream);
             return properties;
         }
+    }
+
+    /**
+     * @param port server port
+     * @param path path
+     * @return url
+     */
+    public static String getURL(String port, String path) {
+        return "http://" + IPUtils.getLocalAddress() + ":" + port + path;
     }
 
 }
