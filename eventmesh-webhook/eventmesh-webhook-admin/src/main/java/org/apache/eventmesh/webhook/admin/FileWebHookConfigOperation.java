@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+import org.apache.eventmesh.webhook.api.common.SharedLatchHolder;
 import org.apache.eventmesh.webhook.api.utils.ClassUtils;
 
 import java.io.BufferedReader;
@@ -132,7 +133,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
             if (log.isWarnEnabled()) {
-                log.warn("webhookConfig dir {} is not existed", manuDirPath);
+                log.warn("webhookConfig dir {} does not exist", manuDirPath);
             }
             return new ArrayList<>();
         }
@@ -165,7 +166,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             }
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
-                log.error("get webhook from file {} error", webhookConfigFile.getPath(), e);
+                log.error("get webHookConfig from file {} error", webhookConfigFile.getPath(), e);
             }
             return null;
         }
@@ -174,27 +175,21 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
-        CountDownLatch latch = new CountDownLatch(1);
+        // Reset latch count
+        SharedLatchHolder.latch = new CountDownLatch(1);
         try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
             // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
             fos.getChannel().lock();
             bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
-            // Notify that file write has been completed
-            latch.countDown();
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
                 log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             }
             return false;
         }
-        try {
-            // Wait for write to complete, then return
-            latch.await();
-        } catch (InterruptedException e) {
-            log.error("Latch await interrupted", e);
-            Thread.currentThread().interrupt();
-        }
+        // Notify that file write has been completed
+        SharedLatchHolder.latch.countDown();
         return true;
     }
 

@@ -24,6 +24,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+import org.apache.eventmesh.webhook.api.common.SharedLatchHolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -152,11 +152,10 @@ public class WebhookFileListener {
                 // A newly created config file will be captured for two events, ENTRY_CREATE and ENTRY_MODIFY
                 for (final WatchEvent<?> event : key.pollEvents()) {
                     final String flashPath = watchKeyPathMap.get(key);
-                    // manufacturer path
-                    final String path = flashPath.concat("/").concat(event.context().toString());
+                    // manufacturer change
+                    final String path = flashPath.concat(WebHookOperationConstant.FILE_SEPARATOR).concat(event.context().toString());
                     final File file = new File(path);
-                    CountDownLatch latch = new CountDownLatch(1);
-                    if (!file.isFile() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
+                    if (file.isDirectory() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
                         // If it is a folder, re-register the listener
                         try {
                             key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
@@ -168,7 +167,7 @@ public class WebhookFileListener {
                         // If it is a file, cache it only when it is modified to wait for complete file writes
                         try {
                             // Wait for the notification of file write completion before initializing the cache
-                            latch.await();
+                            SharedLatchHolder.latch.await();
                             cacheInit(file);
                         } catch (Exception e) {
                             log.error("cacheInit failed", e);
