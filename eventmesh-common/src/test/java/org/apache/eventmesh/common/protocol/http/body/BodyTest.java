@@ -47,13 +47,7 @@ public class BodyTest {
 
     @Test
     public void testBuildBody() throws Exception {
-        boolean errorCode = false;
-        try {
-            Body.buildBody("-1", originalMap);
-        } catch (Exception e) {
-            errorCode = true;
-        }
-        Assert.assertEquals(true, errorCode);
+        Assert.assertThrows(Exception.class, () -> Body.buildBody("-1", originalMap));
         Body sendMessageBatchRequestBody = Body.buildBody(String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()), originalMap);
         Assert.assertNotNull(sendMessageBatchRequestBody);
         Assert.assertEquals(sendMessageBatchRequestBody.getClass(), SendMessageBatchRequestBody.class);

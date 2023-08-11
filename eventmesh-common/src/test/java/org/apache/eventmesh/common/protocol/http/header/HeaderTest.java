@@ -47,13 +47,7 @@ public class HeaderTest {
 
     @Test
     public void testBuildHeader() throws Exception {
-        boolean errorCode = false;
-        try {
-            Header.buildHeader("-1", originalMap);
-        } catch (Exception e) {
-            errorCode = true;
-        }
-        Assert.assertEquals(true, errorCode);
+        Assert.assertThrows(Exception.class, () -> Header.buildHeader("-1", originalMap));
         Header messageBatchRequestHeader = Header.buildHeader(String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()), originalMap);
         Assert.assertNotNull(messageBatchRequestHeader);
         Assert.assertEquals(messageBatchRequestHeader.getClass(), SendMessageBatchRequestHeader.class);
