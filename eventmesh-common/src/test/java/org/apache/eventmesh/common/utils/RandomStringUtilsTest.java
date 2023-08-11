@@ -17,29 +17,24 @@
 
 package org.apache.eventmesh.common.utils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import org.apache.commons.lang3.math.NumberUtils;
 
-public class ReflectUtils {
+import org.junit.Assert;
+import org.junit.Test;
 
-    /**
-     * Look up fields inherited from the parent class.
-     *
-     * @param clazz
-     * @param fieldName
-     * @return
-     */
-    public static Field lookUpFieldByParentClass(Class<?> clazz, String fieldName) {
-        Class<?> superClass = clazz.getSuperclass();
-        while (superClass != null) {
-            Field[] superFields = superClass.getDeclaredFields();
-            for (Field superField : superFields) {
-                if (!Modifier.isPrivate(superField.getModifiers()) && superField.getName().equals(fieldName)) {
-                    return superField;
-                }
-            }
-            superClass = superClass.getSuperclass();
-        }
-        return null;
+public class RandomStringUtilsTest {
+
+    @Test
+    public void testGenerateNum() {
+        String result = RandomStringUtils.generateNum(2);
+        Assert.assertTrue(NumberUtils.isDigits(result));
+        Assert.assertEquals(2, result.length());
     }
+
+    @Test
+    public void testGenerateUUID() {
+        String result = RandomStringUtils.generateUUID();
+        Assert.assertTrue(result.matches("^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$"));
+    }
+
 }

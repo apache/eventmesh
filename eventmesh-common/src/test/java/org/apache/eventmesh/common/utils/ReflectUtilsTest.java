@@ -18,28 +18,36 @@
 package org.apache.eventmesh.common.utils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
-public class ReflectUtils {
+import org.junit.Assert;
+import org.junit.Test;
 
-    /**
-     * Look up fields inherited from the parent class.
-     *
-     * @param clazz
-     * @param fieldName
-     * @return
-     */
-    public static Field lookUpFieldByParentClass(Class<?> clazz, String fieldName) {
-        Class<?> superClass = clazz.getSuperclass();
-        while (superClass != null) {
-            Field[] superFields = superClass.getDeclaredFields();
-            for (Field superField : superFields) {
-                if (!Modifier.isPrivate(superField.getModifiers()) && superField.getName().equals(fieldName)) {
-                    return superField;
-                }
-            }
-            superClass = superClass.getSuperclass();
-        }
-        return null;
+public class ReflectUtilsTest {
+
+    public static class TestParent {
+
+        private String age;
+
+        public String tel;
+
     }
+
+    public static class TestObj extends TestParent {
+
+        private String name;
+
+        private String password;
+    }
+
+    @Test
+    public void testLookUpFieldByParentClass() {
+        Field fieldName = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "name");
+        Field fieldAge = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "age");
+        Field fieldTel = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "tel");
+        Assert.assertNull(fieldName);
+        Assert.assertNull(fieldAge);
+        Assert.assertNotNull(fieldTel);
+        Assert.assertEquals("tel", fieldTel.getName());
+    }
+
 }
