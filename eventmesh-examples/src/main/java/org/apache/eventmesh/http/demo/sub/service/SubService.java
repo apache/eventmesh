@@ -21,6 +21,7 @@ import static org.apache.eventmesh.common.ExampleConstants.ENV;
 import static org.apache.eventmesh.common.ExampleConstants.IDC;
 import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
 import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+import static org.apache.eventmesh.util.Utils.getURL;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
@@ -66,11 +67,10 @@ public class SubService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String localIP = IPUtils.getLocalAddress();
         final String localPort = properties.getProperty(SERVER_PORT);
         final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventmeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-        final String testURL = "http://" + localIP + ":" + localPort + "/sub/test";
+        final String testURL = getURL(localPort, "/sub/test");
 
         final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
@@ -103,7 +103,7 @@ public class SubService implements InitializingBean {
     @PreDestroy
     public void cleanup() {
         if (log.isInfoEnabled()) {
-            log.info("start destory ....");
+            log.info("start destroy....");
         }
 
         try {
@@ -121,7 +121,7 @@ public class SubService implements InitializingBean {
         }
 
         if (log.isInfoEnabled()) {
-            log.info("end destory.");
+            log.info("end destroy....");
         }
     }
 
