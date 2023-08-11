@@ -23,7 +23,7 @@ import java.lang.reflect.Modifier;
 public class ReflectUtils {
 
     /**
-     * Look up fields inherited from the parent class.
+     * Look up not private fields inherited from the parent class.
      *
      * @param clazz
      * @param fieldName
