@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import java.util.Objects;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
@@ -51,7 +52,7 @@ public class SubscribeStreamProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final GrpcType grpcType = GrpcType.STREAM;
+    private static final GrpcType grpcType = GrpcType.STREAM;
 
     private final Acl acl;
 
@@ -95,7 +96,7 @@ public class SubscribeStreamProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
-        for (SubscriptionItem item : subscriptionItems) {
+        for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
                 .env(env)
                 .idc(idc)
@@ -148,7 +149,7 @@ public class SubscribeStreamProcessor {
             List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
                 new TypeReference<List<SubscriptionItem>>() {
                 });
-            for (SubscriptionItem item : subscriptionItems) {
+            for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
                 this.acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
