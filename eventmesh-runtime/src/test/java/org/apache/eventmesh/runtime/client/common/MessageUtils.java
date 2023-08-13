@@ -37,7 +37,7 @@ public class MessageUtils {
 
     public static Package hello(UserAgent user) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, "sucess", generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, "success", generateRandomString(seqLength)));
         msg.setBody(user);
         return msg;
     }
@@ -230,7 +230,7 @@ public class MessageUtils {
 
     public static Package askRecommend(UserAgent user) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.RECOMMEND_REQUEST, 0, "sucess", generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.RECOMMEND_REQUEST, 0, "success", generateRandomString(seqLength)));
         msg.setBody(user);
         return msg;
     }
