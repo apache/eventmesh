@@ -21,9 +21,6 @@ import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
@@ -115,7 +112,7 @@ public class StreamPushRequest extends AbstractPushRequest {
         return Collections.emptyList();
     }
 
-    private List<EventEmitter<SimpleMessage>> getEventEmitters(List<EventEmitter<SimpleMessage>> emitterList) {
+    private List<EventEmitter<CloudEvent>> getEventEmitters(List<EventEmitter<CloudEvent>> emitterList) {
         switch (subscriptionMode) {
             case CLUSTERING:
                 return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
