@@ -20,61 +20,33 @@ package org.apache.eventmesh.trace.jaeger;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.trace.api.EventMeshTraceService;
-import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
+import org.apache.eventmesh.trace.api.AbstractTraceService;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.eventmesh.trace.api.exception.TraceException;
-import org.apache.eventmesh.trace.jaeger.common.JaegerConstants;
 import org.apache.eventmesh.trace.jaeger.config.JaegerConfiguration;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Config(field = "jaegerConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
-public class JaegerTraceService implements EventMeshTraceService {
-
-    private transient SdkTracerProvider sdkTracerProvider;
-
-    private transient Tracer tracer;
-
-    private transient TextMapPropagator textMapPropagator;
+public class JaegerTraceService extends AbstractTraceService {
 
     /**
      * Unified configuration class corresponding to jaeger.properties
      */
+    @Getter
+    @Setter
     private transient JaegerConfiguration jaegerConfiguration;
-
-    /**
-     * Unified configuration class corresponding to exporter.properties
-     */
-    private transient ExporterConfiguration exporterConfiguration;
-
-    private transient Thread shutdownHook;
 
     @Override
     public void init() throws TraceException {
@@ -99,90 +71,15 @@ public class JaegerTraceService implements EventMeshTraceService {
             .setMaxQueueSize(eventMeshTraceMaxQueueSize)
             .build();
 
+        //set the trace service's name
         final Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), JaegerConstants.SERVICE_NAME));
+            Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
-        sdkTracerProvider = SdkTracerProvider.builder()
-            .addSpanProcessor(spanProcessor)
-            .setResource(Resource.getDefault().merge(serviceNameResource))
-            .build();
-
-        final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .setTracerProvider(sdkTracerProvider)
-            .build();
-
-        tracer = openTelemetry.getTracer(JaegerConstants.SERVICE_NAME);
-        textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
-
-        shutdownHook = new Thread(sdkTracerProvider::close);
-        shutdownHook.setDaemon(true);
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-    }
-
-    @Override
-    public Context extractFrom(final Context context, final Map<String, Object> carrier) throws TraceException {
-        textMapPropagator.extract(context, carrier, new TextMapGetter<Map<String, Object>>() {
-            @Override
-            public Iterable<String> keys(@Nonnull final Map<String, Object> carrier) {
-                return carrier.keySet();
-            }
-
-            @Nullable
-            @Override
-            public String get(final @Nonnull Map<String, Object> carrier, final String key) {
-                return Optional.ofNullable(carrier.get(key)).map(Objects::toString).orElse(null);
-            }
-        });
-        return context;
-    }
-
-    @Override
-    public void inject(final Context context, final Map<String, Object> carrier) {
-        textMapPropagator.inject(context, carrier, (cr, key, value) -> {
-            if (cr != null) {
-                cr.put(key, value);
-            }
-        });
-    }
-
-    @Override
-    public Span createSpan(final String spanName, final SpanKind spanKind, final long startTimestamp,
-        final TimeUnit timeUnit, final Context context,
-        final boolean isSpanFinishInOtherThread) throws TraceException {
-        return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(startTimestamp, timeUnit)
-            .startSpan();
-    }
-
-    @Override
-    public Span createSpan(final String spanName, final SpanKind spanKind, final Context context,
-        final boolean isSpanFinishInOtherThread) throws TraceException {
-        return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            .startSpan();
-    }
-
-    @Override
-    public void shutdown() throws TraceException {
-        try {
-            if (sdkTracerProvider != null) {
-                sdkTracerProvider.close();
-            }
-        } catch (Exception e) {
-            throw new TraceException("trace close error", e);
-        }
+        initVars(spanProcessor, serviceNameResource);
     }
 
     public JaegerConfiguration getClientConfiguration() {
         return this.jaegerConfiguration;
     }
 
-    public ExporterConfiguration getExporterConfiguration() {
-        return this.exporterConfiguration;
-    }
 }

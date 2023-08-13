@@ -53,6 +53,6 @@ public class HistoryMessageClearTest {
     public void testClearMessages() {
         historyMessageClear.clearMessages();
         MessageQueue updatedMessageQueue = messageContainer.get(new TopicMetadata(TEST_TOPIC));
-        Assert.assertTrue(Arrays.stream(updatedMessageQueue.items).allMatch(Objects::isNull));
+        Assert.assertTrue(Arrays.stream(updatedMessageQueue.getItems()).allMatch(Objects::isNull));
     }
 }

@@ -22,26 +22,46 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A data transfer object (DTO) that represents a request to create a new topic.
+ * <p>
+ * This class provides a convenient way to encapsulate the topic information when creating a new topic.
+ * <p>
+ * Empty or null values will not be included in the serialized JSON.
+ * <p>
+ * Any unknown properties will be ignored when deserializing JSON into this class.
+ * <p>
+ * Example usage:
+ * <pre>
+ * String params = NetUtils.parsePostBody(httpExchange);
+ * TopicCreateRequest topicCreateRequest = JsonUtils.parseObject(params, TopicCreateRequest.class);
+ * String topic = topicCreateRequest.getTopic();
+ * topicCreateRequest.setTopic("UpdatedTopic");
+ * </pre>
+ */
+
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TopicCreateRequest {
 
-    private String name;
+    private String topic;
 
+    /**
+     * Constructs a new instance of {@link TopicCreateRequest}.
+     *
+     * @param topic the topic for the request
+     */
     @JsonCreator
-    public TopicCreateRequest(@JsonProperty("name") String topic) {
-        super();
-        this.name = topic;
+    public TopicCreateRequest(@JsonProperty("topic") String topic) {
+        this.topic = topic;
     }
 
-    @JsonProperty("name")
-    public String getName() {
-        return this.name;
+    public String getTopic() {
+        return this.topic;
     }
 
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
 }

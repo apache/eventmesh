@@ -18,8 +18,8 @@
 dependencies {
     implementation 'org.asynchttpclient:async-http-client'
 
-    implementation project(":eventmesh-sdk-java")
-    testImplementation project(":eventmesh-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
+    testImplementation project(":eventmesh-sdks:eventmesh-sdk-java")
 
     implementation project(":eventmesh-runtime")
     testImplementation project(":eventmesh-runtime")

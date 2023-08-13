@@ -28,6 +28,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -35,6 +38,8 @@ import io.netty.channel.ChannelHandlerContext;
  * HttpRequestProcessor
  */
 public interface HttpRequestProcessor {
+
+    Logger log = LoggerFactory.getLogger(HttpRequestProcessor.class);
 
     void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
         throws Exception;
@@ -53,7 +58,7 @@ public interface HttpRequestProcessor {
             HttpCommand response = req.createHttpCommandResponse(respHeader, (E) o);
             asyncContext.onComplete(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("response failed", e);
         }
     }
 

@@ -193,10 +193,10 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * @return Returns true if any is empty
      */
     protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
-        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+        return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC.getKey()).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString(),
+            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString())
+            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString());
     }
 
     /**
@@ -206,9 +206,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * @return any null then true
      */
     protected boolean validatedRequestBodyMap(Map<String, Object> requestBodyMap) {
-        return requestBodyMap.get(EventMeshConstants.URL) == null
-            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
-            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null;
+        return requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null;
 
     }
 
@@ -223,15 +221,15 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         String meshGroup = eventMeshHttpConfiguration.getMeshGroup();
 
         Map<String, String> remoteHeaderMap = new HashMap<>();
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpConfiguration.getEventMeshEnv());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpConfiguration.getEventMeshIDC());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, localAddress);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpConfiguration.getSysID());
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
-        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV.getKey(), eventMeshHttpConfiguration.getEventMeshEnv());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC.getKey(), eventMeshHttpConfiguration.getEventMeshIDC());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP.getKey(), localAddress);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID.getKey(), String.valueOf(ThreadUtils.getPID()));
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS.getKey(), eventMeshHttpConfiguration.getSysID());
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), EventMeshConstants.USER_NAME);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), EventMeshConstants.PASSWD);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP.getKey(), meshGroup);
+        remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP.getKey(), meshGroup);
         return remoteHeaderMap;
     }
 
@@ -250,7 +248,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         Map<String, String> requestHeader, Map<String, Object> requestBody,
         ResponseHandler<String> responseHandler) throws IOException {
         AssertUtils.notNull(client, "client can't be null");
-        AssertUtils.notBlack(uri, "uri can't be null");
+        AssertUtils.notBlank(uri, "uri can't be null");
         AssertUtils.notNull(requestHeader, "requestParam can't be null");
         AssertUtils.notNull(responseHandler, "responseHandler can't be null");
 

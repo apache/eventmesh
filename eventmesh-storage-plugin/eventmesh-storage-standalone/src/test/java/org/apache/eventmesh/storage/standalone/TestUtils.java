@@ -39,14 +39,14 @@ public class TestUtils {
     public static final boolean TOPIC_DO_NOT_EXISTS = false;
 
     public static ConcurrentHashMap<TopicMetadata, MessageQueue> createDefaultMessageContainer() {
-        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>();
+        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
         messageContainer.put(new TopicMetadata(TEST_TOPIC), new MessageQueue());
         return messageContainer;
     }
 
     public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata, MessageEntity messageEntity)
         throws InterruptedException {
-        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>();
+        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
         MessageQueue messageQueue = new MessageQueue();
         messageQueue.put(messageEntity);
         messageContainer.put(topicMetadata, messageQueue);

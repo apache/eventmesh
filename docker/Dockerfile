@@ -29,7 +29,7 @@ WORKDIR /data/app/eventmesh
 COPY --from=builder /build/dist ./
 
 EXPOSE 10106 
-EXPOSE 10205 10105 10002
+EXPOSE 10205 10105 10000
 
 ENV DOCKER true
 ENV EVENTMESH_HOME /data/app/eventmesh

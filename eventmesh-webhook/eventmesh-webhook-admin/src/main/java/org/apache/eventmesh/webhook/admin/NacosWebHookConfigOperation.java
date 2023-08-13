@@ -1,5 +1,3 @@
-package org.apache.eventmesh.webhook.admin;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.eventmesh.webhook.admin;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.eventmesh.webhook.admin;
 
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_EXTENSION;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
@@ -153,6 +153,9 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         return result ? 1 : 0;
     }
 
+    /**
+     * Query WebHook configuration information based on the WebHook callback path specified in {@link WebHookConfig}.
+     */
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         try {

@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
@@ -41,9 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StreamPushRequest extends AbstractPushRequest {
 
-    private final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters;
+    private final Map<String, List<EventEmitter<CloudEvent>>> idcEmitters;
 
-    private final List<EventEmitter<SimpleMessage>> totalEmitters;
+    private final List<EventEmitter<CloudEvent>> totalEmitters;
 
     private final SubscriptionMode subscriptionMode;
 
@@ -61,41 +65,43 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     @Override
     public void tryPushRequest() {
-        if (simpleMessage == null) {
+        if (eventMeshCloudEvent == null) {
             return;
         }
 
-        List<EventEmitter<SimpleMessage>> eventEmitters = selectEmitter();
+        List<EventEmitter<CloudEvent>> eventEmitters = selectEmitter();
 
-        for (EventEmitter<SimpleMessage> eventEmitter : eventEmitters) {
+        for (EventEmitter<CloudEvent> eventEmitter : eventEmitters) {
             this.lastPushTime = System.currentTimeMillis();
 
-            simpleMessage = SimpleMessage.newBuilder(simpleMessage)
-                .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime)).build();
+            eventMeshCloudEvent = CloudEvent.newBuilder(eventMeshCloudEvent)
+                .putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
-                StreamObserver<SimpleMessage> emitter = eventEmitter.getEmitter();
+                StreamObserver<CloudEvent> emitter = eventEmitter.getEmitter();
                 synchronized (emitter) {
-                    emitter.onNext(simpleMessage);
+                    emitter.onNext(eventMeshCloudEvent);
                 }
 
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.info("message|eventMesh2client|emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                    simpleMessage.getTopic(), simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
+                    EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 complete();
             } catch (Throwable t) {
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                    t.getMessage(), simpleMessage.getTopic(), simpleMessage.getSeqNum(),
-                    simpleMessage.getUniqueId(), cost, t);
+                    t.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, t);
 
                 delayRetry();
             }
         }
     }
 
-    private List<EventEmitter<SimpleMessage>> selectEmitter() {
-        List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
+    private List<EventEmitter<CloudEvent>> selectEmitter() {
+        List<EventEmitter<CloudEvent>> emitterList = MapUtils.getObject(idcEmitters,
             eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             return getEventEmitters(emitterList);

@@ -1,20 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.http.demo.sub.service;
@@ -23,6 +21,7 @@ import static org.apache.eventmesh.common.ExampleConstants.ENV;
 import static org.apache.eventmesh.common.ExampleConstants.IDC;
 import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
 import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+import static org.apache.eventmesh.util.Utils.getURL;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
@@ -68,11 +67,10 @@ public class SubService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String localIP = IPUtils.getLocalAddress();
         final String localPort = properties.getProperty(SERVER_PORT);
         final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventmeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-        final String testURL = "http://" + localIP + ":" + localPort + "/sub/test";
+        final String testURL = getURL(localPort, "/sub/test");
 
         final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
@@ -105,7 +103,7 @@ public class SubService implements InitializingBean {
     @PreDestroy
     public void cleanup() {
         if (log.isInfoEnabled()) {
-            log.info("start destory ....");
+            log.info("start destroy....");
         }
 
         try {
@@ -123,7 +121,7 @@ public class SubService implements InitializingBean {
         }
 
         if (log.isInfoEnabled()) {
-            log.info("end destory.");
+            log.info("end destroy....");
         }
     }
 

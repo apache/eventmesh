@@ -60,7 +60,11 @@ public class WebhookUtil {
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
-            final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
+            String allowedOrigin = null;
+
+            if (response.getLastHeader(ALLOWED_ORIGIN_HEADER) != null) {
+                allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
+            }
             return StringUtils.isEmpty(allowedOrigin)
                 || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {

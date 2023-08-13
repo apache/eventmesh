@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,8 +89,7 @@ public class ConsumerManager {
     }
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
-        return consumerTable.computeIfAbsent(consumerGroup, key ->
-            consumerTable.put(consumerGroup, new EventMeshConsumer(eventMeshGrpcServer, consumerGroup)));
+        return consumerTable.computeIfAbsent(consumerGroup, key -> new EventMeshConsumer(eventMeshGrpcServer, consumerGroup));
     }
 
     public synchronized void registerClient(final ConsumerGroupClient newClient) {
@@ -210,7 +209,7 @@ public class ConsumerManager {
                     log.debug("grpc client info check");
                 }
 
-                final List<ConsumerGroupClient> clientList = new LinkedList<>();
+                final List<ConsumerGroupClient> clientList = new ArrayList<>();
                 clientTable.values().forEach(clients -> {
                     clientList.addAll(clients);
                 });

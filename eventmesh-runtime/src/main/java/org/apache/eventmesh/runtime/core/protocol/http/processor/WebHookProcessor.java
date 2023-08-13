@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class WebHookProcessor implements HttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{"/webhook"};
+        return new String[]{WebHookOperationConstant.CALLBACK_PATH_PREFIX};
     }
 
     @Override

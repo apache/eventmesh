@@ -17,73 +17,69 @@
 
 package org.apache.eventmesh.metrics.prometheus.metrics;
 
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.METRICS_TCP_PREFIX;
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.TCP;
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
+
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PrometheusTcpExporter {
 
-    public static void export(final String meterName, final TcpSummaryMetrics summaryMetrics) {
+    /**
+     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
+     */
+    private Map<String[], Function<TcpSummaryMetrics, Number>> paramPairs;
+
+    static {
+        paramPairs = new HashMap<String[], Function<TcpSummaryMetrics, Number>>() {
+            {
+                //retryQueueSize
+                put(join("retry.queue.size", "get size of retry queue."),
+                        TcpSummaryMetrics::getRetrySize);
+
+                //client2eventMeshTPS
+                put(join("server.tps", "get tps of client to eventMesh."),
+                        TcpSummaryMetrics::getClient2eventMeshTPS);
+
+                //eventMesh2mqTPS
+                put(join("mq.provider.tps", "get tps of eventMesh to mq."),
+                        TcpSummaryMetrics::getEventMesh2mqTPS);
+
+                //mq2eventMeshTPS
+                put(join("mq.consumer.tps", "get tps of mq to eventMesh."),
+                        TcpSummaryMetrics::getMq2eventMeshTPS);
+
+                //eventMesh2clientTPS
+                put(join("client.tps", "get tps of eventMesh to client."),
+                        TcpSummaryMetrics::getEventMesh2clientTPS);
+
+                //allTPS
+                put(join("all.tps", "get all TPS."), TcpSummaryMetrics::getAllTPS);
+
+                //EventMeshTcpConnectionHandler.connections
+                put(join("connection.num", "EventMeshTcpConnectionHandler.connections."),
+                        TcpSummaryMetrics::getAllConnections);
+
+                //subTopicNum
+                put(join("sub.topic.num", "get sub topic num."), TcpSummaryMetrics::getSubTopicNum);
+            }
+        };
+    }
+
+    public void export(final String meterName, final TcpSummaryMetrics summaryMetrics) {
         final Meter meter = GlobalMeterProvider.getMeter(meterName);
-        //retryQueueSize
-        meter.doubleValueObserverBuilder("eventmesh.tcp.retry.queue.size")
-            .setDescription("get size of retry queue.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getRetrySize(), Labels.empty()))
-            .build();
-
-        //client2eventMeshTPS
-        meter.doubleValueObserverBuilder("eventmesh.tcp.server.tps")
-            .setDescription("get tps of client to eventMesh.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getClient2eventMeshTPS(), Labels.empty()))
-            .build();
-
-        //eventMesh2mqTPS
-        meter.doubleValueObserverBuilder("eventmesh.tcp.mq.provider.tps")
-            .setDescription("get tps of eventMesh to mq.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getEventMesh2mqTPS(), Labels.empty()))
-            .build();
-
-        //mq2eventMeshTPS
-        meter.doubleValueObserverBuilder("eventmesh.tcp.mq.consumer.tps")
-            .setDescription("get tps of mq to eventMesh.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getMq2eventMeshTPS(), Labels.empty()))
-            .build();
-
-        //eventMesh2clientTPS
-        meter.doubleValueObserverBuilder("eventmesh.tcp.client.tps")
-            .setDescription("get tps of eventMesh to client.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getEventMesh2clientTPS(), Labels.empty()))
-            .build();
-
-        //allTPS
-        meter.doubleValueObserverBuilder("eventmesh.tcp.all.tps")
-            .setDescription("get all TPS.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getAllTPS(), Labels.empty()))
-            .build();
-
-        //EventMeshTcpConnectionHandler.connections
-        meter.doubleValueObserverBuilder("eventmesh.tcp.connection.num")
-            .setDescription("EventMeshTcpConnectionHandler.connections.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getAllConnections(), Labels.empty()))
-            .build();
-
-        //subTopicNum
-        meter.doubleValueObserverBuilder("eventmesh.tcp.sub.topic.num")
-            .setDescription("get sub topic num.")
-            .setUnit("TCP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSubTopicNum(), Labels.empty()))
-            .build();
+        paramPairs.forEach((metricInfo, getMetric) ->
+                observeOfValue(meter, METRICS_TCP_PREFIX + metricInfo[0], metricInfo[1], TCP, summaryMetrics, getMetric));
     }
 }

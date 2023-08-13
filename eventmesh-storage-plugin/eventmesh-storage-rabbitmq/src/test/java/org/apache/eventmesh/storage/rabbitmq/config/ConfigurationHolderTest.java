@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.rabbitmq.config;
@@ -47,16 +47,16 @@ public class ConfigurationHolderTest {
     }
 
     private void assertConfig(ConfigurationHolder config) {
-        Assert.assertEquals(config.getHost(), "127.0.0.1");
-        Assert.assertEquals(config.getPort(), 5672);
-        Assert.assertEquals(config.getUsername(), "username-success!!!");
-        Assert.assertEquals(config.getPasswd(), "passwd-success!!!");
-        Assert.assertEquals(config.getVirtualHost(), "virtualHost-success!!!");
+        Assert.assertEquals("127.0.0.1", config.getHost());
+        Assert.assertEquals(5672, config.getPort());
+        Assert.assertEquals("username-success!!!", config.getUsername());
+        Assert.assertEquals("passwd-success!!!", config.getPasswd());
+        Assert.assertEquals("virtualHost-success!!!", config.getVirtualHost());
 
-        Assert.assertEquals(config.getExchangeType(), BuiltinExchangeType.TOPIC);
-        Assert.assertEquals(config.getExchangeName(), "exchangeName-success!!!");
-        Assert.assertEquals(config.getRoutingKey(), "routingKey-success!!!");
-        Assert.assertEquals(config.getQueueName(), "queueName-success!!!");
+        Assert.assertEquals(BuiltinExchangeType.TOPIC, config.getExchangeType());
+        Assert.assertEquals("exchangeName-success!!!", config.getExchangeName());
+        Assert.assertEquals("routingKey-success!!!", config.getRoutingKey());
+        Assert.assertEquals("queueName-success!!!", config.getQueueName());
         Assert.assertTrue(config.isAutoAck());
     }
 }

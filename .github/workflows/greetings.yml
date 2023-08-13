@@ -26,7 +26,7 @@ jobs:
     name: Greeting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/first-interaction@v1
+      - uses: actions/first-interaction@v1.1.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-message: |
@@ -43,7 +43,7 @@ jobs:
 
             |WeChat Assistant|WeChat Public Account|Slack|
             |-|-|-|
-            |<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1t1816dli-I0t3OE~IpdYWrZbIWhMbXg)|
+            |<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/the-asf/shared_invite/zt-1y375qcox-UW1898e4kZE_pqrNsrBM2g)|
 
             Mailing Lists:
             | Name | Description |Subscribe	|Unsubscribe|Archive
@@ -65,7 +65,7 @@ jobs:
 
             |WeChat Assistant|WeChat Public Account|Slack|
             |-|-|-|
-            |<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1t1816dli-I0t3OE~IpdYWrZbIWhMbXg)|
+            |<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-assistant.jpg?raw=true" width="128"/>|<img src="https://github.com/apache/eventmesh/blob/master/resources/wechat-official.jpg?raw=true" width="128"/>|[Join Slack Chat](https://join.slack.com/t/the-asf/shared_invite/zt-1y375qcox-UW1898e4kZE_pqrNsrBM2g)|
 
             Mailing Lists:
             | Name | Description |Subscribe	|Unsubscribe|Archive

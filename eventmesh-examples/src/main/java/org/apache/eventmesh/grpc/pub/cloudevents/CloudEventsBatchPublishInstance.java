@@ -45,7 +45,8 @@ public class CloudEventsBatchPublishInstance extends GrpcAbstractDemo {
 
             final List<CloudEvent> cloudEventList = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
-                cloudEventList.add(buildCloudEvent(content));
+                cloudEventList.add(buildCloudEvent(content,
+                    ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
             }
             eventMeshGrpcProducer.publish(cloudEventList);
             ThreadUtils.sleep(10, TimeUnit.SECONDS);

@@ -19,11 +19,13 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import java.io.IOException;
@@ -33,11 +35,23 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
+
+/**
+ * This class handles the {@code /registry} endpoint,
+ * corresponding to the {@code eventmesh-dashboard} path {@code /registry}.
+ * <p>
+ * This handler is responsible for retrieving a list of EventMesh clusters from the
+ * {@link Registry} object, encapsulate them into a list of {@link GetRegistryResponse} objects,
+ * and sort them by {@code EventMeshClusterName}.
+ *
+ * @see AbstractHttpHandler
+ */
 
 @Slf4j
 @EventHttpHandler(path = "/registry")
@@ -45,6 +59,13 @@ public class RegistryHandler extends AbstractHttpHandler {
 
     private final Registry eventMeshRegistry;
 
+    /**
+     * Constructs a new instance with the specified {@link Registry} and {@link HttpHandlerManager}.
+     *
+     * @param eventMeshRegistry  The {@link Registry} instance used for retrieving EventMesh cluster information.
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public RegistryHandler(Registry eventMeshRegistry,
         HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
@@ -52,24 +73,35 @@ public class RegistryHandler extends AbstractHttpHandler {
     }
 
     /**
-     * OPTION /registry
+     * Handles the OPTIONS request first for {@code /registry}.
+     * <p>
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
+     * the {@link HttpExchange} object and sends a 200 status code.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Method", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
     }
 
     /**
-     * GET /registry Return a response that contains the list of EventMesh clusters
+     * Handles the GET request for {@code /registry}.
+     * <p>
+     * This method retrieves a list of EventMesh clusters and returns it as a JSON response.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
@@ -87,12 +119,12 @@ public class RegistryHandler extends AbstractHttpHandler {
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
 
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (NullPointerException e) {
             //registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            httpExchange.sendResponseHeaders(200, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
@@ -103,7 +135,7 @@ public class RegistryHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, result.getBytes(Constants.DEFAULT_CHARSET).length);
+            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
@@ -116,13 +148,28 @@ public class RegistryHandler extends AbstractHttpHandler {
         }
     }
 
+    /**
+     * Handles the HTTP requests for {@code /registry}.
+     * <p>
+     * It delegates the handling to {@code preflight()} or {@code get()} methods
+     * based on the request method type (OPTIONS or GET).
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTION".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }

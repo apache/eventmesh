@@ -17,16 +17,11 @@
 
 package org.apache.eventmesh.runtime.demo;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
-import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
-
-import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,12 +33,9 @@ public class AsyncPubClient {
             new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
-            pubClient.registerBusiHandler(new ReceiveMsgHook() {
-                @Override
-                public void handle(Package msg, ChannelHandlerContext ctx) {
-                    if (log.isInfoEnabled()) {
-                        log.info("server good by request: {}", msg);
-                    }
+            pubClient.registerBusiHandler((msg, ctx) -> {
+                if (log.isInfoEnabled()) {
+                    log.info("server good by request: {}", msg);
                 }
             });
 

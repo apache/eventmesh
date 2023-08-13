@@ -43,42 +43,42 @@ public class MessageQueueTest {
 
     @Test
     public void testPut() {
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testTake() throws InterruptedException {
         MessageEntity takeMessage = messageQueue.take();
         Assert.assertNotNull(takeMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testPeek() {
         MessageEntity peekMessage = messageQueue.peek();
         Assert.assertNotNull(peekMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetHead() {
         MessageEntity headMessage = messageQueue.getHead();
         Assert.assertNotNull(headMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetTail() {
         MessageEntity tailMessage = messageQueue.getHead();
         Assert.assertNotNull(tailMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetByOffset() {
         MessageEntity offSetMessageEntity = messageQueue.getByOffset(DEFAULT_OFFSET);
         Assert.assertNotNull(offSetMessageEntity);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
         Assert.assertEquals(DEFAULT_OFFSET, offSetMessageEntity.getOffset());
     }
 
@@ -91,7 +91,7 @@ public class MessageQueueTest {
     @Test
     public void testRemoveHead() {
         messageQueue.removeHead();
-        Assert.assertTrue(Arrays.stream(messageQueue.items).anyMatch(Objects::isNull));
+        Assert.assertTrue(Arrays.stream(messageQueue.getItems()).anyMatch(Objects::isNull));
     }
 
     @Test
