@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.protocol.http.common;
 
 public enum RequestCode {
 
+    UNKNOWN(0, "UNKNOWN"),
+
     MSG_BATCH_SEND(102, "SEND BATCH MSG"),
 
     MSG_BATCH_SEND_V2(107, "SEND BATCH MSG V2"),
