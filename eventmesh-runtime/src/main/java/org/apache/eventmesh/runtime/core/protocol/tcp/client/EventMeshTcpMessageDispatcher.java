@@ -86,7 +86,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
             }
             switch(cmd) {
-                case Command.RECOMMEND_REQUEST:
+                case RECOMMEND_REQUEST:
                     if (MESSAGE_LOGGER.isInfoEnabled()) {
                         MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     }
@@ -94,7 +94,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                     eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
                     return;
 
-                case Command.HELLO_REQUEST:
+                case HELLO_REQUEST:
                     if (MESSAGE_LOGGER.isInfoEnabled()) {
                         MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     }
@@ -136,7 +136,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
 
     private boolean isNeedTrace(Command cmd) {
         return eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
-            && cmd != null && (Command.REQUEST_TO_SERVER == cmd
+            && (Command.REQUEST_TO_SERVER == cmd
             || Command.ASYNC_MESSAGE_TO_SERVER == cmd
             || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
     }
