@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
@@ -97,28 +98,26 @@ public class StreamPushRequest extends AbstractPushRequest {
         List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
             eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return emitterList;
-            } else {
-                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
+            return getEventEmitters(emitterList);
         }
 
         if (CollectionUtils.isNotEmpty(totalEmitters)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(totalEmitters.get((startIdx + retryTimes) % totalEmitters.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return totalEmitters;
-            } else {
-                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
+            return getEventEmitters(totalEmitters);
         }
 
         log.error("No event emitters from subscriber, no message returning.");
         return Collections.emptyList();
+    }
+
+    private List<EventEmitter<SimpleMessage>> getEventEmitters(List<EventEmitter<SimpleMessage>> emitterList) {
+        switch (subscriptionMode) {
+            case CLUSTERING:
+                return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
+            case BROADCASTING:
+                return emitterList;
+            default:
+                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                return Collections.emptyList();
+        }
     }
 }
