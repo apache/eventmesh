@@ -16,14 +16,14 @@
  */
 
 
-package org.apache.eventmesh.source.connector.s3.config;
+package org.apache.eventmesh.connector.s3.source.config;
 
 import java.util.Map;
 
 import lombok.Data;
 
 @Data
-public class ConnectorConfig {
+public class SourceConnectorConfig {
 
     private String connectorName;
 

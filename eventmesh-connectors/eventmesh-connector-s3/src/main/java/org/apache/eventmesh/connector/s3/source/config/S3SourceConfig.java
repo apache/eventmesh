@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.source.connector.s3;
 
-import org.apache.eventmesh.openconnect.Application;
-import org.apache.eventmesh.source.connector.s3.connector.S3SourceConnector;
+package org.apache.eventmesh.connector.s3.source.config;
 
-public class S3SourceWorker {
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
-    public static void main(String[] args) throws Exception {
+import lombok.Data;
 
-        Application rocketmqSourceApp = new Application();
-        rocketmqSourceApp.run(S3SourceConnector.class);
 
-    }
+@Data
+public class S3SourceConfig extends SourceConfig {
+    private SourceConnectorConfig sourceConnectorConfig;
 }

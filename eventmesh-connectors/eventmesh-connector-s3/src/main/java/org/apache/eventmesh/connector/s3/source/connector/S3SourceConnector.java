@@ -15,36 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.source.connector.s3.connector;
+package org.apache.eventmesh.connector.s3.source.connector;
+
+
+import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
+import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.source.connector.s3.config.ConnectorConfig;
-import org.apache.eventmesh.source.connector.s3.config.S3SourceConfig;
-
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
+
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 @Slf4j
 public class S3SourceConnector implements Source {
@@ -59,7 +59,7 @@ public class S3SourceConnector implements Source {
 
     private S3SourceConfig sourceConfig;
 
-    private ConnectorConfig connectorConfig;
+    private SourceConnectorConfig sourceConnectorConfig;
 
     private int eachRecordSize;
 
@@ -79,24 +79,24 @@ public class S3SourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for s3 source connector
         this.sourceConfig = (S3SourceConfig) config;
-        this.connectorConfig = this.sourceConfig.getConnectorConfig();
+        this.sourceConnectorConfig = this.sourceConfig.getSourceConnectorConfig();
         this.eachRecordSize = calculateEachRecordSize();
-        AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.connectorConfig.getAccessKey(),
-            this.connectorConfig.getSecretKey());
+        AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.sourceConnectorConfig.getAccessKey(),
+            this.sourceConnectorConfig.getSecretKey());
         this.s3Client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials)
-            .region(Region.of(this.connectorConfig.getRegion())).build();
+            .region(Region.of(this.sourceConnectorConfig.getRegion())).build();
     }
 
     private int calculateEachRecordSize() {
-        Optional<Integer> sum = this.connectorConfig.getSchema().values().stream().reduce((x, y) -> x + y);
+        Optional<Integer> sum = this.sourceConnectorConfig.getSchema().values().stream().reduce((x, y) -> x + y);
         return sum.orElse(0);
     }
 
     @Override
     public void start() throws Exception {
         CompletableFuture<HeadObjectResponse> headObjectResponseCompletableFuture = this.s3Client.headObject(
-            builder -> builder.bucket(this.connectorConfig.getBucket()).key(this.connectorConfig.getFileName()));
-        headObjectResponseCompletableFuture.get(this.connectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            builder -> builder.bucket(this.sourceConnectorConfig.getBucket()).key(this.sourceConnectorConfig.getFileName()));
+        headObjectResponseCompletableFuture.get(this.sourceConnectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
         this.fileSize = headObjectResponseCompletableFuture.get().contentLength();
     }
 
@@ -107,7 +107,7 @@ public class S3SourceConnector implements Source {
 
     @Override
     public String name() {
-        return this.sourceConfig.getConnectorConfig().getConnectorName();
+        return this.sourceConfig.getSourceConnectorConfig().getConnectorName();
     }
 
     @Override
@@ -121,13 +121,14 @@ public class S3SourceConnector implements Source {
             return Collections.EMPTY_LIST;
         }
         long startPosition = this.position;
-        long endPosition = Math.min(this.fileSize, this.position + this.eachRecordSize * this.connectorConfig.getBatchSize()) - 1;
-        GetObjectRequest request = GetObjectRequest.builder().bucket(this.connectorConfig.getBucket()).key(this.connectorConfig.getFileName())
+        long endPosition = Math.min(this.fileSize, this.position + this.eachRecordSize * this.sourceConnectorConfig.getBatchSize()) - 1;
+        GetObjectRequest request = GetObjectRequest.builder().bucket(this.sourceConnectorConfig.getBucket())
+            .key(this.sourceConnectorConfig.getFileName())
             .range("bytes=" + startPosition + "-" + endPosition).build();
         ResponseBytes<GetObjectResponse> resp;
         try {
             resp = this.s3Client.getObject(request, AsyncResponseTransformer.toBytes())
-                .get(this.connectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
+                .get(this.sourceConnectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("poll records from S3 file, poll range {}-{}, but failed", startPosition, endPosition, e);
             return Collections.EMPTY_LIST;
@@ -146,9 +147,9 @@ public class S3SourceConnector implements Source {
 
     private RecordPartition getRecordPartition() {
         Map<String, String> map = new HashMap<>();
-        map.put(REGION, this.connectorConfig.getRegion());
-        map.put(BUCKET, this.connectorConfig.getBucket());
-        map.put(FILE_NAME, this.connectorConfig.getFileName());
+        map.put(REGION, this.sourceConnectorConfig.getRegion());
+        map.put(BUCKET, this.sourceConnectorConfig.getBucket());
+        map.put(FILE_NAME, this.sourceConnectorConfig.getFileName());
         return new RecordPartition(map);
     }
 

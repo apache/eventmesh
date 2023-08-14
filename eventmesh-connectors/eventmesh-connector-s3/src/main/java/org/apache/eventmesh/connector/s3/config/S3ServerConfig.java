@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.connector.s3.config;
 
-package org.apache.eventmesh.source.connector.s3.config;
-
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 
 @Data
-public class S3SourceConfig extends SourceConfig {
-    private ConnectorConfig connectorConfig;
+@EqualsAndHashCode(callSuper = true)
+public class S3ServerConfig extends Config {
+
+    private boolean sourceEnable;
+
+    private boolean sinkEnable;
+
 }

@@ -15,32 +15,37 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.source.connector.s3.connector;
+package org.apache.eventmesh.connector.s3.source;
+
+import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
+import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.connector.s3.source.connector.S3SourceConnector;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
-import org.apache.eventmesh.source.connector.s3.config.ConnectorConfig;
-import org.apache.eventmesh.source.connector.s3.config.S3SourceConfig;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+
 @Ignore
 public class S3SourceConnectorTest {
 
     private static final S3SourceConfig sourceConfig;
 
-    private static final ConnectorConfig connectorConfig;
+    private static final SourceConnectorConfig SOURCE_CONNECTOR_CONFIG;
 
     private static final Map<String, Integer> schema;
 
@@ -48,14 +53,14 @@ public class S3SourceConnectorTest {
 
     static {
         sourceConfig = new S3SourceConfig();
-        connectorConfig = new ConnectorConfig();
-        connectorConfig.setConnectorName("S3SourceConnector");
-        connectorConfig.setRegion("ap-southeast-1");
-        connectorConfig.setBucket("event-mesh-bucket");
-        connectorConfig.setAccessKey("access-key");
-        connectorConfig.setSecretKey("secret-key");
+        SOURCE_CONNECTOR_CONFIG = new SourceConnectorConfig();
+        SOURCE_CONNECTOR_CONFIG.setConnectorName("S3SourceConnector");
+        SOURCE_CONNECTOR_CONFIG.setRegion("ap-southeast-1");
+        SOURCE_CONNECTOR_CONFIG.setBucket("event-mesh-bucket");
+        SOURCE_CONNECTOR_CONFIG.setAccessKey("access-key");
+        SOURCE_CONNECTOR_CONFIG.setSecretKey("secret-key");
 
-        connectorConfig.setFileName("test-file");
+        SOURCE_CONNECTOR_CONFIG.setFileName("test-file");
 
         schema = new HashMap<>();
         schema.put("id", 4);
@@ -63,18 +68,18 @@ public class S3SourceConnectorTest {
         schema.put("time", 8);
 
         eachRecordSize = schema.values().stream().reduce((x, y) -> x + y).orElse(0);
-        connectorConfig.setSchema(schema);
-        sourceConfig.setConnectorConfig(connectorConfig);
+        SOURCE_CONNECTOR_CONFIG.setSchema(schema);
+        sourceConfig.setSourceConnectorConfig(SOURCE_CONNECTOR_CONFIG);
     }
 
     private S3AsyncClient s3Client;
 
     @Before
     public void setUp() throws Exception {
-        AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.connectorConfig.getAccessKey(),
-            this.connectorConfig.getSecretKey());
+        AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.SOURCE_CONNECTOR_CONFIG.getAccessKey(),
+            this.SOURCE_CONNECTOR_CONFIG.getSecretKey());
         this.s3Client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials)
-            .region(Region.of(this.connectorConfig.getRegion())).build();
+            .region(Region.of(this.SOURCE_CONNECTOR_CONFIG.getRegion())).build();
 
         // write mocked data
         this.writeMockedRecords(200);
@@ -83,8 +88,8 @@ public class S3SourceConnectorTest {
     @After
     public void tearDown() throws Exception {
         // clear file
-        this.s3Client.deleteObject(builder -> builder.bucket(this.connectorConfig.getBucket())
-            .key(this.connectorConfig.getFileName()).build()).get();
+        this.s3Client.deleteObject(builder -> builder.bucket(this.SOURCE_CONNECTOR_CONFIG.getBucket())
+            .key(this.SOURCE_CONNECTOR_CONFIG.getFileName()).build()).get();
     }
 
     @Test
@@ -122,7 +127,8 @@ public class S3SourceConnectorTest {
             body.flip();
             bytes.putLong(System.currentTimeMillis());
         }
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(connectorConfig.getBucket()).key(connectorConfig.getFileName()).build();
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            .bucket(SOURCE_CONNECTOR_CONFIG.getBucket()).key(SOURCE_CONNECTOR_CONFIG.getFileName()).build();
         AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(bytes.array());
         this.s3Client.putObject(putObjectRequest, requestBody).get();
     }
