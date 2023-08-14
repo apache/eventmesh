@@ -15,22 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.http.processor;
+package org.apache.eventmesh.common.enums;
 
-import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService.HandlerSpecific;
-
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-
-/**
- * async http processor
- */
-
-public interface AsyncHttpProcessor extends HttpProcessor {
-
-    default HttpResponse handler(HttpRequest httpRequest) {
-        return null;
-    }
-
-    void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception;
+public enum ConnectionType {
+    PERSISTENT,
+    SHORT_LIVED
 }
