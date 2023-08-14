@@ -91,7 +91,10 @@ public class WebhookFileListener {
     }
 
     /**
-     * Read the file and cache it in map
+     * Read the file and cache it in local map for manufacturers webhook payload delivery
+     * <p>
+     * A CountDownLatch is used to ensure that this method should be invoked after the {@code webhookConfigFile} is written completely
+     * by {@code org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#writeToFile} when multiple modify events are triggered.
      *
      * @param webhookConfigFile webhookConfigFile
      */
