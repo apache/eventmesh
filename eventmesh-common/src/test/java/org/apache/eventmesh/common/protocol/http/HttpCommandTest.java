@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.protocol.http;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
 import java.util.HashMap;
@@ -88,5 +89,14 @@ public class HttpCommandTest {
     public void testHttpResponseWithREQCmdType() throws Exception {
         DefaultFullHttpResponse response = httpCommand.httpResponse();
         Assert.assertNull(response);
+    }
+
+    @Test
+    public void testCreateHttpCommandResponse() {
+        HttpCommand command = new HttpCommand();
+        HttpCommand response = command.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        Assert.assertNotNull(response);
+        Assert.assertEquals("0", response.getRequestCode());
+
     }
 }
