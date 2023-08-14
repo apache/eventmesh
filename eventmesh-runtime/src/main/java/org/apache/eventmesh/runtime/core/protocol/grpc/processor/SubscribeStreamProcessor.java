@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-import java.util.Objects;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
@@ -37,6 +36,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
