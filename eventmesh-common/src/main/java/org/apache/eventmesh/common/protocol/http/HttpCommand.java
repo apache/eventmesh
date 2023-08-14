@@ -22,11 +22,10 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -82,8 +81,8 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public HttpCommand createHttpCommandResponse(Header header, Body body) {
-        if (StringUtils.isBlank(requestCode)) {
-            return null;
+        if (this.requestCode == null) {
+            this.requestCode = RequestCode.UNKNOWN.getRequestCode().toString();
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);
         response.setOpaque(this.opaque);
@@ -96,8 +95,8 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public HttpCommand createHttpCommandResponse(EventMeshRetCode eventMeshRetCode) {
-        if (StringUtils.isBlank(requestCode)) {
-            return null;
+        if (this.requestCode == null) {
+            this.requestCode = RequestCode.UNKNOWN.getRequestCode().toString();
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);
         response.setOpaque(this.opaque);
