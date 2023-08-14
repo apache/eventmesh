@@ -85,7 +85,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_IDC, session.getClient().getIdc());
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
             }
-            switch(cmd) {
+            switch (cmd) {
                 case RECOMMEND_REQUEST:
                     if (MESSAGE_LOGGER.isInfoEnabled()) {
                         MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
