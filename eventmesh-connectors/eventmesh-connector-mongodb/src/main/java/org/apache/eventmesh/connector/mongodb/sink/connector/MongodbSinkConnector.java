@@ -17,16 +17,27 @@
 
 package org.apache.eventmesh.connector.mongodb.sink.connector;
 
+import com.mongodb.connection.ClusterType;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.connector.mongodb.sink.client.Impl.MongodbSinkClient;
+import org.apache.eventmesh.connector.mongodb.sink.client.MongodbStandaloneSinkClient;
 import org.apache.eventmesh.connector.mongodb.sink.config.MongodbSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
+@Slf4j
 public class MongodbSinkConnector implements Sink {
 
     private MongodbSinkConfig sinkConfig;
+
+    private MongodbSinkClient client;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -35,12 +46,19 @@ public class MongodbSinkConnector implements Sink {
 
     @Override
     public void init(Config config) throws Exception {
-
+        String connectorType = sinkConfig.getConnectorConfig().getConnectorType();
+        if (connectorType.equals(ClusterType.STANDALONE.name())) {
+            this.client = new MongodbStandaloneSinkClient(sinkConfig.getConnectorConfig());
+        }
+//        if (connectorType.equals(ClusterType.REPLICA_SET.name())) {
+//            producer = new MongodbReplicaSetProducer(configurationHolder);
+//        }
+        client.init();
     }
 
     @Override
     public void start() throws Exception {
-
+        this.client.start();
     }
 
     @Override
@@ -55,11 +73,47 @@ public class MongodbSinkConnector implements Sink {
 
     @Override
     public void stop() throws Exception {
-
+        this.client.stop();
     }
 
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
+        try {
+            for (ConnectRecord connectRecord : sinkRecords) {
+                CloudEvent event = convertRecordToEvent(connectRecord);
+                client.publish(event);
+                log.debug("Produced message to event:{}}", event);
+            }
+        } catch (Exception e) {
+            log.error("Failed to produce message:{}", e.getMessage());
+        }
+    }
 
+    public CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
+        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
+                .withData((byte[]) connectRecord.getData());
+        connectRecord.getExtensions().keySet().forEach(s -> {
+            switch (s) {
+                case "id":
+                    cloudEventBuilder.withId(connectRecord.getExtension(s));
+                    break;
+                case "topic":
+                    cloudEventBuilder.withSubject(connectRecord.getExtension(s));
+                    break;
+                case "source":
+                    try {
+                        cloudEventBuilder.withSource(new URI(connectRecord.getExtension(s)));
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "type":
+                    cloudEventBuilder.withType(connectRecord.getExtension(s));
+                    break;
+                default:
+                    cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
+            }
+        });
+        return cloudEventBuilder.build();
     }
 }

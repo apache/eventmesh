@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mongodb.sink.config;
+package org.apache.eventmesh.connector.mongodb.sink.client.Impl;
 
-import lombok.Data;
+import io.cloudevents.CloudEvent;
 
-@Data
-public class SinkConnectorConfig {
+public interface MongodbSinkClient {
 
-    private String connectorName;
+    void init();
 
-    private String connectorType;
+    void start();
 
-    private String url;
+    void publish(CloudEvent cloudEvent);
 
-    private String database;
+    void stop();
 
-    private String collection;
 }
