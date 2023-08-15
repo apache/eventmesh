@@ -68,6 +68,9 @@ public class EtcdCustomService extends EtcdRegistryService {
                 return eventMeshServicePubTopicInfoList;
             }
         } catch (Exception e) {
+            if(e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] error", e);
             throw new RegistryException(e.getMessage());
         }
@@ -85,14 +88,15 @@ public class EtcdCustomService extends EtcdRegistryService {
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
             if (CollectionUtils.isNotEmpty(keyValues)) {
-                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
-                    JsonUtils.parseObject(
+                return JsonUtils.parseObject(
                         new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
                         EventMeshAppSubTopicInfo.class
-                    );
-                return eventMeshAppSubTopicInfo;
+                );
             }
         } catch (Exception e) {
+            if(e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             throw new RegistryException(e.getMessage());
         }
