@@ -94,10 +94,10 @@ public class EtcdCustomService extends EtcdRegistryService {
                 );
             }
         } catch (Exception e) {
+            log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             if(e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             throw new RegistryException(e.getMessage());
         }
         return null;
