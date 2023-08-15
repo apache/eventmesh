@@ -53,9 +53,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SubService implements InitializingBean {
 
-    private transient EventMeshHttpConsumer eventMeshHttpConsumer;
+    private EventMeshHttpConsumer eventMeshHttpConsumer;
 
-    private transient Properties properties;
+    private Properties properties;
 
     {
         try {
@@ -68,19 +68,19 @@ public class SubService implements InitializingBean {
     final String localPort = properties.getProperty(SERVER_PORT);
     final String testURL = getURL(localPort, "/sub/test");
 
-    private final transient List<SubscriptionItem> topicList = Lists.newArrayList(
+    private final List<SubscriptionItem> topicList = Lists.newArrayList(
         new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private transient CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
+    private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        final String eventmeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventmeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
+    public void afterPropertiesSet() {
+        final String eventMeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
 
-        final String eventMeshIPPort = eventmeshIP + ":" + eventmeshHttpPort;
+        final String eventMeshIPPort = eventMeshIP + ":" + eventMeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
             .liteEventMeshAddr(eventMeshIPPort)
             .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
