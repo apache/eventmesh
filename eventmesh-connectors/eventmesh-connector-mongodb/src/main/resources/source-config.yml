@@ -26,5 +26,8 @@ pubSubConfig:
     passWord: mongodbPassWord
 connectorConfig:
     connectorName: redisSource
-    server:
-    topic: SourceTopic
+    connectorType: STANDALONE
+    #mongodb://root:root@127.0.0.1:27018,127.0.0.1:27019
+    url: mongodb://127.0.0.1:27018
+    database: db
+    collection: col

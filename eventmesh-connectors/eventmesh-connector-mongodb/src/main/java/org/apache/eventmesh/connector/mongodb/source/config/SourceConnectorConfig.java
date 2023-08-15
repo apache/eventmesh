@@ -24,8 +24,12 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String server;
+    private String connectorType;
 
-    private String topic;
+    private String url;
+
+    private String database;
+
+    private String collection;
 
 }
