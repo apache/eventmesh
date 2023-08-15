@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshTcpMessageDispatcher(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -85,25 +85,24 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_IDC, session.getClient().getIdc());
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
             }
+            switch (cmd) {
+                case RECOMMEND_REQUEST:
+                    if (MESSAGE_LOGGER.isInfoEnabled()) {
+                        MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                    }
+                    task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
+                    eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
+                    return;
 
-            if (Command.RECOMMEND_REQUEST == cmd) {
-                if (MESSAGE_LOGGER.isInfoEnabled()) {
-                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
-                }
-                task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
-                eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
-                return;
+                case HELLO_REQUEST:
+                    if (MESSAGE_LOGGER.isInfoEnabled()) {
+                        MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                    }
+                    task = new HelloTask(pkg, ctx, startTime, eventMeshTCPServer);
+                    eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
+                    return;
+                default: //do nothing
             }
-
-            if (Command.HELLO_REQUEST == cmd) {
-                if (MESSAGE_LOGGER.isInfoEnabled()) {
-                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
-                }
-                task = new HelloTask(pkg, ctx, startTime, eventMeshTCPServer);
-                eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
-                return;
-            }
-
             if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx) == null) {
                 if (MESSAGE_LOGGER.isInfoEnabled()) {
                     MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
@@ -136,13 +135,10 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     }
 
     private boolean isNeedTrace(Command cmd) {
-        if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
-            && cmd != null && (Command.REQUEST_TO_SERVER == cmd
+        return eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
+            && (Command.REQUEST_TO_SERVER == cmd
             || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
-            return true;
-        }
-        return false;
+            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
     }
 
     private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
