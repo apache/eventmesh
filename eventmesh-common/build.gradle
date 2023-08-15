@@ -25,6 +25,9 @@ dependencies {
     api "org.apache.commons:commons-text"
     api "org.apache.commons:commons-lang3"
 
+    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
+    implementation 'commons-net:commons-net:3.9.0'
+
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
