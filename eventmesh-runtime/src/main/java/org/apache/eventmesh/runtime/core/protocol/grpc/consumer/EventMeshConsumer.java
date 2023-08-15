@@ -63,7 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshConsumer {
 
-    private final transient String consumerGroup;
+    private final String consumerGroup;
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -80,7 +80,7 @@ public class EventMeshConsumer {
     /**
      * Key: topic Value: ConsumerGroupTopicConfig
      **/
-    private final transient Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
+    private final Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
 
     public EventMeshConsumer(final EventMeshGrpcServer eventMeshGrpcServer, final String consumerGroup) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -252,9 +252,9 @@ public class EventMeshConsumer {
             final String topic = event.getSubject();
             final String bizSeqNo = Optional.ofNullable(
                     (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS))
-                .orElseGet(() -> "");
+                .orElse("");
             final String uniqueId = Optional.ofNullable((String) event.getExtension(Constants.RMB_UNIQ_ID))
-                .orElseGet(() -> "");
+                .orElse("");
 
             if (log.isDebugEnabled()) {
                 log.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
