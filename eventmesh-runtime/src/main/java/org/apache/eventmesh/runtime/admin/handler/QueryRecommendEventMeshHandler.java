@@ -38,7 +38,19 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * query recommend eventmesh
+ * This class handles the HTTP requests of {@code /eventMesh/recommend} endpoint,
+ * which is used to calculate and return the recommended EventMesh server node to the client
+ * based on the provided {@code group} and {@code purpose} parameters.
+ * <p>
+ * Parameters:
+ * <ul>
+ *     <li>client group: {@code group} | Example: {@code EventmeshTestGroup}</li>
+ *     <li>client purpose: {@code purpose} | Example: {@code sub}</li>
+ * </ul>
+ * It uses an {@link EventMeshRecommendStrategy} which is implemented by {@link EventMeshRecommendImpl}
+ * to calculate the recommended EventMesh server node.
+ *
+ * @see AbstractHttpHandler
  */
 @Slf4j
 @EventHttpHandler(path = "/eventMesh/recommend")
@@ -46,11 +58,24 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
+    /**
+     * Handles requests by calculating a recommended EventMesh server node.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
@@ -60,8 +85,10 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
             }
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+            // Extract parameters from the query string
             String group = queryStringInfo.get(EventMeshConstants.MANAGE_GROUP);
             String purpose = queryStringInfo.get(EventMeshConstants.MANAGE_PURPOSE);
+            // Check the validity of the parameters
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
@@ -70,6 +97,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
             }
 
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
+            // Calculate the recommended EventMesh node according to the given group and purpose
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);

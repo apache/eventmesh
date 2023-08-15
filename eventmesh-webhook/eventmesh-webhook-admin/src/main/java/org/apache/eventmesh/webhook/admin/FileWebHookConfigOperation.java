@@ -76,7 +76,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (webhookConfigFile.exists()) {
             if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} is existed", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} exists", webHookConfig.getCallbackPath());
             }
             return 0;
         }
@@ -107,6 +107,9 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         return webhookConfigFile.delete() ? 1 : 0;
     }
 
+    /**
+     * Query WebHook configuration information based on the WebHook callback path specified in {@link WebHookConfig}.
+     */
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);

@@ -27,8 +27,8 @@ import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +125,7 @@ public class SinkWorker implements ConnectorWorker {
         @Override
         public Optional<CloudEvent> handle(CloudEvent event) {
             byte[] body = Objects.requireNonNull(event.getData()).toBytes();
+            log.info("handle receive events {}", new String(event.getData().toBytes()));
             //todo: recordPartition & recordOffset
             ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
             for (String extensionName : event.getExtensionNames()) {
@@ -134,6 +135,7 @@ public class SinkWorker implements ConnectorWorker {
             connectRecord.addExtension("topic", event.getSubject());
             connectRecord.addExtension("source", event.getSource().toString());
             connectRecord.addExtension("type", event.getType());
+            connectRecord.addExtension("datacontenttype", event.getDataContentType());
             List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(connectRecord);
             sink.put(connectRecords);

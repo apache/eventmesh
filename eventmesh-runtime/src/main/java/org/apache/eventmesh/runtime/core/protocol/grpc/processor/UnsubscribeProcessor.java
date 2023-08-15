@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,35 +46,39 @@ public class UnsubscribeProcessor {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Subscription subscription, EventEmitter<Response> emitter) throws Exception {
+    public void process(CloudEvent subscription, EventEmitter<CloudEvent> emitter) throws Exception {
 
-        RequestHeader header = subscription.getHeader();
-
-        if (!ServiceUtils.validateHeader(header)) {
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+        if (!ServiceUtils.validateCloudEventAttributes(subscription)) {
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(null, subscription)) {
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
         ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
 
-        String consumerGroup = subscription.getConsumerGroup();
-        String url = subscription.getUrl();
-        List<Subscription.SubscriptionItem> subscriptionItems = subscription.getSubscriptionItemsList();
-
+        String consumerGroup = EventMeshCloudEventUtils.getConsumerGroup(subscription);
+        String url = EventMeshCloudEventUtils.getURL(subscription);
+        List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
+            new TypeReference<List<SubscriptionItem>>() {
+            });
+        final String env = EventMeshCloudEventUtils.getEnv(subscription);
+        final String idc = EventMeshCloudEventUtils.getIdc(subscription);
+        final String sys = EventMeshCloudEventUtils.getSys(subscription);
+        final String ip = EventMeshCloudEventUtils.getIp(subscription);
+        final String pid = EventMeshCloudEventUtils.getPid(subscription);
         // Collect clients to remove in the unsubscribe
         List<ConsumerGroupClient> removeClients = new LinkedList<>();
-        for (Subscription.SubscriptionItem item : subscriptionItems) {
+        for (SubscriptionItem item : subscriptionItems) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(header.getEnv())
-                .idc(header.getIdc())
-                .sys(header.getSys())
-                .ip(header.getIp())
-                .pid(header.getPid())
+                .env(env)
+                .idc(idc)
+                .sys(sys)
+                .ip(ip)
+                .pid(pid)
                 .consumerGroup(consumerGroup)
                 .topic(item.getTopic())
                 .subscriptionMode(item.getMode())
@@ -105,6 +111,6 @@ public class UnsubscribeProcessor {
             log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "unsubscribe success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "unsubscribe success", emitter);
     }
 }

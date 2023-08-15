@@ -109,9 +109,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        final String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
-        final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
-        final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+        final String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey());
+        final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
+        final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
         //validate event-extension
         if (StringUtils.isAnyBlank(idc, pid, sys) || !StringUtils.isNumeric(pid)) {
@@ -135,8 +135,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         //do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            final String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
-            final String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
+            final String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME.getKey());
+            final String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
             final int requestCode = Integer.parseInt(request.getRequestCode());
 
             try {

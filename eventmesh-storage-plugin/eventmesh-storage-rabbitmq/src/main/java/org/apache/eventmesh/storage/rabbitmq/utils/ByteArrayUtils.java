@@ -30,7 +30,7 @@ public class ByteArrayUtils {
 
     public static <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
         String s = JsonUtils.toJSONString(obj);
-        byte[] bytes = s.getBytes();
+        byte[] bytes = s.getBytes(Constants.DEFAULT_CHARSET);
         return Optional.ofNullable(bytes);
     }
 

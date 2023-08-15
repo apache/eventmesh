@@ -29,9 +29,15 @@ public enum RequestURI {
 
     SUBSCRIBE_REMOTE("/eventmesh/subscribe/remote", "SUBSCRIBE REMOTE"),
 
-    UNSUBSCRIBE_LOCAL("/eventmesh/unsubscribe/local", "SUBSCRIBE LOCAL"),
+    UNSUBSCRIBE_LOCAL("/eventmesh/unsubscribe/local", "UNSUBSCRIBE LOCAL"),
 
-    UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "SUBSCRIBE REMOTE");
+    UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "UNSUBSCRIBE REMOTE"),
+
+    CREATE_TOPIC("/eventmesh/topic/create", "CREATE TOPIC"),
+
+    DELETE_TOPIC("/eventmesh/topic/delete", "DELETE TOPIC"),
+
+    SUBSCRIPTION_QUERY("/eventmesh/subscrition/query", "SUBSCRIPTION QUERY");
 
 
     private final String requestURI;

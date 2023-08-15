@@ -91,6 +91,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         currPushUrl = getUrl();
 
         if (StringUtils.isBlank(currPushUrl)) {
+            LOGGER.warn("tryHTTPRequest fail, getUrl is null, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
+                this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId());
             return;
         }
 
@@ -144,7 +146,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             }
 
         } catch (Exception ex) {
-            LOGGER.error("Failed to convert EventMeshMessage from CloudEvent", ex);
+            LOGGER.warn("cloudevent to HttpEventWrapper occur except, group:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                this.handleMsgContext.getConsumerGroup(),
+                this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId(), ex);
             return;
         }
 
@@ -207,37 +211,31 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     try {
                         res = EntityUtils.toString(response.getEntity(), Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                     } catch (IOException e) {
+                        LOGGER.warn("handleResponse exception", e);
                         handleMsgContext.finish();
                         return new Object();
                     }
                     ClientRetCode result = processResponseContent(res);
-                    if (MESSAGE_LOGGER.isInfoEnabled()) {
-                        MESSAGE_LOGGER.info(
-                            "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}",
+                    MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                    }
-                    if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.RETRY) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.NOLISTEN) {
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else if (result == ClientRetCode.FAIL) {
-                        complete();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
+                    switch (result) {
+                        case OK:
+                        case REMOTE_OK:
+                        case FAIL:
+                            complete();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        case RETRY:
+                        case NOLISTEN:
+                            delayRetry();
+                            if (isComplete()) {
+                                handleMsgContext.finish();
+                            }
+                            break;
+                        default: // do nothing
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
@@ -328,7 +326,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             Map<String, Object> ret =
                 JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
                 });
-            Integer retCode = (Integer) ret.get("retCode");
+            Integer retCode = (Integer) Objects.requireNonNull(ret).get(ProtocolKey.RETCODE);
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
@@ -340,7 +338,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             }
             return ClientRetCode.FAIL;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (MESSAGE_LOGGER.isWarnEnabled()) {
                 MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
                     handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);

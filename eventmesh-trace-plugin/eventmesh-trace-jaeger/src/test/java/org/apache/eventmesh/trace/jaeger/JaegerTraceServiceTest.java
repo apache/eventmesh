@@ -57,7 +57,7 @@ public class JaegerTraceServiceTest {
         try {
             sdkTracerProviderField = JaegerTraceService.class.getDeclaredField("sdkTracerProvider");
         } catch (NoSuchFieldException e) {
-            sdkTracerProviderField = ReflectUtils.lookUpField(JaegerTraceService.class, "sdkTracerProvider");
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(JaegerTraceService.class, "sdkTracerProvider");
             if (sdkTracerProviderField == null) {
                 throw e;
             }

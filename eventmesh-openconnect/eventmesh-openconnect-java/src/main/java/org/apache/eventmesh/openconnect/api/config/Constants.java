@@ -23,7 +23,9 @@ public class Constants {
 
     public static final String ENV_PORT = "connectorPort";
 
-    public static final String ENV_CONFIG_FILE = "connectorConf";
+    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
+
+    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
 
     public static final int DEFAULT_ATTEMPT = 3;
 

@@ -22,13 +22,12 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -48,23 +47,25 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public static final long serialVersionUID = -8547334421415366981L;
 
-    private Map<String, Object> headerMap = new HashMap<>();
+    private transient Map<String, Object> headerMap = new HashMap<>();
 
-    private Map<String, Object> sysHeaderMap = new HashMap<>();
+    private transient Map<String, Object> sysHeaderMap = new HashMap<>();
 
     private byte[] body;
 
     private String requestURI;
 
-    public String httpMethod;
+    private String httpMethod;
 
-    public String httpVersion;
+    private String httpVersion;
 
     //Command request time
-    public long reqTime;
+    private long reqTime;
 
     //Command response time
-    public long resTime;
+    private long resTime;
+
+    private HttpResponseStatus httpResponseStatus = HttpResponseStatus.OK;
 
     public HttpEventWrapper() {
         this(null, null, null);
@@ -180,7 +181,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
     }
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
             Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
@@ -192,19 +193,19 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public void buildSysHeaderForClient() {
         // sys attributes
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.ENV, "env"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IDC, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IDC, "idc"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress()));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PID, ThreadUtils.getPID()));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.SYS, "1234"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PASSWD, "pass"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP,
-            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, "em-http-producer"));
-        sysHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP,
-            headerMap.getOrDefault(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, "em-http-consumer"));
         sysHeaderMap.put(ProtocolKey.PROTOCOL_TYPE, "http");
         sysHeaderMap.put(ProtocolKey.PROTOCOL_DESC, "http");
+        EnumSet<ProtocolKey.ClientInstanceKey> clientInstanceKeys = EnumSet.allOf(ProtocolKey.ClientInstanceKey.class);
+        for (ProtocolKey.ClientInstanceKey clientInstanceKey : clientInstanceKeys) {
+            switch (clientInstanceKey) {
+                case BIZSEQNO:
+                case UNIQUEID:
+                    break;
+                default:
+                    sysHeaderMap.put(clientInstanceKey.getKey(),
+                        headerMap.getOrDefault(clientInstanceKey.getKey(), clientInstanceKey.getValue()));
+            }
+        }
     }
 
     public void buildSysHeaderForCE() {
@@ -223,6 +224,10 @@ public class HttpEventWrapper implements ProtocolTransportObject {
             topic = "TEST-HTTP-TOPIC";
         }
         sysHeaderMap.put(ProtocolKey.CloudEventsKey.SUBJECT, topic);
+    }
+
+    public void setHttpResponseStatus(HttpResponseStatus httpResponseStatus) {
+        this.httpResponseStatus = httpResponseStatus;
     }
 
 }

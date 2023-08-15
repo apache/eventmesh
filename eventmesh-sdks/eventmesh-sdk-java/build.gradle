@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
+def grpcVersion = '1.43.2'
 
 dependencies {
     api project(":eventmesh-common")
@@ -32,6 +32,7 @@ dependencies {
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.cloudevents:cloudevents-protobuf"
 
     // protocol
     api "io.cloudevents:cloudevents-core"
