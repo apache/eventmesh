@@ -30,13 +30,13 @@ public class MongodbConnectServer {
         MongodbServerConfig serverConfig = ConfigUtil.parse(MongodbServerConfig.class, "server-config.yml");
 
         if (serverConfig.isSourceEnable()) {
-            Application redisSourceApp = new Application();
-            redisSourceApp.run(MongodbSourceConnector.class);
+            Application mongodbSourceApp = new Application();
+            mongodbSourceApp.run(MongodbSourceConnector.class);
         }
 
         if (serverConfig.isSinkEnable()) {
-            Application redisSinkApp = new Application();
-            redisSinkApp.run(MongodbSinkConnector.class);
+            Application mongodbSinkApp = new Application();
+            mongodbSinkApp.run(MongodbSinkConnector.class);
         }
     }
 }

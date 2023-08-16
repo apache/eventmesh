@@ -50,6 +50,7 @@ public class MongodbSinkConnector implements Sink {
 
     @Override
     public void init(Config config) throws Exception {
+        this.sinkConfig = (MongodbSinkConfig) config;
         String connectorType = sinkConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSinkClient(sinkConfig.getConnectorConfig());

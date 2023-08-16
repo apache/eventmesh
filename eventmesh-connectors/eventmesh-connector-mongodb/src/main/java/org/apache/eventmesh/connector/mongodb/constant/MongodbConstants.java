@@ -31,7 +31,4 @@ public class MongodbConstants {
     public static final String CLOUD_EVENT_DOC_TYPE = "type";
     public static final String CLOUD_EVENT_DOC_DATACONTENTTYPE = "datacontenttype";
     public static final String CLOUD_EVENT_DOC_SUBJECT = "subject";
-
-
-
 }
