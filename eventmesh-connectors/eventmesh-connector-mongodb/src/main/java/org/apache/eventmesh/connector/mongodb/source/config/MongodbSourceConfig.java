@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.connector.mongodb.source.config;
 
-import lombok.Data;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
+import lombok.Data;
 
 @Data
 public class MongodbSourceConfig extends SourceConfig {

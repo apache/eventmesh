@@ -17,11 +17,8 @@
 
 package org.apache.eventmesh.connector.mongodb.sink.connector;
 
-import com.mongodb.connection.ClusterType;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.mongodb.sink.client.Impl.MongodbSinkClient;
+import org.apache.eventmesh.connector.mongodb.sink.client.MongodbReplicaSetSinkClient;
 import org.apache.eventmesh.connector.mongodb.sink.client.MongodbStandaloneSinkClient;
 import org.apache.eventmesh.connector.mongodb.sink.config.MongodbSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -31,6 +28,13 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import com.mongodb.connection.ClusterType;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MongodbSinkConnector implements Sink {
@@ -50,9 +54,9 @@ public class MongodbSinkConnector implements Sink {
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSinkClient(sinkConfig.getConnectorConfig());
         }
-//        if (connectorType.equals(ClusterType.REPLICA_SET.name())) {
-//            producer = new MongodbReplicaSetProducer(configurationHolder);
-//        }
+        if (connectorType.equals(ClusterType.REPLICA_SET.name())) {
+            this.client = new MongodbReplicaSetSinkClient(sinkConfig.getConnectorConfig());
+        }
         client.init();
     }
 
