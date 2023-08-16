@@ -37,16 +37,16 @@ docker push yourrepo/EventMeshOperator
 
 ## EventMesh Components
 
-- EventMesh-runtime: 核心组件，运行时模块
+- EventMesh-runtime: Core Components, Runtime Modules
   
-- EventMesh-jdk: 支持HTTP、TCP、GRPC协议
+- EventMesh-jdk: Supports HTTP, TCP, GRPC protocols
   
-- EventMesh-connectors: 连接器，连接插件
+- EventMesh-connectors: Connectors, Connecting Inserts
   
-- EventMesh-storage: 存储模块
+- EventMesh-storage: Storage Module
 
-- EventMesh-workflow: EventMesh工作流
+- EventMesh-workflow: EventMesh Workflow
 
-- EventMesh-dashboard: EventMesh仪表盘
+- EventMesh-dashboard: EventMesh Dashboard
 
 ...
