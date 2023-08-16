@@ -175,22 +175,25 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
-        // Reset latch count
-        SharedLatchHolder.latch = new CountDownLatch(1);
-        try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
-            // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
-            fos.getChannel().lock();
-            bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
-        } catch (IOException e) {
-            if (log.isErrorEnabled()) {
-                log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
+        // Wait for the previous cacheInit to complete and ensure the atomicity of countDown in case of concurrency
+        synchronized (SharedLatchHolder.lock) {
+            // Reset latch count
+            SharedLatchHolder.latch = new CountDownLatch(1);
+            try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+                // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
+                fos.getChannel().lock();
+                bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
+            } catch (IOException e) {
+                if (log.isErrorEnabled()) {
+                    log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
+                }
+                return false;
             }
-            return false;
+            // Notify that file write has been completed
+            SharedLatchHolder.latch.countDown();
+            return true;
         }
-        // Notify that file write has been completed
-        SharedLatchHolder.latch.countDown();
-        return true;
     }
 
     private String getWebhookConfigManuDir(final WebHookConfig webHookConfig) {

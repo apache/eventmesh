@@ -171,7 +171,9 @@ public class WebhookFileListener {
                         try {
                             // Wait for the notification of file write completion before initializing the cache
                             SharedLatchHolder.latch.await();
-                            cacheInit(file);
+                            synchronized (SharedLatchHolder.lock) {
+                                cacheInit(file);
+                            }
                         } catch (Exception e) {
                             log.error("cacheInit failed", e);
                         }
