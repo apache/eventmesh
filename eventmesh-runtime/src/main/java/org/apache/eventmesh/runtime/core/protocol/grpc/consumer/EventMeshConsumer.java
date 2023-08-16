@@ -63,24 +63,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshConsumer {
 
-    private final transient String consumerGroup;
+    private final String consumerGroup;
 
-    private final transient EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final transient EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+    private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
-    private final transient MQConsumerWrapper persistentMqConsumer;
+    private final MQConsumerWrapper persistentMqConsumer;
 
-    private final transient MQConsumerWrapper broadcastMqConsumer;
+    private final MQConsumerWrapper broadcastMqConsumer;
 
-    private final transient MessageHandler messageHandler;
+    private final MessageHandler messageHandler;
 
-    private transient ServiceState serviceState;
+    private ServiceState serviceState;
 
     /**
      * Key: topic Value: ConsumerGroupTopicConfig
      **/
-    private final transient Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
+    private final Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
 
     public EventMeshConsumer(final EventMeshGrpcServer eventMeshGrpcServer, final String consumerGroup) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -201,36 +201,44 @@ public class EventMeshConsumer {
     }
 
     public void subscribe(final String topic, final SubscriptionMode subscriptionMode) throws Exception {
-        if (SubscriptionMode.CLUSTERING == subscriptionMode) {
-            persistentMqConsumer.subscribe(topic);
-        } else if (SubscriptionMode.BROADCASTING == subscriptionMode) {
-            broadcastMqConsumer.subscribe(topic);
-        } else {
-            //log.error("Subscribe Failed. Incorrect Subscription Mode");
-            throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
+        switch (subscriptionMode) {
+            case CLUSTERING:
+                persistentMqConsumer.subscribe(topic);
+                break;
+            case BROADCASTING:
+                broadcastMqConsumer.subscribe(topic);
+                break;
+            default:
+                throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
         }
     }
 
     public void unsubscribe(final SubscriptionItem subscriptionItem) throws Exception {
         final SubscriptionMode mode = subscriptionItem.getMode();
         final String topic = subscriptionItem.getTopic();
-        if (SubscriptionMode.CLUSTERING == mode) {
-            persistentMqConsumer.unsubscribe(topic);
-        } else if (SubscriptionMode.BROADCASTING == mode) {
-            broadcastMqConsumer.unsubscribe(topic);
-        } else {
-            throw new Exception("Unsubscribe Failed. Incorrect Subscription Mode");
+        switch (mode) {
+            case CLUSTERING:
+                persistentMqConsumer.unsubscribe(topic);
+                break;
+            case BROADCASTING:
+                broadcastMqConsumer.unsubscribe(topic);
+                break;
+            default:
+                throw new Exception("Unsubscribe Failed. Incorrect Subscription Mode");
         }
     }
 
     public void updateOffset(final SubscriptionMode subscriptionMode, final List<CloudEvent> events, final AbstractContext context)
         throws Exception {
-        if (SubscriptionMode.CLUSTERING == subscriptionMode) {
-            persistentMqConsumer.updateOffset(events, context);
-        } else if (SubscriptionMode.BROADCASTING == subscriptionMode) {
-            broadcastMqConsumer.updateOffset(events, context);
-        } else {
-            throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
+        switch (subscriptionMode) {
+            case CLUSTERING:
+                persistentMqConsumer.updateOffset(events, context);
+                break;
+            case BROADCASTING:
+                broadcastMqConsumer.updateOffset(events, context);
+                break;
+            default:
+                throw new Exception("Subscribe Failed. Incorrect Subscription Mode");
         }
     }
 
@@ -244,9 +252,9 @@ public class EventMeshConsumer {
             final String topic = event.getSubject();
             final String bizSeqNo = Optional.ofNullable(
                     (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS))
-                .orElseGet(() -> "");
+                .orElse("");
             final String uniqueId = Optional.ofNullable((String) event.getExtension(Constants.RMB_UNIQ_ID))
-                .orElseGet(() -> "");
+                .orElse("");
 
             if (log.isDebugEnabled()) {
                 log.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
