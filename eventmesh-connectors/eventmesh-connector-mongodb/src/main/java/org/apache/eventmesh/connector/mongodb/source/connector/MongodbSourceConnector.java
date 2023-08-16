@@ -54,6 +54,7 @@ public class MongodbSourceConnector implements Source {
 
     @Override
     public void init(Config config) throws Exception {
+        this.sourceConfig = (MongodbSourceConfig) config;
         this.queue = new LinkedBlockingQueue<>(1000);
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
