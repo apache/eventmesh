@@ -17,16 +17,35 @@
 
 package org.apache.eventmesh.connector.mongodb.source.connector;
 
+import org.apache.eventmesh.connector.mongodb.source.client.Impl.MongodbSourceClient;
+import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSourceClient;
+import org.apache.eventmesh.connector.mongodb.source.client.MongodbStandaloneSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.config.MongodbSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+import io.cloudevents.CloudEvent;
+
+import com.mongodb.connection.ClusterType;
 
 public class MongodbSourceConnector implements Source {
 
     private MongodbSourceConfig sourceConfig;
+
+    private static final int DEFAULT_BATCH_SIZE = 10;
+
+    private BlockingQueue<CloudEvent> queue;
+
+    private MongodbSourceClient client;
+
 
     @Override
     public Class<? extends Config> configClass() {
@@ -35,12 +54,20 @@ public class MongodbSourceConnector implements Source {
 
     @Override
     public void init(Config config) throws Exception {
-
+        this.queue = new LinkedBlockingQueue<>(1000);
+        String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
+        if (connectorType.equals(ClusterType.STANDALONE.name())) {
+            this.client = new MongodbStandaloneSourceClient(sourceConfig.getConnectorConfig(), queue);
+        }
+        if (connectorType.equals(ClusterType.REPLICA_SET.name())) {
+            this.client = new MongodbReplicaSetSourceClient(sourceConfig.getConnectorConfig(), queue);
+        }
+        client.init();
     }
 
     @Override
     public void start() throws Exception {
-
+        this.client.start();
     }
 
     @Override
@@ -55,11 +82,37 @@ public class MongodbSourceConnector implements Source {
 
     @Override
     public void stop() throws Exception {
-
+        this.client.stop();
     }
 
     @Override
     public List<ConnectRecord> poll() {
-        return null;
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+            try {
+                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                if (event == null) {
+                    break;
+                }
+
+                connectRecords.add(convertEventToRecord(event));
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        return connectRecords;
+    }
+
+    public ConnectRecord convertEventToRecord(CloudEvent event) {
+        byte[] body = Objects.requireNonNull(event.getData()).toBytes();
+        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
+        for (String extensionName : event.getExtensionNames()) {
+            connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
+        }
+        connectRecord.addExtension("id", event.getId());
+        connectRecord.addExtension("topic", event.getSubject());
+        connectRecord.addExtension("source", event.getSource().toString());
+        connectRecord.addExtension("type", event.getType());
+        return connectRecord;
     }
 }

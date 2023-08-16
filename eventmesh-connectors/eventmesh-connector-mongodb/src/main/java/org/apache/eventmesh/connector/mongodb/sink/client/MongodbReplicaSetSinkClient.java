@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.mongodb.sink.client;
 
-import org.apache.eventmesh.connector.mongodb.constant.MongodbConstants;
 import org.apache.eventmesh.connector.mongodb.sink.client.Impl.MongodbSinkClient;
 import org.apache.eventmesh.connector.mongodb.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.mongodb.utils.MongodbCloudEventUtil;
@@ -26,16 +25,12 @@ import org.bson.Document;
 
 import io.cloudevents.CloudEvent;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.ReturnDocument;
 
-public class MongodbStandaloneSinkClient implements MongodbSinkClient {
+public class MongodbReplicaSetSinkClient implements MongodbSinkClient {
 
     private final SinkConnectorConfig connectorConfig;
 
@@ -43,20 +38,13 @@ public class MongodbStandaloneSinkClient implements MongodbSinkClient {
 
     private MongoClient client;
 
-    private MongoCollection<Document> cappedCol;
-
-    private MongoCollection<Document> seqCol;
-
-    public MongodbStandaloneSinkClient(SinkConnectorConfig connectorConfig) {
+    public MongodbReplicaSetSinkClient(SinkConnectorConfig connectorConfig) {
         this.connectorConfig = connectorConfig;
     }
 
     @Override
     public void init() {
         this.client = MongoClients.create(new ConnectionString(connectorConfig.getUrl()));
-        MongoDatabase db = client.getDatabase(connectorConfig.getDatabase());
-        this.cappedCol = db.getCollection(connectorConfig.getCollection());
-        this.seqCol = db.getCollection(MongodbConstants.SEQUENCE_COLLECTION_NAME);
     }
 
     @Override
@@ -68,11 +56,10 @@ public class MongodbStandaloneSinkClient implements MongodbSinkClient {
 
     @Override
     public void publish(CloudEvent cloudEvent) {
-        Document doc = MongodbCloudEventUtil.convertToDocument(cloudEvent);
-        int i = getNextSeq(MongodbConstants.TOPIC);
-        doc.append(MongodbConstants.CAPPED_COL_TOPIC_FN, MongodbConstants.TOPIC)
-                .append(MongodbConstants.CAPPED_COL_CURSOR_FN, i);
-        cappedCol.insertOne(doc);
+        Document document = MongodbCloudEventUtil.convertToDocument(cloudEvent);
+        MongoCollection<Document> collection = client
+                .getDatabase(connectorConfig.getDatabase()).getCollection(connectorConfig.getCollection());
+        collection.insertOne(document);
     }
 
     @Override
@@ -84,15 +71,5 @@ public class MongodbStandaloneSinkClient implements MongodbSinkClient {
                 started = false;
             }
         }
-    }
-
-    public int getNextSeq(String topic) {
-        Document query = new Document(MongodbConstants.SEQUENCE_KEY_FN, topic);
-        Document update = new Document("$inc", new BasicDBObject(MongodbConstants.SEQUENCE_VALUE_FN, 1));
-        FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
-        options.upsert(true);
-        options.returnDocument(ReturnDocument.AFTER);
-        Document result = seqCol.findOneAndUpdate(query, update, options);
-        return (int) (Integer) result.get(MongodbConstants.SEQUENCE_VALUE_FN);
     }
 }

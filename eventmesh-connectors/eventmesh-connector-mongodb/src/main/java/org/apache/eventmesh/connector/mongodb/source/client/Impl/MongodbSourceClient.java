@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mongodb.sink.config;
+package org.apache.eventmesh.connector.mongodb.source.client.Impl;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+/**
+ * MongodbSourceClient
+ */
+public interface MongodbSourceClient {
 
-import lombok.Data;
+    void init();
 
-@Data
-public class MongodbSinkConfig extends SinkConfig {
+    void start();
 
-    public SinkConnectorConfig connectorConfig;
+    void stop();
+
 }

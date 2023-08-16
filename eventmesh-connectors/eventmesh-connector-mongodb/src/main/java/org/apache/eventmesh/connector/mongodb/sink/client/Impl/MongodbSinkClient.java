@@ -19,6 +19,9 @@ package org.apache.eventmesh.connector.mongodb.sink.client.Impl;
 
 import io.cloudevents.CloudEvent;
 
+/**
+ * MongodbSinkClient
+ */
 public interface MongodbSinkClient {
 
     void init();
