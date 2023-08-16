@@ -33,7 +33,7 @@ public enum RequestURI {
 
     UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "UNSUBSCRIBE REMOTE"),
 
-    CRATE_TOPIC("/eventmesh/topic/create", "CRATE TOPIC"),
+    CREATE_TOPIC("/eventmesh/topic/create", "CREATE TOPIC"),
 
     DELETE_TOPIC("/eventmesh/topic/delete", "DELETE TOPIC"),
 
