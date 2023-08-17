@@ -25,11 +25,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Represents a URL mapping pattern for routing purposes.
  * The pattern can include variable path parameters or query strings.
  */
 
+@UtilityClass
 public class UrlMappingPattern {
 
     private static final String URL_PARAMETER_REGEX = "\\{(\\w*?)\\}";
