@@ -55,23 +55,17 @@ public class KafkaSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (KafkaSourceConfig) config;
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getConnectorConfig().getBootstrapServers());
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, sourceConfig.getConnectorConfig().getKeyConverter());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, sourceConfig.getConnectorConfig().getValueConverter());
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, sourceConfig.getConnectorConfig().getGroupID());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, sourceConfig.getConnectorConfig().getEnableAutoCommit());
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, sourceConfig.getConnectorConfig().getMaxPollRecords());
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, sourceConfig.getConnectorConfig().getAutoCommitIntervalMS());
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sourceConfig.getConnectorConfig().getSessionTimeoutMS());
-        this.pollTimeOut = sourceConfig.getConnectorConfig().getPollTimeOut();
-        this.kafkaConsumer = new KafkaConsumer<String, String>(props);
+        doInit();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
         this.sourceConfig = (KafkaSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
+    }
+
+    private void doInit() {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getConnectorConfig().getBootstrapServers());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, sourceConfig.getConnectorConfig().getKeyConverter());

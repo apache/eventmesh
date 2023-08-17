@@ -57,17 +57,17 @@ public class MongodbSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (MongodbSourceConfig) config;
-        doInit(config);
+        doInit();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
         this.sourceConfig = (MongodbSourceConfig) sourceConnectorContext.getSourceConfig();
-        doInit(sourceConfig);
+        doInit();
     }
 
-    private void doInit(Config config) {
+    private void doInit() {
         this.queue = new LinkedBlockingQueue<>(1000);
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {

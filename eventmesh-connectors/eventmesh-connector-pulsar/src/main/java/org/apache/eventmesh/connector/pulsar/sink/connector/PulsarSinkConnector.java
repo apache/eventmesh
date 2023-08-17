@@ -53,12 +53,7 @@ public class PulsarSinkConnector implements Sink {
     public void init(Config config) throws Exception {
         // init config for pulsar source connector
         this.sinkConfig = (PulsarSinkConfig) config;
-        PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
-                .build();
-        producer = client.newProducer()
-                .topic(sinkConfig.getConnectorConfig().getTopic())
-                .create();
+        doInit();
     }
 
     @Override
@@ -66,6 +61,10 @@ public class PulsarSinkConnector implements Sink {
         // init config for pulsar source connector
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
         this.sinkConfig = (PulsarSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit();
+    }
+
+    private void doInit() throws Exception {
         PulsarClient client = PulsarClient.builder()
             .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
             .build();

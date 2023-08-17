@@ -53,17 +53,17 @@ public class MongodbSinkConnector implements Sink {
     @Override
     public void init(Config config) throws Exception {
         this.sinkConfig = (MongodbSinkConfig) config;
-        doInit(sinkConfig);
+        doInit();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
         this.sinkConfig = (MongodbSinkConfig) sinkConnectorContext.getSinkConfig();
-        doInit(sinkConfig);
+        doInit();
     }
 
-    private void doInit(Config config) {
+    private void doInit() {
         String connectorType = sinkConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSinkClient(sinkConfig.getConnectorConfig());
