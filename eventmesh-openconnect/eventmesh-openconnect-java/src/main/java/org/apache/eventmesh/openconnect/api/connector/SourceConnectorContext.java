@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect;
+package org.apache.eventmesh.openconnect.api.connector;
+
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
+
+import lombok.Data;
 
 /**
- * Connector worker interface
+ * Source Connector Context
  */
-public interface ConnectorWorker {
+@Data
+public class SourceConnectorContext implements ConnectorContext {
 
-    void init();
+    public OffsetStorageReader offsetStorageReader;
 
-    /**
-     * Starts the worker
-     */
-    void start();
+    public SourceConfig sourceConfig;
 
-    /**
-     * Stops the worker
-     */
-    void stop();
 }

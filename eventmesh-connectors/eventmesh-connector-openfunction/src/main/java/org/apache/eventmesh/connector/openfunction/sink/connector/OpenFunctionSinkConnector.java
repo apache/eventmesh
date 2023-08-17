@@ -19,6 +19,8 @@ package org.apache.eventmesh.connector.openfunction.sink.connector;
 
 import org.apache.eventmesh.connector.openfunction.sink.config.OpenFunctionSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -46,6 +48,14 @@ public class OpenFunctionSinkConnector implements Sink {
     public void init(Config config) throws Exception {
         // init config for openfunction source connector
         this.sinkConfig = (OpenFunctionSinkConfig) config;
+        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        // init config for openfunction source connector
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        this.sinkConfig = (OpenFunctionSinkConfig) sinkConnectorContext.getSinkConfig();
         this.queue = new LinkedBlockingQueue<>(1000);
     }
 
