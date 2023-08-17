@@ -41,6 +41,14 @@ public interface Connector {
     void init(Config config) throws Exception;
 
     /**
+     * Initializes the Connector with the provided context.
+     *
+     * @param connectorContext connectorContext
+     * @throws Exception if initialization fails
+     */
+    void init(ConnectorContext connectorContext) throws Exception;
+
+    /**
      * Starts the Connector.
      *
      * @throws Exception if the start operation fails
