@@ -31,3 +31,12 @@ connectorConfig:
     url: mongodb://127.0.0.1:27018
     database: db
     collection: col
+offsetStorageConfig:
+    offsetStorageType: nacos
+    offsetStorageAddr: 127.0.0.1:8848
+    extensions: {
+      #same with connectorName
+        dataId: rocketmqSource,
+      #same with group
+        group: rocketmqSource
+    }
