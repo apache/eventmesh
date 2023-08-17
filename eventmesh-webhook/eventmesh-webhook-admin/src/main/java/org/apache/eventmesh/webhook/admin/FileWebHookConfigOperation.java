@@ -99,14 +99,16 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public Integer deleteWebHookConfig(final WebHookConfig webHookConfig) {
-        final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
-        if (!webhookConfigFile.exists()) {
-            if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
+        synchronized (SharedLatchHolder.lock) {
+            final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
+            if (!webhookConfigFile.exists()) {
+                if (log.isErrorEnabled()) {
+                    log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
+                }
+                return 0;
             }
-            return 0;
+            return webhookConfigFile.delete() ? 1 : 0;
         }
-        return webhookConfigFile.delete() ? 1 : 0;
     }
 
     /**
