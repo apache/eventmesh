@@ -93,7 +93,7 @@ public class WebhookFileListener {
     /**
      * Read the file and cache it in local map for manufacturers webhook payload delivery
      * <p>
-     * A CountDownLatch is used to ensure that this method should be invoked after the {@code webhookConfigFile} is written completely
+     * A shared lock is used to ensure that this method should be invoked after the {@code webhookConfigFile} is written completely
      * by {@code org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#writeToFile} when multiple modify events are triggered.
      *
      * @param webhookConfigFile webhookConfigFile
@@ -169,8 +169,7 @@ public class WebhookFileListener {
                     } else if (file.isFile() && ENTRY_MODIFY == event.kind()) {
                         // If it is a file, cache it only when it is modified to wait for complete file writes
                         try {
-                            // Wait for the notification of file write completion before initializing the cache
-                            SharedLatchHolder.latch.await();
+                            // Wait for file write completion before initializing the cache
                             synchronized (SharedLatchHolder.lock) {
                                 cacheInit(file);
                             }

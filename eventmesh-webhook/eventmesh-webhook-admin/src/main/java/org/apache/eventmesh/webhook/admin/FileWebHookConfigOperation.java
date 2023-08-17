@@ -175,10 +175,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
-        // Wait for the previous cacheInit to complete and ensure the atomicity of countDown in case of concurrency
+        // Wait for the previous cacheInit to complete in case of concurrency
         synchronized (SharedLatchHolder.lock) {
-            // Reset latch count
-            SharedLatchHolder.latch = new CountDownLatch(1);
             try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
                 // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
@@ -190,8 +188,6 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
                 }
                 return false;
             }
-            // Notify that file write has been completed
-            SharedLatchHolder.latch.countDown();
             return true;
         }
     }

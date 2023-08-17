@@ -17,12 +17,9 @@
 
 package org.apache.eventmesh.webhook.api.common;
 
-import java.util.concurrent.CountDownLatch;
-
 public class SharedLatchHolder {
-    // ensure writeToFile is executed before cacheInit
-    public static CountDownLatch latch = new CountDownLatch(1);
 
-    // ensure cacheInit is executed before the next writeToFile
+    // secure the execution sequence of writeToFile and cacheInit
     public static final Object lock = new Object();
+
 }
