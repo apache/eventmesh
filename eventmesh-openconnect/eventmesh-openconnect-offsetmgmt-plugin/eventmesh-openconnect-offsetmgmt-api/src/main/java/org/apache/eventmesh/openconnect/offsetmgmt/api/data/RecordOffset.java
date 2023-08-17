@@ -29,7 +29,7 @@ public class RecordOffset {
      */
     private Map<String, ?> offset = new HashMap<>();
 
-    public RecordOffset(){
+    public RecordOffset() {
 
     }
 
