@@ -58,17 +58,17 @@ public class RedisSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (RedisSourceConfig) config;
-        org.redisson.config.Config redisConfig = new org.redisson.config.Config();
-        redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
-        redisConfig.setCodec(CloudEventCodec.getInstance());
-        this.redissonClient = Redisson.create(redisConfig);
-        this.queue = new LinkedBlockingQueue<>(1000);
+        doInit(sourceConfig);
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
         this.sourceConfig = (RedisSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit(sourceConfig);
+    }
+
+    private void doInit(Config config) {
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());

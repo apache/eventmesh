@@ -55,16 +55,17 @@ public class RedisSinkConnector implements Sink {
     @Override
     public void init(Config config) throws Exception {
         this.sinkConfig = (RedisSinkConfig) config;
-        org.redisson.config.Config redisConfig = new org.redisson.config.Config();
-        redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
-        redisConfig.setCodec(CloudEventCodec.getInstance());
-        this.redissonClient = Redisson.create(redisConfig);
+        doInit(sinkConfig);
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
         this.sinkConfig = (RedisSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit(sinkConfig);
+    }
+
+    private void doInit(Config config) {
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());
