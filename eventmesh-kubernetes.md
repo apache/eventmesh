@@ -10,7 +10,7 @@
 
 ## Build Operator:
 
-- Creating an Operator Project
+- Create an Operator Project
 
 ```
 operator-sdk init --domain domain1test --repo github.com/xc/eventmesh-operator
@@ -58,7 +58,7 @@ Directory Structure:
 └── main.go
 ```
 
-- create api、resource、controller
+- Create api、resource、controller
 
 ```
 operator-sdk create api --group grouptest --version v1 --kind EventMeshOperator --resource --controller 
@@ -126,6 +126,17 @@ Directory Structure:
 │   └── boilerplate.go.txt
 └── main.go
 ```
+**PROJECT**: Automatically generated project metadata.  
+**eventmeshoperator_types.go**: Custom CRD corresponding struct place.  
+**groupversion_info.go**: GroupVersion (GV) defines and registers CRD with Scheme.  
+**zz_generated.deepcopy.go**: GVR DeepCopy method automatically generated.  
+**crd**: The relevant Yaml collection for deploying CRD.  
+**default**: A default Yaml collection of the Operator is deployed using Kustomize, which is based on crd, rbac, and manager.  
+**manager**: Deploy the associated Yaml collection of operators.  
+**prometheus**: The Operator runs and monitors the associated Yaml collections.  
+**rbac**: Yaml collections associated with RBAC permissions required for Operator deployment.  
+**samples**: Deploy Yaml for a CR sample.   
+**controllers**: Developers implement their own logic, and ventmeshoperator_controller.go is the file that completes the control logic.
 
 - Controller TODO
 ```
