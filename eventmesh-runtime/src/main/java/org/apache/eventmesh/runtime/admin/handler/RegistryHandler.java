@@ -42,12 +42,30 @@ import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class handles the {@code /registry} endpoint,
+ * corresponding to the {@code eventmesh-dashboard} path {@code /registry}.
+ * <p>
+ * This handler is responsible for retrieving a list of EventMesh clusters from the
+ * {@link Registry} object, encapsulate them into a list of {@link GetRegistryResponse} objects,
+ * and sort them by {@code EventMeshClusterName}.
+ *
+ * @see AbstractHttpHandler
+ */
+
 @Slf4j
 @EventHttpHandler(path = "/registry")
 public class RegistryHandler extends AbstractHttpHandler {
 
     private final Registry eventMeshRegistry;
 
+    /**
+     * Constructs a new instance with the specified {@link Registry} and {@link HttpHandlerManager}.
+     *
+     * @param eventMeshRegistry  The {@link Registry} instance used for retrieving EventMesh cluster information.
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public RegistryHandler(Registry eventMeshRegistry,
         HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
@@ -55,7 +73,13 @@ public class RegistryHandler extends AbstractHttpHandler {
     }
 
     /**
-     * OPTION /registry
+     * Handles the OPTIONS request first for {@code /registry}.
+     * <p>
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
+     * the {@link HttpExchange} object and sends a 200 status code.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
@@ -67,7 +91,12 @@ public class RegistryHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /registry Return a response that contains the list of EventMesh clusters
+     * Handles the GET request for {@code /registry}.
+     * <p>
+     * This method retrieves a list of EventMesh clusters and returns it as a JSON response.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
@@ -119,6 +148,17 @@ public class RegistryHandler extends AbstractHttpHandler {
         }
     }
 
+    /**
+     * Handles the HTTP requests for {@code /registry}.
+     * <p>
+     * It delegates the handling to {@code preflight()} or {@code get()} methods
+     * based on the request method type (OPTIONS or GET).
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {

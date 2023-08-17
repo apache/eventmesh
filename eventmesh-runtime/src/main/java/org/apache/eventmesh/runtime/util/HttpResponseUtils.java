@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.AsciiString;
 
 public class HttpResponseUtils {
 
@@ -44,7 +45,7 @@ public class HttpResponseUtils {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private static ByteBuf crateByteBuf(ChannelHandlerContext ctx, String body) {
+    private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);
@@ -52,17 +53,18 @@ public class HttpResponseUtils {
     }
 
     public static HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
-            responseHeaders, responseHeaders);
+        return getHttpResponse(body, ctx, HttpHeaderValues.APPLICATION_JSON);
 
     }
 
     public static HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
+        return getHttpResponse(body, ctx, HttpHeaderValues.TEXT_HTML);
+    }
+
+    public static HttpResponse getHttpResponse(String body, ChannelHandlerContext ctx, AsciiString headerValue) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
-        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
+        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, createByteBuf(ctx, body),
             responseHeaders, responseHeaders);
     }
 

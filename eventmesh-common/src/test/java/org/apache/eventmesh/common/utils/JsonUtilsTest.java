@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.utils;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -42,6 +43,11 @@ public class JsonUtilsTest {
         map.put("mxsm", "2");
         jsonString = JsonUtils.toJSONString(map);
         Assert.assertEquals("{\"mxsm\":\"2\"}", jsonString);
+
+        Map<String, Object> maps = new HashMap<>();
+        maps.put("mxsm", LocalDate.of(2013, 6, 28));
+        jsonString = JsonUtils.toJSONString(maps);
+        Assert.assertEquals("{\"mxsm\":\"2013-06-28\"}", jsonString);
     }
 
     @Test

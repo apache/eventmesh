@@ -109,7 +109,7 @@ public class EventMeshConstants {
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
     public static final String MANAGE_MSG = "msg";
-    public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshdendbacktimes";
+    public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshsendbacktimes";
 
     public static final String EVENTMESH_SEND_BACK_IP = "eventmeshsendbackip";
 

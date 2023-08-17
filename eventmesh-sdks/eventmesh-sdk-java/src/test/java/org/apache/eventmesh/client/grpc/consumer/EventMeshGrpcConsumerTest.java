@@ -25,17 +25,19 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.Builder;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +54,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import io.cloudevents.core.v1.CloudEventV1;
 import io.grpc.stub.StreamObserver;
 
 @RunWith(PowerMockRunner.class)
@@ -74,17 +77,19 @@ public class EventMeshGrpcConsumerTest {
         eventMeshGrpcConsumer.setConsumerClient(consumerClient);
         eventMeshGrpcConsumer.setConsumerAsyncClient(consumerAsyncClient);
         eventMeshGrpcConsumer.setHeartbeatClient(heartbeatClient);
-        when(consumerClient.subscribe(any())).thenReturn(Response.getDefaultInstance());
-        when(consumerClient.unsubscribe(any())).thenReturn(Response.getDefaultInstance());
-        when(heartbeatClient.heartbeat(any())).thenReturn(Response.getDefaultInstance());
+        when(consumerClient.subscribe(any())).thenReturn(CloudEvent.getDefaultInstance());
+        when(consumerClient.unsubscribe(any())).thenReturn(CloudEvent.getDefaultInstance());
+        when(heartbeatClient.heartbeat(any())).thenReturn(CloudEvent.getDefaultInstance());
         when(consumerAsyncClient.subscribeStream(any())).thenAnswer(invocation -> {
-            StreamObserver<SimpleMessage> receiver = invocation.getArgument(0);
-            return new StreamObserver<Subscription>() {
+            StreamObserver<CloudEvent> receiver = invocation.getArgument(0);
+            return new StreamObserver<CloudEvent>() {
                 @Override
-                public void onNext(Subscription value) {
-                    receiver.onNext(
-                        SimpleMessage.newBuilder().setUniqueId("uniqueId").setSeqNum("1").setContent("mockContent")
-                            .setTopic("mockTopic").build());
+                public void onNext(CloudEvent value) {
+                    Builder builder = CloudEvent.newBuilder(value)
+                        .putAttributes(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+                        .putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+                        .setTextData("mockContent");
+                    receiver.onNext(builder.build());
                     receiver.onCompleted();
                 }
 
@@ -102,12 +107,12 @@ public class EventMeshGrpcConsumerTest {
 
     @Test
     public void testSubscribeWithUrl() {
-        assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()),
-            "customUrl")).isEqualTo(Response.getDefaultInstance());
+        assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()), "customUrl")).isEqualTo(
+            Response.builder().build());
         verify(consumerClient, times(1)).subscribe(any());
         verify(heartbeatClient, Mockito.after(20_000L).times(1)).heartbeat(any());
-        assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()),
-            "customUrl")).isEqualTo(Response.getDefaultInstance());
+        assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()), "customUrl")).isEqualTo(
+            Response.builder().build());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -129,19 +134,18 @@ public class EventMeshGrpcConsumerTest {
 
             @Override
             public EventMeshProtocolType getProtocolType() {
-                return EventMeshProtocolType.EVENT_MESH_MESSAGE;
+                return EventMeshProtocolType.CLOUD_EVENTS;
             }
         });
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()));
-        assertThat(eventMeshGrpcConsumer.getSubscriptionMap().size()).isEqualTo(1);
+        assertThat(eventMeshGrpcConsumer.getSubscriptionMap()).hasSize(1);
 
-        assertThat(result).hasSize(1).first().isInstanceOf(EventMeshMessage.class)
-            .hasFieldOrPropertyWithValue("bizSeqNo", "1").hasFieldOrPropertyWithValue("uniqueId", "uniqueId")
-            .hasFieldOrPropertyWithValue("topic", "mockTopic")
-            .hasFieldOrPropertyWithValue("content", "mockContent");
+        assertThat(result).hasSize(1).first().isInstanceOf(CloudEventV1.class);
+        CloudEventV1 v1 = (CloudEventV1) result.get(0);
+        Assert.assertEquals(new String(v1.getData().toBytes(), Constants.DEFAULT_CHARSET), "mockContent");
         verify(consumerAsyncClient, times(1)).subscribeStream(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()))).isEqualTo(
-            Response.getDefaultInstance());
+            Response.builder().build());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -151,14 +155,5 @@ public class EventMeshGrpcConsumerTest {
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setTopic("topic");
         return subscriptionItem;
-    }
-
-    @Test
-    public void testBuildSubscription() {
-        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-        subscriptionItems.add(buildMockSubscriptionItem());
-        subscriptionItems.add(buildMockSubscriptionItem());
-        Subscription subsription = eventMeshGrpcConsumer.buildSubscription(subscriptionItems, "test_url");
-        Assert.assertEquals(1, subsription.getSubscriptionItemsList().size());
     }
 }

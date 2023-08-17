@@ -19,6 +19,7 @@ package org.apache.eventmesh.trace.pinpoint;
 
 import static org.junit.Assert.assertThrows;
 
+import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
@@ -45,13 +46,20 @@ public class PinpointTraceServiceTest {
 
     @Test
     public void testShutdown() throws Exception {
-        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-
         PinpointTraceService pinpointTraceService =
             (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
-        Field sdkTracerProviderField = PinpointTraceService.class.getDeclaredField("sdkTracerProvider");
+        Field sdkTracerProviderField = null;
+        try {
+            sdkTracerProviderField = PinpointTraceService.class.getDeclaredField("sdkTracerProvider");
+        } catch (NoSuchFieldException e) {
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(PinpointTraceService.class, "sdkTracerProvider");
+            if (sdkTracerProviderField == null) {
+                throw e;
+            }
+        }
         sdkTracerProviderField.setAccessible(true);
+        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         sdkTracerProviderField.set(pinpointTraceService, mockSdkTracerProvider);
 
         pinpointTraceService.shutdown();

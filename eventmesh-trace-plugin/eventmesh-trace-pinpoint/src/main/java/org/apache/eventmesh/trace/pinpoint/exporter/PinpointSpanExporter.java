@@ -25,7 +25,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.trace.pinpoint.common.PinpointConstants;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -178,7 +178,7 @@ public final class PinpointSpanExporter implements SpanExporter {
         final ServerMetaDataRegistryService serverMetaDataRegistryService = new DefaultServerMetaDataRegistryService(
             Collections.emptyList()
         );
-        serverMetaDataRegistryService.setServerName(PinpointConstants.SERVICE_NAME);
+        serverMetaDataRegistryService.setServerName(EventMeshTraceConstants.SERVICE_NAME);
 
         final AgentInfoFactory agentInfoFactory = new AgentInfoFactory(
             agentInformationProvider.createAgentInformation(),

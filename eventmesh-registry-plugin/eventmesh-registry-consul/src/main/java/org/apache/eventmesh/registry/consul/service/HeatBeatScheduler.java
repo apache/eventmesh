@@ -91,7 +91,7 @@ public class HeatBeatScheduler {
                     consulClient.agentCheckPass(checkId, aclToken);
                     return;
                 }
-                if (heartBeatMap.contains(instance)) {
+                if (heartBeatMap.containsValue(instance)) {
                     consulClient.agentCheckPass(checkId);
                 }
             } finally {

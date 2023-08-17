@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.storage.mongodb.utils;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.storage.mongodb.constant.MongodbConstants;
 import org.apache.eventmesh.storage.mongodb.exception.MongodbStorageException;
 
 import java.net.URI;
@@ -28,10 +30,11 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+
 public class MongodbCloudEventUtil {
     public static CloudEvent convertToCloudEvent(Document document) {
         document.remove("_id");
-        String versionStr = document.getString("version");
+        String versionStr = document.getString(MongodbConstants.CLOUD_EVENT_DOC_VERSION);
         SpecVersion version = SpecVersion.valueOf(versionStr);
         CloudEventBuilder builder;
         switch (version) {
@@ -44,12 +47,12 @@ public class MongodbCloudEventUtil {
             default:
                 throw new MongodbStorageException(String.format("CloudEvent version %s does not support.", version));
         }
-        builder.withData(document.remove("data").toString().getBytes())
-                .withId(document.remove("id").toString())
-                .withSource(URI.create(document.remove("source").toString()))
-                .withType(document.remove("type").toString())
-                .withDataContentType(document.remove("datacontenttype").toString())
-                .withSubject(document.remove("subject").toString());
+        builder.withData(document.remove(MongodbConstants.CLOUD_EVENT_DOC_DATA).toString().getBytes(Constants.DEFAULT_CHARSET))
+                .withId(document.remove(MongodbConstants.CLOUD_EVENT_DOC_ID).toString())
+                .withSource(URI.create(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SOURCE).toString()))
+                .withType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_TYPE).toString())
+                .withDataContentType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_DATACONTENTTYPE).toString())
+                .withSubject(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SUBJECT).toString());
         document.forEach((key, value) -> builder.withExtension(key, value.toString()));
 
         return builder.build();
@@ -57,14 +60,14 @@ public class MongodbCloudEventUtil {
 
     public static Document convertToDocument(CloudEvent cloudEvent) {
         Document document = new Document();
-        document.put("version", cloudEvent.getSpecVersion().name());
-        document.put("data", cloudEvent.getData() == null
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_VERSION, cloudEvent.getSpecVersion().name());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_DATA, cloudEvent.getData() == null
                 ? null : new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
-        document.put("id", cloudEvent.getId());
-        document.put("source", cloudEvent.getSource().toString());
-        document.put("type", cloudEvent.getType());
-        document.put("datacontenttype", cloudEvent.getDataContentType());
-        document.put("subject", cloudEvent.getSubject());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_ID, cloudEvent.getId());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_SOURCE, cloudEvent.getSource().toString());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_TYPE, cloudEvent.getType());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_DATACONTENTTYPE, cloudEvent.getDataContentType());
+        document.put(MongodbConstants.CLOUD_EVENT_DOC_SUBJECT, cloudEvent.getSubject());
         cloudEvent.getExtensionNames().forEach(key -> document.put(key, cloudEvent.getExtension(key)));
 
         return document;
