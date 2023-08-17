@@ -48,7 +48,7 @@ public class SinkWorker implements ConnectorWorker {
 
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
-    public SinkWorker(Sink sink, SinkConfig config){
+    public SinkWorker(Sink sink, SinkConfig config) {
         this.sink = sink;
         this.config = config;
         eventMeshTCPClient = buildEventMeshSubClient(config);

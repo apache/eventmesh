@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.openconnect.api.connector;
 
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
