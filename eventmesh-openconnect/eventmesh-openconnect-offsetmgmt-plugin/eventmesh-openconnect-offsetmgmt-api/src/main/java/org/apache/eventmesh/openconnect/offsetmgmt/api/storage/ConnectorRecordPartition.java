@@ -19,6 +19,7 @@ package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,6 +31,10 @@ public class ConnectorRecordPartition extends RecordPartition {
      * connect name
      */
     private String connectorName;
+
+    public ConnectorRecordPartition() {
+
+    }
 
     public ConnectorRecordPartition(String connectorName, Map<String, ?> partition) {
         super(partition);
@@ -53,13 +58,6 @@ public class ConnectorRecordPartition extends RecordPartition {
         }
         ConnectorRecordPartition that = (ConnectorRecordPartition) o;
         return this.connectorName.equals(that.connectorName);
-    }
-
-    @Override
-    public String toString() {
-        return "ConnectorRecordPartition{"
-            + "connectorName='" + connectorName + '\''
-            + "} " + super.toString();
     }
 
     @Override
