@@ -55,7 +55,7 @@ public class OpenFunctionSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         // init config for openfunction source connector
         this.sourceConfig = (OpenFunctionSourceConfig) sourceConnectorContext.getSourceConfig();
         this.queue = new LinkedBlockingQueue<>(1000);

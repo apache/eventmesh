@@ -59,7 +59,7 @@ public class PulsarSinkConnector implements Sink {
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         // init config for pulsar source connector
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (PulsarSinkConfig) sinkConnectorContext.getSinkConfig();
         doInit();
     }

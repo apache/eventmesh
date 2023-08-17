@@ -60,7 +60,7 @@ public class KafkaSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (KafkaSourceConfig) sourceConnectorContext.getSourceConfig();
         doInit();
     }

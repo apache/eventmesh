@@ -58,7 +58,7 @@ public class MongodbSinkConnector implements Sink {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (MongodbSinkConfig) sinkConnectorContext.getSinkConfig();
         doInit();
     }

@@ -59,7 +59,7 @@ public class KafkaSinkConnector implements Sink {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (KafkaSinkConfig) sinkConnectorContext.getSinkConfig();
         doInit();
     }
