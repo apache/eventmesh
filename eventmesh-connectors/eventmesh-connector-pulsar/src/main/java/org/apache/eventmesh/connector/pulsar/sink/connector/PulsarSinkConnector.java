@@ -21,6 +21,8 @@ package org.apache.eventmesh.connector.pulsar.sink.connector;
 
 import org.apache.eventmesh.connector.pulsar.sink.config.PulsarSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -57,6 +59,19 @@ public class PulsarSinkConnector implements Sink {
         producer = client.newProducer()
                 .topic(sinkConfig.getConnectorConfig().getTopic())
                 .create();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        // init config for pulsar source connector
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        this.sinkConfig = (PulsarSinkConfig) sinkConnectorContext.getSinkConfig();
+        PulsarClient client = PulsarClient.builder()
+            .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
+            .build();
+        producer = client.newProducer()
+            .topic(sinkConfig.getConnectorConfig().getTopic())
+            .create();
     }
 
     @Override
