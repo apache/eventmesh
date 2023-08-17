@@ -27,6 +27,7 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -64,13 +65,13 @@ public class SourceWorker implements ConnectorWorker {
     private final Source source;
     private final SourceConfig config;
 
-    private final OffsetStorageWriterImpl offsetStorageWriter;
+    private OffsetStorageWriterImpl offsetStorageWriter;
 
-    private final OffsetStorageReaderImpl offsetStorageReader;
+    private OffsetStorageReaderImpl offsetStorageReader;
 
-    private final OffsetManagementService offsetManagementService;
+    private OffsetManagementService offsetManagementService;
 
-    private final RecordOffsetManagement offsetManagement;
+    private RecordOffsetManagement offsetManagement;
 
     private volatile RecordOffsetManagement.CommittableOffsets committableOffsets;
 
@@ -83,22 +84,11 @@ public class SourceWorker implements ConnectorWorker {
 
     private volatile boolean isRunning = false;
 
-    public SourceWorker(Source source, SourceConfig config) throws Exception {
+    public SourceWorker(Source source, SourceConfig config) {
         this.source = source;
         this.config = config;
         queue = new LinkedBlockingQueue<>(1000);
         eventMeshTCPClient = buildEventMeshPubClient(config);
-        eventMeshTCPClient.init();
-        // spi load offsetMgmtService
-        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
-        String offsetMgmtPluginType = offsetStorageConfig.getOffsetStorageType();
-        this.offsetManagementService =
-            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
-        this.offsetManagementService.initialize(offsetStorageConfig);
-        this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
-        this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
-        this.offsetManagement = new RecordOffsetManagement();
-        this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
     }
 
     private EventMeshTCPClient<CloudEvent> buildEventMeshPubClient(SourceConfig config) {
@@ -129,6 +119,29 @@ public class SourceWorker implements ConnectorWorker {
     }
 
     @Override
+    public void init() {
+        SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
+        sourceConnectorContext.setSourceConfig(config);
+        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+        try {
+            source.init(sourceConnectorContext);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        eventMeshTCPClient.init();
+        // spi load offsetMgmtService
+        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
+        String offsetMgmtPluginType = offsetStorageConfig.getOffsetStorageType();
+        this.offsetManagement = new RecordOffsetManagement();
+        this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
+        this.offsetManagementService =
+            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+        this.offsetManagementService.initialize(offsetStorageConfig);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
+    }
+
+    @Override
     public void start() {
         log.info("source worker starting {}", source.name());
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
@@ -153,7 +166,6 @@ public class SourceWorker implements ConnectorWorker {
         while (isRunning) {
             ConnectRecord connectRecord = null;
             try {
-                // todo: need to read the offset first
                 connectRecord = queue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -169,9 +181,11 @@ public class SourceWorker implements ConnectorWorker {
 
             if (sendResult.getHeader().getCode() == 0) {
                 // publish success
-                // todo: ack record position
+                // commit record
+                this.source.commit(connectRecord);
                 submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
             } else {
+                // todo: retry or other strategy
                 log.error("{} failed to send record to {}, failed record {}", this, event.getSubject(), connectRecord);
             }
 

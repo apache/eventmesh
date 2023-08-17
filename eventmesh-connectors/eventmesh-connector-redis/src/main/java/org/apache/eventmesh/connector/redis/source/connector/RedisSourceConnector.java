@@ -20,6 +20,8 @@ package org.apache.eventmesh.connector.redis.source.connector;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -56,6 +58,17 @@ public class RedisSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (RedisSourceConfig) config;
+        org.redisson.config.Config redisConfig = new org.redisson.config.Config();
+        redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
+        redisConfig.setCodec(CloudEventCodec.getInstance());
+        this.redissonClient = Redisson.create(redisConfig);
+        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
+        this.sourceConfig = (RedisSourceConfig) sourceConnectorContext.getSourceConfig();
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());

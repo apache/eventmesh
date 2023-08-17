@@ -21,6 +21,8 @@ import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
@@ -52,14 +54,6 @@ public class Application {
             return;
         }
 
-        try {
-            connector.init(config);
-            CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
-        } catch (Exception e) {
-            log.error("connector {} initialize error", connector.name(), e);
-            return;
-        }
-
         ConnectorWorker worker;
         if (isSink(clazz)) {
             worker = new SinkWorker((Sink) connector, (SinkConfig) config);
@@ -69,6 +63,9 @@ public class Application {
             log.error("class {} is not sink and source", clazz);
             return;
         }
+        worker.init();
+
+        CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
             log.info("connector {} stopped", connector.name());
