@@ -57,11 +57,11 @@ Directory Structure:
 │   └── boilerplate.go.txt
 └── main.go
 ```
-**Makefile**:  make targets for building and deploying your controller   
-**PROJECT**: automatically generated project metadata.  
-**go.mod**: a new Go module matching our project, with basic dependencies  
-**config/default**: contains for starting the controller in a standard configuration.
-**config/manager**: launch your controllers as pods in the cluster    
+**Makefile**:  make targets for building and deploying your controller       
+**PROJECT**: automatically generated project metadata.     
+**go.mod**: a new Go module matching our project, with basic dependencies    
+**config/default**: contains for starting the controller in a standard configuration.     
+**config/manager**: launch your controllers as pods in the cluster       
 **config/rbac**: permissions required to run your controllers under their own service account   
 
 - Create api、resource、controller
