@@ -127,7 +127,7 @@ Directory Structure:
 └── main.go
 ```
 
-- Controller TODO.
+- Controller TODO
 ```
 func (r *EventMeshOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
         _ = log.FromContext(ctx)
@@ -137,6 +137,18 @@ func (r *EventMeshOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
         return ctrl.Result{}, nil
 }
+```
+
+- Register to CRD:
+```
+make generate
+make manifests
+```
+
+- Builder IMG
+```
+make docker-builder IMG=
+make deploy IMG=
 ```
 
 ## EventMesh Components
