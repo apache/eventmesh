@@ -57,6 +57,12 @@ Directory Structure:
 │   └── boilerplate.go.txt
 └── main.go
 ```
+**Makefile**:  make targets for building and deploying your controller   
+**PROJECT**: automatically generated project metadata.  
+**go.mod**: a new Go module matching our project, with basic dependencies  
+**config/default**: contains for starting the controller in a standard configuration.
+**config/manager**: launch your controllers as pods in the cluster    
+**config/rbac**: permissions required to run your controllers under their own service account   
 
 - Create api、resource、controller
 
@@ -125,18 +131,17 @@ Directory Structure:
 ├── hack
 │   └── boilerplate.go.txt
 └── main.go
-```
-**PROJECT**: Automatically generated project metadata.  
-**eventmeshoperator_types.go**: Custom CRD corresponding struct place.  
-**groupversion_info.go**: GroupVersion (GV) defines and registers CRD with Scheme.  
+``` 
+**eventmeshoperator_types.go**: custom CRD corresponding struct place.  
+**groupversion_info.go**: groupVersion (GV) defines and registers CRD with Scheme.  
 **zz_generated.deepcopy.go**: GVR DeepCopy method automatically generated.  
-**crd**: The relevant Yaml collection for deploying CRD.  
-**default**: A default Yaml collection of the Operator is deployed using Kustomize, which is based on crd, rbac, and manager.  
-**manager**: Deploy the associated Yaml collection of operators.  
-**prometheus**: The Operator runs and monitors the associated Yaml collections.  
+**crd**: the relevant Yaml collection for deploying CRD.  
+**default**: a default Yaml collection of the Operator is deployed using Kustomize, which is based on crd, rbac, and manager.  
+**manager**: deploy the associated Yaml collection of operators.  
+**prometheus**: the Operator runs and monitors the associated Yaml collections.  
 **rbac**: Yaml collections associated with RBAC permissions required for Operator deployment.  
-**samples**: Deploy Yaml for a CR sample.   
-**controllers**: Developers implement their own logic, and ventmeshoperator_controller.go is the file that completes the control logic.
+**samples**: deploy Yaml for a CR sample.   
+**controllers**: developers implement their own logic, and ventmeshoperator_controller.go is the file that completes the control logic.
 
 - Controller TODO
 ```
