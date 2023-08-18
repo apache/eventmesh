@@ -48,7 +48,7 @@ public class SubscribeProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final GrpcType grpcType = GrpcType.WEBHOOK;
+    private static final GrpcType grpcType = GrpcType.WEBHOOK;
 
     private final Acl acl;
 
