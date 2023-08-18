@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.connector.rabbitmq.sink.connector;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
+import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
-import org.apache.eventmesh.connector.rabbitmq.source.config.RabbitMQSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 import java.util.List;
 
 @Slf4j
@@ -30,7 +34,15 @@ public class RabbitMQSinkConnector implements Sink {
 
     private RabbitMQSinkConfig sinkConfig;
 
-    RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
+    private final RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
+
+    private RabbitmqClient rabbitmqClient;
+
+    private Connection connection;
+
+    private Channel channel;
+
+    private volatile boolean started = false;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -40,10 +52,17 @@ public class RabbitMQSinkConnector implements Sink {
     @Override
     public void init(Config config) throws Exception {
         this.sinkConfig = (RabbitMQSinkConfig) config;
+        this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
+        this.connection = rabbitmqClient.getConnection(sinkConfig.getConnectorConfig().getHost(), sinkConfig.getConnectorConfig().getUsername(),
+                sinkConfig.getConnectorConfig().getPasswd(), sinkConfig.getConnectorConfig().getPort(), sinkConfig.getConnectorConfig().getVirtualHost());
+        this.channel = rabbitmqConnectionFactory.createChannel(connection);
     }
 
     @Override
     public void start() throws Exception {
+        if (!started) {
+            started = true;
+        }
     }
 
     @Override
@@ -58,6 +77,14 @@ public class RabbitMQSinkConnector implements Sink {
 
     @Override
     public void stop() {
+        if (started) {
+            try {
+                rabbitmqClient.closeConnection(connection);
+                rabbitmqClient.closeChannel(channel);
+            } finally {
+                started = false;
+            }
+        }
     }
 
     @Override

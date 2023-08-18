@@ -15,33 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rabbitmq.sink.config;
+package org.apache.eventmesh.connector.rabbitmq.client;
 
-import com.rabbitmq.client.BuiltinExchangeType;
-import lombok.Data;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
-@Data
-public class SinkConnectorConfig {
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
-    private String connectorName;
+public class RabbitmqConnectionFactory {
 
-    private String host;
+    public ConnectionFactory createConnectionFactory() {
+        return new ConnectionFactory();
+    }
 
-    private int port;
+    public Connection createConnection(ConnectionFactory connectionFactory) throws IOException, TimeoutException {
+        return connectionFactory.newConnection();
+    }
 
-    private String username;
-
-    private String passwd;
-
-    private String virtualHost;
-
-    private BuiltinExchangeType exchangeType;
-
-    private String exchangeName;
-
-    private String routingKey;
-
-    private String queueName;
-
-    private boolean autoAck;
+    public Channel createChannel(Connection connection) throws IOException {
+        return connection.createChannel();
+    }
 }
