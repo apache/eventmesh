@@ -85,9 +85,11 @@ public class SubscribeProcessor {
 
         final String consumerGroup = EventMeshCloudEventUtils.getConsumerGroup(subscription);
         // Collect new clients in the subscription
-        List<SubscriptionItem> subscriptionItems =  Objects.requireNonNull(JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
+        List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
-            }), "subscriptionItems must not be null");;
+            });
+        
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
         final String idc = EventMeshCloudEventUtils.getIdc(subscription);
         final String sys = EventMeshCloudEventUtils.getSys(subscription);
@@ -140,9 +142,10 @@ public class SubscribeProcessor {
     }
 
     private void doAclCheck(final CloudEvent subscription) throws AclException {
-        List<SubscriptionItem> subscriptionItems = Objects.requireNonNull(JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
+        List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
-            }), "subscriptionItems must not be null");
+            })
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionItems) {
                 this.acl.doAclCheckInHttpReceive(EventMeshCloudEventUtils.getConsumerGroup(subscription),
