@@ -22,7 +22,7 @@ configurations {
 }
 
 dependencies {
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
     // rabbitmq
     implementation 'com.rabbitmq:amqp-client:5.16.0'
