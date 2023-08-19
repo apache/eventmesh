@@ -39,15 +39,17 @@ import io.netty.channel.Channel;
 
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 
 @Slf4j
+@UtilityClass
 public class IPUtils {
 
-    public static String getLocalAddress() {
+    public String getLocalAddress() {
         // if the progress works under docker environment
         // return the host ip about this docker located from environment value
         String dockerHostIp = System.getenv("docker_host_ip");
@@ -110,7 +112,7 @@ public class IPUtils {
         return null;
     }
 
-    public static boolean isValidIPV4Address(String ip) {
+    public boolean isValidIPV4Address(String ip) {
 
         // Regex for digit from 0 to 255.
         String zeroTo255
@@ -137,7 +139,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(Collection<String> ipv4Result, Collection<String> ipv6Result, Enumeration<InetAddress> en) {
+    private void getIpResult(Collection<String> ipv4Result, Collection<String> ipv6Result, Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {
@@ -150,7 +152,7 @@ public class IPUtils {
         }
     }
 
-    private static String normalizeHostAddress(final InetAddress localHost) {
+    private String normalizeHostAddress(final InetAddress localHost) {
         if (localHost instanceof Inet6Address) {
             return "[" + localHost.getHostAddress() + "]";
         } else {
@@ -159,7 +161,7 @@ public class IPUtils {
     }
 
 
-    public static String parseChannelRemoteAddr(final Channel channel) {
+    public String parseChannelRemoteAddr(final Channel channel) {
         if (null == channel) {
             return "";
         }
@@ -178,7 +180,7 @@ public class IPUtils {
         return "";
     }
 
-    public static boolean isValidDomainOrIp(String url, List<IPAddress> ipV4ReservedAddrs, List<IPAddress> ipV6ReservedAddrs) {
+    public boolean isValidDomainOrIp(String url, List<IPAddress> ipV4ReservedAddrs, List<IPAddress> ipV6ReservedAddrs) {
         if (StringUtils.isBlank(url)) {
             return false;
         }
@@ -197,7 +199,7 @@ public class IPUtils {
         }
     }
 
-    public static boolean isValidIp(String url) {
+    public boolean isValidIp(String url) {
         try {
             IPAddressString ipString = new IPAddressString(url);
             if (!ipString.isValid()) {
@@ -210,7 +212,7 @@ public class IPUtils {
         return true;
     }
 
-    public static IPAddress domain2Ip(String url) {
+    public IPAddress domain2Ip(String url) {
         HostName hostName = new HostName(url);
         if (hostName.isValid()) {
             return hostName.getAddress();
@@ -224,7 +226,7 @@ public class IPUtils {
         }
     }
 
-    private static boolean isReservedIp(IPAddress ipAddress, List<IPAddress> reservedIps) {
+    private boolean isReservedIp(IPAddress ipAddress, List<IPAddress> reservedIps) {
         for (IPAddress address : reservedIps) {
             if (address.contains(ipAddress)) {
                 return true;
