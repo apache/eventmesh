@@ -36,14 +36,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Json serialize or deserialize utils.
  */
+@UtilityClass
 public class JsonUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    static {
+    {
         OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -58,7 +61,7 @@ public class JsonUtils {
      * @param obj obj
      * @return json string
      */
-    public static String toJSONString(Object obj) {
+    public String toJSONString(Object obj) {
         if (Objects.isNull(obj)) {
             return null;
         }
@@ -69,7 +72,7 @@ public class JsonUtils {
         }
     }
 
-    public static byte[] toJSONBytes(Object obj) {
+    public byte[] toJSONBytes(Object obj) {
         if (Objects.isNull(obj)) {
             return null;
         }
@@ -88,7 +91,7 @@ public class JsonUtils {
      * @param <T>   object type
      * @return object
      */
-    public static <T> T parseObject(String text, Class<T> clazz) {
+    public <T> T parseObject(String text, Class<T> clazz) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -99,7 +102,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
@@ -118,7 +121,7 @@ public class JsonUtils {
      * @param <T>           object type
      * @return object
      */
-    public static <T> T parseTypeReferenceObject(String text, TypeReference<T> typeReference) {
+    public <T> T parseTypeReferenceObject(String text, TypeReference<T> typeReference) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -129,7 +132,7 @@ public class JsonUtils {
         }
     }
 
-    public static JsonNode getJsonNode(String text) {
+    public JsonNode getJsonNode(String text) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
