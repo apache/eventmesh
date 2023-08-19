@@ -37,11 +37,13 @@ import java.util.Map;
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 /**
  * NetUtils
  */
 @Slf4j
+@UtilityClass
 public class NetUtils {
 
     /**
@@ -50,7 +52,7 @@ public class NetUtils {
      * @param formData
      * @return url parameters map
      */
-    public static Map<String, String> formData2Dic(String formData) {
+    public Map<String, String> formData2Dic(String formData) {
         if (StringUtils.isBlank(formData)) {
             return new HashMap<>();
         }
@@ -71,7 +73,7 @@ public class NetUtils {
         return result;
     }
 
-    public static String addressToString(List<InetSocketAddress> clients) {
+    public String addressToString(List<InetSocketAddress> clients) {
         if (clients.isEmpty()) {
             return "no session had been closed";
         }
@@ -82,7 +84,7 @@ public class NetUtils {
         return sb.toString();
     }
 
-    public static String parsePostBody(HttpExchange exchange)
+    public String parsePostBody(HttpExchange exchange)
         throws IOException {
 
         if (!HttpMethod.POST.name().equalsIgnoreCase(exchange.getRequestMethod())
@@ -100,7 +102,7 @@ public class NetUtils {
         return body.toString();
     }
 
-    public static void sendSuccessResponseHeaders(HttpExchange httpExchange) throws IOException {
+    public void sendSuccessResponseHeaders(HttpExchange httpExchange) throws IOException {
         httpExchange.sendResponseHeaders(SUCCESS_CODE, 0);
     }
 }
