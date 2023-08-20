@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.pulsar.sink.connector;
 
 
-
 import org.apache.eventmesh.connector.pulsar.sink.config.PulsarSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -54,17 +53,17 @@ public class PulsarSinkConnector implements Sink {
         // init config for pulsar source connector
         this.sinkConfig = (PulsarSinkConfig) config;
         PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
-                .build();
+            .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
+            .build();
         producer = client.newProducer()
-                .topic(sinkConfig.getConnectorConfig().getTopic())
-                .create();
+            .topic(sinkConfig.getConnectorConfig().getTopic())
+            .create();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         // init config for pulsar source connector
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (PulsarSinkConfig) sinkConnectorContext.getSinkConfig();
         PulsarClient client = PulsarClient.builder()
             .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
@@ -106,9 +105,9 @@ public class PulsarSinkConnector implements Sink {
                     props.put(key, connectRecord.getExtension(key));
                 }
                 MessageId messageId = producer.newMessage()
-                        .value((byte[]) connectRecord.getData())
-                        .properties(props)
-                        .send();
+                    .value((byte[]) connectRecord.getData())
+                    .properties(props)
+                    .send();
             } catch (Exception e) {
                 log.error("put records to pulsar failed", e);
             }

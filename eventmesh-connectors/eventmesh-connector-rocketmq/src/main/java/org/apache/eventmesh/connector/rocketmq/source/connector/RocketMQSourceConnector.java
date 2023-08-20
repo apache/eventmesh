@@ -25,35 +25,26 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -208,7 +199,7 @@ public class RocketMQSourceConnector implements Source {
 
         prepareCommitOffset.forEach((messageQueue, list) -> {
             Iterator<AtomicLong> offsetIterator = list.iterator();
-            while(offsetIterator.hasNext()) {
+            while (offsetIterator.hasNext()) {
                 Map<MessageQueue, Long> commitOffsetTable = new HashMap<>();
                 commitOffsetTable.put(messageQueue, offsetIterator.next().get());
                 consumer.commitSync(commitOffsetTable, false);

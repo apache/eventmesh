@@ -33,8 +33,6 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 
 
-
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,17 +58,17 @@ public class PulsarSourceConnector implements Source {
         // init config for rocketmq source connector
         this.sourceConfig = (PulsarSourceConfig) config;
         PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
-                .build();
+            .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
+            .build();
         consumer = client.newConsumer()
-                .topic(sourceConfig.connectorConfig.getTopic())
-                .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
-                .subscribe();
+            .topic(sourceConfig.connectorConfig.getTopic())
+            .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
+            .subscribe();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (PulsarSourceConfig) sourceConnectorContext.getSourceConfig();
         PulsarClient client = PulsarClient.builder()
             .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())

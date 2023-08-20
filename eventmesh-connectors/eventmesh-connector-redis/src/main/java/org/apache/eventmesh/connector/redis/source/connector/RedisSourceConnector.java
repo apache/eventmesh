@@ -67,7 +67,7 @@ public class RedisSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext)connectorContext;
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (RedisSourceConfig) sourceConnectorContext.getSourceConfig();
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());

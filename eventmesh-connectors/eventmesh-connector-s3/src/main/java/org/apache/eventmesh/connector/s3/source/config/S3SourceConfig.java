@@ -21,9 +21,11 @@ package org.apache.eventmesh.connector.s3.source.config;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class S3SourceConfig extends SourceConfig {
     private SourceConnectorConfig sourceConnectorConfig;
 }

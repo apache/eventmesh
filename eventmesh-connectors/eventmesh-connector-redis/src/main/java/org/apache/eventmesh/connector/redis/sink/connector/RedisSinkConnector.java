@@ -63,7 +63,7 @@ public class RedisSinkConnector implements Sink {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (RedisSinkConfig) sinkConnectorContext.getSinkConfig();
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
@@ -105,7 +105,7 @@ public class RedisSinkConnector implements Sink {
 
     public CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withData((byte[]) connectRecord.getData());
+            .withData((byte[]) connectRecord.getData());
         connectRecord.getExtensions().keySet().forEach(s -> {
             switch (s) {
                 case "id":

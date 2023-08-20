@@ -21,6 +21,8 @@ package org.apache.eventmesh.connector.s3.source.connector;
 import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
 import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
@@ -79,6 +81,24 @@ public class S3SourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for s3 source connector
         this.sourceConfig = (S3SourceConfig) config;
+        this.sourceConnectorConfig = this.sourceConfig.getSourceConnectorConfig();
+        this.eachRecordSize = calculateEachRecordSize();
+        AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.sourceConnectorConfig.getAccessKey(),
+            this.sourceConnectorConfig.getSecretKey());
+        this.s3Client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials)
+            .region(Region.of(this.sourceConnectorConfig.getRegion())).build();
+    }
+
+    /**
+     * Initializes the Connector with the provided context.
+     *
+     * @param connectorContext connectorContext
+     * @throws Exception if initialization fails
+     */
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (S3SourceConfig) sourceConnectorContext.getSourceConfig();
         this.sourceConnectorConfig = this.sourceConfig.getSourceConnectorConfig();
         this.eachRecordSize = calculateEachRecordSize();
         AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.sourceConnectorConfig.getAccessKey(),

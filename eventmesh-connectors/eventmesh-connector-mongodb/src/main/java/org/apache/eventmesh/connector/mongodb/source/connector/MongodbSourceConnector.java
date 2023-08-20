@@ -22,6 +22,8 @@ import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSou
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbStandaloneSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.config.MongodbSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -55,6 +57,27 @@ public class MongodbSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (MongodbSourceConfig) config;
+        this.queue = new LinkedBlockingQueue<>(1000);
+        String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
+        if (connectorType.equals(ClusterType.STANDALONE.name())) {
+            this.client = new MongodbStandaloneSourceClient(sourceConfig.getConnectorConfig(), queue);
+        }
+        if (connectorType.equals(ClusterType.REPLICA_SET.name())) {
+            this.client = new MongodbReplicaSetSourceClient(sourceConfig.getConnectorConfig(), queue);
+        }
+        client.init();
+    }
+
+    /**
+     * Initializes the Connector with the provided context.
+     *
+     * @param connectorContext connectorContext
+     * @throws Exception if initialization fails
+     */
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (MongodbSourceConfig) sourceConnectorContext.getSourceConfig();
         this.queue = new LinkedBlockingQueue<>(1000);
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
