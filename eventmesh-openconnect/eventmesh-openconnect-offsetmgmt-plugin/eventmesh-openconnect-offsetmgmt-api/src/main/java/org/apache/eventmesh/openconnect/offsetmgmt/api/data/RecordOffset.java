@@ -24,12 +24,11 @@ import java.util.Objects;
 public class RecordOffset {
 
     /**
-     * if pull message from mq key=queueOffset,
-     * value=queueOffset value
+     * if pull message from mq key=queueOffset, value=queueOffset value
      */
     private Map<String, ?> offset = new HashMap<>();
 
-    public RecordOffset(){
+    public RecordOffset() {
 
     }
 

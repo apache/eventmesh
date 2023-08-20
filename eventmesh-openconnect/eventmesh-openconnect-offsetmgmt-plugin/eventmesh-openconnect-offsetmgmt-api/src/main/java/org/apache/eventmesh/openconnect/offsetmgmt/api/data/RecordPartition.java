@@ -24,10 +24,7 @@ import java.util.Objects;
 public class RecordPartition {
 
     /**
-     * if pull message from mq key=topic,
-     * value=topicName key=brokerName,
-     * value=brokerName key=queueId,
-     * value=queueId
+     * if pull message from mq key=topic, value=topicName key=brokerName, value=brokerName key=queueId, value=queueId
      */
     private Map<String, ?> partition = new HashMap<>();
 

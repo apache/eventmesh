@@ -18,4 +18,5 @@
 package org.apache.eventmesh.openconnect.api.config;
 
 public abstract class Config {
+
 }

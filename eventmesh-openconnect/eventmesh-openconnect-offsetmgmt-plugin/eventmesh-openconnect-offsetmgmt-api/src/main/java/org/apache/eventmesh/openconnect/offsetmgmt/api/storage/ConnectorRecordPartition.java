@@ -19,7 +19,6 @@ package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,6 +26,7 @@ import java.util.Objects;
  * extend record partition
  */
 public class ConnectorRecordPartition extends RecordPartition {
+
     /**
      * connect name
      */

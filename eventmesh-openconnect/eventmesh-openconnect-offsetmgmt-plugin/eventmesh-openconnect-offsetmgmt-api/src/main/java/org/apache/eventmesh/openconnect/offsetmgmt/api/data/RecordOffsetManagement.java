@@ -37,10 +37,12 @@ public class RecordOffsetManagement {
 
     private CountDownLatch messageDrainLatch;
 
-    public RecordOffsetManagement() {}
+    public RecordOffsetManagement() {
+    }
 
     /**
      * submit record
+     *
      * @param position
      * @return
      */
@@ -132,8 +134,8 @@ public class RecordOffsetManagement {
     }
 
     /**
-     * Contains a snapshot of offsets that can be committed for a source task and metadata for that offset commit
-     * (such as the number of messages for which offsets can and cannot be committed).
+     * Contains a snapshot of offsets that can be committed for a source task and metadata for that offset commit (such as the number of messages for
+     * which offsets can and cannot be committed).
      */
     public static class CommittableOffsets {
 
@@ -151,12 +153,12 @@ public class RecordOffsetManagement {
 
 
         CommittableOffsets(
-                Map<RecordPartition, RecordOffset> offsets,
-                int numCommittableMessages,
-                int numUncommittableMessages,
-                int numDeques,
-                int largestDequeSize,
-                RecordPartition largestDequePartition
+            Map<RecordPartition, RecordOffset> offsets,
+            int numCommittableMessages,
+            int numUncommittableMessages,
+            int numDeques,
+            int largestDequeSize,
+            RecordPartition largestDequePartition
         ) {
             this.offsets = offsets != null ? new HashMap<>(offsets) : Collections.emptyMap();
             this.numCommittableMessages = numCommittableMessages;
@@ -205,17 +207,18 @@ public class RecordOffsetManagement {
             offsets.putAll(newerOffsets.offsets);
 
             return new CommittableOffsets(
-                    offsets,
-                    this.numCommittableMessages + newerOffsets.numCommittableMessages,
-                    newerOffsets.numUncommittableMessages,
-                    newerOffsets.numDeques,
-                    newerOffsets.largestDequeSize,
-                    newerOffsets.largestDequePartition
+                offsets,
+                this.numCommittableMessages + newerOffsets.numCommittableMessages,
+                newerOffsets.numUncommittableMessages,
+                newerOffsets.numDeques,
+                newerOffsets.largestDequeSize,
+                newerOffsets.largestDequePartition
             );
         }
     }
 
     public class SubmittedPosition {
+
         private final RecordPosition position;
         private final AtomicBoolean acked;
 
