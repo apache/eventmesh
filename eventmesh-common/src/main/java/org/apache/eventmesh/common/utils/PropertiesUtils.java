@@ -32,7 +32,7 @@ import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 
-import java.experimental.UtilityClass;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PropertiesUtils {
