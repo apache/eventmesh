@@ -32,9 +32,12 @@ import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 
+import java.experimental.UtilityClass;
+
+@UtilityClass
 public class PropertiesUtils {
 
-    public static Properties getPropertiesByPrefix(final Properties from, final String prefix) {
+    public Properties getPropertiesByPrefix(final Properties from, final String prefix) {
 
         Properties to = new Properties();
         if (StringUtils.isBlank(prefix) || from == null) {
@@ -82,7 +85,7 @@ public class PropertiesUtils {
      * @param cs
      * @throws IOException Exception when loading properties, like illegal content, file permission denies
      */
-    public static void loadPropertiesWhenFileExist(Properties properties, String path, Charset cs) throws IOException {
+    public void loadPropertiesWhenFileExist(Properties properties, String path, Charset cs) throws IOException {
         Preconditions.checkNotNull(properties, "Properties can not be null");
         File file = new File(path);
         if (!file.exists()) {
@@ -101,7 +104,7 @@ public class PropertiesUtils {
      * @param path
      * @throws IOException Exception when loading properties, like illegal content, file permission denies
      */
-    public static void loadPropertiesWhenFileExist(Properties properties, String path) throws IOException {
+    public void loadPropertiesWhenFileExist(Properties properties, String path) throws IOException {
         loadPropertiesWhenFileExist(properties, path, StandardCharsets.UTF_8);
     }
 }
