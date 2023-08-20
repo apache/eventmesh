@@ -20,6 +20,9 @@ package org.apache.eventmesh.common.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ReflectUtils {
 
     /**
@@ -29,7 +32,7 @@ public class ReflectUtils {
      * @param fieldName
      * @return
      */
-    public static Field lookUpFieldByParentClass(Class<?> clazz, String fieldName) {
+    public Field lookUpFieldByParentClass(Class<?> clazz, String fieldName) {
         Class<?> superClass = clazz.getSuperclass();
         while (superClass != null) {
             Field[] superFields = superClass.getDeclaredFields();
