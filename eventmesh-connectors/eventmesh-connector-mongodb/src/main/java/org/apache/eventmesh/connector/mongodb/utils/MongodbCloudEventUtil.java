@@ -29,8 +29,11 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class MongodbCloudEventUtil {
-    public static CloudEvent convertToCloudEvent(Document document) throws Exception {
+    public CloudEvent convertToCloudEvent(Document document) throws Exception {
         document.remove("_id");
         String versionStr = document.getString(MongodbConstants.CLOUD_EVENT_DOC_VERSION);
         SpecVersion version = SpecVersion.valueOf(versionStr);
@@ -56,7 +59,7 @@ public class MongodbCloudEventUtil {
         return builder.build();
     }
 
-    public static Document convertToDocument(CloudEvent cloudEvent) {
+    public Document convertToDocument(CloudEvent cloudEvent) {
         Document document = new Document();
         document.put(MongodbConstants.CLOUD_EVENT_DOC_VERSION, cloudEvent.getSpecVersion().name());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_DATA, cloudEvent.getData() == null
