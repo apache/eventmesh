@@ -20,15 +20,18 @@ package org.apache.eventmesh.common.utils;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ThreadUtils {
 
-    private static volatile long currentPID = -1;
+    private volatile long currentPID = -1;
 
-    public static void randomPause(long min, long max) {
+    public void randomPause(long min, long max) {
         randomPause(min, max, TimeUnit.MILLISECONDS);
     }
 
-    public static void randomPause(long min, long max, TimeUnit timeUnit) {
+    public void randomPause(long min, long max, TimeUnit timeUnit) {
         // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
         try {
             long timeout = ThreadLocalRandom.current().nextLong(min, max + 1);
@@ -38,16 +41,16 @@ public class ThreadUtils {
         }
     }
 
-    public static void randomPause(long max) {
+    public void randomPause(long max) {
         randomPause(1, max);
     }
 
     @Deprecated
-    public static void sleep(long timeout) {
+    public void sleep(long timeout) {
         sleep(timeout, TimeUnit.MILLISECONDS);
     }
 
-    public static void sleep(long timeout, TimeUnit timeUnit) {
+    public void sleep(long timeout, TimeUnit timeUnit) {
         try {
             sleepWithThrowException(timeout, timeUnit);
         } catch (InterruptedException ignore) {
@@ -55,7 +58,7 @@ public class ThreadUtils {
         }
     }
 
-    public static void sleepWithThrowException(long timeout, TimeUnit timeUnit) throws InterruptedException {
+    public void sleepWithThrowException(long timeout, TimeUnit timeUnit) throws InterruptedException {
         if (null == timeUnit) {
             return;
         }
@@ -67,7 +70,7 @@ public class ThreadUtils {
      *
      * @return process id
      */
-    public static long getPID() {
+    public long getPID() {
         if (currentPID == -1) {
             synchronized (ThreadUtils.class) {
                 if (currentPID == -1) {
