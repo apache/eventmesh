@@ -33,12 +33,15 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Splitter;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class HttpLoadBalanceUtils {
 
-    private static final Pattern IP_PORT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}");
-    private static final Pattern IP_PORT_WEIGHT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}:\\d{1,6}");
+    private final Pattern IP_PORT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}");
+    private final Pattern IP_PORT_WEIGHT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}:\\d{1,6}");
 
-    public static LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(
+    public LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(
         final EventMeshHttpClientConfig eventMeshHttpClientConfig)
         throws EventMeshException {
         LoadBalanceSelector<String> eventMeshServerSelector = null;
@@ -64,7 +67,7 @@ public class HttpLoadBalanceUtils {
         return eventMeshServerSelector;
     }
 
-    private static List<Weight<String>> buildWeightedClusterGroupFromConfig(
+    private List<Weight<String>> buildWeightedClusterGroupFromConfig(
         final EventMeshHttpClientConfig eventMeshHttpClientConfig)
         throws EventMeshException {
         final List<String> eventMeshAddrs = Splitter.on(";")
@@ -91,7 +94,7 @@ public class HttpLoadBalanceUtils {
         return eventMeshAddrWeightList;
     }
 
-    private static List<String> buildClusterGroupFromConfig(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+    private List<String> buildClusterGroupFromConfig(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
         throws EventMeshException {
         final List<String> eventMeshAddrs = Splitter.on(";")
             .trimResults()
