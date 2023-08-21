@@ -70,7 +70,6 @@ public class SubscribeProcessor {
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
-
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
