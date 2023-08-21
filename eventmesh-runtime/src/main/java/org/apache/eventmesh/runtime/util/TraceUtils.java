@@ -29,13 +29,14 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 @Slf4j
+@UtilityClass
 public class TraceUtils {
 
-    public static Span prepareClientSpan(Map<String, Object> map, String spanName,
+    public Span prepareClientSpan(Map<String, Object> map, String spanName,
         boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
@@ -48,7 +49,7 @@ public class TraceUtils {
         return span;
     }
 
-    public static Span prepareServerSpan(Map<String, Object> map, String spanName,
+    public Span prepareServerSpan(Map<String, Object> map, String spanName,
         boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
@@ -61,7 +62,7 @@ public class TraceUtils {
         return span;
     }
 
-    public static Span prepareServerSpan(Map<String, Object> map, String spanName, long startTime,
+    public Span prepareServerSpan(Map<String, Object> map, String spanName, long startTime,
         TimeUnit timeUnit, boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
@@ -81,7 +82,7 @@ public class TraceUtils {
     }
 
 
-    public static void finishSpan(Span span, CloudEvent event) {
+    public void finishSpan(Span span, CloudEvent event) {
         try {
             log.debug("finishSpan with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(span, event);
@@ -92,7 +93,7 @@ public class TraceUtils {
 
     }
 
-    public static void finishSpan(ChannelHandlerContext ctx, CloudEvent event) {
+    public void finishSpan(ChannelHandlerContext ctx, CloudEvent event) {
         try {
             log.debug("finishSpan with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
@@ -103,7 +104,7 @@ public class TraceUtils {
 
     }
 
-    public static void finishSpanWithException(ChannelHandlerContext ctx, CloudEvent event,
+    public void finishSpanWithException(ChannelHandlerContext ctx, CloudEvent event,
         String errMsg, Throwable e) {
         try {
             log.debug("finishSpanWithException with event:{}", event);
@@ -114,7 +115,7 @@ public class TraceUtils {
         }
     }
 
-    public static void finishSpanWithException(Span span, Map<String, Object> map, String errMsg,
+    public void finishSpanWithException(Span span, Map<String, Object> map, String errMsg,
         Throwable e) {
         try {
             log.debug("finishSpanWithException with map:{}", map);
