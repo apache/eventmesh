@@ -26,10 +26,12 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utils for metrics-prometheus module
  */
+@UtilityClass
 public class PrometheusExporterUtils {
 
     /**
@@ -43,7 +45,7 @@ public class PrometheusExporterUtils {
      * @param getMetric
      */
     @SneakyThrows
-    public static void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
+    public void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
         Metric summaryMetrics, Function getMetric) {
         Method method = getMetric.getClass().getMethod("apply", Object.class);
         Class metricType = (Class) method.getGenericReturnType();
@@ -69,7 +71,7 @@ public class PrometheusExporterUtils {
      * @param desc the description of metric
      * @return
      */
-    public static String[] join(String metricName, String desc) {
+    public String[] join(String metricName, String desc) {
         String[] array = {metricName, desc};
         return array;
     }
