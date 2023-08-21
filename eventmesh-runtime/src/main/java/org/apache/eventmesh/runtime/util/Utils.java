@@ -41,11 +41,13 @@ import io.netty.handler.codec.http.HttpRequest;
 
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 @Slf4j
+@UtilityClass
 public class Utils {
 
-    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     /**
      * used to send messages to the client
@@ -55,7 +57,7 @@ public class Utils {
      * @param ctx
      * @param session
      */
-    public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
+    public void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
         Session session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
@@ -91,12 +93,12 @@ public class Utils {
      * @param user
      * @param startTime
      */
-    public static void logFailedMessageFlow(ChannelFuture future, Package pkg, UserAgent user, long startTime,
+    public void logFailedMessageFlow(ChannelFuture future, Package pkg, UserAgent user, long startTime,
         long taskExecuteTime) {
         logFailedMessageFlow(pkg, user, startTime, taskExecuteTime, future.cause());
     }
 
-    private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
+    private void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
         Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
@@ -117,7 +119,7 @@ public class Utils {
      * @param user
      * @param startTime
      */
-    public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
+    public void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
@@ -134,7 +136,7 @@ public class Utils {
     /**
      * get serviceId according to topic
      */
-    public static String getServiceId(String topic) {
+    public String getServiceId(String topic) {
         String[] topicStrArr = topic.split("-");
         if (topicStrArr.length >= 3) {
             return topicStrArr[2];
@@ -149,7 +151,7 @@ public class Utils {
      * @param fullReq request parameter
      * @return http header
      */
-    public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+    public Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),
