@@ -18,14 +18,16 @@
 package org.apache.eventmesh.runtime.util;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 /**
  * EventMesh banner util
  */
 @Slf4j
+@UtilityClass
 public class BannerUtil {
 
-    private static final String LOGO =
+    private final String LOGO =
                        "       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME        EMEMEMEME               EMEMEMEME       " + System.lineSeparator()
                      + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME       EMEMEMEMEMEMEMEME     EMEMEMEMEMEMEMEMEM   " + System.lineSeparator()
                      + "  EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM        EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME " + System.lineSeparator()
@@ -44,14 +46,14 @@ public class BannerUtil {
                      + "   EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEM       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME   " + System.lineSeparator()
                      + "       MEMEMEMEMEMEMEMEMEMEMEMEMEMEME       EMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEMEME";
 
-    private static final String LOGONAME =
+    private final String LOGONAME =
                        "                       ____                 _   __  __           _     " + System.lineSeparator()
                      + "                     / ____|_   _____ _ __ | |_|  \\/  | ___  ___| |__  " + System.lineSeparator()
                      + "                     |  __|\\ \\ / / _ | '_ \\| __| |\\/| |/ _ |/ __| '_ \\ " + System.lineSeparator()
                      + "                     | |___ \\ V /  __| | | | |_| |  | |  __|\\__ \\ | | |" + System.lineSeparator()
                      + "                     \\ ____| \\_/ \\___|_| |_|\\__|_|  |_|\\___||___/_| |_|";
 
-    public static void generateBanner() {
+    public void generateBanner() {
         String banner =
                           System.lineSeparator()
                         + System.lineSeparator()
