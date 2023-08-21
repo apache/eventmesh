@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
@@ -40,15 +41,16 @@ import lombok.extern.slf4j.Slf4j;
  * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md">CloudEvents Http Webhook</a>
  */
 @Slf4j
+@UtilityClass
 public class WebhookUtil {
 
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
-    private static final String ALLOWED_ORIGIN_HEADER = "WebHook-Allowed-Origin";
+    private final String CONTENT_TYPE_HEADER = "Content-Type";
+    private final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";
+    private final String ALLOWED_ORIGIN_HEADER = "WebHook-Allowed-Origin";
 
-    private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
+    private final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
-    public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
+    public boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
         final String targetUrl,
         final String requestOrigin) {
 
@@ -76,7 +78,7 @@ public class WebhookUtil {
         return true;
     }
 
-    public static void setWebhookHeaders(final HttpPost builder,
+    public void setWebhookHeaders(final HttpPost builder,
         final String contentType,
         final String requestOrigin,
         final String urlAuthType) {
@@ -90,7 +92,7 @@ public class WebhookUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, String> getHttpAuthParam(final String authType) {
+    private Map<String, String> getHttpAuthParam(final String authType) {
         if (StringUtils.isEmpty(authType)) {
             return new HashMap<String, String>();
         }
@@ -99,7 +101,7 @@ public class WebhookUtil {
         return authService != null ? authService.getAuthParams() : null;
     }
 
-    private static AuthService getHttpAuthPlugin(final String pluginType) {
+    private AuthService getHttpAuthPlugin(final String pluginType) {
         if (AUTH_SERVICES_MAP.containsKey(pluginType)) {
             return AUTH_SERVICES_MAP.get(pluginType);
         }
