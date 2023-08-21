@@ -31,37 +31,40 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AsciiString;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class HttpResponseUtils {
 
-    public static HttpResponse createSuccess() {
+    public HttpResponse createSuccess() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
     }
 
-    public static HttpResponse createNotFound() {
+    public HttpResponse createNotFound() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
     }
 
-    public static HttpResponse createInternalServerError() {
+    public HttpResponse createInternalServerError() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
+    private ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);
         return byteBuf;
     }
 
-    public static HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
+    public HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
         return getHttpResponse(body, ctx, HttpHeaderValues.APPLICATION_JSON);
 
     }
 
-    public static HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
+    public HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
         return getHttpResponse(body, ctx, HttpHeaderValues.TEXT_HTML);
     }
 
-    public static HttpResponse getHttpResponse(String body, ChannelHandlerContext ctx, AsciiString headerValue) {
+    public HttpResponse getHttpResponse(String body, ChannelHandlerContext ctx, AsciiString headerValue) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, createByteBuf(ctx, body),
