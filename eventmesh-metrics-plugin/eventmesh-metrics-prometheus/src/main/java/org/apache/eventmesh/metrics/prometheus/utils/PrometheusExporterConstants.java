@@ -17,19 +17,22 @@
 
 package org.apache.eventmesh.metrics.prometheus.utils;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Constants in metrics-prometheus module
  */
+@UtilityClass
 public class PrometheusExporterConstants {
 
-    public static final String HTTP = "HTTP";
+    public final String HTTP = "HTTP";
 
-    public static final String GRPC = "GRPC";
+    public final String GRPC = "GRPC";
 
-    public static final String TCP = "TCP";
+    public final String TCP = "TCP";
 
-    public static final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
+    public final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
 
-    public static final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
+    public final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
 
 }
