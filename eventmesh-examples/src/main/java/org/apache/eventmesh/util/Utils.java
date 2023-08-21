@@ -30,12 +30,15 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class Utils {
 
     /**
      * Get local IP address
      */
-    public static String getLocalIP() throws IOException {
+    public String getLocalIP() throws IOException {
         if (isWindowsOS()) {
             return InetAddress.getLocalHost().getHostAddress();
         } else {
@@ -48,7 +51,7 @@ public class Utils {
      *
      * @return true - Windows false - other OS
      */
-    public static boolean isWindowsOS() {
+    public boolean isWindowsOS() {
         return SystemUtils.IS_OS_WINDOWS;
     }
 
@@ -57,7 +60,7 @@ public class Utils {
      *
      * @return IP address
      */
-    private static String getLinuxLocalIp() throws SocketException {
+    private String getLinuxLocalIp() throws SocketException {
         String ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
 
         for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
@@ -85,7 +88,7 @@ public class Utils {
      * @param fileName
      * @return Properties
      */
-    public static Properties readPropertiesFile(final String fileName) throws IOException {
+    public Properties readPropertiesFile(final String fileName) throws IOException {
         try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
             final Properties properties = new Properties();
             properties.load(inputStream);
@@ -98,7 +101,7 @@ public class Utils {
      * @param path path
      * @return url
      */
-    public static String getURL(String port, String path) {
+    public String getURL(String port, String path) {
         return "http://" + IPUtils.getLocalAddress() + ":" + port + path;
     }
 
