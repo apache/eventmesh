@@ -46,18 +46,20 @@ import io.netty.handler.codec.http.HttpMethod;
 import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 @Slf4j
-public final class HttpUtils {
+@UtilityClass
+public class HttpUtils {
 
-    public static String post(final CloseableHttpClient client,
+    public String post(final CloseableHttpClient client,
         final String uri,
         final RequestParam requestParam) throws IOException {
 
         return post(client, null, uri, requestParam);
     }
 
-    public static String post(final CloseableHttpClient client,
+    public String post(final CloseableHttpClient client,
         final HttpHost forwardAgent,
         final String uri,
         final RequestParam requestParam) throws IOException {
@@ -66,7 +68,7 @@ public final class HttpUtils {
 
     }
 
-    public static String post(final CloseableHttpClient client,
+    public String post(final CloseableHttpClient client,
         final HttpHost forwardAgent,
         final String uri,
         final RequestParam requestParam,
@@ -115,14 +117,14 @@ public final class HttpUtils {
         return client.execute(httpPost, responseHandler);
     }
 
-    public static String get(final CloseableHttpClient client,
+    public String get(final CloseableHttpClient client,
         final String url,
         final RequestParam requestParam) throws IOException {
 
         return get(client, null, url, requestParam, new EventMeshResponseHandler());
     }
 
-    public static String get(final CloseableHttpClient client,
+    public String get(final CloseableHttpClient client,
         final HttpHost forwardAgent,
         final String url,
         final RequestParam requestParam) throws IOException {
@@ -130,7 +132,7 @@ public final class HttpUtils {
         return get(client, forwardAgent, url, requestParam, new EventMeshResponseHandler());
     }
 
-    public static String get(final CloseableHttpClient client,
+    public String get(final CloseableHttpClient client,
         final HttpHost forwardAgent,
         final String uri,
         final RequestParam requestParam,
@@ -169,7 +171,7 @@ public final class HttpUtils {
         return client.execute(httpGet, responseHandler);
     }
 
-    private static class EventMeshResponseHandler implements ResponseHandler<String> {
+    private class EventMeshResponseHandler implements ResponseHandler<String> {
 
         /**
          * Processes an {@link HttpResponse} and returns some value corresponding to that response.
