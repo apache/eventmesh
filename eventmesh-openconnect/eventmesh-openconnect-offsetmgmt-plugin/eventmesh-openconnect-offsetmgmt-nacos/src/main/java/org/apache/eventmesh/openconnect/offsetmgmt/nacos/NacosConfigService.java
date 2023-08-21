@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 import com.alibaba.nacos.api.NacosFactory;
@@ -112,7 +111,7 @@ public class NacosConfigService implements OffsetManagementService {
             Map<ConnectorRecordPartition, RecordOffset> recordMap = positionStore.getKVMap();
 
             List<Map<String, Object>> recordToSyncList = new ArrayList<>();
-            for(Map.Entry<ConnectorRecordPartition, RecordOffset> entry : recordMap.entrySet()) {
+            for (Map.Entry<ConnectorRecordPartition, RecordOffset> entry : recordMap.entrySet()) {
                 Map<String, Object> synchronizeMap = new HashMap<>();
                 synchronizeMap.put("connectorRecordPartition", entry.getKey());
                 synchronizeMap.put("recordOffset", entry.getValue());
@@ -206,7 +205,8 @@ public class NacosConfigService implements OffsetManagementService {
                     });
 
                 for (Map<String, Object> recordPartitionOffsetMap : recordOffsetList) {
-                    ConnectorRecordPartition connectorRecordPartition = JacksonUtils.toObj(JacksonUtils.toJson(recordPartitionOffsetMap.get("connectorRecordPartition")),
+                    ConnectorRecordPartition connectorRecordPartition = JacksonUtils.toObj(
+                        JacksonUtils.toJson(recordPartitionOffsetMap.get("connectorRecordPartition")),
                         ConnectorRecordPartition.class);
                     RecordOffset recordOffset = JacksonUtils.toObj(JacksonUtils.toJson(recordPartitionOffsetMap.get("recordOffset")),
                         RecordOffset.class);

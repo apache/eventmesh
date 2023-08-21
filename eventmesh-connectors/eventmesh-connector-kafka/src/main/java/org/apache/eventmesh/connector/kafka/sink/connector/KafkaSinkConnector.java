@@ -54,25 +54,17 @@ public class KafkaSinkConnector implements Sink {
     @Override
     public void init(Config config) {
         this.sinkConfig = (KafkaSinkConfig) config;
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, sinkConfig.getConnectorConfig().getBootstrapServers());
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getKeyConverter());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getValueConverter());
-        props.put(ProducerConfig.ACKS_CONFIG, sinkConfig.getConnectorConfig().getAck());
-        props.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, sinkConfig.getConnectorConfig().getMaxRequestSize());
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, sinkConfig.getConnectorConfig().getBufferMemory());
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, sinkConfig.getConnectorConfig().getBatchSize());
-        props.put(ProducerConfig.LINGER_MS_CONFIG, sinkConfig.getConnectorConfig().getLingerMs());
-        props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, sinkConfig.getConnectorConfig().getRequestTimeoutMs());
-        props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, sinkConfig.getConnectorConfig().getMaxInFightRequestsPerConnection());
-        props.put(ProducerConfig.RETRIES_CONFIG, sinkConfig.getConnectorConfig().getRetries());
-        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, sinkConfig.getConnectorConfig().getCompressionType());
-        producer = new KafkaProducer<>(props);
+        doInit();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (KafkaSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit();
+    }
+
+    private void doInit() {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, sinkConfig.getConnectorConfig().getBootstrapServers());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getKeyConverter());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getValueConverter());
