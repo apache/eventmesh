@@ -22,9 +22,12 @@ import org.apache.eventmesh.storage.knative.cloudevent.KnativeMessageFactory;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class CloudEventUtils {
 
-    public static SendResult convertSendResult(CloudEvent cloudEvent) {
+    public SendResult convertSendResult(CloudEvent cloudEvent) {
         SendResult sendResult = new SendResult();
         sendResult.setTopic(KnativeMessageFactory.createReader(cloudEvent));
         sendResult.setMessageId(cloudEvent.getId());
