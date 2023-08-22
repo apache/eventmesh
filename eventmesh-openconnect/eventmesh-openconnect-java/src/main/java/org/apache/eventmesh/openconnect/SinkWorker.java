@@ -38,6 +38,7 @@ import java.util.Optional;
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 @Slf4j
 public class SinkWorker implements ConnectorWorker {
@@ -124,18 +125,7 @@ public class SinkWorker implements ConnectorWorker {
 
         @Override
         public Optional<CloudEvent> handle(CloudEvent event) {
-            byte[] body = Objects.requireNonNull(event.getData()).toBytes();
-            log.info("handle receive events {}", new String(event.getData().toBytes()));
-            //todo: recordPartition & recordOffset
-            ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
-            for (String extensionName : event.getExtensionNames()) {
-                connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
-            }
-            connectRecord.addExtension("id", event.getId());
-            connectRecord.addExtension("topic", event.getSubject());
-            connectRecord.addExtension("source", event.getSource().toString());
-            connectRecord.addExtension("type", event.getType());
-            connectRecord.addExtension("datacontenttype", event.getDataContentType());
+            ConnectRecord connectRecord = CloudEventUtil.convertEventToRecord(event);
             List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(connectRecord);
             sink.put(connectRecords);
