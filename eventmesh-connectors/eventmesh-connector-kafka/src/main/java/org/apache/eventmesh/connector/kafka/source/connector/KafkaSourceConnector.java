@@ -19,6 +19,8 @@ package org.apache.eventmesh.connector.kafka.source.connector;
 
 import org.apache.eventmesh.connector.kafka.source.config.KafkaSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
@@ -53,6 +55,17 @@ public class KafkaSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (KafkaSourceConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (KafkaSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
+    }
+
+    private void doInit() {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getConnectorConfig().getBootstrapServers());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, sourceConfig.getConnectorConfig().getKeyConverter());

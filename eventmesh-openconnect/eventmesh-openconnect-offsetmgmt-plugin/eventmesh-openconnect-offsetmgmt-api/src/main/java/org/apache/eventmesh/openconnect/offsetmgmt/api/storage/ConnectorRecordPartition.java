@@ -31,6 +31,10 @@ public class ConnectorRecordPartition extends RecordPartition {
      */
     private String connectorName;
 
+    public ConnectorRecordPartition() {
+
+    }
+
     public ConnectorRecordPartition(String connectorName, Map<String, ?> partition) {
         super(partition);
         this.connectorName = connectorName;
@@ -53,13 +57,6 @@ public class ConnectorRecordPartition extends RecordPartition {
         }
         ConnectorRecordPartition that = (ConnectorRecordPartition) o;
         return this.connectorName.equals(that.connectorName);
-    }
-
-    @Override
-    public String toString() {
-        return "ConnectorRecordPartition{"
-            + "connectorName='" + connectorName + '\''
-            + "} " + super.toString();
     }
 
     @Override

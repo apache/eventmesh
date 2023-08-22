@@ -20,6 +20,8 @@ package org.apache.eventmesh.connector.pulsar.source.connector;
 
 import org.apache.eventmesh.connector.pulsar.source.config.PulsarSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
@@ -57,13 +59,24 @@ public class PulsarSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for rocketmq source connector
         this.sourceConfig = (PulsarSourceConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (PulsarSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
+    }
+
+    private void doInit() throws Exception {
         PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
-                .build();
+            .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
+            .build();
         consumer = client.newConsumer()
-                .topic(sourceConfig.connectorConfig.getTopic())
-                .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
-                .subscribe();
+            .topic(sourceConfig.connectorConfig.getTopic())
+            .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
+            .subscribe();
     }
 
     @Override

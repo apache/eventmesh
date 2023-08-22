@@ -15,22 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect;
+package org.apache.eventmesh.openconnect.api.connector;
+
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+
+import lombok.Data;
 
 /**
- * Connector worker interface
+ * Sink Connector Context
  */
-public interface ConnectorWorker {
+@Data
+public class SinkConnectorContext implements ConnectorContext {
 
-    void init();
+    public SinkConfig sinkConfig;
 
-    /**
-     * Starts the worker
-     */
-    void start();
-
-    /**
-     * Stops the worker
-     */
-    void stop();
 }
