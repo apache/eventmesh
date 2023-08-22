@@ -19,15 +19,19 @@ package org.apache.eventmesh.connector.rabbitmq.sink.connector;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
+import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 public class RabbitMQSinkConnector implements Sink {
@@ -90,27 +94,22 @@ public class RabbitMQSinkConnector implements Sink {
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
-//            Message message = convertRecordToMessage(connectRecord);
+            CloudEvent event = CloudEventUtil.convertRecordToEvent(connectRecord);
             try {
-//                SendResult sendResult = producer.send(message);
-//            } catch (InterruptedException e) {
+                Optional<byte[]> optionalBytes = ByteArrayUtils.objectToBytes(event);
+                if (optionalBytes.isPresent()) {
+                    byte[] data = optionalBytes.get();
+                    rabbitmqClient.publish(channel, sinkConfig.getConnectorConfig().getExchangeName(),
+                            sinkConfig.getConnectorConfig().getRoutingKey(), data);
+                }
+            } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
-//                log.warn("[RabbitMQSinkConnector] Interrupting thread {} due to exception {}",
-//                    currentThread.getName(), e.getMessage());
+                log.warn("[RabbitMQSinkConnector] Interrupting thread {} due to exception {}",
+                    currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             } catch (Exception e) {
                 log.error("[RabbitMQSinkConnector] sendResult has error : ", e);
             }
         }
     }
-
-//    public Message convertRecordToMessage(ConnectRecord connectRecord) {
-//        Message message = new Message();
-//        message.setTopic(this.sinkConfig.getConnectorConfig().getTopic());
-//        message.setBody((byte[]) connectRecord.getData());
-//        for (String key : connectRecord.getExtensions().keySet()) {
-//            MessageAccessor.putProperty(message, key, connectRecord.getExtension(key));
-//        }
-//        return message;
-//    }
 }
