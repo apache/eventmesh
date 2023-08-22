@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rabbitmq.sink.config;
 
 import com.rabbitmq.client.BuiltinExchangeType;
+
 import lombok.Data;
 
 @Data

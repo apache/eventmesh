@@ -17,14 +17,16 @@
 
 package org.apache.eventmesh.openconnect.util;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CloudEventUtil {

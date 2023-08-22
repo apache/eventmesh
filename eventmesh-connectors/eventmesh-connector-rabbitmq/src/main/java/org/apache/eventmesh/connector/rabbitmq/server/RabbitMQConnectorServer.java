@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.connector.rabbitmq.server;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.rabbitmq.config.RabbitMQServerConfig;
 import org.apache.eventmesh.connector.rabbitmq.sink.connector.RabbitMQSinkConnector;
 import org.apache.eventmesh.connector.rabbitmq.source.connector.RabbitMQSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RabbitMQConnectorServer {

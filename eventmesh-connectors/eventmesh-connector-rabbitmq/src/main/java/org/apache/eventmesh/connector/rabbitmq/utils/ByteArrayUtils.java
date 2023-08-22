@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.connector.rabbitmq.utils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @SuppressWarnings("all")
 public class ByteArrayUtils {
