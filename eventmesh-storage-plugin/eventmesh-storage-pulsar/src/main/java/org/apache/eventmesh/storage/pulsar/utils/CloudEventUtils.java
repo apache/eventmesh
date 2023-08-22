@@ -21,9 +21,12 @@ import org.apache.eventmesh.api.SendResult;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class CloudEventUtils {
 
-    public static SendResult convertSendResult(CloudEvent cloudEvent) {
+    public SendResult convertSendResult(CloudEvent cloudEvent) {
         SendResult sendResult = new SendResult();
         sendResult.setTopic(cloudEvent.getSubject());
         sendResult.setMessageId(cloudEvent.getId());
