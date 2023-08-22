@@ -28,12 +28,13 @@ connectorConfig:
     connectorName: rocketmqSource
     nameserver: 127.0.0.1:9877
     topic: TopicTest
+    commitOffsetIntervalMs: 5000
 offsetStorageConfig:
     offsetStorageType: nacos
     offsetStorageAddr: 127.0.0.1:8848
     extensions: {
-                    #same with connectorName
-                    dataId: rocketmqSource,
+                    #same with topic
+                    dataId: TopicTest,
                     #same with group
                     group: rocketmqSource
     }

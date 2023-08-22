@@ -52,14 +52,6 @@ public class Application {
             return;
         }
 
-        try {
-            connector.init(config);
-            CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
-        } catch (Exception e) {
-            log.error("connector {} initialize error", connector.name(), e);
-            return;
-        }
-
         ConnectorWorker worker;
         if (isSink(clazz)) {
             worker = new SinkWorker((Sink) connector, (SinkConfig) config);
@@ -69,6 +61,9 @@ public class Application {
             log.error("class {} is not sink and source", clazz);
             return;
         }
+        worker.init();
+
+        CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
             log.info("connector {} stopped", connector.name());

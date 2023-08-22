@@ -28,4 +28,6 @@ public class SourceConnectorConfig {
     private String nameserver;
 
     private String topic;
+
+    private long commitOffsetIntervalMs = 5 * 1000;
 }

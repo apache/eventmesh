@@ -23,6 +23,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.ThreadPoolHelper;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
@@ -127,5 +128,6 @@ public class EventMeshTcpRetryer {
     }
 
     public void printRetryThreadPoolState() {
+        ThreadPoolHelper.printState(pool);
     }
 }

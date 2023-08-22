@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,7 +27,11 @@ public class RecordOffset {
      * if pull message from mq key=queueOffset,
      * value=queueOffset value
      */
-    private final Map<String, ?> offset;
+    private Map<String, ?> offset = new HashMap<>();
+
+    public RecordOffset() {
+
+    }
 
     public RecordOffset(Map<String, ?> offset) {
         this.offset = offset;
@@ -53,10 +58,4 @@ public class RecordOffset {
         return Objects.hash(offset);
     }
 
-    @Override
-    public String toString() {
-        return "RecordOffset{"
-             + "offset=" + offset
-             + "}";
-    }
 }
