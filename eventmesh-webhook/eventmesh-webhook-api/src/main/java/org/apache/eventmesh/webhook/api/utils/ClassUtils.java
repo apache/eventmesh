@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.webhook.api.utils;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ClassUtils {
 
-    public static String convertResourcePathToClassName(String path) {
+    public String convertResourcePathToClassName(String path) {
         return path.substring(1).replace('/', '.');
     }
 }
