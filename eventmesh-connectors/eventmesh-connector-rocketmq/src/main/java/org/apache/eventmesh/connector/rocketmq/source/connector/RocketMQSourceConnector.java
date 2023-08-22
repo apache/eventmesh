@@ -129,7 +129,7 @@ public class RocketMQSourceConnector implements Source {
         // commit offset with schedule task
         execScheduleTask();
         // todo: we need more elegant way instead of sleep
-        // for rocketmq client, will delay 1 second to send heartbeat to broker, so here sleep a
+        // for rocketmq client, will delay 1 second to send heartbeat to broker, so here sleep few seconds
         Thread.sleep(1500);
 
         List<MessageQueue> allocated = getAllocatedMessageQueue(sourceConfig.getConnectorConfig().getTopic(),
