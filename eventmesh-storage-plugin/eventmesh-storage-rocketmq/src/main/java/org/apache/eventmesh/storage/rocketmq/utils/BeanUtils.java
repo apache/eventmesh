@@ -29,16 +29,19 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-public final class BeanUtils {
+import lombok.experimental.UtilityClass;
 
-    private static final InternalLogger LOG = ClientLogger.getLog();
+@UtilityClass
+public class BeanUtils {
+
+    private final InternalLogger LOG = ClientLogger.getLog();
 
     /**
      * Maps primitive {@code Class}es to their corresponding wrapper {@code Class}.
      */
-    private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+    private final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
 
-    static {
+    {
         primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
         primitiveWrapperMap.put(Byte.TYPE, Byte.class);
         primitiveWrapperMap.put(Character.TYPE, Character.class);
@@ -50,9 +53,9 @@ public final class BeanUtils {
         primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
     }
 
-    private static final Map<Class<?>, Class<?>> wrapperMap = new HashMap<>();
+    private final Map<Class<?>, Class<?>> wrapperMap = new HashMap<>();
 
-    static {
+    {
         primitiveWrapperMap.forEach((primitiveClass, wrapperClass) -> {
             if (!Objects.equals(wrapperClass, primitiveClass)) {
                 wrapperMap.put(wrapperClass, primitiveClass);
@@ -81,7 +84,7 @@ public final class BeanUtils {
      * @param <T>        Class type
      * @return Class instance
      */
-    public static <T> T populate(final Properties properties, final Class<T> clazz) {
+    public <T> T populate(final Properties properties, final Class<T> clazz) {
         T obj = null;
         try {
             obj = clazz.getDeclaredConstructor().newInstance();
@@ -92,7 +95,7 @@ public final class BeanUtils {
         return obj;
     }
 
-    public static <T> T populate(final Properties properties, final T obj) {
+    public <T> T populate(final Properties properties, final T obj) {
         Class<?> clazz = obj.getClass();
         try {
 
@@ -117,7 +120,7 @@ public final class BeanUtils {
         return obj;
     }
 
-    public static Class<?> getMethodClass(Class<?> clazz, String methodName) {
+    public Class<?> getMethodClass(Class<?> clazz, String methodName) {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             if (method.getName().equalsIgnoreCase(methodName)) {
@@ -127,7 +130,7 @@ public final class BeanUtils {
         return null;
     }
 
-    public static void setProperties(Class<?> clazz, Object obj, String methodName,
+    public void setProperties(Class<?> clazz, Object obj, String methodName,
         Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> parameterClass = getMethodClass(clazz, methodName);
         Method setterMethod = clazz.getMethod(methodName, parameterClass);
