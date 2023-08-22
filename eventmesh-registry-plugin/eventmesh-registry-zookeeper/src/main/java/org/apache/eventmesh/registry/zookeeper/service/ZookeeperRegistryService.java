@@ -23,9 +23,12 @@ import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.registry.zookeeper.config.ZKRegistryConfiguration;
 import org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant;
 import org.apache.eventmesh.registry.zookeeper.pojo.EventMeshInstance;
 
@@ -34,7 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.CuratorFrameworkFactory.Builder;
+import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.retry.RetryForever;
+import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
@@ -43,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,6 +73,8 @@ public class ZookeeperRegistryService implements RegistryService {
 
     private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
+    private ZKRegistryConfiguration zkConfig;
+
     @Override
     public void init() throws RegistryException {
 
@@ -84,6 +94,8 @@ public class ZookeeperRegistryService implements RegistryService {
             this.serverAddr = commonConfiguration.getNamesrvAddr();
             break;
         }
+        ZKRegistryConfiguration zkConfig = ConfigService.getInstance().buildConfigInstance(ZKRegistryConfiguration.class);
+        this.zkConfig = zkConfig;
     }
 
     @Override
@@ -94,17 +106,64 @@ public class ZookeeperRegistryService implements RegistryService {
             return;
         }
         try {
-            RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 5);
-            zkClient = CuratorFrameworkFactory.builder()
-                .connectString(serverAddr)
-                .retryPolicy(retryPolicy)
-                .namespace(ZookeeperConstant.NAMESPACE)
-                .build();
+            zkClient = buildZkClient();
             zkClient.start();
-
         } catch (Exception e) {
             throw new RegistryException("ZookeeperRegistry starting failed", e);
         }
+    }
+
+    private CuratorFramework buildZkClient() throws ClassNotFoundException {
+        Builder builder = CuratorFrameworkFactory.builder()
+            .connectString(serverAddr)
+            .namespace(ZookeeperConstant.NAMESPACE);
+        if (zkConfig == null) {
+            builder.retryPolicy(new ExponentialBackoffRetry(1000, 5));
+            return builder.build();
+        }
+        builder.retryPolicy(createRetryPolicy());
+        String scheme = zkConfig.getScheme();
+        String auth = zkConfig.getAuth();
+        if (!StringUtils.isAnyBlank(scheme, auth)) {
+            builder.authorization(scheme, auth.getBytes(Constants.DEFAULT_CHARSET));
+        }
+        Optional.ofNullable(zkConfig.getConnectionTimeoutMs()).ifPresent((timeout) -> builder.connectionTimeoutMs(timeout));
+        Optional.ofNullable(zkConfig.getSessionTimeoutMs()).ifPresent((timeout) -> builder.sessionTimeoutMs(timeout));
+        return builder.build();
+    }
+
+    private RetryPolicy createRetryPolicy() throws ClassNotFoundException {
+        String retryPolicyClass = zkConfig.getRetryPolicyClass();
+        if (StringUtils.isBlank(retryPolicyClass)) {
+            return new ExponentialBackoffRetry(1000, 5);
+        }
+        Class<?> clazz = Class.forName(retryPolicyClass);
+        if (clazz == ExponentialBackoffRetry.class) {
+            return new ExponentialBackoffRetry(
+                getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
+                getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
+        } else if (clazz == BoundedExponentialBackoffRetry.class) {
+            return new BoundedExponentialBackoffRetry(
+                getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
+                getOrDefault(zkConfig.getMaxSleepTimeMs(), 5000, Integer.class),
+                getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
+        } else if (clazz == RetryForever.class) {
+            return new RetryForever(
+                getOrDefault(zkConfig.getRetryIntervalTimeMs(), 1000, Integer.class));
+        } else if (clazz == RetryNTimes.class) {
+            return new RetryNTimes(
+                getOrDefault(zkConfig.getRetryNTimes(), 10, Integer.class),
+                getOrDefault(zkConfig.getSleepMsBetweenRetries(), 1000, Integer.class));
+        } else {
+            throw new IllegalArgumentException("Unsupported retry policy: " + retryPolicyClass);
+        }
+    }
+
+    private <T> T getOrDefault(T value, T defaultValue, Class<T> clazz) {
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
     }
 
     @Override

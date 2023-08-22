@@ -30,6 +30,8 @@ public enum EventMeshExtensionType {
     PROTOCOL("protocol"),
     METRICS("metrics"),
     TRACE("trace"),
+
+    OFFSETMGMT("offsetMgmt"),
     ;
 
     private final String extensionTypeName;

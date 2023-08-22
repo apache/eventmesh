@@ -56,7 +56,7 @@ public class ZipkinTraceServiceTest {
         try {
             sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
         } catch (NoSuchFieldException e) {
-            sdkTracerProviderField = ReflectUtils.lookUpField(ZipkinTraceService.class, "sdkTracerProvider");
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(ZipkinTraceService.class, "sdkTracerProvider");
             if (sdkTracerProviderField == null) {
                 throw e;
             }

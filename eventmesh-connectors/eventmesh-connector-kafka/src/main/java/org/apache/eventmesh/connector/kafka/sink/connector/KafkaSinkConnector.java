@@ -19,8 +19,10 @@ package org.apache.eventmesh.connector.kafka.sink.connector;
 
 import org.apache.eventmesh.connector.kafka.sink.config.KafkaSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -41,7 +43,7 @@ public class KafkaSinkConnector implements Sink {
 
     private KafkaSinkConfig sinkConfig;
 
-    private Properties props = new Properties();
+    private final Properties props = new Properties();
     Producer<String, String> producer;
 
     @Override
@@ -52,6 +54,17 @@ public class KafkaSinkConnector implements Sink {
     @Override
     public void init(Config config) {
         this.sinkConfig = (KafkaSinkConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        this.sinkConfig = (KafkaSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit();
+    }
+
+    private void doInit() {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, sinkConfig.getConnectorConfig().getBootstrapServers());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getKeyConverter());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, sinkConfig.getConnectorConfig().getValueConverter());

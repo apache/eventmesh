@@ -19,8 +19,10 @@ package org.apache.eventmesh.connector.openfunction.source.connector;
 
 import org.apache.eventmesh.connector.openfunction.source.config.OpenFunctionSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +50,14 @@ public class OpenFunctionSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for openfunction source connector
         this.sourceConfig = (OpenFunctionSourceConfig) config;
+        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        // init config for openfunction source connector
+        this.sourceConfig = (OpenFunctionSourceConfig) sourceConnectorContext.getSourceConfig();
         this.queue = new LinkedBlockingQueue<>(1000);
     }
 

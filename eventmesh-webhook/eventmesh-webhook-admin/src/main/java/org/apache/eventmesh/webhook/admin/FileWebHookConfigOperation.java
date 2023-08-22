@@ -76,7 +76,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (webhookConfigFile.exists()) {
             if (log.isErrorEnabled()) {
-                log.error("webhookConfig {} is existed", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} exists", webHookConfig.getCallbackPath());
             }
             return 0;
         }

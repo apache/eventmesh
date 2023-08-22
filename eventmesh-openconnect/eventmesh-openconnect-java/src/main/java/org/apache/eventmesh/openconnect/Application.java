@@ -36,6 +36,7 @@ public class Application {
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
     public void run(Class<? extends Connector> clazz) throws Exception {
+
         Connector connector;
         try {
             connector = clazz.getDeclaredConstructor().newInstance();
@@ -46,17 +47,8 @@ public class Application {
         Config config;
         try {
             config = ConfigUtil.parse(connector.configClass());
-            // offset storage, memory default
-            //KVStoreFactory.setStoreConfig(config.getStoreConfig());
         } catch (Exception e) {
             log.error("parse config error", e);
-            return;
-        }
-        try {
-            connector.init(config);
-            CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
-        } catch (Exception e) {
-            log.error("connector {} initialize error", connector.name(), e);
             return;
         }
 
@@ -69,6 +61,9 @@ public class Application {
             log.error("class {} is not sink and source", clazz);
             return;
         }
+        worker.init();
+
+        CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
             log.info("connector {} stopped", connector.name());

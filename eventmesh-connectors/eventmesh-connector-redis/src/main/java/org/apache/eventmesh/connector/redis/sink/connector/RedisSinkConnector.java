@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.redis.sink.connector;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,6 +55,17 @@ public class RedisSinkConnector implements Sink {
     @Override
     public void init(Config config) throws Exception {
         this.sinkConfig = (RedisSinkConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        this.sinkConfig = (RedisSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit();
+    }
+
+    private void doInit() {
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sinkConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());
