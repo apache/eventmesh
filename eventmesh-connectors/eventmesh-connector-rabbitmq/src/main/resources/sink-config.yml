@@ -26,5 +26,12 @@ pubSubConfig:
     passWord: rabbitmqPassWord
 connectorConfig:
     connectorName: rabbitmqSink
-    nameServer: 127.0.0.1:9876
-    topic: TopicTest
+    port: 
+    username: 
+    passwd: 
+    virtualHost: 
+    exchangeType: TOPIC
+    exchangeName: 
+    routingKey: 
+    queueName: 
+    autoAck: true

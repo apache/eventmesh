@@ -26,8 +26,15 @@ pubSubConfig:
     passWord: rabbitmqPassWord
 connectorConfig:
     connectorName: rabbitmqSource
-    nameserver: 127.0.0.1:9877
-    topic: TopicTest
+    port:
+    username:
+    passwd:
+    virtualHost:
+    exchangeType: TOPIC
+    exchangeName:
+    routingKey:
+    queueName:
+    autoAck: true
 offsetStorageConfig:
     offsetStorageType: nacos
     offsetStorageAddr: 127.0.0.1:8848
