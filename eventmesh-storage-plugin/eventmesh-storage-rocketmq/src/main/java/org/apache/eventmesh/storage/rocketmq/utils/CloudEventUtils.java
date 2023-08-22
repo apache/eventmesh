@@ -30,14 +30,14 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-
 import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 @Slf4j
+@UtilityClass
 public class CloudEventUtils {
 
-
-    public static SendResult convertSendResult(
+    public SendResult convertSendResult(
         org.apache.rocketmq.client.producer.SendResult rmqResult) {
         SendResult sendResult = new SendResult();
         sendResult.setTopic(rmqResult.getMessageQueue().getTopic());
@@ -46,7 +46,7 @@ public class CloudEventUtils {
     }
 
 
-    public static Message msgConvert(MessageExt rmqMsg) {
+    public Message msgConvert(MessageExt rmqMsg) {
         Message message = new Message();
         initProperty(rmqMsg, message, MessageExt::getTopic, Message::setTopic);
         initProperty(rmqMsg, message, MessageExt::getKeys, Message::setKeys);
@@ -89,7 +89,7 @@ public class CloudEventUtils {
         return message;
     }
 
-    public static MessageExt msgConvertExt(Message message) {
+    public MessageExt msgConvertExt(Message message) {
         MessageExt rmqMessageExt = new MessageExt();
         try {
             initProperty(message, rmqMessageExt, Message::getKeys, Message::setKeys);
@@ -125,7 +125,7 @@ public class CloudEventUtils {
      * @param <T>        t
      * @param <V>        v
      */
-    private static <T, V> void initProperty(T source, V target, Function<T, String> function, BiConsumer<V, String> biConsumer) {
+    private <T, V> void initProperty(T source, V target, Function<T, String> function, BiConsumer<V, String> biConsumer) {
         String apply = function.apply(source);
         if (Objects.nonNull(apply)) {
             biConsumer.accept(target, apply);
