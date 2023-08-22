@@ -19,6 +19,9 @@ package org.apache.eventmesh.storage.rocketmq.utils;
 
 import org.apache.rocketmq.common.UtilAll;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class OMSUtil {
 
     /**
@@ -26,7 +29,7 @@ public class OMSUtil {
      *
      * @return a unique instance name
      */
-    public static String buildInstanceName() {
+    public String buildInstanceName() {
         return UtilAll.getPid() + "%EventMesh" + "%" + System.nanoTime();
     }
 }
