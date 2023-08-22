@@ -29,16 +29,15 @@ import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 @Slf4j
 public class SinkWorker implements ConnectorWorker {

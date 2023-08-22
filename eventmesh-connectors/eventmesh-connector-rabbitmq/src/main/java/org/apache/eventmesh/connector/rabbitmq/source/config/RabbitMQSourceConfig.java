@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.connector.rabbitmq.source.config;
 
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

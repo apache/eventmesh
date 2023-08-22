@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.connector.rabbitmq.sink.connector;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
@@ -32,6 +28,13 @@ import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.List;
 import java.util.Optional;
+
+import io.cloudevents.CloudEvent;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RabbitMQSinkConnector implements Sink {
@@ -57,8 +60,11 @@ public class RabbitMQSinkConnector implements Sink {
     public void init(Config config) throws Exception {
         this.sinkConfig = (RabbitMQSinkConfig) config;
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
-        this.connection = rabbitmqClient.getConnection(sinkConfig.getConnectorConfig().getHost(), sinkConfig.getConnectorConfig().getUsername(),
-                sinkConfig.getConnectorConfig().getPasswd(), sinkConfig.getConnectorConfig().getPort(), sinkConfig.getConnectorConfig().getVirtualHost());
+        this.connection = rabbitmqClient.getConnection(sinkConfig.getConnectorConfig().getHost(),
+                sinkConfig.getConnectorConfig().getUsername(),
+                sinkConfig.getConnectorConfig().getPasswd(),
+                sinkConfig.getConnectorConfig().getPort(),
+                sinkConfig.getConnectorConfig().getVirtualHost());
         this.channel = rabbitmqConnectionFactory.createChannel(connection);
     }
 

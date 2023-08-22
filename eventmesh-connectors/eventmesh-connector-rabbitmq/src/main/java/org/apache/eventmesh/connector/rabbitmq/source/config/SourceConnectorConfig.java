@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.rabbitmq.source.config;
+
+import com.rabbitmq.client.BuiltinExchangeType;
 
 import lombok.Data;
 
@@ -25,7 +26,23 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String nameserver;
+    private String host;
 
-    private String topic;
+    private int port;
+
+    private String username;
+
+    private String passwd;
+
+    private String virtualHost;
+
+    private BuiltinExchangeType exchangeType;
+
+    private String exchangeName;
+
+    private String routingKey;
+
+    private String queueName;
+
+    private boolean autoAck;
 }

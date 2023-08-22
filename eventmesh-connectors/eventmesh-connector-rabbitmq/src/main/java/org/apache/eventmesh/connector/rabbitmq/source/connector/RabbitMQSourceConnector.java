@@ -17,20 +17,60 @@
 
 package org.apache.eventmesh.connector.rabbitmq.source.connector;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
+import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.source.config.RabbitMQSourceConfig;
+import org.apache.eventmesh.connector.rabbitmq.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.cloudevents.CloudEvent;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.GetResponse;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RabbitMQSourceConnector implements Source {
 
     private RabbitMQSourceConfig sourceConfig;
+
+    private volatile boolean started = false;
+
+    private static final int DEFAULT_BATCH_SIZE = 10;
+
+    private BlockingQueue<CloudEvent> queue;
+
+    private final RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
+
+    private RabbitMQSinkHandler rabbitMQSinkHandler;
+
+    private RabbitmqClient rabbitmqClient;
+
+    private Connection connection;
+
+    private Channel channel;
+
+    private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
+            Runtime.getRuntime().availableProcessors() * 2,
+            Runtime.getRuntime().availableProcessors() * 2,
+            "EventMesh-RabbitMQSourceConnector-");
+
 
     @Override
     public Class<? extends Config> configClass() {
@@ -40,10 +80,24 @@ public class RabbitMQSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (RabbitMQSourceConfig) config;
+        this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
+        this.connection = rabbitmqClient.getConnection(sourceConfig.getConnectorConfig().getHost(),
+                sourceConfig.getConnectorConfig().getUsername(),
+                sourceConfig.getConnectorConfig().getPasswd(),
+                sourceConfig.getConnectorConfig().getPort(),
+                sourceConfig.getConnectorConfig().getVirtualHost());
+        this.channel = rabbitmqConnectionFactory.createChannel(connection);
+        this.rabbitMQSinkHandler = new RabbitMQSinkHandler(channel, sourceConfig.getConnectorConfig());
     }
 
     @Override
     public void start() throws Exception {
+        if (!started) {
+            rabbitmqClient.binding(channel, sourceConfig.getConnectorConfig().getExchangeType(), sourceConfig.getConnectorConfig().getExchangeName(),
+                    sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
+            executor.execute(this.rabbitMQSinkHandler);
+            started = true;
+        }
     }
 
     @Override
@@ -58,38 +112,72 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public void stop() {
+        if (started) {
+            try {
+                rabbitmqClient.unbinding(channel, sourceConfig.getConnectorConfig().getExchangeName(),
+                        sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
+                rabbitmqClient.closeConnection(connection);
+                rabbitmqClient.closeChannel(channel);
+                rabbitMQSinkHandler.stop();
+            } finally {
+                started = false;
+            }
+        }
     }
 
     @Override
     public List<ConnectRecord> poll() {
-//        List<MessageExt> messageExts = consumer.poll();
-//        List<ConnectRecord> connectRecords = new ArrayList<>(messageExts.size());
-//        for (MessageExt messageExt : messageExts) {
-//            Long timestamp = System.currentTimeMillis();
-//            byte[] body = messageExt.getBody();
-//            String bodyStr = new String(body, StandardCharsets.UTF_8);
-//            RecordPartition recordPartition = convertToRecordPartition(messageExt.getTopic(),
-//                messageExt.getBrokerName(), messageExt.getQueueId());
-//            RecordOffset recordOffset = convertToRecordOffset(messageExt.getQueueOffset());
-//            ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, bodyStr);
-//            connectRecord.addExtension("topic", messageExt.getTopic());
-//            connectRecords.add(connectRecord);
-//        }
-//        return connectRecords;
-        return null;
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+            try {
+                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                if (event == null) {
+                    break;
+                }
+
+                connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        return connectRecords;
     }
 
-    public static RecordOffset convertToRecordOffset(Long offset) {
-        Map<String, String> offsetMap = new HashMap<>();
-        offsetMap.put("queueOffset", offset + "");
-        return new RecordOffset(offsetMap);
-    }
+    public class RabbitMQSinkHandler implements Runnable {
 
-    public static RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {
-        Map<String, String> map = new HashMap<>();
-        map.put("topic", topic);
-        map.put("brokerName", brokerName);
-        map.put("queueId", queueId + "");
-        return new RecordPartition(map);
+        private final Channel channel;
+        private final SourceConnectorConfig connectorConfig;
+        private final AtomicBoolean stop = new AtomicBoolean(false);
+
+        public RabbitMQSinkHandler(Channel channel, SourceConnectorConfig connectorConfig) {
+            this.channel = channel;
+            this.connectorConfig = connectorConfig;
+        }
+
+        @Override
+        public void run() {
+            while (!stop.get()) {
+                try {
+                    GetResponse response = channel.basicGet(connectorConfig.getQueueName(), connectorConfig.isAutoAck());
+                    if (response != null) {
+                        CloudEvent event = JsonUtils.parseTypeReferenceObject(new String(response.getBody(), Constants.DEFAULT_CHARSET),
+                                new TypeReference<CloudEvent>() {
+                                });
+                        if (event != null) {
+                            queue.add(event);
+                        }
+                        if (!connectorConfig.isAutoAck()) {
+                            channel.basicAck(response.getEnvelope().getDeliveryTag(), false);
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.error("[RabbitMQSinkHandler] thread run happen exception.", ex);
+                }
+            }
+        }
+
+        public void stop() {
+            stop.set(true);
+        }
     }
 }
