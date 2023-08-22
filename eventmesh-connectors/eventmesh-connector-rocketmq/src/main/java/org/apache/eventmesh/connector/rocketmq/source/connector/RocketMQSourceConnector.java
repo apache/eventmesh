@@ -27,13 +27,23 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
+import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
+import org.apache.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.protocol.body.Connection;
+import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +55,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,6 +65,11 @@ public class RocketMQSourceConnector implements Source {
     private RocketMQSourceConfig sourceConfig;
 
     private OffsetStorageReader offsetStorageReader;
+
+    private DefaultMQAdminExt srcMQAdminExt;
+
+    // message queue divided strategy
+    private final AllocateMessageQueueStrategy allocateMessageQueueStrategy = new AllocateMessageQueueAveragely();
 
     private final DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
 
@@ -71,7 +87,7 @@ public class RocketMQSourceConnector implements Source {
     }
 
     @Override
-    public void init(Config config) {
+    public void init(Config config) throws Exception {
         // init config for rocketmq source connector
         this.sourceConfig = (RocketMQSourceConfig) config;
         consumer.setConsumerGroup(sourceConfig.getPubSubConfig().getGroup());
@@ -79,6 +95,7 @@ public class RocketMQSourceConnector implements Source {
         consumer.setAutoCommit(false);
         consumer.setPullBatchSize(32);
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        initAdmin();
     }
 
     @Override
@@ -91,15 +108,79 @@ public class RocketMQSourceConnector implements Source {
         consumer.setAutoCommit(false);
         consumer.setPullBatchSize(32);
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        consumer.setAllocateMessageQueueStrategy(allocateMessageQueueStrategy);
+        initAdmin();
+    }
+
+    private synchronized void initAdmin() throws MQClientException {
+        if (srcMQAdminExt == null) {
+            srcMQAdminExt = new DefaultMQAdminExt();
+            srcMQAdminExt.setNamesrvAddr(sourceConfig.getConnectorConfig().getNameserver());
+            srcMQAdminExt.setAdminExtGroup("RocketMQ-Admin");
+        }
     }
 
     @Override
     public void start() throws Exception {
-        consumer.subscribe(sourceConfig.getConnectorConfig().getTopic(), "*");
+
+        consumer.start();
+        srcMQAdminExt.start();
+
         // commit offset with schedule task
         execScheduleTask();
-        consumer.start();
-        // todo: if we can specify the certain offset for consumption
+        // todo: we need more elegant way instead of sleep
+        // for rocketmq client, will delay 1 second to send heartbeat to broker, so here sleep a
+        Thread.sleep(1500);
+
+        List<MessageQueue> allocated = getAllocatedMessageQueue(sourceConfig.getConnectorConfig().getTopic(),
+            sourceConfig.getPubSubConfig().getGroup());
+
+        consumer.assign(allocated);
+
+        consumer.setMessageQueueListener((topic, mqAll, mqDivided) -> {
+
+            for (MessageQueue messageQueue : mqDivided) {
+                try {
+                    Map<String, String> partitionMap = new HashMap<>();
+                    partitionMap.put("topic", messageQueue.getTopic());
+                    partitionMap.put("brokerName", messageQueue.getBrokerName());
+                    partitionMap.put("queueId", messageQueue.getQueueId() + "");
+                    RecordPartition recordPartition = new RecordPartition(partitionMap);
+                    RecordOffset recordOffset = offsetStorageReader.readOffset(recordPartition);
+                    log.info("assigned messageQueue {}, recordOffset {}", messageQueue, recordOffset);
+                    if (recordOffset != null) {
+                        long pollOffset = (Long) recordOffset.getOffset().get("queueOffset");
+                        if (pollOffset != 0) {
+                            consumer.seek(messageQueue, pollOffset);
+                        }
+                    }
+                } catch (MQClientException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    private List<MessageQueue> getAllocatedMessageQueue(String topic, String group)
+        throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
+        List<MessageQueue> mqAll = getMessageQueueList(topic);
+        List<String> cidAll = getCidList(group);
+        if (cidAll != null) {
+            Collections.sort(mqAll);
+            Collections.sort(cidAll);
+            return allocateMessageQueueStrategy.allocate(group, consumer.buildMQClientId(), mqAll, cidAll);
+        }
+        return new ArrayList<>();
+    }
+
+    private List<String> getCidList(String group) throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
+        ConsumerConnection consumerConnection = srcMQAdminExt.examineConsumerConnectionInfo(group);
+        return consumerConnection.getConnectionSet().stream().map(Connection::getClientId).collect(Collectors.toList());
+    }
+
+    private List<MessageQueue> getMessageQueueList(String topic) throws MQClientException {
+        Collection<MessageQueue> messageQueueCollection = consumer.fetchMessageQueues(topic);
+        return new ArrayList<>(messageQueueCollection);
     }
 
     @Override
@@ -212,11 +293,12 @@ public class RocketMQSourceConnector implements Source {
         if (canCommitOffset == -1) {
             return;
         }
+        long nextBeginOffset = canCommitOffset + 1;
         List<AtomicLong> commitOffset = prepareCommitOffset.get(mq);
         if (commitOffset == null || commitOffset.isEmpty()) {
             commitOffset = new ArrayList<>();
         }
-        commitOffset.add(new AtomicLong(canCommitOffset));
+        commitOffset.add(new AtomicLong(nextBeginOffset));
         prepareCommitOffset.put(mq, commitOffset);
     }
 }
