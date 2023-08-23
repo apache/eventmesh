@@ -19,48 +19,33 @@ package org.apache.eventmesh.storage.rabbitmq.admin;
 
 import org.apache.eventmesh.api.admin.AbstractAdmin;
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.storage.rabbitmq.config.ConfigurationHolder;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-
 public class RabbitMQAdmin extends AbstractAdmin {
 
-    private Connection connection;
+    private ConfigurationHolder configurationHolder;
 
-    private Channel channel;
+    private String mgmtHost;
+
+    private int mgmtPort;
 
     public RabbitMQAdmin() {
         super(new AtomicBoolean(false));
-        // config
     }
 
-    // more
-    @Override
-    public void init(Properties properties) throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getProperty("rabbitmq.host", "localhost"));
-        factory.setPort(Integer.parseInt(properties.getProperty("rabbitmq.port", "5672")));
-        factory.setUsername(properties.getProperty("rabbitmq.username", "guest"));
-        factory.setPassword(properties.getProperty("rabbitmq.password", "guest"));
-
-        connection = factory.newConnection();
-        channel = connection.createChannel();
-        start();
+    public void init() throws Exception {
+        this.mgmtHost = configurationHolder.getHost();
+        this.mgmtPort = configurationHolder.getMgmtPort();
     }
 
     @Override
     public List<TopicProperties> getTopic() throws Exception {
-        // Implement logic to retrieve topic information from RabbitMQ.
-        // Use channel to interact with RabbitMQ, e.g., channel.queueDeclare, channel.exchangeDeclare, etc.
+
         return null;
     }
 
@@ -90,20 +75,5 @@ public class RabbitMQAdmin extends AbstractAdmin {
     // more
     @Override
     public void shutdown() {
-        super.shutdown();
-        if (channel != null) {
-            try {
-                channel.close();
-            } catch (IOException | TimeoutException e) {
-                // Handle the exception.
-            }
-        }
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (IOException e) {
-                // Handle the exception.
-            }
-        }
     }
 }
