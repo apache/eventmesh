@@ -22,3 +22,5 @@ rabbitmqctl set_user_tags full_access administrator
 ```
 
 eventmesh-dashboard does not support authenticating with OAuth 2 currently. If you are using OAuth 2 to authenticate, you should keep `management.disable_basic_auth` configuration at default value `false` to support HTTP basic authentication.
+
+> More information for developers to provide admin functions: https://github.com/apache/eventmesh/pull/4395
