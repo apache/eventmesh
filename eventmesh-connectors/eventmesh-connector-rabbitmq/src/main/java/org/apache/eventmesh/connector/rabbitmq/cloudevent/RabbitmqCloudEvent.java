@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.connector.rabbitmq.cloudevent;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.rabbitmq.exception.RabbitmqConnectorException;
@@ -34,6 +28,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
