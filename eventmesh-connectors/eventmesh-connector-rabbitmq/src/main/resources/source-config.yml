@@ -26,6 +26,7 @@ pubSubConfig:
     passWord: rabbitmqPassWord
 connectorConfig:
     connectorName: rabbitmqSource
+    host:
     port:
     username:
     passwd:
