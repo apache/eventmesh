@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.connector.rabbitmq.cloudevent;
 
+import java.nio.charset.StandardCharsets;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.format.EventFormat;
@@ -24,10 +29,6 @@ import io.cloudevents.core.message.MessageWriter;
 import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 
 public class RabbitmqCloudEventWriter
     implements MessageWriter<CloudEventWriter<RabbitmqCloudEvent>, RabbitmqCloudEvent>, CloudEventWriter<RabbitmqCloudEvent> {
