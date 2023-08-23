@@ -37,7 +37,7 @@ dependencies {
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-standalone")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-rabbitmq")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
