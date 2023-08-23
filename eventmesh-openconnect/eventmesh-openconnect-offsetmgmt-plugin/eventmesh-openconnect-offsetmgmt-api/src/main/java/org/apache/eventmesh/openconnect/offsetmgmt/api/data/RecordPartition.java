@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,7 +29,11 @@ public class RecordPartition {
      * value=brokerName key=queueId,
      * value=queueId
      */
-    private final Map<String, ?> partition;
+    private Map<String, ?> partition = new HashMap<>();
+
+    public RecordPartition() {
+
+    }
 
     public RecordPartition(Map<String, ?> partition) {
         this.partition = partition;
@@ -53,12 +58,5 @@ public class RecordPartition {
     @Override
     public int hashCode() {
         return Objects.hash(partition);
-    }
-
-    @Override
-    public String toString() {
-        return "RecordPartition{"
-            + "partition=" + partition
-            + "}";
     }
 }
