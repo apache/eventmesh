@@ -22,17 +22,33 @@ import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.storage.kafka.config.ClientConfiguration;
 
+import org.apache.kafka.clients.admin.Admin;
+import org.apache.kafka.clients.admin.DescribeTopicsResult;
+import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.admin.TopicDescription;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.TopicPartitionInfo;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class KafkaAdmin extends AbstractAdmin {
 
-    protected String nameServerAddr;
-
-    protected String clusterName;
+    private static final Properties properties = new Properties();
 
     public KafkaAdmin() {
         super(new AtomicBoolean(false));
@@ -40,13 +56,49 @@ public class KafkaAdmin extends AbstractAdmin {
         ConfigService configService = ConfigService.getInstance();
         ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
-        nameServerAddr = clientConfiguration.getNamesrvAddr();
-        clusterName = clientConfiguration.getClusterName();
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, clientConfiguration.getBootstrapServers());
     }
 
     @Override
     public List<TopicProperties> getTopic() throws Exception {
-        return null;
+        Admin client = Admin.create(properties);
+        Set<String> topicList = client.listTopics().names().get();
+        try {
+            List<TopicProperties> result = new ArrayList<>();
+            for (String topic : topicList) {
+                DescribeTopicsResult describeTopicsResult = client.describeTopics(Collections.singletonList(topic));
+                TopicDescription topicDescription = describeTopicsResult.values().get(topic).get();
+
+                long messageCount = topicDescription.partitions().stream()
+                    .mapToInt(TopicPartitionInfo::partition)
+                    .mapToLong(partition -> {
+                        try {
+                            return getLastOffset(topic, partition, client);
+                        } catch (ExecutionException | InterruptedException e) {
+                            log.error("Failed to get last offset", e);
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .sum();
+
+                result.add(new TopicProperties(topic, messageCount));
+            }
+            result.sort(Comparator.comparing(t -> t.name));
+            return result;
+        } finally {
+            client.close();
+            log.info("KafkaAdmin closed");
+        }
+    }
+
+    private long getLastOffset(String topic, int partition, Admin client) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, OffsetSpec> offsetSpecMap = Collections.singletonMap(
+            new TopicPartition(topic, partition),
+            new OffsetSpec.EarliestSpec()
+        );
+
+        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> offsetResultMap = client.listOffsets(offsetSpecMap).all().get();
+        return offsetResultMap.get(new TopicPartition(topic, partition)).offset();
     }
 
     @Override

@@ -44,6 +44,10 @@ public class ClientConfiguration {
     @Builder.Default
     private String clientPass = "password";
 
+    @ConfigFiled(field = "bootstrap.servers")
+    @Builder.Default
+    private String bootstrapServers = "";
+
     @ConfigFiled(field = "client.consumeThreadMin")
     @Builder.Default
     private Integer consumeThreadMin = 2;
