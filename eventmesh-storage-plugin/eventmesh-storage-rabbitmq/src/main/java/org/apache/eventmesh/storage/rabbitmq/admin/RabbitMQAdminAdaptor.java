@@ -64,12 +64,12 @@ public class RabbitMQAdminAdaptor implements Admin {
     }
 
     @Override
-    public void createTopic(String topicName) throws Exception {
+    public void createTopic(String topicName) {
         admin.createTopic(topicName);
     }
 
     @Override
-    public void deleteTopic(String topicName) throws Exception {
+    public void deleteTopic(String topicName) {
         admin.deleteTopic(topicName);
     }
 

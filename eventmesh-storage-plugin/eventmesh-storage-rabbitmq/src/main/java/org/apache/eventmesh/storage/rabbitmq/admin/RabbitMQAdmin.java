@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.admin.AbstractAdmin;
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.storage.rabbitmq.config.ConfigurationHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +35,8 @@ public class RabbitMQAdmin extends AbstractAdmin {
 
     private int mgmtPort;
 
+    private String mgmtProtocol;
+
     public RabbitMQAdmin() {
         super(new AtomicBoolean(false));
     }
@@ -41,38 +44,28 @@ public class RabbitMQAdmin extends AbstractAdmin {
     public void init() throws Exception {
         this.mgmtHost = configurationHolder.getHost();
         this.mgmtPort = configurationHolder.getMgmtPort();
+        this.mgmtProtocol = configurationHolder.getMgmtProtocol();
     }
 
     @Override
-    public List<TopicProperties> getTopic() throws Exception {
-
-        return null;
+    public List<TopicProperties> getTopic() {
+        // Utilizing the RabbitMQ Management HTTP API is a favorable approach to list queues and historical message counts.
+        // To display topics, it would be necessary to retrieve the topic name from each message and use it to declare a corresponding queue.
+        return new ArrayList<>();
     }
 
     @Override
-    public void createTopic(String topicName) throws Exception {
-        // Implement logic to create a topic in RabbitMQ.
+    public void createTopic(String topicName) {
     }
 
     @Override
-    public void deleteTopic(String topicName) throws Exception {
-        // Implement logic to delete a topic from RabbitMQ.
+    public void deleteTopic(String topicName) {
     }
 
-    // more
-    @Override
-    public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
-        // Implement logic to retrieve events from RabbitMQ for the given topic.
-        return null;
-    }
-
-    // more
     @Override
     public void publish(CloudEvent cloudEvent) throws Exception {
-        // Implement logic to publish an event to a specific topic in RabbitMQ.
     }
 
-    // more
     @Override
     public void shutdown() {
     }
