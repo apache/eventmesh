@@ -157,7 +157,7 @@ public class EventMeshTestUtils {
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
+            .withSubject("TopicTest")
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
