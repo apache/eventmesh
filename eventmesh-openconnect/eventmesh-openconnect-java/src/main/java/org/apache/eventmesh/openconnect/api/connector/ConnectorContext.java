@@ -15,22 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect;
+package org.apache.eventmesh.openconnect.api.connector;
 
 /**
- * Connector worker interface
+ * Connector Context
  */
-public interface ConnectorWorker {
+public interface ConnectorContext {
 
-    void init();
-
-    /**
-     * Starts the worker
-     */
-    void start();
-
-    /**
-     * Stops the worker
-     */
-    void stop();
 }

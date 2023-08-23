@@ -22,6 +22,8 @@ import org.apache.eventmesh.connector.mongodb.sink.client.MongodbReplicaSetSinkC
 import org.apache.eventmesh.connector.mongodb.sink.client.MongodbStandaloneSinkClient;
 import org.apache.eventmesh.connector.mongodb.sink.config.MongodbSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -49,6 +51,17 @@ public class MongodbSinkConnector implements Sink {
     @Override
     public void init(Config config) throws Exception {
         this.sinkConfig = (MongodbSinkConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        this.sinkConfig = (MongodbSinkConfig) sinkConnectorContext.getSinkConfig();
+        doInit();
+    }
+
+    private void doInit() {
         String connectorType = sinkConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSinkClient(sinkConfig.getConnectorConfig());

@@ -27,6 +27,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -47,11 +48,10 @@ public class SinkWorker implements ConnectorWorker {
 
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
-    public SinkWorker(Sink sink, SinkConfig config) throws Exception {
+    public SinkWorker(Sink sink, SinkConfig config) {
         this.sink = sink;
         this.config = config;
         eventMeshTCPClient = buildEventMeshSubClient(config);
-        eventMeshTCPClient.init();
     }
 
     private EventMeshTCPClient<CloudEvent> buildEventMeshSubClient(SinkConfig config) {
@@ -79,6 +79,18 @@ public class SinkWorker implements ConnectorWorker {
             .userAgent(userAgent)
             .build();
         return EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+    }
+
+    @Override
+    public void init() {
+        SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
+        sinkConnectorContext.setSinkConfig(config);
+        try {
+            sink.init(sinkConnectorContext);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        eventMeshTCPClient.init();
     }
 
     @Override
