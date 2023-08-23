@@ -19,8 +19,9 @@ package org.apache.eventmesh.connector.rabbitmq.sink.connector;
 
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
+import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
+import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEventWriter;
 import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
-import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -29,7 +30,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.cloudevents.CloudEvent;
 
@@ -110,16 +110,15 @@ public class RabbitMQSinkConnector implements Sink {
         for (ConnectRecord connectRecord : sinkRecords) {
             CloudEvent event = CloudEventUtil.convertRecordToEvent(connectRecord);
             try {
-                Optional<byte[]> optionalBytes = ByteArrayUtils.objectToBytes(event);
-                if (optionalBytes.isPresent()) {
-                    byte[] data = optionalBytes.get();
-                    rabbitmqClient.publish(channel, sinkConfig.getConnectorConfig().getExchangeName(),
-                            sinkConfig.getConnectorConfig().getRoutingKey(), data);
-                }
+                RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
+                RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(event);
+                byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
+                rabbitmqClient.publish(channel, sinkConfig.getConnectorConfig().getExchangeName(),
+                        sinkConfig.getConnectorConfig().getRoutingKey(), data);
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[RabbitMQSinkConnector] Interrupting thread {} due to exception {}",
-                    currentThread.getName(), e.getMessage());
+                        currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             } catch (Exception e) {
                 log.error("[RabbitMQSinkConnector] sendResult has error : ", e);

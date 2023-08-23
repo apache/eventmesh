@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.connector.rabbitmq.source.connector;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
+import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
 import org.apache.eventmesh.connector.rabbitmq.source.config.RabbitMQSourceConfig;
 import org.apache.eventmesh.connector.rabbitmq.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -41,7 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.GetResponse;
@@ -168,9 +166,8 @@ public class RabbitMQSourceConnector implements Source {
                 try {
                     GetResponse response = channel.basicGet(connectorConfig.getQueueName(), connectorConfig.isAutoAck());
                     if (response != null) {
-                        CloudEvent event = JsonUtils.parseTypeReferenceObject(new String(response.getBody(), Constants.DEFAULT_CHARSET),
-                                new TypeReference<CloudEvent>() {
-                                });
+                        RabbitmqCloudEvent rabbitmqCloudEvent = RabbitmqCloudEvent.getFromByteArray(response.getBody());
+                        CloudEvent event = rabbitmqCloudEvent.convertToCloudEvent();
                         if (event != null) {
                             queue.add(event);
                         }
