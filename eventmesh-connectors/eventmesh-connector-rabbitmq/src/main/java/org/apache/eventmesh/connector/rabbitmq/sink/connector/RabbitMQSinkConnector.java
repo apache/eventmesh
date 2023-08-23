@@ -22,6 +22,8 @@ import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
 import org.apache.eventmesh.connector.rabbitmq.utils.ByteArrayUtils;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -58,7 +60,11 @@ public class RabbitMQSinkConnector implements Sink {
 
     @Override
     public void init(Config config) throws Exception {
-        this.sinkConfig = (RabbitMQSinkConfig) config;
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        this.sinkConfig = (RabbitMQSinkConfig) ((SinkConnectorContext) connectorContext).getSinkConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sinkConfig.getConnectorConfig().getHost(),
                 sinkConfig.getConnectorConfig().getUsername(),
@@ -71,6 +77,8 @@ public class RabbitMQSinkConnector implements Sink {
     @Override
     public void start() throws Exception {
         if (!started) {
+            rabbitmqClient.binding(channel, sinkConfig.getConnectorConfig().getExchangeType(), sinkConfig.getConnectorConfig().getExchangeName(),
+                    sinkConfig.getConnectorConfig().getRoutingKey(), sinkConfig.getConnectorConfig().getQueueName());
             started = true;
         }
     }

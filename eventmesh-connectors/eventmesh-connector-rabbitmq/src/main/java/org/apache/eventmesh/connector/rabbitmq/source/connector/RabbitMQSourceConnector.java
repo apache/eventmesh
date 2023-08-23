@@ -25,6 +25,8 @@ import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.source.config.RabbitMQSourceConfig;
 import org.apache.eventmesh.connector.rabbitmq.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -32,6 +34,7 @@ import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,7 +61,7 @@ public class RabbitMQSourceConnector implements Source {
 
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 
-    private RabbitMQSinkHandler rabbitMQSinkHandler;
+    private RabbitMQSourceHandler rabbitMQSourceHandler;
 
     private RabbitmqClient rabbitmqClient;
 
@@ -79,7 +82,12 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public void init(Config config) throws Exception {
-        this.sourceConfig = (RabbitMQSourceConfig) config;
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        this.queue = new LinkedBlockingQueue<>(1000);
+        this.sourceConfig = (RabbitMQSourceConfig) ((SourceConnectorContext) connectorContext).getSourceConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sourceConfig.getConnectorConfig().getHost(),
                 sourceConfig.getConnectorConfig().getUsername(),
@@ -87,7 +95,7 @@ public class RabbitMQSourceConnector implements Source {
                 sourceConfig.getConnectorConfig().getPort(),
                 sourceConfig.getConnectorConfig().getVirtualHost());
         this.channel = rabbitmqConnectionFactory.createChannel(connection);
-        this.rabbitMQSinkHandler = new RabbitMQSinkHandler(channel, sourceConfig.getConnectorConfig());
+        this.rabbitMQSourceHandler = new RabbitMQSourceHandler(channel, sourceConfig.getConnectorConfig());
     }
 
     @Override
@@ -95,7 +103,7 @@ public class RabbitMQSourceConnector implements Source {
         if (!started) {
             rabbitmqClient.binding(channel, sourceConfig.getConnectorConfig().getExchangeType(), sourceConfig.getConnectorConfig().getExchangeName(),
                     sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
-            executor.execute(this.rabbitMQSinkHandler);
+            executor.execute(this.rabbitMQSourceHandler);
             started = true;
         }
     }
@@ -118,7 +126,7 @@ public class RabbitMQSourceConnector implements Source {
                         sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
                 rabbitmqClient.closeConnection(connection);
                 rabbitmqClient.closeChannel(channel);
-                rabbitMQSinkHandler.stop();
+                rabbitMQSourceHandler.stop();
             } finally {
                 started = false;
             }
@@ -143,13 +151,13 @@ public class RabbitMQSourceConnector implements Source {
         return connectRecords;
     }
 
-    public class RabbitMQSinkHandler implements Runnable {
+    public class RabbitMQSourceHandler implements Runnable {
 
         private final Channel channel;
         private final SourceConnectorConfig connectorConfig;
         private final AtomicBoolean stop = new AtomicBoolean(false);
 
-        public RabbitMQSinkHandler(Channel channel, SourceConnectorConfig connectorConfig) {
+        public RabbitMQSourceHandler(Channel channel, SourceConnectorConfig connectorConfig) {
             this.channel = channel;
             this.connectorConfig = connectorConfig;
         }
