@@ -24,9 +24,8 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.redisson.Redisson;
@@ -34,7 +33,6 @@ import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,40 +93,12 @@ public class RedisSinkConnector implements Sink {
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
-            CloudEvent event = convertRecordToEvent(connectRecord);
+            CloudEvent event = CloudEventUtil.convertRecordToEvent(connectRecord);
             try {
                 long publish = topic.publish(event);
             } catch (Exception e) {
                 log.error("[RedisSinkConnector] sendResult has error : ", e);
             }
         }
-    }
-
-    public CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withData((byte[]) connectRecord.getData());
-        connectRecord.getExtensions().keySet().forEach(s -> {
-            switch (s) {
-                case "id":
-                    cloudEventBuilder.withId(connectRecord.getExtension(s));
-                    break;
-                case "topic":
-                    cloudEventBuilder.withSubject(connectRecord.getExtension(s));
-                    break;
-                case "source":
-                    try {
-                        cloudEventBuilder.withSource(new URI(connectRecord.getExtension(s)));
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                case "type":
-                    cloudEventBuilder.withType(connectRecord.getExtension(s));
-                    break;
-                default:
-                    cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
-            }
-        });
-        return cloudEventBuilder.build();
     }
 }
