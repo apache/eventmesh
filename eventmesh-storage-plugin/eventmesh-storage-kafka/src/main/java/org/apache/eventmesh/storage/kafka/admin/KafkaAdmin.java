@@ -24,13 +24,14 @@ import org.apache.eventmesh.storage.kafka.config.ClientConfiguration;
 
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
-import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,6 +50,8 @@ import lombok.extern.slf4j.Slf4j;
 public class KafkaAdmin extends AbstractAdmin {
 
     private static final Properties properties = new Properties();
+
+    private static final long startUpTime = Instant.now().toEpochMilli();
 
     public KafkaAdmin() {
         super(new AtomicBoolean(false));
@@ -73,7 +76,7 @@ public class KafkaAdmin extends AbstractAdmin {
                     .mapToInt(TopicPartitionInfo::partition)
                     .mapToLong(partition -> {
                         try {
-                            return getLastOffset(topic, partition, client);
+                            return getMsgCount(topic, partition, client);
                         } catch (ExecutionException | InterruptedException e) {
                             log.error("Failed to get last offset", e);
                             throw new RuntimeException(e);
@@ -87,18 +90,20 @@ public class KafkaAdmin extends AbstractAdmin {
             return result;
         } finally {
             client.close();
-            log.info("KafkaAdmin closed");
         }
     }
 
-    private long getLastOffset(String topic, int partition, Admin client) throws ExecutionException, InterruptedException {
-        Map<TopicPartition, OffsetSpec> offsetSpecMap = Collections.singletonMap(
-            new TopicPartition(topic, partition),
-            new OffsetSpec.EarliestSpec()
-        );
+    private long getMsgCount(String topic, int partition, Admin client) throws ExecutionException, InterruptedException {
+        TopicPartition topicPartition = new TopicPartition(topic, partition);
+        long earliestOffset = getOffset(topicPartition, OffsetSpec.earliest(), client);
+        long latestOffset = getOffset(topicPartition, OffsetSpec.latest(), client);
+        return latestOffset - earliestOffset;
+    }
 
-        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> offsetResultMap = client.listOffsets(offsetSpecMap).all().get();
-        return offsetResultMap.get(new TopicPartition(topic, partition)).offset();
+    private long getOffset(TopicPartition topicPartition, OffsetSpec offsetSpec, Admin client) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, OffsetSpec> offsetSpecMap = Collections.singletonMap(topicPartition, offsetSpec);
+        Map<TopicPartition, ListOffsetsResultInfo> offsetResultMap = client.listOffsets(offsetSpecMap).all().get();
+        return offsetResultMap.get(topicPartition).offset();
     }
 
     @Override
