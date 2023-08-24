@@ -89,19 +89,19 @@ elif  is_java8 "/nemo/jdk/bin/java"; then
 elif is_java8 "$(which java)"; then
         JAVA="$(which java)"
 else
-        echo -e "ERROR\t java(1.8) not found, operation abort."
+        echo -e "ERROR\t Java 8 not found, operation abort."
         exit 9;
 fi
 
-echo "eventmesh use java location= "$JAVA
+echo "EventMesh use Java location: $JAVA"
 
-EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
-
+EVENTMESH_HOME=$(cd "$(dirname "$0")/.." && pwd)
 export EVENTMESH_HOME
 
-export EVENTMESH_LOG_HOME=${EVENTMESH_HOME}/logs
+EVENTMESH_LOG_HOME="${EVENTMESH_HOME}/logs"
+export EVENTMESH_LOG_HOME
 
-echo "EVENTMESH_HOME : ${EVENTMESH_HOME}, EVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
+echo -e "EVENTMESH_HOME : ${EVENTMESH_HOME}\nEVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
 
 function make_logs_dir {
         if [ ! -e "${EVENTMESH_LOG_HOME}" ]; then mkdir -p "${EVENTMESH_LOG_HOME}"; fi
@@ -166,7 +166,7 @@ fi
 
 make_logs_dir
 
-echo "using jdk[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
+echo "Using JDK[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 
 
 EVENTMESH_MAIN=org.apache.eventmesh.runtime.boot.EventMeshStartup
