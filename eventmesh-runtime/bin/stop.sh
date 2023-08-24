@@ -28,12 +28,13 @@ function get_pid {
 	local ppid=""
 	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
-		  # If the process does not exist, it indicates that the previous process terminated abnormally.
-		  if [ ! -d /proc/$ppid ]; then
-		    # Remove the residual file and return an error status.
-        rm ${EVENTMESH_HOME}/bin/pid.file
-        return 1
-      fi
+    # If the process does not exist, it indicates that the previous process terminated abnormally.
+    if [ ! -d /proc/$ppid ]; then
+      # Remove the residual file and return an error status.
+      rm ${EVENTMESH_HOME}/bin/pid.file
+      echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
+      ppid=""
+    fi
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a Bug on Msys that may not be able to kill the identified process
@@ -50,13 +51,13 @@ function get_pid {
 }
 
 pid=$(get_pid)
-if [ $? -eq 1 ]; then
-  echo "EventMesh process had already terminated unexpectedly before, please check log output."
-  exit 0
+if [[ $pid == "ERROR"* ]]; then
+  echo -e "${pid}"
+  exit 9
 fi
 if [ -z "$pid" ];then
-	echo -e "No EventMesh running.."
-	exit 0;
+	echo -e "ERROR\t No EventMesh server running."
+	exit 9
 fi
 
 kill ${pid}

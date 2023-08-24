@@ -53,6 +53,13 @@ function get_pid {
 	local ppid=""
 	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
+		# If the process does not exist, it indicates that the previous process terminated abnormally.
+    if [ ! -d /proc/$ppid ]; then
+      # Remove the residual file
+      rm ${EVENTMESH_HOME}/bin/pid.file
+      echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
+      ppid=""
+    fi
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a Bug on Msys that may not be able to kill the identified process
@@ -102,7 +109,7 @@ function make_logs_dir {
 
 error_exit ()
 {
-    echo "ERROR: $1 !!"
+    echo -e "ERROR\t $1 !!"
     exit 1
 }
 
@@ -148,9 +155,13 @@ JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_HOME}/plugin"
 #fi
 
 pid=$(get_pid)
+if [[ $pid == "ERROR"* ]]; then
+  echo -e "${pid}"
+  exit 9
+fi
 if [ -n "$pid" ];then
-	echo -e "ERROR\t the server is already running (pid=$pid), there is no need to execute start.sh again."
-	exit 9;
+	echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
+	exit 9
 fi
 
 make_logs_dir
