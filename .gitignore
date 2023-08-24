@@ -48,4 +48,3 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-!eventmesh-runtime/bin/*.sh
