@@ -30,7 +30,11 @@ import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
@@ -38,7 +42,10 @@ import io.pravega.client.ClientConfig;
 import io.pravega.client.EventStreamClientFactory;
 import io.pravega.client.admin.ReaderGroupManager;
 import io.pravega.client.admin.StreamManager;
-import io.pravega.client.stream.*;
+import io.pravega.client.stream.EventRead;
+import io.pravega.client.stream.EventStreamReader;
+import io.pravega.client.stream.ReaderConfig;
+import io.pravega.client.stream.ReaderGroupConfig;
 import io.pravega.client.stream.impl.ByteArraySerializer;
 import io.pravega.shared.NameUtils;
 import io.pravega.shared.security.auth.DefaultCredentials;
@@ -85,9 +92,13 @@ public class PravegaSourceConnector implements Source {
         this.queue = new LinkedBlockingQueue<>(1000);
 
         streamManager = StreamManager.create(sourceConfig.getConnectorConfig().getControllerURI());
-        ClientConfig.ClientConfigBuilder clientConfigBuilder = ClientConfig.builder().controllerURI(sourceConfig.getConnectorConfig().getControllerURI());
+        ClientConfig.ClientConfigBuilder clientConfigBuilder =
+                ClientConfig.builder().controllerURI(sourceConfig.getConnectorConfig().getControllerURI());
         if (sourceConfig.getConnectorConfig().isAuthEnabled()) {
-            clientConfigBuilder.credentials(new DefaultCredentials(sourceConfig.getConnectorConfig().getPassword(), sourceConfig.getConnectorConfig().getUsername()));
+            clientConfigBuilder.credentials(
+                    new DefaultCredentials(
+                            sourceConfig.getConnectorConfig().getPassword(),
+                            sourceConfig.getConnectorConfig().getUsername()));
         }
         if (sourceConfig.getConnectorConfig().isTlsEnable()) {
             clientConfigBuilder.trustStore(sourceConfig.getConnectorConfig().getTruststore()).validateHostName(false);

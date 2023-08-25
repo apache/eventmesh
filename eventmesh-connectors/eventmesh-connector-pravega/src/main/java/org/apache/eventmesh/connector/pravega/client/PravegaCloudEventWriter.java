@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import java.nio.charset.StandardCharsets;
 
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
