@@ -73,6 +73,12 @@ public class PravegaSinkConnector implements Sink {
         this.sinkConfig = (PravegaSinkConfig) sinkConnectorContext.getSinkConfig();
 
         streamManager = StreamManager.create(sinkConfig.getConnectorConfig().getControllerURI());
+
+        if(!streamManager.checkScopeExists(sinkConfig.getConnectorConfig().getScope())){
+            streamManager.createScope(sinkConfig.getConnectorConfig().getScope());
+            log.debug("scope[{}] is just created.", sinkConfig.getConnectorConfig().getScope());
+        }
+
         ClientConfig.ClientConfigBuilder clientConfigBuilder =
                 ClientConfig.builder().controllerURI(sinkConfig.getConnectorConfig().getControllerURI());
         if (sinkConfig.getConnectorConfig().isAuthEnabled()) {
@@ -138,6 +144,7 @@ public class PravegaSinkConnector implements Sink {
         PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
         try {
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);
+            writer.flush();
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             log.error(String.format("Write topic[%s] fail.", topic), e);
             throw new PravegaConnectorException(String.format("Write topic[%s] fail.", topic));
