@@ -19,19 +19,25 @@ package org.apache.eventmesh.storage.pravega;
 
 import org.apache.eventmesh.api.storage.StorageResourceService;
 import org.apache.eventmesh.storage.pravega.client.PravegaClient;
+import org.apache.eventmesh.storage.pravega.config.PravegaStorageConfig;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaStorageResourceServiceImpl implements StorageResourceService {
 
+    /**
+     * Unified configuration class corresponding to pravega-storage.properties
+     */
+    private PravegaStorageConfig pravegaConnectorConfig = new PravegaStorageConfig();
+
     @Override
     public void init() throws Exception {
-        PravegaClient.getInstance().start();
+        PravegaClient.getInstance(pravegaConnectorConfig).start();
     }
 
     @Override
-    public void release() throws Exception {
+    public void release() {
         PravegaClient.getInstance().shutdown();
     }
 }
