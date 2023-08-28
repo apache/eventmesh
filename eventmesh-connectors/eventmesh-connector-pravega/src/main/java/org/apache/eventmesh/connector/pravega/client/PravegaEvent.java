@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.pravega.client;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -53,18 +52,8 @@ public class PravegaEvent implements Serializable {
         return JsonUtils.parseObject(new String(body, StandardCharsets.UTF_8), PravegaEvent.class);
     }
 
-    public CloudEvent convertToCloudEvent() throws Exception {
-        CloudEventBuilder builder;
-        switch (version) {
-            case V03:
-                builder = CloudEventBuilder.v03();
-                break;
-            case V1:
-                builder = CloudEventBuilder.v1();
-                break;
-            default:
-                throw new PravegaConnectorException(String.format("CloudEvent version %s does not support.", version));
-        }
+    public CloudEvent convertToCloudEvent() {
+        CloudEventBuilder builder = CloudEventBuilder.fromSpecVersion(version);
         builder.withData(data.getBytes(StandardCharsets.UTF_8))
             .withId(extensions.remove("id"))
             .withSource(URI.create(extensions.remove("source")))
