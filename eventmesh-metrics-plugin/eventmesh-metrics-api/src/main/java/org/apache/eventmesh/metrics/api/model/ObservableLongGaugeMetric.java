@@ -15,21 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.utils;
+package org.apache.eventmesh.metrics.api.model;
 
-/**
- * Constants in metrics-prometheus module
- */
-public class PrometheusExporterConstants {
+import java.util.function.Supplier;
 
-    public static final String HTTP = "HTTP";
+public class ObservableLongGaugeMetric extends AbstractObservableLongMetric {
 
-    public static final String GRPC = "GRPC";
+    public ObservableLongGaugeMetric(InstrumentFurther further, String metricName, Supplier<Long> supplier) {
+        super(further, metricName, supplier);
+    }
 
-    public static final String TCP = "TCP";
+    public ObservableLongGaugeMetric(String metricName) {
+        super(null, metricName);
+    }
 
-    public static final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
+    public ObservableLongGaugeMetric() {
+        super(null, null);
+    }
 
-    public static final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
+    @Override
+    public InstrumentType getInstrumentType() {
+        return InstrumentType.OBSERVABLE_LONG_GAUGE;
+    }
 
 }

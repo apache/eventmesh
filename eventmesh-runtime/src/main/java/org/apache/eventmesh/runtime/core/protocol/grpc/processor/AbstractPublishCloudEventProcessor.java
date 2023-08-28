@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -69,7 +71,10 @@ public abstract class AbstractPublishCloudEventProcessor implements PublishProce
             ServiceUtils.sendResponseCompleted(aclCheck, emitter);
             return;
         }
+        final Stopwatch stopwatch = Stopwatch.createStarted();
         handleCloudEvent(cloudEvent, emitter);
+        eventMeshGrpcServer.getMetricsManager()
+            .recordGrpcPublishHandleCost(stopwatch.elapsed(TimeUnit.MILLISECONDS), EventMeshCloudEventUtils.getIp(cloudEvent));
     }
 
     public StatusCode cloudEventCheck(CloudEvent cloudEvent) {

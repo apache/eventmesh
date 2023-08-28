@@ -54,7 +54,7 @@ public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
                 eventMeshTCPServer.getClientSessionGroupMapping());
         } else {
             EventMeshTcp2Client.goodBye2Client(ctx, errMsg, eventMeshTCPServer.getClientSessionGroupMapping(),
-                eventMeshTCPServer.getEventMeshTcpMonitor());
+                eventMeshTCPServer.getEventMeshTcpMetricsManager());
         }
     }
 

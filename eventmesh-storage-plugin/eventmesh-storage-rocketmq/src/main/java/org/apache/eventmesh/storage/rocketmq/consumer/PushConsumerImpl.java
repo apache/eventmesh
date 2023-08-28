@@ -159,6 +159,7 @@ public class PushConsumerImpl {
                     RocketMQMessageFactory.createWriter(Objects.requireNonNull(msg.getSubject())).writeBinary(msg)));
             }
         }
+
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
             .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }

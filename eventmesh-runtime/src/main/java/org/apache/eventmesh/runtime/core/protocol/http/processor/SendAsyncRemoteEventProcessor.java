@@ -275,7 +275,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
         final SendMessageContext sendMessageContext = new SendMessageContext(bizNo, event, eventMeshProducer,
             eventMeshHTTPServer);
-        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsg();
+        eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsg();
 
         final long startTime = System.currentTimeMillis();
 

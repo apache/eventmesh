@@ -24,14 +24,14 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
-import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
+import org.apache.eventmesh.runtime.metrics.tcp.TcpMetrics;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -58,17 +58,17 @@ public class ClientManageControllerTest {
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
-        HttpSummaryMetrics httpSummaryMetrics = mock(HttpSummaryMetrics.class);
-        HTTPMetricsServer metrics = mock(HTTPMetricsServer.class);
+        HttpMetrics httpSummaryMetrics = mock(HttpMetrics.class);
+        EventMeshHttpMetricsManager metrics = mock(EventMeshHttpMetricsManager.class);
 
         EventMeshHTTPServer eventMeshHTTPServer = mock(EventMeshHTTPServer.class);
-        when(eventMeshHTTPServer.getMetrics()).thenReturn(metrics);
-        when(eventMeshHTTPServer.getMetrics().getSummaryMetrics()).thenReturn(httpSummaryMetrics);
+        when(eventMeshHTTPServer.getEventMeshHttpMetricsManager()).thenReturn(metrics);
+        when(eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics()).thenReturn(httpSummaryMetrics);
 
-        EventMeshTcpMonitor eventMeshTcpMonitor = mock(EventMeshTcpMonitor.class);
-        TcpSummaryMetrics tcpSummaryMetrics = mock(TcpSummaryMetrics.class);
-        when(eventMeshTCPServer.getEventMeshTcpMonitor()).thenReturn(eventMeshTcpMonitor);
-        when(eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()).thenReturn(tcpSummaryMetrics);
+        EventMeshTcpMetricsManager eventMeshTcpMonitor = mock(EventMeshTcpMetricsManager.class);
+        TcpMetrics tcpMetrics = mock(org.apache.eventmesh.runtime.metrics.tcp.TcpMetrics.class);
+        when(eventMeshTCPServer.getEventMeshTcpMetricsManager()).thenReturn(eventMeshTcpMonitor);
+        when(eventMeshTCPServer.getEventMeshTcpMetricsManager().getTcpMetrics()).thenReturn(tcpMetrics);
 
         AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManager.class);
         WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);

@@ -36,7 +36,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.runtime.util.Utils;
@@ -109,8 +109,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private HandlerService handlerService;
 
-
-    private HTTPMetricsServer metrics;
+    private EventMeshHttpMetricsManager eventMeshHttpMetricsManager;
 
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
@@ -163,12 +162,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.handlerService = handlerService;
     }
 
-    public HTTPMetricsServer getMetrics() {
-        return metrics;
+    public EventMeshHttpMetricsManager getEventMeshHttpMetricsManager() {
+        return eventMeshHttpMetricsManager;
     }
 
-    public void setMetrics(final HTTPMetricsServer metrics) {
-        this.metrics = metrics;
+    public void setEventMeshHttpMetricsManager(final EventMeshHttpMetricsManager eventMeshHttpMetricsManager) {
+        this.eventMeshHttpMetricsManager = eventMeshHttpMetricsManager;
     }
 
     public HandlerService getHandlerService() {
@@ -328,7 +327,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
             decoder.destroy();
         }
-        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        eventMeshHttpMetricsManager.getHttpMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
         return httpRequestBody;
     }
 
@@ -369,7 +368,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     TraceUtils.finishSpanWithException(span, headerMap, errorStatus.reasonPhrase(), null);
                     return;
                 }
-                metrics.getSummaryMetrics().recordHTTPRequest();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPRequest();
 
                 boolean useRequestURI = false;
                 for (final String processURI : eventProcessorTable.keySet()) {
@@ -503,7 +502,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             return;
                         }
 
-                        metrics.getSummaryMetrics()
+                        eventMeshHttpMetricsManager.getHttpMetrics()
                             .recordHTTPReqResTimeCost(System.currentTimeMillis() - requestWrapper.getReqTime());
 
                         if (log.isDebugEnabled()) {
@@ -520,8 +519,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 final HttpEventWrapper responseWrapper = requestWrapper.createHttpResponse(EventMeshRetCode.OVERLOAD);
                 responseWrapper.setHttpResponseStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
                 asyncContext.onComplete(responseWrapper);
-                metrics.getSummaryMetrics().recordHTTPDiscard();
-                metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPDiscard();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(
                     System.currentTimeMillis() - requestWrapper.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
@@ -566,7 +565,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             return;
                         }
 
-                        metrics.getSummaryMetrics()
+                        eventMeshHttpMetricsManager.getHttpMetrics()
                             .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
                         if (log.isDebugEnabled()) {
@@ -581,8 +580,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 });
             } catch (RejectedExecutionException re) {
                 asyncContext.onComplete(request.createHttpCommandResponse(EventMeshRetCode.OVERLOAD));
-                metrics.getSummaryMetrics().recordHTTPDiscard();
-                metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPDiscard();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
@@ -680,7 +679,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         httpEventWrapper.setBody(requestBody);
 
-        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        eventMeshHttpMetricsManager.getHttpMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
 
         return httpEventWrapper;
     }

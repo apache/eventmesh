@@ -54,7 +54,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcesso
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
@@ -195,7 +195,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         }
     }
 
-    private void init() throws Exception {
+    public void init() throws Exception {
         if (log.isInfoEnabled()) {
             log.info("==================EventMeshHTTPServer Initialing==================");
         }
@@ -216,7 +216,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer = new HttpRetryer(this);
         httpRetryer.init();
 
-        this.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
+        this.setEventMeshHttpMetricsManager(new EventMeshHttpMetricsManager(this, metricsRegistries));
 
         subscriptionManager = new SubscriptionManager();
 
@@ -227,7 +227,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.init();
 
         this.setHandlerService(new HandlerService());
-        this.getHandlerService().setMetrics(this.getMetrics());
+        this.getHandlerService().setMetrics(this.getEventMeshHttpMetricsManager());
 
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
@@ -249,7 +249,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public void start() throws Exception {
         init();
         super.start();
-        this.getMetrics().start();
+        this.getEventMeshHttpMetricsManager().start();
         consumerManager.start();
         producerManager.start();
         httpRetryer.start();
@@ -266,7 +266,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         super.shutdown();
 
-        this.getMetrics().shutdown();
+        this.getEventMeshHttpMetricsManager().shutdown();
 
         consumerManager.shutdown();
 

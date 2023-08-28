@@ -20,10 +20,9 @@ package org.apache.eventmesh.runtime.trace;
 import java.util.Collection;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +38,7 @@ public class LogExporter implements SpanExporter {
         StringBuilder sb = new StringBuilder(60);
         for (SpanData span : spans) {
             sb.setLength(0);
-            InstrumentationLibraryInfo instrumentationLibraryInfo = span.getInstrumentationLibraryInfo();
+            InstrumentationScopeInfo instrumentationLibraryInfo = span.getInstrumentationScopeInfo();
             sb.append("'")
                 .append(span.getName())
                 .append("' : ")
