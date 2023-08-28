@@ -15,34 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.ddl;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Interface for parsing DDL SQL statements.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public interface DdlParser {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    /**
+     * Parses the given DDL SQL statement.
+     *
+     * @param ddlSql the DDL SQL statement to be parsed
+     */
+    default void parse(String ddlSql) {
+        parse(ddlSql, null);
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    void parse(String ddlSql, DdlParserCallback callback);
 
+    /**
+     * Sets the current database.
+     *
+     * @param databaseName the name of the database to be set as current
+     */
+    void setCurrentDatabase(String databaseName);
+
+    void setCurrentSchema(String schema);
 }

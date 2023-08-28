@@ -15,34 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source;
+
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
+
+import java.util.Set;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Engine interface represents the core engine
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public interface Engine {
 
-    private final String extensionTypeName;
+    /**
+     * Initializes the engine.
+     */
+    void init();
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    /**
+     * Starts the engine.
+     */
+    void start();
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    /**
+     * Retrieves the set of TableId objects representing the tables that the engine handles.
+     *
+     * @return The set of handled TableId objects.
+     */
+    Set<TableId> getHandledTables();
 }

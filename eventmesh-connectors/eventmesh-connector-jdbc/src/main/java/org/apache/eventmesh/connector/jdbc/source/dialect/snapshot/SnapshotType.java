@@ -15,34 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public enum SnapshotType {
 
-    private final String extensionTypeName;
+    /**
+     * Every time the service starts, it reads the data of the tables that need to be processed.
+     */
+    INITIALIZATION,
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    /**
+     * Continue processing from the last handled position.
+     */
+    INCREASE  //TODO Need to support next version
 }

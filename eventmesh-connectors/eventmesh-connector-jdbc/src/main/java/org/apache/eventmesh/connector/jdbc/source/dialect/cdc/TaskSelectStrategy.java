@@ -15,34 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source.dialect.cdc;
+
+import org.apache.eventmesh.connector.jdbc.source.EventMeshJdbcTask;
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Represents a strategy for selecting a CdcTask for a given TableId.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public interface TaskSelectStrategy<Task extends EventMeshJdbcTask> {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    /**
+     * Selects a CdcTask for the specified TableId.
+     *
+     * @param tableId the TableId for which to select a CdcTask
+     * @return the selected CdcTask
+     */
+    Task select(TableId tableId);
 
 }

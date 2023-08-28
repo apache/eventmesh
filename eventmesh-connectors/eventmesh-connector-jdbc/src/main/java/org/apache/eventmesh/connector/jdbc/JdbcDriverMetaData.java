@@ -15,34 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Represents metadata information about a JDBC driver
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+@Data
+@AllArgsConstructor
+@ToString
+public class JdbcDriverMetaData {
 
-    private final String extensionTypeName;
+    // The major version number of the JDBC driver
+    private final int jdbcMajorVersion;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    // The minor version number of the JDBC driver
+    private final int jdbcMinorVersion;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    // The name of the JDBC driver
+    private final String jdbcDriverName;
+
+    // The name of the database product
+    private final String databaseProductName;
+
+    // The version of the database product
+    private final String databaseProductVersion;
 
 }

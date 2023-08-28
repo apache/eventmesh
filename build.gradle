@@ -90,6 +90,7 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
+                  .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
     dependencies {
         repositories {
@@ -249,6 +250,9 @@ subprojects {
         rulesMinimumPriority = 5
         ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
         ignoreFailures = true
+        pmdMain {
+            excludes = ["**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/**"]
+        }
     }
 
     jar {
@@ -341,6 +345,7 @@ subprojects {
     javadoc {
         source = sourceSets.main.java
         destinationDir = reporting.file("javadoc")
+        options.encoding = "UTF-8"
     }
 
     task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {

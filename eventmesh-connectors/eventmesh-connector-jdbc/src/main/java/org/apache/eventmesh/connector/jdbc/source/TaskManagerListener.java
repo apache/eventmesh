@@ -15,34 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source;
+
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
+import java.util.List;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * The TaskManagerListener is a functional interface used to listen for events from the TaskManager. It defines a single method, "listen", that takes
+ * a list of ConnectRecord objects as its parameter.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+@FunctionalInterface
+public interface TaskManagerListener {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    /**
+     * Listens for events from the TaskManager and processes the given list of ConnectRecords.
+     *
+     * @param records The list of ConnectRecord objects to be processed.
+     */
+    void listen(List<ConnectRecord> records);
 
 }

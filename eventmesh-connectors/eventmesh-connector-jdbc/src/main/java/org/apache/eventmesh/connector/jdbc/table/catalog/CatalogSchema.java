@@ -15,34 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.table.catalog;
+
+import java.io.Serializable;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Represents catalog schema information, including its name and character set.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CatalogSchema implements Serializable {
 
-    private final String extensionTypeName;
+    /**
+     * The name of the catalog schema.
+     */
+    private String name;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    /**
+     * The character set used by the catalog schema.
+     */
+    private String characterSet;
+
+    public CatalogSchema(String name) {
+        this.name = name;
     }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
 }

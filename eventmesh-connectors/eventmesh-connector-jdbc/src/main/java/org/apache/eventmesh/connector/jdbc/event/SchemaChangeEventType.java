@@ -15,34 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.event;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
+public enum SchemaChangeEventType {
+
+    DATABASE_CREATE("D", "C"),
+    DATABASE_DROP("D", "D"),
+    DATABASE_ALERT("D", "A"),
+    TABLE_CREATE("T", "C"),
+    TABLE_DROP("T", "D"),
+    TABLE_ALERT("T", "A"),
     ;
+    private final String type;
+    private final String operationType;
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    SchemaChangeEventType(String type, String operationType) {
+        this.type = type;
+        this.operationType = operationType;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public String ofType() {
+        return this.type;
     }
 
+    public String ofOperationType() {
+        return this.operationType;
+    }
 }

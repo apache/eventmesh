@@ -15,34 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc;
+
+import java.util.Map;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * The OffsetContext interface represents the offset context for event processing. It provides methods to retrieve the offset map and check if a
+ * snapshot is currently running.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public interface OffsetContext {
 
-    private final String extensionTypeName;
+    /**
+     * Retrieves the offset map associated with the context.
+     *
+     * @return The offset map.
+     */
+    Map<String, ?> getOffset();
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    /**
+     * Checks if a snapshot is currently running.
+     *
+     * @return True if a snapshot is running, false otherwise.
+     */
+    boolean isSnapshotRunning();
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    boolean isSnapshotCompleted();
+
+    void markSnapshotRunning();
+
+    void markSnapshotCompleted();
 
 }
+

@@ -15,34 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source.dialect;
+
+import org.apache.eventmesh.connector.jdbc.DatabaseDialect;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Interface for creating a database dialect based on the provided source configuration.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.JDBC_DATABASE_DIALECT)
+public interface DatabaseDialectFactory {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    /**
+     * Creates a database dialect based on the provided source configuration.
+     *
+     * @param config the source configuration to create a database dialect for
+     * @return the created database dialect
+     */
+    DatabaseDialect createDatabaseDialect(SourceConfig config);
 
 }
