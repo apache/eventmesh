@@ -176,13 +176,13 @@ public class RabbitMQSourceConnector implements Source {
                         }
                     }
                 } catch (Exception ex) {
-                    log.error("[RabbitMQSinkHandler] thread run happen exception.", ex);
+                    log.error("[RabbitMQSourceHandler] thread run happen exception.", ex);
                 }
             }
         }
 
         public void stop() {
-            stop.set(true);
+            stop.compareAndSet(false, true);
         }
     }
 }
