@@ -126,7 +126,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
                     if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
                         // Call the serverGoodby2Client method in EventMeshTcp2Client to disconnect the client's connection
                         EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer,
+                            eventMeshTCPServer.getTcpThreadPoolGroup(),
                             entry.getValue(),
                             clientSessionGroupMapping
                         );

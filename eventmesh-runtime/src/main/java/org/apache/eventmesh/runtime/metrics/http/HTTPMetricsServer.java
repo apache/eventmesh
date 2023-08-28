@@ -41,16 +41,16 @@ public class HTTPMetricsServer {
     private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
-        final List<MetricsRegistry> metricsRegistries) {
+                             final List<MetricsRegistry> metricsRegistries) {
         Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
         Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
         this.summaryMetrics = new HttpSummaryMetrics(
-            eventMeshHTTPServer.getBatchMsgExecutor(),
-            eventMeshHTTPServer.getSendMsgExecutor(),
-            eventMeshHTTPServer.getPushMsgExecutor(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor(),
             eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
 
         init();
@@ -168,9 +168,9 @@ public class HTTPMetricsServer {
 
         if (log.isInfoEnabled()) {
             log.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
-                eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getHttpRetryer().size());
         }
 

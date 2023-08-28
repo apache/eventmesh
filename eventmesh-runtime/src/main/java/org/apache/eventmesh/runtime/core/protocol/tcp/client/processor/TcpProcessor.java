@@ -15,27 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public abstract class AbstractTask implements Runnable {
-
-    protected Package pkg;
-    protected ChannelHandlerContext ctx;
-    protected Session session;
-    protected long startTime;
-    protected EventMeshTCPServer eventMeshTCPServer;
-
-    public AbstractTask(final Package pkg, final ChannelHandlerContext ctx, long startTime, final EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
-        this.pkg = pkg;
-        this.ctx = ctx;
-        this.session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
-        this.startTime = startTime;
-    }
+/**
+ * TcpProcessor
+ */
+public interface TcpProcessor {
+    void process(final Package pkg, final ChannelHandlerContext ctx, long startTime);
 }
