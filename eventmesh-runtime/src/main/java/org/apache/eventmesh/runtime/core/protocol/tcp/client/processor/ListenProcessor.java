@@ -15,29 +15,37 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
 
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import io.netty.channel.ChannelHandlerContext;
 
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class ListenTask extends AbstractTask {
 
-    public ListenTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
-        super(pkg, ctx, startTime, eventMeshTCPServer);
+@Slf4j
+public class ListenProcessor implements TcpProcessor {
+
+    private EventMeshTCPServer eventMeshTCPServer;
+    private final Acl acl;
+
+    public ListenProcessor(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.acl = eventMeshTCPServer.getAcl();
     }
 
     @Override
-    public void run() {
+    public void process(final Package pkg, final ChannelHandlerContext ctx, long startTime) {
+        Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         long taskExecuteTime = System.currentTimeMillis();
         Header header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq());
         session.setListenRequestSeq(pkg.getHeader().getSeq());

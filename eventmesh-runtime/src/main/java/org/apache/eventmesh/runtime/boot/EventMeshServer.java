@@ -76,8 +76,8 @@ public class EventMeshServer {
 
         //Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
-        for (final String provideServerProtocol : provideServerProtocols) {
-            switch (provideServerProtocol) {
+        for (String provideServerProtocol : provideServerProtocols) {
+            switch (provideServerProtocol.toUpperCase()) {
                 case ConfigurationContextUtil.HTTP:
                     BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
                     break;

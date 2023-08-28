@@ -90,7 +90,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                     // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                            eventMeshTCPServer.getTcpThreadPoolGroup(), entry.getValue(), clientSessionGroupMapping);
                         // Add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);

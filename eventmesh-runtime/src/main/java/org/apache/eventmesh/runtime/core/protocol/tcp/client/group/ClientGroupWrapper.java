@@ -130,7 +130,7 @@ public class ClientGroupWrapper {
         this.group = group;
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
-        this.eventMeshTcpRetryer = eventMeshTCPServer.getEventMeshTcpRetryer();
+        this.eventMeshTcpRetryer = eventMeshTCPServer.getTcpRetryer();
         this.eventMeshTcpMonitor =
             Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
@@ -627,7 +627,7 @@ public class ClientGroupWrapper {
                     downStreamMsgContext.setSession(session);
 
                     //downstream broadcast msg asynchronously
-                    eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
+                    eventMeshTCPServer.getTcpThreadPoolGroup().getBroadcastMsgDownstreamExecutorService()
                         .submit(() -> {
                             //msg put in eventmesh,waiting client ack
                             session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
