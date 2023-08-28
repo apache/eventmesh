@@ -21,9 +21,6 @@ dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     testImplementation project(":eventmesh-sdks:eventmesh-sdk-java")
 
-    implementation project(":eventmesh-runtime")
-    testImplementation project(":eventmesh-runtime")
-
     implementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
 
