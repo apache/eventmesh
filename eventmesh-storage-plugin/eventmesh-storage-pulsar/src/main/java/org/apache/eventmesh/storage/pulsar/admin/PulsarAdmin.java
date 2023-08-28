@@ -15,29 +15,42 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.pravega;
+package org.apache.eventmesh.storage.pulsar.admin;
 
-import org.apache.eventmesh.api.storage.StorageResourceService;
-import org.apache.eventmesh.storage.pravega.client.PravegaClient;
-import org.apache.eventmesh.storage.pravega.config.PravegaStorageConfig;
+import org.apache.eventmesh.api.admin.AbstractAdmin;
+import org.apache.eventmesh.api.admin.TopicProperties;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Slf4j
-public class PravegaStorageResourceServiceImpl implements StorageResourceService {
+import io.cloudevents.CloudEvent;
 
-    /**
-     * Unified configuration class corresponding to pravega-storage.properties
-     */
-    private PravegaStorageConfig pravegaConnectorConfig = new PravegaStorageConfig();
+public class PulsarAdmin extends AbstractAdmin {
 
-    @Override
-    public void init() throws Exception {
-        PravegaClient.getInstance(pravegaConnectorConfig).start();
+    public PulsarAdmin() {
+        super(new AtomicBoolean(false));
     }
 
     @Override
-    public void release() {
-        PravegaClient.getInstance().shutdown();
+    public List<TopicProperties> getTopic() {
+        // TODO implement admin functions
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void createTopic(String topicName) {
+    }
+
+    @Override
+    public void deleteTopic(String topicName) {
+    }
+
+    @Override
+    public void publish(CloudEvent cloudEvent) throws Exception {
+    }
+
+    @Override
+    public void shutdown() {
     }
 }
