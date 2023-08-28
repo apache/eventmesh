@@ -113,6 +113,9 @@ public class PravegaSourceConnector implements Source {
     private void initReaders() {
         streamManager.listStreams(sourceConfig.getConnectorConfig().getScope())
                 .forEachRemaining(stream -> {
+                    if (stream.getStreamName().startsWith("_")) {
+                        return;
+                    }
                     ReaderGroupConfig readerGroupConfig =
                             ReaderGroupConfig.builder()
                                     .stream(NameUtils.getScopedStreamName(sourceConfig.getConnectorConfig().getScope(), stream.getStreamName()))
