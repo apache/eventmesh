@@ -74,7 +74,7 @@ public class PravegaSinkConnector implements Sink {
 
         streamManager = StreamManager.create(sinkConfig.getConnectorConfig().getControllerURI());
 
-        if(!streamManager.checkScopeExists(sinkConfig.getConnectorConfig().getScope())){
+        if (!streamManager.checkScopeExists(sinkConfig.getConnectorConfig().getScope())) {
             streamManager.createScope(sinkConfig.getConnectorConfig().getScope());
             log.debug("scope[{}] is just created.", sinkConfig.getConnectorConfig().getScope());
         }
