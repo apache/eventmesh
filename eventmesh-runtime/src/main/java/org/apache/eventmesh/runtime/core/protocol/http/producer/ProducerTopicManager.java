@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.producer;
 
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
@@ -61,7 +61,7 @@ public class ProducerTopicManager {
                         if (!eventMeshServer.getConfiguration().isEventMeshServerRegistryEnable()) {
                             return;
                         }
-                        List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getRegistry().findEventMeshServicePubTopicInfos();
+                        List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getMetaStorage().findEventMeshServicePubTopicInfos();
                         Optional.ofNullable(pubTopicInfoList)
                             .ifPresent(lt -> lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
                     } catch (Exception e) {

@@ -63,8 +63,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "metrics.plugin", notEmpty = true)
     private List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
-    private String eventMeshRegistryPluginType = "namesrv";
+    @ConfigFiled(field = "metaStorage.plugin.type", notEmpty = true)
+    private String eventMeshMetaStoragePluginType = "namesrv";
 
     @ConfigFiled(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";

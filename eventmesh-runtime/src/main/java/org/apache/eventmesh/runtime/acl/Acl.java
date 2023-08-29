@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.acl;
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
