@@ -49,8 +49,8 @@ public class NacosMetaServiceTest {
         nacosMetaService = new NacosMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
         configuration.setNamesrvAddr("127.0.0.1");
-        configuration.setEventMeshRegistryPluginPassword("nacos");
-        configuration.setEventMeshRegistryPluginUsername("nacos");
+        configuration.setEventMeshMetaStoragePluginPassword("nacos");
+        configuration.setEventMeshMetaStoragePluginUsername("nacos");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");

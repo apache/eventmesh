@@ -77,7 +77,7 @@ public class EventMeshTCPConfigurationTest {
         Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
+        Assert.assertEquals("registry-succeed!!!", config.getEventMeshMetaStoragePluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
         Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
 
@@ -88,7 +88,7 @@ public class EventMeshTCPConfigurationTest {
         Assert.assertEquals(list, config.getEventMeshMetricsPluginType());
 
         Assert.assertTrue(config.isEventMeshServerSecurityEnable());
-        Assert.assertTrue(config.isEventMeshServerRegistryEnable());
+        Assert.assertTrue(config.isEventMeshServerMetaStorageEnable());
         Assert.assertTrue(config.isEventMeshServerTraceEnable());
 
         Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
