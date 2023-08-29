@@ -90,7 +90,7 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshMetaStoragePluginType());
+        Assert.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
         Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
 
