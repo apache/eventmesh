@@ -38,6 +38,7 @@ include 'eventmesh-connectors:eventmesh-connector-kafka'
 include 'eventmesh-connectors:eventmesh-connector-s3'
 include 'eventmesh-connectors:eventmesh-connector-pravega'
 
+include 'eventmesh-connectors:eventmesh-connector-jdbc'
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
 include 'eventmesh-storage-plugin:eventmesh-storage-kafka'

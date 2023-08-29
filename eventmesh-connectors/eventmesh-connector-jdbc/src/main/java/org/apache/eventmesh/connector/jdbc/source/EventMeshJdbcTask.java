@@ -15,34 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * The EventMeshJdbcTask interface represents a task that interacts with the EventMesh through a JDBC connection. It extends the AutoCloseable
+ * interface, allowing the task to be managed efficiently.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public interface EventMeshJdbcTask extends AutoCloseable {
 
-    private final String extensionTypeName;
+    /**
+     * Starts the EventMesh JDBC task, initializing any necessary resources or connections.
+     */
+    void start();
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    /**
+     * Shuts down the EventMesh JDBC task, releasing any acquired resources or connections.
+     */
+    void shutdown();
 
 }
+

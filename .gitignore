@@ -48,3 +48,4 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/*

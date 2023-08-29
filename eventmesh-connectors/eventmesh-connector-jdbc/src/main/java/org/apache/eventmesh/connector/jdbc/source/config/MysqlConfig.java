@@ -15,34 +15,40 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source.config;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+import lombok.Data;
 
-    private final String extensionTypeName;
+@Data
+public class MysqlConfig {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    private int serverId;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    private boolean keepAlive = true;
+
+    private long keepAliveInterval;
+
+    private SnapshotLockingMode snapshotLockingMode = SnapshotLockingMode.MINIMAL;
+
+    private boolean useGlobalLock = true;
+
+    public enum SnapshotLockingMode {
+
+        EXTENDED("extended"),
+
+        MINIMAL("minimal"),
+
+        NONE("none");
+
+        private final String value;
+
+        SnapshotLockingMode(String value) {
+            this.value = value;
+        }
+
+        public boolean usesLocking() {
+            return !value.equals(NONE.value);
+        }
     }
 
 }

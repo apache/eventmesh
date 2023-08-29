@@ -15,34 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.table.catalog;
+
+import java.io.Serializable;
+
+import lombok.Data;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Represents a catalog table.
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+@Data
+public class CatalogTable implements Serializable {
 
-    private final String extensionTypeName;
+    private static final long serialVersionUID = -9159821671858779282L;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    // The ID of the table.
+    private TableId tableId;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    // The schema of the table.
+    private TableSchema tableSchema;
+
+    // A comment describing the table.
+    private String comment;
+
+    private Options options;
 
 }
