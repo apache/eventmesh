@@ -103,7 +103,7 @@ public class EventMeshServer {
         if (configuration.isEventMeshServerSecurityEnable()) {
             acl.init();
         }
-        if (configuration.isEventMeshServerRegistryEnable()) {
+        if (configuration.isEventMeshServerMetaStorageEnable()) {
             metaStorage.init();
         }
         if (configuration.isEventMeshServerTraceEnable()) {
@@ -156,7 +156,7 @@ public class EventMeshServer {
                 acl.start();
             }
             // registry start
-            if (configuration.isEventMeshServerRegistryEnable()) {
+            if (configuration.isEventMeshServerMetaStorageEnable()) {
                 metaStorage.start();
             }
         }
@@ -186,7 +186,7 @@ public class EventMeshServer {
             eventMeshBootstrap.shutdown();
         }
 
-        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
+        if (configuration != null && configuration.isEventMeshServerMetaStorageEnable()) {
             metaStorage.shutdown();
         }
 

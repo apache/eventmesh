@@ -76,7 +76,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * Add a topic with subscribers to the service's metadata.
      */
     protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerMetaStorageEnable()) {
             return;
         }
 
@@ -122,7 +122,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (!httpConfiguration.isEventMeshServerMetaStorageEnable()) {
             return "";
         }
 

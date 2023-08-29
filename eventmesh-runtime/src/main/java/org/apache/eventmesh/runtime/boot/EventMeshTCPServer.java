@@ -115,7 +115,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         super.setEventMeshTcpMonitor(new EventMeshTcpMonitor(this, metricsRegistries));
         super.getEventMeshTcpMonitor().init();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventMeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
@@ -138,7 +138,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         clientSessionGroupMapping.start();
         tcpRetryer.start();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
             eventMeshRebalanceService.start();
         }
@@ -159,7 +159,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         tcpRetryer.shutdown();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService.shutdown();
             this.unRegister();
         }

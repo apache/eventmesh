@@ -142,7 +142,7 @@ public class EventMeshGrpcServer {
         grpcRetryer.start();
         server.start();
 
-        if (eventMeshGrpcConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshGrpcConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
         }
 
@@ -162,7 +162,7 @@ public class EventMeshGrpcServer {
 
         server.shutdown();
 
-        if (eventMeshGrpcConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshGrpcConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.unRegister();
         }
 

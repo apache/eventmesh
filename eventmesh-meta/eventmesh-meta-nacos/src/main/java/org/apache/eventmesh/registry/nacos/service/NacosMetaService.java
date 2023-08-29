@@ -93,8 +93,8 @@ public class NacosMetaService implements MetaService {
             }
 
             this.serverAddr = commonConfiguration.getNamesrvAddr();
-            this.username = commonConfiguration.getEventMeshRegistryPluginUsername();
-            this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
+            this.username = commonConfiguration.getEventMeshMetaStoragePluginUsername();
+            this.password = commonConfiguration.getEventMeshMetaStoragePluginPassword();
             break;
         }
         ConfigService configService = ConfigService.getInstance();

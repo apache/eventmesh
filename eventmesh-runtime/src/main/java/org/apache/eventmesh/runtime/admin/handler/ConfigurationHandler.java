@@ -121,7 +121,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshTCPConfiguration.getEventMeshName(),
                     eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
                     eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                    eventMeshTCPConfiguration.isEventMeshServerRegistryEnable(),
+                    eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
                     // TCP Configuration
                     eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
                     // HTTP Configuration

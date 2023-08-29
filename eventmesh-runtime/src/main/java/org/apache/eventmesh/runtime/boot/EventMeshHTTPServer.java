@@ -162,7 +162,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.start();
         httpRetryer.start();
 
-        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
         }
         if (log.isInfoEnabled()) {
@@ -185,7 +185,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         httpRetryer.shutdown();
 
-        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.unRegister();
         }
         if (log.isInfoEnabled()) {

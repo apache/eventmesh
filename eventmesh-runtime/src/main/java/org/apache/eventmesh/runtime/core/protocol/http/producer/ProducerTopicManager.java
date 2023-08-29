@@ -58,7 +58,7 @@ public class ProducerTopicManager {
             synchronized (ProducerTopicManager.class) {
                 scheduledTask = scheduler.scheduleAtFixedRate(() -> {
                     try {
-                        if (!eventMeshServer.getConfiguration().isEventMeshServerRegistryEnable()) {
+                        if (!eventMeshServer.getConfiguration().isEventMeshServerMetaStorageEnable()) {
                             return;
                         }
                         List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getMetaStorage().findEventMeshServicePubTopicInfos();
