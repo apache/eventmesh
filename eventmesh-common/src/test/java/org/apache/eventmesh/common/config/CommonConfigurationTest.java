@@ -49,7 +49,7 @@ public class CommonConfigurationTest {
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
+        Assert.assertEquals("registry-succeed!!!", config.getEventMeshMetaStoragePluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
         Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
         Assert.assertEquals("username-succeed!!!", config.getEventMeshRegistryPluginUsername());
