@@ -42,6 +42,7 @@ public class RedisAdmin extends AbstractAdmin {
 
     @Override
     public List<TopicProperties> getTopic() throws Exception {
+        // TODO: match all the topic with pattern "*" for now.
         RPatternTopic patternTopic = redisson.getPatternTopic("*");
         return patternTopic.getPatternNames()
             .stream()
