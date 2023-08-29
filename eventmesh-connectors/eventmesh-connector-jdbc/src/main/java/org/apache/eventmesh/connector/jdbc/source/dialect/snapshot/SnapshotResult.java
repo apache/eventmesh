@@ -15,34 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+import org.apache.eventmesh.connector.jdbc.JdbcContext;
 
-    private final String extensionTypeName;
+import lombok.Getter;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+@Getter
+public class SnapshotResult<Jc extends JdbcContext> {
+
+    private final SnapshotResultStatus status;
+
+    private final Jc context;
+
+    public SnapshotResult(SnapshotResultStatus status, Jc jc) {
+        this.status = status;
+        this.context = jc;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public enum SnapshotResultStatus {
+        COMPLETED,
+        ABORTED,
+        SKIPPED
     }
-
 }

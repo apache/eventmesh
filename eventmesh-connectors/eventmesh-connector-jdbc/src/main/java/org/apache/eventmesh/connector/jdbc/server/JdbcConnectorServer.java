@@ -15,34 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.server;
+
+import org.apache.eventmesh.connector.jdbc.config.JdbcServerConfig;
+import org.apache.eventmesh.connector.jdbc.source.JdbcSourceConnector;
+import org.apache.eventmesh.openconnect.Application;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * JDBC connector server
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+public class JdbcConnectorServer {
 
-    private final String extensionTypeName;
+    public static void main(String[] args) throws Exception {
+        JdbcServerConfig serverConfig = ConfigUtil.parse(JdbcServerConfig.class, "server-config.yml");
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+        if (serverConfig.isSourceEnable()) {
+            Application jdbcSourceApp = new Application();
+            jdbcSourceApp.run(JdbcSourceConnector.class);
+        }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+        if (serverConfig.isSinkEnable()) {
+            //TODO support
+        }
     }
 
 }

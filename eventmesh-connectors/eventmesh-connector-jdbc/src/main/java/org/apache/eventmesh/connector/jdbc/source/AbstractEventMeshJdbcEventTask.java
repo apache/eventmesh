@@ -15,34 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.jdbc.source;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+import org.apache.eventmesh.common.ThreadWrapper;
+import org.apache.eventmesh.connector.jdbc.event.Event;
 
-    private final String extensionTypeName;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+public abstract class AbstractEventMeshJdbcEventTask extends ThreadWrapper implements EventMeshJdbcEventTask<Event> {
+
+    protected BlockingQueue<Event> eventBlockingQueue = new LinkedBlockingQueue<>(10000);
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    @Override
+    public void close() throws Exception {
+        shutdown();
     }
 
+    @Override
+    public void put(Event event) throws InterruptedException {
+        eventBlockingQueue.put(event);
+    }
 }
