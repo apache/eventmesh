@@ -56,8 +56,8 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "clientmanage.threads.num")
     private int eventMeshServerSubscribeMsgThreadNum = 4;
 
-    @ConfigFiled(field = "registry.threads.num")
-    private int eventMeshServerRegistryThreadNum = 10;
+    @ConfigFiled(field = "metaStorage.threads.num")
+    private int eventMeshServerMetaStorageThreadNum = 10;
 
     @ConfigFiled(field = "admin.threads.num")
     private int eventMeshServerAdminThreadNum = 2;
@@ -65,8 +65,8 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "retry.threads.num")
     private int eventMeshServerRetryThreadNum = 2;
 
-    @ConfigFiled(field = "pull.registry.interval")
-    private int eventMeshServerPullRegistryInterval = 30000;
+    @ConfigFiled(field = "pull.metaStorage.interval")
+    private int eventMeshServerPullMetaStorageInterval = 30000;
 
     @ConfigFiled(field = "async.accumulation.threshold")
     private int eventMeshServerAsyncAccumulationThreshold = 1000;

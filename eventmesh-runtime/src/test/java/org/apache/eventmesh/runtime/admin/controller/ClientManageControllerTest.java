@@ -30,9 +30,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
-import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -75,9 +75,9 @@ public class ClientManageControllerTest {
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
 
         EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
-        Registry registry = mock(Registry.class);
+        MetaStorage metaStorage = mock(MetaStorage.class);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer,
-            eventMeshHTTPServer, eventMeshGrpcServer, registry);
+            eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
         eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshStoragePluginType("standalone");

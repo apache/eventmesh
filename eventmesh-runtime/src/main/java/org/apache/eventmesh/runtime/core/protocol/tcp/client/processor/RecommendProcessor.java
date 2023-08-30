@@ -55,7 +55,7 @@ public class RecommendProcessor implements TcpProcessor {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerMetaStorageEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
             UserAgent user = (UserAgent) pkg.getBody();

@@ -26,7 +26,7 @@ import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
-import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
 
@@ -42,7 +42,7 @@ public class EventMeshServer {
 
     private final Acl acl;
 
-    private Registry registry;
+    private MetaStorage metaStorage;
 
     private static Trace trace;
 
@@ -70,7 +70,7 @@ public class EventMeshServer {
 
         //Initialize acl, registry, trace and storageResource
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
-        this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
+        this.metaStorage = MetaStorage.getInstance(this.configuration.getEventMeshMetaStoragePluginType());
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
@@ -103,8 +103,8 @@ public class EventMeshServer {
         if (configuration.isEventMeshServerSecurityEnable()) {
             acl.init();
         }
-        if (configuration.isEventMeshServerRegistryEnable()) {
-            registry.init();
+        if (configuration.isEventMeshServerMetaStorageEnable()) {
+            metaStorage.init();
         }
         if (configuration.isEventMeshServerTraceEnable()) {
             trace.init();
@@ -132,7 +132,7 @@ public class EventMeshServer {
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
 
-            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, registry);
+            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
             clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
         }
 
@@ -156,8 +156,8 @@ public class EventMeshServer {
                 acl.start();
             }
             // registry start
-            if (configuration.isEventMeshServerRegistryEnable()) {
-                registry.start();
+            if (configuration.isEventMeshServerMetaStorageEnable()) {
+                metaStorage.start();
             }
         }
         // server start
@@ -186,8 +186,8 @@ public class EventMeshServer {
             eventMeshBootstrap.shutdown();
         }
 
-        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
-            registry.shutdown();
+        if (configuration != null && configuration.isEventMeshServerMetaStorageEnable()) {
+            metaStorage.shutdown();
         }
 
         storageResource.release();
@@ -216,12 +216,12 @@ public class EventMeshServer {
         return serviceState;
     }
 
-    public Registry getRegistry() {
-        return registry;
+    public MetaStorage getMetaStorage() {
+        return metaStorage;
     }
 
-    public void setRegistry(final Registry registry) {
-        this.registry = registry;
+    public void setMetaStorage(final MetaStorage metaStorage) {
+        this.metaStorage = metaStorage;
     }
 
     public Acl getAcl() {
