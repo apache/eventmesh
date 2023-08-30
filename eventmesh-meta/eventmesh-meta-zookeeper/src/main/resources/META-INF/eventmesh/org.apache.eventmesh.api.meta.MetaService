@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-zookeeper=org.apache.eventmesh.metaStorage.zookeeper.service.ZookeeperRegistryService
+zookeeper=org.apache.eventmesh.meta.zookeeper.service.ZookeeperMetaService

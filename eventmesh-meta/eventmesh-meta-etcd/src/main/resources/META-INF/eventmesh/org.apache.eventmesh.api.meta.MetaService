@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-etcd=org.apache.eventmesh.metaStorage.etcd.service.EtcdRegistryService
+etcd=org.apache.eventmesh.meta.etcd.service.EtcdMetaService

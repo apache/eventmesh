@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-consul=org.apache.eventmesh.metaStorage.consul.service.ConsulMetaService
+consul=org.apache.eventmesh.meta.consul.service.ConsulMetaService
