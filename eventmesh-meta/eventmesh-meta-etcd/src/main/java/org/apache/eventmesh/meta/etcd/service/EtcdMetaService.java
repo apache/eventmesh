@@ -27,8 +27,8 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.meta.etcd.factory.EtcdClientFactory;
 import org.apache.eventmesh.meta.etcd.constant.EtcdConstant;
+import org.apache.eventmesh.meta.etcd.factory.EtcdClientFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

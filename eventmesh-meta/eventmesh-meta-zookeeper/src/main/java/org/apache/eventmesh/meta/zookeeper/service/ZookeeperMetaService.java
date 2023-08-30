@@ -29,8 +29,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.meta.zookeeper.config.ZKRegistryConfiguration;
-import org.apache.eventmesh.meta.zookeeper.pojo.EventMeshInstance;
 import org.apache.eventmesh.meta.zookeeper.constant.ZookeeperConstant;
+import org.apache.eventmesh.meta.zookeeper.pojo.EventMeshInstance;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
