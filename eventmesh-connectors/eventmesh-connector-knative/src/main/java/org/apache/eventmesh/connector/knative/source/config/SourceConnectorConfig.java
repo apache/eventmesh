@@ -24,6 +24,8 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String service;
+    public String emurl;
+
+    public String serviceAddr;
 
 }

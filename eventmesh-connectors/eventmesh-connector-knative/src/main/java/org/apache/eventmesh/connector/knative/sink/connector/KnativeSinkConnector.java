@@ -31,11 +31,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
+import org.asynchttpclient.AsyncHttpClient;
 
 @Slf4j
 public class KnativeSinkConnector implements Sink {
 
     private KnativeSinkConfig sinkConfig;
+
+    private transient AsyncHttpClient asyncHttpClient;
 
     private static final AtomicBoolean started = new AtomicBoolean(false);
 

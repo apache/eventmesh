@@ -24,6 +24,8 @@ dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
 
+    implementation 'org.asynchttpclient:async-http-client'
+
     implementation 'io.cloudevents:cloudevents-json-jackson'
 
     compileOnly 'org.projectlombok:lombok'

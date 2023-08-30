@@ -26,5 +26,6 @@ pubSubConfig:
     passWord: knativePassWord
 connectorConfig:
     connectorName: knativeSink
-    service: 127.0.0.1;cloudevents-player.default.127.0.0.1.sslip.io
+    emurl: 127.0.0.1
+    serviceAddr: cloudevents-player.default.127.0.0.1.sslip.io
 

@@ -18,12 +18,15 @@
 package org.apache.eventmesh.connector.knative.sink.config;
 
 import lombok.Data;
+import org.apache.eventmesh.common.config.ConfigFiled;
 
 @Data
 public class SinkConnectorConfig {
 
     private String connectorName;
 
-    private String service;
+    public String emurl;
+
+    public String serviceAddr;
 
 }
