@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.meta.zookeeper.service.ZookeeperMetaService;
 
 import org.apache.curator.test.TestingServer;
 
@@ -49,7 +50,7 @@ public class ZookeeperMetaServiceTest {
     @Mock
     private EventMeshUnRegisterInfo eventMeshUnRegisterInfo;
 
-    private ZookeeperRegistryService zkRegistryService;
+    private ZookeeperMetaService zkRegistryService;
 
     private TestingServer testingServer;
 
@@ -58,7 +59,7 @@ public class ZookeeperMetaServiceTest {
         testingServer = new TestingServer(1500, true);
         testingServer.start();
 
-        zkRegistryService = new ZookeeperRegistryService();
+        zkRegistryService = new ZookeeperMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
         configuration.setNamesrvAddr("127.0.0.1:1500");
         configuration.setEventMeshName("eventmesh");
@@ -103,7 +104,7 @@ public class ZookeeperMetaServiceTest {
         zkRegistryService.start();
         zkRegistryService.shutdown();
 
-        Class<ZookeeperRegistryService> zkRegistryServiceClass = ZookeeperRegistryService.class;
+        Class<ZookeeperMetaService> zkRegistryServiceClass = ZookeeperMetaService.class;
         Field initStatus = zkRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(zkRegistryService);
