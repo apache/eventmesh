@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.knative.sink.connector;
 
+import org.apache.eventmesh.connector.knative.cloudevent.KnativeHeaders;
+import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.sink.config.KnativeSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -26,12 +28,18 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.util.HttpConstants;
+
+import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 @Slf4j
 public class KnativeSinkConnector implements Sink {
@@ -55,6 +63,7 @@ public class KnativeSinkConnector implements Sink {
     public void init(ConnectorContext connectorContext) throws Exception {
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (KnativeSinkConfig) sinkConnectorContext.getSinkConfig();
+        this.asyncHttpClient = asyncHttpClient();
     }
 
     @Override
@@ -81,15 +90,27 @@ public class KnativeSinkConnector implements Sink {
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
             CloudEvent cloudEvent = CloudEventUtil.convertRecordToEvent(connectRecord);
-//            try {
-//
-//            } catch (InterruptedException e) {
-//                Thread currentThread = Thread.currentThread();
-//                log.warn("[KnativeSinkConnector] Interrupting thread {} due to exception {}", currentThread.getName(), e.getMessage());
-//                currentThread.interrupt();
-//            } catch (Exception e) {
-//                log.error("[KnativeSinkConnector] sendResult has error : ", e);
-//            }
+            try {
+                ListenableFuture<Response> execute = asyncHttpClient.preparePost("http://" + sinkConfig.getConnectorConfig().getServiceAddr())
+                        .addHeader(KnativeHeaders.CONTENT_TYPE, cloudEvent.getDataContentType())
+                        .addHeader(KnativeHeaders.CE_ID, cloudEvent.getId())
+                        .addHeader(KnativeHeaders.CE_SPECVERSION, String.valueOf(cloudEvent.getSpecVersion()))
+                        .addHeader(KnativeHeaders.CE_TYPE, cloudEvent.getType())
+                        .addHeader(KnativeHeaders.CE_SOURCE, String.valueOf(cloudEvent.getSource()))
+                        .setBody(KnativeMessageFactory.createReader(cloudEvent))
+                        .execute();
+
+                Response response = execute.get(10, TimeUnit.SECONDS);
+                if (response.getStatusCode() != HttpConstants.ResponseStatusCodes.OK_200) {
+                    log.error("[KnativeSinkConnector] sendResult fail : {}", response.getResponseBody());;
+                }
+            } catch (InterruptedException e) {
+                Thread currentThread = Thread.currentThread();
+                log.warn("[KnativeSinkConnector] Interrupting thread {} due to exception {}", currentThread.getName(), e.getMessage());
+                currentThread.interrupt();
+            } catch (Exception e) {
+                log.error("[KnativeSinkConnector] sendResult has error : ", e);
+            }
         }
     }
 }
