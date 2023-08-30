@@ -52,11 +52,11 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals(4816, config.getEventMeshServerPushMsgThreadNum());
         Assert.assertEquals(5816, config.getEventMeshServerReplyMsgThreadNum());
         Assert.assertEquals(6816, config.getEventMeshServerClientManageThreadNum());
-        Assert.assertEquals(7816, config.getEventMeshServerRegistryThreadNum());
+        Assert.assertEquals(7816, config.getEventMeshServerMetaStorageThreadNum());
         Assert.assertEquals(8816, config.getEventMeshServerAdminThreadNum());
 
         Assert.assertEquals(9816, config.getEventMeshServerRetryThreadNum());
-        Assert.assertEquals(11816, config.getEventMeshServerPullRegistryInterval());
+        Assert.assertEquals(11816, config.getEventMeshServerPullMetaStorageInterval());
         Assert.assertEquals(12816, config.getEventMeshServerAsyncAccumulationThreshold());
         Assert.assertEquals(13816, config.getEventMeshServerRetryBlockQSize());
         Assert.assertEquals(14816, config.getEventMeshServerBatchBlockQSize());
@@ -90,7 +90,7 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
+        Assert.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
         Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
 
@@ -101,7 +101,7 @@ public class EventMeshHTTPConfigurationTest {
         Assert.assertEquals(list, config.getEventMeshMetricsPluginType());
 
         Assert.assertTrue(config.isEventMeshServerSecurityEnable());
-        Assert.assertTrue(config.isEventMeshServerRegistryEnable());
+        Assert.assertTrue(config.isEventMeshServerMetaStorageEnable());
         Assert.assertTrue(config.isEventMeshServerTraceEnable());
 
         Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());

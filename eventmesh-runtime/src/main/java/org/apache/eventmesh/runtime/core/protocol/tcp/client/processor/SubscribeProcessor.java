@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;

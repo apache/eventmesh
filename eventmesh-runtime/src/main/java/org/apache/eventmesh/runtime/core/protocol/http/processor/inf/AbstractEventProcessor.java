@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
-import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -39,7 +39,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AsyncHttpProcessor;
-import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +76,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * Add a topic with subscribers to the service's metadata.
      */
     protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerMetaStorageEnable()) {
             return;
         }
 
@@ -122,13 +122,13 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (!httpConfiguration.isEventMeshServerMetaStorageEnable()) {
             return "";
         }
 
         String targetMesh = "";
-        Registry registry = eventMeshHTTPServer.getRegistry();
-        List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
+        MetaStorage metaStorage = eventMeshHTTPServer.getRegistry();
+        List<EventMeshDataInfo> allEventMeshInfo = metaStorage.findAllEventMeshInfo();
         String httpServiceName =
             ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
                 + "-" + ConfigurationContextUtil.HTTP;

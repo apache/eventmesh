@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.processor;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
