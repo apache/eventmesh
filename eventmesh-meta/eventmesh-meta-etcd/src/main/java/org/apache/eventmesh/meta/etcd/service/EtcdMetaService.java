@@ -189,6 +189,21 @@ public class EtcdMetaService implements MetaService {
     }
 
     @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
+    }
+
+    @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
         String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
         String eventMeshName = eventMeshRegisterInfo.getEventMeshName();

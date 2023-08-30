@@ -190,4 +190,19 @@ public class ConsulMetaService implements MetaService {
     public void registerMetadata(Map<String, String> metadataMap) {
 
     }
+
+    @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
+    }
 }

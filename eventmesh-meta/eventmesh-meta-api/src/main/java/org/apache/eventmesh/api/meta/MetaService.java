@@ -54,6 +54,12 @@ public interface MetaService {
 
     void registerMetadata(Map<String, String> metadataMap);
 
+    String getMetaData(String key);
+
+    void updateMetaData(Map<String, String> metadataMap);
+
+    void removeMetaData(String key);
+
     boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException;
 
     boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException;

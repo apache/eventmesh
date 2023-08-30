@@ -53,8 +53,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "server.hostIp", reload = true)
     private String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
-    private String namesrvAddr = "";
+    @ConfigFiled(field = "metaStorage.plugin.server-addr", notEmpty = true)
+    private String metaStorageAddr = "";
 
 
     @ConfigFiled(field = "trace.plugin", notEmpty = true)

@@ -25,7 +25,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
-import org.apache.eventmesh.meta.nacos.config.NacosRegistryConfiguration;
+import org.apache.eventmesh.meta.nacos.config.NacosMetaStorageConfiguration;
 import org.apache.eventmesh.meta.nacos.constant.NacosConstant;
 
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class NacosMetaService implements MetaService {
     private String password;
 
     @Getter
-    private NacosRegistryConfiguration nacosConfig;
+    private NacosMetaStorageConfiguration nacosConfig;
 
     @Getter
     private NamingService namingService;
@@ -88,17 +88,17 @@ public class NacosMetaService implements MetaService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
+            if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
                 throw new MetaException("namesrvAddr cannot be null");
             }
 
-            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.serverAddr = commonConfiguration.getMetaStorageAddr();
             this.username = commonConfiguration.getEventMeshMetaStoragePluginUsername();
             this.password = commonConfiguration.getEventMeshMetaStoragePluginPassword();
             break;
         }
         ConfigService configService = ConfigService.getInstance();
-        NacosRegistryConfiguration nacosConfig = configService.buildConfigInstance(NacosRegistryConfiguration.class);
+        NacosMetaStorageConfiguration nacosConfig = configService.buildConfigInstance(NacosMetaStorageConfiguration.class);
         if (nacosConfig != null) {
             this.nacosConfig = nacosConfig;
         }
@@ -220,6 +220,21 @@ public class NacosMetaService implements MetaService {
             registerInfo.setMetadata(metadataMap);
             this.register(registerInfo);
         }
+    }
+
+    @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
     }
 
     @Override

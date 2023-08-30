@@ -289,6 +289,21 @@ public class ZookeeperMetaService implements MetaService {
     }
 
     @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
+    }
+
+    @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
