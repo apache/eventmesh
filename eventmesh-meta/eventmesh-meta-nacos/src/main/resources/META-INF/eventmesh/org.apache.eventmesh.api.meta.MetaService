@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-nacos=org.apache.eventmesh.metaStorage.nacos.service.NacosMetaService
+nacos=org.apache.eventmesh.meta.nacos.service.NacosMetaService

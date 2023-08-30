@@ -30,7 +30,7 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
+import org.apache.eventmesh.meta.nacos.constant.NacosConstant;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;

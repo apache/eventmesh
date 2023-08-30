@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
-import org.apache.eventmesh.registry.consul.service.ConsulMetaService;
+import org.apache.eventmesh.meta.consul.service.ConsulMetaService;
 
 import java.lang.reflect.Field;
 import java.util.List;
