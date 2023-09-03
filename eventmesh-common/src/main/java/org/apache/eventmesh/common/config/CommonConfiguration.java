@@ -63,8 +63,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "metrics.plugin", notEmpty = true)
     private List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
-    private String eventMeshRegistryPluginType = "namesrv";
+    @ConfigFiled(field = "metaStorage.plugin.type", notEmpty = true)
+    private String eventMeshMetaStoragePluginType = "namesrv";
 
     @ConfigFiled(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
@@ -78,17 +78,17 @@ public class CommonConfiguration {
     @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
 
-    @ConfigFiled(field = "registry.plugin.username")
-    private String eventMeshRegistryPluginUsername = "";
+    @ConfigFiled(field = "metaStorage.plugin.username")
+    private String eventMeshMetaStoragePluginUsername = "";
 
-    @ConfigFiled(field = "registry.plugin.password")
-    private String eventMeshRegistryPluginPassword = "";
+    @ConfigFiled(field = "metaStorage.plugin.password")
+    private String eventMeshMetaStoragePluginPassword = "";
 
-    @ConfigFiled(field = "server.registry.registerIntervalInMills")
-    private Integer eventMeshRegisterIntervalInMills = 10 * 1000;
+    @ConfigFiled(field = "server.metaStorage.metaStorageIntervalInMills")
+    private Integer eventMeshMetaStorageIntervalInMills = 10 * 1000;
 
-    @ConfigFiled(field = "server.registry.fetchRegistryAddrIntervalInMills")
-    private Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+    @ConfigFiled(field = "server.metaStorage.fetchMetaStorageAddrIntervalInMills")
+    private Integer eventMeshFetchMetaStorageAddrInterval = 10 * 1000;
 
 
     @ConfigFiled(field = "server.trace.enabled")
@@ -97,8 +97,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "server.security.enabled")
     private boolean eventMeshServerSecurityEnable = false;
 
-    @ConfigFiled(field = "server.registry.enabled")
-    private boolean eventMeshServerRegistryEnable = false;
+    @ConfigFiled(field = "server.metaStorage.enabled")
+    private boolean eventMeshServerMetaStorageEnable = false;
 
     @ConfigFiled(field = "security.publickey")
     private String eventMeshSecurityPublickey = "";

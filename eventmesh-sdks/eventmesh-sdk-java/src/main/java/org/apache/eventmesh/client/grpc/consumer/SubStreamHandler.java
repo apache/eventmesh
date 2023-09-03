@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.SubscriptionReply;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubStreamHandler<T> extends Thread {
+public class SubStreamHandler<T> extends Thread implements Serializable {
 
     private final transient CountDownLatch latch = new CountDownLatch(1);
 
@@ -151,6 +152,7 @@ public class SubStreamHandler<T> extends Thread {
             latch.await();
         } catch (InterruptedException e) {
             log.error("SubStreamHandler Thread interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 

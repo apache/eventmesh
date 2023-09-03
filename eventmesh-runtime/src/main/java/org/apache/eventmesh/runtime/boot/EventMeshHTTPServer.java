@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
-import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
@@ -53,8 +53,8 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcesso
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,7 +80,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private final EventMeshServer eventMeshServer;
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private final Registry registry;
+    private final MetaStorage metaStorage;
     private final Acl acl;
     private final EventBus eventBus = new EventBus();
 
@@ -102,7 +102,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                 eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
-        this.registry = eventMeshServer.getRegistry();
+        this.metaStorage = eventMeshServer.getMetaStorage();
         this.acl = eventMeshServer.getAcl();
 
     }
@@ -162,7 +162,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.start();
         httpRetryer.start();
 
-        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
         }
         if (log.isInfoEnabled()) {
@@ -185,7 +185,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         httpRetryer.shutdown();
 
-        if (eventMeshHttpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.unRegister();
         }
         if (log.isInfoEnabled()) {
@@ -207,7 +207,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                     + "-" + ConfigurationContextUtil.HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
-            registerResult = registry.register(eventMeshRegisterInfo);
+            registerResult = metaStorage.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             log.error("eventMesh register to registry failed", e);
         }
@@ -226,7 +226,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
-        final boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
+        final boolean registerResult = metaStorage.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
         }
@@ -349,8 +349,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
-    public Registry getRegistry() {
-        return registry;
+    public MetaStorage getRegistry() {
+        return metaStorage;
     }
 
     public HTTPClientPool getHttpClientPool() {

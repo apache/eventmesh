@@ -60,7 +60,7 @@
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="registry" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="metaStorage" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 

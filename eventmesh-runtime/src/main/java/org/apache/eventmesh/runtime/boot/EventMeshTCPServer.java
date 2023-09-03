@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
-import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
@@ -42,8 +42,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.processor.UnSubscri
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
-import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
 import java.util.List;
@@ -66,7 +66,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     private final EventMeshServer eventMeshServer;
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
-    private final Registry registry;
+    private final MetaStorage metaStorage;
     private final Acl acl;
 
     private ClientSessionGroupMapping clientSessionGroupMapping;
@@ -83,7 +83,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         super(eventMeshTCPConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.registry = eventMeshServer.getRegistry();
+        this.metaStorage = eventMeshServer.getMetaStorage();
         this.acl = eventMeshServer.getAcl();
     }
 
@@ -115,7 +115,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         super.setEventMeshTcpMonitor(new EventMeshTcpMonitor(this, metricsRegistries));
         super.getEventMeshTcpMonitor().init();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventMeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
@@ -138,7 +138,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         clientSessionGroupMapping.start();
         tcpRetryer.start();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
             eventMeshRebalanceService.start();
         }
@@ -159,7 +159,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         tcpRetryer.shutdown();
 
-        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
+        if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService.shutdown();
             this.unRegister();
         }
@@ -185,7 +185,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
-            registerResult = registry.register(eventMeshRegisterInfo);
+            registerResult = metaStorage.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             log.error("eventMesh register to registry failed", e);
         }
@@ -203,7 +203,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
-        boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
+        boolean registerResult = metaStorage.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
         }
@@ -258,8 +258,8 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         return eventMeshTCPConfiguration;
     }
 
-    public Registry getRegistry() {
-        return registry;
+    public MetaStorage getRegistry() {
+        return metaStorage;
     }
 
     public EventMeshRebalanceService getEventMeshRebalanceService() {
