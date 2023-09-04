@@ -40,6 +40,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProces
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.QuerySubscriptionProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.QuicLocalSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
@@ -254,7 +255,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.getHandlerService().register(sendAsyncEventProcessor, sendMsgExecutor);
 
         ThreadPoolExecutor remoteMsgExecutor = httpThreadPoolGroup.getRemoteMsgExecutor();
-        final SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
+        final SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new     SendAsyncRemoteEventProcessor(this);
         this.getHandlerService().register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
         ThreadPoolExecutor adminExecutor = httpThreadPoolGroup.getAdminExecutor();
@@ -270,6 +271,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         final LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
         this.getHandlerService().register(localSubscribeEventProcessor, clientManageExecutor);
+
+        final QuicLocalSubscribeEventProcessor quicLocalSubscribeEventProcessor = new QuicLocalSubscribeEventProcessor(this);
+        this.getHandlerService().register(quicLocalSubscribeEventProcessor, clientManageExecutor);
 
         final RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
         this.getHandlerService().register(remoteSubscribeEventProcessor, clientManageExecutor);
