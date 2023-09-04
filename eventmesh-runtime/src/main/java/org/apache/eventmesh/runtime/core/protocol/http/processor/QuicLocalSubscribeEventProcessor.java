@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
@@ -60,6 +61,10 @@ import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.extern.slf4j.Slf4j;
+
+@EventMeshTrace
+@Slf4j
 public class QuicLocalSubscribeEventProcessor extends AbstractEventProcessor {
     public QuicLocalSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
