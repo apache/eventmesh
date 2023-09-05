@@ -26,6 +26,13 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.util.HttpConstants;
+
+import io.cloudevents.CloudEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -34,9 +41,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.cloudevents.CloudEvent;
-
 import lombok.extern.slf4j.Slf4j;
+
+import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 @Slf4j
 public class KnativeSourceConnector implements Source {
@@ -73,6 +80,7 @@ public class KnativeSourceConnector implements Source {
     @Override
     public void start() throws Exception {
         started.compareAndSet(false, true);
+        executor.execute(new KnativeSourceHandler(this.sourceConfig));
     }
 
     @Override
@@ -105,5 +113,40 @@ public class KnativeSourceConnector implements Source {
             }
         }
         return connectRecords;
+    }
+
+    public class KnativeSourceHandler implements Runnable {
+
+        private final KnativeSourceConfig sourceConfig;
+
+        private final AtomicBoolean running = new AtomicBoolean(true);
+
+        private final transient AsyncHttpClient asyncHttpClient = asyncHttpClient();
+
+        public KnativeSourceHandler(KnativeSourceConfig sourceConfig) {
+            this.sourceConfig = sourceConfig;
+        }
+
+        @Override
+        public void run() {
+            while (running.get()) {
+                try {
+                    ListenableFuture<Response> execute = asyncHttpClient.prepareGet("http://" + sourceConfig.getConnectorConfig().getServiceAddr() + "/" + "*").execute();
+                    Response response = execute.get(10, TimeUnit.SECONDS);
+
+                    if (response.getStatusCode() != HttpConstants.ResponseStatusCodes.OK_200) {
+                        log.error("HTTP response code error: " + response.getStatusCode());
+                    }
+                    String responseBody = response.getResponseBody();
+
+                } catch (Exception ex) {
+                    log.error("[KnativeSourceHandler] thread run happen exception.", ex);
+                }
+            }
+        }
+
+        public void stop() {
+            running.compareAndSet(true, false);
+        }
     }
 }
