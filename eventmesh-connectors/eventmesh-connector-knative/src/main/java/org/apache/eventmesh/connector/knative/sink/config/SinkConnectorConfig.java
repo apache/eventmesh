@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.knative.sink.config;
 
 import lombok.Data;
-import org.apache.eventmesh.common.config.ConfigFiled;
 
 @Data
 public class SinkConnectorConfig {

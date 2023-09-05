@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.knative.source.connector;
 
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.connector.knative.source.config.KnativeSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -26,13 +28,6 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.ListenableFuture;
-import org.asynchttpclient.Response;
-import org.asynchttpclient.util.HttpConstants;
-
-import io.cloudevents.CloudEvent;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -41,9 +36,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import lombok.extern.slf4j.Slf4j;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.util.HttpConstants;
 
-import static org.asynchttpclient.Dsl.asyncHttpClient;
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class KnativeSourceConnector implements Source {

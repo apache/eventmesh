@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.knative.sink.connector;
 
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeHeaders;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.sink.config.KnativeSinkConfig;
@@ -31,15 +33,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.cloudevents.CloudEvent;
-
-import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.util.HttpConstants;
 
-import static org.asynchttpclient.Dsl.asyncHttpClient;
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class KnativeSinkConnector implements Sink {

@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent;
 
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
-
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class KnativeMessageFactory {
@@ -36,9 +36,5 @@ public final class KnativeMessageFactory {
             return "";
         }
         return new String(message.getData().toBytes(), StandardCharsets.UTF_8);
-    }
-
-    public static KnativeMessageWriter createWriter(final Properties properties) {
-        return new KnativeMessageWriter(properties);
     }
 }
