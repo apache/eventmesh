@@ -72,11 +72,11 @@ public class ConsulMetaService implements MetaService {
             for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
                 if (null != commonConfiguration) {
-                    String namesrvAddr = commonConfiguration.getNamesrvAddr();
-                    if (StringUtils.isBlank(namesrvAddr)) {
+                    String metaStorageAddr = commonConfiguration.getMetaStorageAddr();
+                    if (StringUtils.isBlank(metaStorageAddr)) {
                         throw new MetaException("namesrvAddr cannot be null");
                     }
-                    String[] addr = namesrvAddr.split(":");
+                    String[] addr = metaStorageAddr.split(":");
                     if (addr.length != 2) {
                         throw new MetaException("Illegal namesrvAddr");
                     }
