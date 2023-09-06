@@ -20,130 +20,116 @@ package org.apache.eventmesh.connector.jdbc.table.catalog;
 import org.apache.eventmesh.connector.jdbc.table.type.EventMeshDataType;
 
 import java.sql.JDBCType;
-import java.sql.Types;
 
 /**
- * Interface for editing column properties.
+ * An interface for building and configuring columns in a database table.
+ *
+ * @param <CE>  The concrete type of the column editor.
+ * @param <Col> The concrete type of the column being edited.
  */
-public interface ColumnEditor {
+public interface ColumnEditor<CE extends ColumnEditor, Col extends Column> {
 
     /**
      * Sets the name of the column.
      *
      * @param name The name of the column.
-     * @return The ColumnEditor instance.
+     * @return The column editor instance.
      */
-    ColumnEditor withName(String name);
+    CE withName(String name);
 
     /**
-     * Sets the type of the column.
+     * Retrieves the name associated with this column editor.
      *
-     * @param typeName The type of the column.
-     * @return The ColumnEditor instance.
+     * @return The name of the column.
      */
-    ColumnEditor withType(String typeName);
+    String ofName();
+
 
     /**
-     * Sets the {@link Types JDBC type} of this column.
+     * Sets the data type of the column.
      *
-     * @param jdbcType The JDBC type of the column.
-     * @return The ColumnEditor instance.
+     * @param typeName The data type name of the column.
+     * @return The column editor instance.
      */
-    ColumnEditor withJdbcType(JDBCType jdbcType);
+    CE withType(String typeName);
 
     /**
-     * Sets the event mesh type of the column.
+     * Sets the JDBC data type of the column.
      *
-     * @param eventMeshType The event mesh type of the column.
-     * @return The ColumnEditor instance.
+     * @param jdbcType The JDBC data type of the column.
+     * @return The column editor instance.
      */
-    ColumnEditor withEventMeshType(EventMeshDataType<?> eventMeshType);
+    CE withJdbcType(JDBCType jdbcType);
 
     /**
-     * Sets the character set name of the column.
+     * Sets the EventMesh data type of the column.
      *
-     * @param charsetName The character set name of the column.
-     * @return The ColumnEditor instance.
+     * @param eventMeshType The EventMesh data type of the column.
+     * @return The column editor instance.
      */
-    ColumnEditor charsetName(String charsetName);
+    CE withEventMeshType(EventMeshDataType<?> eventMeshType);
 
     /**
-     * Sets the character set name of the table associated with the column.
-     *
-     * @param charsetName The character set name of the table.
-     * @return The ColumnEditor instance.
-     */
-    ColumnEditor charsetNameOfTable(String charsetName);
-
-    /**
-     * Sets the length of the column.
+     * Sets the length of the column (if applicable).
      *
      * @param length The length of the column.
-     * @return The ColumnEditor instance.
+     * @return The column editor instance.
      */
-    ColumnEditor length(int length);
+    CE length(int length);
 
     /**
-     * Sets the scale of the column.
+     * Sets the scale of the column (if applicable).
      *
      * @param scale The scale of the column.
-     * @return The ColumnEditor instance.
+     * @return The column editor instance.
      */
-    ColumnEditor scale(Integer scale);
+    CE scale(Integer scale);
 
     /**
-     * Sets whether the column is optional.
+     * Sets whether the column is optional (nullable).
      *
-     * @param optional Whether the column is optional.
-     * @return The ColumnEditor instance.
+     * @param optional Indicates whether the column is optional (true) or not (false).
+     * @return The column editor instance.
      */
-    ColumnEditor optional(boolean optional);
+    CE optional(boolean optional);
 
     /**
-     * Sets the comment of the column.
+     * Sets the comment for the column.
      *
-     * @param comment The comment of the column.
-     * @return The ColumnEditor instance.
+     * @param comment The comment for the column.
+     * @return The column editor instance.
      */
-    ColumnEditor comment(String comment);
+    CE comment(String comment);
 
     /**
-     * Sets whether the column is auto-incremented.
+     * Sets the default value expression for the column.
      *
-     * @param autoIncremented Whether the column is auto-incremented.
-     * @return The ColumnEditor instance.
+     * @param defaultValueExpression The default value expression for the column.
+     * @return The column editor instance.
      */
-    ColumnEditor autoIncremented(boolean autoIncremented);
+    CE defaultValueExpression(String defaultValueExpression);
 
     /**
-     * Sets whether the column is generated.
+     * Sets the default value for the column.
      *
-     * @param generated Whether the column is generated.
-     * @return The ColumnEditor instance.
+     * @param value The default value for the column.
+     * @return The column editor instance.
      */
-    ColumnEditor generated(boolean generated);
+    CE defaultValue(Object value);
 
     /**
-     * Sets the default value expression of the column.
+     * Sets whether the column is marked as not null.
      *
-     * @param defaultValueExpression The default value expression of the column.
-     * @return The ColumnEditor instance.
+     * @param notNull Indicates whether the column is marked as not null (true) or not (false).
+     * @return The column editor instance.
      */
-    ColumnEditor defaultValueExpression(String defaultValueExpression);
+    CE notNull(boolean notNull);
 
     /**
-     * Specifies whether the column should be marked as "NOT NULL."
+     * Builds and returns the configured column.
      *
-     * @param notNull True if the column should be marked as "NOT NULL," false otherwise.
-     * @return The updated ColumnEditor.
+     * @return The configured column.
      */
-    ColumnEditor notNull(boolean notNull);
-
-
-    /**
-     * Builds the Column object with the edited properties.
-     *
-     * @return The built Column object.
-     */
-    Column build();
+    Col build();
 }
+
