@@ -232,7 +232,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
             }
 
             // Update service metadata
-            updateMetadata();
+            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
     }
 

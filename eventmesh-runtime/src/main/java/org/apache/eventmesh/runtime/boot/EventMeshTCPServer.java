@@ -258,7 +258,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         return eventMeshTCPConfiguration;
     }
 
-    public MetaStorage getRegistry() {
+    public MetaStorage getMetaStorage() {
         return metaStorage;
     }
 

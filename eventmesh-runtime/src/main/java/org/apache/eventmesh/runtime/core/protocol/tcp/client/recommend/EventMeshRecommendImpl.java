@@ -58,7 +58,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
         final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         try {
-            eventMeshDataInfoList = eventMeshTCPServer.getRegistry().findEventMeshInfoByCluster(cluster);
+            eventMeshDataInfoList = eventMeshTCPServer.getMetaStorage().findEventMeshInfoByCluster(cluster);
         } catch (Exception e) {
             if (log.isWarnEnabled()) {
                 log.warn("EventMeshRecommend failed, findEventMeshInfoByCluster failed, cluster:{}, group:{}, purpose:{}, errMsg:{}",
@@ -162,7 +162,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
         Map<String, Map<String, Integer>> eventMeshClientDistributionDataMap = null;
         try {
-            eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
+            eventMeshClientDistributionDataMap = eventMeshTCPServer.getMetaStorage().findEventMeshClientDistributionData(
                 cluster, group, purpose);
         } catch (Exception e) {
             if (log.isWarnEnabled()) {

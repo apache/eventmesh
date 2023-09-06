@@ -128,7 +128,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer.init();
 
         super.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
-        subscriptionManager = new SubscriptionManager();
+        subscriptionManager = new SubscriptionManager(eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable(), metaStorage);
 
         consumerManager = new ConsumerManager(this);
         consumerManager.init();
@@ -349,7 +349,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
-    public MetaStorage getRegistry() {
+    public MetaStorage getMetaStorage() {
         return metaStorage;
     }
 

@@ -79,7 +79,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         Map<String, String> localEventMeshMap = null;
         List<EventMeshDataInfo> eventMeshDataInfoList = null;
         try {
-            eventMeshDataInfoList = eventMeshTCPServer.getRegistry().findEventMeshInfoByCluster(cluster);
+            eventMeshDataInfoList = eventMeshTCPServer.getMetaStorage().findEventMeshInfoByCluster(cluster);
 
             if (eventMeshDataInfoList == null || CollectionUtils.isEmpty(eventMeshDataInfoList)) {
                 log.warn("doRebalance failed,query eventmesh instances is null from registry,cluster:{}", cluster);
@@ -222,7 +222,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         Map<String, Integer> localEventMeshDistributeData = null;
         Map<String, Map<String, Integer>> eventMeshClientDistributionDataMap = null;
         try {
-            eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
+            eventMeshClientDistributionDataMap = eventMeshTCPServer.getMetaStorage().findEventMeshClientDistributionData(
                 cluster, group, purpose);
 
             if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {

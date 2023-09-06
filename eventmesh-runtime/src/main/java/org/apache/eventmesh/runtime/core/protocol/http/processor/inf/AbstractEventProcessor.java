@@ -72,52 +72,6 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    /**
-     * Add a topic with subscribers to the service's metadata.
-     */
-    protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerMetaStorageEnable()) {
-            return;
-        }
-
-        try {
-
-            Map<String, String> metadata = new HashMap<>(1 << 4);
-            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
-                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
-
-                String consumerGroupKey = consumerGroupMap.getKey();
-                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
-
-                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
-                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
-
-                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                    new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
-                    final String topic = consumerGroupTopicConfEntry.getKey();
-                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
-                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
-                    consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
-                    consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
-                    consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
-
-                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
-                }
-
-                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
-            }
-
-            eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
-
-        } catch (Exception e) {
-            log.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
-        }
-    }
-
-
     protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
         throws Exception {
         // Currently only supports http
@@ -127,7 +81,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         }
 
         String targetMesh = "";
-        MetaStorage metaStorage = eventMeshHTTPServer.getRegistry();
+        MetaStorage metaStorage = eventMeshHTTPServer.getMetaStorage();
         List<EventMeshDataInfo> allEventMeshInfo = metaStorage.findAllEventMeshInfo();
         String httpServiceName =
             ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
