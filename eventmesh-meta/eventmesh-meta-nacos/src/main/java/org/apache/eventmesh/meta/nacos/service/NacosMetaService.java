@@ -58,9 +58,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NacosMetaService implements MetaService {
 
-    private  final AtomicBoolean initStatus = new AtomicBoolean(false);
+    private final AtomicBoolean initStatus = new AtomicBoolean(false);
 
-    private  final AtomicBoolean startStatus = new AtomicBoolean(false);
+    private final AtomicBoolean startStatus = new AtomicBoolean(false);
 
     @Getter
     private String serverAddr;
@@ -211,17 +211,17 @@ public class NacosMetaService implements MetaService {
             try {
                 List<Instance> instances =
                     nacosNamingService.selectInstances(eventMeshName + "-" + key,
-                                key + "-" + (inCluster ? configuration.getEventMeshCluster() : NacosConstant.GROUP),
-                                clusters,
-                                true);
+                        key + "-" + (inCluster ? configuration.getEventMeshCluster() : NacosConstant.GROUP),
+                        clusters,
+                        true);
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
                 }
                 for (Instance instance : instances) {
                     EventMeshDataInfo eventMeshDataInfo =
-                            new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
-                                    instance.getIp() + ":"
-                                            + instance.getPort(), 0L, instance.getMetadata());
+                        new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
+                            instance.getIp() + ":"
+                                + instance.getPort(), 0L, instance.getMetadata());
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
@@ -259,7 +259,7 @@ public class NacosMetaService implements MetaService {
             boolean flag = this.nacosConfigService.publishConfig(nacosDataId, group, JacksonUtils.toJson(metadataMap));
             if (flag) {
                 log.info("publish metaData {} success", metadataMap);
-            }else{
+            } else {
                 log.error("publish metaData {} fail", metadataMap);
             }
         } catch (NacosException e) {
