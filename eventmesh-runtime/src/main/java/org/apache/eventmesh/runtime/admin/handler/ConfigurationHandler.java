@@ -113,7 +113,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             try {
                 GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
                     eventMeshTCPConfiguration.getSysID(),
-                    eventMeshTCPConfiguration.getNamesrvAddr(),
+                    eventMeshTCPConfiguration.getMetaStorageAddr(),
                     eventMeshTCPConfiguration.getEventMeshEnv(),
                     eventMeshTCPConfiguration.getEventMeshIDC(),
                     eventMeshTCPConfiguration.getEventMeshCluster(),
