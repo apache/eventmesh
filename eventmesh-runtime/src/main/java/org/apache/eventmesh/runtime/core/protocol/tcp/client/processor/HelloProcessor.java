@@ -73,7 +73,7 @@ public class HelloProcessor implements TcpProcessor {
             String subsystem = user.getSubsystem();
 
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getMetaStorage().findEventMeshAppSubTopicInfo(group);
                 if (eventMeshAppSubTopicInfo == null) {
                     throw new AclException("no group register");
                 }

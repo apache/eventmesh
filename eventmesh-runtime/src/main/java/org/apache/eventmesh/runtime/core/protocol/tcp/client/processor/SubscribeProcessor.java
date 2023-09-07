@@ -72,7 +72,7 @@ public class SubscribeProcessor implements TcpProcessor {
             subscriptionInfo.getTopicList().forEach(item -> {
                 if (eventMeshServerSecurityEnable) {
                     try {
-                        EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                        EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getMetaStorage().findEventMeshAppSubTopicInfo(group);
                         if (eventMeshAppSubTopicInfo == null) {
                             throw new AclException("no group register");
                         }
@@ -91,6 +91,7 @@ public class SubscribeProcessor implements TcpProcessor {
                     log.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
                 }
             }
+            eventMeshTCPServer.getClientSessionGroupMapping().updateMetaData();
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
         } catch (Exception e) {
             log.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
@@ -99,6 +100,5 @@ public class SubscribeProcessor implements TcpProcessor {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }
     }
-
 
 }

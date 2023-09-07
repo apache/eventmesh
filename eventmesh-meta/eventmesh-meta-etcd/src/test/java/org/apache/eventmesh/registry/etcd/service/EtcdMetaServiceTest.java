@@ -50,7 +50,7 @@ public class EtcdMetaServiceTest {
     public void setUp() {
         etcdMetaService = new EtcdMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
-        configuration.setNamesrvAddr("127.0.0.1:2379");
+        configuration.setMetaStorageAddr("127.0.0.1:2379");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
         // Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");

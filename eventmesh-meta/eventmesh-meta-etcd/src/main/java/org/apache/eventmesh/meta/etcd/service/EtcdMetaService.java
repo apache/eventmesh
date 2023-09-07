@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.meta.etcd.constant.EtcdConstant;
 import org.apache.eventmesh.meta.etcd.factory.EtcdClientFactory;
@@ -33,6 +34,7 @@ import org.apache.eventmesh.meta.etcd.factory.EtcdClientFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,10 @@ public class EtcdMetaService implements MetaService {
 
     private String password;
 
+    private String instanceIp;
+
+    private String group;
+
     @Getter
     private Client etcdClient;
 
@@ -89,12 +95,14 @@ public class EtcdMetaService implements MetaService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
+            if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
                 throw new MetaException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.serverAddr = commonConfiguration.getMetaStorageAddr();
             this.username = commonConfiguration.getEventMeshMetaStoragePluginUsername();
             this.password = commonConfiguration.getEventMeshMetaStoragePluginPassword();
+            this.instanceIp = IPUtils.getLocalAddress();
+            this.group = commonConfiguration.getMeshGroup();
             break;
         }
         etcdRegistryMonitorExecutorService = ThreadPoolFactory.createSingleScheduledExecutor(
@@ -186,6 +194,24 @@ public class EtcdMetaService implements MetaService {
             registerInfo.setMetadata(metadataMap);
             this.register(registerInfo);
         }
+    }
+
+    @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+        String etcdMetaKey = instanceIp + "-" + group;
+        ByteSequence key = ByteSequence.from(etcdMetaKey, StandardCharsets.UTF_8);
+        ByteSequence value = ByteSequence.from(Objects.requireNonNull(JsonUtils.toJSONString(metadataMap)), StandardCharsets.UTF_8);
+        etcdClient.getKVClient().put(key, value);
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
     }
 
     @Override

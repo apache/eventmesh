@@ -205,6 +205,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 summaryMetrics.recordSendMsgFailed();
                 summaryMetrics.recordSendMsgCost(endTime - startTime);
             }
+            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
     }
 

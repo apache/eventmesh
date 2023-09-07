@@ -49,7 +49,7 @@ public class NacosMetaServiceTest {
     public void setUp() {
         nacosMetaService = new NacosMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
-        configuration.setNamesrvAddr("127.0.0.1");
+        configuration.setMetaStorageAddr("127.0.0.1");
         configuration.setEventMeshMetaStoragePluginPassword("nacos");
         configuration.setEventMeshMetaStoragePluginUsername("nacos");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
@@ -80,7 +80,7 @@ public class NacosMetaServiceTest {
     public void testStart() {
         nacosMetaService.init();
         nacosMetaService.start();
-        Assert.assertNotNull(nacosMetaService.getNamingService());
+        Assert.assertNotNull(nacosMetaService.getNacosNamingService());
 
     }
 
