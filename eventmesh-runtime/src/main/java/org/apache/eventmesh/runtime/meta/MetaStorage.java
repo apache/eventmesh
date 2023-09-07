@@ -110,6 +110,10 @@ public class MetaStorage {
         metaService.registerMetadata(metadata);
     }
 
+    public void updateMetaData(Map<String, String> metadata) {
+        metaService.updateMetaData(metadata);
+    }
+
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
         return metaService.register(eventMeshRegisterInfo);
     }

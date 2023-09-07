@@ -314,7 +314,7 @@ public class EventMeshGrpcServer {
         }
     }
 
-    public MetaStorage getRegistry() {
+    public MetaStorage getMetaStorage() {
         return metaStorage;
     }
 

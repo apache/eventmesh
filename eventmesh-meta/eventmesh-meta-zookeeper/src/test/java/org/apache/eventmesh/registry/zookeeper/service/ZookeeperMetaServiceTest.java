@@ -61,7 +61,7 @@ public class ZookeeperMetaServiceTest {
 
         zkRegistryService = new ZookeeperMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
-        configuration.setNamesrvAddr("127.0.0.1:1500");
+        configuration.setMetaStorageAddr("127.0.0.1:1500");
         configuration.setEventMeshName("eventmesh");
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 

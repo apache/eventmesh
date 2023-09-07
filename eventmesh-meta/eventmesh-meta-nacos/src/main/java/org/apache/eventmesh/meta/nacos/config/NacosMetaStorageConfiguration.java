@@ -28,8 +28,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Config(prefix = "eventMesh.registry.nacos")
-public class NacosRegistryConfiguration {
+@Config(prefix = "eventMesh.metaStorage.nacos")
+public class NacosMetaStorageConfiguration {
 
     @ConfigFiled(field = PropertyKeyConst.ENDPOINT)
     private String endpoint;

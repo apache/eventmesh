@@ -88,10 +88,10 @@ public class ZookeeperMetaService implements MetaService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
-                throw new MetaException("namesrvAddr cannot be null");
+            if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
+                throw new MetaException("meta storage address cannot be null");
             }
-            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.serverAddr = commonConfiguration.getMetaStorageAddr();
             break;
         }
         ZKRegistryConfiguration zkConfig = ConfigService.getInstance().buildConfigInstance(ZKRegistryConfiguration.class);
@@ -286,6 +286,21 @@ public class ZookeeperMetaService implements MetaService {
             registerInfo.setMetadata(metadataMap);
             this.register(registerInfo);
         }
+    }
+
+    @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
     }
 
     @Override
