@@ -25,14 +25,15 @@ import org.apache.eventmesh.storage.kafka.config.ClientConfiguration;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -50,8 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 public class KafkaAdmin extends AbstractAdmin {
 
     private static final Properties properties = new Properties();
-
-    private static final long startUpTime = Instant.now().toEpochMilli();
 
     public KafkaAdmin() {
         super(new AtomicBoolean(false));
@@ -108,6 +107,18 @@ public class KafkaAdmin extends AbstractAdmin {
 
     @Override
     public void createTopic(String topicName) {
+        Admin client = Admin.create(properties);
+        NewTopic newTopic = new NewTopic(topicName, 2, (short) 1);
+
+        Collection<NewTopic> newTopicList = new ArrayList<>();
+        newTopicList.add(newTopic);
+        try {
+            client.createTopics(newTopicList).all().get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Failed to create topic", e);
+        } finally {
+            client.close();
+        }
     }
 
     @Override
