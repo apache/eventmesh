@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,7 +51,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KafkaAdmin extends AbstractAdmin {
 
-    private static final Properties properties = new Properties();
+    // properties for kafka admin client
+    private static final Properties kafkaProps = new Properties();
+
+    // properties for topic management
+    private static final Map<String, Integer> topicProps = new HashMap<>();
 
     public KafkaAdmin() {
         super(new AtomicBoolean(false));
@@ -58,12 +63,14 @@ public class KafkaAdmin extends AbstractAdmin {
         ConfigService configService = ConfigService.getInstance();
         ClientConfiguration clientConfiguration = configService.buildConfigInstance(ClientConfiguration.class);
 
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, clientConfiguration.getBootstrapServers());
+        kafkaProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, clientConfiguration.getNamesrvAddr());
+        topicProps.put("partitionNum", clientConfiguration.getPartitions());
+        topicProps.put("replicationFactorNum", (int) clientConfiguration.getReplicationFactors());
     }
 
     @Override
     public List<TopicProperties> getTopic() throws Exception {
-        Admin client = Admin.create(properties);
+        Admin client = Admin.create(kafkaProps);
         Set<String> topicList = client.listTopics().names().get();
         try {
             List<TopicProperties> result = new ArrayList<>();
@@ -107,8 +114,8 @@ public class KafkaAdmin extends AbstractAdmin {
 
     @Override
     public void createTopic(String topicName) {
-        Admin client = Admin.create(properties);
-        NewTopic newTopic = new NewTopic(topicName, 2, (short) 1);
+        Admin client = Admin.create(kafkaProps);
+        NewTopic newTopic = new NewTopic(topicName, topicProps.get("partitionNum"), topicProps.get("replicationFactorNum").shortValue());
 
         Collection<NewTopic> newTopicList = new ArrayList<>();
         newTopicList.add(newTopic);

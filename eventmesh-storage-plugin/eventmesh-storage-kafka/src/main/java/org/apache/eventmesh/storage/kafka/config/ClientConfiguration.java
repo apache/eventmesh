@@ -44,9 +44,13 @@ public class ClientConfiguration {
     @Builder.Default
     private String clientPass = "password";
 
-    @ConfigFiled(field = "bootstrap.servers")
+    @ConfigFiled(field = "num.partitions")
     @Builder.Default
-    private String bootstrapServers = "";
+    private int partitions = 1;
+
+    @ConfigFiled(field = "num.replicationFactors")
+    @Builder.Default
+    private short replicationFactors = 1;
 
     @ConfigFiled(field = "client.consumeThreadMin")
     @Builder.Default
