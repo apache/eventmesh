@@ -25,12 +25,12 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.storage.kafka.config.ClientConfiguration;
 
 import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
@@ -40,6 +40,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -73,18 +74,19 @@ public class KafkaAdmin extends AbstractAdmin {
     public List<TopicProperties> getTopic() {
         try (Admin client = Admin.create(kafkaProps)) {
             Set<String> topicList = client.listTopics().names().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            Map<String, KafkaFuture<TopicDescription>> topicDescriptionFutures = client.describeTopics(topicList).values();
             List<TopicProperties> result = new ArrayList<>();
-            for (String topic : topicList) {
-                DescribeTopicsResult describeTopicsResult = client.describeTopics(Collections.singletonList(topic));
-                TopicDescription topicDescription = describeTopicsResult.values().get(topic).get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            for (Entry<String, KafkaFuture<TopicDescription>> entry : topicDescriptionFutures.entrySet()) {
+                String topicName = entry.getKey();
+                TopicDescription topicDescription = entry.getValue().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
 
                 long messageCount = topicDescription.partitions().stream()
                     .mapToInt(TopicPartitionInfo::partition)
                     .mapToLong(partition -> {
                         try {
-                            return getMsgCount(topic, partition, client);
+                            return getMsgCount(topicName, partition, client);
                         } catch (TimeoutException e) {
-                            log.error("Failed to get msg offset when listing topics. Didn't receive msg offset response within {} secs.",
+                            log.error("Failed to get msg offset when listing topics. Kafka response timed out in {} seconds.",
                                 DEFAULT_TIMEOUT_IN_SECONDS);
                             throw new RuntimeException(e);
                         } catch (ExecutionException | InterruptedException e) {
@@ -94,12 +96,12 @@ public class KafkaAdmin extends AbstractAdmin {
                     })
                     .sum();
 
-                result.add(new TopicProperties(topic, messageCount));
+                result.add(new TopicProperties(topicName, messageCount));
             }
             result.sort(Comparator.comparing(t -> t.name));
             return result;
         } catch (TimeoutException e) {
-            log.error("Failed to list topics. Didn't receive list topic response within {} secs.", DEFAULT_TIMEOUT_IN_SECONDS);
+            log.error("Failed to list topics. Kafka response timed out in {} seconds.", DEFAULT_TIMEOUT_IN_SECONDS);
             throw new RuntimeException(e);
         } catch (Exception e) {
             log.error("Failed to list topics.", e);
@@ -107,8 +109,8 @@ public class KafkaAdmin extends AbstractAdmin {
         }
     }
 
-    private long getMsgCount(String topic, int partition, Admin client) throws ExecutionException, InterruptedException, TimeoutException {
-        TopicPartition topicPartition = new TopicPartition(topic, partition);
+    private long getMsgCount(String topicName, int partition, Admin client) throws ExecutionException, InterruptedException, TimeoutException {
+        TopicPartition topicPartition = new TopicPartition(topicName, partition);
         long earliestOffset = getOffset(topicPartition, OffsetSpec.earliest(), client);
         long latestOffset = getOffset(topicPartition, OffsetSpec.latest(), client);
         return latestOffset - earliestOffset;
@@ -128,7 +130,7 @@ public class KafkaAdmin extends AbstractAdmin {
             NewTopic newTopic = new NewTopic(topicName, topicProps.get("partitionNum"), topicProps.get("replicationFactorNum").shortValue());
             client.createTopics(Collections.singletonList(newTopic)).all().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            log.error("Failed to create topic. Didn't receive create topic response within {} secs.", DEFAULT_TIMEOUT_IN_SECONDS);
+            log.error("Failed to create topic. Kafka response timed out in {} seconds.", DEFAULT_TIMEOUT_IN_SECONDS);
         } catch (Exception e) {
             log.error("Failed to create topic.", e);
         }
@@ -139,7 +141,7 @@ public class KafkaAdmin extends AbstractAdmin {
         try (Admin client = Admin.create(kafkaProps)) {
             client.deleteTopics(Collections.singletonList(topicName)).all().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            log.error("Failed to delete topic. Didn't receive delete topic response within {} secs.", DEFAULT_TIMEOUT_IN_SECONDS);
+            log.error("Failed to delete topic. Kafka response timed out in {} seconds.", DEFAULT_TIMEOUT_IN_SECONDS);
         } catch (Exception e) {
             log.error("Failed to delete topic.", e);
         }
