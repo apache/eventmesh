@@ -26,11 +26,16 @@ import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class DefaultColumn extends Column {
+public class DefaultColumn extends Column<DefaultColumn> {
 
     public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
         String comment, Object defaultValue, String defaultValueExpression) {
-        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression);
+        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0);
+    }
+
+    public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, int order) {
+        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
     }
 
     public static DefaultColumn of(
@@ -39,13 +44,19 @@ public class DefaultColumn extends Column {
         return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression);
     }
 
+    public static DefaultColumn of(
+        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, int order) {
+        return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
+    }
+
     /**
      * creates a clone of the Column
      *
      * @return clone of column
      */
     @Override
-    public Column clone() {
-        return DefaultColumn.of(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression);
+    public DefaultColumn clone() {
+        return DefaultColumn.of(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
     }
 }

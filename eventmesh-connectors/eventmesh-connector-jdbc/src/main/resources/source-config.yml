@@ -34,7 +34,6 @@ sourceConnectorConfig:
   snapshotFetchSize: 100
   databaseType: mysql
   databaseIncludeList:
-    - mxsm
   databaseExcludeList:
   tableIncludeList:
   tableExcludeList:
@@ -42,7 +41,7 @@ sourceConnectorConfig:
     hostname: localhost
     port: 3306
     user: root
-    password: Mxsm22##
+    password: xxxxx
     initialStatements:
     connectTimeout: 10
   mysqlConfig:

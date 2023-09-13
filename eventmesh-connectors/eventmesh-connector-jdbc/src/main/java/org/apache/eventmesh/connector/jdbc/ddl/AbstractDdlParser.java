@@ -23,8 +23,10 @@ import lombok.Getter;
 
 public abstract class AbstractDdlParser implements DdlParser {
 
+    // Indicates whether to skip parsing views.
     private final boolean skipViews;
 
+    // Indicates whether to skip parsing comments.
     private final boolean skipComments;
 
     @Getter

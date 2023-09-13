@@ -17,9 +17,56 @@
 
 package org.apache.eventmesh.connector.jdbc;
 
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Field {
 
     private String type;
-    private String optional;
+
+    private boolean required;
+
+    private String field;
+
     private String name;
+
+    private List<Field> fields;
+
+    public Field(String type, boolean required, String field, String name) {
+        this.type = type;
+        this.required = required;
+        this.field = field;
+        this.name = name;
+    }
+
+    public Field withType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public Field withRequired(boolean required) {
+        this.required = required;
+        return this;
+    }
+
+    public Field withField(String field) {
+        this.field = field;
+        return this;
+    }
+
+    public Field withName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Field withFields(List<Field> fields) {
+        this.fields = fields;
+        return this;
+    }
 }
