@@ -23,18 +23,30 @@ import java.util.HashMap;
 
 public final class Payload extends HashMap<String, Object> {
 
+    /**
+     * Constructs an empty <code>HashMap</code> with the default initial capacity (16) and the default load factor (0.75).
+     */
+    public Payload() {
+        this.put("timestamp", System.currentTimeMillis());
+    }
+
     public Payload withSource(SourceMateData source) {
-        super.put("source", source);
+        this.put("source", source);
         return this;
     }
 
     public Payload withDdl(String ddl) {
-        super.put("ddl", ddl);
+        this.put("ddl", ddl);
         return this;
     }
 
     public Payload withCatalogChanges(CatalogChanges catalogChanges) {
-        super.put("catalogChanges", catalogChanges);
+        this.put("catalogChanges", catalogChanges);
+        return this;
+    }
+
+    public Payload withAfterValue(Object value) {
+        this.put("after", value);
         return this;
     }
 

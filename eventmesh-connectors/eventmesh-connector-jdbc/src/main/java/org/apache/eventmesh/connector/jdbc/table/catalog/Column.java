@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class Column implements Serializable {
+public abstract class Column<Col extends Column> implements Serializable {
 
     /**
      * Name of the column
@@ -77,26 +77,13 @@ public abstract class Column implements Serializable {
 
     protected String defaultValueExpression;
 
-    //protected int index;
-
-    /**
-     * Creates a new instance of the ColumnEditor.
-     *
-     * @return A new instance of the ColumnEditor.
-     */
-    public static ColumnEditor ofEditor() {
-        return new DefaultColumnEditorImpl();
-    }
-
-    public static ColumnEditor ofEditor(String name) {
-        return new DefaultColumnEditorImpl(name);
-    }
+    protected int order;
 
     /**
      * creates a clone of the Column
      *
      * @return clone of column
      */
-    public abstract Column clone();
+    public abstract Col clone();
 
 }

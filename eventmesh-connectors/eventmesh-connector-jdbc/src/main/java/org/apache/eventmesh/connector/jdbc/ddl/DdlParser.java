@@ -17,28 +17,41 @@
 
 package org.apache.eventmesh.connector.jdbc.ddl;
 
+
 /**
- * Interface for parsing DDL SQL statements.
+ * Interface for parsing Data Definition Language (DDL) SQL statements.
  */
 public interface DdlParser {
 
     /**
-     * Parses the given DDL SQL statement.
+     * Parses the given DDL SQL statement with a default callback.
      *
-     * @param ddlSql the DDL SQL statement to be parsed
+     * @param ddlSql The DDL SQL statement to parse.
      */
     default void parse(String ddlSql) {
         parse(ddlSql, null);
     }
 
+    /**
+     * Parses the given DDL SQL statement and provides a callback for handling the parsed events.
+     *
+     * @param ddlSql   The DDL SQL statement to parse.
+     * @param callback The DdlParserCallback to handle the parsed events.
+     */
     void parse(String ddlSql, DdlParserCallback callback);
 
     /**
-     * Sets the current database.
+     * Sets the current database name for the parser.
      *
-     * @param databaseName the name of the database to be set as current
+     * @param databaseName The name of the current database.
      */
     void setCurrentDatabase(String databaseName);
 
+    /**
+     * Sets the current schema for the parser.
+     *
+     * @param schema The name of the current schema.
+     */
     void setCurrentSchema(String schema);
 }
+
