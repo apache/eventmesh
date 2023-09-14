@@ -75,7 +75,7 @@ public class EventMeshServerTest {
         Assert.assertEquals(config.getEventMeshTcpMsgSyncRetryTimes(), 13816);
         Assert.assertEquals(config.getEventMeshTcpMsgRetrySyncDelayInMills(), 14816);
         Assert.assertEquals(config.getEventMeshTcpMsgRetryAsyncDelayInMills(), 15816);
-        Assert.assertEquals(config.getEventMeshTcpMsgRetryQueueSize(), 16816);
+        Assert.assertEquals(config.getEventMeshServerRetryBlockQSize(), 16816);
         Assert.assertEquals(config.getEventMeshTcpRebalanceIntervalInMills(), Integer.valueOf(17816));
         Assert.assertEquals(config.getEventMeshServerAdminPort(), 18816);
         Assert.assertEquals(config.isEventMeshTcpSendBackEnabled(), Boolean.TRUE);

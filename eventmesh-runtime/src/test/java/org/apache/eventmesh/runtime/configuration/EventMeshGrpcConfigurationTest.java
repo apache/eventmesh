@@ -54,7 +54,7 @@ public class EventMeshGrpcConfigurationTest {
         Assert.assertEquals(9816, config.getEventMeshServerRetryThreadNum());
         Assert.assertEquals(11816, config.getEventMeshServerPullMetaStorageInterval());
         Assert.assertEquals(12816, config.getEventMeshServerAsyncAccumulationThreshold());
-        Assert.assertEquals(13816, config.getEventMeshServerRetryBlockQueueSize());
+        Assert.assertEquals(13816, config.getEventMeshServerRetryBlockQSize());
         Assert.assertEquals(14816, config.getEventMeshServerBatchBlockQueueSize());
         Assert.assertEquals(15816, config.getEventMeshServerSendMsgBlockQueueSize());
         Assert.assertEquals(16816, config.getEventMeshServerPushMsgBlockQueueSize());

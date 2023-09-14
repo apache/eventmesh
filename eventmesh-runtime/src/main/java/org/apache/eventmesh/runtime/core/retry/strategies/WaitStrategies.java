@@ -17,15 +17,18 @@
 
 package org.apache.eventmesh.runtime.core.retry.strategies;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import org.apache.eventmesh.runtime.core.retry.Attempt;
+
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-import org.apache.eventmesh.runtime.core.retry.Attempt;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  * Factory class for instances of {@link WaitStrategy}.

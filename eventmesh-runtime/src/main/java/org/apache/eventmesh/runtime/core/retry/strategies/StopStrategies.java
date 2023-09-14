@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.retry.strategies;
 
+import org.apache.eventmesh.runtime.core.retry.Attempt;
+
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Preconditions;
-import org.apache.eventmesh.runtime.core.retry.Attempt;
 
 /**
  * Factory class for {@link StopStrategy} instances.

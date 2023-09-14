@@ -19,9 +19,10 @@ package org.apache.eventmesh.runtime.core.retry.exception;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.apache.eventmesh.runtime.core.retry.Attempt;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-import org.apache.eventmesh.runtime.core.retry.Attempt;
 
 /**
  * An exception indicating that none of the attempts of retry.

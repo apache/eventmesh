@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.retry.strategies;
 
-import javax.annotation.concurrent.Immutable;
 import org.apache.eventmesh.common.enums.RetryStorageEnum;
+
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Factory class for {@link StorageStrategy} instances.
