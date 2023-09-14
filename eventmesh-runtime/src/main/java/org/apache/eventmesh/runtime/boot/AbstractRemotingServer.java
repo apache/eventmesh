@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.enums.ProtocolType;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
@@ -45,6 +46,8 @@ public abstract class AbstractRemotingServer {
     private EventExecutorGroup workerGroup;
 
     private int port;
+
+    public abstract ProtocolType protocolType();
 
     private void buildBossGroup(final String threadPrefix) {
         if (useEpoll()) {

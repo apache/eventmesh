@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.boot;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.enums.ProtocolType;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -59,7 +60,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshGrpcServer {
+public class EventMeshGrpcServer extends AbstractRemotingServer {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
@@ -134,6 +135,12 @@ public class EventMeshGrpcServer {
         log.info("-----------------EventMeshGRPCServer initialized");
     }
 
+    @Override
+    public ProtocolType protocolType() {
+        return ProtocolType.GRPC;
+    }
+
+    @Override
     public void start() throws Exception {
         log.info("---------------EventMeshGRPCServer starting-------------------");
 
@@ -150,6 +157,7 @@ public class EventMeshGrpcServer {
         log.info("---------------EventMeshGRPCServer running-------------------");
     }
 
+    @Override
     public void shutdown() throws Exception {
         log.info("---------------EventMeshGRPCServer stopping-------------------");
 
