@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol;
+package org.apache.eventmesh.runtime.core.retry;
 
 import java.util.concurrent.Delayed;
 

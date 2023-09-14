@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
+import org.apache.eventmesh.runtime.core.retry.DelayRetryable;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;

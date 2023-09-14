@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
+import org.apache.eventmesh.runtime.core.retry.DelayRetryable;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
