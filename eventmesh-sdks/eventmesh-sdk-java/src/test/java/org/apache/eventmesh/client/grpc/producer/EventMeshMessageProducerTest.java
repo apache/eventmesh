@@ -25,10 +25,11 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,23 +58,20 @@ public class EventMeshMessageProducerTest {
     private PublisherServiceBlockingStub blockingStub;
 
     @Mock
-    private Response mockResponse;
-
-    @Mock
-    private SimpleMessage mockSimpleMessage;
+    private CloudEvent mockCloudEvent;
 
     @Before
     public void setUp() throws Exception {
         eventMeshMessageProducer = new EventMeshMessageProducer(EventMeshGrpcClientConfig.builder().build(), blockingStub);
-        when(blockingStub.batchPublish(Mockito.isA(BatchMessage.class))).thenReturn(mockResponse);
-        when(blockingStub.publish(Mockito.isA(SimpleMessage.class))).thenReturn(mockResponse);
-        when(blockingStub.requestReply(Mockito.isA(SimpleMessage.class))).thenReturn(mockSimpleMessage);
+        when(blockingStub.batchPublish(Mockito.isA(CloudEventBatch.class))).thenReturn(mockCloudEvent);
+        when(blockingStub.publish(Mockito.isA(CloudEvent.class))).thenReturn(mockCloudEvent);
+        when(blockingStub.requestReply(Mockito.isA(CloudEvent.class))).thenReturn(mockCloudEvent);
         doAnswer(invocation -> {
-            SimpleMessage simpleMessage = invocation.getArgument(0);
-            if (StringUtils.isEmpty(simpleMessage.getContent())) {
-                return SimpleMessage.getDefaultInstance();
+            CloudEvent cloudEvent = invocation.getArgument(0);
+            if (StringUtils.isEmpty(EventMeshCloudEventUtils.getDataContent(cloudEvent))) {
+                return CloudEvent.getDefaultInstance();
             }
-            return SimpleMessage.newBuilder(simpleMessage).build();
+            return CloudEvent.newBuilder(cloudEvent).build();
         }).when(blockingStub).requestReply(any());
         doReturn(blockingStub).when(blockingStub).withDeadlineAfter(1000, TimeUnit.MILLISECONDS);
     }
@@ -87,7 +85,7 @@ public class EventMeshMessageProducerTest {
             .bizSeqNo("mxsm")
             .uniqueId("mxsm")
             .build();
-        assertThat(eventMeshMessageProducer.publish(eventMeshMessage)).isEqualTo(mockResponse);
+        assertThat(eventMeshMessageProducer.publish(eventMeshMessage)).isEqualTo(Response.builder().build());
     }
 
     @Test
@@ -103,7 +101,7 @@ public class EventMeshMessageProducerTest {
                 .build();
             messageArrayList.add(eventMeshMessage);
         }
-        assertThat(eventMeshMessageProducer.publish(messageArrayList)).isEqualTo(mockResponse);
+        assertThat(eventMeshMessageProducer.publish(messageArrayList)).isEqualTo(Response.builder().build());
         assertThat(eventMeshMessageProducer.publish(Collections.emptyList())).isNull();
     }
 

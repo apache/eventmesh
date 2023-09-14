@@ -25,12 +25,18 @@ import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Application {
 
-    public static void run(Class<? extends Connector> clazz) throws Exception {
+    public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
+
+    public void run(Class<? extends Connector> clazz) throws Exception {
+
         Connector connector;
         try {
             connector = clazz.getDeclaredConstructor().newInstance();
@@ -41,16 +47,8 @@ public class Application {
         Config config;
         try {
             config = ConfigUtil.parse(connector.configClass());
-            // offset storage, memory default
-            //KVStoreFactory.setStoreConfig(config.getStoreConfig());
         } catch (Exception e) {
             log.error("parse config error", e);
-            return;
-        }
-        try {
-            connector.init(config);
-        } catch (Exception e) {
-            log.error("connector {} initialize error", connector.name(), e);
             return;
         }
 
@@ -63,6 +61,9 @@ public class Application {
             log.error("class {} is not sink and source", clazz);
             return;
         }
+        worker.init();
+
+        CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
             log.info("connector {} stopped", connector.name());
@@ -71,7 +72,7 @@ public class Application {
         log.info("connector {} started", connector.name());
     }
 
-    private static boolean isAssignableFrom(Class<?> c, Class<?> cls) {
+    public static boolean isAssignableFrom(Class<?> c, Class<?> cls) {
         Class<?>[] clazzArr = c.getInterfaces();
         for (Class<?> clazz : clazzArr) {
             if (clazz.isAssignableFrom(cls)) {
@@ -81,7 +82,7 @@ public class Application {
         return false;
     }
 
-    private static boolean isSink(Class<?> c) {
+    public static boolean isSink(Class<?> c) {
         while (c != null && c != Object.class) {
             if (isAssignableFrom(c, Sink.class)) {
                 return true;
@@ -91,7 +92,7 @@ public class Application {
         return false;
     }
 
-    private static boolean isSource(Class<?> c) {
+    public static boolean isSource(Class<?> c) {
         while (c != null && c != Object.class) {
             if (isAssignableFrom(c, Source.class)) {
                 return true;

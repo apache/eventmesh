@@ -18,8 +18,8 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
 import org.apache.commons.collections4.MapUtils;
@@ -40,14 +40,14 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     /**
      * Key: IDC Value: list of emitters with Client_IP:port
      */
-    private final transient Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap = new ConcurrentHashMap<>();
+    private final transient Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap = new ConcurrentHashMap<>();
 
     /**
      * Key: IDC Value: list of emitters
      */
-    private transient Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters = new ConcurrentHashMap<>();
+    private transient Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
 
-    private transient List<EventEmitter<SimpleMessage>> totalEmitters = new ArrayList<>();
+    private transient List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
 
     public StreamTopicConfig(final String consumerGroup, final String topic, final SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
@@ -78,7 +78,7 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         final String clientIp = client.getIp();
         final String clientPid = client.getPid();
 
-        final Map<String, EventEmitter<SimpleMessage>> emitters = idcEmitterMap.get(idc);
+        final Map<String, EventEmitter<CloudEvent>> emitters = idcEmitterMap.get(idc);
         if (MapUtils.isEmpty(emitters)) {
             return;
         }
@@ -104,26 +104,30 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
             + ",topic=" + topic + "}";
     }
 
-    public Map<String, List<EventEmitter<SimpleMessage>>> getIdcEmitters() {
+    public Map<String, Map<String, EventEmitter<CloudEvent>>> getIdcEmitterMap() {
+        return idcEmitterMap;
+    }
+
+    public Map<String, List<EventEmitter<CloudEvent>>> getIdcEmitters() {
         return idcEmitters;
     }
 
-    public List<EventEmitter<SimpleMessage>> getTotalEmitters() {
+    public List<EventEmitter<CloudEvent>> getTotalEmitters() {
         return totalEmitters;
     }
 
-    private static Map<String, List<EventEmitter<SimpleMessage>>> buildIdcEmitter(
-        final Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap) {
-        final Map<String, List<EventEmitter<SimpleMessage>>> result = new HashMap<>();
+    private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(
+        final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap) {
+        final Map<String, List<EventEmitter<CloudEvent>>> result = new HashMap<>();
         idcEmitterMap.forEach((k, v) -> {
-            result.put(k, new LinkedList<EventEmitter<SimpleMessage>>(v.values()));
+            result.put(k, new LinkedList<EventEmitter<CloudEvent>>(v.values()));
         });
         return result;
     }
 
-    private static List<EventEmitter<SimpleMessage>> buildTotalEmitter(
-        final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters) {
-        final List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>();
+    private static List<EventEmitter<CloudEvent>> buildTotalEmitter(
+        final Map<String, List<EventEmitter<CloudEvent>>> idcEmitters) {
+        final List<EventEmitter<CloudEvent>> emitterList = new LinkedList<>();
         idcEmitters.values().forEach(emitterList::addAll);
         return emitterList;
     }

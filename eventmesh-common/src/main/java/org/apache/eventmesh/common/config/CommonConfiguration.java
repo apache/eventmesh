@@ -53,18 +53,32 @@ public class CommonConfiguration {
     @ConfigFiled(field = "server.hostIp", reload = true)
     private String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
-    private String namesrvAddr = "";
+    @ConfigFiled(field = "metaStorage.plugin.server-addr", notEmpty = true)
+    private String metaStorageAddr = "";
 
+    @ConfigFiled(field = "metaStorage.plugin.type", notEmpty = true)
+    private String eventMeshMetaStoragePluginType = "namesrv";
+
+    @ConfigFiled(field = "metaStorage.plugin.username")
+    private String eventMeshMetaStoragePluginUsername = "";
+
+    @ConfigFiled(field = "metaStorage.plugin.password")
+    private String eventMeshMetaStoragePluginPassword = "";
+
+    @ConfigFiled(field = "metaStorage.plugin.metaStorageIntervalInMills")
+    private Integer eventMeshMetaStorageIntervalInMills = 10 * 1000;
+
+    @ConfigFiled(field = "metaStorage.plugin.fetchMetaStorageAddrIntervalInMills")
+    private Integer eventMeshFetchMetaStorageAddrInterval = 10 * 1000;
+
+    @ConfigFiled(field = "metaStorage.plugin.enabled")
+    private boolean eventMeshServerMetaStorageEnable = false;
 
     @ConfigFiled(field = "trace.plugin", notEmpty = true)
     private String eventMeshTracePluginType;
 
     @ConfigFiled(field = "metrics.plugin", notEmpty = true)
     private List<String> eventMeshMetricsPluginType;
-
-    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
-    private String eventMeshRegistryPluginType = "namesrv";
 
     @ConfigFiled(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
@@ -78,27 +92,12 @@ public class CommonConfiguration {
     @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
 
-    @ConfigFiled(field = "registry.plugin.username")
-    private String eventMeshRegistryPluginUsername = "";
-
-    @ConfigFiled(field = "registry.plugin.password")
-    private String eventMeshRegistryPluginPassword = "";
-
-    @ConfigFiled(field = "server.registry.registerIntervalInMills")
-    private Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-
-    @ConfigFiled(field = "server.registry.fetchRegistryAddrIntervalInMills")
-    private Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
-
 
     @ConfigFiled(field = "server.trace.enabled")
     private boolean eventMeshServerTraceEnable = false;
 
     @ConfigFiled(field = "server.security.enabled")
     private boolean eventMeshServerSecurityEnable = false;
-
-    @ConfigFiled(field = "server.registry.enabled")
-    private boolean eventMeshServerRegistryEnable = false;
 
     @ConfigFiled(field = "security.publickey")
     private String eventMeshSecurityPublickey = "";
@@ -124,6 +123,6 @@ public class CommonConfiguration {
             this.eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
         }
 
-        meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshCluster, this.sysID);
+        meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshIDC, this.eventMeshCluster, this.sysID);
     }
 }

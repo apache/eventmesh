@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -136,7 +137,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result, Enumeration<InetAddress> en) {
+    private static void getIpResult(Collection<String> ipv4Result, Collection<String> ipv6Result, Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {

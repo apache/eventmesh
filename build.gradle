@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit
 
 buildscript {
     repositories {
+        mavenLocal()
+        mavenCentral()
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
@@ -84,10 +86,16 @@ allprojects {
         configDirectory = file("${rootDir}/style")
     }
 
-    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
+    checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
+                  .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
+                  .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
     dependencies {
         repositories {
+            mavenLocal()
+            mavenCentral()
             maven {
                 url "https://maven.aliyun.com/repository/public"
             }
@@ -242,6 +250,9 @@ subprojects {
         rulesMinimumPriority = 5
         ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
         ignoreFailures = true
+        pmdMain {
+            excludes = ["**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/**"]
+        }
     }
 
     jar {
@@ -268,10 +279,9 @@ subprojects {
         Set<String> rootProject = ["eventmesh-admin",
                                    "eventmesh-admin-rocketmq",
                                    "eventmesh-common",
-                                   "eventmesh-connector-api",
                                    "eventmesh-storage-api",
                                    "eventmesh-metrics-api",
-                                   "eventmesh-registry-api",
+                                   "eventmesh-meta-api",
                                    "eventmesh-trace-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
@@ -334,6 +344,7 @@ subprojects {
     javadoc {
         source = sourceSets.main.java
         destinationDir = reporting.file("javadoc")
+        options.encoding = "UTF-8"
     }
 
     task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
@@ -361,9 +372,9 @@ subprojects {
     }
 
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
+        maven { url "https://maven.aliyun.com/repository/public" }
     }
 
     configurations.all {
@@ -451,6 +462,7 @@ subprojects {
             dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
             dependency "com.fasterxml.jackson.core:jackson-annotations:2.13.0"
             dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
+            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
 
             dependency "org.asynchttpclient:async-http-client:2.12.0"
             dependency "org.apache.httpcomponents:httpclient:4.5.13"
@@ -489,9 +501,11 @@ subprojects {
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.9"
 
-            dependency "io.cloudevents:cloudevents-core:2.2.0"
-            dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+            dependency "io.cloudevents:cloudevents-core:2.4.2"
+            dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
+            dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
 
+            dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
             dependency "io.grpc:grpc-stub:${grpcVersion}"
             dependency "io.grpc:grpc-netty:${grpcVersion}"
@@ -517,6 +531,8 @@ subprojects {
             dependency "com.github.seancfoley:ipaddress:5.3.3"
             dependency "javax.annotation:javax.annotation-api:1.3.2"
             dependency "com.alibaba:fastjson:1.2.83"
+
+            dependency "software.amazon.awssdk:s3:2.20.29"
         }
     }
 }

@@ -1,0 +1,52 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'antlr'
+}
+
+repositories {
+    mavenCentral()
+}
+
+generateGrammarSource {
+    maxHeapSize = '64m'
+    arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
+    outputDirectory = file('src/main/java/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration')
+}
+
+packageSources {
+    dependsOn generateGrammarSource
+}
+
+dependencies {
+    antlr("org.antlr:antlr4:4.13.0")
+    implementation 'org.antlr:antlr4-runtime:4.13.0'
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation project(":eventmesh-spi")
+    implementation 'com.zendesk:mysql-binlog-connector-java:0.28.0'
+    implementation 'mysql:mysql-connector-java:8.0.32'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation "org.assertj:assertj-core"
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
+}

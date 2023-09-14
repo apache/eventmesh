@@ -11,6 +11,7 @@ logs
 *.log
 *.log.*
 .idea
+!/.idea/icon.png
 build
 .classpath
 .project
@@ -47,4 +48,4 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-!eventmesh-runtime/bin/*.sh
+**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/*

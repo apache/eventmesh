@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.ThreadPoolHelper;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -38,7 +39,7 @@ public class EventMeshTcpRetryer extends AbstractRetryer {
 
     private EventMeshTCPServer eventMeshTCPServer;
 
-    private ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
+    private final ThreadPoolExecutor pool = new ThreadPoolExecutor(3,
         3,
         60000,
         TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
@@ -61,7 +62,7 @@ public class EventMeshTcpRetryer extends AbstractRetryer {
     public void pushRetry(DelayRetryable delayRetryable) {
         RetryContext retryContext = (RetryContext) delayRetryable;
         if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
-            log.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
+            log.error("pushRetry fail, retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
                 eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
                 retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
@@ -92,6 +93,6 @@ public class EventMeshTcpRetryer extends AbstractRetryer {
     }
 
     public void printRetryThreadPoolState() {
-        //ThreadPoolHelper.printState(pool);
+        ThreadPoolHelper.printState(pool);
     }
 }

@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.client.grpc.producer;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+
+
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import java.util.List;
 

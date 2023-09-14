@@ -153,6 +153,9 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         return result ? 1 : 0;
     }
 
+    /**
+     * Query WebHook configuration information based on the WebHook callback path specified in {@link WebHookConfig}.
+     */
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         try {

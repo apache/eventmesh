@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -106,6 +108,7 @@ public class HttpSummaryMetrics implements Metric {
 
     private final DelayQueue<?> httpFailedQueue;
 
+    private Lock lock = new ReentrantLock();
 
     public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
         final ThreadPoolExecutor sendMsgExecutor,
@@ -139,20 +142,37 @@ public class HttpSummaryMetrics implements Metric {
     }
 
     public void snapshotHTTPTPS() {
-        Integer tps = httpRequestPerSecond.intValue();
-        httpRequestTPSSnapshots.add(tps);
-        httpRequestPerSecond.set(0);
-        if (httpRequestTPSSnapshots.size() > STATIC_PERIOD / 1000) {
-            httpRequestTPSSnapshots.removeFirst();
+        try {
+            lock.lock();
+            Integer tps = httpRequestPerSecond.intValue();
+            httpRequestTPSSnapshots.add(tps);
+            httpRequestPerSecond.set(0);
+            if (httpRequestTPSSnapshots.size() > STATIC_PERIOD / 1000) {
+                httpRequestTPSSnapshots.removeFirst();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public float maxHTTPTPS() {
-        return Collections.max(httpRequestTPSSnapshots);
+        try {
+            lock.lock();
+            float tps = Collections.max(httpRequestTPSSnapshots);
+            return tps;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public float avgHTTPTPS() {
-        return avg(httpRequestTPSSnapshots);
+        try {
+            lock.lock();
+            float tps = avg(httpRequestTPSSnapshots);
+            return tps;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void recordHTTPReqResTimeCost(long cost) {

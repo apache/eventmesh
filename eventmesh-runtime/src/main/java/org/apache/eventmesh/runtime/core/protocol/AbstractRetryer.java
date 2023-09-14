@@ -57,6 +57,9 @@ public abstract class AbstractRetryer {
                     });
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 log.error("retry-dispatcher error!", e);
             }
         }, "retry-dispatcher");
@@ -76,7 +79,7 @@ public abstract class AbstractRetryer {
     }
 
     /**
-     * Get failed queue, this method is just used for metrics.
+     * Get fail-retry queue, this method is just used for metrics.
      */
     public DelayQueue<DelayRetryable> getRetryQueue() {
         return retrys;

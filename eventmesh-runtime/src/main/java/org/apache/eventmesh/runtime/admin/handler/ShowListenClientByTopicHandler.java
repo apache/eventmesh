@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -40,37 +39,64 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * query client subscription by topic
+ * This class handles the HTTP requests of {@code /clientManage/showListenClientByTopic} endpoint,
+ * which is used to display clients information
+ * subscribed to a specific topic.
+ * <p>
+ * Parameters:
+ * <ul>
+ *     <li>Message Topic: {@code topic}</li>
+ * </ul>
+ *
+ * @see AbstractHttpHandler
  */
+
 @Slf4j
 @EventHttpHandler(path = "/clientManage/showListenClientByTopic")
 public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
+    /**
+     * Handles requests by displaying clients information.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
         try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+            // Extract parameter from the query string
             String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
 
             String newLine = System.getProperty("line.separator");
             log.info("showListeningClientByTopic,topic:{}=================", topic);
+            // Retrieve the mappings of client subsystem to client group
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
             if (!clientGroupMap.isEmpty()) {
+                // Iterate through the client group to get matching sessions in the group by given topic
                 for (ClientGroupWrapper cgw : clientGroupMap.values()) {
-                    Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
-                    if (listenSessionSet != null && !listenSessionSet.isEmpty()) {
+                    Map<String, Session> listenSessions = cgw.getTopic2sessionInGroupMapping().get(topic);
+                    if (listenSessions != null && !listenSessions.isEmpty()) {
                         result.append(String.format("group:%s", cgw.getGroup())).append(newLine);
-                        for (Session session : listenSessionSet) {
+                        // Iterate through the sessions to get each client information
+                        for (Session session : listenSessions.values()) {
                             UserAgent userAgent = session.getClient();
                             result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
                                     .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))

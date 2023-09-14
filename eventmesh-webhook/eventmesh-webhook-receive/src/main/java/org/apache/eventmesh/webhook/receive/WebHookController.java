@@ -79,6 +79,7 @@ public class WebHookController {
      * @param path   CallbackPath
      * @param header map of webhook request header
      * @param body   data
+     * @throws Exception if any uncaught exception occurs during execution
      */
     public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
 
@@ -113,7 +114,7 @@ public class WebHookController {
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
             .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
-            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+            .cloudEventSource(webHookConfig.getManufacturerDomain())
             .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent

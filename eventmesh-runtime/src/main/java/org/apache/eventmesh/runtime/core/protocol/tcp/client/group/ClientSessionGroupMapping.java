@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
+import org.apache.eventmesh.api.meta.config.EventMeshMetaConfig;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.FreePriorityDispatchStrategy;
@@ -38,8 +42,10 @@ import org.apache.commons.collections4.MapUtils;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -209,7 +215,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void startClientGroupProducer(ClientGroupWrapper cgw, Session session) throws Exception {
-        if (!cgw.producerStarted.get()) {
+        if (!cgw.getProducerStarted().get()) {
             cgw.startClientGroupProducer();
         }
         boolean flag = cgw.addGroupProducerSession(session);
@@ -220,15 +226,15 @@ public class ClientSessionGroupMapping {
     }
 
     private void initClientGroupConsumser(ClientGroupWrapper cgw) throws Exception {
-        if (!cgw.producerStarted.get()) {
+        if (!cgw.getProducerStarted().get()) {
             cgw.startClientGroupProducer();
         }
 
-        if (!cgw.inited4Broadcast.get()) {
+        if (!cgw.getInited4Broadcast().get()) {
             cgw.initClientGroupBroadcastConsumer();
         }
 
-        if (!cgw.inited4Persistent.get()) {
+        if (!cgw.getInited4Persistent().get()) {
             cgw.initClientGroupPersistentConsumer();
         }
     }
@@ -247,10 +253,10 @@ public class ClientSessionGroupMapping {
                 throw new Exception("addGroupConsumerSession fail");
             }
 
-            if (cgw.inited4Persistent.get() && !cgw.started4Persistent.get()) {
+            if (cgw.getInited4Persistent().get() && !cgw.getStarted4Persistent().get()) {
                 cgw.startClientGroupPersistentConsumer();
             }
-            if (cgw.inited4Broadcast.get() && !cgw.started4Broadcast.get()) {
+            if (cgw.getInited4Broadcast().get() && !cgw.getStarted4Broadcast().get()) {
                 cgw.startClientGroupBroadcastConsumer();
             }
             session.setSessionState(SessionState.RUNNING);
@@ -306,7 +312,7 @@ public class ClientSessionGroupMapping {
                 Session reChooseSession = clientGroupWrapper.getDownstreamDispatchStrategy()
                     .select(clientGroupWrapper.getGroup(),
                         downStreamMsgContext.event.getSubject(),
-                        clientGroupWrapper.groupConsumerSessions);
+                        clientGroupWrapper.getGroupConsumerSessions());
                 if (reChooseSession != null) {
                     downStreamMsgContext.setSession(reChooseSession);
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
@@ -340,24 +346,24 @@ public class ClientSessionGroupMapping {
     }
 
     private void shutdownClientGroupConsumer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.started4Broadcast.get()) {
+        if (clientGroupWrapper.getStarted4Broadcast().get()) {
             clientGroupWrapper.shutdownBroadCastConsumer();
         }
 
-        if (clientGroupWrapper.started4Persistent.get()) {
+        if (clientGroupWrapper.getStarted4Persistent().get()) {
             clientGroupWrapper.shutdownPersistentConsumer();
         }
     }
 
 
     private void shutdownClientGroupProducer(ClientGroupWrapper clientGroupWrapper) throws Exception {
-        if (clientGroupWrapper.producerStarted.get()) {
+        if (clientGroupWrapper.getProducerStarted().get()) {
             clientGroupWrapper.shutdownProducer();
         }
     }
 
     private void initSessionCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
                 for (Session tmp : sessionTable.values()) {
                     if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
@@ -376,7 +382,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
+        eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
 
                 //scan non-broadcast msg
@@ -412,7 +418,7 @@ public class ClientSessionGroupMapping {
         for (ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()) {
             for (Session subSession : clientGroupWrapper.getGroupConsumerSessions()) {
                 try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), subSession, this);
                 } catch (Exception e) {
                     log.error("say goodbye to subSession error! {}", subSession, e);
                 }
@@ -420,7 +426,7 @@ public class ClientSessionGroupMapping {
 
             for (Session pubSession : clientGroupWrapper.getGroupProducerSessions()) {
                 try {
-                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), pubSession, this);
                 } catch (Exception e) {
                     log.error("say goodbye to pubSession error! {}", pubSession, e);
                 }
@@ -434,7 +440,7 @@ public class ClientSessionGroupMapping {
 
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
-                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer, itr, this);
+                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer.getTcpThreadPoolGroup(), itr, this);
             } catch (Exception e) {
                 log.error("say goodbye to session error! {}", itr, e);
             }
@@ -481,5 +487,49 @@ public class ClientSessionGroupMapping {
         }
 
         return result;
+    }
+
+    public void updateMetaData() {
+        if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerMetaStorageEnable()) {
+            return;
+        }
+        try {
+            Map<String, String> metadata = new HashMap<>(1 << 4);
+
+            for (Map.Entry<String, ClientGroupWrapper> clientGroupWrapperMap : this.clientGroupMap.entrySet()) {
+                String group = clientGroupWrapperMap.getKey();
+                ClientGroupWrapper cgw = clientGroupWrapperMap.getValue();
+                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+                consumerGroupMetadata.setConsumerGroup(group);
+                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                    new HashMap<>(1 << 4);
+                Map<String, Map<String, Session>> topic2sessionInGroupMapping = cgw.getTopic2sessionInGroupMapping();
+                for (Map.Entry<String, Map<String, Session>> topicSessionMap : topic2sessionInGroupMapping.entrySet()) {
+                    String topic = topicSessionMap.getKey();
+                    Map<String, Session> sessionMap = topicSessionMap.getValue();
+
+                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+                    consumerGroupTopicMetadata.setConsumerGroup(group);
+                    consumerGroupTopicMetadata.setTopic(topic);
+                    Set<String> sessionSet = new HashSet<>();
+                    for (Map.Entry<String, Session> sessionEntry : sessionMap.entrySet()) {
+                        String sessionId = sessionEntry.getKey();
+                        Session session = sessionEntry.getValue();
+                        sessionSet.add(session.toString());
+                    }
+                    consumerGroupTopicMetadata.setUrls(sessionSet);
+                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
+                }
+
+                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
+                metadata.put(group, JsonUtils.toJSONString(consumerGroupMetadata));
+            }
+            metadata.put(EventMeshMetaConfig.EVENT_MESH_PROTO, "tcp");
+
+            eventMeshTCPServer.getMetaStorage().updateMetaData(metadata);
+
+        } catch (Exception e) {
+            log.error("update eventmesh metadata error", e);
+        }
     }
 }

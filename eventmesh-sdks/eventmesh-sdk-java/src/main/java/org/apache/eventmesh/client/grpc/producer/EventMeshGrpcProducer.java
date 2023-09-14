@@ -20,9 +20,9 @@ package org.apache.eventmesh.client.grpc.producer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 

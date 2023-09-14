@@ -43,7 +43,8 @@ public class AsyncPublishInstance extends GrpcAbstractDemo {
             content.put("content", "testAsyncMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
-                buildEventMeshMessage(content);
+                eventMeshGrpcProducer.publish(buildEventMeshMessage(content,
+                    ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC));
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
             ThreadUtils.sleep(30, TimeUnit.SECONDS);

@@ -74,7 +74,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // user request header
-        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP, remoteAddr);
+        requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP.getKey(), remoteAddr);
         // build sys header
         requestWrapper.buildSysHeaderForClient();
 
@@ -117,9 +117,9 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {
-                    String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-                    String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-                    String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString();
+                    String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME.getKey()).toString();
+                    String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD.getKey()).toString();
+                    String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString();
                     this.acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
                         requestWrapper.getRequestURI());
                 } catch (Exception e) {
@@ -196,7 +196,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             }
 
             // Update service metadata
-            updateMetadata();
+            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
 
     }
@@ -209,11 +209,11 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
     private ClientInfo getClientInfo(final HttpEventWrapper requestWrapper) {
         final Map<String, Object> requestHeaderMap = requestWrapper.getSysHeaderMap();
         ClientInfo clientInfo = new ClientInfo();
-        clientInfo.setEnv(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV).toString());
-        clientInfo.setIdc(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString());
-        clientInfo.setSys(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString());
-        clientInfo.setIp(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP).toString());
-        clientInfo.setPid(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString());
+        clientInfo.setEnv(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.ENV.getKey()).toString());
+        clientInfo.setIdc(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC.getKey()).toString());
+        clientInfo.setSys(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString());
+        clientInfo.setIp(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.IP.getKey()).toString());
+        clientInfo.setPid(requestHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString());
         return clientInfo;
     }
 }

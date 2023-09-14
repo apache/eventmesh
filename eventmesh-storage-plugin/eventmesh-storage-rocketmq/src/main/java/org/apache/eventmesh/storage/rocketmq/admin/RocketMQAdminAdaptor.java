@@ -74,12 +74,12 @@ public class RocketMQAdminAdaptor implements Admin {
     }
 
     @Override
-    public List<CloudEvent> getEvent(String topicName, int offset, int length) {
+    public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
         return admin.getEvent(topicName, offset, length);
     }
 
     @Override
-    public void publish(CloudEvent cloudEvent) {
+    public void publish(CloudEvent cloudEvent) throws Exception {
         admin.publish(cloudEvent);
     }
 }

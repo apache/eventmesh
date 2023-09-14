@@ -21,37 +21,69 @@ import org.apache.eventmesh.common.enums.HttpMethod;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import lombok.experimental.UtilityClass;
+
+/**
+ * This class provides utility methods for handling HTTP request mappings.
+ */
+
+@UtilityClass
 public class RequestMapping {
 
-    public static boolean postMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.POST.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    /**
+     * Performs a POST mapping for a specific URL.
+     *
+     * @param value        the URL pattern to match
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @return {@code true} if the URL pattern matches and the HTTP method is POST, {@code false} otherwise
+     */
+    public boolean postMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.POST.name());
     }
 
-    public static boolean getMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.GET.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    /**
+     * Performs a GET mapping for a specific URL.
+     *
+     * @param value        the URL pattern to match
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @return {@code true} if the URL pattern matches and the HTTP method is GET, {@code false} otherwise
+     */
+    public boolean getMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.GET.name());
     }
 
-    public static boolean putMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.PUT.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
-            String requestUri = httpExchange.getRequestURI().getPath();
-            UrlMappingPattern matcher = new UrlMappingPattern(value);
-            return matcher.matches(requestUri);
-        }
-        return false;
+    /**
+     * Performs a PUT mapping for a specific URL.
+     *
+     * @param value        the URL pattern to match
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @return {@code true} if the URL pattern matches and the HTTP method is PUT, {@code false} otherwise
+     */
+    public boolean putMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.PUT.name());
     }
 
-    public static boolean deleteMapping(String value, HttpExchange httpExchange) {
-        if (HttpMethod.DELETE.name().equalsIgnoreCase(httpExchange.getRequestMethod())) {
+    /**
+     * Performs a DELETE mapping for a specific URL.
+     *
+     * @param value        the URL pattern to match
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @return {@code true} if the URL pattern matches and the HTTP method is DELETE, {@code false} otherwise
+     */
+    public boolean deleteMapping(String value, HttpExchange httpExchange) {
+        return isUrlMatch(value, httpExchange, HttpMethod.DELETE.name());
+    }
+
+    /**
+     * Checks if the URL pattern matches the request URI and the HTTP method is the specified method type.
+     *
+     * @param value        the URL pattern to match
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @param methodType   the HTTP method type to check against
+     * @return {@code true} if the URL pattern matches and the HTTP method is the specified method type, {@code false} otherwise
+     */
+    private boolean isUrlMatch(String value, HttpExchange httpExchange, String methodType) {
+        if (methodType.equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);

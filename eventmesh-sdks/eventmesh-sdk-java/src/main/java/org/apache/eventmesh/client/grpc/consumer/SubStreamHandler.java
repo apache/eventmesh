@@ -18,13 +18,21 @@
 package org.apache.eventmesh.client.grpc.consumer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
+import org.apache.eventmesh.common.enums.EventMeshDataContentType;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.grpc.common.SubscriptionReply;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
@@ -32,7 +40,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubStreamHandler<T> extends Thread {
+public class SubStreamHandler<T> extends Thread implements Serializable {
 
     private final transient CountDownLatch latch = new CountDownLatch(1);
 
@@ -40,9 +48,9 @@ public class SubStreamHandler<T> extends Thread {
 
     private final transient EventMeshGrpcClientConfig clientConfig;
 
-    private transient StreamObserver<Subscription> sender;
+    private transient StreamObserver<CloudEvent> sender;
 
-    private final transient ReceiveMsgHook<T> listener;
+    private final ReceiveMsgHook<T> listener;
 
     public SubStreamHandler(final ConsumerServiceStub consumerAsyncClient, final EventMeshGrpcClientConfig clientConfig,
         final ReceiveMsgHook<T> listener) {
@@ -51,7 +59,7 @@ public class SubStreamHandler<T> extends Thread {
         this.listener = listener;
     }
 
-    public void sendSubscription(final Subscription subscription) {
+    public void sendSubscription(final CloudEvent subscription) {
         synchronized (this) {
             if (this.sender == null) {
                 this.sender = consumerAsyncClient.subscribeStream(createReceiver());
@@ -60,22 +68,21 @@ public class SubStreamHandler<T> extends Thread {
         senderOnNext(subscription);
     }
 
-    private StreamObserver<SimpleMessage> createReceiver() {
-        return new StreamObserver<SimpleMessage>() {
+    private StreamObserver<CloudEvent> createReceiver() {
+        return new StreamObserver<CloudEvent>() {
             @Override
-            public void onNext(final SimpleMessage message) {
-                T msg = EventMeshClientUtil.buildMessage(message, listener.getProtocolType());
-
-                if (msg instanceof Map) {
+            public void onNext(final CloudEvent message) {
+                T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());
+                if (msg instanceof Set) {
                     if (log.isInfoEnabled()) {
                         log.info("Received message from Server:{}", message);
                     }
                 } else {
                     if (log.isInfoEnabled()) {
-                        log.info("Received message from Server.|seq={}|uniqueId={}|", message.getSeqNum(),
-                            message.getUniqueId());
+                        log.info("Received message from Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message),
+                            EventMeshCloudEventUtils.getUniqueId(message));
                     }
-                    Subscription streamReply = null;
+                    CloudEvent streamReply = null;
                     try {
                         Optional<T> reply = listener.handle(msg);
                         if (reply.isPresent()) {
@@ -84,14 +91,14 @@ public class SubStreamHandler<T> extends Thread {
                     } catch (Exception e) {
                         if (log.isErrorEnabled()) {
                             log.error("Error in handling reply message.|seq={}|uniqueId={}|",
-                                message.getSeqNum(), message.getUniqueId(), e);
+                                EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
                         }
                     }
                     if (streamReply != null) {
                         if (log.isInfoEnabled()) {
                             log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
-                                streamReply.getReply().getSeqNum(),
-                                streamReply.getReply().getUniqueId());
+                                EventMeshCloudEventUtils.getSeqNum(streamReply),
+                                EventMeshCloudEventUtils.getUniqueId(streamReply));
                         }
                         senderOnNext(streamReply);
                     }
@@ -116,24 +123,27 @@ public class SubStreamHandler<T> extends Thread {
         };
     }
 
-    private Subscription buildReplyMessage(final SimpleMessage reqMessage, final T replyMessage) {
-        final SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage,
+    private CloudEvent buildReplyMessage(final CloudEvent reqMessage, final T replyMessage) {
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(replyMessage,
             clientConfig, listener.getProtocolType());
+        SubscriptionReply subscriptionReply = SubscriptionReply.builder().producerGroup(clientConfig.getConsumerGroup())
+            .topic(EventMeshCloudEventUtils.getSubject(cloudEvent))
+            .content(EventMeshCloudEventUtils.getDataContent(cloudEvent))
+            .seqNum(EventMeshCloudEventUtils.getSeqNum(cloudEvent))
+            .uniqueId(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
+            .ttl(EventMeshCloudEventUtils.getTtl(cloudEvent)).build();
 
-        final Subscription.Reply reply = Subscription.Reply.newBuilder()
-            .setProducerGroup(clientConfig.getConsumerGroup())
-            .setTopic(simpleMessage.getTopic())
-            .setContent(simpleMessage.getContent())
-            .setSeqNum(simpleMessage.getSeqNum())
-            .setUniqueId(simpleMessage.getUniqueId())
-            .setTtl(simpleMessage.getTtl())
-            .putAllProperties(reqMessage.getPropertiesMap())
-            .putAllProperties(simpleMessage.getPropertiesMap())
-            .build();
+        Map<String, String> prop = new HashMap<>();
+        Map<String, CloudEventAttributeValue> reqMessageMap = reqMessage.getAttributesMap();
+        reqMessageMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
+        Map<String, CloudEventAttributeValue> cloudEventMap = reqMessage.getAttributesMap();
+        cloudEventMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
+        subscriptionReply.putAllProperties(prop);
 
-        return Subscription.newBuilder()
-            .setHeader(simpleMessage.getHeader())
-            .setReply(reply).build();
+        return CloudEvent.newBuilder().putAllAttributes(cloudEvent.getAttributesMap())
+            .putAttributes(ProtocolKey.DATA_CONTENT_TYPE,
+                CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build())
+            .setTextData(JsonUtils.toJSONString(subscriptionReply)).build();
     }
 
     @Override
@@ -142,6 +152,7 @@ public class SubStreamHandler<T> extends Thread {
             latch.await();
         } catch (InterruptedException e) {
             log.error("SubStreamHandler Thread interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -157,7 +168,7 @@ public class SubStreamHandler<T> extends Thread {
         }
     }
 
-    private void senderOnNext(final Subscription subscription) {
+    private void senderOnNext(final CloudEvent subscription) {
         try {
             synchronized (sender) {
                 sender.onNext(subscription);
