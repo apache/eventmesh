@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 
 import io.cloudevents.CloudEvent;
 
-public abstract class RetryContext implements DelayRetryable {
+public abstract class RetryContext implements Retryable {
 
     public CloudEvent event;
 

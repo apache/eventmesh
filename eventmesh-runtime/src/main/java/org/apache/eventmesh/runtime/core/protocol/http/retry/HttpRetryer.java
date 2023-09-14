@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.core.retry.DelayRetryable;
+import org.apache.eventmesh.runtime.core.retry.Retryable;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
@@ -43,18 +43,18 @@ public class HttpRetryer {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    private final DelayQueue<DelayRetryable> failed = new DelayQueue<>();
+    private final DelayQueue<Retryable> failed = new DelayQueue<>();
 
     private ThreadPoolExecutor pool;
 
     private Thread dispatcher;
 
-    public void pushRetry(DelayRetryable delayRetryable) {
+    public void pushRetry(Retryable retryable) {
         if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
-        failed.offer(delayRetryable);
+        failed.offer(retryable);
     }
 
     public void init() {
@@ -68,14 +68,14 @@ public class HttpRetryer {
 
         dispatcher = new Thread(() -> {
             try {
-                DelayRetryable retryObj;
+                Retryable retryObj;
                 while (!Thread.currentThread().isInterrupted() && (retryObj = failed.take()) != null) {
-                    final DelayRetryable delayRetryable = retryObj;
+                    final Retryable retryable = retryObj;
                     pool.execute(() -> {
                         try {
-                            delayRetryable.retry();
+                            retryable.retry();
                             if (retryLogger.isDebugEnabled()) {
-                                retryLogger.debug("retryObj : {}", delayRetryable);
+                                retryLogger.debug("retryObj : {}", retryable);
                             }
                         } catch (Exception e) {
                             retryLogger.error("http-retry-dispatcher error!", e);
@@ -100,7 +100,7 @@ public class HttpRetryer {
     /**
      * Get failed queue, this method is just used for metrics.
      */
-    public DelayQueue<DelayRetryable> getFailedQueue() {
+    public DelayQueue<Retryable> getFailedQueue() {
         return failed;
     }
 

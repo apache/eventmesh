@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.core.retry.DelayRetryable;
+import org.apache.eventmesh.runtime.core.retry.Retryable;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
@@ -38,13 +38,13 @@ public class GrpcRetryer {
         this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
     }
 
-    private final DelayQueue<DelayRetryable> failed = new DelayQueue<DelayRetryable>();
+    private final DelayQueue<Retryable> failed = new DelayQueue<Retryable>();
 
     private ThreadPoolExecutor pool;
 
     private Thread dispatcher;
 
-    public void pushRetry(DelayRetryable delayRetryable) {
+    public void pushRetry(Retryable delayRetryable) {
         if (failed.size() >= grpcConfiguration.getEventMeshServerRetryBlockQSize()) {
             log.error("[RETRY-QUEUE] is full!");
             return;
@@ -62,15 +62,15 @@ public class GrpcRetryer {
 
         dispatcher = new Thread(() -> {
             try {
-                DelayRetryable retryObj;
+                Retryable retryObj;
                 while (!Thread.currentThread().isInterrupted()
                     && (retryObj = failed.take()) != null) {
-                    final DelayRetryable delayRetryable = retryObj;
+                    final Retryable retryable = retryObj;
                     pool.execute(() -> {
                         try {
-                            delayRetryable.retry();
+                            retryable.retry();
                             if (log.isDebugEnabled()) {
-                                log.debug("retryObj : {}", delayRetryable);
+                                log.debug("retryObj : {}", retryable);
                             }
                         } catch (Exception e) {
                             log.error("grpc-retry-dispatcher error!", e);
