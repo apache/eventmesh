@@ -322,7 +322,7 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
         }
     }
 
-    public MetaStorage getRegistry() {
+    public MetaStorage getMetaStorage() {
         return metaStorage;
     }
 

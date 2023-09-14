@@ -215,7 +215,8 @@ public class ClientGroupWrapper {
                 Map<String, Session> sessions = new HashMap<>();
                 topic2sessionInGroupMapping.put(topic, sessions);
             }
-            if (r = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session) == null) {
+            Session s = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session);
+            if (s == null) {
                 if (log.isInfoEnabled()) {
                     log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
                         topic, session.getClient(), session.getSessionId());

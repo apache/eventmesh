@@ -35,7 +35,7 @@ public class CatalogChanges {
     /**
      * The type of change (e.g., "T(Table)" or "D(Database)").
      * <pr>
-     *     {@link SchemaChangeEventType#type}
+     * {@link SchemaChangeEventType}
      * </pr>
      */
     private String type;
@@ -43,7 +43,7 @@ public class CatalogChanges {
     /**
      * The specific operation type (e.g., "C(Create)", "D(Drop)", "A(Alert)").
      * <pr>
-     *     {@link SchemaChangeEventType#operationType}
+     * {@link SchemaChangeEventType}
      * </pr>
      */
     private String operationType;
