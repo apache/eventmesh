@@ -38,7 +38,7 @@ public class PrometheusHttpExporter {
     /**
      * Map structure : [metric name, description of name] -> the method of get corresponding metric.
      */
-    private Map<String[], Function<HttpSummaryMetrics, Number>> paramPairs;
+    private final Map<String[], Function<HttpSummaryMetrics, Number>> paramPairs;
 
     static {
         paramPairs = new HashMap<String[], Function<HttpSummaryMetrics, Number>>() {

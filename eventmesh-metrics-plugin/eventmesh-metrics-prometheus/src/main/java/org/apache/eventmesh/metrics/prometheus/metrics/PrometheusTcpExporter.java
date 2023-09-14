@@ -39,7 +39,7 @@ public class PrometheusTcpExporter {
     /**
      * Map structure : [metric name, description of name] -> the method of get corresponding metric.
      */
-    private Map<String[], Function<TcpSummaryMetrics, Number>> paramPairs;
+    private final Map<String[], Function<TcpSummaryMetrics, Number>> paramPairs;
 
     static {
         paramPairs = new HashMap<String[], Function<TcpSummaryMetrics, Number>>() {

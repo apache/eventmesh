@@ -39,7 +39,7 @@ public class PrometheusGrpcExporter {
     /**
      * Map structure : [metric name, description of name] -> the method of get corresponding metric.
      */
-    private Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs;
+    private final Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs;
 
     static {
         paramPairs = new HashMap<String[], Function<GrpcSummaryMetrics, Number>>() {
