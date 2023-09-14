@@ -63,22 +63,6 @@ public final class StopStrategies {
      * given delay amount. If it has exceeded this delay, then using this
      * strategy causes the retrying to stop.
      *
-     * @param delayInMillis the delay, in milliseconds, starting from first attempt
-     * @return a stop strategy which stops after {@code delayInMillis} time in milliseconds
-     * @deprecated Use {@link #stopAfterDelay(long, TimeUnit)} instead.
-     */
-    @Deprecated
-    public static StopStrategy stopAfterDelay(long delayInMillis) {
-        return stopAfterDelay(delayInMillis, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Returns a stop strategy which stops after a given delay. If an
-     * unsuccessful attempt is made, this {@link StopStrategy} will check if the
-     * amount of time that's passed from the first attempt has exceeded the
-     * given delay amount. If it has exceeded this delay, then using this
-     * strategy causes the retrying to stop.
-     *
      * @param duration the delay, starting from first attempt
      * @param timeUnit the unit of the duration
      * @return a stop strategy which stops after {@code delayInMillis} time in milliseconds

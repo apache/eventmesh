@@ -113,13 +113,13 @@ public class CommonConfiguration {
     private String meshGroup;
 
     // ---------------------- retry ----------------------
-    @ConfigFiled(field = "retry.threads.num")
+    @ConfigFiled(field = "server.retry.threads.num")
     private int eventMeshServerRetryThreadNum = 2;
 
-    @ConfigFiled(field = "retry.blockQ.size")
+    @ConfigFiled(field = "server.retry.blockQ.size")
     private int eventMeshServerRetryBlockQSize = 10000;
 
-    @ConfigFiled(field = "retry.storageEnabled")
+    @ConfigFiled(field = "server.retry.storageEnabled")
     private boolean eventMeshServerRetryStorageEnabled = Boolean.FALSE;
 
     public void reload() {
