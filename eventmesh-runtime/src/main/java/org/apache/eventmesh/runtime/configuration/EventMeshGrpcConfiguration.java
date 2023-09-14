@@ -62,17 +62,11 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "admin.threads.num")
     private int eventMeshServerAdminThreadNum = 2;
 
-    @ConfigFiled(field = "retry.threads.num")
-    private int eventMeshServerRetryThreadNum = 2;
-
     @ConfigFiled(field = "pull.metaStorage.interval")
     private int eventMeshServerPullMetaStorageInterval = 30000;
 
     @ConfigFiled(field = "async.accumulation.threshold")
     private int eventMeshServerAsyncAccumulationThreshold = 1000;
-
-    @ConfigFiled(field = "retry.blockQ.size")
-    private int eventMeshServerRetryBlockQueueSize = 10000;
 
     @ConfigFiled(field = "batchmsg.blockQ.size")
     private int eventMeshServerBatchBlockQueueSize = 1000;

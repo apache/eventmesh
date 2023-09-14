@@ -56,6 +56,13 @@ public class CommonConfiguration {
     @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
     private String namesrvAddr = "";
 
+    // ---------------------- retry ----------------------
+    @ConfigFiled(field = "retry.threads.num")
+    private int eventMeshServerRetryThreadNum = 2;
+
+    @ConfigFiled(field = "retry.blockQ.size")
+    private int eventMeshServerRetryBlockQSize = 10000;
+
 
     @ConfigFiled(field = "trace.plugin", notEmpty = true)
     private String eventMeshTracePluginType;

@@ -62,9 +62,9 @@ public class EventMeshTcpRetryer {
     }
 
     public void pushRetry(RetryContext retryContext) {
-        if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize()) {
+        if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerRetryBlockQSize()) {
             log.error("pushRetry fail, retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
-                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryQueueSize(), retryContext.retryTimes,
+                eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerRetryBlockQSize(), retryContext.retryTimes,
                 retryContext.seq, EventMeshUtil.getMessageBizSeq(retryContext.event));
             return;
         }

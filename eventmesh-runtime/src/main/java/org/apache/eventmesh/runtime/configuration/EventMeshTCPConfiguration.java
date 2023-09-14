@@ -82,9 +82,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "retry.async.pushRetryDelayInMills")
     private int eventMeshTcpMsgRetryAsyncDelayInMills = 500;
 
-    @ConfigFiled(field = "retry.pushRetryQueueSize")
-    private int eventMeshTcpMsgRetryQueueSize = 10000;
-
     @ConfigFiled(field = "tcp.RebalanceIntervalInMills")
     private Integer eventMeshTcpRebalanceIntervalInMills = 30 * 1000;
 

@@ -66,9 +66,6 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "admin.threads.num")
     private int eventMeshServerAdminThreadNum = 2;
 
-    @ConfigFiled(field = "retry.threads.num")
-    private int eventMeshServerRetryThreadNum = 2;
-
     @ConfigFiled(field = "")
     private int eventMeshServerWebhookThreadNum = 4;
 
@@ -77,9 +74,6 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "async.accumulation.threshold")
     private int eventMeshServerAsyncAccumulationThreshold = 1000;
-
-    @ConfigFiled(field = "retry.blockQ.size")
-    private int eventMeshServerRetryBlockQSize = 10000;
 
     @ConfigFiled(field = "batchmsg.blockQ.size")
     private int eventMeshServerBatchBlockQSize = 1000;
