@@ -17,21 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.retry;
 
-import java.util.concurrent.Delayed;
-
-/**
- * Retry
- */
-public interface Retryable extends Delayed {
-
-    void retry() throws Exception;
-
-    WaitStrategy getWaitStrategy();
-
-    StopStrategy getStopStrategy();
-
-    StorageStrategy getStorageStrategy();
-
-    Attempt<Void> getAttempt();
-
+public enum RetryStorageEnum {
+    MEMORY,
+    STORAGE
 }

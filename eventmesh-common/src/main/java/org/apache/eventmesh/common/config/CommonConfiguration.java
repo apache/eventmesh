@@ -63,6 +63,8 @@ public class CommonConfiguration {
     @ConfigFiled(field = "retry.blockQ.size")
     private int eventMeshServerRetryBlockQSize = 10000;
 
+    @ConfigFiled(field = "retry.storageEnabled")
+    private boolean eventMeshServerRetryStorageEnabled = Boolean.FALSE;
 
     @ConfigFiled(field = "trace.plugin", notEmpty = true)
     private String eventMeshTracePluginType;

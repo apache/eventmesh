@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.retry;
 
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
 
@@ -31,6 +34,16 @@ public abstract class RetryContext implements Retryable {
     public String seq;
 
     public int retryTimes;
+
+    private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
+
+    private Attempt<Void> attempt;
+
+    private StopStrategy stopStrategy = StopStrategies.stopAfterAttempt(EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES);
+
+    private WaitStrategy waitStrategy = WaitStrategies.fixedWait(10000, TimeUnit.MILLISECONDS);
+
+    private StorageStrategy storageStrategy;
 
     public long executeTime = System.currentTimeMillis();
 
@@ -50,4 +63,47 @@ public abstract class RetryContext implements Retryable {
     public long getDelay(TimeUnit unit) {
         return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
+
+    public RetryContext withStopStrategy(StopStrategy stopStrategy) {
+        this.stopStrategy = stopStrategy;
+        return this;
+    }
+
+    public RetryContext withWaitStrategy(WaitStrategy waitStrategy) {
+        this.waitStrategy = waitStrategy;
+        return this;
+    }
+
+    @Override
+    public StopStrategy getStopStrategy() {
+        return stopStrategy;
+    }
+
+    @Override
+    public StorageStrategy getStorageStrategy() {
+        return storageStrategy;
+    }
+
+    @Override
+    public WaitStrategy getWaitStrategy() {
+        return waitStrategy;
+    }
+
+    @Override
+    public Attempt<Void> getAttempt() {
+        return attempt;
+    }
+
+    public void setAttempt(Attempt<Void> attempt) {
+        this.attempt = attempt;
+    }
+
+    public void setExecuteTime(long timeMillis) {
+        this.executeTime = timeMillis;
+    }
+
+    protected void complete() {
+        complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+    }
+
 }
