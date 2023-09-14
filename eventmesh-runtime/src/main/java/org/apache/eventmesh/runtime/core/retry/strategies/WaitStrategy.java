@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.strategies;
+
+import org.apache.eventmesh.runtime.core.retry.Attempt;
 
 /**
  * A strategy used to decide how long to sleep before retrying after a failed attempt.

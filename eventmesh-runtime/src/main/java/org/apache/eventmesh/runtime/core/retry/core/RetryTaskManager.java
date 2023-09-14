@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.core;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
@@ -28,6 +28,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.eventmesh.runtime.core.retry.Attempt;
+import org.apache.eventmesh.runtime.core.retry.exception.EventMeshRetryException;
+import org.apache.eventmesh.runtime.core.retry.Retryer;
+import org.apache.eventmesh.runtime.core.retry.strategies.StopStrategy;
+import org.apache.eventmesh.runtime.core.retry.strategies.StorageStrategies;
+import org.apache.eventmesh.runtime.core.retry.strategies.StorageStrategy;
+import org.apache.eventmesh.runtime.core.retry.strategies.WaitStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +108,7 @@ public class RetryTaskManager implements Retryer {
                                         Thread.sleep(sleepTime);
                                     } catch (InterruptedException e) {
                                         Thread.currentThread().interrupt();
-                                        throw new RetryException(attemptNumber, attempt);
+                                        throw new EventMeshRetryException(attemptNumber, attempt);
                                     }
                                 }
                             }

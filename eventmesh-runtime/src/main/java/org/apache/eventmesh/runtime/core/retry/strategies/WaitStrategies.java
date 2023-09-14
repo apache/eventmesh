@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.strategies;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import org.apache.eventmesh.runtime.core.retry.Attempt;
 
 /**
  * Factory class for instances of {@link WaitStrategy}.

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.common.enums;
 
 public enum RetryStorageEnum {
     MEMORY,

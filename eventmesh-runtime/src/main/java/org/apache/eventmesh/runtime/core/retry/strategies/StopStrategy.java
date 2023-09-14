@@ -15,12 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.strategies;
+
+import org.apache.eventmesh.runtime.core.retry.Attempt;
 
 /**
- * A strategy used to decide storage.
+ * A strategy used to decide if a retryer must stop retrying after a failed attempt or not.
  */
-public interface StorageStrategy {
+public interface StopStrategy {
 
-    RetryStorageEnum getStorageType();
+    /**
+     * Returns <code>true</code> if the retryer should stop retrying.
+     *
+     * @param failedAttempt the previous failed {@code Attempt}
+     * @return <code>true</code> if the retryer must stop, <code>false</code> otherwise
+     */
+    boolean shouldStop(Attempt failedAttempt);
 }

@@ -15,12 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.strategies;
 
-import com.google.common.base.Preconditions;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import org.apache.eventmesh.common.enums.RetryStorageEnum;
 
 /**
  * Factory class for {@link StorageStrategy} instances.

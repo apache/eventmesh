@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.runtime.core.retry.limiter;
 
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import java.util.concurrent.Callable;
