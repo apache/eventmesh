@@ -5,7 +5,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.enums.ProtocolType;
-import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

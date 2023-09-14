@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.retry;
 
-import org.apache.eventmesh.runtime.core.protocol.RetryContext;
-
 /**
  * Retryer interface
  */
