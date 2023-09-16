@@ -36,8 +36,8 @@ import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * NetUtils
