@@ -37,9 +37,8 @@ import java.util.regex.Pattern;
 
 import io.netty.channel.Channel;
 
-
-import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
