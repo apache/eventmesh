@@ -18,7 +18,18 @@ configurations {
 }
 
 repositories {
+    maven { url 'https://maven.aliyun.com/repository/public/' }
     mavenCentral()
+}
+
+ext {
+    // utility
+    commonsLang3Version = '3.13.0'
+    guavaVersion = '32.1.2-jre' // not used for now
+    // swagger
+    springdocVersion = '2.2.0'
+    // unit test
+    mockitoVersion = '5.5.0' // not used for now
 }
 
 dependencies {
@@ -28,6 +39,9 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 }
 
 tasks.named('test') {
