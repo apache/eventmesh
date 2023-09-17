@@ -33,6 +33,7 @@ ext {
 }
 
 dependencies {
+    // versions managed by spring.dependency-management
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -40,6 +41,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // community dependencies
     implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 }

@@ -1,4 +1,4 @@
-package com.apache.eventmesh.adminnew;
+package com.apache.eventmesh.adminkotlin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
