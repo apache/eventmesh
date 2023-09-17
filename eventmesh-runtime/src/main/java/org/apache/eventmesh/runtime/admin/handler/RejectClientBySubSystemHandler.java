@@ -121,7 +121,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     for (Session session : sessionMap.values()) {
                         // Reject client connection for each matching session found
                         if (session.getClient().getSubsystem().equals(subSystem)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session,
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
                                 clientSessionGroupMapping);
                             // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {

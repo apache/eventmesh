@@ -54,7 +54,7 @@ public class OpenFunctionSinkConnector implements Sink {
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         // init config for openfunction source connector
-        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext)connectorContext;
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (OpenFunctionSinkConfig) sinkConnectorContext.getSinkConfig();
         this.queue = new LinkedBlockingQueue<>(1000);
     }

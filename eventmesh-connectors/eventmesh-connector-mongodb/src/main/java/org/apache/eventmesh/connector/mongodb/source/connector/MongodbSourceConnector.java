@@ -22,12 +22,14 @@ import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSou
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbStandaloneSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.config.MongodbSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,17 @@ public class MongodbSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (MongodbSourceConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (MongodbSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
+    }
+
+    private void doInit() {
         this.queue = new LinkedBlockingQueue<>(1000);
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
@@ -96,24 +109,11 @@ public class MongodbSourceConnector implements Source {
                     break;
                 }
 
-                connectRecords.add(convertEventToRecord(event));
+                connectRecords.add(CloudEventUtil.convertEventToRecord(event));
             } catch (InterruptedException e) {
                 break;
             }
         }
         return connectRecords;
-    }
-
-    public ConnectRecord convertEventToRecord(CloudEvent event) {
-        byte[] body = Objects.requireNonNull(event.getData()).toBytes();
-        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
-        for (String extensionName : event.getExtensionNames()) {
-            connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
-        }
-        connectRecord.addExtension("id", event.getId());
-        connectRecord.addExtension("topic", event.getSubject());
-        connectRecord.addExtension("source", event.getSource().toString());
-        connectRecord.addExtension("type", event.getType());
-        return connectRecord;
     }
 }

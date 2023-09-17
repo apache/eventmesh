@@ -30,10 +30,10 @@ import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import io.cloudevents.CloudEvent;
@@ -48,7 +48,7 @@ public class SinkWorker implements ConnectorWorker {
 
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
-    public SinkWorker(Sink sink, SinkConfig config){
+    public SinkWorker(Sink sink, SinkConfig config) {
         this.sink = sink;
         this.config = config;
         eventMeshTCPClient = buildEventMeshSubClient(config);
@@ -136,18 +136,7 @@ public class SinkWorker implements ConnectorWorker {
 
         @Override
         public Optional<CloudEvent> handle(CloudEvent event) {
-            byte[] body = Objects.requireNonNull(event.getData()).toBytes();
-            log.info("handle receive events {}", new String(event.getData().toBytes()));
-            //todo: recordPartition & recordOffset
-            ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
-            for (String extensionName : event.getExtensionNames()) {
-                connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
-            }
-            connectRecord.addExtension("id", event.getId());
-            connectRecord.addExtension("topic", event.getSubject());
-            connectRecord.addExtension("source", event.getSource().toString());
-            connectRecord.addExtension("type", event.getType());
-            connectRecord.addExtension("datacontenttype", event.getDataContentType());
+            ConnectRecord connectRecord = CloudEventUtil.convertEventToRecord(event);
             List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(connectRecord);
             sink.put(connectRecords);

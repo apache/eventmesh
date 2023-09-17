@@ -57,4 +57,10 @@ public class ConfigurationHolder {
 
     @ConfigFiled(field = "autoAck")
     private boolean autoAck;
+
+    @ConfigFiled(field = "mgmt.port")
+    private int mgmtPort;
+
+    @ConfigFiled(field = "mgmt.protocol")
+    private String mgmtProtocol;
 }

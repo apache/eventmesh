@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
-import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -30,16 +30,14 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
+import org.apache.eventmesh.meta.nacos.constant.NacosConstant;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AsyncHttpProcessor;
-import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -72,63 +70,17 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    /**
-     * Add a topic with subscribers to the service's metadata.
-     */
-    protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
-            return;
-        }
-
-        try {
-
-            Map<String, String> metadata = new HashMap<>(1 << 4);
-            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap :
-                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().entrySet()) {
-
-                String consumerGroupKey = consumerGroupMap.getKey();
-                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
-
-                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
-                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
-
-                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                    new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
-                    final String topic = consumerGroupTopicConfEntry.getKey();
-                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
-                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
-                    consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
-                    consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
-                    consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
-
-                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
-                }
-
-                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
-                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
-            }
-
-            eventMeshHTTPServer.getRegistry().registerMetadata(metadata);
-
-        } catch (Exception e) {
-            log.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
-        }
-    }
-
-
     protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
         throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
+        if (!httpConfiguration.isEventMeshServerMetaStorageEnable()) {
             return "";
         }
 
         String targetMesh = "";
-        Registry registry = eventMeshHTTPServer.getRegistry();
-        List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
+        MetaStorage metaStorage = eventMeshHTTPServer.getMetaStorage();
+        List<EventMeshDataInfo> allEventMeshInfo = metaStorage.findAllEventMeshInfo();
         String httpServiceName =
             ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
                 + "-" + ConfigurationContextUtil.HTTP;

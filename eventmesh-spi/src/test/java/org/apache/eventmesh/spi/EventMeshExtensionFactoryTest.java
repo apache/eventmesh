@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.spi;
 
+import org.apache.eventmesh.spi.example.TestAnotherSingletonExtension;
 import org.apache.eventmesh.spi.example.TestPrototypeExtension;
 import org.apache.eventmesh.spi.example.TestSingletonExtension;
 
@@ -30,6 +31,14 @@ public class EventMeshExtensionFactoryTest {
         TestSingletonExtension extensionA = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         TestSingletonExtension extensionB = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         Assert.assertSame(extensionA, extensionB);
+
+        TestAnotherSingletonExtension singletonExtension = EventMeshExtensionFactory.getExtension(TestAnotherSingletonExtension.class,
+            "singletonExtension");
+        Assert.assertNotNull(singletonExtension);
+        TestSingletonExtension singletonExtension1 = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
+        Assert.assertNotNull(singletonExtension1);
+
+
     }
 
     @Test

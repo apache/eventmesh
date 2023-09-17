@@ -116,7 +116,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                         // to the new EventMesh node specified by given EventMesh IP and port.
                         if (session.getClient().getPath().contains(path)) {
                             redirectResult.append("|");
-                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                 destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                 session, clientSessionGroupMapping));
                         }

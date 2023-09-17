@@ -156,7 +156,7 @@ public class SourceWorker implements ConnectorWorker {
                     startConnector();
                 } catch (Exception e) {
                     log.error("source worker[{}] start fail", source.name(), e);
-                    throw new RuntimeException(e);
+                    this.stop();
                 }
             }
         );

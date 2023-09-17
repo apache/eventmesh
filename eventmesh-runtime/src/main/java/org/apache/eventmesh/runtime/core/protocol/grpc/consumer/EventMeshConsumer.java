@@ -29,17 +29,24 @@ import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.meta.config.EventMeshMetaConfig;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
@@ -48,10 +55,13 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.collections4.MapUtils;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -108,7 +118,7 @@ public class EventMeshConsumer {
             requireRestart = true;
         }
         topicConfig.registerClient(client);
-
+        updateMetaData();
         return requireRestart;
     }
 
@@ -129,8 +139,59 @@ public class EventMeshConsumer {
                 requireRestart = true;
             }
         }
-
+        updateMetaData();
         return requireRestart;
+    }
+
+    public void updateMetaData() {
+        if (!eventMeshGrpcConfiguration.isEventMeshServerMetaStorageEnable()) {
+            return;
+        }
+        try {
+            Map<String, String> metadata = new HashMap<>(1 << 4);
+            for (Map.Entry<String, ConsumerGroupTopicConfig> consumerGroupMap : consumerGroupTopicConfig.entrySet()) {
+                String topic = consumerGroupMap.getKey();
+
+                ConsumerGroupTopicConfig cgtConfig = consumerGroupMap.getValue();
+
+                GrpcType grpcType = cgtConfig.getGrpcType();
+                String consumerGroupKey = cgtConfig.getConsumerGroup();
+                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
+                    new HashMap<>(1 << 4);
+                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
+                if (GrpcType.STREAM == grpcType) {
+                    StreamTopicConfig streamTopicConfig = (StreamTopicConfig) cgtConfig;
+                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+                    consumerGroupTopicMetadata.setConsumerGroup(streamTopicConfig.getConsumerGroup());
+                    consumerGroupTopicMetadata.setTopic(streamTopicConfig.getTopic());
+                    Set<String> clientSet = new HashSet<>();
+                    streamTopicConfig.getIdcEmitterMap().values().forEach(stringEmitterMap -> {
+                        clientSet.addAll(stringEmitterMap.keySet());
+                    });
+
+                    consumerGroupTopicMetadata.setUrls(clientSet);
+                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
+                } else {
+                    WebhookTopicConfig webhookTopicConfig = (WebhookTopicConfig) cgtConfig;
+                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+                    consumerGroupTopicMetadata.setConsumerGroup(webhookTopicConfig.getConsumerGroup());
+                    consumerGroupTopicMetadata.setTopic(webhookTopicConfig.getTopic());
+                    Set<String> set = new HashSet<>(webhookTopicConfig.getTotalUrls());
+                    consumerGroupTopicMetadata.setUrls(set);
+                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
+                }
+
+                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
+                metadata.put(consumerGroupKey, JsonUtils.toJSONString(consumerGroupMetadata));
+            }
+            metadata.put(EventMeshMetaConfig.EVENT_MESH_PROTO, "grpc");
+
+            eventMeshGrpcServer.getMetaStorage().updateMetaData(metadata);
+
+        } catch (Exception e) {
+            log.error("update eventmesh metadata error", e);
+        }
     }
 
     public synchronized void init() throws Exception {
