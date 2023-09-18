@@ -100,7 +100,7 @@ allprojects {
                 exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
             }
             importOrder('org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
-            licenseHeaderFile rootProject.file('style/format/license-header')
+            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
             eclipse().configFile("${rootDir}/style/format/spotless-formatter.xml")
             removeUnusedImports()
         }
