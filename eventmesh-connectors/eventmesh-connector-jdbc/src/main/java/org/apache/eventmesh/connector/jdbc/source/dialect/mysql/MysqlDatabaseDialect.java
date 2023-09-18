@@ -84,7 +84,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
     @Override
     public void start() {
-        //TODO?
+        // TODO?
     }
 
     private MysqlJdbcConnection initJdbcConnection() {
@@ -184,7 +184,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 throw new CatalogException(String.format("Table %s not exist in database", tableId.getId()));
             }
             String creatTableSql = resultSet.getString("Create Table");
-            //table.setDdlSql(creatTableSql);
+            // table.setDdlSql(creatTableSql);
         });
 
         // Get table columns SQL
@@ -208,7 +208,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 int scale = tableMetaData.getScale(columnIndex);
                 dataTypeProperties.put(MysqlDataTypeConvertor.SCALE, scale);
                 column.setDataType(
-                    dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
+                        dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
                 column.setDecimal(scale);
             }
         });
@@ -231,14 +231,14 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 DefaultColumn column = columns.get(field);
                 String comment = resultSet.getString("Comment");
                 column.setComment(comment);
-                //The column nullability. The value is YES if NULL values can be stored in the column, NO if not.
+                // The column nullability. The value is YES if NULL values can be stored in the column, NO if not.
                 String enableNull = resultSet.getString("Null");
                 column.setNotNull("NO".equalsIgnoreCase(enableNull));
 
                 String type = resultSet.getString("Type");
-                //column.setSqlDesc(type);
+                // column.setSqlDesc(type);
 
-                //Get default value
+                // Get default value
                 Object defaultValue = resultSet.getObject("Default");
                 column.setDefaultValue(defaultValue);
 

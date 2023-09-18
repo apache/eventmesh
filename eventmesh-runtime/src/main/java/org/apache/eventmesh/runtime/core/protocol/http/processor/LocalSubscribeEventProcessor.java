@@ -48,7 +48,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @EventMeshTrace
 @Slf4j
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
@@ -61,8 +60,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest)
-        throws Exception {
+    public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
 
         final Channel channel = handlerSpecific.getCtx().channel();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
@@ -70,7 +68,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(channel);
         if (log.isInfoEnabled()) {
             log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
+                    EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
         }
 
         // user request header
@@ -82,23 +80,22 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
         final Map<String, Object> responseBodyMap = new HashMap<>();
 
-        //validate header
+        // validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
-        //validate body
+        // validate body
         final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
-            new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {
-            }
-        )).orElseGet(HashMap::new);
+                new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
+                new TypeReference<HashMap<String, Object>>() {
+                })).orElseGet(HashMap::new);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
@@ -108,12 +105,11 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
         // SubscriptionItem
         final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
-            topic,
-            new TypeReference<List<SubscriptionItem>>() {
-            }
-        )).orElseGet(Collections::emptyList);
+                topic,
+                new TypeReference<List<SubscriptionItem>>() {
+                })).orElseGet(Collections::emptyList);
 
-        //do acl check
+        // do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {
@@ -121,14 +117,14 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                     String pass = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PASSWD.getKey()).toString();
                     String subsystem = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString();
                     this.acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
-                        requestWrapper.getRequestURI());
+                            requestWrapper.getRequestURI());
                 } catch (Exception e) {
                     if (log.isWarnEnabled()) {
                         log.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
                     }
 
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
-                        responseBodyMap, null);
+                            responseBodyMap, null);
                     return;
                 }
             }
@@ -137,13 +133,13 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         // validate URL
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv4BlackList(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv6BlackList())) {
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIpv6BlackList())) {
                 if (log.isErrorEnabled()) {
                     log.error("subscriber url {} is not valid", url);
                 }
 
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                        responseBodyMap, null);
                 return;
             }
         } catch (Exception e) {
@@ -152,18 +148,18 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             }
 
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
         // obtain webhook delivery agreement for Abuse Protection
         if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.getHttpClientPool().getClient(),
-            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
+                url, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshWebhookOrigin())) {
             if (log.isErrorEnabled()) {
                 log.error("subscriber url {} is not allowed by the target system", url);
             }
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
@@ -177,7 +173,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                    eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
+                        eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
                 responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
@@ -186,13 +182,13 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             } catch (Exception e) {
                 if (log.isErrorEnabled()) {
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
-                        System.currentTimeMillis() - startTime,
-                        JsonUtils.toJSONString(subscriptionList),
-                        url, e);
+                            System.currentTimeMillis() - startTime,
+                            JsonUtils.toJSONString(subscriptionList),
+                            url, e);
                 }
 
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                        responseBodyMap, null);
             }
 
             // Update service metadata

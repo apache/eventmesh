@@ -82,7 +82,6 @@ public class HandlerService {
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
-
     public void init() {
         log.info("HandlerService start ");
     }
@@ -97,7 +96,7 @@ public class HandlerService {
 
         if (httpProcessorMap.containsKey(path)) {
             throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
-                path, httpProcessor.getClass().getSimpleName()));
+                    path, httpProcessor.getClass().getSimpleName()));
         }
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
@@ -160,7 +159,7 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 if (isClose) {
                     f.channel().close();
                 }
@@ -176,7 +175,7 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] with short-lived connection fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
             }
         }).addListener(ChannelFutureListener.CLOSE);
     }
@@ -187,13 +186,13 @@ public class HandlerService {
         httpEventWrapper.setHttpVersion(httpRequest.protocolVersion().protocolName());
         httpEventWrapper.setRequestURI(httpRequest.uri());
 
-        //parse http header
+        // parse http header
         for (String key : httpRequest.headers().names()) {
             httpEventWrapper.getHeaderMap().put(key, httpRequest.headers().get(key));
         }
 
         final long bodyDecodeStart = System.currentTimeMillis();
-        //parse http body
+        // parse http body
         FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
         final Map<String, Object> bodyMap = new HashMap<>();
         if (HttpMethod.GET == fullHttpRequest.method()) {
@@ -207,16 +206,15 @@ public class HandlerService {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
                     Optional
-                        .ofNullable(JsonUtils.parseTypeReferenceObject(
-                            new String(body, Constants.DEFAULT_CHARSET),
-                            new TypeReference<Map<String, Object>>() {
-                            }
-                        ))
-                        .ifPresent(bodyMap::putAll);
+                            .ofNullable(JsonUtils.parseTypeReferenceObject(
+                                    new String(body, Constants.DEFAULT_CHARSET),
+                                    new TypeReference<Map<String, Object>>() {
+                                    }))
+                            .ifPresent(bodyMap::putAll);
                 }
             } else {
                 HttpPostRequestDecoder decoder =
-                    new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
+                        new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
                 for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
                     if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                         Attribute data = (Attribute) parm;
@@ -231,8 +229,8 @@ public class HandlerService {
         }
 
         byte[] requestBody = Optional.ofNullable(JsonUtils.toJSONString(bodyMap))
-            .map(s -> s.getBytes(StandardCharsets.UTF_8))
-            .orElse(new byte[0]);
+                .map(s -> s.getBytes(StandardCharsets.UTF_8))
+                .orElse(new byte[0]);
 
         httpEventWrapper.setBody(requestBody);
 
@@ -262,7 +260,6 @@ public class HandlerService {
         private Map<String, Object> traceMap;
 
         private CloudEvent ce;
-
 
         public void run() {
             String processorKey = "/";
@@ -328,7 +325,6 @@ public class HandlerService {
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
-
         public void setResponseJsonBody(String body) {
             this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
         }
@@ -359,7 +355,7 @@ public class HandlerService {
 
         // for error response
         public void sendErrorResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap,
-            Map<String, Object> traceMap) {
+                                      Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, retCode.getRetCode());
@@ -385,7 +381,6 @@ public class HandlerService {
         }
 
     }
-
 
     private static class ProcessorWrapper {
 

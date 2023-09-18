@@ -28,9 +28,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 public class ListenProcessor implements TcpProcessor {
@@ -58,7 +56,7 @@ public class ListenProcessor implements TcpProcessor {
             Integer status = OPStatus.FAIL.getCode();
             header = new Header(LISTEN_RESPONSE, status, e.toString(), pkg.getHeader().getSeq());
         } finally {
-            //check to avoid send repeatedly
+            // check to avoid send repeatedly
             session.trySendListenResponse(header, startTime, taskExecuteTime);
         }
     }

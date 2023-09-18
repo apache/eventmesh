@@ -36,9 +36,9 @@ public class ConsumerGroupTopicConfChangeEvent {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupTopicConfChangeEvent={")
-            .append("consumerGroup=").append(consumerGroup).append(",")
-            .append("topic=").append(topic).append(",")
-            .append("action=").append(action).append("}");
+                .append("consumerGroup=").append(consumerGroup).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("action=").append(action).append("}");
         return sb.toString();
     }
 

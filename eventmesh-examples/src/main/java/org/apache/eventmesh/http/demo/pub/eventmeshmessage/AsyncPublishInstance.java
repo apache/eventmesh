@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,19 +39,20 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
     public static final int MESSAGE_SIZE = 5;
 
     public static void main(String[] args) throws Exception {
-        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (
+                EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+                        initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 final Map<String, String> content = new HashMap<>();
                 content.put("content", "testPublishMessage");
 
                 final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content(JsonUtils.toJSONString(content))
-                    .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
-                    .uniqueId(RandomStringUtils.generateNum(30))
-                    .build()
-                    .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+                        .bizSeqNo(RandomStringUtils.generateNum(30))
+                        .content(JsonUtils.toJSONString(content))
+                        .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
+                        .uniqueId(RandomStringUtils.generateNum(30))
+                        .build()
+                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
                 eventMeshHttpProducer.publish(eventMeshMessage);
             }
             ThreadUtils.sleep(30, TimeUnit.SECONDS);

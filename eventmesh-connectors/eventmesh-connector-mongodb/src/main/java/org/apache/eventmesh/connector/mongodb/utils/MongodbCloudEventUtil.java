@@ -30,6 +30,7 @@ import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class MongodbCloudEventUtil {
+
     public static CloudEvent convertToCloudEvent(Document document) throws Exception {
         document.remove("_id");
         String versionStr = document.getString(MongodbConstants.CLOUD_EVENT_DOC_VERSION);
@@ -60,7 +61,8 @@ public class MongodbCloudEventUtil {
         Document document = new Document();
         document.put(MongodbConstants.CLOUD_EVENT_DOC_VERSION, cloudEvent.getSpecVersion().name());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_DATA, cloudEvent.getData() == null
-                ? null : new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                ? null
+                : new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
         document.put(MongodbConstants.CLOUD_EVENT_DOC_ID, cloudEvent.getId());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_SOURCE, cloudEvent.getSource().toString());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_TYPE, cloudEvent.getType());

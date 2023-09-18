@@ -29,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -63,10 +62,10 @@ public class MessageHandler {
 
     public boolean handle(HandleMsgContext handleMsgContext) {
         Set<AbstractPushRequest> waitingRequests4Group = MapUtils.getObject(waitingRequests,
-            handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
+                handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
         if (waitingRequests4Group.size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
             log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, consumerGroup:{}, threshold:{}",
-                handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
+                    handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
             return false;
         }
 

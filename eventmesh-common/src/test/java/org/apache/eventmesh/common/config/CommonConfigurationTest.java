@@ -45,7 +45,7 @@ public class CommonConfigurationTest {
         Assert.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
         Assert.assertEquals("name-succeed!!!", config.getEventMeshName());
         Assert.assertEquals("816", config.getSysID());
-        //Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
+        // Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());

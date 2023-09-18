@@ -45,7 +45,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -75,8 +74,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
      *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public TCPClientHandler(
-        EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager
-    ) {
+                            EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -110,7 +108,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
      * @throws IOException if an I/O error occurs while handling the request
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        
+
         try (OutputStream out = httpExchange.getResponseBody()) {
             // Parse the request body string into a DeleteTCPClientRequest object
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
@@ -126,10 +124,9 @@ public class TCPClientHandler extends AbstractHttpHandler {
                     if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
                         // Call the serverGoodby2Client method in EventMeshTcp2Client to disconnect the client's connection
                         EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer.getTcpThreadPoolGroup(),
-                            entry.getValue(),
-                            clientSessionGroupMapping
-                        );
+                                eventMeshTCPServer.getTcpThreadPoolGroup(),
+                                entry.getValue(),
+                                clientSessionGroupMapping);
                     }
                 }
             }
@@ -173,18 +170,17 @@ public class TCPClientHandler extends AbstractHttpHandler {
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();
                 GetClientResponse getClientResponse = new GetClientResponse(
-                    Optional.ofNullable(userAgent.getEnv()).orElse(""),
-                    Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
-                    Optional.ofNullable(userAgent.getPath()).orElse(""),
-                    String.valueOf(userAgent.getPid()),
-                    Optional.ofNullable(userAgent.getHost()).orElse(""),
-                    userAgent.getPort(),
-                    Optional.ofNullable(userAgent.getVersion()).orElse(""),
-                    Optional.ofNullable(userAgent.getIdc()).orElse(""),
-                    Optional.ofNullable(userAgent.getGroup()).orElse(""),
-                    Optional.ofNullable(userAgent.getPurpose()).orElse(""),
-                    "TCP"
-                );
+                        Optional.ofNullable(userAgent.getEnv()).orElse(""),
+                        Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
+                        Optional.ofNullable(userAgent.getPath()).orElse(""),
+                        String.valueOf(userAgent.getPid()),
+                        Optional.ofNullable(userAgent.getHost()).orElse(""),
+                        userAgent.getPort(),
+                        Optional.ofNullable(userAgent.getVersion()).orElse(""),
+                        Optional.ofNullable(userAgent.getIdc()).orElse(""),
+                        Optional.ofNullable(userAgent.getGroup()).orElse(""),
+                        Optional.ofNullable(userAgent.getPurpose()).orElse(""),
+                        "TCP");
                 getClientResponseList.add(getClientResponse);
             }
 
@@ -211,7 +207,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
             String result = JsonUtils.toJSONString(error);
             httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             log.error(result, e);
-        } 
+        }
     }
 
     /**

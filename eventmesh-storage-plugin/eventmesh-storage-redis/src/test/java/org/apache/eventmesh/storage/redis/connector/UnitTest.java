@@ -71,10 +71,9 @@ public class UnitTest extends AbstractRedisServer {
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
 
         redisConsumer.registerEventListener((cloudEvent, context) -> {
-                downLatch.countDown();
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        );
+            downLatch.countDown();
+            context.commit(EventMeshAction.CommitMessage);
+        });
 
         final String topic = RedisConsumerTest.class.getSimpleName();
 
@@ -82,14 +81,14 @@ public class UnitTest extends AbstractRedisServer {
 
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId(String.valueOf(i))
-                .withTime(OffsetDateTime.now())
-                .withSource(URI.create("testsource"))
-                .withSubject(topic)
-                .withType(String.class.getCanonicalName())
-                .withDataContentType("text/plain")
-                .withData("data".getBytes(StandardCharsets.UTF_8))
-                .build();
+                    .withId(String.valueOf(i))
+                    .withTime(OffsetDateTime.now())
+                    .withSource(URI.create("testsource"))
+                    .withSubject(topic)
+                    .withType(String.class.getCanonicalName())
+                    .withDataContentType("text/plain")
+                    .withData("data".getBytes(StandardCharsets.UTF_8))
+                    .build();
 
             redisProducer.publish(cloudEvent, new SendCallback() {
 

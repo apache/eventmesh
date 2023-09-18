@@ -122,7 +122,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                         // Reject client connection for each matching session found
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
-                                clientSessionGroupMapping);
+                                    clientSessionGroupMapping);
                             // Add the remote client address to a list of successfully rejected addresses
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
@@ -135,15 +135,15 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
                         +
                         "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
-                    subSystem, e.getMessage());
+                        subSystem, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             // Serialize the successfully rejected client addresses into output stream
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
-                +
-                "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
+                    +
+                    "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

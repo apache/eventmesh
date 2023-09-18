@@ -40,9 +40,9 @@ public class SubscribeTask implements Runnable {
                 ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 log.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
-                    subscribe.getTopicName(),
-                    subscribe.getOffset() == null ? null : subscribe.getOffset().get(),
-                    Thread.currentThread().getName(), e);
+                        subscribe.getTopicName(),
+                        subscribe.getOffset() == null ? null : subscribe.getOffset().get(),
+                        Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();
             }
         }

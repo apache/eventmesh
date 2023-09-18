@@ -25,7 +25,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,7 +61,6 @@ public class PushContext {
         return unAckMsg.size();
     }
 
-
     public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
         return unAckMsg;
     }
@@ -70,13 +68,13 @@ public class PushContext {
     @Override
     public String toString() {
         return "PushContext{"
-            +
-            "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
-            +
-            ",deliverFailCount=" + deliverFailMsgsCount.longValue()
-            +
-            ",unAckMsg=" + CollectionUtils.size(unAckMsg)
-            +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
+                +
+                "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
+                +
+                ",deliverFailCount=" + deliverFailMsgsCount.longValue()
+                +
+                ",unAckMsg=" + CollectionUtils.size(unAckMsg)
+                +
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

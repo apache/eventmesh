@@ -109,10 +109,10 @@ public class EventMeshUtilTest {
     public void testGetMessageBizSeq() throws URISyntaxException {
         String value = "keys";
         CloudEvent cloudEvent = CloudEventBuilder.v03().withExtension(EventMeshConstants.KEYS_LOWERCASE, value)
-            .withId(UUID.randomUUID().toString())
-            .withSource(new URIBuilder().build())
-            .withType(TYPE)
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSource(new URIBuilder().build())
+                .withType(TYPE)
+                .build();
         String result = EventMeshUtil.getMessageBizSeq(cloudEvent);
         Assert.assertEquals(result, value);
     }
@@ -121,10 +121,10 @@ public class EventMeshUtilTest {
     public void testGetEventProp() throws URISyntaxException {
         String value = "keys";
         CloudEvent cloudEvent = CloudEventBuilder.v03().withExtension(EventMeshConstants.KEYS_LOWERCASE, value)
-            .withId(UUID.randomUUID().toString())
-            .withSource(new URIBuilder().build())
-            .withType(TYPE)
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSource(new URIBuilder().build())
+                .withType(TYPE)
+                .build();
         Map<String, String> result = EventMeshUtil.getEventProp(cloudEvent);
         Assert.assertEquals(result.get(EventMeshConstants.KEYS_LOWERCASE), value);
     }
@@ -149,7 +149,7 @@ public class EventMeshUtilTest {
         int pid = 1;
         int port = 8080;
         UserAgent agent = UserAgent.builder().subsystem(subSystem).host(host)
-            .pid(pid).port(port).build();
+                .pid(pid).port(port).build();
         String result = EventMeshUtil.buildUserAgentClientId(agent);
         Assert.assertEquals(result, String.format("%s--%d-%s:%d", subSystem, pid, host, port));
 
@@ -169,7 +169,7 @@ public class EventMeshUtilTest {
     public void testPrintState() {
         try {
             ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
-                .createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
+                    .createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
             EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
         } catch (Exception e) {
             Assert.fail(e.getMessage());

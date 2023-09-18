@@ -33,7 +33,6 @@ public class ResetCountDownLatch {
         this.restSync = new RestSync(count);
     }
 
-
     /**
      * Causes the current thread to wait until the latch has counted down to zero, unless the thread is {@linkplain Thread#interrupt interrupted}.
      *
@@ -99,11 +98,9 @@ public class ResetCountDownLatch {
      * @return {@code true} if the count reached zero and {@code false} if the waiting time elapsed before the count reached zero
      * @throws InterruptedException if the current thread is interrupted while waiting
      */
-    public boolean await(long timeout, TimeUnit unit)
-        throws InterruptedException {
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
         return restSync.tryAcquireSharedNanos(1, unit.toNanos(timeout));
     }
-
 
     /**
      * Decrements the count of the latch, releasing all waiting threads if the count reaches zero.
@@ -165,7 +162,7 @@ public class ResetCountDownLatch {
 
         @Override
         protected boolean tryReleaseShared(int releases) {
-            for (; ; ) {
+            for (;;) {
                 int count = getState();
                 if (count == 0) {
                     return false;

@@ -32,7 +32,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(final List<MessageExt> msgs,
-        final ConsumeConcurrentlyContext context) {
+                                                    final ConsumeConcurrentlyContext context) {
         ConsumeConcurrentlyStatus status = null;
 
         if (CollectionUtils.isEmpty(msgs)) {
@@ -63,7 +63,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
             log.info("handleMessage fail", e);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
-        //return status;
+        // return status;
     }
 
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context);

@@ -38,7 +38,7 @@ import java.util.Objects;
 public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient implements EventMeshProtocolProducer<T> {
 
     public AbstractProducerHttpClient(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+                                                                                                 throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
@@ -78,7 +78,7 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
         validateMessage(message);
         final String target = selectEventMesh();
         final RRCallbackResponseHandlerAdapter<T> adapter = new RRCallbackResponseHandlerAdapter<>(
-            message, rrCallback, timeout);
+                message, rrCallback, timeout);
         try {
             HttpUtils.post(httpClient, null, target, builderRequestParam(message, timeout), adapter);
         } catch (IOException e) {
@@ -90,7 +90,6 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
     public abstract RequestParam builderPublishRequestParam(T t);
 
     public abstract RequestParam builderRequestParam(T t, long timeout);
-
 
     public abstract void validateMessage(T t);
 

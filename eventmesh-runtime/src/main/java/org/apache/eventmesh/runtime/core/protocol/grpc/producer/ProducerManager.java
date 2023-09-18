@@ -23,7 +23,6 @@ import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -67,13 +66,13 @@ public class ProducerManager {
     }
 
     private synchronized EventMeshProducer createEventMeshProducer(
-        ProducerGroupConf producerGroupConfig) throws Exception {
+                                                                   ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
         EventMeshProducer eventMeshProducer = new EventMeshProducer();
         eventMeshProducer.init(eventMeshGrpcServer.getEventMeshGrpcConfiguration(),
-            producerGroupConfig);
+                producerGroupConfig);
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }

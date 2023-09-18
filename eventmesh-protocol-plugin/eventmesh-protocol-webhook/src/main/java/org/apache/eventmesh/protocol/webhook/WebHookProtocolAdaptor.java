@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,16 +40,16 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
     @Override
     public CloudEvent toCloudEvent(WebhookProtocolTransportObject protocol) throws ProtocolHandleException {
         return CloudEventBuilder.v1()
-            .withId(protocol.getCloudEventId())
-            .withSubject(protocol.getCloudEventName())
-            .withSource(URI.create(protocol.getCloudEventSource()))
-            .withDataContentType(protocol.getDataContentType())
-            .withType(protocol.getEventType())
-            .withData(protocol.getBody())
-            .withExtension(Constants.PROTOCOL_TYPE, "webhook")
-            .withExtension("bizseqno", RandomStringUtils.generateNum(30))
-            .withExtension("uniqueid", RandomStringUtils.generateNum(30))
-            .build();
+                .withId(protocol.getCloudEventId())
+                .withSubject(protocol.getCloudEventName())
+                .withSource(URI.create(protocol.getCloudEventSource()))
+                .withDataContentType(protocol.getDataContentType())
+                .withType(protocol.getEventType())
+                .withData(protocol.getBody())
+                .withExtension(Constants.PROTOCOL_TYPE, "webhook")
+                .withExtension("bizseqno", RandomStringUtils.generateNum(30))
+                .withExtension("uniqueid", RandomStringUtils.generateNum(30))
+                .build();
     }
 
     @Override

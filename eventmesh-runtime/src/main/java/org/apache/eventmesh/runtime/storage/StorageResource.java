@@ -47,7 +47,7 @@ public class StorageResource {
 
     private static StorageResource storageResourceBuilder(String storageResourcePluginType) {
         StorageResourceService storageResourceServiceExt = EventMeshExtensionFactory.getExtension(StorageResourceService.class,
-            storageResourcePluginType);
+                storageResourcePluginType);
         if (storageResourceServiceExt == null) {
             String errorMsg = "can't load the StorageResourceService plugin, please check.";
             log.error(errorMsg);

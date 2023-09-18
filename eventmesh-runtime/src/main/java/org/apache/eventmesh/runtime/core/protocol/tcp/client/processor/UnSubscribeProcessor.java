@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 
 public class UnSubscribeProcessor implements TcpProcessor {
+
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private EventMeshTCPServer eventMeshTCPServer;
@@ -65,16 +66,15 @@ public class UnSubscribeProcessor implements TcpProcessor {
                 }
             }
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
-                .getSeq()));
+                    .getSeq()));
         } catch (Exception e) {
             MESSAGE_LOGGER.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                +
-                "unSubscribing", pkg.getHeader().getSeq()));
+                    +
+                    "unSubscribing", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
         }
     }
-
 
 }

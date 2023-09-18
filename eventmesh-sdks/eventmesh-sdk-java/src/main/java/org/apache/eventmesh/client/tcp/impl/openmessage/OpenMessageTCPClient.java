@@ -75,8 +75,7 @@ public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {
     }
 
     @Override
-    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws EventMeshException {
         eventMeshTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 

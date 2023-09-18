@@ -47,7 +47,7 @@ public class EventMeshCatalogClient {
     private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<>();
 
     public EventMeshCatalogClient(final EventMeshCatalogClientConfig clientConfig,
-        final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
+                                  final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
         this.clientConfig = clientConfig;
         this.eventMeshGrpcConsumer = eventMeshGrpcConsumer;
     }
@@ -55,16 +55,16 @@ public class EventMeshCatalogClient {
     public void init() {
         final Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
         AssertUtils.notNull(selector, String.format("selector=%s not register.please check it.",
-            clientConfig.getSelectorType()));
+                clientConfig.getSelectorType()));
         final ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
         AssertUtils.notNull(instance, "catalog server is not running.please check it.");
 
         final ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
-            .usePlaintext().build();
+                .usePlaintext().build();
         final CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
 
         final QueryOperationsRequest request = QueryOperationsRequest.newBuilder()
-            .setServiceName(clientConfig.getAppServerName()).build();
+                .setServiceName(clientConfig.getAppServerName()).build();
         final QueryOperationsResponse response = catalogClient.queryOperations(request);
         if (log.isInfoEnabled()) {
             log.info("received response: {}", response);

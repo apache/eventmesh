@@ -28,6 +28,6 @@ public interface EventMeshRecommendStrategy {
     String calculateRecommendEventMesh(String group, String purpose) throws Exception;
 
     List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap,
-        Map<String, Integer> clientDistributeMap, String group,
-        int recommendNum, String eventMeshName) throws Exception;
+                                                     Map<String, Integer> clientDistributeMap, String group,
+                                                     int recommendNum, String eventMeshName) throws Exception;
 }

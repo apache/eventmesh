@@ -92,7 +92,6 @@ import io.opentelemetry.api.trace.Span;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
  * HTTP serves as the runtime module server for the protocol
  *
@@ -112,11 +111,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private final transient AtomicBoolean started = new AtomicBoolean(false);
     private final transient boolean useTLS;
-    private Boolean useTrace = false; //Determine whether trace is enabled
+    private Boolean useTrace = false; // Determine whether trace is enabled
     private static final int MAX_CONNECTIONS = 20_000;
 
-    protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>>
-            httpRequestProcessorTable = new ConcurrentHashMap<>(64);
+    protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
+            new ConcurrentHashMap<>(64);
 
     private HttpConnectionHandler httpConnectionHandler;
     private HttpDispatcher httpDispatcher;
@@ -226,13 +225,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return null;
     }
 
-
     public void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status) {
         final FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         final HttpHeaders responseHeaders = response.headers();
         responseHeaders.add(
-                HttpHeaderNames.CONTENT_TYPE, String.format("text/plain; charset=%s", EventMeshConstants.DEFAULT_CHARSET)
-        );
+                HttpHeaderNames.CONTENT_TYPE, String.format("text/plain; charset=%s", EventMeshConstants.DEFAULT_CHARSET));
         responseHeaders.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         responseHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
@@ -372,7 +369,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         new AsyncContext<>(requestCommand, responseCommand, asyncContextCompleteHandler);
                 processHttpCommandRequest(ctx, asyncContext);
 
-
             } catch (Exception ex) {
                 log.error("AbstractHTTPServer.HTTPHandler.channelRead error", ex);
                 sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -395,7 +391,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             if (StringUtils.isBlank(requestHeaders.get(ProtocolKey.VERSION))) {
                 requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
             }
-
 
             requestHeaders.set(ProtocolKey.ClientInstanceKey.IP.getKey(),
                     RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
@@ -421,8 +416,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                 }
                                 final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
                                 TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
-                                                EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-                                                false),
+                                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                                        false),
                                         traceMap,
                                         EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                             }
@@ -487,7 +482,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         }
     }
-
 
     @Sharable
     private class HttpConnectionHandler extends ChannelDuplexHandler {

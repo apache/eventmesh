@@ -154,7 +154,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     }
 
-
     @Override
     public void shutdown() throws Exception {
         super.shutdown();
@@ -162,7 +161,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         globalTrafficShapingHandler.release();
         started.compareAndSet(true, false);
     }
-
 
     /**
      * Registers the processors required by the runtime module
@@ -175,7 +173,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         AssertUtils.notNull(executor, "executor can't be null");
         this.tcpRequestProcessorTable.put(command, new Pair<>(processor, executor));
     }
-
 
     private class TcpServerInitializer extends ChannelInitializer<SocketChannel> {
 
@@ -198,6 +195,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
         private GlobalTrafficShapingHandler newGTSHandler(final ScheduledExecutorService executor, final long readLimit) {
             GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(executor, 0, readLimit) {
+
                 @Override
                 protected long calculateSize(final Object msg) {
                     return 1;
@@ -209,6 +207,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
         private ChannelTrafficShapingHandler newCTSHandler(final long readLimit) {
             ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, readLimit) {
+
                 @Override
                 protected long calculateSize(final Object msg) {
                     return 1;
@@ -286,10 +285,8 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
         }
 
-
         private void processHttpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
                                                final long startTime, final Command cmd) {
-
 
             Pair<TcpProcessor, ThreadPoolExecutor> pair = tcpRequestProcessorTable.get(cmd);
             pair.getObject2().submit(() -> {
@@ -303,8 +300,8 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         private boolean isNeedTrace(Command cmd) {
             return eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
                     && (Command.REQUEST_TO_SERVER == cmd
-                    || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
+                            || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+                            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
         }
 
         private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
@@ -374,8 +371,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
         }
 
-
-
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             Session session = clientSessionGroupMapping.getSession(ctx);
@@ -402,7 +397,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     public class TcpConnectionHandler extends ChannelDuplexHandler {
 
         private final AtomicInteger connections = new AtomicInteger(0);
-
 
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -441,7 +435,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             super.channelInactive(ctx);
         }
 
-
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
@@ -460,8 +453,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             return this.connections.get();
         }
     }
-
-
 
     public TcpConnectionHandler getTcpConnectionHandler() {
         return tcpConnectionHandler;

@@ -35,8 +35,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
     @Override
     public Session select(final String group, final String topic, final Set<Session> groupConsumerSessions) {
         if (CollectionUtils.isEmpty(groupConsumerSessions)
-            || StringUtils.isBlank(topic)
-            || StringUtils.isBlank(group)) {
+                || StringUtils.isBlank(topic)
+                || StringUtils.isBlank(group)) {
             return null;
         }
 
@@ -51,7 +51,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
                 isolatedSessions.add(session);
                 if (log.isInfoEnabled()) {
                     log.info("session is not available because session is isolated,isolateTime:{},client:{}",
-                        session.getIsolateTime(), session.getClient());
+                            session.getIsolateTime(), session.getClient());
                 }
                 continue;
             }

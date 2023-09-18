@@ -95,15 +95,15 @@ public class SendMessageBatchV2RequestBody extends Body {
 
     public static SendMessageBatchV2RequestBody buildBody(final Map<String, Object> bodyParam) {
         String bizSeqno = MapUtils.getString(bodyParam,
-            BIZSEQNO);
+                BIZSEQNO);
         String topic = MapUtils.getString(bodyParam,
-            TOPIC);
+                TOPIC);
         String tag = MapUtils.getString(bodyParam,
-            TAG);
+                TAG);
         String msg = MapUtils.getString(bodyParam,
-            MSG);
+                MSG);
         String ttl = MapUtils.getString(bodyParam,
-            TTL);
+                TTL);
         SendMessageBatchV2RequestBody body = new SendMessageBatchV2RequestBody();
         body.setBizSeqNo(bizSeqno);
         body.setMsg(msg);
@@ -130,12 +130,12 @@ public class SendMessageBatchV2RequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("SendMessageBatchV2RequestBody={")
-            .append("bizSeqNo=").append(bizSeqNo).append(",")
-            .append("topic=").append(topic).append(",")
-            .append("tag=").append(tag).append(",")
-            .append("ttl=").append(ttl).append(",")
-            .append("producerGroup=").append(producerGroup).append(",")
-            .append("msg=").append(msg).append("}");
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("tag=").append(tag).append(",")
+                .append("ttl=").append(ttl).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
+                .append("msg=").append(msg).append("}");
         return sb.toString();
     }
 }

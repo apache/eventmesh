@@ -66,8 +66,9 @@ public class QueryRecommendEventMeshHandlerTest {
         // case 1: normal case
         tcpConfiguration.setEventMeshServerMetaStorageEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
-        try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
+        try (
+                MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
+                        (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
             Assert.assertEquals(returnValue, response);
@@ -88,8 +89,9 @@ public class QueryRecommendEventMeshHandlerTest {
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
-        try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
+        try (
+                MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
+                        (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
             Assert.assertNotEquals(returnValue, response);

@@ -26,7 +26,7 @@ public class RecordPosition {
     private final RecordOffset recordOffset;
 
     public RecordPosition(
-        RecordPartition recordPartition, RecordOffset recordOffset) {
+                          RecordPartition recordPartition, RecordOffset recordOffset) {
         this.recordPartition = recordPartition;
         this.recordOffset = recordOffset;
     }

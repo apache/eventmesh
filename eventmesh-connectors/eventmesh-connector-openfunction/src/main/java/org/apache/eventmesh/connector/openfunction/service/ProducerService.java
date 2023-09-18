@@ -73,18 +73,18 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             queue.put(connectRecord);
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
-                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getErrMsg()).build())
-                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                    .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                    .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
+                            CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getErrMsg()).build())
+                    .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                            .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
         } catch (InterruptedException e) {
             log.error("publish event error {}", e.getMessage());
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode()).build())
-                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()).build())
-                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                    .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                    .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
+                            CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()).build())
+                    .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                            .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
             Thread.currentThread().interrupt();
         }
 

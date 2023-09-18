@@ -21,6 +21,7 @@ package org.apache.eventmesh.connector.jdbc.table.type;
  * An enum representing the different modes in which a row can be handled.
  */
 public enum RowHandleMode {
+
     INSERT("+I", (byte) 1),
     UPDATE_BEFORE("-UB", (byte) 2),
     UPDATE_AFTER("+UA", (byte) 3),
@@ -79,8 +80,7 @@ public enum RowHandleMode {
                 return DELETE;
             default:
                 throw new UnsupportedOperationException(
-                    "Unsupported byte value '" + value + "' for row handle mode.");
+                        "Unsupported byte value '" + value + "' for row handle mode.");
         }
     }
 }
-

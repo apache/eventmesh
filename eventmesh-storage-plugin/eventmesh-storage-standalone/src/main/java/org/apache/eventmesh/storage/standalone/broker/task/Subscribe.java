@@ -42,8 +42,8 @@ public class Subscribe {
     private AtomicInteger offset;
 
     public Subscribe(String topicName,
-        StandaloneBroker standaloneBroker,
-        EventListener listener) {
+                     StandaloneBroker standaloneBroker,
+                     EventListener listener) {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;
@@ -68,6 +68,7 @@ public class Subscribe {
                 CloudEvent message = standaloneBroker.getMessage(topicName, offset.get());
                 if (message != null) {
                     EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
                         @Override
                         public void commit(EventMeshAction action) {
                             switch (action) {

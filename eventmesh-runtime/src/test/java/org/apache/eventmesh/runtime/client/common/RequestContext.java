@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.util.concurrent.CountDownLatch;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

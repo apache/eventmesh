@@ -44,8 +44,9 @@ public class EventMeshAsyncSubscribe extends GrpcAbstractDemo implements Receive
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
-        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+        try (
+                EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 

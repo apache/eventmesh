@@ -29,7 +29,7 @@ public class ReplyMessageResponseHeaderTest {
     @Test
     public void testToMap() {
         ReplyMessageResponseHeader header = ReplyMessageResponseHeader.buildHeader(100,
-            "Cluster", "127.0.0.1", "DEV", "IDC");
+                "Cluster", "127.0.0.1", "DEV", "IDC");
         Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(100));
         Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER), is("Cluster"));
         Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP), is("127.0.0.1"));

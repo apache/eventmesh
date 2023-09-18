@@ -60,10 +60,10 @@ public class HttpCommand implements ProtocolTransportObject {
 
     private transient Body body;
 
-    //Command request time
+    // Command request time
     public long reqTime;
 
-    //Command response time
+    // Command response time
     public long resTime;
 
     public CmdType cmdType = CmdType.REQ;
@@ -117,18 +117,18 @@ public class HttpCommand implements ProtocolTransportObject {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-            .append(cmdType).append(",")
-            .append(httpMethod).append("/").append(httpVersion).append(",")
-            .append("requestCode=").append(requestCode).append(",")
-            .append("opaque=").append(opaque).append(",");
+                .append(cmdType).append(",")
+                .append(httpMethod).append("/").append(httpVersion).append(",")
+                .append("requestCode=").append(requestCode).append(",")
+                .append("opaque=").append(opaque).append(",");
 
         if (cmdType == CmdType.RES) {
             sb.append("cost=").append(resTime - reqTime).append(",");
         }
 
         sb.append("header=").append(header).append(",")
-            .append("body=").append(body)
-            .append("}");
+                .append("body=").append(body)
+                .append("}");
 
         return sb.toString();
     }
@@ -136,17 +136,17 @@ public class HttpCommand implements ProtocolTransportObject {
     public String abstractDesc() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-            .append(cmdType).append(",")
-            .append(httpMethod).append("/").append(httpVersion).append(",")
-            .append("requestCode=").append(requestCode).append(",")
-            .append("opaque=").append(opaque).append(",");
+                .append(cmdType).append(",")
+                .append(httpMethod).append("/").append(httpVersion).append(",")
+                .append("requestCode=").append(requestCode).append(",")
+                .append("opaque=").append(opaque).append(",");
 
         if (cmdType == CmdType.RES) {
             sb.append("cost=").append(resTime - reqTime).append(",");
         }
 
         sb.append("header=").append(header).append(",")
-            .append("bodySize=").append(body.toString().length()).append("}");
+                .append("bodySize=").append(body.toString().length()).append("}");
 
         return sb.toString();
     }
@@ -154,9 +154,9 @@ public class HttpCommand implements ProtocolTransportObject {
     public String simpleDesc() {
         StringBuilder sb = new StringBuilder();
         sb.append("httpCommand={")
-            .append(cmdType).append(",")
-            .append(httpMethod).append("/").append(httpVersion).append(",")
-            .append("requestCode=").append(requestCode).append("}");
+                .append(cmdType).append(",")
+                .append(httpMethod).append("/").append(httpVersion).append(",")
+                .append("requestCode=").append(requestCode).append("}");
 
         return sb.toString();
     }
@@ -166,7 +166,7 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
+                Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -180,7 +180,7 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
-            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
+                Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());

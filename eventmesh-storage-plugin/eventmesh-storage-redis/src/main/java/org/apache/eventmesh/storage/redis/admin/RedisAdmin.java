@@ -45,9 +45,9 @@ public class RedisAdmin extends AbstractAdmin {
         // TODO: match all the topic with pattern "*" for now.
         RPatternTopic patternTopic = redisson.getPatternTopic("*");
         return patternTopic.getPatternNames()
-            .stream()
-            .map(s -> new TopicProperties(s, 0))
-            .collect(Collectors.toList());
+                .stream()
+                .map(s -> new TopicProperties(s, 0))
+                .collect(Collectors.toList());
     }
 
     @Override

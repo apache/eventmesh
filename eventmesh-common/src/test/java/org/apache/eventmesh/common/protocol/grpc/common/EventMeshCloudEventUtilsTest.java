@@ -34,7 +34,6 @@ import org.junit.Test;
 
 import com.google.protobuf.Timestamp;
 
-
 public class EventMeshCloudEventUtilsTest {
 
     private CloudEvent cloudEvent;
@@ -62,7 +61,7 @@ public class EventMeshCloudEventUtilsTest {
         attributeValueMap.put(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString("0").build());
         Instant instant = LocalDateTime.of(2023, 4, 11, 19, 7, 0).toInstant(ZoneOffset.UTC);
         attributeValueMap.put(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-            .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
         attributeValueMap.put(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString("0").build());
         attributeValueMap.put(ProtocolKey.PROPERTY_MESSAGE_CLUSTER, CloudEventAttributeValue.newBuilder().setCeString("DefaultCluster").build());
         attributeValueMap.put(ProtocolKey.URL, CloudEventAttributeValue.newBuilder().setCeString("http://127.0.0.1").build());
@@ -70,11 +69,11 @@ public class EventMeshCloudEventUtilsTest {
         attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
         attributeValueMap.put(ProtocolKey.CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
         attributeValueMap.put(ProtocolKey.PROTOCOL_TYPE,
-            CloudEventAttributeValue.newBuilder().setCeString(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName()).build());
+                CloudEventAttributeValue.newBuilder().setCeString(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName()).build());
         attributeValueMap.put(ProtocolKey.PROTOCOL_VERSION, CloudEventAttributeValue.newBuilder().setCeString("1.0").build());
         cloudEvent = CloudEvent.newBuilder().putAllAttributes(attributeValueMap).setId("123").setSource(URI.create("/").toString())
-            .setType("eventmesh")
-            .setSpecVersion("1.0").setTextData("mxsm").build();
+                .setType("eventmesh")
+                .setSpecVersion("1.0").setTextData("mxsm").build();
     }
 
     @Test
@@ -180,7 +179,7 @@ public class EventMeshCloudEventUtilsTest {
         Assert.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent));
         Assert.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent, "mxsm_producer_group"));
         Assert.assertEquals("mxsm_producer_group1",
-            EventMeshCloudEventUtils.getProducerGroup(CloudEvent.newBuilder().build(), "mxsm_producer_group1"));
+                EventMeshCloudEventUtils.getProducerGroup(CloudEvent.newBuilder().build(), "mxsm_producer_group1"));
     }
 
     @Test
@@ -266,6 +265,5 @@ public class EventMeshCloudEventUtilsTest {
         Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent, "http://127.0.0.2"));
         Assert.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getDataContent(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
     }
-
 
 }

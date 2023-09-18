@@ -70,8 +70,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
-        throws Exception {
+    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList) throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         if (!httpConfiguration.isEventMeshServerMetaStorageEnable()) {
@@ -82,8 +81,8 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         MetaStorage metaStorage = eventMeshHTTPServer.getMetaStorage();
         List<EventMeshDataInfo> allEventMeshInfo = metaStorage.findAllEventMeshInfo();
         String httpServiceName =
-            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
-                + "-" + ConfigurationContextUtil.HTTP;
+                ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
+                        + "-" + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
@@ -100,11 +99,11 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
             }
 
             ConsumerGroupMetadata consumerGroupMetadata =
-                JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
+                    JsonUtils.parseObject(topicMetadataJson, ConsumerGroupMetadata.class);
             Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                Optional.ofNullable(consumerGroupMetadata)
-                    .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
-                    .orElseGet(Maps::newConcurrentMap);
+                    Optional.ofNullable(consumerGroupMetadata)
+                            .map(ConsumerGroupMetadata::getConsumerGroupTopicMetadataMap)
+                            .orElseGet(Maps::newConcurrentMap);
 
             for (SubscriptionItem subscriptionItem : subscriptionList) {
                 if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
@@ -128,13 +127,13 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-            eventMeshHttpConfiguration.getEventMeshCluster());
+                eventMeshHttpConfiguration.getEventMeshCluster());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
-            IPUtils.getLocalAddress());
+                IPUtils.getLocalAddress());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-            eventMeshHttpConfiguration.getEventMeshEnv());
+                eventMeshHttpConfiguration.getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-            eventMeshHttpConfiguration.getEventMeshIDC());
+                eventMeshHttpConfiguration.getEventMeshIDC());
         return responseHeaderMap;
     }
 
@@ -146,9 +145,9 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      */
     protected boolean validateSysHeader(Map<String, Object> sysHeaderMap) {
         return StringUtils.isAnyBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC.getKey()).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString(),
-            sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString());
+                sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString(),
+                sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS.getKey()).toString())
+                || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString());
     }
 
     /**
@@ -197,8 +196,8 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      * @throws IOException
      */
     public static String post(CloseableHttpClient client, String uri,
-        Map<String, String> requestHeader, Map<String, Object> requestBody,
-        ResponseHandler<String> responseHandler) throws IOException {
+                              Map<String, String> requestHeader, Map<String, Object> requestBody,
+                              ResponseHandler<String> responseHandler) throws IOException {
         AssertUtils.notNull(client, "client can't be null");
         AssertUtils.notBlank(uri, "uri can't be null");
         AssertUtils.notNull(requestHeader, "requestParam can't be null");
@@ -208,22 +207,22 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         httpPost.addHeader(CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 
-        //header
+        // header
         if (MapUtils.isNotEmpty(requestHeader)) {
             requestHeader.forEach(httpPost::addHeader);
         }
 
-        //body
+        // body
         if (MapUtils.isNotEmpty(requestBody)) {
             String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 
-        //ttl
+        // ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
-            .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
-            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)));
+                .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
+                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)));
 
         httpPost.setConfig(configBuilder.build());
 

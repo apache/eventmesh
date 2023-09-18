@@ -72,7 +72,6 @@ public class RabbitMQSourceConnector implements Source {
             Runtime.getRuntime().availableProcessors() * 2,
             "EventMesh-RabbitMQSourceConnector-");
 
-
     @Override
     public Class<? extends Config> configClass() {
         return RabbitMQSourceConfig.class;

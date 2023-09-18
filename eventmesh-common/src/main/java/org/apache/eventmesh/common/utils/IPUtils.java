@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import io.netty.channel.Channel;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
@@ -55,7 +54,7 @@ public class IPUtils {
             return dockerHostIp;
         }
 
-        //priority of networkInterface when generating client ip
+        // priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
         List<String> list = Arrays.asList(priority.split("<"));
         ArrayList<String> preferList = new ArrayList<>(list);
@@ -67,8 +66,8 @@ public class IPUtils {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
                 if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
-                } else if (preferList.indexOf(networkInterface.getName()) //get the networkInterface that has higher priority
-                    > preferList.indexOf(preferNetworkInterface.getName())) {
+                } else if (preferList.indexOf(networkInterface.getName()) // get the networkInterface that has higher priority
+                        > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -101,7 +100,7 @@ public class IPUtils {
             } else if (!ipv6Result.isEmpty()) {
                 return ipv6Result.get(0);
             }
-            //If failed to find,fall back to localhost
+            // If failed to find,fall back to localhost
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
         } catch (SocketException | UnknownHostException e) {
@@ -113,15 +112,13 @@ public class IPUtils {
     public static boolean isValidIPV4Address(String ip) {
 
         // Regex for digit from 0 to 255.
-        String zeroTo255
-            = "(\\d{1,2}|(0|1)\\"
-            + "d{2}|2[0-4]\\d|25[0-5])";
+        String zeroTo255 = "(\\d{1,2}|(0|1)\\"
+                + "d{2}|2[0-4]\\d|25[0-5])";
 
-        String regex
-            = zeroTo255 + "\\."
-            + zeroTo255 + "\\."
-            + zeroTo255 + "\\."
-            + zeroTo255;
+        String regex = zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255;
 
         // Compile the ReGex
         Pattern p = Pattern.compile(regex);
@@ -157,7 +154,6 @@ public class IPUtils {
             return localHost.getHostAddress();
         }
     }
-
 
     public static String parseChannelRemoteAddr(final Channel channel) {
         if (null == channel) {

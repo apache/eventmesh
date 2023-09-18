@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
@@ -111,11 +110,11 @@ public class ClientManageController {
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
 
-        //TODO: Optimized for automatic injection
+        // TODO: Optimized for automatic injection
 
         // Initialize the client handler and register it with the HTTP handler manager.
         initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
-            eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
+                eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
         // Register the handlers from the HTTP handler manager with the HTTP server.
         httpHandlerManager.registerHttpHandler(server);
@@ -145,9 +144,9 @@ public class ClientManageController {
         new HTTPClientHandler(eventMeshHTTPServer, httpHandlerManager);
         new GrpcClientHandler(eventMeshGrpcServer, httpHandlerManager);
         new ConfigurationHandler(
-            eventMeshTCPServer.getEventMeshTCPConfiguration(),
-            eventMeshHTTPServer.getEventMeshHttpConfiguration(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration(), httpHandlerManager);
+                eventMeshTCPServer.getEventMeshTCPConfiguration(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration(),
+                eventMeshGrpcServer.getEventMeshGrpcConfiguration(), httpHandlerManager);
         new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer, httpHandlerManager);
         new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
         new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
@@ -162,6 +161,5 @@ public class ClientManageController {
             new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation, httpHandlerManager);
         }
     }
-
 
 }

@@ -27,7 +27,6 @@ import org.apache.eventmesh.trace.jaeger.config.JaegerConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -61,19 +60,19 @@ public class JaegerTraceService extends AbstractTraceService {
 
         final String httpEndpoint = String.format("http://%s:%s", eventMeshJaegerIp, eventMeshJaegerPort);
         final JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-            .setEndpoint(httpEndpoint)
-            .build();
+                .setEndpoint(httpEndpoint)
+                .build();
 
         final SpanProcessor spanProcessor = BatchSpanProcessor.builder(jaegerExporter)
-            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-            .build();
+                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+                .build();
 
-        //set the trace service's name
+        // set the trace service's name
         final Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
+                Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
         initVars(spanProcessor, serviceNameResource);
     }

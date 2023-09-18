@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
-
 import org.apache.eventmesh.connector.jdbc.common.SourceInfo;
 
 import lombok.Data;

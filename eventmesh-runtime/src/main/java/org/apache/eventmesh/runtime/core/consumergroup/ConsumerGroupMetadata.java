@@ -33,7 +33,6 @@ public class ConsumerGroupMetadata {
      */
     private Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = Maps.newConcurrentMap();
 
-
     public String getConsumerGroup() {
         return consumerGroup;
     }
@@ -47,7 +46,7 @@ public class ConsumerGroupMetadata {
     }
 
     public void setConsumerGroupTopicMetadataMap(
-        Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap) {
+                                                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap) {
         this.consumerGroupTopicMetadataMap = consumerGroupTopicMetadataMap;
     }
 }

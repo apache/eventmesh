@@ -21,6 +21,7 @@ package org.apache.eventmesh.spi;
  * An Extension can be defined by extensionTypeName and extensionInstanceName
  */
 public enum EventMeshExtensionType {
+
     UNKNOWN("unknown"),
     CONNECTOR("connector"),
     STORAGE("storage"),

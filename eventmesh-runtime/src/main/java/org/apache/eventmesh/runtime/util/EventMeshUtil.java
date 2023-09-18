@@ -63,27 +63,27 @@ public class EventMeshUtil {
 
     public static String buildPushMsgSeqNo() {
         return new StringBuilder()
-            .append(StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6))
-            .append(RandomStringUtils.generateNum(4))
-            .toString();
+                .append(StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6))
+                .append(RandomStringUtils.generateNum(4))
+                .toString();
 
     }
 
     public static String buildMeshClientID(final String clientGroup, final String meshCluster) {
         return new StringBuilder()
-            .append(StringUtils.trim(clientGroup))
-            .append('(')
-            .append(StringUtils.trim(meshCluster))
-            .append(')')
-            .append('-')
-            .append(EventMeshVersion.getCurrentVersionDesc())
-            .append('-')
-            .append(ThreadUtils.getPID())
-            .toString();
+                .append(StringUtils.trim(clientGroup))
+                .append('(')
+                .append(StringUtils.trim(meshCluster))
+                .append(')')
+                .append('-')
+                .append(EventMeshVersion.getCurrentVersionDesc())
+                .append('-')
+                .append(ThreadUtils.getPID())
+                .toString();
     }
 
     public static String buildMeshTcpClientID(final String clientSysId, final String purpose,
-        final String meshCluster) {
+                                              final String meshCluster) {
         return StringUtils.joinWith("-", StringUtils.trim(clientSysId), StringUtils.trim(purpose),
                 StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
     }
@@ -125,12 +125,11 @@ public class EventMeshUtil {
 
     public static ObjectMapper createJsoner() {
         return new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-            .setTimeZone(TimeZone.getDefault());
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .setTimeZone(TimeZone.getDefault());
     }
-
 
     /**
      * print part of the mq message
@@ -147,7 +146,7 @@ public class EventMeshUtil {
         }
 
         return String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
-            properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
+                properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
     }
 
     public static String getMessageBizSeq(final CloudEvent event) {
@@ -169,7 +168,7 @@ public class EventMeshUtil {
     }
 
     public static String getLocalAddr() {
-        //priority of networkInterface when generating client ip
+        // priority of networkInterface when generating client ip
         final String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
         if (log.isDebugEnabled()) {
             log.debug("networkInterface.priority: {}", priority);
@@ -187,8 +186,7 @@ public class EventMeshUtil {
                 if (!preferList.contains(networkInterface.getName())) {
                     continue;
                 } else if (preferNetworkInterface == null
-                        || preferList.indexOf(networkInterface.getName())
-                                > preferList.indexOf(preferNetworkInterface.getName())) {
+                        || preferList.indexOf(networkInterface.getName()) > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -227,7 +225,7 @@ public class EventMeshUtil {
             } else if (!ipv6Result.isEmpty()) {
                 return ipv6Result.get(0);
             }
-            //If failed to find,fall back to localhost
+            // If failed to find,fall back to localhost
             return normalizeHostAddress(InetAddress.getLocalHost());
         } catch (SocketException | UnknownHostException e) {
             log.error("failed to get local address", e);
@@ -245,7 +243,7 @@ public class EventMeshUtil {
     }
 
     private static void getIpResult(final List<String> ipv4Result, final List<String> ipv6Result,
-        final Enumeration<InetAddress> en) {
+                                    final Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (address.isLoopbackAddress()) {
@@ -267,23 +265,25 @@ public class EventMeshUtil {
         }
 
         return new StringBuilder()
-            .append(client.getSubsystem())
-            .append('-')
-            .append('-')
-            .append(client.getPid())
-            .append('-')
-            .append(client.getHost())
-            .append(':')
-            .append(client.getPort())
-            .toString();
+                .append(client.getSubsystem())
+                .append('-')
+                .append('-')
+                .append(client.getPid())
+                .append('-')
+                .append(client.getHost())
+                .append(':')
+                .append(client.getPort())
+                .toString();
     }
 
     public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
         if (log.isInfoEnabled()) {
             log.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
-                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
-                .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
-                .getCompletedTaskCount());
+                    .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(),
+                    scheduledExecutorService
+                            .getPoolSize(),
+                    scheduledExecutorService.getActiveCount(), scheduledExecutorService
+                            .getCompletedTaskCount());
         }
     }
 
@@ -297,28 +297,29 @@ public class EventMeshUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> T cloneObject(final T object) throws IOException, ClassNotFoundException {
-        try (ByteArrayOutputStream byOut = new ByteArrayOutputStream();
-            ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
+        try (
+                ByteArrayOutputStream byOut = new ByteArrayOutputStream();
+                ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
 
             outputStream.writeObject(object);
 
-            try (ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
-                ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
+            try (
+                    ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
+                    ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
                 return (T) inputStream.readObject();
             }
         }
 
-
     }
 
     public static Map<String, Object> getCloudEventExtensionMap(final String protocolVersion,
-        final CloudEvent cloudEvent) {
+                                                                final CloudEvent cloudEvent) {
         final EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
-            && cloudEvent instanceof CloudEventV1) {
+                && cloudEvent instanceof CloudEventV1) {
             ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)
-            && cloudEvent instanceof CloudEventV03) {
+                && cloudEvent instanceof CloudEventV03) {
             ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
         }
 

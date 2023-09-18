@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
@@ -35,38 +34,38 @@ import lombok.ToString;
 @ToString
 public class PushMessageResponseHeader extends Header {
 
-    //response code
+    // response code
     private int code;
 
-    //requester language description
+    // requester language description
     private String language;
 
-    //protocol version adopted by requester, default:1.0
+    // protocol version adopted by requester, default:1.0
     private ProtocolVersion version;
 
-    //the environment number of the requester
+    // the environment number of the requester
     private String env;
 
-    //the IDC of the requester
+    // the IDC of the requester
     private String idc;
 
-    //subsystem of the requester
+    // subsystem of the requester
     private String sys;
 
-    //PID of the requester
+    // PID of the requester
     private String pid;
 
-    //IP of the requester
+    // IP of the requester
     private String ip;
 
-    //USERNAME of the requester
+    // USERNAME of the requester
     private String username;
 
-    //PASSWD of the requester
+    // PASSWD of the requester
     private String passwd;
 
     public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
-        String clientSysId, String clientPid, String clientIP) {
+                                                        String clientSysId, String clientPid, String clientIP) {
         PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
         pushMessageResponseHeader.setCode(requestCode);
         pushMessageResponseHeader.setVersion(ProtocolVersion.V1);

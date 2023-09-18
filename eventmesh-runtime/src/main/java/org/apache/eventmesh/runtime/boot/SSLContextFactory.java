@@ -46,14 +46,13 @@ public class SSLContextFactory {
 
     private static String password;
 
-    public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration)
-        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
-        UnrecoverableKeyException, KeyManagementException {
+    public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration) throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
         SSLContext sslContext;
 
-        try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
-            + File.separator
-            + fileName), StandardOpenOption.READ)) {
+        try (
+                InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
+                        + File.separator
+                        + fileName), StandardOpenOption.READ)) {
             protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
             fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
             password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();

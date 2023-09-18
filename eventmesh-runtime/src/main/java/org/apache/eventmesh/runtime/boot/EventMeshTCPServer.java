@@ -63,6 +63,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class EventMeshTCPServer extends AbstractTCPServer {
+
     private final EventMeshServer eventMeshServer;
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
@@ -77,7 +78,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
     private RateLimiter rateLimiter;
     private EventMeshRebalanceService eventMeshRebalanceService;
-
 
     public EventMeshTCPServer(final EventMeshServer eventMeshServer, final EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         super(eventMeshTCPConfiguration);
@@ -95,18 +95,14 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.getEventMeshTcpMsgReqnumPerSecond());
 
-
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
         Optional.ofNullable(eventMeshTCPConfiguration.getEventMeshMetricsPluginType()).ifPresent(
                 metricsPlugins -> metricsPlugins.forEach(
-                        pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))
-                )
-        );
+                        pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         tcpRetryer = new EventMeshTcpRetryer(this);
         tcpRetryer.init();
-
 
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
         clientSessionGroupMapping.init();
@@ -247,9 +243,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         registerProcessor(Command.REQUEST_TO_CLIENT_ACK, messageAckProcessor, taskHandleExecutorService);
     }
 
-
-
-
     public EventMeshServer getEventMeshServer() {
         return eventMeshServer;
     }
@@ -277,7 +270,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     public Acl getAcl() {
         return acl;
     }
-
 
     public ClientSessionGroupMapping getClientSessionGroupMapping() {
         return clientSessionGroupMapping;

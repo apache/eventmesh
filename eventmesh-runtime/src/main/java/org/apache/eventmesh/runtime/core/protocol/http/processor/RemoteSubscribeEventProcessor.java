@@ -78,8 +78,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         String localAddress = IPUtils.getLocalAddress();
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress
-        );
+                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
@@ -94,39 +93,37 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
-        //validate header
+        // validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
-        //validate body
+        // validate body
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
-            new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {
-            }
-        )).orElseGet(Maps::newHashMap);
+                new String(requestBody, Constants.DEFAULT_CHARSET),
+                new TypeReference<HashMap<String, Object>>() {
+                })).orElseGet(Maps::newHashMap);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
-        //String url = requestBodyMap.get(EventMeshConstants.URL).toString();
+        // String url = requestBodyMap.get(EventMeshConstants.URL).toString();
         String topic = JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // SubscriptionItem
         List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
-            topic,
-            new TypeReference<List<SubscriptionItem>>() {
-            }
-        )).orElseGet(Collections::emptyList);
+                topic,
+                new TypeReference<List<SubscriptionItem>>() {
+                })).orElseGet(Collections::emptyList);
 
-        //do acl check
+        // do acl check
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
             String user = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.USERNAME.getKey()).toString();
@@ -144,39 +141,39 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         }
 
         // validate URL
-        //        try {
-        //            if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-        //                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
-        //                httpLogger.error("subscriber url {} is not valid", url);
-        //                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        //                    responseBodyMap, null);
-        //                return;
-        //            }
-        //        } catch (Exception e) {
-        //            httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
-        //            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        //                responseBodyMap, null);
-        //            return;
-        //        }
+        // try {
+        // if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
+        // eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
+        // httpLogger.error("subscriber url {} is not valid", url);
+        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        // responseBodyMap, null);
+        // return;
+        // }
+        // } catch (Exception e) {
+        // httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
+        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        // responseBodyMap, null);
+        // return;
+        // }
         //
-        //        CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
-        //        // obtain webhook delivery agreement for Abuse Protection
-        //        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
-        //            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
+        // CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
+        // // obtain webhook delivery agreement for Abuse Protection
+        // boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
+        // url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
         //
-        //        if (!isWebhookAllowed) {
-        //            httpLogger.error("subscriber url {} is not allowed by the target system", url);
-        //            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        //                responseBodyMap, null);
-        //            return;
-        //        }
+        // if (!isWebhookAllowed) {
+        // httpLogger.error("subscriber url {} is not allowed by the target system", url);
+        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+        // responseBodyMap, null);
+        // return;
+        // }
 
         long startTime = System.currentTimeMillis();
         try {
             // local subscription url
             String localUrl = "http://" + localAddress + ":"
-                + eventMeshHttpConfiguration.getHttpServerPort()
-                + RequestURI.PUBLISH_BRIDGE.getRequestURI();
+                    + eventMeshHttpConfiguration.getHttpServerPort()
+                    + RequestURI.PUBLISH_BRIDGE.getRequestURI();
             Map<String, Object> remoteBodyMap = new HashMap<>();
             remoteBodyMap.put(EventMeshConstants.URL, localUrl);
             remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, eventMeshHttpConfiguration.getMeshGroup());
@@ -192,13 +189,12 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
             CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
-                response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
+                    response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
             Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
-                remoteResult,
-                new TypeReference<Map<String, String>>() {
-                }
-            )).orElseGet(Maps::newHashMap);
+                    remoteResult,
+                    new TypeReference<Map<String, String>>() {
+                    })).orElseGet(Maps::newHashMap);
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
@@ -207,15 +203,15 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
             } else {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                        responseBodyMap, null);
             }
 
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
             httpLogger.error("subscribe Remote|cost={}ms|topic={}", endTime - startTime,
-                JsonUtils.toJSONString(subscriptionList), e);
+                    JsonUtils.toJSONString(subscriptionList), e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
         }
     }
 

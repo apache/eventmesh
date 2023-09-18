@@ -43,14 +43,14 @@ public class EventMeshWorkflowClient {
         final Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
         if (selector == null) {
             throw new Exception(String.format("selector=%s not register.please check it.",
-                clientConfig.getSelectorType()));
+                    clientConfig.getSelectorType()));
         }
         final ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
         if (instance == null) {
             throw new Exception("workflow server is not running.please check it.");
         }
         final ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(),
-            instance.getPort()).usePlaintext().build();
+                instance.getPort()).usePlaintext().build();
         return WorkflowGrpc.newBlockingStub(channel);
     }
 

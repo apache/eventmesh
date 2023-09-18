@@ -36,7 +36,6 @@ import java.util.Set;
 
 import io.grpc.stub.StreamObserver;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -72,8 +71,9 @@ public class StreamPushRequest extends AbstractPushRequest {
             this.lastPushTime = System.currentTimeMillis();
 
             eventMeshCloudEvent = CloudEvent.newBuilder(eventMeshCloudEvent)
-                .putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
+                    .putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+                            CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build())
+                    .build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
                 StreamObserver<CloudEvent> emitter = eventEmitter.getEmitter();
@@ -83,14 +83,15 @@ public class StreamPushRequest extends AbstractPushRequest {
 
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.info("message|eventMesh2client|emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                    EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
+                        EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 complete();
             } catch (Throwable t) {
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                    t.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, t);
+                        t.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, t);
 
                 delayRetry();
             }
@@ -99,7 +100,7 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     private List<EventEmitter<CloudEvent>> selectEmitter() {
         List<EventEmitter<CloudEvent>> emitterList = MapUtils.getObject(idcEmitters,
-            eventMeshGrpcConfiguration.getEventMeshIDC(), null);
+                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             return getEventEmitters(emitterList);
         }

@@ -19,7 +19,7 @@ package org.apache.eventmesh.common.protocol.grpc.common;
 
 public class ProtocolKey {
 
-    //EventMesh extensions
+    // EventMesh extensions
     public static final String ENV = "env";
     public static final String IDC = "idc";
     public static final String SYS = "sys";
@@ -53,13 +53,13 @@ public class ProtocolKey {
      * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#context-attributes">context-attributes</a>
      */
 
-    //Required attributes
+    // Required attributes
     public static final String ID = "id";
     public static final String SOURCE = "source";
     public static final String SPECVERSION = "specversion";
     public static final String TYPE = "type";
 
-    //Optional attributes
+    // Optional attributes
     public static final String DATA_CONTENT_TYPE = "datacontenttype";
     public static final String DATA_SCHEMA = "dataschema";
     public static final String SUBJECT = "subject";

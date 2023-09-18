@@ -65,28 +65,28 @@ public class SendMessageRequestProtocolResolver {
                 cloudEventBuilder = CloudEventBuilder.fromSpecVersion(SpecVersion.parse(protocolVersion));
 
                 cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
-                    .withSubject(sendMessageRequestBody.getTopic())
-                    .withType("eventmeshmessage")
-                    .withSource(URI.create("/"))
-                    .withData(content.getBytes(Constants.DEFAULT_CHARSET))
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
-                    .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
-                    .withExtension(SendMessageRequestBody.PRODUCERGROUP,
-                        sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
+                        .withSubject(sendMessageRequestBody.getTopic())
+                        .withType("eventmeshmessage")
+                        .withSource(URI.create("/"))
+                        .withData(content.getBytes(Constants.DEFAULT_CHARSET))
+                        .withExtension(ProtocolKey.REQUEST_CODE, code)
+                        .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), env)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), ip)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), pid)
+                        .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys)
+                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd)
+                        .withExtension(ProtocolKey.VERSION, version.getVersion())
+                        .withExtension(ProtocolKey.LANGUAGE, language)
+                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
+                        .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
+                        .withExtension(SendMessageRequestBody.PRODUCERGROUP,
+                                sendMessageRequestBody.getProducerGroup())
+                        .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
                 if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
                     cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
                 }

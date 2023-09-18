@@ -42,14 +42,14 @@ import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
  *
  * @since 1.3.0
  */
 public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
-    implements ProtocolAdaptor<ProtocolTransportObject> {
+        implements
+            ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject protocolTransportObject) throws ProtocolHandleException {
@@ -76,8 +76,7 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
-        throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
         return null;
     }
 
@@ -99,13 +98,13 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         // ce data
         if (null != cloudEvent.getData()) {
             Map<String, Object> dataContentMap = JsonUtils.parseTypeReferenceObject(
-                new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
-                new TypeReference<Map<String, Object>>() {
-                });
+                    new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
+                    new TypeReference<Map<String, Object>>() {
+                    });
             String requestHeader = JsonUtils.toJSONString(
-                Objects.requireNonNull(dataContentMap, "Headers must not be null").get(CONSTANTS_KEY_HEADERS));
+                    Objects.requireNonNull(dataContentMap, "Headers must not be null").get(CONSTANTS_KEY_HEADERS));
             byte[] requestBody = Objects.requireNonNull(
-                JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)), "Body must not be null").getBytes(StandardCharsets.UTF_8);
+                    JsonUtils.toJSONString(dataContentMap.get(CONSTANTS_KEY_BODY)), "Body must not be null").getBytes(StandardCharsets.UTF_8);
             Map<String, Object> requestHeaderMap = JsonUtils.parseTypeReferenceObject(requestHeader, new TypeReference<Map<String, Object>>() {
             });
             String requestURI = dataContentMap.get(CONSTANTS_KEY_PATH).toString();

@@ -85,4 +85,3 @@ class EtcdLeaseId {
         this.leaseId = leaseId;
     }
 }
-

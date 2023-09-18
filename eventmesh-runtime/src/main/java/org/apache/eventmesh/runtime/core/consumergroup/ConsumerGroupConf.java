@@ -24,11 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConsumerGroupConf implements Serializable {
 
-    //eg . 5013-1A0
+    // eg . 5013-1A0
     private String consumerGroup;
 
-    private final ConcurrentHashMap<String/*topic*/, ConsumerGroupTopicConf> consumerGroupTopicConf
-        = new ConcurrentHashMap<String, ConsumerGroupTopicConf>();
+    private final ConcurrentHashMap<String/* topic */, ConsumerGroupTopicConf> consumerGroupTopicConf =
+            new ConcurrentHashMap<String, ConsumerGroupTopicConf>();
 
     public ConsumerGroupConf(String consumerGroup) {
         this.consumerGroup = consumerGroup;
@@ -57,8 +57,8 @@ public class ConsumerGroupConf implements Serializable {
         ConsumerGroupConf that = (ConsumerGroupConf) o;
 
         return consumerGroup.equals(that.consumerGroup)
-            &&
-            Objects.equals(consumerGroupTopicConf, that.consumerGroupTopicConf);
+                &&
+                Objects.equals(consumerGroupTopicConf, that.consumerGroupTopicConf);
     }
 
     @Override
@@ -70,8 +70,8 @@ public class ConsumerGroupConf implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupConfig={")
-            .append("groupName=").append(consumerGroup).append(",")
-            .append(",consumerGroupTopicConf=").append(consumerGroupTopicConf).append("}");
+                .append("groupName=").append(consumerGroup).append(",")
+                .append(",consumerGroupTopicConf=").append(consumerGroupTopicConf).append("}");
         return sb.toString();
     }
 }

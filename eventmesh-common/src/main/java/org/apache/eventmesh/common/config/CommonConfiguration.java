@@ -92,7 +92,6 @@ public class CommonConfiguration {
     @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
 
-
     @ConfigFiled(field = "server.trace.enabled")
     private boolean eventMeshServerTraceEnable = false;
 
@@ -104,7 +103,6 @@ public class CommonConfiguration {
 
     @ConfigFiled(field = "server.provide.protocols", reload = true)
     private List<String> eventMeshProvideServerProtocols;
-
 
     @ConfigFiled(reload = true)
     private String eventMeshWebhookOrigin;

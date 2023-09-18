@@ -56,19 +56,20 @@ public class RemoteSubscribeInstance {
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
         final RequestParam subscribeParam = buildCommonRequestParam()
-            .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(Collections.singletonList(subscriptionItem)))
-            .addBody(SubscribeRequestBody.CONSUMERGROUP, ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .addBody(SubscribeRequestBody.URL, "http://127.0.0.1:8088/sub/test")
-            .addBody("remoteMesh", "http://127.0.0.1:10105/eventmesh/subscribe/local");
+                .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(Collections.singletonList(subscriptionItem)))
+                .addBody(SubscribeRequestBody.CONSUMERGROUP, ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .addBody(SubscribeRequestBody.URL, "http://127.0.0.1:8088/sub/test")
+                .addBody("remoteMesh", "http://127.0.0.1:10105/eventmesh/subscribe/local");
 
         postMsg(subscribeParam);
     }
 
     private static void unsubscribeRemote() {
         final RequestParam subscribeParam = buildCommonRequestParam()
-            .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(Collections.singletonList(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)))
-            .addBody(SubscribeRequestBody.CONSUMERGROUP, ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .addBody(SubscribeRequestBody.URL, "http://127.0.0.1:8088/sub/test");
+                .addBody(SubscribeRequestBody.TOPIC,
+                        JsonUtils.toJSONString(Collections.singletonList(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)))
+                .addBody(SubscribeRequestBody.CONSUMERGROUP, ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .addBody(SubscribeRequestBody.URL, "http://127.0.0.1:8088/sub/test");
 
         postMsg(subscribeParam);
     }
@@ -89,8 +90,8 @@ public class RemoteSubscribeInstance {
 
     private static RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
-            .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), IPUtils.getLocalAddress())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT);
+                .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), IPUtils.getLocalAddress())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT);
     }
 }

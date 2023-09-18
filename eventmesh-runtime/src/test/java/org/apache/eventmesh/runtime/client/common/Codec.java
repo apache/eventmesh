@@ -35,7 +35,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -108,7 +107,7 @@ public class Codec {
                     String errorMsg = String.format("invalid magic flag or "
                             +
                             "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
-                        new String(versionBytes, UTF8), ctx.channel().remoteAddress());
+                            new String(versionBytes, UTF8), ctx.channel().remoteAddress());
                     throw new Exception(errorMsg);
                 }
 
@@ -134,7 +133,7 @@ public class Codec {
                 out.add(pkg);
             } catch (Exception e) {
                 log.error("decode|length={}|headerLength={}|bodyLength={}|header={}|body={}.", length,
-                    headerLength, bodyLength, header, body);
+                        headerLength, bodyLength, header, body);
                 throw e;
             }
         }
@@ -144,20 +143,20 @@ public class Codec {
         if (cmd == Command.HELLO_REQUEST || cmd == Command.RECOMMEND_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, UserAgent.class);
         } else if (cmd == Command.SUBSCRIBE_REQUEST
-            || cmd == Command.UNSUBSCRIBE_REQUEST) {
+                || cmd == Command.UNSUBSCRIBE_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, Subscription.class);
         } else if (cmd == Command.REQUEST_TO_SERVER
-            || cmd == Command.REQUEST_TO_CLIENT
-            || cmd == Command.RESPONSE_TO_SERVER
-            || cmd == Command.RESPONSE_TO_CLIENT
-            || cmd == Command.ASYNC_MESSAGE_TO_SERVER
-            || cmd == Command.ASYNC_MESSAGE_TO_CLIENT
-            || cmd == Command.BROADCAST_MESSAGE_TO_SERVER
-            || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT
-            || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT_ACK
-            || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK
-            || cmd == Command.REQUEST_TO_CLIENT_ACK
-            || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
+                || cmd == Command.REQUEST_TO_CLIENT
+                || cmd == Command.RESPONSE_TO_SERVER
+                || cmd == Command.RESPONSE_TO_CLIENT
+                || cmd == Command.ASYNC_MESSAGE_TO_SERVER
+                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT
+                || cmd == Command.BROADCAST_MESSAGE_TO_SERVER
+                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT
+                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT_ACK
+                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK
+                || cmd == Command.REQUEST_TO_CLIENT_ACK
+                || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
             return ClientGlobal.jsonMapper.readValue(data, EventMeshMessage.class);
         } else if (cmd == Command.REDIRECT_TO_CLIENT) {
             return ClientGlobal.jsonMapper.readValue(data, RedirectInfo.class);

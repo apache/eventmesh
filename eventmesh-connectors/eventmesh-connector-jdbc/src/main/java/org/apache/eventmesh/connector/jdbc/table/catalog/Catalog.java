@@ -92,5 +92,5 @@ public interface Catalog extends AutoCloseable {
      */
     CatalogTable getTable(TableId tableId) throws CatalogException, TableNotExistException, SQLException;
 
-    //TODO: support create table, drop table and update table
+    // TODO: support create table, drop table and update table
 }

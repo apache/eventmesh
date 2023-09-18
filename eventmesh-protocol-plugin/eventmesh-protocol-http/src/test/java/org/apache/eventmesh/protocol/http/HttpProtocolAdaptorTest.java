@@ -29,11 +29,11 @@ public class HttpProtocolAdaptorTest {
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor(HttpProtocolConstant.PROTOCOL_NAME);
+                ProtocolPluginFactory.getProtocolAdaptor(HttpProtocolConstant.PROTOCOL_NAME);
 
         Assert.assertNotNull(protocolAdaptor);
         Assert.assertEquals(
-            HttpProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+                HttpProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
         Assert.assertEquals(HttpProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

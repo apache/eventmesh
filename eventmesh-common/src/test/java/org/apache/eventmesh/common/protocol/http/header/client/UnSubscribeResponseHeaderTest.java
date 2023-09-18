@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-
 import org.junit.Test;
 
 public class UnSubscribeResponseHeaderTest extends AbstractResponseHeaderTest {
@@ -25,7 +24,7 @@ public class UnSubscribeResponseHeaderTest extends AbstractResponseHeaderTest {
     @Test
     public void testToMap() {
         UnSubscribeResponseHeader header = UnSubscribeResponseHeader.buildHeader(200,
-            "CLUSTER", "127.0.0.1", "DEV", "IDC");
+                "CLUSTER", "127.0.0.1", "DEV", "IDC");
         assertMapContent(header);
     }
 }

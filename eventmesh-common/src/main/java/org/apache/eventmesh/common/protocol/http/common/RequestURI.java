@@ -39,7 +39,6 @@ public enum RequestURI {
 
     SUBSCRIPTION_QUERY("/eventmesh/subscrition/query", "SUBSCRIPTION QUERY");
 
-
     private final String requestURI;
 
     private final String desc;

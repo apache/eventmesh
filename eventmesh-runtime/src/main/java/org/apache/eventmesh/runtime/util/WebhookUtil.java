@@ -49,8 +49,8 @@ public class WebhookUtil {
     private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
-        final String targetUrl,
-        final String requestOrigin) {
+                                                  final String targetUrl,
+                                                  final String requestOrigin) {
 
         if (log.isInfoEnabled()) {
             log.info("obtain webhook delivery agreement for url: {}", targetUrl);
@@ -66,20 +66,20 @@ public class WebhookUtil {
                 allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             }
             return StringUtils.isEmpty(allowedOrigin)
-                || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
+                    || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
-                    + "unable to obtain the webhook delivery agreement.", targetUrl);
+                        + "unable to obtain the webhook delivery agreement.", targetUrl);
             }
         }
         return true;
     }
 
     public static void setWebhookHeaders(final HttpPost builder,
-        final String contentType,
-        final String requestOrigin,
-        final String urlAuthType) {
+                                         final String contentType,
+                                         final String requestOrigin,
+                                         final String urlAuthType) {
         builder.setHeader(CONTENT_TYPE_HEADER, contentType);
         builder.setHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 

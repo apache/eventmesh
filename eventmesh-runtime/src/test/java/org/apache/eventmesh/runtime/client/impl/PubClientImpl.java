@@ -37,7 +37,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -89,7 +88,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 Package msg = MessageUtils.heartBeat();
                 if (log.isDebugEnabled()) {
                     log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                        clientNo, msg.getHeader().getCommand(), msg);
+                            clientNo, msg.getHeader().getCommand(), msg);
                 }
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {

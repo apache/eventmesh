@@ -74,12 +74,12 @@ public class SubService implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
         final EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env(ENV).idc(IDC)
-            .sys(SUB_SYS)
-            .build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .env(ENV).idc(IDC)
+                .sys(SUB_SYS)
+                .build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();

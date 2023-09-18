@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +49,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
     public synchronized void registerClient(ConsumerGroupClient client) {
         if (client.getGrpcType() != grpcType) {
             log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
-                client.getGrpcType(), grpcType, client.toString());
+                    client.getGrpcType(), grpcType, client.toString());
             return;
         }
         String idc = client.getIdc();
@@ -87,9 +85,9 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
     @Override
     public String toString() {
         return "WebhookConsumeTopicConfig={consumerGroup=" + consumerGroup
-            + ",grpcType=" + grpcType
-            + ",topic=" + topic
-            + ",idcUrls=" + idcUrls + "}";
+                + ",grpcType=" + grpcType
+                + ",topic=" + topic
+                + ",idcUrls=" + idcUrls + "}";
     }
 
     public String getConsumerGroup() {

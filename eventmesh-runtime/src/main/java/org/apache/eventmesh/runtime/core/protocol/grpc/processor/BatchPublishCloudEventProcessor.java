@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEventProcessor {
 
-
     public BatchPublishCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         super(eventMeshGrpcServer, eventMeshGrpcServer.getAcl());
     }
@@ -57,7 +56,7 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
         String protocolType = EventMeshCloudEventUtils.getProtocolType(cloudEvent);
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         List<io.cloudevents.CloudEvent> cloudEvents = grpcCommandProtocolAdaptor.toBatchCloudEvent(
-            new BatchEventMeshCloudEventWrapper(cloudEventBatch));
+                new BatchEventMeshCloudEventWrapper(cloudEventBatch));
 
         for (io.cloudevents.CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
@@ -70,23 +69,23 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
             eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
             long startTime = System.currentTimeMillis();
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     long endTime = System.currentTimeMillis();
                     log.info("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId);
+                            endTime - startTime, topic, seqNum, uniqueId);
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
                     long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId, context.getException());
+                            endTime - startTime, topic, seqNum, uniqueId, context.getException());
                 }
             });
         }
         ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "batch publish success", emitter);
     }
-
 
 }

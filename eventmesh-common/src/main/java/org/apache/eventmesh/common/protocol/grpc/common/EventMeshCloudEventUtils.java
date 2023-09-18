@@ -280,11 +280,10 @@ public abstract class EventMeshCloudEventUtils {
         if (ProtoSupport.isProtoContent(dataContentType)) {
             Any protoData = cloudEvent.getProtoData();
             return protoData == Any.getDefaultInstance() ? defaultValue
-                : new String(protoData.toByteArray(), Constants.DEFAULT_CHARSET);
+                    : new String(protoData.toByteArray(), Constants.DEFAULT_CHARSET);
         }
         ByteString binaryData = cloudEvent.getBinaryData();
         return ByteString.EMPTY == binaryData ? defaultValue : binaryData.toStringUtf8();
-
 
     }
 

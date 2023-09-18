@@ -71,12 +71,12 @@ public class EventMeshGrpcProducerTest {
         producer.setPublisherClient(stub);
 
         doThrow(RuntimeException.class).when(stub).publish(
-            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument),
-                "mockExceptionContent")));
+                argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument),
+                        "mockExceptionContent")));
         doReturn(CloudEvent.getDefaultInstance()).when(stub).publish(
-            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument), "mockContent")));
+                argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getDataContent(argument), "mockContent")));
         doReturn(CloudEvent.getDefaultInstance()).when(stub).batchPublish(
-            argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getSubject(argument.getEvents(0)), "mockTopic")));
+                argThat(argument -> argument != null && StringUtils.equals(EventMeshCloudEventUtils.getSubject(argument.getEvents(0)), "mockTopic")));
         doReturn(stub).when(stub).withDeadlineAfter(1000L, TimeUnit.MILLISECONDS);
         when(cloudEventProducer.publish(anyList())).thenReturn(Response.builder().build());
         when(cloudEventProducer.publish(Mockito.isA(io.cloudevents.CloudEvent.class))).thenReturn(Response.builder().build());
@@ -114,25 +114,25 @@ public class EventMeshGrpcProducerTest {
     @Test
     public void testPublishGenericMessageList() {
         assertThat(producer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(
-            Response.builder().build());
+                Response.builder().build());
         EventMeshMessageBuilder eventMeshMessageBuilder = defaultEventMeshMessageBuilder();
         eventMeshMessageBuilder.prop(Collections.singletonMap(Constants.EVENTMESH_MESSAGE_CONST_TTL, "1000"));
         assertThat(producer.publish(Collections.singletonList(eventMeshMessageBuilder.build()))).isEqualTo(
-            Response.builder().build());
+                Response.builder().build());
     }
 
     @Test
     public void testRequestReply() {
         assertThat(producer.requestReply(defaultEventMeshMessageBuilder().content(StringUtils.EMPTY).build(),
-            1000L)).isNull();
+                1000L)).isNull();
         EventMeshMessage eventMeshMessage = defaultEventMeshMessageBuilder().build();
         assertThat(producer.requestReply(eventMeshMessage, 1000L)).hasFieldOrPropertyWithValue("content",
-            eventMeshMessage.getContent()).hasFieldOrPropertyWithValue("topic", eventMeshMessage.getTopic());
+                eventMeshMessage.getContent()).hasFieldOrPropertyWithValue("topic", eventMeshMessage.getTopic());
     }
 
     private EventMeshMessage.EventMeshMessageBuilder defaultEventMeshMessageBuilder() {
         return EventMeshMessage.builder().bizSeqNo("bizSeqNo").content("mockContent")
-            .createTime(System.currentTimeMillis()).uniqueId("mockUniqueId").topic("mockTopic")
-            .prop(Collections.emptyMap());
+                .createTime(System.currentTimeMillis()).uniqueId("mockUniqueId").topic("mockTopic")
+                .prop(Collections.emptyMap());
     }
 }

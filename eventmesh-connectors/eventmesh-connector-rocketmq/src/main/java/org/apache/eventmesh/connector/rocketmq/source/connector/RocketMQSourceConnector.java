@@ -133,7 +133,7 @@ public class RocketMQSourceConnector implements Source {
         Thread.sleep(1500);
 
         List<MessageQueue> allocated = getAllocatedMessageQueue(sourceConfig.getConnectorConfig().getTopic(),
-            sourceConfig.getPubSubConfig().getGroup());
+                sourceConfig.getPubSubConfig().getGroup());
 
         consumer.assign(allocated);
 
@@ -161,8 +161,8 @@ public class RocketMQSourceConnector implements Source {
         });
     }
 
-    private List<MessageQueue> getAllocatedMessageQueue(String topic, String group)
-        throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
+    private List<MessageQueue> getAllocatedMessageQueue(String topic,
+                                                        String group) throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
         List<MessageQueue> mqAll = getMessageQueueList(topic);
         List<String> cidAll = getCidList(group);
         if (cidAll != null) {
@@ -220,7 +220,7 @@ public class RocketMQSourceConnector implements Source {
             byte[] body = messageExt.getBody();
             String bodyStr = new String(body, StandardCharsets.UTF_8);
             RecordPartition recordPartition = convertToRecordPartition(messageExt.getTopic(),
-                messageExt.getBrokerName(), messageExt.getQueueId());
+                    messageExt.getBrokerName(), messageExt.getQueueId());
             RecordOffset recordOffset = convertToRecordOffset(messageExt.getQueueOffset());
             ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, bodyStr);
             connectRecord.addExtension("topic", messageExt.getTopic());
@@ -273,7 +273,7 @@ public class RocketMQSourceConnector implements Source {
 
     private void execScheduleTask() {
         commitOffsetScheduleService.scheduleAtFixedRate(this::commitOffsetSchedule, sourceConfig.connectorConfig.getCommitOffsetIntervalMs(),
-            sourceConfig.connectorConfig.getCommitOffsetIntervalMs(), TimeUnit.MILLISECONDS);
+                sourceConfig.connectorConfig.getCommitOffsetIntervalMs(), TimeUnit.MILLISECONDS);
     }
 
     private void commitOffsetSchedule() {

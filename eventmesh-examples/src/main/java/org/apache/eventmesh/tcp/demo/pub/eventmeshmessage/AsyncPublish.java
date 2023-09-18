@@ -31,7 +31,6 @@ import org.apache.eventmesh.util.Utils;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,12 +43,12 @@ public class AsyncPublish {
         try {
             final UserAgent userAgent = EventMeshTestUtils.generateClient1();
             final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+                    .host(eventMeshIp)
+                    .port(eventMeshTcpPort)
+                    .userAgent(userAgent)
+                    .build();
             final EventMeshTCPClient<EventMeshMessage> client =
-                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+                    EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             for (int i = 0; i < 5; i++) {

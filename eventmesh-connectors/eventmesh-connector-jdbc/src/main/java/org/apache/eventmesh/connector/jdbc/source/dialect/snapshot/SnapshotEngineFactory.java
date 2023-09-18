@@ -38,6 +38,5 @@ public interface SnapshotEngineFactory {
      * @return A snapshot engine that can perform snapshot operations.
      */
     SnapshotEngine<? extends JdbcContext> createSnapshotEngine(final JdbcSourceConfig jdbcSourceConfig,
-        final DatabaseDialect databaseDialect);
+                                                               final DatabaseDialect databaseDialect);
 }
-

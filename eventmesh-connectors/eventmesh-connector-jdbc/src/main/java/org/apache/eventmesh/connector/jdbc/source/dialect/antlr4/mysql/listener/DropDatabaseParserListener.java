@@ -51,10 +51,10 @@ public class DropDatabaseParserListener extends MySqlParserBaseListener {
             Payload payload = event.getJdbcConnectData().getPayload();
             SourceConnectorConfig sourceConnectorConfig = parser.getSourceConfig().getSourceConnectorConfig();
             MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
-                .name(sourceConnectorConfig.getName())
-                .catalogName(databaseName)
-                .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
-                .build();
+                    .name(sourceConnectorConfig.getName())
+                    .catalogName(databaseName)
+                    .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
+                    .build();
             CatalogChanges changes = CatalogChanges.newBuilder().operationType(SchemaChangeEventType.DATABASE_DROP).catalog(catalogSchema).build();
             payload.withSource(sourceMateData).withDdl(sql).withCatalogChanges(changes);
             parser.getCallback().handle(event);

@@ -31,7 +31,7 @@ public class PushMessageResponseHeaderTest {
     @Test
     public void testToMap() {
         PushMessageResponseHeader header = PushMessageResponseHeader.buildHeader(100, "DEV",
-            "IDC", "SYSID", "PID", "127.0.0.1");
+                "IDC", "SYSID", "PID", "127.0.0.1");
         Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(100));
         Assert.assertThat(header.toMap().get(ProtocolKey.LANGUAGE), is(Constants.LANGUAGE_JAVA));
         Assert.assertThat(header.toMap().get(ProtocolKey.VERSION), is(ProtocolVersion.V1));

@@ -32,12 +32,10 @@ import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class AdminWebHookConfigOperationManager {
 
-    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
-        = new HashMap<>();
+    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP = new HashMap<>();
 
     static {
         WEBHOOK_CONFIG_OPERATION_MAP.put(OPERATION_MODE_FILE, FileWebHookConfigOperation.class);
@@ -52,8 +50,7 @@ public class AdminWebHookConfigOperationManager {
         return webHookConfigOperation;
     }
 
-    public void init() throws InvocationTargetException, InstantiationException, IllegalAccessException,
-        NoSuchMethodException {
+    public void init() throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
 
         adminConfiguration = ConfigService.getInstance().buildConfigInstance(AdminConfiguration.class);
         if (!adminConfiguration.isAdminStart()) {
@@ -67,7 +64,7 @@ public class AdminWebHookConfigOperationManager {
 
         // Affects which implementation of the WebHookConfigOperation interface is used.
         final Constructor<? extends WebHookConfigOperation> constructor =
-            WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
+                WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
         // Save the original accessibility of constructor
         final boolean oldAccessible = constructor.isAccessible();
         try {

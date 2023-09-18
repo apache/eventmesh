@@ -29,13 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RabbitmqClient {
 
-
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory;
 
     public RabbitmqClient(RabbitmqConnectionFactory rabbitmqConnectionFactory) {
         this.rabbitmqConnectionFactory = rabbitmqConnectionFactory;
     }
-
 
     /**
      * get rabbitmq connection
@@ -49,8 +47,8 @@ public class RabbitmqClient {
      * @throws Exception Exception
      */
     public Connection getConnection(String host, String username,
-        String passwd, int port,
-        String virtualHost) throws Exception {
+                                    String passwd, int port,
+                                    String virtualHost) throws Exception {
         ConnectionFactory factory = rabbitmqConnectionFactory.createConnectionFactory();
         factory.setHost(host.trim());
         factory.setPort(port);
@@ -73,7 +71,7 @@ public class RabbitmqClient {
      * @throws Exception Exception
      */
     public void publish(Channel channel, String exchangeName,
-        String routingKey, byte[] message) throws Exception {
+                        String routingKey, byte[] message) throws Exception {
         channel.basicPublish(exchangeName, routingKey, null, message);
     }
 
@@ -87,12 +85,12 @@ public class RabbitmqClient {
      * @param queueName           queue name
      */
     public void binding(Channel channel, BuiltinExchangeType builtinExchangeType,
-        String exchangeName, String routingKey, String queueName) {
+                        String exchangeName, String routingKey, String queueName) {
         try {
             channel.exchangeDeclare(exchangeName, builtinExchangeType.getType(), true,
-                false, false, null);
+                    false, false, null);
             channel.queueDeclare(queueName, false, false,
-                false, null);
+                    false, null);
             routingKey = builtinExchangeType.getType().equals(BuiltinExchangeType.FANOUT.getType()) ? "" : routingKey;
             channel.queueBind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {

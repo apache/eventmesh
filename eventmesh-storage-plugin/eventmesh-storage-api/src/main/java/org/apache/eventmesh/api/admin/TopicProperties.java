@@ -27,9 +27,8 @@ public class TopicProperties {
 
     @JsonCreator
     public TopicProperties(
-        @JsonProperty("name") String name,
-        @JsonProperty("messageCount") long messageCount
-    ) {
+                           @JsonProperty("name") String name,
+                           @JsonProperty("messageCount") long messageCount) {
         super();
         this.name = name;
         this.messageCount = messageCount;

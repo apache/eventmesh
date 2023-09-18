@@ -62,7 +62,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
         this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
         this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
-            eventMeshHttpClientConfig);
+                eventMeshHttpClientConfig);
         this.httpClient = setHttpClient();
     }
 
@@ -90,11 +90,11 @@ public abstract class AbstractHttpClient implements AutoCloseable {
             sslContext.init(null, tm, new SecureRandom());
 
             return HttpClients.custom()
-                .setConnectionManager(getHttpPoolManager(sslContext, eventMeshHttpClientConfig.getMaxConnectionPoolSize()))
-                .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
-                .evictIdleConnections(eventMeshHttpClientConfig.getConnectionIdleTimeSeconds(), TimeUnit.SECONDS)
-                .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
-                .build();
+                    .setConnectionManager(getHttpPoolManager(sslContext, eventMeshHttpClientConfig.getMaxConnectionPoolSize()))
+                    .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
+                    .evictIdleConnections(eventMeshHttpClientConfig.getConnectionIdleTimeSeconds(), TimeUnit.SECONDS)
+                    .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
+                    .build();
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
             throw new EventMeshException(e);
@@ -104,9 +104,9 @@ public abstract class AbstractHttpClient implements AutoCloseable {
     private HttpClientConnectionManager getHttpPoolManager(final SSLContext sslContext, final int poolSize) {
         final SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
         final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-            .register("http", PlainConnectionSocketFactory.getSocketFactory())
-            .register("https", sslFactory)
-            .build();
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslFactory)
+                .build();
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         connectionManager.setMaxTotal(poolSize);
         return connectionManager;

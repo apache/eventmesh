@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +70,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public GrpcClientHandler(
-        EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager
-    ) {
+                             EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
@@ -165,18 +163,17 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 // Convert each Client object to GetClientResponse and add to getClientResponseList
                 for (ConsumerGroupClient client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(client.env).orElse(""),
-                        Optional.ofNullable(client.sys).orElse(""),
-                        Optional.ofNullable(client.url).orElse(""),
-                        "0",
-                        Optional.ofNullable(client.hostname).orElse(""),
-                        0,
-                        Optional.ofNullable(client.apiVersion).orElse(""),
-                        Optional.ofNullable(client.idc).orElse(""),
-                        Optional.ofNullable(client.consumerGroup).orElse(""),
-                        "",
-                        "gRPC"
-                    );
+                            Optional.ofNullable(client.env).orElse(""),
+                            Optional.ofNullable(client.sys).orElse(""),
+                            Optional.ofNullable(client.url).orElse(""),
+                            "0",
+                            Optional.ofNullable(client.hostname).orElse(""),
+                            0,
+                            Optional.ofNullable(client.apiVersion).orElse(""),
+                            Optional.ofNullable(client.idc).orElse(""),
+                            Optional.ofNullable(client.consumerGroup).orElse(""),
+                            "",
+                            "gRPC");
                     getClientResponseList.add(getClientResponse);
                 }
             }

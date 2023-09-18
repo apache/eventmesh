@@ -46,7 +46,7 @@ public class UserAgent {
     }
 
     public UserAgent(String env, String subsystem, String path, int pid, String host, int port, String version,
-        String username, String password, String token, String idc, String group, String purpose, int unack) {
+                     String username, String password, String token, String idc, String group, String purpose, int unack) {
         this.env = env;
         this.subsystem = subsystem;
         this.path = path;
@@ -66,9 +66,9 @@ public class UserAgent {
     @Override
     public String toString() {
         return String.format(
-            "UserAgent{env='%s', subsystem='%s', group='%s', path='%s', pid=%d, host='%s',"
-                + " port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
-            env, subsystem, group, path, pid, host, port, version, idc, purpose, unack);
+                "UserAgent{env='%s', subsystem='%s', group='%s', path='%s', pid=%d, host='%s',"
+                        + " port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
+                env, subsystem, group, path, pid, host, port, version, idc, purpose, unack);
     }
 
     @Override
@@ -102,7 +102,6 @@ public class UserAgent {
         if (!Objects.equals(group, userAgent.group)) {
             return false;
         }
-
 
         if (!Objects.equals(path, userAgent.path)) {
             return false;

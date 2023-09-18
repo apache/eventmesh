@@ -37,7 +37,7 @@ public abstract class ConsumerGroupTopicConfig {
     }
 
     public static ConsumerGroupTopicConfig buildTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode,
-        GrpcType grpcType) {
+                                                            GrpcType grpcType) {
         if (GrpcType.STREAM == grpcType) {
             return new StreamTopicConfig(consumerGroup, topic, subscriptionMode);
         } else {

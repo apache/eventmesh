@@ -44,12 +44,12 @@ public class AsyncPublish {
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
             EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+                    .host(eventMeshIp)
+                    .port(eventMeshTcpPort)
+                    .userAgent(userAgent)
+                    .build();
             final EventMeshTCPClient<CloudEvent> client =
-                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+                    EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             for (int i = 0; i < 2; i++) {

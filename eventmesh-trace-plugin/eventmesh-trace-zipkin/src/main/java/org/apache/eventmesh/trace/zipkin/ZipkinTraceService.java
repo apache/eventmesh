@@ -37,7 +37,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import lombok.Getter;
 import lombok.Setter;
 
-
 /**
  * ZipkinTraceService
  */
@@ -56,11 +55,11 @@ public class ZipkinTraceService extends AbstractTraceService {
 
     @Override
     public void init() {
-        //zipkin's config
+        // zipkin's config
         final String eventMeshZipkinIP = zipkinConfiguration.getEventMeshZipkinIP();
         final int eventMeshZipkinPort = zipkinConfiguration.getEventMeshZipkinPort();
 
-        //exporter's config
+        // exporter's config
         final int eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
         final int eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
         final int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
@@ -68,17 +67,17 @@ public class ZipkinTraceService extends AbstractTraceService {
 
         final String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
         zipkinExporter =
-            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
+                ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
-            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-            .build();
+                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+                .build();
 
-        //set the trace service's name
+        // set the trace service's name
         final Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
+                Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
         initVars(spanProcessor, serviceNameResource);
     }
@@ -108,7 +107,7 @@ public class ZipkinTraceService extends AbstractTraceService {
             throw new TraceException("trace close error", ex);
         }
 
-        //todo: turn the value of useTrace in AbstractHTTPServer into false
+        // todo: turn the value of useTrace in AbstractHTTPServer into false
     }
 
     public ZipkinConfiguration getClientConfiguration() {

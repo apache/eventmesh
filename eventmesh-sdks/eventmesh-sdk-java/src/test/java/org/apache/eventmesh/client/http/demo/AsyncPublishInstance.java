@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,23 +38,23 @@ public class AsyncPublishInstance {
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .producerGroup("EventMeshTest-producerGroup")
-            .env("env")
-            .idc("idc")
-            .ip(IPUtils.getLocalAddress())
-            .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .producerGroup("EventMeshTest-producerGroup")
+                .env("env")
+                .idc("idc")
+                .ip(IPUtils.getLocalAddress())
+                .sys("1234")
+                .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
         for (int i = 0; i < 1; i++) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content("testPublishMessage")
-                .topic(topic)
-                .uniqueId(RandomStringUtils.generateNum(30))
-                .build()
-                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+                    .bizSeqNo(RandomStringUtils.generateNum(30))
+                    .content("testPublishMessage")
+                    .topic(topic)
+                    .uniqueId(RandomStringUtils.generateNum(30))
+                    .build()
+                    .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
             eventMeshHttpProducer.publish(eventMeshMessage);
             ThreadUtils.sleep(1, TimeUnit.SECONDS);

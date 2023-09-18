@@ -27,8 +27,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public interface EventProcessor {
 
-    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpEventWrapper> asyncContext)
-        throws Exception;
+    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpEventWrapper> asyncContext) throws Exception;
 
     boolean rejectRequest();
 

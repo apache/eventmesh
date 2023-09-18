@@ -32,8 +32,8 @@ public class MysqlSnapshotEngineFactory implements SnapshotEngineFactory {
 
     @Override
     public SnapshotEngine<MysqlJdbcContext> createSnapshotEngine(final JdbcSourceConfig jdbcSourceConfig,
-        final DatabaseDialect databaseDialect) {
+                                                                 final DatabaseDialect databaseDialect) {
         return new MysqlSnapshotEngine(jdbcSourceConfig, (MysqlDatabaseDialect) databaseDialect,
-            new MysqlJdbcContext(jdbcSourceConfig, new MysqlAntlr4DdlParser(false, false, jdbcSourceConfig)));
+                new MysqlJdbcContext(jdbcSourceConfig, new MysqlAntlr4DdlParser(false, false, jdbcSourceConfig)));
     }
 }

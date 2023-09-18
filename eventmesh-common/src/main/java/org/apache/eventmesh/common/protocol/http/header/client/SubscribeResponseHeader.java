@@ -43,8 +43,8 @@ public class SubscribeResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static SubscribeResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-        String eventMeshIp, String eventMeshEnv,
-        String eventMeshIDC) {
+                                                      String eventMeshIp, String eventMeshEnv,
+                                                      String eventMeshIDC) {
         SubscribeResponseHeader subscribeResponseHeader = new SubscribeResponseHeader();
         subscribeResponseHeader.setCode(requestCode);
         subscribeResponseHeader.setEventMeshCluster(eventMeshCluster);

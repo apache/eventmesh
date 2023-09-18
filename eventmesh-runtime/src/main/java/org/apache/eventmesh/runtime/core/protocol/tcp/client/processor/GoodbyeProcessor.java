@@ -33,7 +33,6 @@ import java.util.Arrays;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -57,18 +56,18 @@ public class GoodbyeProcessor implements TcpProcessor {
                 log.info("client|address={}| has reject ", session.getContext().channel().remoteAddress());
             } else {
                 msg.setHeader(
-                    new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                        pkg.getHeader().getSeq()));
+                        new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                                pkg.getHeader().getSeq()));
             }
         } catch (Exception e) {
             log.error("GoodbyeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()),
-                pkg.getHeader().getSeq()));
+                    pkg.getHeader().getSeq()));
         } finally {
             this.eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler()
                     .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
         }
         EventMeshTcp2Client
-            .closeSessionIfTimeout(this.eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());
+                .closeSessionIfTimeout(this.eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }

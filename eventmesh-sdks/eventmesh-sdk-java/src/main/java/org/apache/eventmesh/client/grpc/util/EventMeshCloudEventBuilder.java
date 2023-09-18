@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.grpc.util;
 
-
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.exception.ProtocolNotSupportException;
 import org.apache.eventmesh.common.Constants;
@@ -143,7 +142,8 @@ public class EventMeshCloudEventBuilder {
     private static CloudEvent switchEventMeshMessage2EventMeshCloudEvent(EventMeshMessage message, EventMeshGrpcClientConfig clientConfig,
                                                                          EventMeshProtocolType protocolType) {
         final String ttl = message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-                ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
+                ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+                : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
         final Map<String, String> props = message.getProp() == null ? new HashMap<>() : message.getProp();
         final String seqNum = message.getBizSeqNo() == null ? RandomStringUtils.generateNum(30) : message.getBizSeqNo();
         final String uniqueId = message.getUniqueId() == null ? RandomStringUtils.generateNum(30) : message.getUniqueId();
@@ -243,7 +243,7 @@ public class EventMeshCloudEventBuilder {
 
         // This is GRPC response cloudEvent
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
-            //The SubscriptionItem collection contains the content for the subscription.
+            // The SubscriptionItem collection contains the content for the subscription.
             return (T) JsonUtils.parseTypeReferenceObject(content,
                     new TypeReference<Set<HashMap<String, String>>>() {
 

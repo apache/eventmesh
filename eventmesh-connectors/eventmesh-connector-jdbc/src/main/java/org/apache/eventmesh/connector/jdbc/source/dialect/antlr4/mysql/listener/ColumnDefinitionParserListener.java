@@ -56,11 +56,11 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
 
     private MysqlDataTypeConvertor dataTypeConvertor;
 
-    //Determines whether the current column definition should be ignored. e.g. PRIMARY KEY, UNIQUE KEY
+    // Determines whether the current column definition should be ignored. e.g. PRIMARY KEY, UNIQUE KEY
     private AtomicReference<Boolean> ignoreColumn = new AtomicReference<>(false);
 
     public ColumnDefinitionParserListener(List<ParseTreeListener> listeners, TableEditor tableEditor, MysqlColumnEditor columnEditor,
-        MysqlAntlr4DdlParser parser) {
+                                          MysqlAntlr4DdlParser parser) {
         this.listeners = listeners;
         this.tableEditor = tableEditor;
         this.columnEditor = columnEditor;
@@ -70,7 +70,7 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
 
     @Override
     public void enterColumnDefinition(ColumnDefinitionContext ctx) {
-        //parse Column data type
+        // parse Column data type
         this.parser.runIfAllNotNull(() -> {
             String dataTypeString = ctx.dataType().getText();
             EventMeshDataType<?> eventMeshType = this.dataTypeConvertor.toEventMeshType(dataTypeString);
@@ -80,14 +80,13 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
         }, columnEditor);
 
         this.parser.runIfAllNotNull(() -> {
-            //parse column default value
+            // parse column default value
             ColumnDefinitionParserListener.this.defaultValueParserListener = new DefaultValueParserListener(columnEditor);
             ColumnDefinitionParserListener.this.listeners.add(defaultValueParserListener);
         }, tableEditor, columnEditor);
 
         super.enterColumnDefinition(ctx);
     }
-
 
     @Override
     public void enterNullNotnull(NullNotnullContext ctx) {
@@ -134,7 +133,7 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
             ignoreColumn.set(false);
         }
 
-        //When exit column definition needs to remove DefaultValueParserListener from listener list
+        // When exit column definition needs to remove DefaultValueParserListener from listener list
         parser.runIfAllNotNull(() -> listeners.remove(defaultValueParserListener), tableEditor);
         super.exitColumnDefinition(ctx);
     }

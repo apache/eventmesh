@@ -37,8 +37,7 @@ import com.google.common.base.Preconditions;
 
 public class TcpMessageProtocolResolver {
 
-    public static CloudEvent buildEvent(Header header, String cloudEventJson)
-        throws ProtocolHandleException {
+    public static CloudEvent buildEvent(Header header, String cloudEventJson) throws ProtocolHandleException {
         final CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
@@ -47,13 +46,13 @@ public class TcpMessageProtocolResolver {
 
         if (StringUtils.isAnyBlank(protocolType, protocolVersion, protocolDesc)) {
             throw new ProtocolHandleException(
-                String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
-                    protocolType, protocolVersion, protocolDesc));
+                    String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
+                            protocolType, protocolVersion, protocolDesc));
         }
 
         if (StringUtils.isBlank(cloudEventJson)) {
             throw new ProtocolHandleException(
-                String.format("invalid method params cloudEventJson %s", cloudEventJson));
+                    String.format("invalid method params cloudEventJson %s", cloudEventJson));
         }
 
         if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {

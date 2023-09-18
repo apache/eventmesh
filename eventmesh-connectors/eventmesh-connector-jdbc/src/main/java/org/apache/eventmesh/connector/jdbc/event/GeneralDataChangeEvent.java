@@ -22,7 +22,6 @@ import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
 public abstract class GeneralDataChangeEvent extends AbstractEvent implements DataChangeEvent {
 
-
     public GeneralDataChangeEvent(TableId tableId) {
         super(tableId);
     }

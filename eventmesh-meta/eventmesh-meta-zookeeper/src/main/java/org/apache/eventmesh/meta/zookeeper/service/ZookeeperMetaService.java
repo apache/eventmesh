@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.meta.zookeeper.service;
 
-
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -115,8 +114,8 @@ public class ZookeeperMetaService implements MetaService {
 
     private CuratorFramework buildZkClient() throws ClassNotFoundException {
         Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(serverAddr)
-            .namespace(ZookeeperConstant.NAMESPACE);
+                .connectString(serverAddr)
+                .namespace(ZookeeperConstant.NAMESPACE);
         if (zkConfig == null) {
             builder.retryPolicy(new ExponentialBackoffRetry(1000, 5));
             return builder.build();
@@ -140,20 +139,20 @@ public class ZookeeperMetaService implements MetaService {
         Class<?> clazz = Class.forName(retryPolicyClass);
         if (clazz == ExponentialBackoffRetry.class) {
             return new ExponentialBackoffRetry(
-                getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
-                getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
+                    getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
+                    getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
         } else if (clazz == BoundedExponentialBackoffRetry.class) {
             return new BoundedExponentialBackoffRetry(
-                getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
-                getOrDefault(zkConfig.getMaxSleepTimeMs(), 5000, Integer.class),
-                getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
+                    getOrDefault(zkConfig.getBaseSleepTimeMs(), 1000, Integer.class),
+                    getOrDefault(zkConfig.getMaxSleepTimeMs(), 5000, Integer.class),
+                    getOrDefault(zkConfig.getMaxRetries(), 5, Integer.class));
         } else if (clazz == RetryForever.class) {
             return new RetryForever(
-                getOrDefault(zkConfig.getRetryIntervalTimeMs(), 1000, Integer.class));
+                    getOrDefault(zkConfig.getRetryIntervalTimeMs(), 1000, Integer.class));
         } else if (clazz == RetryNTimes.class) {
             return new RetryNTimes(
-                getOrDefault(zkConfig.getRetryNTimes(), 10, Integer.class),
-                getOrDefault(zkConfig.getSleepMsBetweenRetries(), 1000, Integer.class));
+                    getOrDefault(zkConfig.getRetryNTimes(), 10, Integer.class),
+                    getOrDefault(zkConfig.getSleepMsBetweenRetries(), 1000, Integer.class));
         } else {
             throw new IllegalArgumentException("Unsupported retry policy: " + retryPolicyClass);
         }
@@ -194,7 +193,7 @@ public class ZookeeperMetaService implements MetaService {
                 String servicePath = formatServicePath(clusterName, serviceName);
 
                 List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
+                        .forPath(servicePath);
 
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -207,8 +206,8 @@ public class ZookeeperMetaService implements MetaService {
                     byte[] data;
                     try {
                         data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
+                                .storingStatIn(stat)
+                                .forPath(instancePath);
                     } catch (Exception e) {
                         log.warn("[ZookeeperRegistryService][findEventMeshInfoByCluster] failed for path: {}", instancePath, e);
                         continue;
@@ -217,8 +216,8 @@ public class ZookeeperMetaService implements MetaService {
                     EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
-                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
+                            new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                                    Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -243,7 +242,7 @@ public class ZookeeperMetaService implements MetaService {
                 String servicePath = formatServicePath(clusterName, serviceName);
 
                 List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
+                        .forPath(servicePath);
 
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -256,8 +255,8 @@ public class ZookeeperMetaService implements MetaService {
                     byte[] data;
                     try {
                         data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
+                                .storingStatIn(stat)
+                                .forPath(instancePath);
                     } catch (Exception e) {
                         log.warn("[ZookeeperRegistryService][findAllEventMeshInfo] failed for path: {}", instancePath, e);
                         continue;
@@ -266,8 +265,8 @@ public class ZookeeperMetaService implements MetaService {
                     EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
-                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
+                            new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                                    Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -327,11 +326,12 @@ public class ZookeeperMetaService implements MetaService {
             final String path = formatInstancePath(eventMeshClusterName, eventMeshName, eventMeshRegisterInfo.getEndPoint());
 
             zkClient.create()
-                .orSetData()
-                .creatingParentsIfNeeded()
-                .withMode(CreateMode.EPHEMERAL)
-                .forPath(path,
-                    Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null").getBytes(StandardCharsets.UTF_8));
+                    .orSetData()
+                    .creatingParentsIfNeeded()
+                    .withMode(CreateMode.EPHEMERAL)
+                    .forPath(path,
+                            Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null")
+                                    .getBytes(StandardCharsets.UTF_8));
 
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (Exception e) {
@@ -340,7 +340,6 @@ public class ZookeeperMetaService implements MetaService {
         log.info("EventMesh successfully registered to zookeeper");
         return true;
     }
-
 
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {
@@ -360,12 +359,12 @@ public class ZookeeperMetaService implements MetaService {
 
     private String formatInstancePath(String clusterName, String serviceName, String endPoint) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
     }
 
     private String formatServicePath(String clusterName, String serviceName) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
     }
 }

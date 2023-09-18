@@ -60,17 +60,16 @@ public class Utils {
     private static String getLinuxLocalIp() throws SocketException {
         String ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
 
-        for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+        for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
             final NetworkInterface intf = en.nextElement();
             final String name = intf.getName();
             if (!name.contains("docker") && !name.contains("lo")) {
-                for (final Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
-                    enumIpAddr.hasMoreElements(); ) {
+                for (final Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     final InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         final String ipaddress = inetAddress.getHostAddress();
                         if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                            && !ipaddress.contains("fe80")) {
+                                && !ipaddress.contains("fe80")) {
                             ip = ipaddress;
                         }
                     }

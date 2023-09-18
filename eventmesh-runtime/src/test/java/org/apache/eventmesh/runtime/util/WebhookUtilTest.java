@@ -42,21 +42,22 @@ public class WebhookUtilTest {
     @Test
     public void testObtainDeliveryAgreement() {
         // normal case
-        try (CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-            CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-            CloseableHttpClient httpClient2 = mock(CloseableHttpClient.class)) {
+        try (
+                CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+                CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+                CloseableHttpClient httpClient2 = mock(CloseableHttpClient.class)) {
 
             Mockito.when(response.getLastHeader("WebHook-Allowed-Origin"))
-                .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
+                    .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
             Mockito.when(httpClient.execute(any())).thenReturn(response);
             Assert.assertTrue("match logic must return true",
-                WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+                    WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
 
             // abnormal case
             Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
             try {
                 Assert.assertTrue("when throw exception ,default return true",
-                    WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"));
+                        WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"));
             } catch (RuntimeException e) {
                 Assert.fail(e.getMessage());
             }

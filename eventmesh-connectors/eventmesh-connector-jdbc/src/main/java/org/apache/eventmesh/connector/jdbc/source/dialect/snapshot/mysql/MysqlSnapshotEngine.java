@@ -49,8 +49,9 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MysqlSnapshotEngine extends
-    AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
+public class MysqlSnapshotEngine
+        extends
+            AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
 
     private static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
 
@@ -87,7 +88,7 @@ public class MysqlSnapshotEngine extends
 
     @Override
     protected void preSnapshot(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) {
-        //nothing to do
+        // nothing to do
     }
 
     @Override
@@ -96,13 +97,13 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void lockTables4SchemaSnapshot(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
-        throws SQLException {
-        //Set the REPEATABLE_READ isolation level to avoid the MySQL transaction isolation level being changed unexpectedly.
+    protected void lockTables4SchemaSnapshot(MysqlJdbcContext jdbcContext,
+                                             SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException {
+        // Set the REPEATABLE_READ isolation level to avoid the MySQL transaction isolation level being changed unexpectedly.
         connection.connection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
         connection.executeWithoutCommitting("SET SESSION lock_wait_timeout=10", "SET SESSION innodb_lock_wait_timeout=10");
 
-        //Lock tables
+        // Lock tables
         final MysqlConfig mysqlConfig = sourceConnectorConfig.getMysqlConfig();
         if (mysqlConfig.getSnapshotLockingMode().usesLocking() && mysqlConfig.isUseGlobalLock()) {
             globalLockAcquiredTry();
@@ -111,8 +112,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void determineSnapshotOffset(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
-        throws SQLException {
+    protected void determineSnapshotOffset(MysqlJdbcContext jdbcContext,
+                                           SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException {
 
         if (!globalLockAcquired && !tableLockAcquired) {
             return;
@@ -145,8 +146,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void readStructureOfTables(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
-        throws SQLException, InterruptedException {
+    protected void readStructureOfTables(MysqlJdbcContext jdbcContext,
+                                         SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException, InterruptedException {
         if (sourceConnectorConfig.getMysqlConfig().getSnapshotLockingMode().usesLocking() && !globalLockAcquired) {
             lockTable(snapshotContext);
             determineSnapshotOffset(jdbcContext, snapshotContext);
@@ -158,8 +159,8 @@ public class MysqlSnapshotEngine extends
             dropTableDdl.append(MysqlUtils.wrapper(tableId));
             addParseDdlAndEvent(jdbcContext, dropTableDdl.toString(), tableId);
         }
-        final HashMap<String/*database Name*/, List<TableId>/*table list*/> databaseMapTables = determineTables.stream()
-            .collect(Collectors.groupingBy(TableId::getCatalogName, HashMap::new, Collectors.toList()));
+        final HashMap<String/* database Name */, List<TableId>/* table list */> databaseMapTables = determineTables.stream()
+                .collect(Collectors.groupingBy(TableId::getCatalogName, HashMap::new, Collectors.toList()));
         Set<String> databaseSet = databaseMapTables.keySet();
         // Read all table structures, construct DDL statements
         for (String database : databaseSet) {
@@ -180,7 +181,7 @@ public class MysqlSnapshotEngine extends
             addParseDdlAndEvent(jdbcContext, databaseCreateDdl, tableId);
             addParseDdlAndEvent(jdbcContext, "USE " + database, tableId);
 
-            //build create table snapshot event
+            // build create table snapshot event
             List<TableId> tableIds = databaseMapTables.get(database);
             createTableSnapshotEvent(tableIds, jdbcContext);
         }
@@ -209,7 +210,7 @@ public class MysqlSnapshotEngine extends
         for (TableId tableId : tableIds) {
             connection.query(MysqlDialectSql.SHOW_CREATE_TABLE.ofWrapperSQL(tableId.toString()), resultSet -> {
                 if (resultSet.next()) {
-                    //Get create table sql
+                    // Get create table sql
                     String createTableDdl = resultSet.getString(2);
                     addParseDdlAndEvent(jdbcContext, createTableDdl, tableId);
                 }
@@ -245,8 +246,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void releaseSnapshotLocks(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
-        throws Exception {
+    protected void releaseSnapshotLocks(MysqlJdbcContext jdbcContext,
+                                        SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws Exception {
         if (globalLockAcquired) {
             connection.executeWithoutCommitting(MysqlDialectSql.UNLOCK_TABLES.ofSQL());
             globalLockAcquired = false;
@@ -259,16 +260,15 @@ public class MysqlSnapshotEngine extends
 
     @Override
     protected Optional<String> getSnapshotTableSelectSql(MysqlJdbcContext jdbcContext,
-        SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext, TableId tableId) {
+                                                         SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext, TableId tableId) {
         return Optional.of(MysqlDialectSql.SNAPSHOT_TABLE_SELECT_SQL.ofWrapperSQL(tableId.toString()));
     }
 
     private void globalLockAcquiredTry() throws SQLException {
-        //Lock tables
+        // Lock tables
         connection.executeWithoutCommitting(MysqlDialectSql.LOCK_TABLE_GLOBAL.ofSQL());
         this.globalLockAcquired = true;
     }
-
 
     @Override
     public String getThreadName() {

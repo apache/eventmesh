@@ -48,7 +48,6 @@ import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -64,8 +63,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
     }
 
     @Override
-    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
-        throws Exception {
+    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseEventMeshCommand;
         final HttpCommand request = asyncContext.getRequest();
         final Integer requestCode = Integer.valueOf(request.getRequestCode());
@@ -73,47 +71,47 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         if (log.isInfoEnabled()) {
             log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(requestCode), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
+                    RequestCode.get(requestCode), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
         }
 
         final SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
         final SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         final SubscribeResponseHeader subscribeResponseHeader =
-            SubscribeResponseHeader
-                .buildHeader(requestCode,
-                        eventMeshHttpConfiguration.getEventMeshCluster(),
-                        localAddress,
-                        eventMeshHttpConfiguration.getEventMeshEnv(),
-                        eventMeshHttpConfiguration.getEventMeshIDC());
+                SubscribeResponseHeader
+                        .buildHeader(requestCode,
+                                eventMeshHttpConfiguration.getEventMeshCluster(),
+                                localAddress,
+                                eventMeshHttpConfiguration.getEventMeshEnv(),
+                                eventMeshHttpConfiguration.getEventMeshIDC());
 
-        //validate header
+        // validate header
         if (StringUtils.isAnyBlank(subscribeRequestHeader.getIdc(),
                 subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
-            || !StringUtils.isNumeric(subscribeRequestHeader.getPid())) {
+                || !StringUtils.isNumeric(subscribeRequestHeader.getPid())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
             return;
         }
 
-        //validate body
+        // validate body
         if (StringUtils.isAnyBlank(subscribeRequestBody.getUrl(), subscribeRequestBody.getConsumerGroup())
-            || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
+                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SubscribeResponseBody.class);
             return;
         }
         final List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
 
-        //do acl check
+        // do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subTopicList) {
                 try {
                     this.acl.doAclCheckInHttpReceive(remoteAddr,
-                        subscribeRequestHeader.getUsername(),
-                        subscribeRequestHeader.getPasswd(),
-                        subscribeRequestHeader.getSys(), item.getTopic(),
-                        requestCode);
+                            subscribeRequestHeader.getUsername(),
+                            subscribeRequestHeader.getPasswd(),
+                            subscribeRequestHeader.getSys(), item.getTopic(),
+                            requestCode);
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, subscribeResponseHeader,
                             EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SubscribeResponseBody.class);
@@ -152,7 +150,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         // obtain webhook delivery agreement for Abuse Protection
         if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.getHttpClientPool().getClient(),
-            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin())) {
+                url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin())) {
             log.error("subscriber url {} is not allowed by the target system", url);
             completeResponse(request, asyncContext, subscribeResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
@@ -197,10 +195,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 final long endTime = System.currentTimeMillis();
                 if (log.isErrorEnabled()) {
                     log.error(
-                        "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                            + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                        JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
-                        subscribeRequestBody.getUrl(), e);
+                            "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
+                                    + "|bizSeqNo={}|uniqueId={}",
+                            endTime - startTime,
+                            JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
+                            subscribeRequestBody.getUrl(), e);
                 }
                 summaryMetrics.recordSendMsgFailed();
                 summaryMetrics.recordSendMsgCost(endTime - startTime);

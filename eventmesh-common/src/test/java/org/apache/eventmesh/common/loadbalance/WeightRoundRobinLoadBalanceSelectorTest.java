@@ -26,9 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 public class WeightRoundRobinLoadBalanceSelectorTest {

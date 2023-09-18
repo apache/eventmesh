@@ -73,7 +73,6 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
     public AbstractColumnEditorImpl() {
     }
 
-
     /**
      * Sets the name of the column.
      *

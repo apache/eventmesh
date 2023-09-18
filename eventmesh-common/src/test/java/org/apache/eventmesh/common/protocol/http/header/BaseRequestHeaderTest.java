@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.header;
 
-
 import static org.hamcrest.CoreMatchers.is;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;

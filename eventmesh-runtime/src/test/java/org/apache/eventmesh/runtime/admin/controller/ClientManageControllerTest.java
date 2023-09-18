@@ -77,7 +77,7 @@ public class ClientManageControllerTest {
         EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
         MetaStorage metaStorage = mock(MetaStorage.class);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer,
-            eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
+                eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
         eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshStoragePluginType("standalone");

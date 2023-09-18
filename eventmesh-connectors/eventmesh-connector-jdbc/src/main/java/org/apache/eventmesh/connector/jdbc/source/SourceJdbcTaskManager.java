@@ -48,10 +48,9 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
         this.includeDatabaseTable = includeDatabaseTable == null ? new HashSet<>() : includeDatabaseTable;
     }
 
-
     @SuppressWarnings("unchecked")
     public void init() {
-        //init Jdbc Task
+        // init Jdbc Task
         int maxTaskNum = this.jdbcSourceConfig.getSourceConnectorConfig().getMaxTask();
         int taskNum = Math.min(maxTaskNum, this.includeDatabaseTable.size());
         log.info("Source jdbc task num {}", taskNum);
@@ -77,7 +76,6 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
             listener.listen(records);
         }
     }
-
 
     @Override
     public SourceEventMeshJdbcEventTask select(TableId tableId) {

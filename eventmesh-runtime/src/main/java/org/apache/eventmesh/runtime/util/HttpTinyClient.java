@@ -33,7 +33,7 @@ import java.util.Objects;
 public class HttpTinyClient {
 
     public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
-        String encoding, long readTimeoutMs) throws IOException {
+                                     String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
 
@@ -62,14 +62,13 @@ public class HttpTinyClient {
         }
     }
 
-    private static String encodingParams(Collection<String> paramValues, String encoding)
-        throws UnsupportedEncodingException {
+    private static String encodingParams(Collection<String> paramValues, String encoding) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
             return null;
         }
 
-        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext(); ) {
+        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext();) {
             sb.append(iter.next()).append("=");
             sb.append(URLEncoder.encode(iter.next(), encoding));
             if (iter.hasNext()) {
@@ -81,7 +80,7 @@ public class HttpTinyClient {
 
     private static void setHeaders(HttpURLConnection conn, Collection<String> headers, String encoding) {
         if (null != headers) {
-            for (Iterator<String> iter = headers.iterator(); iter.hasNext(); ) {
+            for (Iterator<String> iter = headers.iterator(); iter.hasNext();) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
         }
@@ -95,7 +94,7 @@ public class HttpTinyClient {
      * @return the http response of given http post request
      */
     public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues,
-        String encoding, long readTimeoutMs) throws IOException {
+                                      String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
 
         HttpURLConnection conn = null;
@@ -112,7 +111,7 @@ public class HttpTinyClient {
 
             int respCode = conn.getResponseCode();
             String resp = HttpURLConnection.HTTP_OK == respCode ? IOUtils.toString(conn.getInputStream(), encoding)
-                : IOUtils.toString(conn.getErrorStream(), encoding);
+                    : IOUtils.toString(conn.getErrorStream(), encoding);
 
             return new HttpResult(respCode, resp);
         } finally {

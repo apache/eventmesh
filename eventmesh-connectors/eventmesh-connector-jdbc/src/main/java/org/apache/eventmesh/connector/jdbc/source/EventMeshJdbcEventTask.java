@@ -42,4 +42,3 @@ public interface EventMeshJdbcEventTask<E extends Event> extends EventMeshJdbcTa
     void registerEventHandler(EventHandler handler);
 
 }
-

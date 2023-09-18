@@ -42,9 +42,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class HttpAbstractDemo {
 
-
-    protected static EventMeshHttpClientConfig initEventMeshHttpClientConfig(final String groupName)
-        throws IOException {
+    protected static EventMeshHttpClientConfig initEventMeshHttpClientConfig(final String groupName) throws IOException {
         final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
@@ -58,38 +56,38 @@ public class HttpAbstractDemo {
         // Both the producer and consumer require an instance of EventMeshHttpClientConfig class
         // that specifies the configuration of EventMesh HTTP client.
         return EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .producerGroup(groupName)
-            .env("env")
-            .idc("idc")
-            .ip(IPUtils.getLocalAddress())
-            .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID()))
-            .userName("eventmesh")
-            .password("pass")
-            .build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .producerGroup(groupName)
+                .env("env")
+                .idc("idc")
+                .ip(IPUtils.getLocalAddress())
+                .sys("1234")
+                .pid(String.valueOf(ThreadUtils.getPID()))
+                .userName("eventmesh")
+                .password("pass")
+                .build();
     }
 
     protected static CloudEvent buildCloudEvent(final Map<String, String> content) {
         return CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
-            .withSource(URI.create("/"))
-            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
-            .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000))
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSubject(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
+                .withSource(URI.create("/"))
+                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000))
+                .build();
     }
 
     protected static EventMeshMessage buildMessage(final Map<String, String> content) {
         return EventMeshMessage.builder()
-            .bizSeqNo(RandomStringUtils.generateNum(30))
-            .content(JsonUtils.toJSONString(content))
-            .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
-            .uniqueId(RandomStringUtils.generateNum(30))
-            .build()
-            .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .content(JsonUtils.toJSONString(content))
+                .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
 
     }
 }

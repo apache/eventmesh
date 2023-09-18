@@ -28,7 +28,7 @@ public class PrometheusConfigurationTest {
     @Test
     public void getConfigWhenPrometheusMetricsRegistryInit() {
         PrometheusMetricsRegistry registry =
-            (PrometheusMetricsRegistry) MetricsPluginFactory.getMetricsRegistry("prometheus");
+                (PrometheusMetricsRegistry) MetricsPluginFactory.getMetricsRegistry("prometheus");
 
         PrometheusConfiguration config = registry.getClientConfiguration();
         assertConfig(config);

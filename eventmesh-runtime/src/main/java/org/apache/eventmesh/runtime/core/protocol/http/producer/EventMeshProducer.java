@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,8 +61,7 @@ public class EventMeshProducer {
         mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
-        throws Exception {
+    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout) throws Exception {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
@@ -77,7 +75,7 @@ public class EventMeshProducer {
     }
 
     public void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+                     ProducerGroupConf producerGroupConfig) throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
@@ -87,18 +85,17 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-            eventMeshHttpConfiguration.getEventMeshCluster()));
+                eventMeshHttpConfiguration.getEventMeshCluster()));
         if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
             keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
         }
 
-        //TODO for defibus
+        // TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
-
 
     public void start() throws Exception {
 
@@ -124,9 +121,9 @@ public class EventMeshProducer {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("eventMeshProducer={")
-            .append("inited=").append(inited.get()).append(",")
-            .append("started=").append(started.get()).append(",")
-            .append("producerGroupConfig=").append(producerGroupConfig).append("}");
+                .append("inited=").append(inited.get()).append(",")
+                .append("started=").append(started.get()).append(",")
+                .append("producerGroupConfig=").append(producerGroupConfig).append("}");
         return sb.toString();
     }
 }

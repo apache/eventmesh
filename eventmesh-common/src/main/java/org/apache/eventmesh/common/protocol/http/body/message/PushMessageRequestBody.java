@@ -108,8 +108,8 @@ public class PushMessageRequestBody extends Body {
 
         if (StringUtils.isNotBlank(extFields)) {
             pushMessageRequestBody.setExtFields(
-                JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
-                }));
+                    JsonUtils.parseTypeReferenceObject(extFields, new TypeReference<HashMap<String, String>>() {
+                    }));
         }
         return pushMessageRequestBody;
     }
@@ -131,12 +131,12 @@ public class PushMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestBody={")
-            .append("randomNo=").append(randomNo).append(",")
-            .append("topic=").append(topic).append(",")
-            .append("bizSeqNo=").append(bizSeqNo).append(",")
-            .append("uniqueId=").append(uniqueId).append(",")
-            .append("content=").append(content).append(",")
-            .append("extFields=").append(extFields).append("}");
+                .append("randomNo=").append(randomNo).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("uniqueId=").append(uniqueId).append(",")
+                .append("content=").append(content).append(",")
+                .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 }

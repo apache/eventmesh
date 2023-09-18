@@ -39,7 +39,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-
 @Ignore
 public class S3SourceConnectorTest {
 
@@ -77,9 +76,9 @@ public class S3SourceConnectorTest {
     @Before
     public void setUp() throws Exception {
         AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.SOURCE_CONNECTOR_CONFIG.getAccessKey(),
-            this.SOURCE_CONNECTOR_CONFIG.getSecretKey());
+                this.SOURCE_CONNECTOR_CONFIG.getSecretKey());
         this.s3Client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials)
-            .region(Region.of(this.SOURCE_CONNECTOR_CONFIG.getRegion())).build();
+                .region(Region.of(this.SOURCE_CONNECTOR_CONFIG.getRegion())).build();
 
         // write mocked data
         this.writeMockedRecords(200);
@@ -89,7 +88,7 @@ public class S3SourceConnectorTest {
     public void tearDown() throws Exception {
         // clear file
         this.s3Client.deleteObject(builder -> builder.bucket(this.SOURCE_CONNECTOR_CONFIG.getBucket())
-            .key(this.SOURCE_CONNECTOR_CONFIG.getFileName()).build()).get();
+                .key(this.SOURCE_CONNECTOR_CONFIG.getFileName()).build()).get();
     }
 
     @Test
@@ -128,7 +127,7 @@ public class S3SourceConnectorTest {
             bytes.putLong(System.currentTimeMillis());
         }
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-            .bucket(SOURCE_CONNECTOR_CONFIG.getBucket()).key(SOURCE_CONNECTOR_CONFIG.getFileName()).build();
+                .bucket(SOURCE_CONNECTOR_CONFIG.getBucket()).key(SOURCE_CONNECTOR_CONFIG.getFileName()).build();
         AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(bytes.array());
         this.s3Client.putObject(putObjectRequest, requestBody).get();
     }

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,7 +49,6 @@ public class EventMeshExtensionFactory {
         EXTENSION_CLASS_LOADERS.add(MetaInfExtensionClassLoader.getInstance());
         EXTENSION_CLASS_LOADERS.add(JarExtensionClassLoader.getInstance());
     }
-
 
     private EventMeshExtensionFactory() {
 
@@ -103,13 +101,13 @@ public class EventMeshExtensionFactory {
                 ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
                 log.info("initialize extension instance success, extensionClass: {}, extensionInstanceName: {}",
-                    extensionClass, extensionInstanceName);
+                        extensionClass, extensionInstanceName);
                 return extensionInstance;
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ExtensionException("Extension initialize error", e);
             } catch (NoSuchFieldException | IOException e) {
                 log.error("initialize extension instance config failed, extensionClass: {}, extensionInstanceName: {}",
-                    extensionClass, extensionInstanceName, e);
+                        extensionClass, extensionInstanceName, e);
                 throw new ExtensionException("Extension initialize error", e);
             }
         });
@@ -133,13 +131,13 @@ public class EventMeshExtensionFactory {
             ConfigService.getInstance().populateConfigForObject(extensionInstance);
 
             log.info("initialize extension instance success, extensionType: {}, extensionName: {}",
-                extensionType, extensionInstanceName);
+                    extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ExtensionException("Extension initialize error", e);
         } catch (NoSuchFieldException | IOException e) {
             log.error("initialize extension instance config failed, extensionType: {}, extensionInstanceName: {}",
-                extensionType, extensionInstanceName, e);
+                    extensionType, extensionInstanceName, e);
             throw new ExtensionException("Extension initialize error", e);
         }
     }

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
@@ -85,9 +84,9 @@ public class SubscribeProcessor {
         final String consumerGroup = EventMeshCloudEventUtils.getConsumerGroup(subscription);
         // Collect new clients in the subscription
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
-        
+                new TypeReference<List<SubscriptionItem>>() {
+                });
+
         Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
         final String idc = EventMeshCloudEventUtils.getIdc(subscription);
@@ -98,18 +97,18 @@ public class SubscribeProcessor {
         final List<ConsumerGroupClient> newClients = new LinkedList<>();
         for (final SubscriptionItem item : subscriptionItems) {
             final ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(env)
-                .idc(idc)
-                .sys(sys)
-                .ip(ip)
-                .pid(pid)
-                .consumerGroup(consumerGroup)
-                .topic(item.getTopic())
-                .grpcType(grpcType)
-                .subscriptionMode(item.getMode())
-                .url(url)
-                .lastUpTime(new Date())
-                .build();
+                    .env(env)
+                    .idc(idc)
+                    .sys(sys)
+                    .ip(ip)
+                    .pid(pid)
+                    .consumerGroup(consumerGroup)
+                    .topic(item.getTopic())
+                    .grpcType(grpcType)
+                    .subscriptionMode(item.getMode())
+                    .url(url)
+                    .lastUpTime(new Date())
+                    .build();
             newClients.add(newClient);
         }
 
@@ -142,14 +141,14 @@ public class SubscribeProcessor {
 
     private void doAclCheck(final CloudEvent subscription) throws AclException {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
         Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionItems) {
                 this.acl.doAclCheckInHttpReceive(EventMeshCloudEventUtils.getConsumerGroup(subscription),
-                    EventMeshCloudEventUtils.getUserName(subscription), EventMeshCloudEventUtils.getPassword(subscription),
-                    EventMeshCloudEventUtils.getSys(subscription), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
+                        EventMeshCloudEventUtils.getUserName(subscription), EventMeshCloudEventUtils.getPassword(subscription),
+                        EventMeshCloudEventUtils.getSys(subscription), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

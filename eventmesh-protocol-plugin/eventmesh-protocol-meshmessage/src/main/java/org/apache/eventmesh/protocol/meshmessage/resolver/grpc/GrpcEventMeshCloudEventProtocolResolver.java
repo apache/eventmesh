@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.grpc;
 
-
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
@@ -64,7 +63,7 @@ public class GrpcEventMeshCloudEventProtocolResolver {
             return new ArrayList<>(0);
         }
         return cloudEventBatch.getEventsList().stream().map(cloudEvent -> eventFormat.deserialize(cloudEvent.toByteArray()))
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
 }

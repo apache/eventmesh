@@ -52,7 +52,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -132,7 +131,7 @@ public class Session {
             Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
             Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
-                .checkTopicExist(item.getTopic());
+                    .checkTopicExist(item.getTopic());
 
             Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
@@ -152,7 +151,7 @@ public class Session {
     }
 
     public EventMeshTcpSendResult upstreamMsg(Header header, CloudEvent event, SendCallback sendCallback,
-        long startTime, long taskExecuteTime) {
+                                              long startTime, long taskExecuteTime) {
         String topic = event.getSubject();
         sessionContext.getSendTopics().putIfAbsent(topic, topic);
         return sender.send(header, event, sendCallback, startTime, taskExecuteTime);
@@ -161,7 +160,7 @@ public class Session {
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
         trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
-            getListenRequestSeq()), currTime, currTime);
+                getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
     }
@@ -178,21 +177,21 @@ public class Session {
             }
 
             context.writeAndFlush(pkg).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        if (!future.isSuccess()) {
-                            MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                        } else {
-                            Objects.requireNonNull(clientGroupWrapper.get())
-                                .getEventMeshTcpMonitor()
-                                .getTcpSummaryMetrics()
-                                .getEventMesh2clientMsgNum()
-                                .incrementAndGet();
+                    new ChannelFutureListener() {
+
+                        @Override
+                        public void operationComplete(ChannelFuture future) throws Exception {
+                            if (!future.isSuccess()) {
+                                MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                            } else {
+                                Objects.requireNonNull(clientGroupWrapper.get())
+                                        .getEventMeshTcpMonitor()
+                                        .getTcpSummaryMetrics()
+                                        .getEventMesh2clientMsgNum()
+                                        .incrementAndGet();
+                            }
                         }
-                    }
-                }
-            );
+                    });
         } catch (Exception e) {
             log.error("exception while write2Client", e);
         }
@@ -201,24 +200,24 @@ public class Session {
     @Override
     public String toString() {
         return "Session{"
-            +
-            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-            +
-            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-            +
-            ",client=" + client
-            +
-            ",sessionState=" + sessionState
-            +
-            ",sessionContext=" + sessionContext
-            +
-            ",pusher=" + pusher
-            +
-            ",sender=" + sender
-            +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-            +
-            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+                +
+                "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+                +
+                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+                +
+                ",client=" + client
+                +
+                ",sessionState=" + sessionState
+                +
+                ",sessionContext=" + sessionContext
+                +
+                ",pusher=" + pusher
+                +
+                ",sender=" + sender
+                +
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+                +
+                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -236,14 +235,14 @@ public class Session {
         if (!Objects.equals(context, session.context)) {
             return false;
         }
-        
+
         return Objects.equals(sessionState, session.sessionState);
 
     }
 
     @Override
     public int hashCode() {
-        int result = 1001;   //primeNumber
+        int result = 1001; // primeNumber
         if (null != client) {
             result += 31 * result + Objects.hash(client);
         }

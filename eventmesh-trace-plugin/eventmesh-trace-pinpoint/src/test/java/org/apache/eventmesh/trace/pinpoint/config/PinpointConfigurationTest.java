@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;
@@ -32,7 +31,7 @@ public class PinpointConfigurationTest {
     @Test
     public void getConfigWhenPinpointTraceInit() {
         PinpointTraceService pinpointTrace =
-            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
 
         PinpointConfiguration config = pinpointTrace.getClientConfiguration();
         assertClientConfig(config);

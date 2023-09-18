@@ -64,23 +64,23 @@ public class SendMessageRequestProtocolResolver {
             CloudEvent event = null;
             if (StringUtils.equalsAny(protocolVersion, SpecVersion.V1.toString(), SpecVersion.V03.toString())) {
                 event = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
-                    .deserialize(content.getBytes(Constants.DEFAULT_CHARSET));
+                        .deserialize(content.getBytes(Constants.DEFAULT_CHARSET));
                 event = CloudEventBuilder.from(event)
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageRequestBody.PRODUCERGROUP, producerGroup)
-                    .build();
+                        .withExtension(ProtocolKey.REQUEST_CODE, code)
+                        .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), env)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), idc)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), ip)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), pid)
+                        .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sys)
+                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), username)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), passwd)
+                        .withExtension(ProtocolKey.VERSION, version.getVersion())
+                        .withExtension(ProtocolKey.LANGUAGE, language)
+                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageRequestBody.PRODUCERGROUP, producerGroup)
+                        .build();
             }
             return event;
         } catch (Exception e) {

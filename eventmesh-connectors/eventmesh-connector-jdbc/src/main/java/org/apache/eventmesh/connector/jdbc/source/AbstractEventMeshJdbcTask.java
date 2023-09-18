@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.ThreadWrapper;
 
 public abstract class AbstractEventMeshJdbcTask extends ThreadWrapper implements EventMeshJdbcTask {
 
-
     @Override
     public void shutdown() {
         super.shutdown();

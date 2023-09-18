@@ -40,16 +40,15 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
-
 public class AuthTokenUtils {
 
     public static void authTokenByPublicKey(AclProperties aclProperties) {
 
-        String token =  aclProperties.getToken();
+        String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             if (!authAccess(aclProperties)) {
                 throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
-                    + aclProperties.getTopic());
+                        + aclProperties.getTopic());
             }
             String publicKeyUrl = null;
             token = token.replace("Bearer ", "");
@@ -74,7 +73,7 @@ public class AuthTokenUtils {
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                        + aclProperties.getTopic());
+                            + aclProperties.getTopic());
                 }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);
@@ -87,9 +86,9 @@ public class AuthTokenUtils {
             }
 
         } else {
-              {
+            {
                 throw new AclException("invalid token!");
-              }
+            }
         }
     }
 
@@ -119,7 +118,7 @@ public class AuthTokenUtils {
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                        + aclProperties.getTopic());
+                            + aclProperties.getTopic());
                 }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);
@@ -131,9 +130,9 @@ public class AuthTokenUtils {
                 throw new AclException("invalid token!", e);
             }
         } else {
-              {
+            {
                 throw new AclException("invalid token!");
-              }
+            }
         }
     }
 

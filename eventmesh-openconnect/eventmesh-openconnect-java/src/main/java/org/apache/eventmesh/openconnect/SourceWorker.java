@@ -96,25 +96,25 @@ public class SourceWorker implements ConnectorWorker {
         String meshIp = meshAddress.split(":")[0];
         int meshPort = Integer.parseInt(meshAddress.split(":")[1]);
         UserAgent agent = UserAgent.builder()
-            .env(config.getPubSubConfig().getEnv())
-            .host("localhost")
-            .password(config.getPubSubConfig().getPassWord())
-            .username(config.getPubSubConfig().getUserName())
-            .group(config.getPubSubConfig().getGroup())
-            .path("/")
-            .port(8362)
-            .subsystem(config.getPubSubConfig().getAppId())
-            .pid(Integer.parseInt(SystemUtils.getProcessId()))
-            .version("2.0")
-            .idc(config.getPubSubConfig().getIdc())
-            .build();
+                .env(config.getPubSubConfig().getEnv())
+                .host("localhost")
+                .password(config.getPubSubConfig().getPassWord())
+                .username(config.getPubSubConfig().getUserName())
+                .group(config.getPubSubConfig().getGroup())
+                .path("/")
+                .port(8362)
+                .subsystem(config.getPubSubConfig().getAppId())
+                .pid(Integer.parseInt(SystemUtils.getProcessId()))
+                .version("2.0")
+                .idc(config.getPubSubConfig().getIdc())
+                .build();
         UserAgent userAgent = MessageUtils.generatePubClient(agent);
 
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(meshIp)
-            .port(meshPort)
-            .userAgent(userAgent)
-            .build();
+                .host(meshIp)
+                .port(meshPort)
+                .userAgent(userAgent)
+                .build();
         return EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
     }
 
@@ -135,7 +135,7 @@ public class SourceWorker implements ConnectorWorker {
         this.offsetManagement = new RecordOffsetManagement();
         this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
         this.offsetManagementService =
-            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+                EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
         this.offsetManagementService.initialize(offsetStorageConfig);
         this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
         this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
@@ -145,21 +145,20 @@ public class SourceWorker implements ConnectorWorker {
     public void start() {
         log.info("source worker starting {}", source.name());
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
-        //start offsetMgmtService
+        // start offsetMgmtService
         offsetManagementService.start();
         isRunning = true;
         pollService.execute(this::startPollAndSend);
 
         startService.execute(
-            () -> {
-                try {
-                    startConnector();
-                } catch (Exception e) {
-                    log.error("source worker[{}] start fail", source.name(), e);
-                    this.stop();
-                }
-            }
-        );
+                () -> {
+                    try {
+                        startConnector();
+                    } catch (Exception e) {
+                        log.error("source worker[{}] start fail", source.name(), e);
+                        this.stop();
+                    }
+                });
     }
 
     public void startPollAndSend() {
@@ -212,14 +211,14 @@ public class SourceWorker implements ConnectorWorker {
     private CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
 
         return CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(config.getPubSubConfig().getSubject())
-            .withSource(URI.create("/"))
-            .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
-            .withExtension("ttl", 10000)
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSubject(config.getPubSubConfig().getSubject())
+                .withSource(URI.create("/"))
+                .withDataContentType("application/cloudevents+json")
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
+                .withExtension("ttl", 10000)
+                .build();
     }
 
     @Override
@@ -275,9 +274,8 @@ public class SourceWorker implements ConnectorWorker {
 
         if (committableOffsets.isEmpty()) {
             log.debug("Either no records were produced since the last offset commit, "
-                + "or every record has been filtered out by a transformation "
-                + "or dropped due to transformation or conversion errors."
-            );
+                    + "or every record has been filtered out by a transformation "
+                    + "or dropped due to transformation or conversion errors.");
             // We continue with the offset commit process here instead of simply returning immediately
             // in order to invoke SourceTask::commit and record metrics for a successful offset commit
         } else {
@@ -285,17 +283,15 @@ public class SourceWorker implements ConnectorWorker {
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
                         + "The source partition with the most pending messages is {}, with {} pending messages",
-                    this,
-                    committableOffsets.numUncommittableMessages(),
-                    committableOffsets.numDeques(),
-                    committableOffsets.largestDequePartition(),
-                    committableOffsets.largestDequeSize()
-                );
+                        this,
+                        committableOffsets.numUncommittableMessages(),
+                        committableOffsets.numDeques(),
+                        committableOffsets.largestDequePartition(),
+                        committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
                         + "all messages dispatched to the task's producer since the last commit have been acknowledged",
-                    this
-                );
+                        this);
             }
         }
 
@@ -326,6 +322,5 @@ public class SourceWorker implements ConnectorWorker {
         }
         return true;
     }
-
 
 }

@@ -25,13 +25,13 @@ import java.util.Map;
 
 public class SendMessageBatchV2ResponseBody extends Body {
 
-    //return code
+    // return code
     private Integer retCode;
 
-    //response message
+    // response message
     private String retMsg;
 
-    //response time
+    // response time
     private long resTime = System.currentTimeMillis();
 
     public Integer getRetCode() {
@@ -70,9 +70,9 @@ public class SendMessageBatchV2ResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchV2ResponseBody={")
-            .append("retCode=").append(retCode).append(",")
-            .append("retMsg=").append(retMsg).append(",")
-            .append("resTime=").append(resTime).append("}");
+                .append("retCode=").append(retCode).append(",")
+                .append("retMsg=").append(retMsg).append(",")
+                .append("resTime=").append(resTime).append("}");
         return sb.toString();
     }
 

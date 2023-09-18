@@ -46,6 +46,7 @@ public class CClientDemo {
         client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
         client.listen();
         client.registerSubBusiHandler(new ReceiveMsgHook() {
+
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
@@ -56,9 +57,9 @@ public class CClientDemo {
             }
         });
         for (int i = 0; i < 10000; i++) {
-            //broadcast message
+            // broadcast message
             client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
-            //asynchronous message
+            // asynchronous message
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }
     }

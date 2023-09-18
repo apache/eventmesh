@@ -68,8 +68,8 @@ public final class RedissonClient {
             serverType = properties.getServerType();
         } catch (IllegalArgumentException ie) {
             final String message = "Invalid Redis server type: " + properties.getServerType()
-                + ", supported values are: "
-                + Arrays.toString(RedisProperties.ServerType.values());
+                    + ", supported values are: "
+                    + Arrays.toString(RedisProperties.ServerType.values());
             throw new StorageRuntimeException(message, ie);
         }
 
@@ -88,24 +88,24 @@ public final class RedissonClient {
         switch (serverType) {
             case SINGLE:
                 config.useSingleServer()
-                    .setAddress(serverAddress)
-                    .setPassword(serverPassword);
+                        .setAddress(serverAddress)
+                        .setPassword(serverPassword);
                 break;
             case CLUSTER:
                 config.useClusterServers()
-                    .addNodeAddress(serverAddress.split(Constants.COMMA))
-                    .setPassword(serverPassword);
+                        .addNodeAddress(serverAddress.split(Constants.COMMA))
+                        .setPassword(serverPassword);
                 break;
             case SENTINEL:
                 config.useSentinelServers()
-                    .setMasterName(masterName)
-                    .addSentinelAddress(serverAddress)
-                    .setPassword(serverPassword);
+                        .setMasterName(masterName)
+                        .addSentinelAddress(serverAddress)
+                        .setPassword(serverPassword);
                 break;
             default:
                 final String message = "Invalid Redis server type: " + properties.getServerType()
-                    + ", supported values are: "
-                    + Arrays.toString(RedisProperties.ServerType.values());
+                        + ", supported values are: "
+                        + Arrays.toString(RedisProperties.ServerType.values());
                 throw new StorageRuntimeException(message);
         }
 

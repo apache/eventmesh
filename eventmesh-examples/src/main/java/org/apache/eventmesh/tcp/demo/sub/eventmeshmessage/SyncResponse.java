@@ -43,17 +43,17 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient2();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
         try {
             final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+                    .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
-                SubscriptionType.SYNC);
+                    SubscriptionType.SYNC);
             // Synchronize RR messages
             client.registerSubBusiHandler(new SyncResponse());
 

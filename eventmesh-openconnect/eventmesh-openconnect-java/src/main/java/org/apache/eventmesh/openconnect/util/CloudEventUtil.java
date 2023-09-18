@@ -62,7 +62,7 @@ public class CloudEventUtil {
     public static ConnectRecord convertEventToRecord(CloudEvent event) {
         byte[] body = Objects.requireNonNull(event.getData()).toBytes();
         log.info("handle receive events {}", new String(event.getData().toBytes()));
-        //todo: recordPartition & recordOffset
+        // todo: recordPartition & recordOffset
         ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
         for (String extensionName : event.getExtensionNames()) {
             connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());

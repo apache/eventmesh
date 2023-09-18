@@ -45,7 +45,6 @@ public class MysqlDataTypeConvertor implements DataTypeConvertor<MysqlType> {
 
     public static final Integer DEFAULT_SCALE = 0;
 
-
     /**
      * Converts a string representation of a connector data type to the corresponding JDBCType.
      *

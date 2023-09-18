@@ -35,7 +35,7 @@ public class UrlMappingPattern {
     private static final String URL_PARAMETER_REGEX = "\\{(\\w*?)\\}";
 
     private static final String URL_PARAMETER_MATCH_REGEX =
-        "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
+            "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
 
     private static final Pattern URL_PARAMETER_PATTERN = Pattern.compile(URL_PARAMETER_REGEX);
 

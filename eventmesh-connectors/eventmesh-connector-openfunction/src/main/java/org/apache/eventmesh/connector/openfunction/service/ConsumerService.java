@@ -27,7 +27,6 @@ import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConf
 import org.apache.eventmesh.connector.openfunction.sink.connector.OpenFunctionSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.BlockingQueue;
@@ -49,12 +48,11 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
     private final CallbackServiceBlockingStub publisherClient;
 
-
     public ConsumerService(OpenFunctionSinkConnector openFunctionSinkConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSinkConnector = openFunctionSinkConnector;
         this.queue = openFunctionSinkConnector.queue();
         ManagedChannel channel = ManagedChannelBuilder.forAddress(serverConfig.getTargetAddress(),
-            serverConfig.getTargetPort()).usePlaintext().build();
+                serverConfig.getTargetPort()).usePlaintext().build();
         this.publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
         ExecutorService handleService = Executors.newSingleThreadExecutor();
         handleService.execute(this::startHandleConsumeEvents);
@@ -80,11 +78,10 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         for (String extensionKey : connectRecord.getExtensions().keySet()) {
             if (!StringUtils.equalsAny(extensionKey, "id", "source", "type")) {
                 cloudEventBuilder.putAttributes(extensionKey,
-                    CloudEventAttributeValue.newBuilder().setCeString(connectRecord.getExtension(extensionKey)).build());
+                        CloudEventAttributeValue.newBuilder().setCeString(connectRecord.getExtension(extensionKey)).build());
             }
         }
         return cloudEventBuilder.build();
     }
-
 
 }

@@ -29,7 +29,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class AbstractRemotingServer {
+
     private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
     private static final int DEFAULT_SLEEP_SECONDS = 30;
 

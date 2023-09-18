@@ -50,7 +50,7 @@ public class ProducerImpl {
 
     public ProducerImpl(Properties props) {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-            props.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
+                props.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CloudEventSerializer.class);
         this.producer = new KafkaProducer<>(properties);

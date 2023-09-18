@@ -86,11 +86,11 @@ public class RequestParam {
             for (final Map.Entry<String, String[]> query : queryParams.entrySet()) {
                 for (final String val : query.getValue()) {
                     stringBuilder.append(Constants.AND)
-                        .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
+                            .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
 
                     if (val != null && !val.isEmpty()) {
                         stringBuilder.append("=")
-                            .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
+                                .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
                     }
                 }
             }

@@ -34,7 +34,8 @@ public class MysqlColumn extends Column<MysqlColumn> {
     private String collationName;
 
     public MysqlColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName) {
+                       String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
+                       String collationName) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0);
         this.autoIncremented = autoIncremented;
         this.generated = generated;
@@ -42,8 +43,9 @@ public class MysqlColumn extends Column<MysqlColumn> {
     }
 
     public MysqlColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName,
-        int order) {
+                       String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
+                       String collationName,
+                       int order) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
         this.autoIncremented = autoIncremented;
         this.generated = generated;
@@ -55,17 +57,21 @@ public class MysqlColumn extends Column<MysqlColumn> {
     }
 
     public static MysqlColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName) {
+                                 String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal,
+                                 boolean notNull,
+                                 String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
+                                 String collationName) {
         return new MysqlColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression,
-            autoIncremented, generated, collationName);
+                autoIncremented, generated, collationName);
     }
 
     public static MysqlColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull, String comment,
-        Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName, int order) {
+                                 String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal,
+                                 boolean notNull, String comment,
+                                 Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName,
+                                 int order) {
         return new MysqlColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression,
-            autoIncremented, generated, collationName, order);
+                autoIncremented, generated, collationName, order);
     }
 
     /**
@@ -78,4 +84,3 @@ public class MysqlColumn extends Column<MysqlColumn> {
         return null;
     }
 }
-

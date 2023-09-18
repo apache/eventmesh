@@ -19,7 +19,6 @@ package org.apache.eventmesh.api.acl;
 
 import org.apache.eventmesh.api.exception.AclException;
 
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

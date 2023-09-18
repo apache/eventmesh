@@ -50,14 +50,14 @@ public class EventMeshServicePubTopicInfo {
     }
 
     /*
-    * Service corresponds to an application
-    * */
+     * Service corresponds to an application
+     */
     @Override
     public String toString() {
         return "EventMeshServicePubTopicInfo{"
-            + "service='" + service + '\''
-            + ", topics=" + topics
-            + '}';
+                + "service='" + service + '\''
+                + ", topics=" + topics
+                + '}';
     }
 
 }

@@ -33,23 +33,23 @@ import lombok.ToString;
 @ToString
 public class SendMessageBatchV2ResponseHeader extends Header {
 
-    //response code, as same as the request code
+    // response code, as same as the request code
     private int code;
 
-    //The cluster name of the EventMesh that processes the request
+    // The cluster name of the EventMesh that processes the request
     private String eventMeshCluster;
 
-    //IP of the EventMesh that processes the request
+    // IP of the EventMesh that processes the request
     private String eventMeshIp;
 
-    //Environment number of the EventMesh that processes the request
+    // Environment number of the EventMesh that processes the request
     private String eventMeshEnv;
 
-    //IDC of the EventMesh that processes the request
+    // IDC of the EventMesh that processes the request
     private String eventMeshIdc;
 
     public static SendMessageBatchV2ResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-        String eventMeshEnv, String eventMeshIDC) {
+                                                               String eventMeshEnv, String eventMeshIDC) {
         SendMessageBatchV2ResponseHeader header = new SendMessageBatchV2ResponseHeader();
         header.setCode(requestCode);
         header.setEventMeshCluster(eventMeshCluster);

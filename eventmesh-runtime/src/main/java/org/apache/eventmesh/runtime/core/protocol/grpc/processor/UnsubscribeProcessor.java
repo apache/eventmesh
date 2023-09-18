@@ -63,8 +63,8 @@ public class UnsubscribeProcessor {
         String consumerGroup = EventMeshCloudEventUtils.getConsumerGroup(subscription);
         String url = EventMeshCloudEventUtils.getURL(subscription);
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
         final String idc = EventMeshCloudEventUtils.getIdc(subscription);
         final String sys = EventMeshCloudEventUtils.getSys(subscription);
@@ -74,17 +74,17 @@ public class UnsubscribeProcessor {
         List<ConsumerGroupClient> removeClients = new LinkedList<>();
         for (SubscriptionItem item : subscriptionItems) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(env)
-                .idc(idc)
-                .sys(sys)
-                .ip(ip)
-                .pid(pid)
-                .consumerGroup(consumerGroup)
-                .topic(item.getTopic())
-                .subscriptionMode(item.getMode())
-                .url(url)
-                .lastUpTime(new Date())
-                .build();
+                    .env(env)
+                    .idc(idc)
+                    .sys(sys)
+                    .ip(ip)
+                    .pid(pid)
+                    .consumerGroup(consumerGroup)
+                    .topic(item.getTopic())
+                    .subscriptionMode(item.getMode())
+                    .url(url)
+                    .lastUpTime(new Date())
+                    .build();
             removeClients.add(newClient);
         }
 

@@ -51,8 +51,8 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     private final ThreadPoolExecutor replyThreadPoolExecutor;
 
     public ConsumerService(EventMeshGrpcServer eventMeshGrpcServer,
-        ThreadPoolExecutor subscribeThreadPoolExecutor,
-        ThreadPoolExecutor replyThreadPoolExecutor) {
+                           ThreadPoolExecutor subscribeThreadPoolExecutor,
+                           ThreadPoolExecutor replyThreadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.subscribeThreadPoolExecutor = subscribeThreadPoolExecutor;
         this.replyThreadPoolExecutor = replyThreadPoolExecutor;
@@ -61,8 +61,8 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     @Override
     public void subscribe(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-            "subscribe", EventMeshConstants.PROTOCOL_GRPC,
-            EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+                "subscribe", EventMeshConstants.PROTOCOL_GRPC,
+                EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
@@ -72,7 +72,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                 subscribeProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
-                    StatusCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg(), e);
+                        StatusCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg(), e);
                 ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });
@@ -83,20 +83,21 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
 
         return new StreamObserver<CloudEvent>() {
+
             @Override
             public void onNext(CloudEvent subscription) {
                 Set<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-                    new TypeReference<Set<SubscriptionItem>>() {
-                    });
+                        new TypeReference<Set<SubscriptionItem>>() {
+                        });
                 if (CollectionUtils.isNotEmpty(subscriptionItems)) {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
-                        EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+                            EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
                     eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
                     handleSubscriptionStream(subscription, emitter);
                 } else {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "reply-to-server", EventMeshConstants.PROTOCOL_GRPC,
-                        EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+                            EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
                     handleSubscribeReply(subscription, emitter);
                 }
             }
@@ -142,7 +143,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     @Override
     public void unsubscribe(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
-            EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+                EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
@@ -152,7 +153,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                 unsubscribeProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
-                    StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg(), e);
+                        StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg(), e);
                 ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_UNSUBSCRIBE_ERR, e.getMessage(), emitter);
             }
         });

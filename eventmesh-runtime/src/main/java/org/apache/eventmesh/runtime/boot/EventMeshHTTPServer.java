@@ -65,7 +65,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.assertj.core.util.Lists;
 
-
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.RateLimiter;
 
@@ -77,6 +76,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class EventMeshHTTPServer extends AbstractHTTPServer {
+
     private final EventMeshServer eventMeshServer;
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -120,9 +120,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
         Optional.ofNullable(eventMeshHttpConfiguration.getEventMeshMetricsPluginType()).ifPresent(
                 metricsPlugins -> metricsPlugins.forEach(
-                        pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))
-                )
-        );
+                        pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         httpRetryer = new HttpRetryer(this);
         httpRetryer.init();
@@ -139,7 +137,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super.setHandlerService(new HandlerService());
         super.getHandlerService().setMetrics(this.getMetrics());
 
-        //get the trace-plugin
+        // get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
                 && eventMeshHttpConfiguration.isEventMeshServerTraceEnable()) {
             super.setUseTrace(eventMeshHttpConfiguration.isEventMeshServerTraceEnable());

@@ -45,13 +45,13 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient2();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
         try {
             final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+                    .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);

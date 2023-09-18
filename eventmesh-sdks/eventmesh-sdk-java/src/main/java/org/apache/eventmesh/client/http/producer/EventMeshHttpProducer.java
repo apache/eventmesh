@@ -63,26 +63,24 @@ public class EventMeshHttpProducer implements AutoCloseable {
         return openMessageProducer.request(openMessage, timeout);
     }
 
-    public void request(final EventMeshMessage message, final RRCallback<EventMeshMessage> rrCallback, final long timeout)
-        throws EventMeshException {
+    public void request(final EventMeshMessage message, final RRCallback<EventMeshMessage> rrCallback, final long timeout) throws EventMeshException {
         eventMeshMessageProducer.request(message, rrCallback, timeout);
     }
 
-    public void request(final CloudEvent cloudEvent, final RRCallback<CloudEvent> rrCallback, final long timeout)
-        throws EventMeshException {
+    public void request(final CloudEvent cloudEvent, final RRCallback<CloudEvent> rrCallback, final long timeout) throws EventMeshException {
         cloudEventProducer.request(cloudEvent, rrCallback, timeout);
     }
 
-    public void request(final Message openMessage, final RRCallback<Message> rrCallback, final long timeout)
-        throws EventMeshException {
+    public void request(final Message openMessage, final RRCallback<Message> rrCallback, final long timeout) throws EventMeshException {
         openMessageProducer.request(openMessage, rrCallback, timeout);
     }
 
     @Override
     public void close() throws EventMeshException {
-        try (final EventMeshMessageProducer ignored = eventMeshMessageProducer;
-            final OpenMessageProducer ignored1 = openMessageProducer;
-            final CloudEventProducer ignored2 = cloudEventProducer) {
+        try (
+                final EventMeshMessageProducer ignored = eventMeshMessageProducer;
+                final OpenMessageProducer ignored1 = openMessageProducer;
+                final CloudEventProducer ignored2 = cloudEventProducer) {
             log.info("Close producer");
         }
     }

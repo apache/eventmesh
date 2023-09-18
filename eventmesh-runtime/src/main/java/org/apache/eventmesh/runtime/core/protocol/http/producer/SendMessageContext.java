@@ -32,7 +32,6 @@ import java.util.Map;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -114,11 +113,11 @@ public class SendMessageContext extends RetryContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
-            .append("bizSeqNo=").append(bizSeqNo)
-            .append(",retryTimes=").append(retryTimes)
-            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
-            .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-            .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+                .append("bizSeqNo=").append(bizSeqNo)
+                .append(",retryTimes=").append(retryTimes)
+                .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
+                .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+                .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
@@ -129,7 +128,7 @@ public class SendMessageContext extends RetryContext {
             return;
         }
 
-        if (retryTimes > 0) { //retry once
+        if (retryTimes > 0) { // retry once
             log.error("Exception happends during retry. The retryTimes > 0.");
             return;
         }

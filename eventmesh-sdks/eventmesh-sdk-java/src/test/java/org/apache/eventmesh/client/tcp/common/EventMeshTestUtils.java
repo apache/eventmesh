@@ -36,31 +36,31 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient1() {
         return UserAgent.builder()
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .group("EventmeshTestGroup")
-            .path("/data/app/umg_proxy")
-            .port(8362)
-            .subsystem("5023")
-            .pid(32893)
-            .version("2.0.11")
-            .idc("FT")
-            .build();
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .group("EventmeshTestGroup")
+                .path("/data/app/umg_proxy")
+                .port(8362)
+                .subsystem("5023")
+                .pid(32893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
     }
 
     public static UserAgent generateClient2() {
         return UserAgent.builder()
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .group("EventmeshTestGroup")
-            .path("/data/app/umg_proxy")
-            .port(9362)
-            .subsystem("5017")
-            .pid(42893)
-            .version("2.0.11")
-            .idc("FT").build();
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .group("EventmeshTestGroup")
+                .path("/data/app/umg_proxy")
+                .port(9362)
+                .subsystem("5017")
+                .pid(42893)
+                .version("2.0.11")
+                .idc("FT").build();
     }
 
     public static Package syncRR() {
@@ -107,7 +107,6 @@ public class EventMeshTestUtils {
         mqMsg.setBody("testSyncRR");
         return mqMsg;
     }
-
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();

@@ -210,18 +210,19 @@ public class NacosMetaService implements MetaService {
             String eventMeshName = configuration.getEventMeshName();
             try {
                 List<Instance> instances =
-                    nacosNamingService.selectInstances(eventMeshName + "-" + key,
-                        key + "-" + (inCluster ? configuration.getEventMeshCluster() : NacosConstant.GROUP),
-                        clusters,
-                        true);
+                        nacosNamingService.selectInstances(eventMeshName + "-" + key,
+                                key + "-" + (inCluster ? configuration.getEventMeshCluster() : NacosConstant.GROUP),
+                                clusters,
+                                true);
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
                 }
                 for (Instance instance : instances) {
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
-                            instance.getIp() + ":"
-                                + instance.getPort(), 0L, instance.getMetadata());
+                            new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
+                                    instance.getIp() + ":"
+                                            + instance.getPort(),
+                                    0L, instance.getMetadata());
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {
@@ -292,7 +293,7 @@ public class NacosMetaService implements MetaService {
 
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
             nacosNamingService.registerInstance(eventMeshName, eventMeshRegisterInfo.getProtocolType() + "-"
-                + NacosConstant.GROUP, instance);
+                    + NacosConstant.GROUP, instance);
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (NacosException e) {
             log.error("[NacosRegistryService][register] error", e);
@@ -313,7 +314,7 @@ public class NacosMetaService implements MetaService {
             String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
             instance.setClusterName(eventMeshClusterName);
             nacosNamingService.deregisterInstance(eventMeshName, eventMeshUnRegisterInfo.getProtocolType()
-                + "-" + NacosConstant.GROUP, instance);
+                    + "-" + NacosConstant.GROUP, instance);
             eventMeshRegisterInfoMap.remove(eventMeshName);
         } catch (NacosException e) {
             log.error("[NacosRegistryService][unRegister] error", e);

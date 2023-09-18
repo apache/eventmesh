@@ -53,14 +53,14 @@ public class ServiceUtils {
 
     public static boolean validateCloudEventAttributes(CloudEvent cloudEvent) {
         return StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIdc(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getEnv(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIp(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getPid(cloudEvent))
-            && StringUtils.isNumeric(EventMeshCloudEventUtils.getPid(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getSys(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getUserName(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getPassword(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getLanguage(cloudEvent));
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getEnv(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIp(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getPid(cloudEvent))
+                && StringUtils.isNumeric(EventMeshCloudEventUtils.getPid(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getSys(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getUserName(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getPassword(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getLanguage(cloudEvent));
     }
 
     public static boolean validateCloudEventBatchAttributes(CloudEventBatch cloudEventBatch) {
@@ -79,9 +79,9 @@ public class ServiceUtils {
 
     public static boolean validateCloudEventData(CloudEvent cloudEvent) {
         boolean flag = StringUtils.isNotEmpty(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getProducerGroup(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getSubject(cloudEvent))
-            && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getTtl(cloudEvent));
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getProducerGroup(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getSubject(cloudEvent))
+                && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getTtl(cloudEvent));
         if (!flag) {
             return false;
         }
@@ -115,36 +115,35 @@ public class ServiceUtils {
             return false;
         }
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
         if (CollectionUtils.isEmpty(subscriptionItems)
-            || StringUtils.isEmpty(EventMeshCloudEventUtils.getConsumerGroup(subscription))) {
+                || StringUtils.isEmpty(EventMeshCloudEventUtils.getConsumerGroup(subscription))) {
             return false;
         }
         for (SubscriptionItem item : subscriptionItems) {
             if (StringUtils.isEmpty(item.getTopic())
-                || item.getMode() == SubscriptionMode.UNRECOGNIZED
-                || item.getType() == SubscriptionType.UNRECOGNIZED) {
+                    || item.getMode() == SubscriptionMode.UNRECOGNIZED
+                    || item.getType() == SubscriptionType.UNRECOGNIZED) {
                 return false;
             }
         }
         return true;
     }
 
-
     public static boolean validateHeartBeat(CloudEvent heartbeat) {
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.SUB == clientType && StringUtils.isEmpty(
-            EventMeshCloudEventUtils.getConsumerGroup(heartbeat))) {
+                EventMeshCloudEventUtils.getConsumerGroup(heartbeat))) {
             return false;
         }
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.PUB == clientType && StringUtils.isEmpty(
-            EventMeshCloudEventUtils.getProducerGroup(heartbeat))) {
+                EventMeshCloudEventUtils.getProducerGroup(heartbeat))) {
             return false;
         }
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
-            new TypeReference<List<HeartbeatItem>>() {
-            });
+                new TypeReference<List<HeartbeatItem>>() {
+                });
         Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             if (StringUtils.isEmpty(item.getTopic())) {
@@ -165,11 +164,11 @@ public class ServiceUtils {
 
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
-                CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
+                        CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                        .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
 
         emitter.onNext(builder.build());
         emitter.onCompleted();
@@ -184,10 +183,10 @@ public class ServiceUtils {
     public static void sendResponseCompleted(StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder()
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                        .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
         emitter.onNext(builder.build());
         emitter.onCompleted();
     }
@@ -227,10 +226,10 @@ public class ServiceUtils {
     public static void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder(cloudEvent)
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                        .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
 
         emitter.onNext(builder.build());
     }
@@ -246,11 +245,11 @@ public class ServiceUtils {
     public static void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
         Instant instant = OffsetDateTime.now().toInstant();
         CloudEvent.Builder builder = CloudEvent.newBuilder(cloudEvent)
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
-                CloudEventAttributeValue.newBuilder().setCeString(StringUtils.isEmpty(message) ? code.getErrMsg() : message).build())
-            .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
-                .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
+                        CloudEventAttributeValue.newBuilder().setCeString(StringUtils.isEmpty(message) ? code.getErrMsg() : message).build())
+                .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
+                        .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
 
         emitter.onNext(builder.build());
     }

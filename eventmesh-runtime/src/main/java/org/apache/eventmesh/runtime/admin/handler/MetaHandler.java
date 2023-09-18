@@ -37,7 +37,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -108,12 +107,11 @@ public class MetaHandler extends AbstractHttpHandler {
             List<EventMeshDataInfo> eventMeshDataInfos = eventMeshMetaStorage.findAllEventMeshInfo();
             for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
                 GetRegistryResponse getRegistryResponse = new GetRegistryResponse(
-                    eventMeshDataInfo.getEventMeshClusterName(),
-                    eventMeshDataInfo.getEventMeshName(),
-                    eventMeshDataInfo.getEndpoint(),
-                    eventMeshDataInfo.getLastUpdateTimestamp(),
-                    eventMeshDataInfo.getMetadata().toString()
-                );
+                        eventMeshDataInfo.getEventMeshClusterName(),
+                        eventMeshDataInfo.getEventMeshName(),
+                        eventMeshDataInfo.getEndpoint(),
+                        eventMeshDataInfo.getLastUpdateTimestamp(),
+                        eventMeshDataInfo.getMetadata().toString());
                 getRegistryResponseList.add(getRegistryResponse);
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
@@ -122,7 +120,7 @@ public class MetaHandler extends AbstractHttpHandler {
             httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (NullPointerException e) {
-            //registry not initialized, return empty list
+            // registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

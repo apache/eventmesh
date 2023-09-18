@@ -28,19 +28,20 @@ import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SyncSubClient {
 
     public static void main(String[] args) throws Exception {
-        try (SubClientImpl client =
-                     new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
+        try (
+                SubClientImpl client =
+                        new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             client.registerBusiHandler(new ReceiveMsgHook() {
+
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {

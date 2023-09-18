@@ -44,8 +44,8 @@ public class TestUtils {
         return messageContainer;
     }
 
-    public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata, MessageEntity messageEntity)
-        throws InterruptedException {
+    public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata,
+                                                                                        MessageEntity messageEntity) throws InterruptedException {
         ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
         MessageQueue messageQueue = new MessageQueue();
         messageQueue.put(messageEntity);
@@ -55,11 +55,11 @@ public class TestUtils {
 
     public static CloudEvent createDefaultCloudEvent() {
         return CloudEventBuilder.v1()
-            .withId("test")
-            .withSubject(TEST_TOPIC)
-            .withSource(URI.create("testsource"))
-            .withType("testType")
-            .build();
+                .withId("test")
+                .withSubject(TEST_TOPIC)
+                .withSource(URI.create("testsource"))
+                .withType("testType")
+                .build();
     }
 
     public static List<CloudEvent> createCloudEvents() {
@@ -68,19 +68,17 @@ public class TestUtils {
 
     public static MessageEntity createDefaultMessageEntity() {
         return new MessageEntity(
-            new TopicMetadata(TEST_TOPIC),
-            createDefaultCloudEvent(),
-            OFF_SET,
-            System.currentTimeMillis()
-        );
+                new TopicMetadata(TEST_TOPIC),
+                createDefaultCloudEvent(),
+                OFF_SET,
+                System.currentTimeMillis());
     }
 
     public static MessageEntity createMessageEntity(TopicMetadata topicMetadata, CloudEvent cloudEvent, long offSet, long currentTimeMillis) {
         return new MessageEntity(
-            topicMetadata,
-            cloudEvent,
-            offSet,
-            currentTimeMillis
-        );
+                topicMetadata,
+                cloudEvent,
+                offSet,
+                currentTimeMillis);
     }
 }

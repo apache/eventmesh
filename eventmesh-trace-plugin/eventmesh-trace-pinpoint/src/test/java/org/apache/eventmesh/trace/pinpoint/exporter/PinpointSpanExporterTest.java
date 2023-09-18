@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.trace.pinpoint.exporter;
 
-
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;
@@ -52,16 +51,15 @@ public class PinpointSpanExporterTest {
     @Before
     public void setup() {
         PinpointTraceService pinpointTrace =
-            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
 
         PinpointConfiguration config = pinpointTrace.getClientConfiguration();
 
         this.exporter = new PinpointSpanExporter(
-            config.getAgentId(),
-            config.getAgentName(),
-            config.getApplicationName(),
-            config.getGrpcTransportConfig()
-        );
+                config.getAgentId(),
+                config.getAgentName(),
+                config.getApplicationName(),
+                config.getGrpcTransportConfig());
     }
 
     @Test

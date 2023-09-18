@@ -33,7 +33,6 @@ import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class HeartBeatProcessor implements TcpProcessor {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            //do acl check in heartbeat
+            // do acl check in heartbeat
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 this.acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());
@@ -63,11 +62,11 @@ public class HeartBeatProcessor implements TcpProcessor {
                 session.notifyHeartbeat(startTime);
             }
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                pkg.getHeader().getSeq()));
+                    pkg.getHeader().getSeq()));
         } catch (Exception e) {
             log.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
-                + "heartbeating", pkg.getHeader().getSeq()));
+                    + "heartbeating", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(res, startTime, taskExecuteTime, Objects.requireNonNull(session).getContext(), session);
         }

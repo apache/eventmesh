@@ -48,7 +48,7 @@ public class ProducerTopicManager {
 
     public void init() {
         scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
-            new EventMeshThreadFactory("Producer-Topic-Manager", true));
+                new EventMeshThreadFactory("Producer-Topic-Manager", true));
         log.info("ProducerTopicManager inited......");
     }
 
@@ -63,7 +63,7 @@ public class ProducerTopicManager {
                         }
                         List<EventMeshServicePubTopicInfo> pubTopicInfoList = eventMeshServer.getMetaStorage().findEventMeshServicePubTopicInfos();
                         Optional.ofNullable(pubTopicInfoList)
-                            .ifPresent(lt -> lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
+                                .ifPresent(lt -> lt.forEach(item -> eventMeshServicePubTopicInfoMap.put(item.getService(), item)));
                     } catch (Exception e) {
                         log.error("ProducerTopicManager update eventMesh pub topic info error. ", e);
                     }
@@ -88,6 +88,5 @@ public class ProducerTopicManager {
     public EventMeshServicePubTopicInfo getEventMeshServicePubTopicInfo(String producerGroup) {
         return eventMeshServicePubTopicInfoMap.get(producerGroup);
     }
-
 
 }

@@ -106,12 +106,13 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         validateCloudEvent(cloudEvent);
         String protocolDesc =
-            cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+                cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         switch (Objects.requireNonNull(protocolDesc)) {
             case MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP:
                 HttpCommand httpCommand = new HttpCommand();
                 Body body = new Body() {
+
                     final Map<String, Object> map = new HashMap<>();
 
                     @Override
@@ -120,7 +121,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                             return map;
                         }
                         map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT,
-                            new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET));
+                                new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET));
                         return map;
                     }
                 };

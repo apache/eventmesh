@@ -64,16 +64,17 @@ public class RabbitmqConsumerTest extends RabbitmqServer {
         ThreadUtils.sleep(1, TimeUnit.SECONDS);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId(String.valueOf(i))
-                .withTime(OffsetDateTime.now())
-                .withSource(URI.create("testsource"))
-                .withSubject("topic")
-                .withType(String.class.getCanonicalName())
-                .withDataContentType("text/plain")
-                .withData("data".getBytes(StandardCharsets.UTF_8))
-                .build();
+                    .withId(String.valueOf(i))
+                    .withTime(OffsetDateTime.now())
+                    .withSource(URI.create("testsource"))
+                    .withSubject("topic")
+                    .withType(String.class.getCanonicalName())
+                    .withDataContentType("text/plain")
+                    .withData("data".getBytes(StandardCharsets.UTF_8))
+                    .build();
 
             rabbitmqProducer.publish(cloudEvent, new SendCallback() {
+
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     Assert.assertEquals(cloudEvent.getId(), sendResult.getMessageId());

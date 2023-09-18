@@ -147,11 +147,12 @@ public class JdbcSourceConnector extends SourceConnector {
         this.snapshotEngine.start();
         SnapshotResult<?> result = this.snapshotEngine.execute();
         this.snapshotEngine.close();
-        //success and skip status can run cdc engine
+        // success and skip status can run cdc engine
         if (result.getStatus() != SnapshotResultStatus.ABORTED) {
             log.info("Start Cdc Engine to handle cdc event");
-            /*this.cdcEngine.setContext(result.getContext());
-            this.cdcEngine.start();*/
+            /*
+             * this.cdcEngine.setContext(result.getContext()); this.cdcEngine.start();
+             */
         }
     }
 

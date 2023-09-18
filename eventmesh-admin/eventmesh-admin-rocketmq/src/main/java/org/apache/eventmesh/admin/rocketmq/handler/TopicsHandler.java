@@ -93,7 +93,7 @@ public class TopicsHandler implements HttpHandler {
             // Parses the request body into a TopicCreateRequest object.
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
-                JsonUtils.parseObject(params, TopicCreateRequest.class);
+                    JsonUtils.parseObject(params, TopicCreateRequest.class);
             // Gets the topic name from the request body.
             String topic = topicCreateRequest.getTopic();
 
@@ -105,7 +105,7 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
 
-            //TBD: A new rocketmq service will be implemented for creating topics
+            // TBD: A new rocketmq service will be implemented for creating topics
             TopicResponse topicResponse = null; // Temporary variable for topic response
             if (topicResponse != null) {
                 log.info("create a new topic: {}", topic);

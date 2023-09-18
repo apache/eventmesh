@@ -23,7 +23,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-
 /**
  * Represents a unique key constraint for a database table.
  * <p>A unique key ensures that the values in specified columns are unique across all rows in the table.</p>
@@ -71,4 +70,3 @@ public class UniqueKey implements Serializable {
         }
     }
 }
-

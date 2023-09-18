@@ -53,7 +53,8 @@ import com.google.common.base.Preconditions;
  * @since 1.3.0
  */
 public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
-    implements ProtocolAdaptor<ProtocolTransportObject> {
+        implements
+            ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
@@ -84,8 +85,8 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
-        org.apache.eventmesh.common.protocol.http.header.Header header,
-        Body body) throws ProtocolHandleException {
+                                               org.apache.eventmesh.common.protocol.http.header.Header header,
+                                               Body body) throws ProtocolHandleException {
 
         switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:
@@ -118,13 +119,14 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             case "http":
                 HttpCommand httpCommand = new HttpCommand();
                 Body body = new Body() {
+
                     final Map<String, Object> map = new HashMap<>();
 
                     @Override
                     public Map<String, Object> toMap() {
                         byte[] eventByte =
-                            Objects.requireNonNull(EventFormatProvider.getInstance()
-                                .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
+                                Objects.requireNonNull(EventFormatProvider.getInstance()
+                                        .resolveFormat(JsonFormat.CONTENT_TYPE)).serialize(cloudEvent);
                         map.put("content", new String(eventByte, Constants.DEFAULT_CHARSET));
                         return map;
                     }
@@ -138,7 +140,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
                 EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
                 Preconditions.checkNotNull(eventFormat,
-                    String.format("DateContentType:%s is not supported", dataContentType));
+                        String.format("DateContentType:%s is not supported", dataContentType));
                 pkg.setBody(eventFormat.serialize(cloudEvent));
                 return pkg;
             case CloudEventsProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT:

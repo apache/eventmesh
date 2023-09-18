@@ -36,7 +36,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,8 +66,8 @@ public class MetricsHandler extends AbstractHttpHandler {
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
-        EventMeshTCPServer eventMeshTcpServer,
-        HttpHandlerManager httpHandlerManager) {
+                          EventMeshTCPServer eventMeshTcpServer,
+                          HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
@@ -108,49 +107,48 @@ public class MetricsHandler extends AbstractHttpHandler {
 
         try {
             GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
-                httpSummaryMetrics.maxHTTPTPS(),
-                httpSummaryMetrics.avgHTTPTPS(),
-                httpSummaryMetrics.maxHTTPCost(),
-                httpSummaryMetrics.avgHTTPCost(),
-                httpSummaryMetrics.avgHTTPBodyDecodeCost(),
-                httpSummaryMetrics.getHttpDiscard(),
-                httpSummaryMetrics.maxSendBatchMsgTPS(),
-                httpSummaryMetrics.avgSendBatchMsgTPS(),
-                httpSummaryMetrics.getSendBatchMsgNumSum(),
-                httpSummaryMetrics.getSendBatchMsgFailNumSum(),
-                httpSummaryMetrics.getSendBatchMsgFailRate(),
-                httpSummaryMetrics.getSendBatchMsgDiscardNumSum(),
-                httpSummaryMetrics.maxSendMsgTPS(),
-                httpSummaryMetrics.avgSendMsgTPS(),
-                httpSummaryMetrics.getSendMsgNumSum(),
-                httpSummaryMetrics.getSendMsgFailNumSum(),
-                httpSummaryMetrics.getSendMsgFailRate(),
-                httpSummaryMetrics.getReplyMsgNumSum(),
-                httpSummaryMetrics.getReplyMsgFailNumSum(),
-                httpSummaryMetrics.maxPushMsgTPS(),
-                httpSummaryMetrics.avgPushMsgTPS(),
-                httpSummaryMetrics.getHttpPushMsgNumSum(),
-                httpSummaryMetrics.getHttpPushFailNumSum(),
-                httpSummaryMetrics.getHttpPushMsgFailRate(),
-                httpSummaryMetrics.maxHTTPPushLatency(),
-                httpSummaryMetrics.avgHTTPPushLatency(),
-                httpSummaryMetrics.getBatchMsgQueueSize(),
-                httpSummaryMetrics.getSendMsgQueueSize(),
-                httpSummaryMetrics.getPushMsgQueueSize(),
-                httpSummaryMetrics.getHttpRetryQueueSize(),
-                httpSummaryMetrics.avgBatchSendMsgCost(),
-                httpSummaryMetrics.avgSendMsgCost(),
-                httpSummaryMetrics.avgReplyMsgCost(),
+                    httpSummaryMetrics.maxHTTPTPS(),
+                    httpSummaryMetrics.avgHTTPTPS(),
+                    httpSummaryMetrics.maxHTTPCost(),
+                    httpSummaryMetrics.avgHTTPCost(),
+                    httpSummaryMetrics.avgHTTPBodyDecodeCost(),
+                    httpSummaryMetrics.getHttpDiscard(),
+                    httpSummaryMetrics.maxSendBatchMsgTPS(),
+                    httpSummaryMetrics.avgSendBatchMsgTPS(),
+                    httpSummaryMetrics.getSendBatchMsgNumSum(),
+                    httpSummaryMetrics.getSendBatchMsgFailNumSum(),
+                    httpSummaryMetrics.getSendBatchMsgFailRate(),
+                    httpSummaryMetrics.getSendBatchMsgDiscardNumSum(),
+                    httpSummaryMetrics.maxSendMsgTPS(),
+                    httpSummaryMetrics.avgSendMsgTPS(),
+                    httpSummaryMetrics.getSendMsgNumSum(),
+                    httpSummaryMetrics.getSendMsgFailNumSum(),
+                    httpSummaryMetrics.getSendMsgFailRate(),
+                    httpSummaryMetrics.getReplyMsgNumSum(),
+                    httpSummaryMetrics.getReplyMsgFailNumSum(),
+                    httpSummaryMetrics.maxPushMsgTPS(),
+                    httpSummaryMetrics.avgPushMsgTPS(),
+                    httpSummaryMetrics.getHttpPushMsgNumSum(),
+                    httpSummaryMetrics.getHttpPushFailNumSum(),
+                    httpSummaryMetrics.getHttpPushMsgFailRate(),
+                    httpSummaryMetrics.maxHTTPPushLatency(),
+                    httpSummaryMetrics.avgHTTPPushLatency(),
+                    httpSummaryMetrics.getBatchMsgQueueSize(),
+                    httpSummaryMetrics.getSendMsgQueueSize(),
+                    httpSummaryMetrics.getPushMsgQueueSize(),
+                    httpSummaryMetrics.getHttpRetryQueueSize(),
+                    httpSummaryMetrics.avgBatchSendMsgCost(),
+                    httpSummaryMetrics.avgSendMsgCost(),
+                    httpSummaryMetrics.avgReplyMsgCost(),
 
-                tcpSummaryMetrics.getRetrySize(),
-                tcpSummaryMetrics.getClient2eventMeshTPS(),
-                tcpSummaryMetrics.getEventMesh2mqTPS(),
-                tcpSummaryMetrics.getMq2eventMeshTPS(),
-                tcpSummaryMetrics.getEventMesh2clientTPS(),
-                tcpSummaryMetrics.getAllTPS(),
-                tcpSummaryMetrics.getAllConnections(),
-                tcpSummaryMetrics.getSubTopicNum()
-            );
+                    tcpSummaryMetrics.getRetrySize(),
+                    tcpSummaryMetrics.getClient2eventMeshTPS(),
+                    tcpSummaryMetrics.getEventMesh2mqTPS(),
+                    tcpSummaryMetrics.getMq2eventMeshTPS(),
+                    tcpSummaryMetrics.getEventMesh2clientTPS(),
+                    tcpSummaryMetrics.getAllTPS(),
+                    tcpSummaryMetrics.getAllConnections(),
+                    tcpSummaryMetrics.getSubTopicNum());
             String result = JsonUtils.toJSONString(getMetricsResponse);
             byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(200, bytes.length);

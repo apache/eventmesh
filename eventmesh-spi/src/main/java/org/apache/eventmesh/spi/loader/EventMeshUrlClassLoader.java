@@ -52,6 +52,6 @@ public class EventMeshUrlClassLoader extends URLClassLoader {
     private static class EventMeshUrlClassLoaderHolder {
 
         private static final EventMeshUrlClassLoader INSTANCE = new EventMeshUrlClassLoader(new URL[0],
-            Thread.currentThread().getContextClassLoader());
+                Thread.currentThread().getContextClassLoader());
     }
 }

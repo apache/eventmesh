@@ -75,7 +75,7 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     public static MysqlJdbcContext initialize(JdbcSourceConfig jdbcSourceConfig) {
         SourceConnectorConfig sourceConnectorConfig = jdbcSourceConfig.getSourceConnectorConfig();
         MysqlAntlr4DdlParser mysqlAntlr4DdlParser = new MysqlAntlr4DdlParser(sourceConnectorConfig.isSkipViews(),
-            sourceConnectorConfig.isSkipComments(), jdbcSourceConfig);
+                sourceConnectorConfig.isSkipComments(), jdbcSourceConfig);
         return new MysqlJdbcContext(new MysqlPartition(), new MysqlOffsetContext(), mysqlAntlr4DdlParser);
     }
 
@@ -88,7 +88,7 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     }
 
     public void complete() {
-        //TODO: What to do?
+        // TODO: What to do?
         this.currentHandleEventSize = 0;
     }
 
@@ -103,6 +103,5 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     public String getGtidSet() {
         return this.currentGtidSet != null ? this.currentGtidSet : null;
     }
-
 
 }

@@ -42,7 +42,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-
 public class HttpEventWrapper implements ProtocolTransportObject {
 
     public static final long serialVersionUID = -8547334421415366981L;
@@ -59,10 +58,10 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     private String httpVersion;
 
-    //Command request time
+    // Command request time
     private long reqTime;
 
-    //Command response time
+    // Command response time
     private long resTime;
 
     private HttpResponseStatus httpResponseStatus = HttpResponseStatus.OK;
@@ -182,7 +181,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     public DefaultFullHttpResponse httpResponse() throws Exception {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
-            Unpooled.wrappedBuffer(this.body));
+                Unpooled.wrappedBuffer(this.body));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
         headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -203,7 +202,7 @@ public class HttpEventWrapper implements ProtocolTransportObject {
                     break;
                 default:
                     sysHeaderMap.put(clientInstanceKey.getKey(),
-                        headerMap.getOrDefault(clientInstanceKey.getKey(), clientInstanceKey.getValue()));
+                            headerMap.getOrDefault(clientInstanceKey.getKey(), clientInstanceKey.getValue()));
             }
         }
     }

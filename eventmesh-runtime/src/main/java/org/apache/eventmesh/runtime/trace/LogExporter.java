@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -41,22 +40,22 @@ public class LogExporter implements SpanExporter {
             sb.setLength(0);
             InstrumentationLibraryInfo instrumentationLibraryInfo = span.getInstrumentationLibraryInfo();
             sb.append("'")
-                .append(span.getName())
-                .append("' : ")
-                .append(span.getTraceId())
-                .append(" ")
-                .append(span.getSpanId())
-                .append(" ")
-                .append(span.getKind())
-                .append(" [tracer: ")
-                .append(instrumentationLibraryInfo.getName())
-                .append(":")
-                .append(
-                    instrumentationLibraryInfo.getVersion() == null
-                        ? ""
-                        : instrumentationLibraryInfo.getVersion())
-                .append("] ")
-                .append(span.getAttributes());
+                    .append(span.getName())
+                    .append("' : ")
+                    .append(span.getTraceId())
+                    .append(" ")
+                    .append(span.getSpanId())
+                    .append(" ")
+                    .append(span.getKind())
+                    .append(" [tracer: ")
+                    .append(instrumentationLibraryInfo.getName())
+                    .append(":")
+                    .append(
+                            instrumentationLibraryInfo.getVersion() == null
+                                    ? ""
+                                    : instrumentationLibraryInfo.getVersion())
+                    .append("] ")
+                    .append(span.getAttributes());
             log.info(sb.toString());
         }
         return CompletableResultCode.ofSuccess();

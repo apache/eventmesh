@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,15 +35,16 @@ public class AsyncPublishInstance extends GrpcAbstractDemo {
     public static final int MESSAGE_SIZE = 5;
 
     public static void main(String[] args) throws Exception {
-        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (
+                EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.publish(buildEventMeshMessage(content,
-                    ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC));
+                        ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC));
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
             ThreadUtils.sleep(30, TimeUnit.SECONDS);

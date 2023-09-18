@@ -43,7 +43,8 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public long lastPushTime = System.currentTimeMillis();
 
-    public final Map<String /** IDC*/, List<String>> urls;
+    public final Map<String /** IDC*/
+            , List<String>> urls;
 
     public final List<String> totalUrls;
 
@@ -95,7 +96,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public String getUrl() {
         List<String> localIDCUrl = MapUtils.getObject(urls,
-            eventMeshHttpConfiguration.getEventMeshIDC(), null);
+                eventMeshHttpConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
             return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
         }

@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,27 +47,27 @@ public class SyncRequestInstance {
             }
 
             EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup("EventMeshTest-producerGroup")
-                .env("env")
-                .idc("idc")
-                .ip(IPUtils.getLocalAddress())
-                .sys("1234")
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+                    .liteEventMeshAddr(eventMeshIPPort)
+                    .producerGroup("EventMeshTest-producerGroup")
+                    .env("env")
+                    .idc("idc")
+                    .ip(IPUtils.getLocalAddress())
+                    .sys("1234")
+                    .pid(String.valueOf(ThreadUtils.getPID())).build();
 
             eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
 
             long startTime = System.currentTimeMillis();
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content("contentStr with special protocal")
-                .topic(topic)
-                .uniqueId(RandomStringUtils.generateNum(30)).build();
+                    .bizSeqNo(RandomStringUtils.generateNum(30))
+                    .content("contentStr with special protocal")
+                    .topic(topic)
+                    .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (log.isDebugEnabled()) {
                 log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(),
-                    System.currentTimeMillis() - startTime);
+                        System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
             log.warn("send msg failed", e);

@@ -29,7 +29,7 @@ public class AuthConfigsTest {
     @Test
     public void getConfigWhenAuthHttpBasicServiceInit() {
         AuthHttpBasicService authService = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
-            AuthService.class, "auth-http-basic");
+                AuthService.class, "auth-http-basic");
 
         AuthConfigs config = authService.getClientConfiguration();
         assertConfig(config);

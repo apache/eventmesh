@@ -46,4 +46,3 @@ public interface JdbcTaskManager extends AutoCloseable {
     void registerListener(TaskManagerListener listener);
 
 }
-

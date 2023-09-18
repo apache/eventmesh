@@ -29,7 +29,7 @@ public class ZipkinConfigurationTest {
     @Test
     public void getConfigWhenZipkinTraceInit() {
         ZipkinTraceService zipkinTraceService =
-            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
 
         ZipkinConfiguration config = zipkinTraceService.getClientConfiguration();
         assertConfig(config);

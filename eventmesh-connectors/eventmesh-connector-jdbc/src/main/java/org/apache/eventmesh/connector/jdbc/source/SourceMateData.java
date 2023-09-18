@@ -61,4 +61,3 @@ public class SourceMateData {
     private String tableName;
 
 }
-

@@ -68,7 +68,6 @@ public class NacosMetaServiceTest {
         nacosMetaService.shutdown();
     }
 
-
     @Test
     public void testInit() {
         nacosMetaService.init();

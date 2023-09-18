@@ -21,8 +21,9 @@ import org.apache.eventmesh.connector.jdbc.ddl.DdlParser;
 import org.apache.eventmesh.connector.jdbc.table.catalog.CatalogTableSet;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
-public abstract class UniversalJdbcContext<Part extends Partition, OffSetCtx extends OffsetContext, Parser extends DdlParser> implements
-    JdbcContext<Part, OffSetCtx> {
+public abstract class UniversalJdbcContext<Part extends Partition, OffSetCtx extends OffsetContext, Parser extends DdlParser>
+        implements
+            JdbcContext<Part, OffSetCtx> {
 
     private PartitionOffSetContextPair<Part, OffSetCtx> poCtx;
 
@@ -42,12 +43,10 @@ public abstract class UniversalJdbcContext<Part extends Partition, OffSetCtx ext
         this.parser = parser;
     }
 
-
     @Override
     public Part getPartition() {
         return poCtx.getPartition();
     }
-
 
     @Override
     public OffSetCtx getOffsetContext() {

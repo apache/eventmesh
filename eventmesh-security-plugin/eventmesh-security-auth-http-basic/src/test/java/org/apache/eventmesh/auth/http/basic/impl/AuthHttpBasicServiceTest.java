@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.auth.http.basic.impl;
 
-
 import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
@@ -34,7 +33,7 @@ public class AuthHttpBasicServiceTest {
     @BeforeClass
     public static void beforeClass() {
         service = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
-            AuthService.class, "auth-http-basic");
+                AuthService.class, "auth-http-basic");
     }
 
     @Test

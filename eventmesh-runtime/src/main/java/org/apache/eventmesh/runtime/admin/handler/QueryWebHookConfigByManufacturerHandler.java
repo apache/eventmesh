@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -79,7 +78,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
-        HttpHandlerManager httpHandlerManager) {
+                                                   HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.operation = operation;
         Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");

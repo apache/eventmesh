@@ -139,8 +139,9 @@ public class PravegaSinkConnector implements Sink {
             log.debug("stream[{}] has already been created.", topic);
         }
 
-        try (EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic, k ->
-                clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build()))) {
+        try (
+                EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic,
+                        k -> clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build()))) {
             PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
             PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);

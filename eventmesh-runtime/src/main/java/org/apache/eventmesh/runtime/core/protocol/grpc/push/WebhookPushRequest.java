@@ -32,7 +32,6 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -79,7 +78,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
     private final SubscriptionMode subscriptionMode;
 
     public WebhookPushRequest(HandleMsgContext handleMsgContext,
-        Map<String, Set<AbstractPushRequest>> waitingRequests) {
+                              Map<String, Set<AbstractPushRequest>> waitingRequests) {
         super(handleMsgContext, waitingRequests);
 
         WebhookTopicConfig topicConfig = (WebhookTopicConfig) handleMsgContext.getConsumeTopicConfig();
@@ -109,7 +108,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
             builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-                eventMeshGrpcConfiguration.getEventMeshCluster());
+                    eventMeshGrpcConfiguration.getEventMeshCluster());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.getEventMeshIp());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.getEventMeshEnv());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.getEventMeshIDC());
@@ -118,7 +117,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.PROTOCOL_DESC, EventMeshCloudEventUtils.getProtocolDesc(eventMeshCloudEvent));
             builder.addHeader(ProtocolKey.PROTOCOL_VERSION, EventMeshCloudEventUtils.getProtocolVersion(eventMeshCloudEvent));
             builder.addHeader(ProtocolKey.CONTENT_TYPE, EventMeshCloudEventUtils.getContentType(eventMeshCloudEvent,
-                Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
+                    Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
 
             List<NameValuePair> body = new ArrayList<>();
             body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, EventMeshCloudEventUtils.getDataContent(eventMeshCloudEvent)));
@@ -127,32 +126,32 @@ public class WebhookPushRequest extends AbstractPushRequest {
             body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
             body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent)));
             body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-                JsonUtils.toJSONString(EventMeshCloudEventUtils.getAttributes(eventMeshCloudEvent))));
+                    JsonUtils.toJSONString(EventMeshCloudEventUtils.getAttributes(eventMeshCloudEvent))));
 
             eventMeshCloudEvent = CloudEvent.newBuilder(eventMeshCloudEvent).putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
+                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
 
             builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
-
 
             addToWaitingMap(this);
 
             CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                IPUtils.getLocalAddress(), selectedPushUrl);
+                    IPUtils.getLocalAddress(), selectedPushUrl);
 
             try {
                 eventMeshGrpcServer.getHttpClient().execute(builder, handleResponse(selectedPushUrl));
                 MESSAGE_LOGGER
-                    .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                        selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
-                        EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent));
+                        .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                                selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                                EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                                EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent));
             } catch (IOException e) {
                 long cost = System.currentTimeMillis() - lastPushTime;
                 MESSAGE_LOGGER.error(
-                    "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", e.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, e);
+                        "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}",
+                        e.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, e);
                 removeWaitingMap(this);
                 delayRetry();
             }
@@ -162,45 +161,47 @@ public class WebhookPushRequest extends AbstractPushRequest {
     @Override
     public String toString() {
         return "asyncPushRequest={"
-            + "bizSeqNo=" + EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent)
-            + ",startIdx=" + startIdx
-            + ",retryTimes=" + retryTimes
-            + ",uniqueId=" + EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent)
-            + ",executeTime="
-            + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
-            + ",lastPushTime="
-            + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
-            + ",createTime="
-            + DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS) + "}";
+                + "bizSeqNo=" + EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent)
+                + ",startIdx=" + startIdx
+                + ",retryTimes=" + retryTimes
+                + ",uniqueId=" + EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent)
+                + ",executeTime="
+                + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
+                + ",lastPushTime="
+                + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)
+                + ",createTime="
+                + DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS) + "}";
     }
 
     private ResponseHandler<Object> handleResponse(String selectedPushUrl) {
         return response -> {
             removeWaitingMap(WebhookPushRequest.this);
             long cost = System.currentTimeMillis() - lastPushTime;
-            
+
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                
+
                 MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
+                        "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}",
+                        selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
 
                 delayRetry();
             } else {
                 String res = "";
                 try {
                     res = EntityUtils.toString(response.getEntity(),
-                        Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
+                            Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                 } catch (IOException e) {
                     complete();
                     return new Object();
                 }
                 ClientRetCode result = processResponseContent(res, selectedPushUrl);
                 MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
+                        "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}",
+                        result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 switch (result) {
                     case OK:
                     case FAIL:
@@ -211,7 +212,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
                         delayRetry();
                         break;
                     default:
-                        //do nothing
+                        // do nothing
                 }
             }
             return new Object();
@@ -225,8 +226,8 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
         try {
             Map<String, Object> ret =
-                JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
-                });
+                    JsonUtils.parseTypeReferenceObject(content, new TypeReference<Map<String, Object>>() {
+                    });
             Integer retCode = (Integer) Objects.requireNonNull(ret).get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
@@ -234,7 +235,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             return ClientRetCode.FAIL;
         } catch (Exception e) {
             MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", selectedPushUrl,
-                EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), content);
+                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), content);
             return ClientRetCode.FAIL;
         }
     }
@@ -242,7 +243,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
     @SuppressWarnings("unchecked")
     private List<String> getUrl() {
         List<String> localIdcUrl = MapUtils.getObject(urls,
-            eventMeshGrpcConfiguration.getEventMeshIDC(), null);
+                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIdcUrl)) {
             return getStringList(localIdcUrl);
         } else if (CollectionUtils.isNotEmpty(totalUrls)) {

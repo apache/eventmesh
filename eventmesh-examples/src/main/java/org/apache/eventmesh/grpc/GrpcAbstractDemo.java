@@ -44,35 +44,35 @@ public class GrpcAbstractDemo {
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         return EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup(groupName)
-            .env("env")
-            .idc("idc")
-            .sys("1234")
-            .build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .producerGroup(groupName)
+                .env("env")
+                .idc("idc")
+                .sys("1234")
+                .build();
     }
 
     protected static CloudEvent buildCloudEvent(final Map<String, String> content, String topic) {
         return CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(topic)
-            .withSource(URI.create("/"))
-            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
-            .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSubject(topic)
+                .withSource(URI.create("/"))
+                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+                .build();
 
     }
 
     protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content, String topic) {
         return EventMeshMessage.builder()
-            .content(JsonUtils.toJSONString(content))
-            .topic(topic)
-            .uniqueId(RandomStringUtils.generateNum(30))
-            .bizSeqNo(RandomStringUtils.generateNum(30))
-            .build()
-            .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
+                .content(JsonUtils.toJSONString(content))
+                .topic(topic)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000));
     }
 }

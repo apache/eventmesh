@@ -72,7 +72,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
          */
         parser.runIfAllNotNull(() -> {
             FullColumnNameContext fullColumnNameContext = ctx.fullColumnName();
-            //parse column name
+            // parse column name
             UidContext uidContext = fullColumnNameContext.uid();
             List<DottedIdContext> dottedIdContextList = fullColumnNameContext.dottedId();
             if (CollectionUtils.isNotEmpty(dottedIdContextList)) {
@@ -82,7 +82,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
             MysqlColumnEditor columnEditor = MysqlColumnEditor.ofEditor(columnName);
             if (Objects.isNull(columnDefinitionListener)) {
                 columnDefinitionListener = new ColumnDefinitionParserListener(listeners, tableEditor, columnEditor, parser);
-                //add ColumnDefinitionParserListener to listener list
+                // add ColumnDefinitionParserListener to listener list
                 listeners.add(columnDefinitionListener);
             } else {
                 columnDefinitionListener.setColumnEditor(columnEditor);
@@ -96,7 +96,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     public void exitColumnDeclaration(ColumnDeclarationContext ctx) {
 
         parser.runIfAllNotNull(() -> tableEditor.addColumns(columnDefinitionListener.getColumnEditor().build()), tableEditor,
-            columnDefinitionListener);
+                columnDefinitionListener);
 
         super.exitColumnDeclaration(ctx);
     }
@@ -142,7 +142,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     @Override
     public void enterUniqueKeyTableConstraint(UniqueKeyTableConstraintContext ctx) {
 
-        //sql example: UNIQUE KEY `eventmesh` (`event_mesh`) USING BTREE COMMENT 'event mesh'
+        // sql example: UNIQUE KEY `eventmesh` (`event_mesh`) USING BTREE COMMENT 'event mesh'
 
         parser.runIfAllNotNull(() -> {
             IndexColumnNamesContext indexColumnNamesContext = ctx.indexColumnNames();

@@ -41,7 +41,6 @@ public class Weight<T> {
         currentWeight.addAndGet(value);
     }
 
-
     public T getTarget() {
         return target;
     }
@@ -54,7 +53,6 @@ public class Weight<T> {
         return value;
     }
 
-
     public AtomicInteger getCurrentWeight() {
         return currentWeight;
     }
@@ -62,9 +60,9 @@ public class Weight<T> {
     @Override
     public String toString() {
         return "Wight{"
-            + "target=" + target
-            + ", value=" + value
-            + ", currentWeight=" + currentWeight
-            + '}';
+                + "target=" + target
+                + ", value=" + value
+                + ", currentWeight=" + currentWeight
+                + '}';
     }
 }

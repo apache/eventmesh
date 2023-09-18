@@ -47,7 +47,7 @@ public class HTTPTrace {
 
         final Map<String, Object> headerMap = Utils.parseHttpHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-            false);
+                false);
         return new TraceOperation(span, null, traceEnabled);
     }
 
@@ -107,7 +107,7 @@ public class HTTPTrace {
 
         public TraceOperation createClientTraceOperation(Map<String, Object> map, String spanName, boolean isSpanFinishInOtherThread) {
             TraceOperation traceOperation = new TraceOperation(TraceUtils.prepareClientSpan(map, spanName, isSpanFinishInOtherThread),
-                null, this.traceEnabled);
+                    null, this.traceEnabled);
             this.setChildTraceOperation(traceOperation);
             return traceOperation;
         }

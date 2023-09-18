@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatResponseBody;
@@ -71,32 +70,32 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         if (log.isInfoEnabled()) {
             log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+                    RequestCode.get(Integer.valueOf(request.getRequestCode())),
+                    EventMeshConstants.PROTOCOL_HTTP,
+                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
         }
         final HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) request.getHeader();
         final HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) request.getBody();
         EventMeshHTTPConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         final HeartbeatResponseHeader heartbeatResponseHeader =
-            HeartbeatResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
-                    httpConfiguration.getEventMeshCluster(),
-                    localAddress, httpConfiguration.getEventMeshEnv(),
-                    httpConfiguration.getEventMeshIDC());
+                HeartbeatResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
+                        httpConfiguration.getEventMeshCluster(),
+                        localAddress, httpConfiguration.getEventMeshEnv(),
+                        httpConfiguration.getEventMeshIDC());
 
-        //validate header
+        // validate header
 
         if (StringUtils.isAnyBlank(
                 heartbeatRequestHeader.getIdc(), heartbeatRequestHeader.getPid(), heartbeatRequestHeader.getSys())
-            || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())) {
+                || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())) {
             completeResponse(request, asyncContext, heartbeatResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, HeartbeatResponseBody.class);
             return;
         }
 
-        //validate body
+        // validate body
         if (StringUtils.isAnyBlank(heartbeatRequestBody.getClientType(), heartbeatRequestBody.getConsumerGroup())
-            || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
+                || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
             completeResponse(request, asyncContext, heartbeatResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, HeartbeatResponseBody.class);
             return;
@@ -120,16 +119,16 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 continue;
             }
 
-            //do acl check
+            // do acl check
             if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
                 try {
                     this.acl.doAclCheckInHttpHeartbeat(
-                        RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                        heartbeatRequestHeader.getUsername(),
-                        heartbeatRequestHeader.getPasswd(),
-                        heartbeatRequestHeader.getSys(),
-                        client.getTopic(),
-                        Integer.parseInt(heartbeatRequestHeader.getCode()));
+                            RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+                            heartbeatRequestHeader.getUsername(),
+                            heartbeatRequestHeader.getPasswd(),
+                            heartbeatRequestHeader.getSys(),
+                            client.getTopic(),
+                            Integer.parseInt(heartbeatRequestHeader.getCode()));
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, heartbeatResponseHeader,
                             EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), HeartbeatResponseBody.class);
@@ -173,9 +172,9 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                     summaryMetrics.recordHTTPReqResTimeCost(
-                        System.currentTimeMillis() - request.getReqTime());
+                            System.currentTimeMillis() - request.getReqTime());
                 } catch (Exception ex) {
-                    //ignore
+                    // ignore
                 }
             };
             responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);

@@ -93,7 +93,7 @@ public class RabbitmqProducer implements Producer {
     public void init(Properties properties) throws Exception {
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(configurationHolder.getHost(), configurationHolder.getUsername(),
-            configurationHolder.getPasswd(), configurationHolder.getPort(), configurationHolder.getVirtualHost());
+                configurationHolder.getPasswd(), configurationHolder.getPort(), configurationHolder.getVirtualHost());
         this.channel = rabbitmqConnectionFactory.createChannel(connection);
     }
 
@@ -114,12 +114,11 @@ public class RabbitmqProducer implements Producer {
         } catch (Exception ex) {
             log.error("[RabbitmqProducer] publish happen exception.", ex);
             sendCallback.onException(
-                OnExceptionContext.builder()
-                    .topic(cloudEvent.getSubject())
-                    .messageId(cloudEvent.getId())
-                    .exception(new StorageRuntimeException(ex))
-                    .build()
-            );
+                    OnExceptionContext.builder()
+                            .topic(cloudEvent.getSubject())
+                            .messageId(cloudEvent.getId())
+                            .exception(new StorageRuntimeException(ex))
+                            .build());
         }
     }
 
@@ -130,7 +129,7 @@ public class RabbitmqProducer implements Producer {
             if (optionalBytes.isPresent()) {
                 byte[] data = optionalBytes.get();
                 rabbitmqClient.publish(channel, configurationHolder.getExchangeName(),
-                    configurationHolder.getRoutingKey(), data);
+                        configurationHolder.getRoutingKey(), data);
             }
         } catch (Exception ex) {
             log.error("[RabbitmqProducer] sendOneway happen exception.", ex);

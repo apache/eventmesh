@@ -36,22 +36,21 @@ public class JaegerTraceServiceTest {
     @Test
     public void testInit() {
         JaegerTraceService jaegerTraceService =
-            (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
+                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
 
         assertNotNull(jaegerTraceService.getSdkTracerProvider());
         assertNotNull(jaegerTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () ->
-                Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
+                assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
         assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
         JaegerTraceService jaegerTraceService =
-            (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
+                (JaegerTraceService) TracePluginFactory.getEventMeshTraceService("jaeger");
         jaegerTraceService.init();
         Field sdkTracerProviderField = null;
         try {

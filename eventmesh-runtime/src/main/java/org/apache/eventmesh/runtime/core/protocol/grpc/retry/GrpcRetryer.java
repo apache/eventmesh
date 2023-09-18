@@ -54,17 +54,17 @@ public class GrpcRetryer {
 
     public void init() {
         pool = new ThreadPoolExecutor(
-            grpcConfiguration.getEventMeshServerRetryThreadNum(),
-            grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
-            new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
-            new ThreadPoolExecutor.AbortPolicy());
+                grpcConfiguration.getEventMeshServerRetryThreadNum(),
+                grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
+                new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
+                new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {
                 DelayRetryable retryObj;
                 while (!Thread.currentThread().isInterrupted()
-                    && (retryObj = failed.take()) != null) {
+                        && (retryObj = failed.take()) != null) {
                     final DelayRetryable delayRetryable = retryObj;
                     pool.execute(() -> {
                         try {

@@ -35,19 +35,18 @@ public class PinpointTraceServiceTest {
     @Test
     public void testInit() {
         PinpointTraceService pinpointTraceService =
-            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () ->
-                Runtime.getRuntime().addShutdownHook(pinpointTraceService.getShutdownHook()));
+                assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(pinpointTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
     public void testShutdown() throws Exception {
         PinpointTraceService pinpointTraceService =
-            (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
+                (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
         pinpointTraceService.init();
         Field sdkTracerProviderField = null;
         try {
