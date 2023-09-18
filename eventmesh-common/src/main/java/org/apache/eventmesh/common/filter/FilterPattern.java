@@ -43,9 +43,9 @@ public class FilterPattern {
             } catch (PathNotFoundException ignored) {
             }
 
-            if (!patternEntry.match(jsonElement)) {
-                return false;
-            }
+//            if (!patternEntry.match(jsonElement)) {
+//                return false;
+//            }
         }
         return true;
     }
@@ -105,9 +105,9 @@ public class FilterPattern {
     private boolean evaluateAttrMap(Map<String, JsonNode> attr, List<PatternEntry> ruleEntries) {
         for (final PatternEntry patternEntry : ruleEntries) {
             JsonNode val = attr.get(patternEntry.getPatternName());
-            if (!patternEntry.match(val)) {
-                return false;
-            }
+//            if (!patternEntry.match(val)) {
+//                return false;
+//            }
         }
         return true;
     }

@@ -1,12 +1,7 @@
 package org.apache.eventmesh.common.transform;
 
-public enum TransformType {
-
+public enum TransformerType {
     ORIGINAL,
-
     CONSTANT,
-
-    JSONPATH,
-
-    TEMPLATE;
+    TEMPLATE
 }
