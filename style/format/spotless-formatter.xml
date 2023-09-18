@@ -26,8 +26,8 @@
         <setting id="org.eclipse.jdt.core.compiler.codegen.targetPlatform" value="1.8"/>
         <setting id="org.eclipse.jdt.core.formatter.indent_empty_lines" value="false"/>
         <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
-        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="200"/>
-        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="200"/>
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="150"/>
+        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="150"/>
         <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
         <setting id="org.eclipse.jdt.core.formatter.indentation.size" value="1"/>
         <setting id="org.eclipse.jdt.core.formatter.comment.format_javadoc_comments" value="false"/>
