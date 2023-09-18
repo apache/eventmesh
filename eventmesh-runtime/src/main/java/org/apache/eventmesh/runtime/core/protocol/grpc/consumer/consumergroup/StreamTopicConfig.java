@@ -104,6 +104,10 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
             + ",topic=" + topic + "}";
     }
 
+    public Map<String, Map<String, EventEmitter<CloudEvent>>> getIdcEmitterMap() {
+        return idcEmitterMap;
+    }
+
     public Map<String, List<EventEmitter<CloudEvent>>> getIdcEmitters() {
         return idcEmitters;
     }

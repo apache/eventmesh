@@ -196,7 +196,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             }
 
             // Update service metadata
-            updateMetadata();
+            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
 
     }

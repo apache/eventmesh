@@ -49,14 +49,14 @@ public class CommonConfigurationTest {
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
+        Assert.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
         Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
         Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
-        Assert.assertEquals("username-succeed!!!", config.getEventMeshRegistryPluginUsername());
-        Assert.assertEquals("password-succeed!!!", config.getEventMeshRegistryPluginPassword());
+        Assert.assertEquals("username-succeed!!!", config.getEventMeshMetaStoragePluginUsername());
+        Assert.assertEquals("password-succeed!!!", config.getEventMeshMetaStoragePluginPassword());
 
-        Assert.assertEquals(Integer.valueOf(816), config.getEventMeshRegisterIntervalInMills());
-        Assert.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchRegistryAddrInterval());
+        Assert.assertEquals(Integer.valueOf(816), config.getEventMeshMetaStorageIntervalInMills());
+        Assert.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchMetaStorageAddrInterval());
 
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");
@@ -71,7 +71,7 @@ public class CommonConfigurationTest {
         Assert.assertEquals(list1, config.getEventMeshProvideServerProtocols());
 
         Assert.assertTrue(config.isEventMeshServerSecurityEnable());
-        Assert.assertTrue(config.isEventMeshServerRegistryEnable());
+        Assert.assertTrue(config.isEventMeshServerMetaStorageEnable());
         Assert.assertTrue(config.isEventMeshServerTraceEnable());
 
         Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());

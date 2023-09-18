@@ -119,7 +119,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                         if (session.getClient().getHost().equals(ip) && String.valueOf(
                             session.getClient().getPort()).equals(port)) {
                             redirectResult.append("|");
-                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                     session, clientSessionGroupMapping));
                         }

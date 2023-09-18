@@ -234,6 +234,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     summaryMetrics.recordSendMsgCost(endTime - startTime);
                 }
             }
+            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
     }
 

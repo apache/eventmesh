@@ -23,5 +23,7 @@ public class EventMeshConstants {
 
     public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
 
+    public static final int DEFAULT_TIMEOUT_IN_SECONDS = 10;
+
     public static final String STORE_TIMESTAMP = "storetime";
 }

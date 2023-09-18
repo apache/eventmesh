@@ -120,7 +120,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                         // to the new EventMesh node specified by given EventMesh IP and port.
                         if (session.getClient().getSubsystem().equals(subSystem)) {
                             redirectResult.append('|')
-                                .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                                .append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                     session, clientSessionGroupMapping));
                         }

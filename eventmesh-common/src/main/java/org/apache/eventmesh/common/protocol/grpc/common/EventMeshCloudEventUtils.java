@@ -42,16 +42,20 @@ public abstract class EventMeshCloudEventUtils {
 
     }
 
+    private static String getValue(CloudEvent cloudEvent, String defaultValue, String protocolKey) {
+        try {
+            return cloudEvent.getAttributesOrThrow(protocolKey).getCeString();
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     public static String getEnv(CloudEvent cloudEvent) {
         return getEnv(cloudEvent, null);
     }
 
     public static String getEnv(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.ENV).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.ENV);
     }
 
     public static String getIdc(CloudEvent cloudEvent) {
@@ -59,11 +63,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getIdc(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.IDC).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.IDC);
     }
 
     public static String getSys(CloudEvent cloudEvent) {
@@ -71,11 +71,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getSys(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.SYS).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.SYS);
     }
 
     public static String getPid(CloudEvent cloudEvent) {
@@ -83,11 +79,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getPid(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PID).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PID);
     }
 
     public static String getIp(CloudEvent cloudEvent) {
@@ -95,11 +87,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getIp(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.IP).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.IP);
     }
 
     public static String getUserName(CloudEvent cloudEvent) {
@@ -107,11 +95,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getUserName(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.USERNAME).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.USERNAME);
     }
 
     public static String getPassword(CloudEvent cloudEvent) {
@@ -119,11 +103,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getPassword(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PASSWD).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PASSWD);
     }
 
     public static String getLanguage(CloudEvent cloudEvent) {
@@ -131,11 +111,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getLanguage(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.LANGUAGE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.LANGUAGE);
     }
 
     public static String getProtocolType(CloudEvent cloudEvent) {
@@ -143,11 +119,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getProtocolType(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PROTOCOL_TYPE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PROTOCOL_TYPE);
     }
 
     public static String getProtocolVersion(CloudEvent cloudEvent) {
@@ -155,11 +127,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getProtocolVersion(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PROTOCOL_VERSION).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PROTOCOL_VERSION);
     }
 
     public static String getProtocolDesc(CloudEvent cloudEvent) {
@@ -167,11 +135,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getProtocolDesc(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PROTOCOL_DESC).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PROTOCOL_DESC);
     }
 
     public static String getSeqNum(CloudEvent cloudEvent) {
@@ -179,11 +143,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getSeqNum(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.SEQ_NUM).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.SEQ_NUM);
     }
 
     public static String getUniqueId(CloudEvent cloudEvent) {
@@ -191,11 +151,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getUniqueId(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.UNIQUE_ID).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.UNIQUE_ID);
     }
 
     public static String getTtl(CloudEvent cloudEvent) {
@@ -203,11 +159,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getTtl(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.TTL).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.TTL);
     }
 
     public static String getProducerGroup(CloudEvent cloudEvent) {
@@ -215,11 +167,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getProducerGroup(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PRODUCERGROUP).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PRODUCERGROUP);
     }
 
     public static String getTag(CloudEvent cloudEvent) {
@@ -227,11 +175,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getTag(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.TAG).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.TAG);
     }
 
     public static String getContentType(CloudEvent cloudEvent) {
@@ -239,11 +183,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getContentType(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.CONTENT_TYPE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.CONTENT_TYPE);
     }
 
     public static String getSubject(CloudEvent cloudEvent) {
@@ -251,11 +191,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getSubject(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.SUBJECT).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.SUBJECT);
     }
 
     public static String getDataContentType(CloudEvent cloudEvent) {
@@ -263,11 +199,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getDataContentType(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.DATA_CONTENT_TYPE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.DATA_CONTENT_TYPE);
     }
 
     public static String getResponseCode(CloudEvent cloudEvent) {
@@ -275,11 +207,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getResponseCode(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.GRPC_RESPONSE_CODE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.GRPC_RESPONSE_CODE);
     }
 
     public static String getResponseMessage(CloudEvent cloudEvent) {
@@ -287,11 +215,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getResponseMessage(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.GRPC_RESPONSE_MESSAGE).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.GRPC_RESPONSE_MESSAGE);
     }
 
     public static String getResponseTime(CloudEvent cloudEvent) {
@@ -312,11 +236,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getCluster(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.PROPERTY_MESSAGE_CLUSTER).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.PROPERTY_MESSAGE_CLUSTER);
     }
 
     public static String getConsumerGroup(CloudEvent cloudEvent) {
@@ -324,11 +244,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getConsumerGroup(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.CONSUMERGROUP).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.CONSUMERGROUP);
     }
 
     public static ClientType getClientType(CloudEvent cloudEvent) {
@@ -349,11 +265,7 @@ public abstract class EventMeshCloudEventUtils {
     }
 
     public static String getURL(CloudEvent cloudEvent, String defaultValue) {
-        try {
-            return cloudEvent.getAttributesOrThrow(ProtocolKey.URL).getCeString();
-        } catch (Exception e) {
-            return defaultValue;
-        }
+        return getValue(cloudEvent, defaultValue, ProtocolKey.URL);
     }
 
     public static String getDataContent(CloudEvent cloudEvent) {
@@ -363,15 +275,15 @@ public abstract class EventMeshCloudEventUtils {
     public static String getDataContent(final CloudEvent cloudEvent, String defaultValue) {
         String dataContentType = getDataContentType(cloudEvent);
         if (ProtoSupport.isTextContent(dataContentType)) {
-            return Optional.ofNullable(cloudEvent.getTextData()).orElse(defaultValue);
+            return Optional.of(cloudEvent.getTextData()).get();
         }
         if (ProtoSupport.isProtoContent(dataContentType)) {
             Any protoData = cloudEvent.getProtoData();
-            return protoData == null || protoData == Any.getDefaultInstance() ? defaultValue
+            return protoData == Any.getDefaultInstance() ? defaultValue
                 : new String(protoData.toByteArray(), Constants.DEFAULT_CHARSET);
         }
         ByteString binaryData = cloudEvent.getBinaryData();
-        return binaryData == null || ByteString.EMPTY == binaryData ? defaultValue : binaryData.toStringUtf8();
+        return ByteString.EMPTY == binaryData ? defaultValue : binaryData.toStringUtf8();
 
 
     }
@@ -380,7 +292,7 @@ public abstract class EventMeshCloudEventUtils {
         if (Objects.isNull(cloudEvent)) {
             return new HashMap<>(0);
         }
-        Map<String, CloudEventAttributeValue> attributesMap = Optional.ofNullable(cloudEvent.getAttributesMap()).orElse(new HashMap<>(0));
+        Map<String, CloudEventAttributeValue> attributesMap = Optional.of(cloudEvent.getAttributesMap()).get();
         Map<String, String> convertedAttributes = new HashMap<>(attributesMap.size());
         attributesMap.forEach((key, value) -> {
             if (Objects.isNull(value)) {
@@ -413,7 +325,6 @@ public abstract class EventMeshCloudEventUtils {
             if (value.hasCeTimestamp()) {
                 OffsetDateTime offsetDateTime = covertProtoTimestamp(value.getCeTimestamp());
                 convertedAttributes.put(key, dateTimeFormatter.format(offsetDateTime.toLocalDateTime()));
-                return;
             }
         });
         return convertedAttributes;

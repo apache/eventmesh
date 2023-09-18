@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.ConnectionType;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -148,10 +149,13 @@ public class HandlerService {
     }
 
     private void sendResponse(ChannelHandlerContext ctx, HttpRequest request, HttpResponse response) {
-        this.sendResponse(ctx, request, response, true);
+        this.sendPersistentResponse(ctx, request, response, true);
     }
 
-    private void sendResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
+    /**
+     * persistent connection
+     */
+    private void sendPersistentResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
         ReferenceCountUtil.release(httpRequest);
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
@@ -162,6 +166,19 @@ public class HandlerService {
                 }
             }
         });
+    }
+
+    /**
+     * short-lived connection
+     */
+    private void sendShortResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response) {
+        ReferenceCountUtil.release(httpRequest);
+        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+            if (!f.isSuccess()) {
+                httpLogger.warn("send response to [{}] with short-lived connection fail, will close this channel",
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+            }
+        }).addListener(ChannelFutureListener.CLOSE);
     }
 
     private HttpEventWrapper parseHttpRequest(HttpRequest httpRequest) throws IOException {
@@ -267,7 +284,11 @@ public class HandlerService {
                 }
                 response = processorWrapper.httpProcessor.handler(request);
 
-                this.postHandler();
+                if (processorWrapper.httpProcessor instanceof ShortHttpProcessor) {
+                    this.postHandler(ConnectionType.SHORT_LIVED);
+                    return;
+                }
+                this.postHandler(ConnectionType.PERSISTENT);
             } catch (Throwable e) {
                 exception = e;
                 // todo: according exception to generate response
@@ -276,7 +297,7 @@ public class HandlerService {
             }
         }
 
-        private void postHandler() {
+        private void postHandler(ConnectionType type) {
             metrics.getSummaryMetrics().recordHTTPRequest();
             if (httpLogger.isDebugEnabled()) {
                 httpLogger.debug("{}", request);
@@ -285,7 +306,11 @@ public class HandlerService {
                 this.response = HttpResponseUtils.createSuccess();
             }
             this.traceOperation.endTrace(ce);
-            HandlerService.this.sendResponse(ctx, this.request, this.response);
+            if (type == ConnectionType.PERSISTENT) {
+                HandlerService.this.sendResponse(ctx, this.request, this.response);
+            } else if (type == ConnectionType.SHORT_LIVED) {
+                sendShortResponse(ctx, this.request, this.response);
+            }
         }
 
         private void preHandler() {
@@ -314,7 +339,7 @@ public class HandlerService {
 
         public void sendResponse(HttpResponse response) {
             this.response = response;
-            this.postHandler();
+            this.postHandler(ConnectionType.PERSISTENT);
         }
 
         public void sendResponse(Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap) {
@@ -322,7 +347,7 @@ public class HandlerService {
                 HttpEventWrapper responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
                 asyncContext.onComplete(responseWrapper);
                 this.response = asyncContext.getResponse().httpResponse();
-                this.postHandler();
+                this.postHandler(ConnectionType.PERSISTENT);
             } catch (Exception e) {
                 this.exception = e;
                 // todo: according exception to generate response

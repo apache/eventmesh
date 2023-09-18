@@ -20,12 +20,14 @@ package org.apache.eventmesh.connector.redis.source.connector;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +58,17 @@ public class RedisSourceConnector implements Source {
     @Override
     public void init(Config config) throws Exception {
         this.sourceConfig = (RedisSourceConfig) config;
+        doInit();
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        this.sourceConfig = (RedisSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
+    }
+
+    private void doInit() {
         org.redisson.config.Config redisConfig = new org.redisson.config.Config();
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());
@@ -97,7 +110,7 @@ public class RedisSourceConnector implements Source {
                     break;
                 }
 
-                connectRecords.add(convertEventToRecord(event));
+                connectRecords.add(CloudEventUtil.convertEventToRecord(event));
             } catch (InterruptedException e) {
                 break;
             }
@@ -105,16 +118,4 @@ public class RedisSourceConnector implements Source {
         return connectRecords;
     }
 
-    public ConnectRecord convertEventToRecord(CloudEvent event) {
-        byte[] body = Objects.requireNonNull(event.getData()).toBytes();
-        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
-        for (String extensionName : event.getExtensionNames()) {
-            connectRecord.addExtension(extensionName, Objects.requireNonNull(event.getExtension(extensionName)).toString());
-        }
-        connectRecord.addExtension("id", event.getId());
-        connectRecord.addExtension("topic", event.getSubject());
-        connectRecord.addExtension("source", event.getSource().toString());
-        connectRecord.addExtension("type", event.getType());
-        return connectRecord;
-    }
 }
