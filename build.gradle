@@ -106,6 +106,8 @@ allprojects {
         }
     }
 
+    spotlessJava.dependsOn(javadoc, compileTestJava, processTestResources)
+
     checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
                   .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
