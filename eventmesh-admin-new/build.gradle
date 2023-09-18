@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'idea'
     id 'org.springframework.boot' version '2.7.15'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
@@ -41,9 +42,12 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    // community dependencies
+    // utility
     implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+    // swagger
+    implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
+    implementation "org.springdoc:springdoc-openapi-javadoc:${springdocVersion}"
+    annotationProcessor 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0'
 }
 
 tasks.named('test') {

@@ -30,9 +30,9 @@ repositories {
 val commonsLang3Version by extra("3.13.0")
 val guavaVersion by extra("32.1.2-jre") // not used for now
 // swagger
-val springdocVersion by extra("2.2.0")
+val springdocVersion by extra("1.7.0")
 // unit test
-val mockitoVersion by extra("5.5.0") // not used for now
+val mockitoVersion by extra("5.5.0")
 
 dependencies {
     // versions managed by spring.dependency-management
@@ -43,9 +43,15 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    // community dependencies
+    // utility
     implementation("org.apache.commons:commons-lang3:${commonsLang3Version}")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}")
+    // swagger
+    implementation("org.springdoc:springdoc-openapi-ui:${springdocVersion}")
+    implementation("org.springdoc:springdoc-openapi-javadoc:${springdocVersion}")
+    annotationProcessor("com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0")
+    // unit test
+    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
+
 }
 
 tasks.withType<Test> {
