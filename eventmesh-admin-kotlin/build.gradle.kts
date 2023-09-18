@@ -33,6 +33,8 @@ val guavaVersion by extra("32.1.2-jre") // not used for now
 val springdocVersion by extra("1.7.0")
 // unit test
 val mockitoVersion by extra("5.5.0")
+// meta
+val nacosVersion by extra("2.2.4")
 
 dependencies {
     // versions managed by spring.dependency-management
@@ -51,7 +53,8 @@ dependencies {
     annotationProcessor("com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0")
     // unit test
     testImplementation("org.mockito:mockito-core:${mockitoVersion}")
-
+    // meta
+    implementation("com.alibaba.nacos:nacos-client:${nacosVersion}")
 }
 
 tasks.withType<Test> {

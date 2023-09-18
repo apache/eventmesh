@@ -34,7 +34,18 @@ eventmesh:
   meta:
     # registry type: nacos, etcd
     type: nacos
-    addr: 127.0.0.1:8848
+    nacos:
+      addr: 127.0.0.1:8848
+      username: nacos
+      password: nacos
+#      endpoint:
+#      accessKey:
+#      secretKey:
+#      clusterName:
+#      namespace:
+#      namingPollingThreadCount:
+    etcd:
+      addr: # TODO
   config:
     # timeout for admin client
     timeoutMillis: 5000
