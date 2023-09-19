@@ -202,7 +202,7 @@ public class SourceWorker implements ConnectorWorker {
                 }
             }
 
-            offsetManagement.awaitAllMessages(10000, TimeUnit.MILLISECONDS);
+            offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
             // update & commit offset
             updateCommittableOffsets();
             commitOffsets();
