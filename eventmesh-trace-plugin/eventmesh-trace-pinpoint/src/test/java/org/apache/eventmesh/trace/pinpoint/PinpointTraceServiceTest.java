@@ -53,7 +53,7 @@ public class PinpointTraceServiceTest {
         try {
             sdkTracerProviderField = PinpointTraceService.class.getDeclaredField("sdkTracerProvider");
         } catch (NoSuchFieldException e) {
-            sdkTracerProviderField = ReflectUtils.lookUpField(PinpointTraceService.class, "sdkTracerProvider");
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(PinpointTraceService.class, "sdkTracerProvider");
             if (sdkTracerProviderField == null) {
                 throw e;
             }

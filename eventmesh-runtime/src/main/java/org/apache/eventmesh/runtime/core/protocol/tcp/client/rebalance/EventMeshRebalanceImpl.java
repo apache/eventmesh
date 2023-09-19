@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
-import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -79,7 +79,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         Map<String, String> localEventMeshMap = null;
         List<EventMeshDataInfo> eventMeshDataInfoList = null;
         try {
-            eventMeshDataInfoList = eventMeshTCPServer.getRegistry().findEventMeshInfoByCluster(cluster);
+            eventMeshDataInfoList = eventMeshTCPServer.getMetaStorage().findEventMeshInfoByCluster(cluster);
 
             if (eventMeshDataInfoList == null || CollectionUtils.isEmpty(eventMeshDataInfoList)) {
                 log.warn("doRebalance failed,query eventmesh instances is null from registry,cluster:{}", cluster);
@@ -167,7 +167,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         for (int i = 0; i < judge; i++) {
             String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
             String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
-            String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, newProxyIp,
+            String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(), newProxyIp,
                 Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
             log.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
             ThreadUtils.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().getSleepIntervalInRebalanceRedirectMills(), TimeUnit.MILLISECONDS);
@@ -222,7 +222,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         Map<String, Integer> localEventMeshDistributeData = null;
         Map<String, Map<String, Integer>> eventMeshClientDistributionDataMap = null;
         try {
-            eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(
+            eventMeshClientDistributionDataMap = eventMeshTCPServer.getMetaStorage().findEventMeshClientDistributionData(
                 cluster, group, purpose);
 
             if (MapUtils.isEmpty(eventMeshClientDistributionDataMap)) {

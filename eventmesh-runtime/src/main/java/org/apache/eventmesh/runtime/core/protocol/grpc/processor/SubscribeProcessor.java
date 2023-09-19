@@ -46,9 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeProcessor {
 
-    private final transient EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final transient GrpcType grpcType = GrpcType.WEBHOOK;
+    private static final GrpcType grpcType = GrpcType.WEBHOOK;
 
     private final Acl acl;
 
@@ -70,7 +70,6 @@ public class SubscribeProcessor {
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
-
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
@@ -88,6 +87,8 @@ public class SubscribeProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
+        
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
         final String idc = EventMeshCloudEventUtils.getIdc(subscription);
         final String sys = EventMeshCloudEventUtils.getSys(subscription);
@@ -143,6 +144,7 @@ public class SubscribeProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionItems) {
                 this.acl.doAclCheckInHttpReceive(EventMeshCloudEventUtils.getConsumerGroup(subscription),

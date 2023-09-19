@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.openconnect.api.config;
 
+import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -25,5 +27,7 @@ import lombok.EqualsAndHashCode;
 public abstract class SourceConfig extends Config {
 
     private PubSubConfig pubSubConfig;
+
+    private OffsetStorageConfig offsetStorageConfig;
 
 }

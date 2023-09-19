@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -171,7 +172,10 @@ public class HttpConvertsUtils {
             protocolKeyField.setAccessible(true);
             switch (headerFieldName) {
                 case ProtocolKey.VERSION:
-                    headerField.set(header, ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
+                    ProtocolVersion protocolVersion = ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION));
+                    if (Objects.nonNull(protocolVersion)) {
+                        headerField.set(header, protocolVersion);
+                    }
                     break;
                 case ProtocolKey.LANGUAGE:
                     String language = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
@@ -183,7 +187,9 @@ public class HttpConvertsUtils {
                     // Use the attribute name to compare with the key value to achieve one-to-one correspondence and ignore case.
                     if (StringUtils.equalsIgnoreCase(headerFieldName, protocolKeyValue)) {
                         Object value = getValue(headerParam, protocolKeyValue);
-                        headerField.set(header, value);
+                        if (Objects.nonNull(value)) {
+                            headerField.set(header, value);
+                        }
                     }
                     break;
             }

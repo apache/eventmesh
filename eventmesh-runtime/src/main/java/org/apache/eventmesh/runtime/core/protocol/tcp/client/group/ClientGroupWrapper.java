@@ -130,7 +130,7 @@ public class ClientGroupWrapper {
         this.group = group;
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
-        this.eventMeshTcpRetryer = eventMeshTCPServer.getEventMeshTcpRetryer();
+        this.eventMeshTcpRetryer = eventMeshTCPServer.getTcpRetryer();
         this.eventMeshTcpMonitor =
             Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
@@ -215,7 +215,8 @@ public class ClientGroupWrapper {
                 Map<String, Session> sessions = new HashMap<>();
                 topic2sessionInGroupMapping.put(topic, sessions);
             }
-            if (r = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session) == null) {
+            Session s = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session);
+            if (s == null) {
                 if (log.isInfoEnabled()) {
                     log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
                         topic, session.getClient(), session.getSessionId());
@@ -627,7 +628,7 @@ public class ClientGroupWrapper {
                     downStreamMsgContext.setSession(session);
 
                     //downstream broadcast msg asynchronously
-                    eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
+                    eventMeshTCPServer.getTcpThreadPoolGroup().getBroadcastMsgDownstreamExecutorService()
                         .submit(() -> {
                             //msg put in eventmesh,waiting client ack
                             session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
