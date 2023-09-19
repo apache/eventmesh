@@ -7,16 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.jayway.jsonpath.*;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.exception.JsonException;
 import com.jayway.jsonpath.internal.path.CompiledPath;
 import com.jayway.jsonpath.internal.path.PathCompiler;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import org.apache.eventmesh.common.filter.JacksonUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

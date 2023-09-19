@@ -1,12 +1,12 @@
 package org.apache.eventmesh.common.filter.condition;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.checkerframework.checker.units.qual.C;
 
 public class ConditionsBuilder {
 
     private String key;
     private JsonNode jsonNode;
+
     public ConditionsBuilder withKey(String key) {
         this.key = key;
         return this;
@@ -42,9 +42,7 @@ public class ConditionsBuilder {
                 throw new RuntimeException("INVALID CONDITION");
             // Add cases for other keys and conditions
         }
-        if(condition == null){
-            throw new RuntimeException("NO RIGHT KEY");
-        }
+
         return condition;
     }
 }

@@ -1,32 +1,34 @@
 package org.apache.eventmesh.common.transform;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.apache.eventmesh.common.utils.JsonUtilsTest;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-public class  TransformTest {
+public class TransformTest {
 
-    public static final String EVENT =  "{\n" +
-            "\"id\": \"5b26115b-73e-cf74a******\",\n" +
-            "      \"specversion\": \"1.0\",\n" +
-            "\"source\": \"apache.eventmesh\",\n" +
-            "\"type\": \"object:test\",\n" +
-            "\"datacontenttype\": \"application/json\",\n" +
-            "\"subject\": \"xxx.jpg\",\n" +
-            "\"time\": \"2023-09-17T12:07:48.955Z\",\n" +
-            "\"data\": {\n" +
-            "\"name\": \"test-transformer\",\n" +
-            "\"num\": 100  ,\n" +
-            "\"boolean\": true,\n" +
-            "\"nullV\": null\n" +
-            "}\n" +
-            "    }";
+    public static final String EVENT = "{\n" +
+        "\"id\": \"5b26115b-73e-cf74a******\",\n" +
+        "      \"specversion\": \"1.0\",\n" +
+        "\"source\": \"apache.eventmesh\",\n" +
+        "\"type\": \"object:test\",\n" +
+        "\"datacontenttype\": \"application/json\",\n" +
+        "\"subject\": \"xxx.jpg\",\n" +
+        "\"time\": \"2023-09-17T12:07:48.955Z\",\n" +
+        "\"data\": {\n" +
+        "\"name\": \"test-transformer\",\n" +
+        "\"num\": 100  ,\n" +
+        "\"boolean\": true,\n" +
+        "\"nullV\": null\n" +
+        "}\n" +
+        "    }";
 
     @Test
     public void testOriginalTransformer() throws JsonProcessingException {
 
-        Transformer transformer =new TransformerBuilder.Builder(TransformerType.ORIGINAL).build();
+        Transformer transformer = new TransformerBuilder.Builder(TransformerType.ORIGINAL).build();
         String output = transformer.transform(EVENT);
         Assert.assertEquals(EVENT, output);
 
@@ -56,9 +58,9 @@ public class  TransformTest {
         String output = transform.transform(EVENT);
         Assert.assertEquals("Transformers test:data name is test-transformer", output);
 
-        Transformer transformer1 =new TransformerBuilder.Builder(TransformerType.TEMPLATE)
-                .setContent(content)
-                .setTemplate(template).build();
+        Transformer transformer1 = new TransformerBuilder.Builder(TransformerType.TEMPLATE)
+            .setContent(content)
+            .setTemplate(template).build();
         String output1 = transformer1.transform(EVENT);
         Assert.assertEquals("Transformers test:data name is test-transformer", output1);
 
@@ -113,7 +115,7 @@ public class  TransformTest {
     }
 
 
-//
+    //
     @Test
     public void testTemplateTransFormerWithConstant() throws JsonProcessingException {
         String extractJson = "{\"name\":\"$.data.name\",\"constant\":\"constant\"" + "}";
@@ -121,10 +123,8 @@ public class  TransformTest {
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(extractJson, template);
         String output = transformer.transform(EVENT);
         Assert.assertEquals("Transformers test:data name is test-transformer, constant is constant",
-                output);
+            output);
     }
-
-
 
 
 }

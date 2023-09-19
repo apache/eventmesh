@@ -1,19 +1,21 @@
 package org.apache.eventmesh.common.filter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.eventmesh.common.filter.condition.Condition;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class PatternEntry {
 
 
-    private String patternPath;
+    private final String patternPath;
 
-    private PatternType patternType = PatternType.OR;
+    private final PatternType patternType = PatternType.OR;
 
-    private List<Condition> conditionList = new ArrayList<>();
+    private final List<Condition> conditionList = new ArrayList<>();
 
     public PatternEntry(final String patternPath) {
         this.patternPath = patternPath;
@@ -24,7 +26,7 @@ public class PatternEntry {
     }
 
 
-    public String getPatternName(){
+    public String getPatternName() {
         return "123";
     }
 
@@ -32,7 +34,7 @@ public class PatternEntry {
         return patternPath;
     }
 
-    public boolean match(JsonNode  jsonElement) {
+    public boolean match(JsonNode jsonElement) {
         if (patternType == PatternType.OR) {
             for (final Condition patternCondition : conditionList) {
                 if (patternCondition.match(jsonElement)) {

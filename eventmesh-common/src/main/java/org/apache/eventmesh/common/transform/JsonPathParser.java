@@ -1,8 +1,6 @@
 package org.apache.eventmesh.common.transform;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
+
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.JsonPathUtils;
 
@@ -11,7 +9,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class JsonPathParser{
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
+public class JsonPathParser {
 
     protected List<Variable> variablesList = new ArrayList<>();
 
@@ -21,9 +22,10 @@ public class JsonPathParser{
 
     /**
      * parser input jsonpath string into variable list
+     *
      * @param jsonPathString
      */
-    public JsonPathParser(String jsonPathString){
+    public JsonPathParser(String jsonPathString) {
         JsonNode jsonObject = JsonPathUtils.parseStrict(jsonPathString);
         Iterator<Map.Entry<String, JsonNode>> fields = jsonObject.fields();
 
@@ -31,10 +33,10 @@ public class JsonPathParser{
             Map.Entry<String, JsonNode> entry = fields.next();
             String name = entry.getKey();
             JsonNode valueNode = entry.getValue();
-            if(valueNode.isValueNode()){
+            if (valueNode.isValueNode()) {
                 variablesList.add(new Variable(name, valueNode.asText()));
-            }else{
-                throw new EventMeshException("invalid config:"+jsonPathString);
+            } else {
+                throw new EventMeshException("invalid config:" + jsonPathString);
             }
 
         }
@@ -44,6 +46,7 @@ public class JsonPathParser{
 
     /**
      * use jsonpath to match json and return result
+     *
      * @param json
      * @return
      */
@@ -57,8 +60,8 @@ public class JsonPathParser{
         List<Variable> variableList = new ArrayList<>(variablesList.size());
         for (Variable element : variablesList) {
             if (JsonPathUtils.isValidAndDefinite(element.getJsonPath())) {
-                String res =  JsonPathUtils.matchJsonPathValueWithString(json, element.getJsonPath());
-                Variable variable = new  Variable(element.getName(),res);
+                String res = JsonPathUtils.matchJsonPathValueWithString(json, element.getJsonPath());
+                Variable variable = new Variable(element.getName(), res);
                 variableList.add(variable);
             } else {
                 variableList.add(element);
