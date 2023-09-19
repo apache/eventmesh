@@ -65,6 +65,8 @@ public class SourceWorker implements ConnectorWorker {
     private final Source source;
     private final SourceConfig config;
 
+    private static final int MAX_RETRY_TIMES = 3;
+
     private OffsetStorageWriterImpl offsetStorageWriter;
 
     private OffsetStorageReaderImpl offsetStorageReader;
@@ -177,19 +179,30 @@ public class SourceWorker implements ConnectorWorker {
             // todo: convert connectRecord to cloudevent
             CloudEvent event = convertRecordToEvent(connectRecord);
             Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(connectRecord);
-            Package sendResult = eventMeshTCPClient.publish(event, 3000);
 
-            if (sendResult.getHeader().getCode() == 0) {
-                // publish success
-                // commit record
-                this.source.commit(connectRecord);
-                submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
-            } else {
-                // todo: retry or other strategy
-                log.error("{} failed to send record to {}, failed record {}", this, event.getSubject(), connectRecord);
+            int retryTimes = 0;
+            // retry until MAX_RETRY_TIMES is reached
+            while (retryTimes < MAX_RETRY_TIMES) {
+                try {
+                    Package sendResult = eventMeshTCPClient.publish(event, 3000);
+                    if (sendResult.getHeader().getCode() == 0) {
+                        // publish success
+                        // commit record
+                        this.source.commit(connectRecord);
+                        submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                        break;
+                    }
+                    retryTimes++;
+                    log.warn("{} failed to send record to {}, retry times = {}, failed record {}",
+                            this, event.getSubject(), retryTimes, connectRecord);
+                } catch (Throwable t) {
+                    retryTimes++;
+                    log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",
+                            this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
+                }
             }
 
-            offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
+            offsetManagement.awaitAllMessages(15000, TimeUnit.MILLISECONDS);
             // update & commit offset
             updateCommittableOffsets();
             commitOffsets();
@@ -326,6 +339,4 @@ public class SourceWorker implements ConnectorWorker {
         }
         return true;
     }
-
-
 }
