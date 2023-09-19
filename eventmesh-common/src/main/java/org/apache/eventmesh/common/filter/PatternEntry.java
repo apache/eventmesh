@@ -13,8 +13,6 @@ public class PatternEntry {
 
     private final String patternPath;
 
-    private final PatternType patternType = PatternType.OR;
-
     private final List<Condition> conditionList = new ArrayList<>();
 
     public PatternEntry(final String patternPath) {
@@ -35,27 +33,14 @@ public class PatternEntry {
     }
 
     public boolean match(JsonNode jsonElement) {
-        if (patternType == PatternType.OR) {
-            for (final Condition patternCondition : conditionList) {
-                if (patternCondition.match(jsonElement)) {
-                    return true;
-                }
+        for (final Condition patternCondition : conditionList) {
+            if (patternCondition.match(jsonElement)) {
+                return true;
             }
-
-            return false;
-        }
-
-        if (patternType == PatternType.AND) {
-            for (final Condition patternCondition : conditionList) {
-                if (!patternCondition.match(jsonElement)) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         return false;
+
     }
 
     /**

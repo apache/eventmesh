@@ -137,9 +137,6 @@ public class PatternBuilder {
         }
         PatternEntry patternEntry = new PatternEntry(path);
         for (final JsonNode objNode : jsonNode) {
-            //{
-            //            "suffix":".jpg"
-            //        }
             Condition condition = parseCondition(objNode);
             patternEntry.addRuleCondition(condition);
         }
