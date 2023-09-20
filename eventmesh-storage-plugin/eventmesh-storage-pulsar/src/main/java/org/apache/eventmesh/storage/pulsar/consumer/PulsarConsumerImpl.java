@@ -76,24 +76,24 @@ public class PulsarConsumerImpl implements Consumer {
 
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
-                    .serviceUrl(clientConfiguration.getServiceAddr());
+                .serviceUrl(clientConfiguration.getServiceAddr());
 
             if (clientConfiguration.getAuthPlugin() != null) {
                 Preconditions.checkNotNull(clientConfiguration.getAuthParams(),
-                        "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
+                    "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
                 clientBuilder.authentication(
-                        clientConfiguration.getAuthPlugin(),
-                        clientConfiguration.getAuthParams());
+                    clientConfiguration.getAuthPlugin(),
+                    clientConfiguration.getAuthParams());
             }
             if (StringUtils.isNotBlank(token)) {
                 clientBuilder.authentication(
-                        AuthenticationFactory.token(token));
+                    AuthenticationFactory.token(token));
             }
 
             this.pulsarClient = clientBuilder.build();
         } catch (Exception ex) {
             throw new StorageRuntimeException(
-                    String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
+                String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
         }
     }
 
@@ -107,7 +107,7 @@ public class PulsarConsumerImpl implements Consumer {
         String subTopic = clientConfiguration.getTopicPrefix() + topic;
         if (pulsarClient == null) {
             throw new StorageRuntimeException(
-                    String.format("Cann't find the pulsar client for topic: %s", subTopic));
+                String.format("Cann't find the pulsar client for topic: %s", subTopic));
         }
 
         EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
@@ -121,28 +121,28 @@ public class PulsarConsumerImpl implements Consumer {
         SubscriptionType type = SubscriptionType.Shared;
 
         String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
-                + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
+            + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
         org.apache.pulsar.client.api.Consumer<byte[]> consumer = pulsarClient.newConsumer()
-                .topic(subTopic)
-                .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
-                .subscriptionMode(SubscriptionMode.Durable)
-                .subscriptionType(type)
-                .messageListener(
-                        (MessageListener<byte[]>) (ackConsumer, msg) -> {
-                            EventFormat eventFormat = Objects.requireNonNull(
-                                    EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE));
-                            CloudEvent cloudEvent = eventFormat.deserialize(msg.getData());
-                            eventListener.consume(cloudEvent, consumeContext);
-                            try {
-                                ackConsumer.acknowledge(msg);
-                            } catch (PulsarClientException ex) {
-                                throw new StorageRuntimeException(
-                                        String.format("Failed to unsubscribe the topic:%s with exception: %s", subTopic, ex.getMessage()));
-                            } catch (EventDeserializationException ex) {
-                                log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
-                            }
-                        })
-                .subscribe();
+            .topic(subTopic)
+            .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
+            .subscriptionMode(SubscriptionMode.Durable)
+            .subscriptionType(type)
+            .messageListener(
+                (MessageListener<byte[]>) (ackConsumer, msg) -> {
+                    EventFormat eventFormat = Objects.requireNonNull(
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE));
+                    CloudEvent cloudEvent = eventFormat.deserialize(msg.getData());
+                    eventListener.consume(cloudEvent, consumeContext);
+                    try {
+                        ackConsumer.acknowledge(msg);
+                    } catch (PulsarClientException ex) {
+                        throw new StorageRuntimeException(
+                            String.format("Failed to unsubscribe the topic:%s with exception: %s", subTopic, ex.getMessage()));
+                    } catch (EventDeserializationException ex) {
+                        log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
+                    }
+                })
+            .subscribe();
 
         consumerMap.putIfAbsent(consumerKey, consumer);
 
@@ -152,13 +152,13 @@ public class PulsarConsumerImpl implements Consumer {
     public void unsubscribe(String topic) {
         try {
             String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
-                    + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
+                + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
             org.apache.pulsar.client.api.Consumer<byte[]> consumer = consumerMap.get(consumerKey);
             consumer.unsubscribe();
             consumerMap.remove(consumerKey);
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-                    String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
+                String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
         }
     }
 
@@ -191,14 +191,14 @@ public class PulsarConsumerImpl implements Consumer {
                     consumer.close();
                 } catch (PulsarClientException e) {
                     throw new StorageRuntimeException(
-                            String.format("Failed to close the pulsar consumer with exception: %s", e.getMessage()));
+                        String.format("Failed to close the pulsar consumer with exception: %s", e.getMessage()));
                 }
             });
             this.pulsarClient.close();
             consumerMap.clear();
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-                    String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));
+                String.format("Failed to close the pulsar client with exception: %s", ex.getMessage()));
         }
     }
 

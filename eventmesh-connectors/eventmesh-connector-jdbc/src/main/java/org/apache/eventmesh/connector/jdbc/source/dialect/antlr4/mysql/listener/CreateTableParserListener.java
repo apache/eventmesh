@@ -110,13 +110,13 @@ public class CreateTableParserListener extends TableBaseParserListener {
             Payload payload = event.getJdbcConnectData().getPayload();
             SourceConnectorConfig sourceConnectorConfig = parser.getSourceConfig().getSourceConnectorConfig();
             MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
-                    .name(sourceConnectorConfig.getName())
-                    .catalogName(currentDatabase)
-                    .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
-                    .build();
+                .name(sourceConnectorConfig.getName())
+                .catalogName(currentDatabase)
+                .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
+                .build();
             Table table = new Table(tableSchema.getSimpleName(), tableSchema.getPrimaryKey(), tableSchema.getUniqueKeys(), tableSchema.getComment());
             CatalogChanges changes = CatalogChanges.newBuilder().operationType(SchemaChangeEventType.TABLE_CREATE).table(table)
-                    .columns(tableSchema.getColumns()).build();
+                .columns(tableSchema.getColumns()).build();
             payload.withSource(sourceMateData).withDdl(ddl).withCatalogChanges(changes);
             parser.handleEvent(event);
         }, tableEditor);

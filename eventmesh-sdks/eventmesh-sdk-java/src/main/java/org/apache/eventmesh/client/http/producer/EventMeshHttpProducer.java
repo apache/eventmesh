@@ -78,9 +78,9 @@ public class EventMeshHttpProducer implements AutoCloseable {
     @Override
     public void close() throws EventMeshException {
         try (
-                final EventMeshMessageProducer ignored = eventMeshMessageProducer;
-                final OpenMessageProducer ignored1 = openMessageProducer;
-                final CloudEventProducer ignored2 = cloudEventProducer) {
+            final EventMeshMessageProducer ignored = eventMeshMessageProducer;
+            final OpenMessageProducer ignored1 = openMessageProducer;
+            final CloudEventProducer ignored2 = cloudEventProducer) {
             log.info("Close producer");
         }
     }

@@ -52,7 +52,7 @@ public class EventMeshTcp2Client {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(),
-                    "graceful normal quit from eventmesh", null));
+                "graceful normal quit from eventmesh", null));
 
             tcpThreadPoolGroup.getScheduler().submit(new Runnable() {
 
@@ -120,7 +120,7 @@ public class EventMeshTcp2Client {
     public static String redirectClient2NewEventMesh(TCPThreadPoolGroup tcpThreadPoolGroup, String newEventMeshIp,
                                                      int port, Session session, ClientSessionGroupMapping mapping) {
         log.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(), newEventMeshIp + ":"
-                + port);
+            + port);
         try {
             long startTime = System.currentTimeMillis();
 

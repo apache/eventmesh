@@ -96,7 +96,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     public void exitColumnDeclaration(ColumnDeclarationContext ctx) {
 
         parser.runIfAllNotNull(() -> tableEditor.addColumns(columnDefinitionListener.getColumnEditor().build()), tableEditor,
-                columnDefinitionListener);
+            columnDefinitionListener);
 
         super.exitColumnDeclaration(ctx);
     }

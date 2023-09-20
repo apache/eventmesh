@@ -65,7 +65,7 @@ public abstract class TCPClient implements Closeable {
     private final Bootstrap bootstrap = new Bootstrap();
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
-            new EventMeshThreadFactory("TCPClientScheduler", true));
+        new EventMeshThreadFactory("TCPClientScheduler", true));
 
     private final NioEventLoopGroup workers = new NioEventLoopGroup(8, new EventMeshThreadFactory("TCPClientWorker"));
 
@@ -118,16 +118,16 @@ public abstract class TCPClient implements Closeable {
         bootstrap.group(workers);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
-                .option(ChannelOption.SO_KEEPALIVE, Boolean.FALSE)
-                .option(ChannelOption.SO_SNDBUF, 64 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 64 * 1024)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            .option(ChannelOption.SO_KEEPALIVE, Boolean.FALSE)
+            .option(ChannelOption.SO_SNDBUF, 64 * 1024)
+            .option(ChannelOption.SO_RCVBUF, 64 * 1024)
+            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             public void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
-                        .addLast(handler, newExceptionHandler());
+                    .addLast(handler, newExceptionHandler());
             }
         });
 

@@ -49,7 +49,7 @@ public class EventMeshGrpcMonitor {
         this.metricsRegistries = Preconditions.checkNotNull(metricsRegistries);
         this.grpcSummaryMetrics = new GrpcSummaryMetrics();
         this.scheduler = ThreadPoolFactory.createScheduledExecutor(SCHEDULE_THREAD_SIZE,
-                new EventMeshThreadFactory(THREAD_NAME_PREFIX, true));
+            new EventMeshThreadFactory(THREAD_NAME_PREFIX, true));
     }
 
     public void init() throws Exception {

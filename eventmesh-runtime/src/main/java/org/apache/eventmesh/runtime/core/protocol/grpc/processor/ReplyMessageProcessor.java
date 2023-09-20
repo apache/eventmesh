@@ -84,7 +84,7 @@ public class ReplyMessageProcessor {
 
         // control flow rate limit
         if (!eventMeshGrpcServer.getMsgRateLimiter()
-                .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             log.error("Send message speed over limit.");
             ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
             return;
@@ -98,7 +98,7 @@ public class ReplyMessageProcessor {
         String mqCluster = EventMeshCloudEventUtils.getCluster(message, "defaultCluster");
         String replyTopic = mqCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC;
         final CloudEvent messageReply = CloudEvent.newBuilder(message)
-                .putAttributes(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(replyTopic).build()).build();
+            .putAttributes(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(replyTopic).build()).build();
 
         String protocolType = EventMeshCloudEventUtils.getProtocolType(messageReply);
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
@@ -117,16 +117,16 @@ public class ReplyMessageProcessor {
             public void onSuccess(SendResult sendResult) {
                 long endTime = System.currentTimeMillis();
                 log.info("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, replyTopic, seqNum, uniqueId);
+                    endTime - startTime, replyTopic, seqNum, uniqueId);
             }
 
             @Override
             public void onException(OnExceptionContext onExceptionContext) {
                 ServiceUtils.sendStreamResponseCompleted(messageReply, StatusCode.EVENTMESH_REPLY_MSG_ERR,
-                        EventMeshUtil.stackTrace(onExceptionContext.getException(), 2), emitter);
+                    EventMeshUtil.stackTrace(onExceptionContext.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
                 log.error("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, replyTopic, seqNum, uniqueId, onExceptionContext.getException());
+                    endTime - startTime, replyTopic, seqNum, uniqueId, onExceptionContext.getException());
             }
         });
     }

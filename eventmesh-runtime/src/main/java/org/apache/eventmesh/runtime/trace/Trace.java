@@ -73,7 +73,7 @@ public class Trace {
             return Span.getInvalid();
         }
         return eventMeshTraceService.createSpan(spanName, spanKind, startTime, timeUnit, context,
-                isSpanFinishInOtherThread);
+            isSpanFinishInOtherThread);
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
@@ -82,7 +82,7 @@ public class Trace {
             return Span.getInvalid();
         }
         return eventMeshTraceService.createSpan(spanName, spanKind, context,
-                isSpanFinishInOtherThread);
+            isSpanFinishInOtherThread);
     }
 
     public Context extractFrom(Context context, Map<String, Object> map) {

@@ -93,9 +93,9 @@ public class S3SourceConnector implements Source {
         this.sourceConnectorConfig = this.sourceConfig.getSourceConnectorConfig();
         this.eachRecordSize = calculateEachRecordSize();
         AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.sourceConnectorConfig.getAccessKey(),
-                this.sourceConnectorConfig.getSecretKey());
+            this.sourceConnectorConfig.getSecretKey());
         this.s3Client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials)
-                .region(Region.of(this.sourceConnectorConfig.getRegion())).build();
+            .region(Region.of(this.sourceConnectorConfig.getRegion())).build();
     }
 
     private int calculateEachRecordSize() {
@@ -106,7 +106,7 @@ public class S3SourceConnector implements Source {
     @Override
     public void start() throws Exception {
         CompletableFuture<HeadObjectResponse> headObjectResponseCompletableFuture = this.s3Client.headObject(
-                builder -> builder.bucket(this.sourceConnectorConfig.getBucket()).key(this.sourceConnectorConfig.getFileName()));
+            builder -> builder.bucket(this.sourceConnectorConfig.getBucket()).key(this.sourceConnectorConfig.getFileName()));
         headObjectResponseCompletableFuture.get(this.sourceConnectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
         this.fileSize = headObjectResponseCompletableFuture.get().contentLength();
     }
@@ -134,12 +134,12 @@ public class S3SourceConnector implements Source {
         long startPosition = this.position;
         long endPosition = Math.min(this.fileSize, this.position + this.eachRecordSize * this.sourceConnectorConfig.getBatchSize()) - 1;
         GetObjectRequest request = GetObjectRequest.builder().bucket(this.sourceConnectorConfig.getBucket())
-                .key(this.sourceConnectorConfig.getFileName())
-                .range("bytes=" + startPosition + "-" + endPosition).build();
+            .key(this.sourceConnectorConfig.getFileName())
+            .range("bytes=" + startPosition + "-" + endPosition).build();
         ResponseBytes<GetObjectResponse> resp;
         try {
             resp = this.s3Client.getObject(request, AsyncResponseTransformer.toBytes())
-                    .get(this.sourceConnectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
+                .get(this.sourceConnectorConfig.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("poll records from S3 file, poll range {}-{}, but failed", startPosition, endPosition, e);
             return Collections.EMPTY_LIST;

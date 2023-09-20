@@ -96,7 +96,7 @@ public class HandlerService {
 
         if (httpProcessorMap.containsKey(path)) {
             throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
-                    path, httpProcessor.getClass().getSimpleName()));
+                path, httpProcessor.getClass().getSimpleName()));
         }
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
@@ -159,7 +159,7 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
-                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 if (isClose) {
                     f.channel().close();
                 }
@@ -175,7 +175,7 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] with short-lived connection fail, will close this channel",
-                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
             }
         }).addListener(ChannelFutureListener.CLOSE);
     }
@@ -206,15 +206,15 @@ public class HandlerService {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
                     Optional
-                            .ofNullable(JsonUtils.parseTypeReferenceObject(
-                                    new String(body, Constants.DEFAULT_CHARSET),
-                                    new TypeReference<Map<String, Object>>() {
-                                    }))
-                            .ifPresent(bodyMap::putAll);
+                        .ofNullable(JsonUtils.parseTypeReferenceObject(
+                            new String(body, Constants.DEFAULT_CHARSET),
+                            new TypeReference<Map<String, Object>>() {
+                            }))
+                        .ifPresent(bodyMap::putAll);
                 }
             } else {
                 HttpPostRequestDecoder decoder =
-                        new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
+                    new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
                 for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
                     if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                         Attribute data = (Attribute) parm;
@@ -229,8 +229,8 @@ public class HandlerService {
         }
 
         byte[] requestBody = Optional.ofNullable(JsonUtils.toJSONString(bodyMap))
-                .map(s -> s.getBytes(StandardCharsets.UTF_8))
-                .orElse(new byte[0]);
+            .map(s -> s.getBytes(StandardCharsets.UTF_8))
+            .orElse(new byte[0]);
 
         httpEventWrapper.setBody(requestBody);
 

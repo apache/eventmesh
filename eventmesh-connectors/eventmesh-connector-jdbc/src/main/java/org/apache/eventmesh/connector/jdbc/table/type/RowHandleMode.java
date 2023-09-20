@@ -80,7 +80,7 @@ public enum RowHandleMode {
                 return DELETE;
             default:
                 throw new UnsupportedOperationException(
-                        "Unsupported byte value '" + value + "' for row handle mode.");
+                    "Unsupported byte value '" + value + "' for row handle mode.");
         }
     }
 }

@@ -46,8 +46,8 @@ public class CloudEventsPublishInstance {
     public static void main(String[] args) throws Exception {
 
         try (
-                EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                        initEventMeshGrpcClientConfig("FUNCTION_PRODUCER_GROUP"))) {
+            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+                initEventMeshGrpcClientConfig("FUNCTION_PRODUCER_GROUP"))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");
@@ -66,25 +66,25 @@ public class CloudEventsPublishInstance {
         final String eventMeshGrpcPort = "10110";
 
         return EventMeshGrpcClientConfig.builder()
-                .serverAddr(eventMeshIp)
-                .serverPort(Integer.parseInt(eventMeshGrpcPort))
-                .producerGroup(groupName)
-                .env("env")
-                .idc("idc")
-                .sys("1234")
-                .build();
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
+            .producerGroup(groupName)
+            .env("env")
+            .idc("idc")
+            .sys("1234")
+            .build();
     }
 
     protected static CloudEvent buildCloudEvent(final Map<String, String> content) {
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject("TEST-TOPIC-FUNCTION")
-                .withSource(URI.create("/"))
-                .withDataContentType("application/cloudevents+json")
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject("TEST-TOPIC-FUNCTION")
+            .withSource(URI.create("/"))
+            .withDataContentType("application/cloudevents+json")
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
+            .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+            .build();
 
     }
 }

@@ -85,7 +85,7 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.getEventMeshCluster()));
+            eventMeshHttpConfiguration.getEventMeshCluster()));
         if (StringUtils.isNotBlank(producerGroupConfig.getToken())) {
             keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
         }
@@ -121,9 +121,9 @@ public class EventMeshProducer {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("eventMeshProducer={")
-                .append("inited=").append(inited.get()).append(",")
-                .append("started=").append(started.get()).append(",")
-                .append("producerGroupConfig=").append(producerGroupConfig).append("}");
+            .append("inited=").append(inited.get()).append(",")
+            .append("started=").append(started.get()).append(",")
+            .append("producerGroupConfig=").append(producerGroupConfig).append("}");
         return sb.toString();
     }
 }

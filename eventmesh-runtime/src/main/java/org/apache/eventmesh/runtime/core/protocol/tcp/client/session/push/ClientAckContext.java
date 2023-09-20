@@ -55,7 +55,7 @@ public class ClientAckContext {
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
         String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? ""
-                : Objects.requireNonNull(events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)).toString();
+            : Objects.requireNonNull(events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)).toString();
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }
@@ -114,22 +114,22 @@ public class ClientAckContext {
             log.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
         } else {
             log.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
-                    consumer == null, context == null, events == null);
+                consumer == null, context == null, events == null);
         }
     }
 
     @Override
     public String toString() {
         return "ClientAckContext{"
-                +
-                ",seq=" + seq
-                +
-                // TODO ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
-                // ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            ",seq=" + seq
+            +
+            // TODO ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
+            // ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
+            ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

@@ -56,9 +56,9 @@ public class MongodbStandaloneSourceClient implements MongodbSourceClient {
     private final SubTask task = new SubTask();
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "EventMesh-MongodbStandaloneSourceClient-");
+        Runtime.getRuntime().availableProcessors() * 2,
+        Runtime.getRuntime().availableProcessors() * 2,
+        "EventMesh-MongodbStandaloneSourceClient-");
 
     public MongodbStandaloneSourceClient(SourceConnectorConfig connectorConfig, BlockingQueue<CloudEvent> queue) {
         this.queue = queue;
@@ -72,7 +72,7 @@ public class MongodbStandaloneSourceClient implements MongodbSourceClient {
         this.cappedCol = db.getCollection(connectorConfig.getCollection());
         // create index
         Document index = new Document(MongodbConstants.CAPPED_COL_CURSOR_FN, 1)
-                .append(MongodbConstants.CAPPED_COL_TOPIC_FN, 1);
+            .append(MongodbConstants.CAPPED_COL_TOPIC_FN, 1);
         this.cappedCol.createIndex(index);
     }
 

@@ -70,10 +70,10 @@ public class SubscriptionItem implements Serializable {
     @Override
     public String toString() {
         return "SubscriptionItem{"
-                + "topic=" + topic
-                + ", mode=" + mode
-                + ", type=" + type
-                + '}';
+            + "topic=" + topic
+            + ", mode=" + mode
+            + ", type=" + type
+            + '}';
     }
 
     @Override

@@ -41,13 +41,13 @@ public class SyncRequest {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient1();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
         try {
             final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                    eventMeshTcpClientConfig, EventMeshMessage.class);
+                eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();

@@ -47,8 +47,8 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
     @Override
     public void heartbeat(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                "heartbeat", EventMeshConstants.PROTOCOL_GRPC, EventMeshCloudEventUtils.getIp(request),
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+            "heartbeat", EventMeshConstants.PROTOCOL_GRPC, EventMeshCloudEventUtils.getIp(request),
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
@@ -57,7 +57,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
                 heartbeatProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
-                        StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
+                    StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
                 ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
             }
         });

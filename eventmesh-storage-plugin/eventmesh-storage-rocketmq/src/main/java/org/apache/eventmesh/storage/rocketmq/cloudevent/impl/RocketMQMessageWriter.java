@@ -31,9 +31,9 @@ import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
 public final class RocketMQMessageWriter<R>
-        implements
-            MessageWriter<CloudEventWriter<Message>, Message>,
-            CloudEventWriter<Message> {
+    implements
+        MessageWriter<CloudEventWriter<Message>, Message>,
+        CloudEventWriter<Message> {
 
     private final Message message = new Message();
 

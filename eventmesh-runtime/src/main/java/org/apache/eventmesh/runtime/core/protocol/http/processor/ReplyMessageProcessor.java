@@ -77,8 +77,8 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         String localAddress = IPUtils.getLocalAddress();
         HttpCommand request = asyncContext.getRequest();
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+            EventMeshConstants.PROTOCOL_HTTP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) request.getHeader();
 
@@ -87,16 +87,16 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(request);
         EventMeshHTTPConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         ReplyMessageResponseHeader replyMessageResponseHeader =
-                ReplyMessageResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
-                        httpConfiguration.getEventMeshCluster(),
-                        localAddress, httpConfiguration.getEventMeshEnv(),
-                        httpConfiguration.getEventMeshIDC());
+            ReplyMessageResponseHeader.buildHeader(Integer.valueOf(request.getRequestCode()),
+                httpConfiguration.getEventMeshCluster(),
+                localAddress, httpConfiguration.getEventMeshEnv(),
+                httpConfiguration.getEventMeshIDC());
 
         // validate event
         if (!ObjectUtils.allNotNull(event, event.getSource(), event.getSpecVersion())
-                || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
+            || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
@@ -106,9 +106,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         // validate HEADER
         if (StringUtils.isAnyBlank(idc, pid, sys)
-                || !StringUtils.isNumeric(pid)) {
+            || !StringUtils.isNumeric(pid)) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
@@ -118,30 +118,30 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         // validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup)
-                || event.getData() == null) {
+            || event.getData() == null) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
         // control flow rate limit
         HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         if (!eventMeshHTTPServer.getMsgRateLimiter()
-                .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             summaryMetrics.recordHTTPDiscard();
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
         String content = event.getData() == null ? "" : new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET);
         if (content.length() > httpConfiguration.getEventMeshEventSize()) {
             httpLogger.error("Event size exceeds the limit: {}",
-                    httpConfiguration.getEventMeshEventSize());
+                httpConfiguration.getEventMeshEventSize());
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                    "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(),
-                    ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(),
+                ReplyMessageResponseBody.class);
             return;
         }
 
@@ -149,7 +149,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         if (!eventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
@@ -161,7 +161,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR, null, ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR, null, ReplyMessageResponseBody.class);
             return;
         }
 
@@ -169,11 +169,11 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             // body
             // omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             event = CloudEventBuilder.from(event)
-                    .withSubject(replyTopic)
-                    .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
-                    .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
-                    .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .build();
+                .withSubject(replyTopic)
+                .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
+                .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
+                .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                .build();
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, replyTopic);
@@ -182,9 +182,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         } catch (Exception e) {
             messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, replyTopic, e);
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR,
-                    EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
-                    ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR,
+                EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                ReplyMessageResponseBody.class);
             return;
         }
 
@@ -197,7 +197,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 }
                 eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                 summaryMetrics.recordHTTPReqResTimeCost(
-                        System.currentTimeMillis() - request.getReqTime());
+                    System.currentTimeMillis() - request.getReqTime());
             } catch (Exception ex) {
                 // ignore
             }
@@ -205,48 +205,48 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         try {
             CloudEvent clone = CloudEventBuilder.from(sendMessageContext.getEvent())
-                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .build();
+                .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                .build();
             sendMessageContext.setEvent(clone);
             eventMeshProducer.reply(sendMessageContext, new SendCallback() {
 
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     HttpCommand succ = request.createHttpCommandResponse(
-                            replyMessageResponseHeader,
-                            ReplyMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg()));
+                        replyMessageResponseHeader,
+                        ReplyMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg()));
                     asyncContext.onComplete(succ, handler);
                     long endTime = System.currentTimeMillis();
                     summaryMetrics.recordReplyMsgCost(endTime - startTime);
                     messageLogger.info("message|eventMesh2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime, replyMQCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC,
-                            origTopic, bizNo, uniqueId);
+                        endTime - startTime, replyMQCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC,
+                        origTopic, bizNo, uniqueId);
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
                     HttpCommand err = request.createHttpCommandResponse(
-                            replyMessageResponseHeader,
-                            ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getRetCode(),
-                                    EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getErrMsg()
-                                            + EventMeshUtil.stackTrace(context.getException(), 2)));
+                        replyMessageResponseHeader,
+                        ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getErrMsg()
+                                + EventMeshUtil.stackTrace(context.getException(), 2)));
                     asyncContext.onComplete(err, handler);
                     long endTime = System.currentTimeMillis();
                     summaryMetrics.recordReplyMsgFailed();
                     summaryMetrics.recordReplyMsgCost(endTime - startTime);
                     messageLogger.error("message|eventMesh2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime, replyMQCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC,
-                            origTopic, bizNo, uniqueId, context.getException());
+                        endTime - startTime, replyMQCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC,
+                        origTopic, bizNo, uniqueId, context.getException());
                 }
             });
         } catch (Exception ex) {
             completeResponse(request, asyncContext, replyMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR,
-                    EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
-                    ReplyMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR,
+                EventMeshRetCode.EVENTMESH_REPLY_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
+                ReplyMessageResponseBody.class);
             long endTime = System.currentTimeMillis();
             messageLogger.error("message|eventMesh2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, replyTopic, origTopic, bizNo, uniqueId, ex);
+                endTime - startTime, replyTopic, origTopic, bizNo, uniqueId, ex);
             summaryMetrics.recordReplyMsgFailed();
             summaryMetrics.recordReplyMsgCost(endTime - startTime);
         }

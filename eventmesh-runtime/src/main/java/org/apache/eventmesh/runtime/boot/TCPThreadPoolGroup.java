@@ -40,19 +40,19 @@ public class TCPThreadPoolGroup implements ThreadPoolGroup {
     public void initThreadPool() {
 
         scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.getEventMeshTcpGlobalScheduler(),
-                new EventMeshThreadFactory("eventMesh-tcp-scheduler", true));
+            new EventMeshThreadFactory("eventMesh-tcp-scheduler", true));
 
         taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshTCPConfiguration.getEventMeshTcpTaskHandleExecutorPoolSize(),
-                eventMeshTCPConfiguration.getEventMeshTcpTaskHandleExecutorPoolSize(),
-                new LinkedBlockingQueue<>(10_000),
-                new EventMeshThreadFactory("eventMesh-tcp-task-handle", true));
+            eventMeshTCPConfiguration.getEventMeshTcpTaskHandleExecutorPoolSize(),
+            eventMeshTCPConfiguration.getEventMeshTcpTaskHandleExecutorPoolSize(),
+            new LinkedBlockingQueue<>(10_000),
+            new EventMeshThreadFactory("eventMesh-tcp-task-handle", true));
 
         broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshTCPConfiguration.getEventMeshTcpMsgDownStreamExecutorPoolSize(),
-                eventMeshTCPConfiguration.getEventMeshTcpMsgDownStreamExecutorPoolSize(),
-                new LinkedBlockingQueue<>(10_000),
-                new EventMeshThreadFactory("eventMesh-tcp-msg-downstream", true));
+            eventMeshTCPConfiguration.getEventMeshTcpMsgDownStreamExecutorPoolSize(),
+            eventMeshTCPConfiguration.getEventMeshTcpMsgDownStreamExecutorPoolSize(),
+            new LinkedBlockingQueue<>(10_000),
+            new EventMeshThreadFactory("eventMesh-tcp-msg-downstream", true));
     }
 
     @Override

@@ -55,9 +55,9 @@ public class EventMeshServicePubTopicInfo {
     @Override
     public String toString() {
         return "EventMeshServicePubTopicInfo{"
-                + "service='" + service + '\''
-                + ", topics=" + topics
-                + '}';
+            + "service='" + service + '\''
+            + ", topics=" + topics
+            + '}';
     }
 
 }

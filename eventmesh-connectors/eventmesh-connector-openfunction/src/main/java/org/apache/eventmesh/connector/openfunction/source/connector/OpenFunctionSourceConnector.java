@@ -100,7 +100,7 @@ public class OpenFunctionSourceConnector implements Source {
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[OpenFunctionSourceConnector] Interrupting thread {} due to exception {}",
-                        currentThread.getName(), e.getMessage());
+                    currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             }
         }

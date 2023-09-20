@@ -77,6 +77,6 @@ public class NetUtilsTest {
         HttpExchange exchange = Mockito.mock(HttpExchange.class);
         NetUtils.sendSuccessResponseHeaders(exchange);
         Mockito.verify(exchange, Mockito.times(1))
-                .sendResponseHeaders(Mockito.anyInt(), Mockito.anyLong());
+            .sendResponseHeaders(Mockito.anyInt(), Mockito.anyLong());
     }
 }

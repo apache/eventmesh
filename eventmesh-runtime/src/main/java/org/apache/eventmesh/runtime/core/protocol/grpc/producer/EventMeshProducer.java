@@ -58,12 +58,12 @@ public class EventMeshProducer {
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
-                producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
+            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
 
         // TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-                eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
+            eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
@@ -97,7 +97,7 @@ public class EventMeshProducer {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("eventMeshProducer={").append("status=").append(serviceState.name()).append(",").append("producerGroupConfig=")
-                .append(producerGroupConfig).append("}");
+            .append(producerGroupConfig).append("}");
         return sb.toString();
     }
 }

@@ -91,7 +91,7 @@ public class RocketMQSinkConnector implements Sink {
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[RocketMQSinkConnector] Interrupting thread {} due to exception {}",
-                        currentThread.getName(), e.getMessage());
+                    currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             } catch (Exception e) {
                 log.error("[RocketMQSinkConnector] sendResult has error : ", e);

@@ -31,9 +31,9 @@ import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
 public class RabbitmqCloudEventWriter
-        implements
-            MessageWriter<CloudEventWriter<RabbitmqCloudEvent>, RabbitmqCloudEvent>,
-            CloudEventWriter<RabbitmqCloudEvent> {
+    implements
+        MessageWriter<CloudEventWriter<RabbitmqCloudEvent>, RabbitmqCloudEvent>,
+        CloudEventWriter<RabbitmqCloudEvent> {
 
     private final RabbitmqCloudEvent rabbitmqCloudEvent;
 

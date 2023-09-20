@@ -42,7 +42,7 @@ public class SendMessageBatchV2ProtocolResolver {
             SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody = (SendMessageBatchV2RequestBody) body;
 
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.fromSpecVersion(
-                    SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion()));
+                SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion()));
 
             return getBuildCloudEvent(sendMessageBatchV2RequestHeader, sendMessageBatchV2RequestBody, cloudEventBuilder);
         } catch (Exception e) {
@@ -53,26 +53,26 @@ public class SendMessageBatchV2ProtocolResolver {
     private static CloudEvent getBuildCloudEvent(SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader,
                                                  SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody, CloudEventBuilder cloudEventBuilder) {
         cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
-                .withSubject(sendMessageBatchV2RequestBody.getTopic())
-                .withType("eventmeshmessage")
-                .withSource(URI.create("/"))
-                .withData(sendMessageBatchV2RequestBody.getMsg().getBytes(Constants.DEFAULT_CHARSET))
-                .withExtension(ProtocolKey.REQUEST_CODE, sendMessageBatchV2RequestHeader.getCode())
-                .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), sendMessageBatchV2RequestHeader.getEnv())
-                .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), sendMessageBatchV2RequestHeader.getIdc())
-                .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), sendMessageBatchV2RequestHeader.getIp())
-                .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), sendMessageBatchV2RequestHeader.getPid())
-                .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sendMessageBatchV2RequestHeader.getSys())
-                .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), sendMessageBatchV2RequestHeader.getUsername())
-                .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), sendMessageBatchV2RequestHeader.getPasswd())
-                .withExtension(ProtocolKey.VERSION, sendMessageBatchV2RequestHeader.getVersion().getVersion())
-                .withExtension(ProtocolKey.LANGUAGE, sendMessageBatchV2RequestHeader.getLanguage())
-                .withExtension(ProtocolKey.PROTOCOL_TYPE, sendMessageBatchV2RequestHeader.getProtocolType())
-                .withExtension(ProtocolKey.PROTOCOL_DESC, sendMessageBatchV2RequestHeader.getProtocolDesc())
-                .withExtension(ProtocolKey.PROTOCOL_VERSION, sendMessageBatchV2RequestHeader.getProtocolVersion())
-                .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
-                .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
-                .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl());
+            .withSubject(sendMessageBatchV2RequestBody.getTopic())
+            .withType("eventmeshmessage")
+            .withSource(URI.create("/"))
+            .withData(sendMessageBatchV2RequestBody.getMsg().getBytes(Constants.DEFAULT_CHARSET))
+            .withExtension(ProtocolKey.REQUEST_CODE, sendMessageBatchV2RequestHeader.getCode())
+            .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), sendMessageBatchV2RequestHeader.getEnv())
+            .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), sendMessageBatchV2RequestHeader.getIdc())
+            .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), sendMessageBatchV2RequestHeader.getIp())
+            .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), sendMessageBatchV2RequestHeader.getPid())
+            .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sendMessageBatchV2RequestHeader.getSys())
+            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), sendMessageBatchV2RequestHeader.getUsername())
+            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), sendMessageBatchV2RequestHeader.getPasswd())
+            .withExtension(ProtocolKey.VERSION, sendMessageBatchV2RequestHeader.getVersion().getVersion())
+            .withExtension(ProtocolKey.LANGUAGE, sendMessageBatchV2RequestHeader.getLanguage())
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, sendMessageBatchV2RequestHeader.getProtocolType())
+            .withExtension(ProtocolKey.PROTOCOL_DESC, sendMessageBatchV2RequestHeader.getProtocolDesc())
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, sendMessageBatchV2RequestHeader.getProtocolVersion())
+            .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
+            .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
+            .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl());
         if (StringUtils.isNotEmpty(sendMessageBatchV2RequestBody.getTag())) {
             cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageBatchV2RequestBody.getTag());
         }

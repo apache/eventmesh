@@ -94,22 +94,22 @@ public class SubscribeStreamProcessor {
         final String pid = EventMeshCloudEventUtils.getPid(subscription);
         List<ConsumerGroupClient> newClients = new LinkedList<>();
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-                new TypeReference<List<SubscriptionItem>>() {
-                });
+            new TypeReference<List<SubscriptionItem>>() {
+            });
         for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                    .env(env)
-                    .idc(idc)
-                    .sys(sys)
-                    .ip(ip)
-                    .pid(pid)
-                    .consumerGroup(consumerGroup)
-                    .topic(item.getTopic())
-                    .subscriptionMode(item.getMode())
-                    .grpcType(grpcType)
-                    .eventEmitter(emitter)
-                    .lastUpTime(new Date())
-                    .build();
+                .env(env)
+                .idc(idc)
+                .sys(sys)
+                .ip(ip)
+                .pid(pid)
+                .consumerGroup(consumerGroup)
+                .topic(item.getTopic())
+                .subscriptionMode(item.getMode())
+                .grpcType(grpcType)
+                .eventEmitter(emitter)
+                .lastUpTime(new Date())
+                .build();
             newClients.add(newClient);
         }
 
@@ -147,8 +147,8 @@ public class SubscribeStreamProcessor {
             String pass = EventMeshCloudEventUtils.getPassword(subscription);
             String subsystem = EventMeshCloudEventUtils.getSys(subscription);
             List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-                    new TypeReference<List<SubscriptionItem>>() {
-                    });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
             for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
                 this.acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }

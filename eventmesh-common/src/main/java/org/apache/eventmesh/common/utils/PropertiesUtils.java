@@ -88,8 +88,8 @@ public class PropertiesUtils {
             return;
         }
         try (
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(new FileInputStream(file), cs))) {
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), cs))) {
             properties.load(reader);
         }
     }

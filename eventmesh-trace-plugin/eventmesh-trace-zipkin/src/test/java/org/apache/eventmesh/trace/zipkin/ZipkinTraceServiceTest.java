@@ -35,22 +35,22 @@ public class ZipkinTraceServiceTest {
     @Test
     public void testInit() {
         ZipkinTraceService zipkinTraceService =
-                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
 
         Assert.assertNotNull(zipkinTraceService.getSdkTracerProvider());
         Assert.assertNotNull(zipkinTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class,
-                        () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
+            assertThrows(IllegalArgumentException.class,
+                () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
     public void testShutdown() throws Exception {
         ZipkinTraceService zipkinTraceService =
-                (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
         Field sdkTracerProviderField = null;
         try {

@@ -56,7 +56,7 @@ public class WatchFileTask extends Thread {
         try (WatchService watchService = FILE_SYSTEM.newWatchService()) {
             this.watchService = watchService;
             path.register(this.watchService, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
-                    StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
         } catch (Exception ex) {
             throw new UnsupportedOperationException("WatchService registry fail", ex);
         }

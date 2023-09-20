@@ -89,7 +89,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     private TcpDispatcher tcpDispatcher;
 
     private final Map<Command, Pair<TcpProcessor, ThreadPoolExecutor>> tcpRequestProcessorTable =
-            new ConcurrentHashMap<>(64);
+        new ConcurrentHashMap<>(64);
 
     private final transient AtomicBoolean started = new AtomicBoolean(false);
 
@@ -118,20 +118,20 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             final ServerBootstrap bootstrap = new ServerBootstrap();
 
             bootstrap.group(this.getBossGroup(), this.getIoGroup())
-                    .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 128)
-                    .option(ChannelOption.SO_REUSEADDR, true)
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
-                    .childOption(ChannelOption.SO_KEEPALIVE, false)
-                    .childOption(ChannelOption.SO_LINGER, 0)
-                    .childOption(ChannelOption.SO_TIMEOUT, 600_000)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.SO_SNDBUF, 65_535 * 4)
-                    .childOption(ChannelOption.SO_RCVBUF, 65_535 * 4)
-                    .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(2_048, 4_096, 65_536))
-                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childHandler(new TcpServerInitializer());
+                .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                .option(ChannelOption.SO_BACKLOG, 128)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
+                .childOption(ChannelOption.SO_KEEPALIVE, false)
+                .childOption(ChannelOption.SO_LINGER, 0)
+                .childOption(ChannelOption.SO_TIMEOUT, 600_000)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.SO_SNDBUF, 65_535 * 4)
+                .childOption(ChannelOption.SO_RCVBUF, 65_535 * 4)
+                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(2_048, 4_096, 65_536))
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childHandler(new TcpServerInitializer());
 
             try {
                 int port = eventMeshTCPConfiguration.getEventMeshTcpServerPort();
@@ -180,17 +180,17 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         protected void initChannel(SocketChannel ch) {
             globalTrafficShapingHandler = newGTSHandler(tcpThreadPoolGroup.getScheduler(), eventMeshTCPConfiguration.getCtc().getReadLimit());
             ch.pipeline()
-                    .addLast(getWorkerGroup(), new Codec.Encoder())
-                    .addLast(getWorkerGroup(), new Codec.Decoder())
-                    .addLast(getWorkerGroup(), "global-traffic-shaping", globalTrafficShapingHandler)
-                    .addLast(getWorkerGroup(), "channel-traffic-shaping", newCTSHandler(eventMeshTCPConfiguration.getCtc().getReadLimit()))
-                    .addLast(getWorkerGroup(), tcpConnectionHandler)
-                    .addLast(getWorkerGroup(),
-                            new IdleStateHandler(
-                                    eventMeshTCPConfiguration.getEventMeshTcpIdleReadSeconds(),
-                                    eventMeshTCPConfiguration.getEventMeshTcpIdleWriteSeconds(),
-                                    eventMeshTCPConfiguration.getEventMeshTcpIdleAllSeconds()),
-                            new TcpDispatcher());
+                .addLast(getWorkerGroup(), new Codec.Encoder())
+                .addLast(getWorkerGroup(), new Codec.Decoder())
+                .addLast(getWorkerGroup(), "global-traffic-shaping", globalTrafficShapingHandler)
+                .addLast(getWorkerGroup(), "channel-traffic-shaping", newCTSHandler(eventMeshTCPConfiguration.getCtc().getReadLimit()))
+                .addLast(getWorkerGroup(), tcpConnectionHandler)
+                .addLast(getWorkerGroup(),
+                    new IdleStateHandler(
+                        eventMeshTCPConfiguration.getEventMeshTcpIdleReadSeconds(),
+                        eventMeshTCPConfiguration.getEventMeshTcpIdleWriteSeconds(),
+                        eventMeshTCPConfiguration.getEventMeshTcpIdleAllSeconds()),
+                    new TcpDispatcher());
         }
 
         private GlobalTrafficShapingHandler newGTSHandler(final ScheduledExecutorService executor, final long readLimit) {
@@ -235,9 +235,9 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             try {
                 if (isNeedTrace(cmd)) {
                     pkg.getHeader().getProperties()
-                            .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
+                        .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                            eventMeshTCPConfiguration.getEventMeshServerIp());
+                        eventMeshTCPConfiguration.getEventMeshServerIp());
                     Session session = clientSessionGroupMapping.getSession(ctx);
 
                     pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SYS, session.getClient().getSubsystem());
@@ -264,9 +264,9 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 logMessageFlow(ctx, pkg, cmd);
 
                 if (clientSessionGroupMapping.getSession(ctx)
-                        .getSessionState() == SessionState.CLOSED) {
+                    .getSessionState() == SessionState.CLOSED) {
                     throw new Exception(
-                            "this eventMesh tcp session will be closed, may be reboot or version change!");
+                        "this eventMesh tcp session will be closed, may be reboot or version change!");
                 }
 
                 processHttpCommandRequest(pkg, ctx, startTime, cmd);
@@ -275,10 +275,10 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
                 if (isNeedTrace(cmd)) {
                     Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
-                            EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, startTime,
-                            TimeUnit.MILLISECONDS, false);
+                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, startTime,
+                        TimeUnit.MILLISECONDS, false);
                     TraceUtils.finishSpanWithException(span, pkg.getHeader().getProperties(),
-                            "exception occurred while dispatch pkg", e);
+                        "exception occurred while dispatch pkg", e);
                 }
 
                 writeToClient(cmd, pkg, ctx, e);
@@ -299,16 +299,16 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
         private boolean isNeedTrace(Command cmd) {
             return eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
-                    && (Command.REQUEST_TO_SERVER == cmd
-                            || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
+                && (Command.REQUEST_TO_SERVER == cmd
+                    || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
         }
 
         private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
             try {
                 Package res = new Package();
                 res.setHeader(new Header(getReplyCommand(cmd), OPStatus.FAIL.getCode(), e.toString(),
-                        pkg.getHeader().getSeq()));
+                    pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(res);
             } catch (Exception ex) {
                 log.warn("writeToClient failed", ex);
@@ -349,11 +349,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
             if (pkg.getBody() instanceof EventMeshMessage) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
-                        EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
-                        clientSessionGroupMapping.getSession(ctx).getClient());
+                    EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
+                    clientSessionGroupMapping.getSession(ctx).getClient());
             } else {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
-                        clientSessionGroupMapping.getSession(ctx).getClient());
+                    clientSessionGroupMapping.getSession(ctx).getClient());
             }
         }
 
@@ -385,7 +385,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
             if (session != null) {
                 EventMeshTcp2Client.goodBye2Client(tcpThreadPoolGroup, session, errMsg, OPStatus.FAIL.getCode(),
-                        clientSessionGroupMapping);
+                    clientSessionGroupMapping);
             } else {
                 EventMeshTcp2Client.goodBye2Client(ctx, errMsg, clientSessionGroupMapping, eventMeshTcpMonitor);
             }

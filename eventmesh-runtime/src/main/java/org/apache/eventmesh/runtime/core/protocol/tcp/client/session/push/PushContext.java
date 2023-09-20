@@ -68,13 +68,13 @@ public class PushContext {
     @Override
     public String toString() {
         return "PushContext{"
-                +
-                "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
-                +
-                ",deliverFailCount=" + deliverFailMsgsCount.longValue()
-                +
-                ",unAckMsg=" + CollectionUtils.size(unAckMsg)
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
+            +
+            ",deliverFailCount=" + deliverFailMsgsCount.longValue()
+            +
+            ",unAckMsg=" + CollectionUtils.size(unAckMsg)
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

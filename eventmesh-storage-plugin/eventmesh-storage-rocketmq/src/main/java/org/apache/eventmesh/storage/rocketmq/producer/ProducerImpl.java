@@ -64,14 +64,14 @@ public class ProducerImpl extends AbstractProducer {
         super.getRocketmqProducer().setPollNameServerInterval(60000);
 
         super.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getNettyClientConfig()
-                .setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
+            .setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
     public SendResult send(CloudEvent cloudEvent) {
         this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-                RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         supplySysProp(msg, cloudEvent);
         String messageId = null;
         try {
@@ -90,7 +90,7 @@ public class ProducerImpl extends AbstractProducer {
     public void sendOneway(CloudEvent cloudEvent) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-                RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         supplySysProp(msg, cloudEvent);
         try {
             this.rocketmqProducer.sendOneway(msg);
@@ -103,7 +103,7 @@ public class ProducerImpl extends AbstractProducer {
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-                RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         msg = supplySysProp(msg, cloudEvent);
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
@@ -118,7 +118,7 @@ public class ProducerImpl extends AbstractProducer {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-                RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
 
         supplySysProp(msg, cloudEvent);
 
@@ -128,7 +128,7 @@ public class ProducerImpl extends AbstractProducer {
     public void reply(final CloudEvent cloudEvent, final SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-                RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
         supplySysProp(msg, cloudEvent);
 

@@ -111,7 +111,7 @@ public class ConnectRecord {
         }
         ConnectRecord that = (ConnectRecord) o;
         return Objects.equals(timestamp, that.timestamp) && Objects.equals(data, that.data)
-                && Objects.equals(position, that.position) && Objects.equals(extensions, that.extensions);
+            && Objects.equals(position, that.position) && Objects.equals(extensions, that.extensions);
     }
 
     @Override
@@ -122,10 +122,10 @@ public class ConnectRecord {
     @Override
     public String toString() {
         return "ConnectRecord{"
-                + "timestamp=" + timestamp
-                + ", data=" + data
-                + ", position=" + position
-                + ", extensions=" + extensions
-                + "}";
+            + "timestamp=" + timestamp
+            + ", data=" + data
+            + ", position=" + position
+            + ", extensions=" + extensions
+            + "}";
     }
 }

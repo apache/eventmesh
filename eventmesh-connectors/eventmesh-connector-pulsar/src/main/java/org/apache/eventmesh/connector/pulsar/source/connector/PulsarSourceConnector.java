@@ -67,12 +67,12 @@ public class PulsarSourceConnector implements Source {
 
     private void doInit() throws Exception {
         PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
-                .build();
+            .serviceUrl(sourceConfig.getConnectorConfig().getServiceUrl())
+            .build();
         consumer = client.newConsumer()
-                .topic(sourceConfig.connectorConfig.getTopic())
-                .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
-                .subscribe();
+            .topic(sourceConfig.connectorConfig.getTopic())
+            .subscriptionName(sourceConfig.getPubSubConfig().getGroup())
+            .subscribe();
     }
 
     @Override

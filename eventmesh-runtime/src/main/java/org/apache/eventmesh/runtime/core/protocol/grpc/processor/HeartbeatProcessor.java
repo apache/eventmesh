@@ -91,20 +91,20 @@ public class HeartbeatProcessor {
         final String pid = EventMeshCloudEventUtils.getPid(heartbeat);
         // update clients' timestamp in the heartbeat items
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
-                new TypeReference<List<HeartbeatItem>>() {
-                });
+            new TypeReference<List<HeartbeatItem>>() {
+            });
         Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             ConsumerGroupClient hbClient = ConsumerGroupClient.builder()
-                    .env(env)
-                    .idc(idc)
-                    .sys(sys)
-                    .ip(ip)
-                    .pid(pid)
-                    .consumerGroup(consumerGroup)
-                    .topic(item.getTopic())
-                    .lastUpTime(new Date())
-                    .build();
+                .env(env)
+                .idc(idc)
+                .sys(sys)
+                .ip(ip)
+                .pid(pid)
+                .consumerGroup(consumerGroup)
+                .topic(item.getTopic())
+                .lastUpTime(new Date())
+                .build();
 
             // consumer group client is lost, and the client needs to resubscribe.
             if (!consumerManager.updateClientTime(hbClient)) {
@@ -124,8 +124,8 @@ public class HeartbeatProcessor {
             String sys = EventMeshCloudEventUtils.getSys(heartbeat);
             int requestCode = RequestCode.HEARTBEAT.getRequestCode();
             List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
-                    new TypeReference<List<HeartbeatItem>>() {
-                    });
+                new TypeReference<List<HeartbeatItem>>() {
+                });
             for (HeartbeatItem item : heartbeatItems) {
                 this.acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
             }

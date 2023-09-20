@@ -37,8 +37,8 @@ public class BatchPublishInstance extends GrpcAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (
-                EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             Map<String, String> content = new HashMap<>();
             content.put("content", "testRequestReplyMessage");
@@ -46,7 +46,7 @@ public class BatchPublishInstance extends GrpcAbstractDemo {
             List<EventMeshMessage> messageList = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
                 messageList.add(buildEventMeshMessage(content,
-                        ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
+                    ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
             }
 
             eventMeshGrpcProducer.publish(messageList);

@@ -121,7 +121,7 @@ public class RedisConsumer implements Consumer {
                 @Override
                 public void commit(EventMeshAction action) {
                     log.info("channel: {} consumer event: {} finish action: {}",
-                            channel, msg.getId(), action);
+                        channel, msg.getId(), action);
                 }
             };
 

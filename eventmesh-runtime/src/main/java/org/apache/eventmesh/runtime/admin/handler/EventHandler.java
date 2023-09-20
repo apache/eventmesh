@@ -161,9 +161,9 @@ public class EventHandler extends AbstractHttpHandler {
             List<String> eventJsonList = new ArrayList<>();
             for (CloudEvent event : eventList) {
                 byte[] serializedEvent = Objects.requireNonNull(EventFormatProvider
-                        .getInstance()
-                        .resolveFormat(JsonFormat.CONTENT_TYPE))
-                        .serialize(event);
+                    .getInstance()
+                    .resolveFormat(JsonFormat.CONTENT_TYPE))
+                    .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }
             String result = JsonUtils.toJSONString(eventJsonList);
@@ -203,8 +203,8 @@ public class EventHandler extends AbstractHttpHandler {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
             CloudEvent event = Objects.requireNonNull(EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
+                .getInstance()
+                .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
             admin.publish(event);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {

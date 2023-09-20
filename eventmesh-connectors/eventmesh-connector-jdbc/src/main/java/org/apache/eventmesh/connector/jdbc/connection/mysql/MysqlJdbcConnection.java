@@ -35,8 +35,8 @@ public class MysqlJdbcConnection extends JdbcConnection {
     private static final int DEFAULT_CONNECT_TIMEOUT_SECOND = 10;
 
     public static final String URL_WITH_PLACEHOLDER = "jdbc:mysql://%s:%s/?useInformationSchema=true"
-            + "&nullCatalogMeansCurrent=false&useUnicode=true&characterEncoding=UTF-8"
-            + "&characterSetResults=UTF-8&zeroDateTimeBehavior=CONVERT_TO_NULL&connectTimeout=%s";
+        + "&nullCatalogMeansCurrent=false&useUnicode=true&characterEncoding=UTF-8"
+        + "&characterSetResults=UTF-8&zeroDateTimeBehavior=CONVERT_TO_NULL&connectTimeout=%s";
 
     public MysqlJdbcConnection(JdbcConfig jdbcConfig, InitialOperation initialOperation, ConnectionFactory connectionFactory) {
         super(jdbcConfig, initialOperation, connectionFactory);
@@ -57,7 +57,7 @@ public class MysqlJdbcConnection extends JdbcConnection {
 
     private static ConnectionFactory getPatternConnectionFactory(JdbcConfig jdbcConfig) {
         return JdbcConnection.createPatternConnectionFactory(URL_WITH_PLACEHOLDER, jdbcConfig.getHostname(), String.valueOf(jdbcConfig.getPort()),
-                String.valueOf(jdbcConfig.getConnectTimeout() <= 0 ? DEFAULT_CONNECT_TIMEOUT_SECOND : jdbcConfig.getConnectTimeout()));
+            String.valueOf(jdbcConfig.getConnectTimeout() <= 0 ? DEFAULT_CONNECT_TIMEOUT_SECOND : jdbcConfig.getConnectTimeout()));
     }
 
     /**

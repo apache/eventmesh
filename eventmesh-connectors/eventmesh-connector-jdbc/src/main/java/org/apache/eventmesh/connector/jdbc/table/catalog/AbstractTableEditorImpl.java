@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractTableEditorImpl<TE extends TableEditor, Col extends Column, TB extends TableSchema>
-        implements
-            TableEditor<TE, Col, TB> {
+    implements
+        TableEditor<TE, Col, TB> {
 
     private TableId tableId;
 

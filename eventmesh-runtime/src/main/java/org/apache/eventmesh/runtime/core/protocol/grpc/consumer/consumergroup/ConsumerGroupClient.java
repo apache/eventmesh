@@ -73,16 +73,16 @@ public class ConsumerGroupClient {
     @Override
     public String toString() {
         return "endPoint={env=" + env
-                + ",idc=" + idc
-                + ",consumerGroup=" + consumerGroup
-                + ",topic=" + topic
-                + ",grpcType=" + grpcType
-                + ",url=" + url
-                + ",sys=" + sys
-                + ",ip=" + ip
-                + ",pid=" + pid
-                + ",hostname=" + hostname
-                + ",apiVersion=" + apiVersion
-                + ",lastUpTime=" + lastUpTime + "}";
+            + ",idc=" + idc
+            + ",consumerGroup=" + consumerGroup
+            + ",topic=" + topic
+            + ",grpcType=" + grpcType
+            + ",url=" + url
+            + ",sys=" + sys
+            + ",ip=" + ip
+            + ",pid=" + pid
+            + ",hostname=" + hostname
+            + ",apiVersion=" + apiVersion
+            + ",lastUpTime=" + lastUpTime + "}";
     }
 }

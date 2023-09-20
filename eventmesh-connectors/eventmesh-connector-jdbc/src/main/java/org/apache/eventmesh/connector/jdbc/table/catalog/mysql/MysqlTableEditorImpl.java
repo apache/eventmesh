@@ -37,12 +37,12 @@ public class MysqlTableEditorImpl extends AbstractTableEditorImpl<MysqlTableEdit
     @Override
     public MysqlTableSchema build() {
         return TableSchema.newMysqlTableSchemaBuilder()
-                .withTableId(ofTableId())
-                .withColumns(new ArrayList<>(ofColumns().values()))
-                .withPrimaryKey(ofPrimaryKey())
-                .withUniqueKeys(ofUniqueKeys())
-                .withComment(ofComment())
-                .withOptions(ofOptions())
-                .build();
+            .withTableId(ofTableId())
+            .withColumns(new ArrayList<>(ofColumns().values()))
+            .withPrimaryKey(ofPrimaryKey())
+            .withUniqueKeys(ofUniqueKeys())
+            .withComment(ofComment())
+            .withOptions(ofOptions())
+            .build();
     }
 }

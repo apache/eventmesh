@@ -63,7 +63,7 @@ public class GrpcEventMeshCloudEventProtocolResolver {
             return new ArrayList<>(0);
         }
         return cloudEventBatch.getEventsList().stream().map(cloudEvent -> eventFormat.deserialize(cloudEvent.toByteArray()))
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
     }
 
 }

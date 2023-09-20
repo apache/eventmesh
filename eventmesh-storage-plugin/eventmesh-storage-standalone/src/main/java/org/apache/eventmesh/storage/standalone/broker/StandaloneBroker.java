@@ -70,7 +70,7 @@ public class StandaloneBroker {
         MessageQueue messageQueue = pair.getLeft();
 
         MessageEntity messageEntity = new MessageEntity(
-                new TopicMetadata(topicName), message, topicOffset.getAndIncrement(), System.currentTimeMillis());
+            new TopicMetadata(topicName), message, topicOffset.getAndIncrement(), System.currentTimeMillis());
         messageQueue.put(messageEntity);
 
         return messageEntity;

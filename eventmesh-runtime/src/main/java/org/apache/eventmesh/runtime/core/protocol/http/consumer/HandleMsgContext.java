@@ -210,8 +210,8 @@ public class HandleMsgContext {
     public void finish() {
         if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
             MESSAGE_LOGGER.info("messageAcked|group={}|topic={}|bizSeq={}|uniqId={}|msgRandomNo={}|queueId={}|queueOffset={}",
-                    consumerGroup, topic, bizSeqNo, uniqueId, msgRandomNo, event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_ID),
-                    event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
+                consumerGroup, topic, bizSeqNo, uniqueId, msgRandomNo, event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_ID),
+                event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
             eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
         }
     }
@@ -235,25 +235,25 @@ public class HandleMsgContext {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("handleMsgContext={")
-                .append("consumerGroup=")
-                .append(consumerGroup)
-                .append(",topic=")
-                .append(topic)
-                .append(",subscriptionItem=")
-                .append(subscriptionItem)
-                .append(",consumeTopicConfig=")
-                .append(consumeTopicConfig)
-                .append(",bizSeqNo=")
-                .append(bizSeqNo)
-                .append(",uniqueId=")
-                .append(uniqueId)
-                .append(",ttl=")
-                .append(ttl)
-                .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-                .append('}')
-                .toString();
+            .append("handleMsgContext={")
+            .append("consumerGroup=")
+            .append(consumerGroup)
+            .append(",topic=")
+            .append(topic)
+            .append(",subscriptionItem=")
+            .append(subscriptionItem)
+            .append(",consumeTopicConfig=")
+            .append(consumeTopicConfig)
+            .append(",bizSeqNo=")
+            .append(bizSeqNo)
+            .append(",uniqueId=")
+            .append(uniqueId)
+            .append(",ttl=")
+            .append(ttl)
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append('}')
+            .toString();
     }
 
 }

@@ -123,7 +123,7 @@ public class KafkaSinkConnector implements Sink {
             headers.add(new RecordHeader(key, connectRecord.getExtension(key).getBytes(StandardCharsets.UTF_8)));
         }
         ProducerRecord message = new ProducerRecord(this.sinkConfig.getConnectorConfig().getTopic(), null, "",
-                new String((byte[]) connectRecord.getData(), StandardCharsets.UTF_8), headers);
+            new String((byte[]) connectRecord.getData(), StandardCharsets.UTF_8), headers);
         return message;
     }
 }

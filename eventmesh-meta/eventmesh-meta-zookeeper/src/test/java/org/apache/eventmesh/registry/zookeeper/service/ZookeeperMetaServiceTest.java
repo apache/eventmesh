@@ -148,7 +148,7 @@ public class ZookeeperMetaServiceTest {
         metaData.put("test", "a");
         zkRegistryService.registerMetadata(metaData);
         List<EventMeshDataInfo> infoList =
-                zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
+            zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
 
         Assert.assertNotNull(infoList);
     }

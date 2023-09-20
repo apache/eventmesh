@@ -45,7 +45,7 @@ public class SessionContext {
     @Override
     public String toString() {
         return "SessionContext{subscribeTopics=" + subscribeTopics
-                + ",sendTopics=" + sendTopics.keySet()
-                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
+            + ",sendTopics=" + sendTopics.keySet()
+            + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }
 }

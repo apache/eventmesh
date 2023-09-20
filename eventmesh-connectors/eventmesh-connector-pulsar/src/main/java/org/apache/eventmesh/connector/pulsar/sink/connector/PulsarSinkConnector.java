@@ -64,11 +64,11 @@ public class PulsarSinkConnector implements Sink {
 
     private void doInit() throws Exception {
         PulsarClient client = PulsarClient.builder()
-                .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
-                .build();
+            .serviceUrl(sinkConfig.getConnectorConfig().getServiceUrl())
+            .build();
         producer = client.newProducer()
-                .topic(sinkConfig.getConnectorConfig().getTopic())
-                .create();
+            .topic(sinkConfig.getConnectorConfig().getTopic())
+            .create();
     }
 
     @Override
@@ -103,9 +103,9 @@ public class PulsarSinkConnector implements Sink {
                     props.put(key, connectRecord.getExtension(key));
                 }
                 MessageId messageId = producer.newMessage()
-                        .value((byte[]) connectRecord.getData())
-                        .properties(props)
-                        .send();
+                    .value((byte[]) connectRecord.getData())
+                    .properties(props)
+                    .send();
             } catch (Exception e) {
                 log.error("put records to pulsar failed", e);
             }

@@ -49,7 +49,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     private static final String EVENT_MESH_PLUGIN_DIR = "eventMeshPluginDir";
 
     private static final String EVENTMESH_EXTENSION_PLUGIN_DIR = System.getProperty(EVENT_MESH_PLUGIN_DIR,
-            Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
+        Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     private static final JarExtensionClassLoader INSTANCE = new JarExtensionClassLoader();
 
@@ -73,7 +73,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         EventMeshSPI eventMeshSpiAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
         String pluginDir = Paths.get(EVENTMESH_EXTENSION_PLUGIN_DIR, eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName())
-                .toString();
+            .toString();
 
         String extensionFileName = EventMeshExtensionConstant.EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
@@ -131,7 +131,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                     log.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(
-                                String.format("class: %s is not subClass of %s", targetClass, extensionType));
+                            String.format("class: %s is not subClass of %s", targetClass, extensionType));
                     }
                     extensionMap.put(extensionNameStr, targetClass);
                 } catch (ClassNotFoundException e) {

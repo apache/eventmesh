@@ -27,8 +27,8 @@ public class BroadCastPubClient {
 
     public static void main(String[] args) throws Exception {
         try (
-                PubClientImpl pubClient =
-                        new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            PubClientImpl pubClient =
+                new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
             for (int i = 0; i < 10000; i++) {

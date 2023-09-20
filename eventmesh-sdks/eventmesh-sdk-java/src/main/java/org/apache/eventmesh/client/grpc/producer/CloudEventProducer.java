@@ -61,10 +61,10 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
         try {
             final CloudEvent response = publisherClient.batchPublish(cloudEventBatch);
             Response parsedResponse = Response.builder()
-                    .respCode(EventMeshCloudEventUtils.getResponseCode(response))
-                    .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
-                    .respTime(EventMeshCloudEventUtils.getResponseTime(response))
-                    .build();
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
             if (log.isInfoEnabled()) {
                 log.info("Received response:{}", parsedResponse);
             }
@@ -86,10 +86,10 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
         try {
             final CloudEvent response = publisherClient.publish(enhancedMessage);
             Response parsedResponse = Response.builder()
-                    .respCode(EventMeshCloudEventUtils.getResponseCode(response))
-                    .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
-                    .respTime(EventMeshCloudEventUtils.getResponseTime(response))
-                    .build();
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
             if (log.isInfoEnabled()) {
                 log.info("Received response:{} ", parsedResponse);
             }

@@ -111,7 +111,7 @@ public class SubscriptionManager {
                                    String url, List<SubscriptionItem> subscriptionList) {
         for (final SubscriptionItem subscription : subscriptionList) {
             final List<Client> groupTopicClients = localClientInfoMapping
-                    .get(consumerGroup + "@" + subscription.getTopic());
+                .get(consumerGroup + "@" + subscription.getTopic());
 
             if (CollectionUtils.isEmpty(groupTopicClients)) {
                 log.error("group {} topic {} clients is empty", consumerGroup, subscription);
@@ -128,7 +128,7 @@ public class SubscriptionManager {
             }
 
             ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf()
-                    .get(subscription.getTopic());
+                .get(subscription.getTopic());
             if (consumerGroupTopicConf == null) {
                 consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topic) -> {
                     ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
@@ -164,9 +164,9 @@ public class SubscriptionManager {
                 consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
 
                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
-                        new HashMap<>(1 << 4);
+                    new HashMap<>(1 << 4);
                 for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
-                        .entrySet()) {
+                    .entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();

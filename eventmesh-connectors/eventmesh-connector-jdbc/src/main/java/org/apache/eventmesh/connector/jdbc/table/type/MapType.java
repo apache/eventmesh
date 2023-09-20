@@ -25,20 +25,20 @@ import java.util.Objects;
 public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
 
     private static final List<SQLType> SUPPORTED_KEY_TYPES =
-            Arrays.asList(
-                    SQLType.NULL,
-                    SQLType.BOOLEAN,
-                    SQLType.TINYINT,
-                    SQLType.SMALLINT,
-                    SQLType.INTEGER,
-                    SQLType.BIGINT,
-                    SQLType.DATE,
-                    SQLType.TIME,
-                    SQLType.TIMESTAMP,
-                    SQLType.FLOAT,
-                    SQLType.DOUBLE,
-                    SQLType.STRING,
-                    SQLType.DECIMAL);
+        Arrays.asList(
+            SQLType.NULL,
+            SQLType.BOOLEAN,
+            SQLType.TINYINT,
+            SQLType.SMALLINT,
+            SQLType.INTEGER,
+            SQLType.BIGINT,
+            SQLType.DATE,
+            SQLType.TIME,
+            SQLType.TIMESTAMP,
+            SQLType.FLOAT,
+            SQLType.DOUBLE,
+            SQLType.STRING,
+            SQLType.DECIMAL);
 
     private final EventMeshDataType<K> keyType;
 

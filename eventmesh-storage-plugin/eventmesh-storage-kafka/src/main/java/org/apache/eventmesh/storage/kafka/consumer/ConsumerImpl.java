@@ -111,7 +111,7 @@ public class ConsumerImpl {
         } catch (Exception e) {
             log.error("Error while subscribing the Kafka consumer to topic: ", e);
             throw new StorageRuntimeException(
-                    String.format("Kafka consumer can't attach to %s.", topic));
+                String.format("Kafka consumer can't attach to %s.", topic));
         }
     }
 

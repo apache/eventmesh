@@ -87,9 +87,9 @@ public class EventMeshGrpcConsumerTest {
                 @Override
                 public void onNext(CloudEvent value) {
                     Builder builder = CloudEvent.newBuilder(value)
-                            .putAttributes(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString("1").build())
-                            .putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
-                            .setTextData("mockContent");
+                        .putAttributes(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+                        .putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+                        .setTextData("mockContent");
                     receiver.onNext(builder.build());
                     receiver.onCompleted();
                 }
@@ -109,11 +109,11 @@ public class EventMeshGrpcConsumerTest {
     @Test
     public void testSubscribeWithUrl() {
         assertThat(eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()), "customUrl")).isEqualTo(
-                Response.builder().build());
+            Response.builder().build());
         verify(consumerClient, times(1)).subscribe(any());
         verify(heartbeatClient, Mockito.after(20_000L).times(1)).heartbeat(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()), "customUrl")).isEqualTo(
-                Response.builder().build());
+            Response.builder().build());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 
@@ -147,7 +147,7 @@ public class EventMeshGrpcConsumerTest {
         Assert.assertEquals(new String(v1.getData().toBytes(), Constants.DEFAULT_CHARSET), "mockContent");
         verify(consumerAsyncClient, times(1)).subscribeStream(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()))).isEqualTo(
-                Response.builder().build());
+            Response.builder().build());
         verify(consumerClient, times(1)).unsubscribe(any());
     }
 

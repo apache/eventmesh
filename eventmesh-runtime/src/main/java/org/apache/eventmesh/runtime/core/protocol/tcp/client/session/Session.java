@@ -131,7 +131,7 @@ public class Session {
             Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
             Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer()
-                    .checkTopicExist(item.getTopic());
+                .checkTopicExist(item.getTopic());
 
             Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
             SUBSCRIB_LOGGER.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
@@ -160,7 +160,7 @@ public class Session {
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
         long currTime = System.currentTimeMillis();
         trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed",
-                getListenRequestSeq()), currTime, currTime);
+            getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
     }
@@ -177,21 +177,21 @@ public class Session {
             }
 
             context.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
+                new ChannelFutureListener() {
 
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            } else {
-                                Objects.requireNonNull(clientGroupWrapper.get())
-                                        .getEventMeshTcpMonitor()
-                                        .getTcpSummaryMetrics()
-                                        .getEventMesh2clientMsgNum()
-                                        .incrementAndGet();
-                            }
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            MESSAGE_LOGGER.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                        } else {
+                            Objects.requireNonNull(clientGroupWrapper.get())
+                                .getEventMeshTcpMonitor()
+                                .getTcpSummaryMetrics()
+                                .getEventMesh2clientMsgNum()
+                                .incrementAndGet();
                         }
-                    });
+                    }
+                });
         } catch (Exception e) {
             log.error("exception while write2Client", e);
         }
@@ -200,24 +200,24 @@ public class Session {
     @Override
     public String toString() {
         return "Session{"
-                +
-                "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-                +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-                +
-                ",client=" + client
-                +
-                ",sessionState=" + sessionState
-                +
-                ",sessionContext=" + sessionContext
-                +
-                ",pusher=" + pusher
-                +
-                ",sender=" + sender
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+            +
+            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+            +
+            ",client=" + client
+            +
+            ",sessionState=" + sessionState
+            +
+            ",sessionContext=" + sessionContext
+            +
+            ",pusher=" + pusher
+            +
+            ",sender=" + sender
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override

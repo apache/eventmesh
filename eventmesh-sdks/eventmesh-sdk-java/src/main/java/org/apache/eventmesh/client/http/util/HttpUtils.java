@@ -99,8 +99,8 @@ public final class HttpUtils {
         // ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -153,8 +153,8 @@ public final class HttpUtils {
         // ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);

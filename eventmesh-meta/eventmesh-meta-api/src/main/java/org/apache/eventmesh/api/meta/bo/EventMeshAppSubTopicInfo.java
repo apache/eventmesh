@@ -61,9 +61,9 @@ public class EventMeshAppSubTopicInfo {
     @Override
     public String toString() {
         return "EventMeshAppSubTopicInfo{"
-                + "app='" + app + '\''
-                + ", topics=" + topics
-                + ", sub='" + sub + '\''
-                + '}';
+            + "app='" + app + '\''
+            + ", topics=" + topics
+            + ", sub='" + sub + '\''
+            + '}';
     }
 }

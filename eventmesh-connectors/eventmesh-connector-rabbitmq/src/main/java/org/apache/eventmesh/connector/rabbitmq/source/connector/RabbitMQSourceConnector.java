@@ -68,9 +68,9 @@ public class RabbitMQSourceConnector implements Source {
     private Channel channel;
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "EventMesh-RabbitMQSourceConnector-");
+        Runtime.getRuntime().availableProcessors() * 2,
+        Runtime.getRuntime().availableProcessors() * 2,
+        "EventMesh-RabbitMQSourceConnector-");
 
     @Override
     public Class<? extends Config> configClass() {
@@ -87,10 +87,10 @@ public class RabbitMQSourceConnector implements Source {
         this.sourceConfig = (RabbitMQSourceConfig) ((SourceConnectorContext) connectorContext).getSourceConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sourceConfig.getConnectorConfig().getHost(),
-                sourceConfig.getConnectorConfig().getUsername(),
-                sourceConfig.getConnectorConfig().getPasswd(),
-                sourceConfig.getConnectorConfig().getPort(),
-                sourceConfig.getConnectorConfig().getVirtualHost());
+            sourceConfig.getConnectorConfig().getUsername(),
+            sourceConfig.getConnectorConfig().getPasswd(),
+            sourceConfig.getConnectorConfig().getPort(),
+            sourceConfig.getConnectorConfig().getVirtualHost());
         this.channel = rabbitmqConnectionFactory.createChannel(connection);
         this.rabbitMQSourceHandler = new RabbitMQSourceHandler(channel, sourceConfig.getConnectorConfig());
     }
@@ -99,7 +99,7 @@ public class RabbitMQSourceConnector implements Source {
     public void start() throws Exception {
         if (!started) {
             rabbitmqClient.binding(channel, sourceConfig.getConnectorConfig().getExchangeType(), sourceConfig.getConnectorConfig().getExchangeName(),
-                    sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
+                sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
             executor.execute(this.rabbitMQSourceHandler);
             started = true;
         }
@@ -120,7 +120,7 @@ public class RabbitMQSourceConnector implements Source {
         if (started) {
             try {
                 rabbitmqClient.unbinding(channel, sourceConfig.getConnectorConfig().getExchangeName(),
-                        sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
+                    sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
                 rabbitmqClient.closeConnection(connection);
                 rabbitmqClient.closeChannel(channel);
                 rabbitMQSourceHandler.stop();

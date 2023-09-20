@@ -81,20 +81,20 @@ public class KafkaAdmin extends AbstractAdmin {
                 TopicDescription topicDescription = entry.getValue().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
 
                 long messageCount = topicDescription.partitions().stream()
-                        .mapToInt(TopicPartitionInfo::partition)
-                        .mapToLong(partition -> {
-                            try {
-                                return getMsgCount(topicName, partition, client);
-                            } catch (TimeoutException e) {
-                                log.error("Failed to get msg offset when listing topics. Kafka response timed out in {} seconds.",
-                                        DEFAULT_TIMEOUT_IN_SECONDS);
-                                throw new RuntimeException(e);
-                            } catch (ExecutionException | InterruptedException e) {
-                                log.error("Failed to get msg offset when listing topics.", e);
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .sum();
+                    .mapToInt(TopicPartitionInfo::partition)
+                    .mapToLong(partition -> {
+                        try {
+                            return getMsgCount(topicName, partition, client);
+                        } catch (TimeoutException e) {
+                            log.error("Failed to get msg offset when listing topics. Kafka response timed out in {} seconds.",
+                                DEFAULT_TIMEOUT_IN_SECONDS);
+                            throw new RuntimeException(e);
+                        } catch (ExecutionException | InterruptedException e) {
+                            log.error("Failed to get msg offset when listing topics.", e);
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .sum();
 
                 result.add(new TopicProperties(topicName, messageCount));
             }
@@ -120,7 +120,7 @@ public class KafkaAdmin extends AbstractAdmin {
                            Admin client) throws ExecutionException, InterruptedException, TimeoutException {
         Map<TopicPartition, OffsetSpec> offsetSpecMap = Collections.singletonMap(topicPartition, offsetSpec);
         Map<TopicPartition, ListOffsetsResultInfo> offsetResultMap =
-                client.listOffsets(offsetSpecMap).all().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            client.listOffsets(offsetSpecMap).all().get(DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
         return offsetResultMap.get(topicPartition).offset();
     }
 

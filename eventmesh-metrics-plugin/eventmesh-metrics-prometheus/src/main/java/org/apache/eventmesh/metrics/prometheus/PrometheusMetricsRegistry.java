@@ -54,7 +54,7 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
                 if (prometheusHttpServer == null) {
                     SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
                     PrometheusCollector
-                            .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
+                        .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
                     int port = prometheusConfiguration.getEventMeshPrometheusPort();
                     try {
                         // Use the daemon thread to start an HTTP server to serve the default Prometheus registry.

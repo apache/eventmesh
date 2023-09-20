@@ -93,13 +93,13 @@ public class KnativeSinkConnector implements Sink {
             CloudEvent cloudEvent = CloudEventUtil.convertRecordToEvent(connectRecord);
             try {
                 ListenableFuture<Response> execute = asyncHttpClient.preparePost("http://" + sinkConfig.getConnectorConfig().getServiceAddr())
-                        .addHeader(KnativeHeaders.CONTENT_TYPE, cloudEvent.getDataContentType())
-                        .addHeader(KnativeHeaders.CE_ID, cloudEvent.getId())
-                        .addHeader(KnativeHeaders.CE_SPECVERSION, String.valueOf(cloudEvent.getSpecVersion()))
-                        .addHeader(KnativeHeaders.CE_TYPE, cloudEvent.getType())
-                        .addHeader(KnativeHeaders.CE_SOURCE, String.valueOf(cloudEvent.getSource()))
-                        .setBody(KnativeMessageFactory.createReader(cloudEvent))
-                        .execute();
+                    .addHeader(KnativeHeaders.CONTENT_TYPE, cloudEvent.getDataContentType())
+                    .addHeader(KnativeHeaders.CE_ID, cloudEvent.getId())
+                    .addHeader(KnativeHeaders.CE_SPECVERSION, String.valueOf(cloudEvent.getSpecVersion()))
+                    .addHeader(KnativeHeaders.CE_TYPE, cloudEvent.getType())
+                    .addHeader(KnativeHeaders.CE_SOURCE, String.valueOf(cloudEvent.getSource()))
+                    .setBody(KnativeMessageFactory.createReader(cloudEvent))
+                    .execute();
 
                 Response response = execute.get(10, TimeUnit.SECONDS);
                 if (response.getStatusCode() != HttpConstants.ResponseStatusCodes.OK_200) {

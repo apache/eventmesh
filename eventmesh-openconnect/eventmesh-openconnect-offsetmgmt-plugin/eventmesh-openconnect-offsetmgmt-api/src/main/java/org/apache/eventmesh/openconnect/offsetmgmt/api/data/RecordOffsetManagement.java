@@ -118,7 +118,7 @@ public class RecordOffsetManagement {
         // Clear out all empty deques from the map to keep it from growing indefinitely
         records.values().removeIf(Deque::isEmpty);
         return new CommittableOffsets(offsets, totalCommittableMessages, totalUncommittableMessages,
-                records.size(), largestDequeSize, largestDequePartition);
+            records.size(), largestDequeSize, largestDequePartition);
     }
 
     // Synchronize in order to ensure that the number of unacknowledged messages isn't modified in the middle of a call
@@ -201,12 +201,12 @@ public class RecordOffsetManagement {
             offsets.putAll(newerOffsets.offsets);
 
             return new CommittableOffsets(
-                    offsets,
-                    this.numCommittableMessages + newerOffsets.numCommittableMessages,
-                    newerOffsets.numUncommittableMessages,
-                    newerOffsets.numDeques,
-                    newerOffsets.largestDequeSize,
-                    newerOffsets.largestDequePartition);
+                offsets,
+                this.numCommittableMessages + newerOffsets.numCommittableMessages,
+                newerOffsets.numUncommittableMessages,
+                newerOffsets.numDeques,
+                newerOffsets.largestDequeSize,
+                newerOffsets.largestDequePartition);
         }
     }
 
@@ -247,7 +247,7 @@ public class RecordOffsetManagement {
                 messageAcked();
             } else {
                 log.warn("Attempted to remove record from submitted queue for partition {}, "
-                        + "but the record has not been submitted or has already been removed", position.getPartition());
+                    + "but the record has not been submitted or has already been removed", position.getPartition());
             }
             return result;
         }

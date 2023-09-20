@@ -48,14 +48,14 @@ class OpenMessageProducer extends AbstractProducerHttpClient<Message> {
     @Override
     public RequestParam builderPublishRequestParam(final Message openMessage) {
         return buildCommonPostParam(openMessage)
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
     }
 
     @Override
     public RequestParam builderRequestParam(final Message message, final long timeout) {
         return buildCommonPostParam(message)
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-                .setTimeout(timeout);
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
+            .setTimeout(timeout);
     }
 
     @Override
@@ -66,21 +66,21 @@ class OpenMessageProducer extends AbstractProducerHttpClient<Message> {
     private RequestParam buildCommonPostParam(final Message openMessage) {
         final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
-                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.OP_MESSAGE_PROTOCOL)
-                .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
-                // todo: add producerGroup to header, set protocol type, protocol version
-                .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-                .addBody(SendMessageRequestBody.CONTENT, JsonUtils.toJSONString(openMessage));
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
+            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.OP_MESSAGE_PROTOCOL)
+            .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
+            // todo: add producerGroup to header, set protocol type, protocol version
+            .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
+            .addBody(SendMessageRequestBody.CONTENT, JsonUtils.toJSONString(openMessage));
         return requestParam;
     }
 
     @Override
     public Message transformMessage(final EventMeshRetObj retObj) {
         final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
-                SendMessageResponseBody.ReplyMessage.class);
+            SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;
     }

@@ -56,38 +56,38 @@ public class PulsarClientWrapper {
         String token = properties.getProperty(Constants.PRODUCER_TOKEN);
         try {
             ClientBuilder clientBuilder = PulsarClient.builder()
-                    .serviceUrl(config.getServiceAddr());
+                .serviceUrl(config.getServiceAddr());
 
             if (config.getAuthPlugin() != null) {
                 Preconditions.checkNotNull(config.getAuthParams(),
-                        "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
+                    "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
                 clientBuilder.authentication(
-                        config.getAuthPlugin(),
-                        config.getAuthParams());
+                    config.getAuthPlugin(),
+                    config.getAuthParams());
             }
             if (StringUtils.isNotBlank(token)) {
                 clientBuilder.authentication(
-                        AuthenticationFactory.token(token));
+                    AuthenticationFactory.token(token));
             }
 
             this.pulsarClient = clientBuilder.build();
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-                    String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
+                String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
         }
     }
 
     private Producer<byte[]> createProducer(String topic) {
         try {
             return this.pulsarClient.newProducer()
-                    .topic(topic)
-                    .batchingMaxPublishDelay(10, TimeUnit.MILLISECONDS)
-                    .sendTimeout(10, TimeUnit.SECONDS)
-                    .blockIfQueueFull(true)
-                    .create();
+                .topic(topic)
+                .batchingMaxPublishDelay(10, TimeUnit.MILLISECONDS)
+                .sendTimeout(10, TimeUnit.SECONDS)
+                .blockIfQueueFull(true)
+                .create();
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-                    String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
+                String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
         }
     }
 
@@ -96,15 +96,15 @@ public class PulsarClientWrapper {
         Producer<byte[]> producer = producerMap.computeIfAbsent(topic, k -> createProducer(topic));
         try {
             byte[] serializedCloudEvent = Objects.requireNonNull(EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE))
-                    .serialize(cloudEvent);
+                .getInstance()
+                .resolveFormat(JsonFormat.CONTENT_TYPE))
+                .serialize(cloudEvent);
             producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
                 sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));
             });
         } catch (Exception ex) {
             log.error("Failed to publish cloudEvent for {} with exception: {}",
-                    cloudEvent.getSubject(), ex.getMessage());
+                cloudEvent.getSubject(), ex.getMessage());
         }
     }
 

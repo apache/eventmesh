@@ -34,8 +34,8 @@ public class ConsumerGroupStateEvent {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupStateEvent={")
-                .append("consumerGroup=").append(consumerGroup)
-                .append(",action=").append(action).append("}");
+            .append("consumerGroup=").append(consumerGroup)
+            .append(",action=").append(action).append("}");
         return sb.toString();
     }
 

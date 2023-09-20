@@ -208,7 +208,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 int scale = tableMetaData.getScale(columnIndex);
                 dataTypeProperties.put(MysqlDataTypeConvertor.SCALE, scale);
                 column.setDataType(
-                        dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
+                    dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
                 column.setDecimal(scale);
             }
         });

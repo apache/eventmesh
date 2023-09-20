@@ -98,20 +98,20 @@ public abstract class AbstractTraceService implements EventMeshTraceService {
                            final Context context,
                            final boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(startTimestamp, timeUnit)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(startTimestamp, timeUnit)
+            .startSpan();
     }
 
     @Override
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
                            boolean isSpanFinishInOtherThread) throws TraceException {
         return tracer.spanBuilder(spanName)
-                .setParent(context)
-                .setSpanKind(spanKind)
-                .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                .startSpan();
+            .setParent(context)
+            .setSpanKind(spanKind)
+            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .startSpan();
     }
 
     @Override
@@ -133,16 +133,16 @@ public abstract class AbstractTraceService implements EventMeshTraceService {
      */
     protected void initVars(SpanProcessor spanProcessor, Resource serviceNameResource) {
         SdkTracerProviderBuilder builder = SdkTracerProvider.builder()
-                .addSpanProcessor(spanProcessor);
+            .addSpanProcessor(spanProcessor);
         if (serviceNameResource != null) {
             builder.setResource(Resource.getDefault().merge(serviceNameResource));
         }
         sdkTracerProvider = builder.build();
 
         final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .setTracerProvider(sdkTracerProvider)
-                .build();
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(sdkTracerProvider)
+            .build();
 
         tracer = openTelemetry.getTracer(EventMeshTraceConstants.SERVICE_NAME);
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();

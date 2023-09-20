@@ -36,15 +36,15 @@ public class AsyncPublishBroadcast extends GrpcAbstractDemo {
 
     public static void main(String[] args) throws Exception {
         try (
-                EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.publish(buildEventMeshMessage(content,
-                        ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
+                    ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
             ThreadUtils.sleep(30, TimeUnit.SECONDS);

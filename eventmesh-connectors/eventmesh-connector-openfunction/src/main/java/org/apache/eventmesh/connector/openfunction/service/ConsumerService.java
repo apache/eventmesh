@@ -52,7 +52,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         this.openFunctionSinkConnector = openFunctionSinkConnector;
         this.queue = openFunctionSinkConnector.queue();
         ManagedChannel channel = ManagedChannelBuilder.forAddress(serverConfig.getTargetAddress(),
-                serverConfig.getTargetPort()).usePlaintext().build();
+            serverConfig.getTargetPort()).usePlaintext().build();
         this.publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
         ExecutorService handleService = Executors.newSingleThreadExecutor();
         handleService.execute(this::startHandleConsumeEvents);
@@ -78,7 +78,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         for (String extensionKey : connectRecord.getExtensions().keySet()) {
             if (!StringUtils.equalsAny(extensionKey, "id", "source", "type")) {
                 cloudEventBuilder.putAttributes(extensionKey,
-                        CloudEventAttributeValue.newBuilder().setCeString(connectRecord.getExtension(extensionKey)).build());
+                    CloudEventAttributeValue.newBuilder().setCeString(connectRecord.getExtension(extensionKey)).build());
             }
         }
         return cloudEventBuilder.build();

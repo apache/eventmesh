@@ -36,7 +36,7 @@ public class RabbitmqServer {
         RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
 
         rabbitmqConsumer =
-                (RabbitmqConsumer) StoragePluginFactory.getMeshMQPushConsumer("rabbitmq");
+            (RabbitmqConsumer) StoragePluginFactory.getMeshMQPushConsumer("rabbitmq");
         rabbitmqConsumer.setRabbitmqConnectionFactory(rabbitmqMockConnectionFactory);
         rabbitmqConsumer.init(new Properties());
         rabbitmqConsumer.start();

@@ -105,8 +105,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
-                    CLIENTNO, msg.getHeader().getCmd(),
-                    msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                CLIENTNO, msg.getHeader().getCmd(),
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception e) {
             throw new EventMeshException("publish error", e);
@@ -119,7 +119,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", CLIENTNO, msg.getHeader().getCmd(),
-                    msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception e) {
             throw new EventMeshException("Broadcast message error", e);
@@ -150,8 +150,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                        responseMessage -> ctx.writeAndFlush(
-                                MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
+                    responseMessage -> ctx.writeAndFlush(
+                        MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

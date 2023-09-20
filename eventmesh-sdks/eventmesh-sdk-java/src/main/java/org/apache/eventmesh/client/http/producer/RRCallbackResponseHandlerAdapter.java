@@ -55,8 +55,8 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         Objects.requireNonNull(protocolMessage, "message invalid");
 
         if (!(protocolMessage instanceof EventMeshMessage)
-                && !(protocolMessage instanceof CloudEvent)
-                && !(protocolMessage instanceof Message)) {
+            && !(protocolMessage instanceof CloudEvent)
+            && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
         this.protocolMessage = protocolMessage;
@@ -100,14 +100,14 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         Objects.requireNonNull(ret, "EventMeshRetObj must not be null");
 
         final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(ret.getRetMsg(),
-                SendMessageResponseBody.ReplyMessage.class);
+            SendMessageResponseBody.ReplyMessage.class);
         Objects.requireNonNull(replyMessage, "ReplyMessage must not be null");
         if (protocolMessage instanceof EventMeshMessage) {
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .content(replyMessage.body)
-                    .prop(replyMessage.properties)
-                    .topic(replyMessage.topic)
-                    .build();
+                .content(replyMessage.body)
+                .prop(replyMessage.properties)
+                .topic(replyMessage.topic)
+                .build();
 
             return (ProtocolMessage) eventMeshMessage;
         }

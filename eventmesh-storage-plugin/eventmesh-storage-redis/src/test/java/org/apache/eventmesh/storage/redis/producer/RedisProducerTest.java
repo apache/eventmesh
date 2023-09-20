@@ -60,14 +60,14 @@ public class RedisProducerTest extends AbstractRedisServer {
 
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                    .withId(String.valueOf(i))
-                    .withTime(OffsetDateTime.now())
-                    .withSource(URI.create("testsource"))
-                    .withSubject(RedisProducerTest.class.getSimpleName())
-                    .withType(String.class.getCanonicalName())
-                    .withDataContentType("text/plain")
-                    .withData("data".getBytes(StandardCharsets.UTF_8))
-                    .build();
+                .withId(String.valueOf(i))
+                .withTime(OffsetDateTime.now())
+                .withSource(URI.create("testsource"))
+                .withSubject(RedisProducerTest.class.getSimpleName())
+                .withType(String.class.getCanonicalName())
+                .withDataContentType("text/plain")
+                .withData("data".getBytes(StandardCharsets.UTF_8))
+                .build();
 
             redisProducer.publish(cloudEvent, new SendCallback() {
 
@@ -96,14 +96,14 @@ public class RedisProducerTest extends AbstractRedisServer {
         final String topic = RedisProducerTest.class.getSimpleName();
 
         CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withTime(OffsetDateTime.now())
-                .withSource(URI.create("testsource"))
-                .withSubject(topic)
-                .withType(String.class.getCanonicalName())
-                .withDataContentType("text/plain")
-                .withData("data".getBytes())
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withTime(OffsetDateTime.now())
+            .withSource(URI.create("testsource"))
+            .withSubject(topic)
+            .withType(String.class.getCanonicalName())
+            .withDataContentType("text/plain")
+            .withData("data".getBytes())
+            .build();
 
         redisProducer.sendOneway(cloudEvent);
     }

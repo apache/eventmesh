@@ -31,12 +31,12 @@ public class TracePluginFactoryTest {
     @Test
     public void testFailedGetTraceService() {
         NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class,
-                () -> TracePluginFactory.getEventMeshTraceService(null));
+            () -> TracePluginFactory.getEventMeshTraceService(null));
         MatcherAssert.assertThat(nullPointerException1.getMessage(), is("traceServiceType cannot be null"));
 
         String traceServiceType = "non-Existing";
         NullPointerException nullPointerException2 =
-                Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(traceServiceType));
+            Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(traceServiceType));
         MatcherAssert.assertThat(nullPointerException2.getMessage(), is("traceServiceType: " + traceServiceType + " is not supported"));
     }
 

@@ -60,9 +60,9 @@ public class Weight<T> {
     @Override
     public String toString() {
         return "Wight{"
-                + "target=" + target
-                + ", value=" + value
-                + ", currentWeight=" + currentWeight
-                + '}';
+            + "target=" + target
+            + ", value=" + value
+            + ", currentWeight=" + currentWeight
+            + '}';
     }
 }

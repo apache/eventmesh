@@ -81,7 +81,7 @@ public class RocketMQAdmin extends AbstractAdmin {
                     messageCount += topicOffset.getMaxOffset() - topicOffset.getMinOffset();
                 }
                 result.add(new TopicProperties(
-                        topic, messageCount));
+                    topic, messageCount));
             }
 
             result.sort(Comparator.comparing(t -> t.name));

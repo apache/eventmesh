@@ -39,7 +39,7 @@ public class TraceUtils {
         Span span = null;
         try {
             span = EventMeshServer.getTrace().createSpan(
-                    spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
+                spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
             EventMeshServer.getTrace().inject(Context.current(), map);
         } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);
@@ -53,7 +53,7 @@ public class TraceUtils {
         try {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
             span = EventMeshServer.getTrace()
-                    .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
+                .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
         } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);
         }
@@ -67,11 +67,11 @@ public class TraceUtils {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
             if (startTime > 0) {
                 span = EventMeshServer.getTrace()
-                        .createSpan(spanName, SpanKind.SERVER, startTime, timeUnit, traceContext,
-                                isSpanFinishInOtherThread);
+                    .createSpan(spanName, SpanKind.SERVER, startTime, timeUnit, traceContext,
+                        isSpanFinishInOtherThread);
             } else {
                 span = EventMeshServer.getTrace()
-                        .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
+                    .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
             }
         } catch (Exception ex) {
             log.error("upload trace fail when prepareSpan", ex);

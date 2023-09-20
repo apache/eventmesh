@@ -166,7 +166,7 @@ public class Codec {
         private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
             if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                 String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
-                        deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
                 throw new IllegalArgumentException(errorMsg);
             }
         }

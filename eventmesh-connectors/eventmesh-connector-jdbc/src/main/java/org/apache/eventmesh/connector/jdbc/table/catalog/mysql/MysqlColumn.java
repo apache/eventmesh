@@ -62,7 +62,7 @@ public class MysqlColumn extends Column<MysqlColumn> {
                                  String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
                                  String collationName) {
         return new MysqlColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression,
-                autoIncremented, generated, collationName);
+            autoIncremented, generated, collationName);
     }
 
     public static MysqlColumn of(
@@ -71,7 +71,7 @@ public class MysqlColumn extends Column<MysqlColumn> {
                                  Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName,
                                  int order) {
         return new MysqlColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression,
-                autoIncremented, generated, collationName, order);
+            autoIncremented, generated, collationName, order);
     }
 
     /**

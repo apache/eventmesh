@@ -63,16 +63,16 @@ public class CloudEventUtils {
 
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_BORN_HOST, String.valueOf(rmqMsg.getBornHost()));
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
-                String.valueOf(rmqMsg.getBornTimestamp()));
+            String.valueOf(rmqMsg.getBornTimestamp()));
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_STORE_HOST,
-                String.valueOf(rmqMsg.getStoreHost()));
+            String.valueOf(rmqMsg.getStoreHost()));
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
-                String.valueOf(rmqMsg.getStoreTimestamp()));
+            String.valueOf(rmqMsg.getStoreTimestamp()));
 
         // use in manual ack
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_ID, String.valueOf(rmqMsg.getQueueId()));
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_OFFSET,
-                String.valueOf(rmqMsg.getQueueOffset()));
+            String.valueOf(rmqMsg.getQueueOffset()));
 
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
             if (StringUtils.isNotEmpty(message.getProperty(sysPropKey))) {

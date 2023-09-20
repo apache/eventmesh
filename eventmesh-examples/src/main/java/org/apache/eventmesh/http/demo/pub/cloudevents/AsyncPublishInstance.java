@@ -36,8 +36,8 @@ public class AsyncPublishInstance extends HttpAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (
-                EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                        initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 Map<String, String> content = new HashMap<>();
                 content.put("content", "testAsyncMessage");

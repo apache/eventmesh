@@ -114,7 +114,7 @@ public class ClientManageController {
 
         // Initialize the client handler and register it with the HTTP handler manager.
         initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
-                eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
+            eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
         // Register the handlers from the HTTP handler manager with the HTTP server.
         httpHandlerManager.registerHttpHandler(server);
@@ -144,9 +144,9 @@ public class ClientManageController {
         new HTTPClientHandler(eventMeshHTTPServer, httpHandlerManager);
         new GrpcClientHandler(eventMeshGrpcServer, httpHandlerManager);
         new ConfigurationHandler(
-                eventMeshTCPServer.getEventMeshTCPConfiguration(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration(),
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration(), httpHandlerManager);
+            eventMeshTCPServer.getEventMeshTCPConfiguration(),
+            eventMeshHTTPServer.getEventMeshHttpConfiguration(),
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration(), httpHandlerManager);
         new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer, httpHandlerManager);
         new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
         new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);

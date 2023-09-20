@@ -86,7 +86,7 @@ public class OpenFunctionSinkConnector implements Sink {
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[OpenFunctionSinkConnector] Interrupting thread {} due to exception {}",
-                        currentThread.getName(), e.getMessage());
+                    currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             }
         }

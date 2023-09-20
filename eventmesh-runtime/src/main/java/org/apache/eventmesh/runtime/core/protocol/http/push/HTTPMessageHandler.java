@@ -47,7 +47,7 @@ public class HTTPMessageHandler implements MessageHandler {
     private final transient EventMeshConsumer eventMeshConsumer;
 
     private static final transient ScheduledExecutorService SCHEDULER =
-            ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
+        ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
@@ -73,10 +73,10 @@ public class HTTPMessageHandler implements MessageHandler {
     @Override
     public boolean handle(final HandleMsgContext handleMsgContext) {
         if (MapUtils.getObject(waitingRequests, handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet())
-                .size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
+            .size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
             log.warn("waitingRequests is too many, so reject, this message will be send back to MQ, "
-                    + "consumerGroup:{}, threshold:{}",
-                    handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
+                + "consumerGroup:{}, threshold:{}",
+                handleMsgContext.getConsumerGroup(), CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD);
             return false;
         }
 
@@ -85,8 +85,8 @@ public class HTTPMessageHandler implements MessageHandler {
                 String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getSpecVersion()).toString();
 
                 Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                        handleMsgContext.getEvent()),
-                        EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                    handleMsgContext.getEvent()),
+                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
 
                 try {
                     new AsyncHTTPPushRequest(handleMsgContext, waitingRequests).tryHTTPRequest();
@@ -98,7 +98,7 @@ public class HTTPMessageHandler implements MessageHandler {
             return true;
         } catch (RejectedExecutionException e) {
             log.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
-                    handleMsgContext.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(), e);
+                handleMsgContext.getEventMeshHTTPServer().getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
     }

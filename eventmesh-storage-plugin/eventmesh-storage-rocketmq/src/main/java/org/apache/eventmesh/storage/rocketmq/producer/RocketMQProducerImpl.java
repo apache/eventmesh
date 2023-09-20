@@ -47,7 +47,7 @@ public class RocketMQProducerImpl implements Producer {
     @Override
     public synchronized void init(Properties keyValue) {
         String producerGroup =
-                keyValue.getProperty(Constants.PRODUCER_GROUP) == null ? "RMQ-producerGroup" : keyValue.getProperty(Constants.PRODUCER_GROUP);
+            keyValue.getProperty(Constants.PRODUCER_GROUP) == null ? "RMQ-producerGroup" : keyValue.getProperty(Constants.PRODUCER_GROUP);
 
         String omsNamesrv = clientConfiguration.getNamesrvAddr();
         Properties properties = new Properties();
@@ -101,10 +101,10 @@ public class RocketMQProducerImpl implements Producer {
     @Override
     public void checkTopicExist(String topic) throws Exception {
         this.producer.getRocketmqProducer()
-                .getDefaultMQProducerImpl()
-                .getmQClientFactory()
-                .getMQClientAPIImpl()
-                .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            .getDefaultMQProducerImpl()
+            .getmQClientFactory()
+            .getMQClientAPIImpl()
+            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override

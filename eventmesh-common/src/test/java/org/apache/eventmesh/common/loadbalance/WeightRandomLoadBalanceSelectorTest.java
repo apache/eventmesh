@@ -45,8 +45,8 @@ public class WeightRandomLoadBalanceSelectorTest {
         Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRandomLoadBalanceSelector.getType());
         int testRange = 100_000;
         Map<String, Integer> addressToNum = IntStream.range(0, testRange)
-                .mapToObj(i -> weightRandomLoadBalanceSelector.select())
-                .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
+            .mapToObj(i -> weightRandomLoadBalanceSelector.select())
+            .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
         addressToNum.forEach((key, value) -> {
             log.info("{}: {}", key, value);
@@ -68,8 +68,8 @@ public class WeightRandomLoadBalanceSelectorTest {
 
         int testRange = 100_000;
         Map<String, Integer> addressToNum = IntStream.range(0, testRange)
-                .mapToObj(i -> weightRandomLoadBalanceSelector.select())
-                .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
+            .mapToObj(i -> weightRandomLoadBalanceSelector.select())
+            .collect(groupingBy(Function.identity(), summingInt(i -> 1)));
 
         Field field = WeightRandomLoadBalanceSelector.class.getDeclaredField("sameWeightGroup");
         field.setAccessible(true);

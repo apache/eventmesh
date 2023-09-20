@@ -49,10 +49,10 @@ public final class RocketMQMessageFactory {
                                              @Nullable final byte[] body) throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
-                () -> null,
-                format -> null,
-                () -> props.get(RocketMQHeaders.SPEC_VERSION),
-                sv -> new RocketMQBinaryMessageReader(sv, props, body));
+            () -> null,
+            format -> null,
+            () -> props.get(RocketMQHeaders.SPEC_VERSION),
+            sv -> new RocketMQBinaryMessageReader(sv, props, body));
     }
 
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic) {

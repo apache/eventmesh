@@ -33,7 +33,7 @@ public class CloudEventUtil {
 
     public static CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withData((byte[]) connectRecord.getData());
+            .withData((byte[]) connectRecord.getData());
         connectRecord.getExtensions().keySet().forEach(s -> {
             switch (s) {
                 case "id":

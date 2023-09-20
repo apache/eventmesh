@@ -87,7 +87,7 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
 
             final byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
-                    .serialize((CloudEvent) message);
+                .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
@@ -161,18 +161,18 @@ public class MessageUtils {
 
     private static UserAgent getUserAgent(UserAgent agent, String purpose) {
         return UserAgent.builder()
-                .env(agent.getEnv())
-                .host(agent.getHost())
-                .password(agent.getPassword())
-                .username(agent.getUsername())
-                .path(agent.getPath())
-                .port(agent.getPort())
-                .subsystem(agent.getSubsystem())
-                .pid(agent.getPid())
-                .version(agent.getVersion())
-                .idc(agent.getIdc())
-                .group(agent.getGroup())
-                .purpose(purpose)
-                .build();
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .group(agent.getGroup())
+            .purpose(purpose)
+            .build();
     }
 }

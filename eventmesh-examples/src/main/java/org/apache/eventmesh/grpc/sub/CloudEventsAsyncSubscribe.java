@@ -46,8 +46,8 @@ public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements Recei
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
         try (
-                EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 

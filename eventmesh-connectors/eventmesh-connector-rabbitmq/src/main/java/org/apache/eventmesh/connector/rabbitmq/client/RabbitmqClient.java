@@ -88,9 +88,9 @@ public class RabbitmqClient {
                         String exchangeName, String routingKey, String queueName) {
         try {
             channel.exchangeDeclare(exchangeName, builtinExchangeType.getType(), true,
-                    false, false, null);
+                false, false, null);
             channel.queueDeclare(queueName, false, false,
-                    false, null);
+                false, null);
             routingKey = builtinExchangeType.getType().equals(BuiltinExchangeType.FANOUT.getType()) ? "" : routingKey;
             channel.queueBind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {

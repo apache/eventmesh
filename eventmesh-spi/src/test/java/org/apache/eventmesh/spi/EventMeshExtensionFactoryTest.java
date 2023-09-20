@@ -33,7 +33,7 @@ public class EventMeshExtensionFactoryTest {
         Assert.assertSame(extensionA, extensionB);
 
         TestAnotherSingletonExtension singletonExtension = EventMeshExtensionFactory.getExtension(TestAnotherSingletonExtension.class,
-                "singletonExtension");
+            "singletonExtension");
         Assert.assertNotNull(singletonExtension);
         TestSingletonExtension singletonExtension1 = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         Assert.assertNotNull(singletonExtension1);

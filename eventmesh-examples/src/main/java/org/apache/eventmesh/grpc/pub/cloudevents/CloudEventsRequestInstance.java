@@ -37,14 +37,14 @@ public class CloudEventsRequestInstance extends GrpcAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (
-                EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testRequestReplyMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 eventMeshGrpcProducer.requestReply(buildCloudEvent(content,
-                        ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC), EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC), EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
 

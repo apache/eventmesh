@@ -49,16 +49,16 @@ public class PrometheusExporterUtils {
         Class metricType = (Class) method.getGenericReturnType();
         if (metricType == Long.class) {
             meter.longValueObserverBuilder(metricName)
-                    .setDescription(metricDesc)
-                    .setUnit(protocol)
-                    .setUpdater(result -> result.observe((long) getMetric.apply(summaryMetrics), Labels.empty()))
-                    .build();
+                .setDescription(metricDesc)
+                .setUnit(protocol)
+                .setUpdater(result -> result.observe((long) getMetric.apply(summaryMetrics), Labels.empty()))
+                .build();
         } else if (metricType == Double.class) {
             meter.doubleValueObserverBuilder(metricName)
-                    .setDescription(metricDesc)
-                    .setUnit(protocol)
-                    .setUpdater(result -> result.observe((double) getMetric.apply(summaryMetrics), Labels.empty()))
-                    .build();
+                .setDescription(metricDesc)
+                .setUnit(protocol)
+                .setUpdater(result -> result.observe((double) getMetric.apply(summaryMetrics), Labels.empty()))
+                .build();
         }
     }
 

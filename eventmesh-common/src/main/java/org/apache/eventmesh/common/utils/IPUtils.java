@@ -67,7 +67,7 @@ public class IPUtils {
                 if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
                 } else if (preferList.indexOf(networkInterface.getName()) // get the networkInterface that has higher priority
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
+                    > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -113,12 +113,12 @@ public class IPUtils {
 
         // Regex for digit from 0 to 255.
         String zeroTo255 = "(\\d{1,2}|(0|1)\\"
-                + "d{2}|2[0-4]\\d|25[0-5])";
+            + "d{2}|2[0-4]\\d|25[0-5])";
 
         String regex = zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255;
+            + zeroTo255 + "\\."
+            + zeroTo255 + "\\."
+            + zeroTo255;
 
         // Compile the ReGex
         Pattern p = Pattern.compile(regex);

@@ -105,14 +105,14 @@ public class EventMeshClientImpl implements EventMeshClient {
     @Override
     public String toString() {
         return "AccessClientImpl{"
-                +
-                "accessHost='" + accessHost + '\''
-                +
-                ", accessPort=" + accessPort
-                +
-                ", agent=" + agent
-                +
-                '}';
+            +
+            "accessHost='" + accessHost + '\''
+            +
+            ", accessPort=" + accessPort
+            +
+            ", agent=" + agent
+            +
+            '}';
     }
 
     @Deprecated

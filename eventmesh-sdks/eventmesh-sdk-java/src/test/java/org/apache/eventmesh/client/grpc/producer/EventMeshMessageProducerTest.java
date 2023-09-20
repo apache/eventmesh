@@ -80,11 +80,11 @@ public class EventMeshMessageProducerTest {
     public void testPublishSingle() {
 
         EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .topic("mxsm")
-                .content("mxsm")
-                .bizSeqNo("mxsm")
-                .uniqueId("mxsm")
-                .build();
+            .topic("mxsm")
+            .content("mxsm")
+            .bizSeqNo("mxsm")
+            .uniqueId("mxsm")
+            .build();
         assertThat(eventMeshMessageProducer.publish(eventMeshMessage)).isEqualTo(Response.builder().build());
     }
 
@@ -94,11 +94,11 @@ public class EventMeshMessageProducerTest {
         List<EventMeshMessage> messageArrayList = new ArrayList<>();
         for (int i = 0; i < 10; ++i) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .topic("mxsm")
-                    .content("mxsm")
-                    .bizSeqNo("mxsm" + i)
-                    .uniqueId("mxsm" + i)
-                    .build();
+                .topic("mxsm")
+                .content("mxsm")
+                .bizSeqNo("mxsm" + i)
+                .uniqueId("mxsm" + i)
+                .build();
             messageArrayList.add(eventMeshMessage);
         }
         assertThat(eventMeshMessageProducer.publish(messageArrayList)).isEqualTo(Response.builder().build());
@@ -108,11 +108,11 @@ public class EventMeshMessageProducerTest {
     @Test
     public void requestReply() {
         EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .topic("mxsm")
-                .content("mxsm")
-                .bizSeqNo("mxsm")
-                .uniqueId("mxsm")
-                .build();
+            .topic("mxsm")
+            .content("mxsm")
+            .bizSeqNo("mxsm")
+            .uniqueId("mxsm")
+            .build();
         assertThat(eventMeshMessageProducer.requestReply(eventMeshMessage, 1000L)).isNotNull();
     }
 }

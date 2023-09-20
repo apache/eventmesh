@@ -31,9 +31,9 @@ import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
 public class PravegaCloudEventWriter
-        implements
-            MessageWriter<CloudEventWriter<PravegaEvent>, PravegaEvent>,
-            CloudEventWriter<PravegaEvent> {
+    implements
+        MessageWriter<CloudEventWriter<PravegaEvent>, PravegaEvent>,
+        CloudEventWriter<PravegaEvent> {
 
     private final PravegaEvent pravegaEvent;
 

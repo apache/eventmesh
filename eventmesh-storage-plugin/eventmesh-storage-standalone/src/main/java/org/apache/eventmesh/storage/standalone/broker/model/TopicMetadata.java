@@ -55,9 +55,9 @@ public class TopicMetadata implements Serializable {
     @Override
     public String toString() {
         return "TopicMetadata{"
-                +
-                "topic='" + topicName + '\''
-                +
-                '}';
+            +
+            "topic='" + topicName + '\''
+            +
+            '}';
     }
 }

@@ -80,12 +80,12 @@ public class PravegaSinkConnector implements Sink {
         }
 
         ClientConfig.ClientConfigBuilder clientConfigBuilder =
-                ClientConfig.builder().controllerURI(sinkConfig.getConnectorConfig().getControllerURI());
+            ClientConfig.builder().controllerURI(sinkConfig.getConnectorConfig().getControllerURI());
         if (sinkConfig.getConnectorConfig().isAuthEnabled()) {
             clientConfigBuilder.credentials(
-                    new DefaultCredentials(
-                            sinkConfig.getConnectorConfig().getPassword(),
-                            sinkConfig.getConnectorConfig().getUsername()));
+                new DefaultCredentials(
+                    sinkConfig.getConnectorConfig().getPassword(),
+                    sinkConfig.getConnectorConfig().getUsername()));
         }
         if (sinkConfig.getConnectorConfig().isTlsEnable()) {
             clientConfigBuilder.trustStore(sinkConfig.getConnectorConfig().getTruststore()).validateHostName(false);
@@ -140,8 +140,8 @@ public class PravegaSinkConnector implements Sink {
         }
 
         try (
-                EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic,
-                        k -> clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build()))) {
+            EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic,
+                k -> clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build()))) {
             PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
             PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);

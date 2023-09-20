@@ -64,7 +64,7 @@ public class AdminWebHookConfigOperationManager {
 
         // Affects which implementation of the WebHookConfigOperation interface is used.
         final Constructor<? extends WebHookConfigOperation> constructor =
-                WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
+            WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
         // Save the original accessibility of constructor
         final boolean oldAccessible = constructor.isAccessible();
         try {

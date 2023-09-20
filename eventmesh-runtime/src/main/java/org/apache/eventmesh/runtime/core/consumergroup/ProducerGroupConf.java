@@ -46,7 +46,7 @@ public class ProducerGroupConf {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("producerGroupConfig={")
-                .append("groupName=").append(groupName).append("}");
+            .append("groupName=").append(groupName).append("}");
         return sb.toString();
     }
 

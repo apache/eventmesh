@@ -108,7 +108,7 @@ public class TableId implements Serializable {
         }
         TableId tableId = (TableId) o;
         return Objects.equals(getCatalogName(), tableId.getCatalogName()) && Objects.equals(getSchemaName(), tableId.getSchemaName())
-                && Objects.equals(getTableName(), tableId.getTableName());
+            && Objects.equals(getTableName(), tableId.getTableName());
     }
 
     @Override

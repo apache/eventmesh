@@ -83,10 +83,10 @@ public class SendMessageBatchRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchRequestBody={")
-                .append("batchId=").append(batchId).append(",")
-                .append("size=").append(size).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("contents=").append(JsonUtils.toJSONString(contents)).append("}");
+            .append("batchId=").append(batchId).append(",")
+            .append("size=").append(size).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("contents=").append(JsonUtils.toJSONString(contents)).append("}");
         return sb.toString();
     }
 
@@ -102,30 +102,30 @@ public class SendMessageBatchRequestBody extends Body {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("batchMessageEntity={")
-                    .append("bizSeqNo=").append(bizSeqNo).append(",")
-                    .append("topic=").append(topic).append(",")
-                    .append("msg=").append(msg).append(",")
-                    .append("ttl=").append(ttl).append(",")
-                    .append("tag=").append(tag).append("}");
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("msg=").append(msg).append(",")
+                .append("ttl=").append(ttl).append(",")
+                .append("tag=").append(tag).append("}");
             return sb.toString();
         }
     }
 
     public static SendMessageBatchRequestBody buildBody(final Map<String, Object> bodyParam) {
         String batchId = MapUtils.getString(bodyParam,
-                BATCHID);
+            BATCHID);
         String size = StringUtils.isBlank(MapUtils.getString(bodyParam,
-                SIZE)) ? "1"
-                        : MapUtils.getString(bodyParam,
-                                SIZE);
+            SIZE)) ? "1"
+                : MapUtils.getString(bodyParam,
+                    SIZE);
         String contents = MapUtils.getString(bodyParam,
-                CONTENTS, null);
+            CONTENTS, null);
         SendMessageBatchRequestBody body = new SendMessageBatchRequestBody();
         body.setBatchId(batchId);
         if (StringUtils.isNotBlank(contents)) {
             body.setContents(
-                    JsonUtils.parseTypeReferenceObject(contents, new TypeReference<List<BatchMessageEntity>>() {
-                    }));
+                JsonUtils.parseTypeReferenceObject(contents, new TypeReference<List<BatchMessageEntity>>() {
+                }));
         }
         body.setSize(size);
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));

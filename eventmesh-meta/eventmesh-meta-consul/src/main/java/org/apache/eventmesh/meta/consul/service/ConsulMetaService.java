@@ -99,12 +99,12 @@ public class ConsulMetaService implements MetaService {
         builder.setHost(consulHost);
         builder.setPort(Integer.parseInt(consulPort));
         if (tlsConfig != null
-                && Objects.nonNull(tlsConfig.getKeyStoreInstanceType())
-                && !StringUtils.isAnyBlank(
-                        tlsConfig.getCertificatePassword(),
-                        tlsConfig.getCertificatePath(),
-                        tlsConfig.getKeyStorePassword(),
-                        tlsConfig.getKeyStorePath())) {
+            && Objects.nonNull(tlsConfig.getKeyStoreInstanceType())
+            && !StringUtils.isAnyBlank(
+                tlsConfig.getCertificatePassword(),
+                tlsConfig.getCertificatePath(),
+                tlsConfig.getKeyStorePassword(),
+                tlsConfig.getKeyStorePath())) {
             builder.setTlsConfig(convertToTlsConfig(tlsConfig));
         }
         consulClient = new ConsulClient(builder.build());
@@ -112,11 +112,11 @@ public class ConsulMetaService implements MetaService {
 
     private TLSConfig convertToTlsConfig(ConsulTLSConfig tlsConfig) {
         return new TLSConfig(
-                tlsConfig.getKeyStoreInstanceType(),
-                tlsConfig.getCertificatePath(),
-                tlsConfig.getCertificatePassword(),
-                tlsConfig.getKeyStorePath(),
-                tlsConfig.getKeyStorePassword());
+            tlsConfig.getKeyStoreInstanceType(),
+            tlsConfig.getCertificatePath(),
+            tlsConfig.getCertificatePassword(),
+            tlsConfig.getKeyStorePath(),
+            tlsConfig.getKeyStorePassword());
     }
 
     @Override
@@ -154,7 +154,7 @@ public class ConsulMetaService implements MetaService {
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {
         try {
             consulClient.agentServiceDeregister(eventMeshUnRegisterInfo.getEventMeshClusterName() + "-" + eventMeshUnRegisterInfo.getEventMeshName(),
-                    token);
+                token);
         } catch (Exception e) {
             throw new MetaException(e.getMessage());
         }

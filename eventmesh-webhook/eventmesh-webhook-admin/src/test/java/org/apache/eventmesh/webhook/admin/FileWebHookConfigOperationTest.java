@@ -66,8 +66,8 @@ public class FileWebHookConfigOperationTest {
     private boolean deleteDir(String path) {
         try {
             Files.walk(FileSystems.getDefault().getPath(path))
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile).forEach(File::delete);
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile).forEach(File::delete);
             return true;
         } catch (Exception e) {
             return false;

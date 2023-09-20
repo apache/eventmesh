@@ -54,8 +54,8 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
         try (
-                EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
             eventMeshGrpcConsumer.init();
             eventMeshGrpcConsumer.registerListener(new WorkflowOrderAsyncSubscribe());
 
@@ -64,14 +64,14 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
             SelectorFactory.register(selectorType, nacosSelector);
 
             EventMeshCatalogClientConfig eventMeshCatalogClientConfig = EventMeshCatalogClientConfig.builder()
-                    .serverName(catalogServerName)
-                    .appServerName(serverName).build();
+                .serverName(catalogServerName)
+                .appServerName(serverName).build();
             EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig,
-                    eventMeshGrpcConsumer);
+                eventMeshGrpcConsumer);
             eventMeshCatalogClient.init();
 
             EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder()
-                    .serverName(workflowServerName).build();
+                .serverName(workflowServerName).build();
             workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
             ThreadUtils.sleep(60_000, TimeUnit.SECONDS);
@@ -90,8 +90,8 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
         final String taskInstanceId = props.get("workflowtaskinstanceid");
 
         final ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
-                .setTaskInstanceId(taskInstanceId)
-                .setInstanceId(workflowInstanceId).build();
+            .setTaskInstanceId(taskInstanceId)
+            .setInstanceId(workflowInstanceId).build();
         final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
         if (log.isInfoEnabled()) {
             log.info("receive workflow msg: {}", response.getInstanceId());

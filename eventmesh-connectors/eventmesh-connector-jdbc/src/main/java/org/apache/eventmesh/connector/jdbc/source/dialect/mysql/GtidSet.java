@@ -67,9 +67,9 @@ public final class GtidSet {
             return this;
         }
         Map<String, UUIDSet> newSets = this.uuidSetsByServerId.entrySet()
-                .stream()
-                .filter(entry -> sourceFilter.test(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .stream()
+            .filter(entry -> sourceFilter.test(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new GtidSet(newSets);
     }
 
@@ -165,10 +165,10 @@ public final class GtidSet {
             return this;
         }
         Map<String, UUIDSet> newSets = this.uuidSetsByServerId.entrySet()
-                .stream()
-                .filter(entry -> !entry.getValue().isContainedWithin(other.forServerWithId(entry.getKey())))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().subtract(other.forServerWithId(entry.getKey()))))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .stream()
+            .filter(entry -> !entry.getValue().isContainedWithin(other.forServerWithId(entry.getKey())))
+            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().subtract(other.forServerWithId(entry.getKey()))))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new GtidSet(newSets);
     }
 

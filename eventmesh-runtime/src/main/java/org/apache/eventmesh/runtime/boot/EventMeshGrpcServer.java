@@ -123,10 +123,10 @@ public class EventMeshGrpcServer {
         int serverPort = eventMeshGrpcConfiguration.getGrpcServerPort();
 
         server = ServerBuilder.forPort(serverPort)
-                .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
-                .addService(new HeartbeatService(this, sendMsgExecutor))
-                .addService(new PublisherService(this, sendMsgExecutor))
-                .build();
+            .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
+            .addService(new HeartbeatService(this, sendMsgExecutor))
+            .addService(new PublisherService(this, sendMsgExecutor))
+            .build();
 
         initMetricsMonitor();
 
@@ -174,11 +174,11 @@ public class EventMeshGrpcServer {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
-                    + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
+                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName() + "-"
-                    + ConfigurationContextUtil.GRPC);
+                + ConfigurationContextUtil.GRPC);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
             registerResult = metaStorage.register(eventMeshRegisterInfo);
@@ -191,7 +191,7 @@ public class EventMeshGrpcServer {
 
     private void unRegister() throws Exception {
         String endPoints = IPUtils.getLocalAddress()
-                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
+            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName());
@@ -246,33 +246,33 @@ public class EventMeshGrpcServer {
 
     private void initThreadPool() {
         BlockingQueue<Runnable> sendMsgThreadPoolQueue =
-                new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSendMsgBlockQueueSize());
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSendMsgBlockQueueSize());
 
         sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(),
-                eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(), sendMsgThreadPoolQueue,
-                "eventMesh-grpc-sendMsg", true);
+            eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(),
+            eventMeshGrpcConfiguration.getEventMeshServerSendMsgThreadNum(), sendMsgThreadPoolQueue,
+            "eventMesh-grpc-sendMsg", true);
 
         BlockingQueue<Runnable> subscribeMsgThreadPoolQueue =
-                new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgBlockQueueSize());
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgBlockQueueSize());
 
         clientMgmtExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(),
-                eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(), subscribeMsgThreadPoolQueue,
-                "eventMesh-grpc-clientMgmt", true);
+            eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(),
+            eventMeshGrpcConfiguration.getEventMeshServerSubscribeMsgThreadNum(), subscribeMsgThreadPoolQueue,
+            "eventMesh-grpc-clientMgmt", true);
 
         BlockingQueue<Runnable> pushMsgThreadPoolQueue =
-                new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerPushMsgBlockQueueSize());
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerPushMsgBlockQueueSize());
 
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(),
-                eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(), pushMsgThreadPoolQueue,
-                "eventMesh-grpc-pushMsg", true);
+            eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(),
+            eventMeshGrpcConfiguration.getEventMeshServerPushMsgThreadNum(), pushMsgThreadPoolQueue,
+            "eventMesh-grpc-pushMsg", true);
 
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-                eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(),
-                eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(), sendMsgThreadPoolQueue,
-                "eventMesh-grpc-replyMsg", true);
+            eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(),
+            eventMeshGrpcConfiguration.getEventMeshServerReplyMsgThreadNum(), sendMsgThreadPoolQueue,
+            "eventMesh-grpc-replyMsg", true);
     }
 
     private void initHttpClientPool() {
@@ -287,9 +287,9 @@ public class EventMeshGrpcServer {
     private void initMetricsMonitor() throws Exception {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
         Optional.ofNullable(eventMeshGrpcConfiguration.getEventMeshMetricsPluginType())
-                .ifPresent(
-                        metricsPlugins -> metricsPlugins.forEach(
-                                pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+            .ifPresent(
+                metricsPlugins -> metricsPlugins.forEach(
+                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
         eventMeshGrpcMonitor = new EventMeshGrpcMonitor(this, metricsRegistries);
         eventMeshGrpcMonitor.init();
     }

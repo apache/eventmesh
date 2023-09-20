@@ -81,33 +81,33 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         final Integer requestCode = Integer.valueOf(request.getRequestCode());
 
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(requestCode),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+            RequestCode.get(requestCode),
+            EventMeshConstants.PROTOCOL_HTTP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
         SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader =
-                (SendMessageBatchV2RequestHeader) request.getHeader();
+            (SendMessageBatchV2RequestHeader) request.getHeader();
 
         String protocolType = sendMessageBatchV2RequestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(request);
 
         EventMeshHTTPConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
-                SendMessageBatchV2ResponseHeader.buildHeader(
-                        requestCode,
-                        httpConfiguration.getEventMeshCluster(),
-                        httpConfiguration.getEventMeshEnv(),
-                        httpConfiguration.getEventMeshIDC());
+            SendMessageBatchV2ResponseHeader.buildHeader(
+                requestCode,
+                httpConfiguration.getEventMeshCluster(),
+                httpConfiguration.getEventMeshEnv(),
+                httpConfiguration.getEventMeshIDC());
 
         // todo: use validate processor to check
         // validate event
         if (!ObjectUtils.allNotNull(event.getSource(), event.getSpecVersion())
-                || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
+            || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchV2ResponseBody.class);
             return;
         }
 
@@ -117,9 +117,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         // validate event-extension
         if (StringUtils.isAnyBlank(idc, pid, sys)
-                || !StringUtils.isNumeric(pid)) {
+            || !StringUtils.isNumeric(pid)) {
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchV2ResponseBody.class);
             return;
         }
 
@@ -128,9 +128,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String topic = event.getSubject();
 
         if (StringUtils.isAnyBlank(bizNo, topic, producerGroup)
-                || event.getData() == null) {
+            || event.getData() == null) {
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageBatchV2ResponseBody.class);
             return;
         }
 
@@ -138,9 +138,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         if (content.length() > httpConfiguration.getEventMeshEventSize()) {
             batchMessageLogger.error("Event size exceeds the limit: {}", httpConfiguration.getEventMeshEventSize());
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                    "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(),
-                    SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(),
+                SendMessageBatchV2ResponseBody.class);
             return;
         }
 
@@ -154,7 +154,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
                 completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                        EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageBatchV2ResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageBatchV2ResponseBody.class);
                 aclLogger.warn("CLIENT HAS NO PERMISSION,BatchSendMessageV2Processor send failed", e);
                 return;
             }
@@ -162,19 +162,19 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         if (!eventMeshHTTPServer.getBatchRateLimiter()
-                .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             summaryMetrics.recordSendBatchMsgDiscard(1);
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, null, SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, null, SendMessageBatchV2ResponseBody.class);
             return;
         }
 
         EventMeshProducer batchEventMeshProducer =
-                eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
+            eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
         if (!batchEventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                    EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR, null, SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR, null, SendMessageBatchV2ResponseBody.class);
             return;
         }
 
@@ -185,17 +185,17 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String ttlValue = getExtension(event, SendMessageRequestBody.TTL);
         if (StringUtils.isBlank(ttlValue) && !StringUtils.isNumeric(ttlValue)) {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, defaultTTL)
-                    .build();
+                .build();
         }
 
         try {
             event = CloudEventBuilder.from(event)
-                    .withExtension("msgtype", "persistent")
-                    .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP,
-                            String.valueOf(System.currentTimeMillis()))
-                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
-                            String.valueOf(System.currentTimeMillis()))
-                    .build();
+                .withExtension("msgtype", "persistent")
+                .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP,
+                    String.valueOf(System.currentTimeMillis()))
+                .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
+                    String.valueOf(System.currentTimeMillis()))
+                .build();
             if (batchMessageLogger.isDebugEnabled()) {
                 batchMessageLogger.debug("msg2MQMsg suc, topic:{}, msg:{}", topic, event.getData());
             }
@@ -203,17 +203,17 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         } catch (Exception e) {
             batchMessageLogger.error("msg2MQMsg err, topic:{}, msg:{}", topic, event.getData(), e);
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader, EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR,
-                    EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg()
-                            +
-                            EventMeshUtil.stackTrace(e, 2),
-                    SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg()
+                    +
+                    EventMeshUtil.stackTrace(e, 2),
+                SendMessageBatchV2ResponseBody.class);
             return;
         }
 
         summaryMetrics.recordSendBatchMsg(1);
 
         final SendMessageContext sendMessageContext =
-                new SendMessageContext(bizNo, event, batchEventMeshProducer, eventMeshHTTPServer);
+            new SendMessageContext(bizNo, event, batchEventMeshProducer, eventMeshHTTPServer);
 
         try {
             batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
@@ -223,8 +223,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     long batchEndTime = System.currentTimeMillis();
                     summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
                     batchMessageLogger.debug(
-                            "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                            bizNo, batchEndTime - batchStartTime, topic);
+                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
+                        bizNo, batchEndTime - batchStartTime, topic);
                 }
 
                 @Override
@@ -233,26 +233,26 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
                     batchMessageLogger.error(
-                            "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                            bizNo, batchEndTime - batchStartTime, topic, context.getException());
+                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
+                        bizNo, batchEndTime - batchStartTime, topic, context.getException());
                 }
 
             });
         } catch (Exception e) {
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader, EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR,
-                    EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR.getErrMsg()
-                            +
-                            EventMeshUtil.stackTrace(e, 2),
-                    SendMessageBatchV2ResponseBody.class);
+                EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR.getErrMsg()
+                    +
+                    EventMeshUtil.stackTrace(e, 2),
+                SendMessageBatchV2ResponseBody.class);
             long batchEndTime = System.currentTimeMillis();
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
             batchMessageLogger.error(
-                    "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                    bizNo, batchEndTime - batchStartTime, topic, e);
+                "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
+                bizNo, batchEndTime - batchStartTime, topic, e);
         }
 
         completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-                EventMeshRetCode.SUCCESS, null, SendMessageBatchV2ResponseBody.class);
+            EventMeshRetCode.SUCCESS, null, SendMessageBatchV2ResponseBody.class);
     }
 }

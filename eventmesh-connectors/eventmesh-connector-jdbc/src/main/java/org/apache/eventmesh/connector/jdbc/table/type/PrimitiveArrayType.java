@@ -26,7 +26,7 @@ public class PrimitiveArrayType<E, T> implements EventMeshDataType<T> {
 
     @SuppressWarnings("unchecked")
     public static final PrimitiveArrayType<Boolean[], Boolean> BOOLEAN_ARRAY_TYPE = new PrimitiveArrayType(Boolean[].class,
-            PrimitiveType.BOOLEAN_TYPE);
+        PrimitiveType.BOOLEAN_TYPE);
 
     @SuppressWarnings("unchecked")
     public static final PrimitiveArrayType<Byte[], Byte> BYTE_ARRAY_TYPE = new PrimitiveArrayType(Byte[].class, PrimitiveType.BYTE_TYPE);

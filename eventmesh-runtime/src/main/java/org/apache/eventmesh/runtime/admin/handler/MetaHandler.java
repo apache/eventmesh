@@ -107,11 +107,11 @@ public class MetaHandler extends AbstractHttpHandler {
             List<EventMeshDataInfo> eventMeshDataInfos = eventMeshMetaStorage.findAllEventMeshInfo();
             for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
                 GetRegistryResponse getRegistryResponse = new GetRegistryResponse(
-                        eventMeshDataInfo.getEventMeshClusterName(),
-                        eventMeshDataInfo.getEventMeshName(),
-                        eventMeshDataInfo.getEndpoint(),
-                        eventMeshDataInfo.getLastUpdateTimestamp(),
-                        eventMeshDataInfo.getMetadata().toString());
+                    eventMeshDataInfo.getEventMeshClusterName(),
+                    eventMeshDataInfo.getEventMeshName(),
+                    eventMeshDataInfo.getEndpoint(),
+                    eventMeshDataInfo.getLastUpdateTimestamp(),
+                    eventMeshDataInfo.getMetadata().toString());
                 getRegistryResponseList.add(getRegistryResponse);
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));

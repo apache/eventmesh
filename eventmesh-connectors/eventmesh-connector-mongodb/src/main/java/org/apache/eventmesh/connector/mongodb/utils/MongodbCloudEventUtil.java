@@ -47,11 +47,11 @@ public class MongodbCloudEventUtil {
                 throw new Exception(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(document.remove(MongodbConstants.CLOUD_EVENT_DOC_DATA).toString().getBytes(Constants.DEFAULT_CHARSET))
-                .withId(document.remove(MongodbConstants.CLOUD_EVENT_DOC_ID).toString())
-                .withSource(URI.create(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SOURCE).toString()))
-                .withType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_TYPE).toString())
-                .withDataContentType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_DATACONTENTTYPE).toString())
-                .withSubject(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SUBJECT).toString());
+            .withId(document.remove(MongodbConstants.CLOUD_EVENT_DOC_ID).toString())
+            .withSource(URI.create(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SOURCE).toString()))
+            .withType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_TYPE).toString())
+            .withDataContentType(document.remove(MongodbConstants.CLOUD_EVENT_DOC_DATACONTENTTYPE).toString())
+            .withSubject(document.remove(MongodbConstants.CLOUD_EVENT_DOC_SUBJECT).toString());
         document.forEach((key, value) -> builder.withExtension(key, value.toString()));
 
         return builder.build();
@@ -61,8 +61,8 @@ public class MongodbCloudEventUtil {
         Document document = new Document();
         document.put(MongodbConstants.CLOUD_EVENT_DOC_VERSION, cloudEvent.getSpecVersion().name());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_DATA, cloudEvent.getData() == null
-                ? null
-                : new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+            ? null
+            : new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
         document.put(MongodbConstants.CLOUD_EVENT_DOC_ID, cloudEvent.getId());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_SOURCE, cloudEvent.getSource().toString());
         document.put(MongodbConstants.CLOUD_EVENT_DOC_TYPE, cloudEvent.getType());

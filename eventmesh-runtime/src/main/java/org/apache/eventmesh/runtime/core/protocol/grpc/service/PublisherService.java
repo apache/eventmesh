@@ -58,7 +58,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
     @Override
     public void publish(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "publish", EventMeshConstants.PROTOCOL_GRPC,
-                EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+            EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
@@ -68,7 +68,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
                 publishCloudEventsProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
-                        StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
+                    StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
                 ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
             }
         });
@@ -85,8 +85,8 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
     @Override
     public void requestReply(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
-                EventMeshConstants.PROTOCOL_GRPC, EventMeshCloudEventUtils.getIp(request),
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+            EventMeshConstants.PROTOCOL_GRPC, EventMeshCloudEventUtils.getIp(request),
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
@@ -96,7 +96,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
                 requestMessageProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getRetCode(),
-                        StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getErrMsg(), e);
+                    StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getErrMsg(), e);
                 ServiceUtils.sendStreamResponseCompleted(request, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, e.getMessage(), emitter);
             }
         });
@@ -113,8 +113,8 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
     @Override
     public void batchPublish(CloudEventBatch request, StreamObserver<CloudEvent> responseObserver) {
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "BatchPublish",
-                EventMeshConstants.PROTOCOL_GRPC, null,
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
+            EventMeshConstants.PROTOCOL_GRPC, null,
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
         eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient(request.getEventsCount());
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
@@ -124,7 +124,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
                 batchPublishMessageProcessor.process(request, emitter);
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getRetCode(),
-                        StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getErrMsg(), e);
+                    StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getErrMsg(), e);
                 ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
             }
         });

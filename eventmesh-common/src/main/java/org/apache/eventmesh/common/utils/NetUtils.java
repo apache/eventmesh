@@ -85,7 +85,7 @@ public class NetUtils {
     public static String parsePostBody(HttpExchange exchange) throws IOException {
 
         if (!HttpMethod.POST.name().equalsIgnoreCase(exchange.getRequestMethod())
-                && !HttpMethod.PUT.name().equalsIgnoreCase(exchange.getRequestMethod())) {
+            && !HttpMethod.PUT.name().equalsIgnoreCase(exchange.getRequestMethod())) {
             return "";
         }
         StringBuilder body = new StringBuilder(1024);

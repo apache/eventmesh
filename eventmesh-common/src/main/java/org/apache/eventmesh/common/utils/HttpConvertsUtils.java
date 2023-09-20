@@ -179,8 +179,8 @@ public class HttpConvertsUtils {
                     break;
                 case ProtocolKey.LANGUAGE:
                     String language = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-                            ? Constants.LANGUAGE_JAVA
-                            : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+                        ? Constants.LANGUAGE_JAVA
+                        : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
                     headerField.set(header, language);
                     break;
                 default:

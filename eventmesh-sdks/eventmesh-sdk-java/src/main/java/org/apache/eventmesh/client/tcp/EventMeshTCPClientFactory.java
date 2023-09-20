@@ -58,6 +58,6 @@ public class EventMeshTCPClientFactory {
             return (EventMeshTCPClient<ProtocolMessage>) new OpenMessageTCPClient(eventMeshTcpClientConfig);
         }
         throw new IllegalArgumentException(
-                String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
+            String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
     }
 }

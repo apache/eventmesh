@@ -51,5 +51,6 @@
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_generic_type_arguments" value="16"/>
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_generic_type_arguments.count_dependent" value="16|-1|16"/>
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_superclass_in_type_declaration" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="1"/>
     </profile>
 </profiles>

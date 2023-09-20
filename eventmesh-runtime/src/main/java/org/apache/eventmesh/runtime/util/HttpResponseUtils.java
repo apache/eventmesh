@@ -65,7 +65,7 @@ public class HttpResponseUtils {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, createByteBuf(ctx, body),
-                responseHeaders, responseHeaders);
+            responseHeaders, responseHeaders);
     }
 
 }

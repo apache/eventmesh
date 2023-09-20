@@ -51,18 +51,18 @@ public class EventMeshTestUtils {
 
     private static UserAgent getUserAgent(Integer port, String subsystem, Integer pid) {
         return UserAgent.builder()
-                .env(UtilsConstants.ENV)
-                .host(UtilsConstants.HOST)
-                .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
-                .username(UtilsConstants.USER_NAME)
-                .group(UtilsConstants.GROUP)
-                .path(UtilsConstants.PATH)
-                .port(port)
-                .subsystem(subsystem)
-                .pid(pid)
-                .version(UtilsConstants.VERSION)
-                .idc(UtilsConstants.IDC)
-                .build();
+            .env(UtilsConstants.ENV)
+            .host(UtilsConstants.HOST)
+            .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
+            .username(UtilsConstants.USER_NAME)
+            .group(UtilsConstants.GROUP)
+            .path(UtilsConstants.PATH)
+            .port(port)
+            .subsystem(subsystem)
+            .pid(pid)
+            .version(UtilsConstants.VERSION)
+            .idc(UtilsConstants.IDC)
+            .build();
     }
 
     // generate pub-client
@@ -118,25 +118,25 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateSyncRRMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.MSG_TYPE,
-                "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR");
+            "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR");
     }
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
-                "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-                "notnull", "testAsyncRR");
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", "testAsyncRR");
     }
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
-                "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-                "notnull", ASYNC_MSG_BODY);
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", ASYNC_MSG_BODY);
     }
 
     public static EventMeshMessage generateBroadcastMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
-                "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-                "notnull", ASYNC_MSG_BODY);
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", ASYNC_MSG_BODY);
     }
 
     private static String generateRandomString(final int length) {
@@ -152,14 +152,14 @@ public class EventMeshTestUtils {
         content.put(UtilsConstants.CONTENT, ASYNC_MSG_BODY);
 
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
+            .withSource(URI.create("/"))
+            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
+            .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
+            .build();
     }
 
     public static CloudEvent generateCloudEventV1SyncRR() {
@@ -167,15 +167,15 @@ public class EventMeshTestUtils {
         content.put(UtilsConstants.CONTENT, "testSyncRR");
 
         return CloudEventBuilder.v1()
-                .withId(UUID.randomUUID().toString())
-                .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
-                .withSource(URI.create("/"))
-                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
-                .withExtension(UtilsConstants.MSG_TYPE, "persistent")
-                .withExtension(UtilsConstants.KEYS, generateRandomString(16))
-                .build();
+            .withId(UUID.randomUUID().toString())
+            .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
+            .withSource(URI.create("/"))
+            .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
+            .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
+            .withExtension(UtilsConstants.MSG_TYPE, "persistent")
+            .withExtension(UtilsConstants.KEYS, generateRandomString(16))
+            .build();
     }
 }

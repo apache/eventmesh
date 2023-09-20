@@ -152,17 +152,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 // Convert each Client object to GetClientResponse and add to getClientResponseList
                 for (Client client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.getEnv()).orElse(""),
-                            Optional.ofNullable(client.getSys()).orElse(""),
-                            Optional.ofNullable(client.getUrl()).orElse(""),
-                            "0",
-                            Optional.ofNullable(client.getHostname()).orElse(""),
-                            0,
-                            Optional.ofNullable(client.getApiVersion()).orElse(""),
-                            Optional.ofNullable(client.getIdc()).orElse(""),
-                            Optional.ofNullable(client.getConsumerGroup()).orElse(""),
-                            "",
-                            EventMeshConstants.PROTOCOL_HTTP.toUpperCase()
+                        Optional.ofNullable(client.getEnv()).orElse(""),
+                        Optional.ofNullable(client.getSys()).orElse(""),
+                        Optional.ofNullable(client.getUrl()).orElse(""),
+                        "0",
+                        Optional.ofNullable(client.getHostname()).orElse(""),
+                        0,
+                        Optional.ofNullable(client.getApiVersion()).orElse(""),
+                        Optional.ofNullable(client.getIdc()).orElse(""),
+                        Optional.ofNullable(client.getConsumerGroup()).orElse(""),
+                        "",
+                        EventMeshConstants.PROTOCOL_HTTP.toUpperCase()
 
                     );
                     getClientResponseList.add(getClientResponse);

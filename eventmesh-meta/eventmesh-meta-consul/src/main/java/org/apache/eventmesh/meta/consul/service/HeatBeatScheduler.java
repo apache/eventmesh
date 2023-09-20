@@ -32,13 +32,13 @@ public class HeatBeatScheduler {
     private final ConcurrentHashMap<String, NewService> heartBeatMap = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService heartbeatServiceExecutor = new ScheduledThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(),
-            r -> {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                thread.setName("ConsulHeartbeatService");
-                return thread;
-            });
+        Runtime.getRuntime().availableProcessors(),
+        r -> {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            thread.setName("ConsulHeartbeatService");
+            return thread;
+        });
 
     public HeatBeatScheduler(ConsulClient consulClient) {
         this.consulClient = consulClient;

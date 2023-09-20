@@ -58,12 +58,12 @@ public class HttpRetryer {
 
     public void init() {
         pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-                60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
-                new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
-                new ThreadPoolExecutor.AbortPolicy());
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
+            60000,
+            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
+            new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
+            new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {

@@ -65,12 +65,12 @@ public class RecommendProcessor implements TcpProcessor {
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
             res.setBody(eventMeshRecommendResult);
         } catch (Exception e) {
             MESSAGE_LOGGER.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg
-                    .getHeader().getSeq()));
+                .getHeader().getSeq()));
 
         } finally {
             writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);

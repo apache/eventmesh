@@ -84,7 +84,7 @@ public class PushConsumerImplTest {
         consumedMsg.setTopic("HELLO_QUEUE");
         consumer.subscribe("HELLO_QUEUE", "*");
         ((MessageListenerConcurrently) rocketmqPushConsumer
-                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
     }
 }

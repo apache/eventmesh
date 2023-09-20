@@ -33,7 +33,7 @@ public class AuthHttpBasicServiceTest {
     @BeforeClass
     public static void beforeClass() {
         service = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
-                AuthService.class, "auth-http-basic");
+            AuthService.class, "auth-http-basic");
     }
 
     @Test

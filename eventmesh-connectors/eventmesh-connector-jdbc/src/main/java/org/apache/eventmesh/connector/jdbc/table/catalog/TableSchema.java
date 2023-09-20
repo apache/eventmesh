@@ -154,7 +154,7 @@ public class TableSchema implements Serializable {
         public MysqlTableSchemaBuilder withColumns(List<MysqlColumn> columns) {
             this.columns = columns;
             this.columnMap = Optional.ofNullable(columns).orElse(new ArrayList<>(0)).stream()
-                    .collect(Collectors.toMap(MysqlColumn::getName, Function.identity()));
+                .collect(Collectors.toMap(MysqlColumn::getName, Function.identity()));
             return this;
         }
 

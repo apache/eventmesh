@@ -124,9 +124,9 @@ public class TCPClientHandler extends AbstractHttpHandler {
                     if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
                         // Call the serverGoodby2Client method in EventMeshTcp2Client to disconnect the client's connection
                         EventMeshTcp2Client.serverGoodby2Client(
-                                eventMeshTCPServer.getTcpThreadPoolGroup(),
-                                entry.getValue(),
-                                clientSessionGroupMapping);
+                            eventMeshTCPServer.getTcpThreadPoolGroup(),
+                            entry.getValue(),
+                            clientSessionGroupMapping);
                     }
                 }
             }
@@ -170,17 +170,17 @@ public class TCPClientHandler extends AbstractHttpHandler {
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();
                 GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(userAgent.getEnv()).orElse(""),
-                        Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
-                        Optional.ofNullable(userAgent.getPath()).orElse(""),
-                        String.valueOf(userAgent.getPid()),
-                        Optional.ofNullable(userAgent.getHost()).orElse(""),
-                        userAgent.getPort(),
-                        Optional.ofNullable(userAgent.getVersion()).orElse(""),
-                        Optional.ofNullable(userAgent.getIdc()).orElse(""),
-                        Optional.ofNullable(userAgent.getGroup()).orElse(""),
-                        Optional.ofNullable(userAgent.getPurpose()).orElse(""),
-                        "TCP");
+                    Optional.ofNullable(userAgent.getEnv()).orElse(""),
+                    Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
+                    Optional.ofNullable(userAgent.getPath()).orElse(""),
+                    String.valueOf(userAgent.getPid()),
+                    Optional.ofNullable(userAgent.getHost()).orElse(""),
+                    userAgent.getPort(),
+                    Optional.ofNullable(userAgent.getVersion()).orElse(""),
+                    Optional.ofNullable(userAgent.getIdc()).orElse(""),
+                    Optional.ofNullable(userAgent.getGroup()).orElse(""),
+                    Optional.ofNullable(userAgent.getPurpose()).orElse(""),
+                    "TCP");
                 getClientResponseList.add(getClientResponse);
             }
 

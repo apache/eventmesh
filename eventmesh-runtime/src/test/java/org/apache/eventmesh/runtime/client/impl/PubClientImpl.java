@@ -88,7 +88,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 Package msg = MessageUtils.heartBeat();
                 if (log.isDebugEnabled()) {
                     log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                            clientNo, msg.getHeader().getCommand(), msg);
+                        clientNo, msg.getHeader().getCommand(), msg);
                 }
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {

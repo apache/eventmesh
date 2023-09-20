@@ -75,7 +75,7 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     public static MysqlJdbcContext initialize(JdbcSourceConfig jdbcSourceConfig) {
         SourceConnectorConfig sourceConnectorConfig = jdbcSourceConfig.getSourceConnectorConfig();
         MysqlAntlr4DdlParser mysqlAntlr4DdlParser = new MysqlAntlr4DdlParser(sourceConnectorConfig.isSkipViews(),
-                sourceConnectorConfig.isSkipComments(), jdbcSourceConfig);
+            sourceConnectorConfig.isSkipComments(), jdbcSourceConfig);
         return new MysqlJdbcContext(new MysqlPartition(), new MysqlOffsetContext(), mysqlAntlr4DdlParser);
     }
 

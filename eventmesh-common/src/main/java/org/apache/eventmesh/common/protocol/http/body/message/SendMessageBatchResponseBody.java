@@ -70,9 +70,9 @@ public class SendMessageBatchResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(resTime).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(resTime).append("}");
         return sb.toString();
     }
 

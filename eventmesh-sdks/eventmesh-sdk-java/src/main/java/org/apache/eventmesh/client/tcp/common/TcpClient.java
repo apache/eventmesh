@@ -85,7 +85,7 @@ public abstract class TcpClient implements Closeable {
     private transient ScheduledFuture<?> heartTask;
 
     protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
-            new EventMeshThreadFactory("TCPClientScheduler", true));
+        new EventMeshThreadFactory("TCPClientScheduler", true));
 
     public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
@@ -100,17 +100,17 @@ public abstract class TcpClient implements Closeable {
         bootstrap.group(workers);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.SO_SNDBUF, 64 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 64 * 1024)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.SO_SNDBUF, 64 * 1024)
+            .option(ChannelOption.SO_RCVBUF, 64 * 1024)
+            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
-                        .addLast(handler, newExceptionHandler());
+                    .addLast(handler, newExceptionHandler());
             }
         });
 
@@ -119,7 +119,7 @@ public abstract class TcpClient implements Closeable {
         channel = f.channel();
         if (log.isInfoEnabled()) {
             log.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
-                    localAddress.getPort(), host + ":" + port);
+                localAddress.getPort(), host + ":" + port);
         }
     }
 
@@ -225,7 +225,7 @@ public abstract class TcpClient implements Closeable {
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                 if (log.isInfoEnabled()) {
                     log.info("exceptionCaught, close connection.|remote address={}",
-                            ctx.channel().remoteAddress(), cause);
+                        ctx.channel().remoteAddress(), cause);
                 }
                 ctx.close();
             }

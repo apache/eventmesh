@@ -45,8 +45,8 @@ public class EventMeshServerTest {
 
         if (hasEnv) {
             ConfigService.getInstance()
-                    .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                    .setRootConfig(eventMeshConfFile);
+                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                .setRootConfig(eventMeshConfFile);
         } else {
             eventMeshConfFile = "classPath://" + eventMeshConfFile;
             ConfigService.getInstance().setRootConfig(eventMeshConfFile);

@@ -111,7 +111,7 @@ public class HttpTinyClient {
 
             int respCode = conn.getResponseCode();
             String resp = HttpURLConnection.HTTP_OK == respCode ? IOUtils.toString(conn.getInputStream(), encoding)
-                    : IOUtils.toString(conn.getErrorStream(), encoding);
+                : IOUtils.toString(conn.getErrorStream(), encoding);
 
             return new HttpResult(respCode, resp);
         } finally {

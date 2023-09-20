@@ -44,7 +44,7 @@ public class Subscription {
     @Override
     public String toString() {
         return "Subscription{"
-                + "topicList=" + topicList
-                + '}';
+            + "topicList=" + topicList
+            + '}';
     }
 }

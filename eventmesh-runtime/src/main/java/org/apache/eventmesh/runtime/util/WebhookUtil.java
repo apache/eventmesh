@@ -66,11 +66,11 @@ public class WebhookUtil {
                 allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             }
             return StringUtils.isEmpty(allowedOrigin)
-                    || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
+                || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
-                        + "unable to obtain the webhook delivery agreement.", targetUrl);
+                    + "unable to obtain the webhook delivery agreement.", targetUrl);
             }
         }
         return true;

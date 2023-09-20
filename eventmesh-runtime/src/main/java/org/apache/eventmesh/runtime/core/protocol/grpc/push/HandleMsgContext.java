@@ -94,9 +94,9 @@ public class HandleMsgContext {
     @Override
     public String toString() {
         return "handleMsgContext={"
-                + "consumerGroup=" + consumerGroup
-                + ",subscriptionMode=" + subscriptionMode
-                + ",consumeTopicConfig=" + consumeTopicConfig
-                + "}";
+            + "consumerGroup=" + consumerGroup
+            + ",subscriptionMode=" + subscriptionMode
+            + ",consumeTopicConfig=" + consumeTopicConfig
+            + "}";
     }
 }

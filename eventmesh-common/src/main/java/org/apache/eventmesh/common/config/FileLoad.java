@@ -71,14 +71,14 @@ public interface FileLoad {
             final Properties properties = new Properties();
             if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {
                 try (
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                                Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET))) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET))) {
                     properties.load(reader);
                 }
             } else {
                 try (
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(Files.newInputStream(Paths.get(configInfo.getFilePath())), Constants.DEFAULT_CHARSET))) {
+                    BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(Files.newInputStream(Paths.get(configInfo.getFilePath())), Constants.DEFAULT_CHARSET))) {
                     properties.load(reader);
                 }
             }

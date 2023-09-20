@@ -69,7 +69,7 @@ public class SubService implements InitializingBean {
     final String testURL = getURL(localPort, "/sub/test");
 
     private final List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
+        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
@@ -81,13 +81,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventMeshIP + ":" + eventMeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(ENV)
-                .idc(IDC)
-                .ip(IPUtils.getLocalAddress())
-                .sys(SUB_SYS)
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .liteEventMeshAddr(eventMeshIPPort)
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV)
+            .idc(IDC)
+            .ip(IPUtils.getLocalAddress())
+            .sys(SUB_SYS)
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, testURL);

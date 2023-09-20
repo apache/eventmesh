@@ -66,12 +66,12 @@ public class ConsumerGroupTopicConf implements Serializable {
         }
         final ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
         return consumerGroup.equals(that.consumerGroup)
-                &&
-                Objects.equals(topic, that.topic)
-                &&
-                Objects.equals(subscriptionItem, that.subscriptionItem)
-                &&
-                Objects.equals(idcUrls, that.idcUrls);
+            &&
+            Objects.equals(topic, that.topic)
+            &&
+            Objects.equals(subscriptionItem, that.subscriptionItem)
+            &&
+            Objects.equals(idcUrls, that.idcUrls);
     }
 
     @Override
@@ -83,9 +83,9 @@ public class ConsumerGroupTopicConf implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("consumeTopicConfig={consumerGroup=").append(consumerGroup)
-                .append(",topic=").append(topic)
-                .append(",subscriptionMode=").append(subscriptionItem)
-                .append(",idcUrls=").append(idcUrls).append('}');
+            .append(",topic=").append(topic)
+            .append(",subscriptionMode=").append(subscriptionItem)
+            .append(",idcUrls=").append(idcUrls).append('}');
         return sb.toString();
     }
 

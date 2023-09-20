@@ -76,7 +76,7 @@ public class KafkaConsumerRunner implements Runnable {
                                     case CommitMessage:
                                         // update offset
                                         log.info("message commit, topic: {}, current offset:{}", topicName,
-                                                rec.offset());
+                                            rec.offset());
                                         break;
                                     case ManualAck:
                                         // update offset

@@ -64,7 +64,7 @@ public class MongodbReplicaSetSourceClient implements MongodbSourceClient {
     public void start() {
         if (!started) {
             MongoCollection<Document> collection = client
-                    .getDatabase(connectorConfig.getDatabase()).getCollection(connectorConfig.getCollection());
+                .getDatabase(connectorConfig.getDatabase()).getCollection(connectorConfig.getCollection());
             ChangeStreamIterable<Document> changeStreamDocuments = collection.watch();
             this.cursor = changeStreamDocuments.cursor();
             this.handle();

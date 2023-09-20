@@ -101,27 +101,27 @@ public abstract class AbstractProducer {
             if (e.getCause() != null) {
                 if (e.getCause() instanceof RemotingTimeoutException) {
                     return new RMQTimeoutException(
-                            String.format("Send message to broker timeout, %dms, Topic=%s, msgId=%s",
-                                    this.rocketmqProducer.getSendMsgTimeout(), topic, msgId),
-                            e);
+                        String.format("Send message to broker timeout, %dms, Topic=%s, msgId=%s",
+                            this.rocketmqProducer.getSendMsgTimeout(), topic, msgId),
+                        e);
                 } else if (e.getCause() instanceof MQBrokerException
-                        || e.getCause() instanceof RemotingConnectException) {
+                    || e.getCause() instanceof RemotingConnectException) {
                     if (e.getCause() instanceof MQBrokerException) {
                         MQBrokerException brokerException = (MQBrokerException) e.getCause();
                         return new StorageRuntimeException(
-                                String.format("Received a broker exception, Topic=%s, msgId=%s, %s",
-                                        topic, msgId, brokerException.getErrorMessage()),
-                                e);
+                            String.format("Received a broker exception, Topic=%s, msgId=%s, %s",
+                                topic, msgId, brokerException.getErrorMessage()),
+                            e);
                     }
 
                     if (e.getCause() instanceof RemotingConnectException) {
                         RemotingConnectException connectException =
-                                (RemotingConnectException) e.getCause();
+                            (RemotingConnectException) e.getCause();
                         return new StorageRuntimeException(
-                                String.format(
-                                        "Network connection experiences failures. Topic=%s, msgId=%s, %s",
-                                        topic, msgId, connectException.getMessage()),
-                                e);
+                            String.format(
+                                "Network connection experiences failures. Topic=%s, msgId=%s, %s",
+                                topic, msgId, connectException.getMessage()),
+                            e);
                     }
                 }
             } else {
@@ -129,14 +129,14 @@ public abstract class AbstractProducer {
                 MQClientException clientException = (MQClientException) e;
                 if (-1 == clientException.getResponseCode()) {
                     return new StorageRuntimeException(
-                            String.format("Topic does not exist, Topic=%s, msgId=%s",
-                                    topic, msgId),
-                            e);
+                        String.format("Topic does not exist, Topic=%s, msgId=%s",
+                            topic, msgId),
+                        e);
                 } else if (ResponseCode.MESSAGE_ILLEGAL == clientException.getResponseCode()) {
                     return new RMQMessageFormatException(
-                            String.format("A illegal message for RocketMQ, Topic=%s, msgId=%s",
-                                    topic, msgId),
-                            e);
+                        String.format("A illegal message for RocketMQ, Topic=%s, msgId=%s",
+                            topic, msgId),
+                        e);
                 }
             }
         }
@@ -147,16 +147,16 @@ public abstract class AbstractProducer {
         switch (producer.getServiceState()) {
             case CREATE_JUST:
                 throw new StorageRuntimeException(
-                        String.format("You do not have start the producer, %s",
-                                producer.getServiceState()));
+                    String.format("You do not have start the producer, %s",
+                        producer.getServiceState()));
             case SHUTDOWN_ALREADY:
                 throw new StorageRuntimeException(
-                        String.format("Your producer has been shut down, %s",
-                                producer.getServiceState()));
+                    String.format("Your producer has been shut down, %s",
+                        producer.getServiceState()));
             case START_FAILED:
                 throw new StorageRuntimeException(
-                        String.format("When you start your service throws an exception, %s",
-                                producer.getServiceState()));
+                    String.format("When you start your service throws an exception, %s",
+                        producer.getServiceState()));
             case RUNNING:
             default:
         }

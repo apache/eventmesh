@@ -45,8 +45,8 @@ public class EventMeshSubscribeReply extends GrpcAbstractDemo implements Receive
         subscriptionItem.setType(SubscriptionType.SYNC);
 
         try (
-                EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                        initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 

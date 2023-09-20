@@ -35,14 +35,14 @@ public class RabbitmqCloudEventTest {
     @Before
     public void before() {
         cloudEvent = CloudEventBuilder.v1()
-                .withId("1")
-                .withTime(OffsetDateTime.now())
-                .withSource(URI.create("testsource"))
-                .withSubject("topic")
-                .withType(String.class.getCanonicalName())
-                .withDataContentType("text/plain")
-                .withData("data".getBytes(StandardCharsets.UTF_8))
-                .build();
+            .withId("1")
+            .withTime(OffsetDateTime.now())
+            .withSource(URI.create("testsource"))
+            .withSubject("topic")
+            .withType(String.class.getCanonicalName())
+            .withDataContentType("text/plain")
+            .withData("data".getBytes(StandardCharsets.UTF_8))
+            .build();
     }
 
     @Test

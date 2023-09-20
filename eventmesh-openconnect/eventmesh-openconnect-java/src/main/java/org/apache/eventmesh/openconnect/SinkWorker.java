@@ -59,25 +59,25 @@ public class SinkWorker implements ConnectorWorker {
         String meshIp = meshAddress.split(":")[0];
         int meshPort = Integer.parseInt(meshAddress.split(":")[1]);
         UserAgent agent = UserAgent.builder()
-                .env(config.getPubSubConfig().getEnv())
-                .host("localhost")
-                .password(config.getPubSubConfig().getPassWord())
-                .username(config.getPubSubConfig().getUserName())
-                .group(config.getPubSubConfig().getGroup())
-                .path("/")
-                .port(8362)
-                .subsystem(config.getPubSubConfig().getAppId())
-                .pid(Integer.parseInt(SystemUtils.getProcessId()))
-                .version("2.0")
-                .idc(config.getPubSubConfig().getIdc())
-                .build();
+            .env(config.getPubSubConfig().getEnv())
+            .host("localhost")
+            .password(config.getPubSubConfig().getPassWord())
+            .username(config.getPubSubConfig().getUserName())
+            .group(config.getPubSubConfig().getGroup())
+            .path("/")
+            .port(8362)
+            .subsystem(config.getPubSubConfig().getAppId())
+            .pid(Integer.parseInt(SystemUtils.getProcessId()))
+            .version("2.0")
+            .idc(config.getPubSubConfig().getIdc())
+            .build();
         UserAgent userAgent = MessageUtils.generateSubClient(agent);
 
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(meshIp)
-                .port(meshPort)
-                .userAgent(userAgent)
-                .build();
+            .host(meshIp)
+            .port(meshPort)
+            .userAgent(userAgent)
+            .build();
         return EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
     }
 
@@ -104,7 +104,7 @@ public class SinkWorker implements ConnectorWorker {
             return;
         }
         eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
-                SubscriptionType.ASYNC);
+            SubscriptionType.ASYNC);
         eventMeshTCPClient.registerSubBusiHandler(new EventHandler(sink));
         eventMeshTCPClient.listen();
     }

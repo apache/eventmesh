@@ -85,11 +85,11 @@ public class RedisProducer implements Producer {
             topic.publishAsync(cloudEvent).whenCompleteAsync((stage, throwable) -> {
                 if (throwable != null) {
                     sendCallback.onException(
-                            OnExceptionContext.builder()
-                                    .topic(cloudEvent.getSubject())
-                                    .messageId(cloudEvent.getId())
-                                    .exception(new StorageRuntimeException(throwable))
-                                    .build());
+                        OnExceptionContext.builder()
+                            .topic(cloudEvent.getSubject())
+                            .messageId(cloudEvent.getId())
+                            .exception(new StorageRuntimeException(throwable))
+                            .build());
                 } else {
                     SendResult sendResult = new SendResult();
                     sendResult.setTopic(cloudEvent.getSubject());
@@ -99,11 +99,11 @@ public class RedisProducer implements Producer {
             });
         } catch (Exception e) {
             sendCallback.onException(
-                    OnExceptionContext.builder()
-                            .topic(cloudEvent.getSubject())
-                            .messageId(cloudEvent.getId())
-                            .exception(new StorageRuntimeException(e))
-                            .build());
+                OnExceptionContext.builder()
+                    .topic(cloudEvent.getSubject())
+                    .messageId(cloudEvent.getId())
+                    .exception(new StorageRuntimeException(e))
+                    .build());
         }
     }
 

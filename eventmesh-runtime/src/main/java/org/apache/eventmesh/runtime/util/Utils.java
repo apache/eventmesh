@@ -60,22 +60,22 @@ public class Utils {
             UserAgent user = session == null ? null : session.getClient();
             if (session != null && session.getSessionState() == SessionState.CLOSED) {
                 logFailedMessageFlow(pkg, user, startTime, taskExecuteTime,
-                        new Exception("the session has been closed"));
+                    new Exception("the session has been closed"));
                 return;
             }
             ctx.writeAndFlush(pkg).addListener(
-                    (ChannelFutureListener) future -> {
-                        if (!future.isSuccess()) {
-                            logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
-                        } else {
-                            logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
+                (ChannelFutureListener) future -> {
+                    if (!future.isSuccess()) {
+                        logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
+                    } else {
+                        logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
-                            if (session != null) {
-                                Objects.requireNonNull(session.getClientGroupWrapper().get())
-                                        .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
-                            }
+                        if (session != null) {
+                            Objects.requireNonNull(session.getClientGroupWrapper().get())
+                                .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
-                    });
+                    }
+                });
         } catch (Exception e) {
             log.error("exception while sending message to client", e);
         }
@@ -99,12 +99,12 @@ public class Utils {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                    pkg.getHeader().getCmd(), mqMessage, user, taskExecuteTime - startTime,
-                    System.currentTimeMillis() - startTime, e);
+                pkg.getHeader().getCmd(), mqMessage, user, taskExecuteTime - startTime,
+                System.currentTimeMillis() - startTime, e);
         } else {
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                    pkg.getHeader().getCmd(),
-                    pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
+                pkg.getHeader().getCmd(),
+                pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         }
     }
 
@@ -119,12 +119,12 @@ public class Utils {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                    mqMessage, user, taskExecuteTime - startTime,
-                    System.currentTimeMillis() - startTime);
+                mqMessage, user, taskExecuteTime - startTime,
+                System.currentTimeMillis() - startTime);
         } else {
             MESSAGE_LOGGER
-                    .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
-                            user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+                .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
+                    user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
 
         }
     }
@@ -151,8 +151,8 @@ public class Utils {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),
-                    HttpHeaderNames.ACCEPT_ENCODING.toString(),
-                    HttpHeaderNames.CONTENT_LENGTH.toString())) {
+                HttpHeaderNames.ACCEPT_ENCODING.toString(),
+                HttpHeaderNames.CONTENT_LENGTH.toString())) {
                 continue;
             }
             headerParam.put(key, fullReq.headers().get(key));

@@ -88,22 +88,22 @@ public class HelloProcessor implements TcpProcessor {
             validateUserAgent(user);
             session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                    pkg.getHeader().getSeq()));
+                pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
-                    .getHeader().getSeq()));
+                .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                    (ChannelFutureListener) future -> {
-                        if (!future.isSuccess()) {
-                            Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
-                        } else {
-                            Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
-                        }
-                        log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
-                        eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
-                    });
+                (ChannelFutureListener) future -> {
+                    if (!future.isSuccess()) {
+                        Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
+                    } else {
+                        Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
+                    }
+                    log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
+                    eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                });
         }
     }
 

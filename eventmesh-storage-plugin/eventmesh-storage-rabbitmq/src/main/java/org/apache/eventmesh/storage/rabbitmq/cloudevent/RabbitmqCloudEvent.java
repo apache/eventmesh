@@ -59,11 +59,11 @@ public class RabbitmqCloudEvent implements Serializable {
                 throw new RabbitmqStorageException(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(data.getBytes(StandardCharsets.UTF_8))
-                .withId(extensions.remove("id"))
-                .withSource(URI.create(extensions.remove("source")))
-                .withType(extensions.remove("type"))
-                .withDataContentType(extensions.remove("datacontenttype"))
-                .withSubject(extensions.remove("subject"));
+            .withId(extensions.remove("id"))
+            .withSource(URI.create(extensions.remove("source")))
+            .withType(extensions.remove("type"))
+            .withDataContentType(extensions.remove("datacontenttype"))
+            .withSubject(extensions.remove("subject"));
         extensions.forEach(builder::withExtension);
 
         return builder.build();

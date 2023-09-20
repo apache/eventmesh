@@ -110,9 +110,9 @@ public class HookConfigOperationManager implements WebHookConfigOperation {
             case OPERATION_MODE_NACOS:
                 try {
                     final String content = nacosConfigService.getConfig(
-                            webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
-                            GROUP_PREFIX + webHookConfig.getManufacturerName(),
-                            TIMEOUT_MS);
+                        webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
+                        GROUP_PREFIX + webHookConfig.getManufacturerName(),
+                        TIMEOUT_MS);
                     return JsonUtils.parseObject(content, WebHookConfig.class);
                 } catch (NacosException e) {
                     log.error("queryWebHookConfigById failed", e);

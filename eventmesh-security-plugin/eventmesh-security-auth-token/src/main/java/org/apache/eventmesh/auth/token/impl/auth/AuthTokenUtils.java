@@ -48,7 +48,7 @@ public class AuthTokenUtils {
         if (StringUtils.isNotBlank(token)) {
             if (!authAccess(aclProperties)) {
                 throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
-                        + aclProperties.getTopic());
+                    + aclProperties.getTopic());
             }
             String publicKeyUrl = null;
             token = token.replace("Bearer ", "");
@@ -73,7 +73,7 @@ public class AuthTokenUtils {
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                            + aclProperties.getTopic());
+                        + aclProperties.getTopic());
                 }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);
@@ -116,7 +116,7 @@ public class AuthTokenUtils {
                 String sub = signJwt.getBody().get("sub", String.class);
                 if (!sub.contains(aclProperties.getExtendedField("group").toString()) && !sub.contains("pulsar-admin")) {
                     throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access eventMesh:"
-                            + aclProperties.getTopic());
+                        + aclProperties.getTopic());
                 }
             } catch (IOException e) {
                 throw new AclException("public key read error!", e);

@@ -32,7 +32,7 @@ public class RocketMQBinaryMessageReader extends BaseGenericBinaryMessageReaderI
     public RocketMQBinaryMessageReader(SpecVersion version, Map<String, String> headers,
                                        byte[] payload) {
         super(version,
-                payload != null && payload.length > 0 ? BytesCloudEventData.wrap(payload) : null);
+            payload != null && payload.length > 0 ? BytesCloudEventData.wrap(payload) : null);
 
         Objects.requireNonNull(headers);
         this.headers = headers;

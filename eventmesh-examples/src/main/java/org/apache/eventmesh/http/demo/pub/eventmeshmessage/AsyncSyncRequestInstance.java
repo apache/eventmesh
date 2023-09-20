@@ -35,14 +35,14 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
     public static void main(String[] args) throws Exception {
 
         try (
-                EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                        initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+            EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content("testAsyncMessage")
-                    .topic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
-                    .uniqueId(RandomStringUtils.generateNum(30)).build();
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .content("testAsyncMessage")
+                .topic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
+                .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
 
@@ -50,7 +50,7 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
                 public void onSuccess(final EventMeshMessage o) {
                     if (log.isDebugEnabled()) {
                         log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
-                                System.currentTimeMillis() - startTime);
+                            System.currentTimeMillis() - startTime);
                     }
                 }
 

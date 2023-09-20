@@ -67,17 +67,17 @@ public class ZipkinTraceService extends AbstractTraceService {
 
         final String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
         zipkinExporter =
-                ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
+            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
-                .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
-                .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
-                .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
-                .setMaxQueueSize(eventMeshTraceMaxQueueSize)
-                .build();
+            .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
+            .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
+            .setMaxExportBatchSize(eventMeshTraceMaxExportSize)
+            .setMaxQueueSize(eventMeshTraceMaxQueueSize)
+            .build();
 
         // set the trace service's name
         final Resource serviceNameResource =
-                Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
+            Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
         initVars(spanProcessor, serviceNameResource);
     }

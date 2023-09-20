@@ -67,7 +67,7 @@ public final class CatalogTableSet {
 
         public void removeDatabase(String catalogName, String schemaName) {
             values.removeIf(
-                    entry -> StringUtils.equals(entry.getCatalogName(), catalogName) && StringUtils.equals(entry.getSchemaName(), schemaName));
+                entry -> StringUtils.equals(entry.getCatalogName(), catalogName) && StringUtils.equals(entry.getSchemaName(), schemaName));
         }
     }
 

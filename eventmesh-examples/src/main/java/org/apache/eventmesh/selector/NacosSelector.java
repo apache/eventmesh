@@ -39,7 +39,7 @@ public class NacosSelector implements Selector {
         try {
             final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
             namingService = NamingFactory.createNamingService(
-                    properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
+                properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
         } catch (NacosException | IOException e) {
             throw new SelectorException("NamingService create error", e);
         }

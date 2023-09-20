@@ -53,7 +53,7 @@ public interface HttpRequestProcessor {
         try {
             Method method = clazz.getMethod("buildBody", Integer.class, String.class);
             Object o = method.invoke(null, emCode.getRetCode(),
-                    StringUtils.isNotBlank(msg) ? msg : emCode.getErrMsg());
+                StringUtils.isNotBlank(msg) ? msg : emCode.getErrMsg());
             HttpCommand response = req.createHttpCommandResponse(respHeader, (E) o);
             asyncContext.onComplete(response);
         } catch (Exception e) {

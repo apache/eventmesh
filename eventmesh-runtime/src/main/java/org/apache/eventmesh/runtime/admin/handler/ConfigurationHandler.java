@@ -110,24 +110,24 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             try {
                 GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                        eventMeshTCPConfiguration.getSysID(),
-                        eventMeshTCPConfiguration.getMetaStorageAddr(),
-                        eventMeshTCPConfiguration.getEventMeshEnv(),
-                        eventMeshTCPConfiguration.getEventMeshIDC(),
-                        eventMeshTCPConfiguration.getEventMeshCluster(),
-                        eventMeshTCPConfiguration.getEventMeshServerIp(),
-                        eventMeshTCPConfiguration.getEventMeshName(),
-                        eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-                        eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                        eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
-                        // TCP Configuration
-                        eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
-                        // HTTP Configuration
-                        eventMeshHTTPConfiguration.getHttpServerPort(),
-                        eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
-                        // gRPC Configuration
-                        eventMeshGrpcConfiguration.getGrpcServerPort(),
-                        eventMeshGrpcConfiguration.isEventMeshServerUseTls());
+                    eventMeshTCPConfiguration.getSysID(),
+                    eventMeshTCPConfiguration.getMetaStorageAddr(),
+                    eventMeshTCPConfiguration.getEventMeshEnv(),
+                    eventMeshTCPConfiguration.getEventMeshIDC(),
+                    eventMeshTCPConfiguration.getEventMeshCluster(),
+                    eventMeshTCPConfiguration.getEventMeshServerIp(),
+                    eventMeshTCPConfiguration.getEventMeshName(),
+                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+                    eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
+                    // TCP Configuration
+                    eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
+                    // HTTP Configuration
+                    eventMeshHTTPConfiguration.getHttpServerPort(),
+                    eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
+                    // gRPC Configuration
+                    eventMeshGrpcConfiguration.getGrpcServerPort(),
+                    eventMeshGrpcConfiguration.isEventMeshServerUseTls());
 
                 String result = JsonUtils.toJSONString(getConfigurationResponse);
                 httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);

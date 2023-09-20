@@ -63,26 +63,26 @@ public class EventMeshGrpcClientConfig {
     @Override
     public String toString() {
         return "ClientConfig={ServerAddr="
-                + serverAddr
-                + ",ServerPort="
-                + serverPort
-                + ",env="
-                + env
-                + ",idc="
-                + idc
-                + ",producerGroup="
-                + producerGroup
-                + ",consumerGroup="
-                + consumerGroup
-                + ",sys="
-                + sys
-                + ",userName="
-                + userName
-                + ",password=***"
-                + ",useTls="
-                + useTls
-                + ",timeOut="
-                + timeOut
-                + "}";
+            + serverAddr
+            + ",ServerPort="
+            + serverPort
+            + ",env="
+            + env
+            + ",idc="
+            + idc
+            + ",producerGroup="
+            + producerGroup
+            + ",consumerGroup="
+            + consumerGroup
+            + ",sys="
+            + sys
+            + ",userName="
+            + userName
+            + ",password=***"
+            + ",useTls="
+            + useTls
+            + ",timeOut="
+            + timeOut
+            + "}";
     }
 }

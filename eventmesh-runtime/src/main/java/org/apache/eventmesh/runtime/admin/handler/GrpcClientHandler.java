@@ -163,17 +163,17 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 // Convert each Client object to GetClientResponse and add to getClientResponseList
                 for (ConsumerGroupClient client : clientList) {
                     GetClientResponse getClientResponse = new GetClientResponse(
-                            Optional.ofNullable(client.env).orElse(""),
-                            Optional.ofNullable(client.sys).orElse(""),
-                            Optional.ofNullable(client.url).orElse(""),
-                            "0",
-                            Optional.ofNullable(client.hostname).orElse(""),
-                            0,
-                            Optional.ofNullable(client.apiVersion).orElse(""),
-                            Optional.ofNullable(client.idc).orElse(""),
-                            Optional.ofNullable(client.consumerGroup).orElse(""),
-                            "",
-                            "gRPC");
+                        Optional.ofNullable(client.env).orElse(""),
+                        Optional.ofNullable(client.sys).orElse(""),
+                        Optional.ofNullable(client.url).orElse(""),
+                        "0",
+                        Optional.ofNullable(client.hostname).orElse(""),
+                        0,
+                        Optional.ofNullable(client.apiVersion).orElse(""),
+                        Optional.ofNullable(client.idc).orElse(""),
+                        Optional.ofNullable(client.consumerGroup).orElse(""),
+                        "",
+                        "gRPC");
                     getClientResponseList.add(getClientResponse);
                 }
             }

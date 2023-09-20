@@ -49,14 +49,14 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
     @Override
     public RequestParam builderPublishRequestParam(final EventMeshMessage message) {
         return buildCommonPostParam(message)
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
     }
 
     @Override
     public RequestParam builderRequestParam(final EventMeshMessage message, final long timeout) {
         return buildCommonPostParam(message)
-                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-                .setTimeout(timeout);
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
+            .setTimeout(timeout);
     }
 
     @Override
@@ -70,36 +70,36 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
     private RequestParam buildCommonPostParam(final EventMeshMessage message) {
         final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV.getKey(), eventMeshHttpClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC.getKey(), eventMeshHttpClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), eventMeshHttpClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID.getKey(), eventMeshHttpClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS.getKey(), eventMeshHttpClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
-                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-                .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.EM_MESSAGE_PROTOCOL)
-                .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
-                // default ce version is 1.0
-                .addHeader(ProtocolKey.PROTOCOL_VERSION, SpecVersion.V1.toString())
-                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-                // todo: set message to content is better
-                .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-                .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-                .addBody(SendMessageRequestBody.TTL, message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
-                .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV.getKey(), eventMeshHttpClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC.getKey(), eventMeshHttpClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), eventMeshHttpClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID.getKey(), eventMeshHttpClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS.getKey(), eventMeshHttpClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
+            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+            .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.EM_MESSAGE_PROTOCOL)
+            .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
+            // default ce version is 1.0
+            .addHeader(ProtocolKey.PROTOCOL_VERSION, SpecVersion.V1.toString())
+            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
+            // todo: set message to content is better
+            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
+            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
+            .addBody(SendMessageRequestBody.TTL, message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
+            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
         return requestParam;
     }
 
     @Override
     public EventMeshMessage transformMessage(final EventMeshRetObj retObj) {
         final SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.parseObject(retObj.getRetMsg(),
-                SendMessageResponseBody.ReplyMessage.class);
+            SendMessageResponseBody.ReplyMessage.class);
         return EventMeshMessage.builder()
-                .content(Objects.requireNonNull(replyMessage, "ReplyMessage must not be null").body)
-                .prop(replyMessage.properties)
-                .topic(replyMessage.topic).build();
+            .content(Objects.requireNonNull(replyMessage, "ReplyMessage must not be null").body)
+            .prop(replyMessage.properties)
+            .topic(replyMessage.topic).build();
     }
 }
