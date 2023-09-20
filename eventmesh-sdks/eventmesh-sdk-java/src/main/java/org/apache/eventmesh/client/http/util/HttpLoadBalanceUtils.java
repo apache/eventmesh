@@ -39,7 +39,8 @@ public class HttpLoadBalanceUtils {
     private static final Pattern IP_PORT_WEIGHT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}:\\d{1,6}");
 
     public static LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(
-                                                                                       final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+        throws EventMeshException {
         LoadBalanceSelector<String> eventMeshServerSelector = null;
         switch (eventMeshHttpClientConfig.getLoadBalanceType()) {
             case RANDOM:
@@ -64,7 +65,8 @@ public class HttpLoadBalanceUtils {
     }
 
     private static List<Weight<String>> buildWeightedClusterGroupFromConfig(
-                                                                            final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        final EventMeshHttpClientConfig eventMeshHttpClientConfig)
+        throws EventMeshException {
         final List<String> eventMeshAddrs = Splitter.on(";")
                 .trimResults()
                 .splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());

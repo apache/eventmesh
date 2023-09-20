@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.trace.pinpoint.exporter;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.REQ_IP;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.UNKNOWN_REQ_IP;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;

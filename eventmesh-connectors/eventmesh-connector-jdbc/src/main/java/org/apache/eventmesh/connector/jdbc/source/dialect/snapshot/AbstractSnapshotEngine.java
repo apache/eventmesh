@@ -72,10 +72,8 @@ import lombok.extern.slf4j.Slf4j;
  * @param <Offset>    The offset context type
  */
 @Slf4j
-public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<Jconn>, Jc extends JdbcContext<Part, Offset>, Part extends Partition, Offset extends OffsetContext, Jconn extends JdbcConnection>
-        extends AbstractEngine<DbDialect>
-        implements
-            SnapshotEngine<Jc> {
+public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<Jconn>, Jc extends JdbcContext<Part, Offset>, Part extends Partition,
+    Offset extends OffsetContext, Jconn extends JdbcConnection> extends AbstractEngine<DbDialect> implements SnapshotEngine<Jc> {
 
     private final Jconn jdbcConnection;
 

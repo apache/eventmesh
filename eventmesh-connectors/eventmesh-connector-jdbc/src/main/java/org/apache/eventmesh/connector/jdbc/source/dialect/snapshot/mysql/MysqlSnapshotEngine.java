@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MysqlSnapshotEngine
-        extends AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
+public class MysqlSnapshotEngine extends
+    AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
 
     private static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
 
@@ -145,8 +145,8 @@ public class MysqlSnapshotEngine
     }
 
     @Override
-    protected void readStructureOfTables(MysqlJdbcContext jdbcContext,
-                                         SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException, InterruptedException {
+    protected void readStructureOfTables(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
+        throws SQLException, InterruptedException {
         if (sourceConnectorConfig.getMysqlConfig().getSnapshotLockingMode().usesLocking() && !globalLockAcquired) {
             lockTable(snapshotContext);
             determineSnapshotOffset(jdbcContext, snapshotContext);

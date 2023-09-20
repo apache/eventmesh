@@ -46,10 +46,8 @@ public interface MetaService {
 
     List<EventMeshDataInfo> findAllEventMeshInfo() throws MetaException;
 
-    default Map<String/* eventMeshName */, Map<String/* purpose */, Integer/* num */>> findEventMeshClientDistributionData(
-                                                                                                                           String clusterName,
-                                                                                                                           String group,
-                                                                                                                           String purpose) throws MetaException {
+    default Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
+        String clusterName, String group, String purpose) throws MetaException {
         // todo find metadata
         return Collections.emptyMap();
     }

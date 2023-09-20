@@ -116,6 +116,14 @@ allprojects {
                 exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
                 exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
                 exclude '**/org/apache/eventmesh/common/protocol/grpc**'
+                exclude '**/org/apache/eventmesh/runtime/core/protocol/grpc/consumer/consumergroup/StreamTopicConfig.java'
+                exclude '**/org/apache/eventmesh/connector/jdbc/source/dialect/snapshot/AbstractSnapshotEngine.java'
+                exclude '**/org/apache/eventmesh/connector/jdbc/source/dialect/snapshot/mysql/MysqlSnapshotEngine.java'
+                exclude '**/org/apache/eventmesh/connector/rocketmq/source/connector/RocketMQSourceConnector.java'
+                exclude '**/org/apache/eventmesh/api/meta/MetaService.java'
+                exclude '**/org/apache/eventmesh/storage/standalone/broker/task/SubscribeTest.java'
+                exclude '**/org/apache/eventmesh/trace/pinpoint/exporter/PinpointSpanExporter.java'
+                exclude '**/org/apache/eventmesh/client/http/util/HttpLoadBalanceUtils.java'
             }
             importOrderFile rootProject.file('style/format/eventmesh-spotless.importorder')
             licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
