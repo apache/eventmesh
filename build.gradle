@@ -88,25 +88,6 @@ allprojects {
         configDirectory = file("${rootDir}/style")
     }
 
-    spotless {
-        enforceCheck false
-        java {
-            target project.fileTree(project.projectDir) {
-                include '**/*.java'
-                exclude '**/org/apache/eventmesh/**/protos**'
-                exclude '**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**'
-                exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
-                exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
-            }
-            importOrder('org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
-            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
-            eclipse().configFile("${rootDir}/style/format/spotless-formatter.xml")
-            removeUnusedImports()
-        }
-    }
-
-    spotlessJava.dependsOn(javadoc, compileTestJava, processTestResources, test)
-
     checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
                   .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
@@ -124,6 +105,25 @@ allprojects {
         }
         testImplementation "junit:junit:4.13.2"
     }
+
+    spotless {
+        enforceCheck false
+        java {
+            target project.fileTree(project.projectDir) {
+                include '**/*.java'
+                exclude '**/org/apache/eventmesh/**/protos**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
+                exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
+                exclude '**/org/apache/eventmesh/common/protocol/grpc**'
+            }
+            importOrderFile rootProject.file('style/format/eventmesh-spotless.importorder')
+            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            eclipse().configFile("${rootDir}/style/format/eventmesh-spotless-formatter.xml")
+            removeUnusedImports()
+        }
+    }
+    spotlessJava.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
 }
 
 task tar(type: Tar) {

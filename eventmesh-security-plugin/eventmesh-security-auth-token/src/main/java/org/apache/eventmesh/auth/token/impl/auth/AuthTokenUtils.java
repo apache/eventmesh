@@ -86,9 +86,7 @@ public class AuthTokenUtils {
             }
 
         } else {
-            {
-                throw new AclException("invalid token!");
-            }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -130,9 +128,7 @@ public class AuthTokenUtils {
                 throw new AclException("invalid token!", e);
             }
         } else {
-            {
-                throw new AclException("invalid token!");
-            }
+            throw new AclException("invalid token!");
         }
     }
 

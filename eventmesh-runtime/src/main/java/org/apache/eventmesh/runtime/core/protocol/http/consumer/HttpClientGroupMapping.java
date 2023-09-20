@@ -49,13 +49,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class HttpClientGroupMapping {
 
-    private final transient Map<String /**group*/
-            , ConsumerGroupConf> localConsumerGroupMapping =
-                    new ConcurrentHashMap<>();
+    /**
+     * key: group
+     */
+    private final transient Map<String, ConsumerGroupConf> localConsumerGroupMapping =
+            new ConcurrentHashMap<>();
 
-    private final transient Map<String /**group@topic*/
-            , List<Client>> localClientInfoMapping =
-                    new ConcurrentHashMap<>();
+    /**
+     * key: group@topic
+     */
+    private final transient Map<String, List<Client>> localClientInfoMapping =
+            new ConcurrentHashMap<>();
 
     private final transient Set<String> localTopicSet = new HashSet<String>(16);
 

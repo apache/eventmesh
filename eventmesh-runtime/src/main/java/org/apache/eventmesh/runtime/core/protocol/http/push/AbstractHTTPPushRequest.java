@@ -43,8 +43,10 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public long lastPushTime = System.currentTimeMillis();
 
-    public final Map<String /** IDC*/
-            , List<String>> urls;
+    /**
+     * key: IDC
+     */
+    public final Map<String, List<String>> urls;
 
     public final List<String> totalUrls;
 

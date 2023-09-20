@@ -50,8 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MysqlSnapshotEngine
-        extends
-            AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
+        extends AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
 
     private static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
 

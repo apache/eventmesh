@@ -46,11 +46,15 @@ public class SubscriptionManager {
 
     private final MetaStorage metaStorage;
 
-    private final ConcurrentHashMap<String /**group*/
-            , ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
+    /**
+     * key: group
+     */
+    private final ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /**group@topic*/
-            , List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
+    /**
+     * key: group@topic
+     */
+    private final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
     public SubscriptionManager(boolean isEventMeshServerMetaStorageEnable, MetaStorage metaStorage) {
         this.isEventMeshServerMetaStorageEnable = isEventMeshServerMetaStorageEnable;

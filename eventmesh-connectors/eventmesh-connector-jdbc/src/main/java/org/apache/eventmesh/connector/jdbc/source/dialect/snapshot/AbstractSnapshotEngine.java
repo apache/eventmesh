@@ -73,8 +73,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<Jconn>, Jc extends JdbcContext<Part, Offset>, Part extends Partition, Offset extends OffsetContext, Jconn extends JdbcConnection>
-        extends
-            AbstractEngine<DbDialect>
+        extends AbstractEngine<DbDialect>
         implements
             SnapshotEngine<Jc> {
 
