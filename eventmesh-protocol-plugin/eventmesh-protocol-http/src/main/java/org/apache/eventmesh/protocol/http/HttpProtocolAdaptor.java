@@ -48,8 +48,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @since 1.3.0
  */
 public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
-    implements
-        ProtocolAdaptor<ProtocolTransportObject> {
+    implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject protocolTransportObject) throws ProtocolHandleException {

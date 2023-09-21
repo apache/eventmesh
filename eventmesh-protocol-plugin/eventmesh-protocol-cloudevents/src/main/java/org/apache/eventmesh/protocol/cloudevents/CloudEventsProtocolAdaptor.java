@@ -53,8 +53,7 @@ import com.google.common.base.Preconditions;
  * @since 1.3.0
  */
 public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
-    implements
-        ProtocolAdaptor<ProtocolTransportObject> {
+    implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
