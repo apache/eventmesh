@@ -48,7 +48,7 @@ public class RegResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static RegResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
         RegResponseHeader regResponseHeader = new RegResponseHeader();
         regResponseHeader.setCode(requestCode);
         regResponseHeader.setEventMeshCluster(eventMeshCluster);

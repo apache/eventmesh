@@ -55,7 +55,7 @@ public class Utils {
      * @param session
      */
     public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
-                                     Session session) {
+        Session session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
             if (session != null && session.getSessionState() == SessionState.CLOSED) {
@@ -90,12 +90,12 @@ public class Utils {
      * @param startTime
      */
     public static void logFailedMessageFlow(ChannelFuture future, Package pkg, UserAgent user, long startTime,
-                                            long taskExecuteTime) {
+        long taskExecuteTime) {
         logFailedMessageFlow(pkg, user, startTime, taskExecuteTime, future.cause());
     }
 
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime,
-                                             Throwable e) {
+        Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             final String mqMessage = EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody());
             MESSAGE_LOGGER.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",

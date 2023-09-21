@@ -51,7 +51,7 @@ public class SendMessageBatchV2ProtocolResolver {
     }
 
     private static CloudEvent getBuildCloudEvent(SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader,
-                                                 SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody, CloudEventBuilder cloudEventBuilder) {
+        SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody, CloudEventBuilder cloudEventBuilder) {
         cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
             .withSubject(sendMessageBatchV2RequestBody.getTopic())
             .withType("eventmeshmessage")

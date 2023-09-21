@@ -126,10 +126,10 @@ public class ClientManageController {
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
-                                   EventMeshHTTPServer eventMeshHTTPServer,
-                                   EventMeshGrpcServer eventMeshGrpcServer,
-                                   MetaStorage eventMeshMetaStorage,
-                                   HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        MetaStorage eventMeshMetaStorage,
+        HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
         new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);

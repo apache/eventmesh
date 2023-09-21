@@ -54,7 +54,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-                                  ProducerGroupConf producerGroupConfig)
+        ProducerGroupConf producerGroupConfig)
         throws Exception {
         this.producerGroupConfig = producerGroupConfig;
 

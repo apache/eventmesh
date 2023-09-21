@@ -49,8 +49,8 @@ public interface HttpRequestProcessor {
     }
 
     default <T extends Header, E extends Body> void completeResponse(HttpCommand req, AsyncContext asyncContext,
-                                                                     T respHeader, EventMeshRetCode emCode,
-                                                                     String msg, Class<E> clazz) {
+        T respHeader, EventMeshRetCode emCode,
+        String msg, Class<E> clazz) {
         try {
             Method method = clazz.getMethod("buildBody", Integer.class, String.class);
             Object o = method.invoke(null, emCode.getRetCode(),

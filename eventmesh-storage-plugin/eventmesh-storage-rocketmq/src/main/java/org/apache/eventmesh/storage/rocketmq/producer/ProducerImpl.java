@@ -184,7 +184,7 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(final Message message,
-                                                                                 final SendCallback sendCallback) {
+        final SendCallback sendCallback) {
         return new org.apache.rocketmq.client.producer.SendCallback() {
 
             @Override

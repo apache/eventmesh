@@ -46,7 +46,7 @@ public final class RocketMQMessageFactory {
     }
 
     public static MessageReader createReader(final Map<String, String> props,
-                                             @Nullable final byte[] body)
+        @Nullable final byte[] body)
         throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
@@ -61,13 +61,13 @@ public final class RocketMQMessageFactory {
     }
 
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic,
-                                                                                 String keys) {
+        String keys) {
         return new RocketMQMessageWriter<>(topic, keys);
     }
 
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic,
-                                                                                 String keys,
-                                                                                 String tags) {
+        String keys,
+        String tags) {
         return new RocketMQMessageWriter<>(topic, keys, tags);
     }
 

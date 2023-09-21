@@ -68,7 +68,7 @@ public class Trace {
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
-                           Context context, boolean isSpanFinishInOtherThread) {
+        Context context, boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
             return Span.getInvalid();
         }
@@ -77,7 +77,7 @@ public class Trace {
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
-                           boolean isSpanFinishInOtherThread) {
+        boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
             return Span.getInvalid();
         }

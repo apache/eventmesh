@@ -43,7 +43,7 @@ public class UnRegResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static UnRegResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                  String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
         UnRegResponseHeader regResponseHeader = new UnRegResponseHeader();
         regResponseHeader.setCode(requestCode);
         regResponseHeader.setEventMeshCluster(eventMeshCluster);

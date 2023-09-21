@@ -76,7 +76,7 @@ public class EventMeshProducer {
     }
 
     public void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                     ProducerGroupConf producerGroupConfig)
+        ProducerGroupConf producerGroupConfig)
         throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;

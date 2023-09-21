@@ -44,7 +44,7 @@ public class PrometheusExporterUtils {
      */
     @SneakyThrows
     public static void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
-                                      Metric summaryMetrics, Function getMetric) {
+        Metric summaryMetrics, Function getMetric) {
         Method method = getMetric.getClass().getMethod("apply", Object.class);
         Class metricType = (Class) method.getGenericReturnType();
         if (metricType == Long.class) {

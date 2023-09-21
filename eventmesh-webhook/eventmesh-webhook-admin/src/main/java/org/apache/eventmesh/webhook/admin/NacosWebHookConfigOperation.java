@@ -168,8 +168,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
-                                                                final Integer pageNum,
-                                                                final Integer pageSize) {
+        final Integer pageNum,
+        final Integer pageSize) {
         final List<WebHookConfig> webHookConfigs = new ArrayList<>();
         final String manufacturerName = webHookConfig.getManufacturerName();
 

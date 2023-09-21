@@ -63,7 +63,7 @@ public class MessageUtils {
     }
 
     public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
-                                    SubscriptionType subscriptionType) {
+        SubscriptionType subscriptionType) {
         Package msg = getPackage(Command.SUBSCRIBE_REQUEST);
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
         return msg;
@@ -127,7 +127,7 @@ public class MessageUtils {
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
-                                                     SubscriptionType subscriptionType) {
+        SubscriptionType subscriptionType) {
         final Subscription subscription = new Subscription();
         final List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));

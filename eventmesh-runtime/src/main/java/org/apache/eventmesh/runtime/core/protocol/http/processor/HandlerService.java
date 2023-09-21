@@ -355,7 +355,7 @@ public class HandlerService {
 
         // for error response
         public void sendErrorResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap,
-                                      Map<String, Object> traceMap) {
+            Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, retCode.getRetCode());

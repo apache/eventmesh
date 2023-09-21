@@ -166,7 +166,7 @@ public class ClientGroupWrapper {
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, RequestReplyCallback rrCallback,
-                        long timeout)
+        long timeout)
         throws Exception {
         mqProducerWrapper.request(upStreamMsgContext.getEvent(), rrCallback, timeout);
     }
@@ -731,7 +731,7 @@ public class ClientGroupWrapper {
     }
 
     public void setDownstreamDispatchStrategy(
-                                              DownstreamDispatchStrategy downstreamDispatchStrategy) {
+        DownstreamDispatchStrategy downstreamDispatchStrategy) {
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
     }
 

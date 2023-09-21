@@ -33,7 +33,7 @@ import java.util.Objects;
 public class HttpTinyClient {
 
     public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
-                                     String encoding, long readTimeoutMs)
+        String encoding, long readTimeoutMs)
         throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
@@ -96,7 +96,7 @@ public class HttpTinyClient {
      * @return the http response of given http post request
      */
     public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues,
-                                      String encoding, long readTimeoutMs)
+        String encoding, long readTimeoutMs)
         throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
 

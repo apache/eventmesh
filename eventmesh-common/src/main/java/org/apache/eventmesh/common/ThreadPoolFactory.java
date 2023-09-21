@@ -35,18 +35,18 @@ public abstract class ThreadPoolFactory {
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, final String threadName,
-                                                              final boolean isDaemon) {
+        final boolean isDaemon) {
         return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<>(1000), threadName, isDaemon);
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
-                                                              final String threadName, final boolean isDaemon) {
+        final String threadName, final boolean isDaemon) {
         return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue,
             new EventMeshThreadFactory(threadName, isDaemon));
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
-                                                              ThreadFactory threadFactory) {
+        ThreadFactory threadFactory) {
         return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
     }
 

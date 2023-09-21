@@ -204,7 +204,7 @@ public class MessageTransferProcessor implements TcpProcessor {
     }
 
     private CloudEvent buildCloudEventWithTimestamps(CloudEvent event, String client2EventMeshTime,
-                                                     String eventMesh2MqTime, long sendTime, String eventMeshIP) {
+        String eventMesh2MqTime, long sendTime, String eventMeshIP) {
         return CloudEventBuilder.from(event)
             .withExtension(client2EventMeshTime, String.valueOf(startTime))
             .withExtension(eventMesh2MqTime, String.valueOf(sendTime))
@@ -226,7 +226,7 @@ public class MessageTransferProcessor implements TcpProcessor {
     }
 
     protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime,
-                                              CloudEvent event) {
+        CloudEvent event) {
         final long createTime = System.currentTimeMillis();
         Package msg = new Package();
 

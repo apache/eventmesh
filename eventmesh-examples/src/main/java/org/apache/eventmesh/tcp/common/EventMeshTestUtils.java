@@ -105,7 +105,7 @@ public class EventMeshTestUtils {
     }
 
     public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic, String msgType, String msg,
-                                                       String keys, String keyMsg, String testMessage) {
+        String keys, String keyMsg, String testMessage) {
         final EventMeshMessage mqmsg = new EventMeshMessage();
         mqmsg.setTopic(eventMeshTcpSyncTestTopic);
         mqmsg.getProperties().put(msgType, msg);

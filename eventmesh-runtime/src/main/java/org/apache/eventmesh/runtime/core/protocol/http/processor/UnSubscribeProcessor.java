@@ -238,9 +238,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     }
 
     private void registerClient(final UnSubscribeRequestHeader unSubscribeRequestHeader,
-                                final String consumerGroup,
-                                final List<String> topicList,
-                                final String url) {
+        final String consumerGroup,
+        final List<String> topicList,
+        final String url) {
         for (final String topic : topicList) {
             final Client client = new Client();
             client.setEnv(unSubscribeRequestHeader.getEnv());

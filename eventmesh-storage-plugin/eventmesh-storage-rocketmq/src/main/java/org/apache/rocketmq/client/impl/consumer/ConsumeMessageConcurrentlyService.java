@@ -200,10 +200,10 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     @Override
     public void submitConsumeRequest(
-                                     final List<MessageExt> msgs,
-                                     final ProcessQueue processQueue,
-                                     final MessageQueue messageQueue,
-                                     final boolean dispatchToConsume) {
+        final List<MessageExt> msgs,
+        final ProcessQueue processQueue,
+        final MessageQueue messageQueue,
+        final boolean dispatchToConsume) {
         final int consumeBatchSize = this.defaultMQPushConsumer.getConsumeMessageBatchMaxSize();
         if (msgs.size() <= consumeBatchSize) {
             ConsumeRequest consumeRequest = new ConsumeRequest(msgs, processQueue, messageQueue);
@@ -254,9 +254,9 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     }
 
     public void processConsumeResult(
-                                     final ConsumeConcurrentlyStatus status,
-                                     final EventMeshConsumeConcurrentlyContext context,
-                                     final ConsumeRequest consumeRequest) {
+        final ConsumeConcurrentlyStatus status,
+        final EventMeshConsumeConcurrentlyContext context,
+        final ConsumeRequest consumeRequest) {
         int ackIndex = context.getAckIndex();
 
         if (consumeRequest.getMsgs().isEmpty()) {
@@ -345,9 +345,9 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     }
 
     private void submitConsumeRequestLater(
-                                           final List<MessageExt> msgs,
-                                           final ProcessQueue processQueue,
-                                           final MessageQueue messageQueue) {
+        final List<MessageExt> msgs,
+        final ProcessQueue processQueue,
+        final MessageQueue messageQueue) {
 
         this.scheduledExecutorService.schedule(
             () -> ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true), 5000, TimeUnit.MILLISECONDS);

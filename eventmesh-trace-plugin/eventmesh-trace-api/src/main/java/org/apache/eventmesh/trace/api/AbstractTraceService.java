@@ -92,11 +92,11 @@ public abstract class AbstractTraceService implements EventMeshTraceService {
 
     @Override
     public Span createSpan(final String spanName,
-                           final SpanKind spanKind,
-                           final long startTimestamp,
-                           final TimeUnit timeUnit,
-                           final Context context,
-                           final boolean isSpanFinishInOtherThread)
+        final SpanKind spanKind,
+        final long startTimestamp,
+        final TimeUnit timeUnit,
+        final Context context,
+        final boolean isSpanFinishInOtherThread)
         throws TraceException {
         return tracer.spanBuilder(spanName)
             .setParent(context)
@@ -107,7 +107,7 @@ public abstract class AbstractTraceService implements EventMeshTraceService {
 
     @Override
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
-                           boolean isSpanFinishInOtherThread)
+        boolean isSpanFinishInOtherThread)
         throws TraceException {
         return tracer.spanBuilder(spanName)
             .setParent(context)

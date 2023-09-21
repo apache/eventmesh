@@ -70,7 +70,7 @@ public class SubscriptionManager {
     }
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
-                               final List<SubscriptionItem> subscriptionItems, final String url) {
+        final List<SubscriptionItem> subscriptionItems, final String url) {
         for (final SubscriptionItem subscription : subscriptionItems) {
             final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
 
@@ -108,7 +108,7 @@ public class SubscriptionManager {
     }
 
     public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
-                                   String url, List<SubscriptionItem> subscriptionList) {
+        String url, List<SubscriptionItem> subscriptionList) {
         for (final SubscriptionItem subscription : subscriptionList) {
             final List<Client> groupTopicClients = localClientInfoMapping
                 .get(consumerGroup + "@" + subscription.getTopic());

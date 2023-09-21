@@ -48,8 +48,8 @@ public class ReplyMessageResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static ReplyMessageResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                         String eventMeshIp, String eventMeshEnv,
-                                                         String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         ReplyMessageResponseHeader replyMessageResponseHeader = new ReplyMessageResponseHeader();
         replyMessageResponseHeader.setCode(requestCode);
         replyMessageResponseHeader.setEventMeshCluster(eventMeshCluster);

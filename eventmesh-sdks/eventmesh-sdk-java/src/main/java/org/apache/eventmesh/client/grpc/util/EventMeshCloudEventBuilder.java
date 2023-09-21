@@ -67,7 +67,7 @@ public class EventMeshCloudEventBuilder {
     private static final EventFormat eventProtoFormat = EventFormatProvider.getInstance().resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE);
 
     public static Map<String, CloudEventAttributeValue> buildCommonCloudEventAttributes(EventMeshGrpcClientConfig clientConfig,
-                                                                                        EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
         final Map<String, CloudEventAttributeValue> attributeValueMap = new HashMap<>(64);
         attributeValueMap.put(ProtocolKey.ENV, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getEnv()).build());
         attributeValueMap.put(ProtocolKey.IDC, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getIdc()).build());
@@ -84,7 +84,7 @@ public class EventMeshCloudEventBuilder {
     }
 
     public static CloudEvent buildEventSubscription(EventMeshGrpcClientConfig clientConfig, EventMeshProtocolType protocolType, String url,
-                                                    List<SubscriptionItem> subscriptionItems) {
+        List<SubscriptionItem> subscriptionItems) {
 
         if (CollectionUtils.isEmpty(subscriptionItems)) {
             return null;
@@ -117,7 +117,7 @@ public class EventMeshCloudEventBuilder {
      * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#context-attributes">context-attributes</a>
      */
     public static <T> CloudEvent buildEventMeshCloudEvent(final T message, final EventMeshGrpcClientConfig clientConfig,
-                                                          final EventMeshProtocolType protocolType) {
+        final EventMeshProtocolType protocolType) {
 
         switch (protocolType) {
             case CLOUD_EVENTS: {
@@ -140,7 +140,7 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static CloudEvent switchEventMeshMessage2EventMeshCloudEvent(EventMeshMessage message, EventMeshGrpcClientConfig clientConfig,
-                                                                         EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
         final String ttl = message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
             ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
             : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
@@ -186,7 +186,7 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static CloudEvent switchCloudEvent2EventMeshCloudEvent(io.cloudevents.CloudEvent message, EventMeshGrpcClientConfig clientConfig,
-                                                                   EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
 
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(message);
 
@@ -215,14 +215,14 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static void buildCloudEventIfAbsent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder,
-                                                String extension, String value) {
+        String extension, String value) {
         if (Objects.isNull(message.getExtension(extension))) {
             cloudEventBuilder.withExtension(extension, value);
         }
     }
 
     public static <T> CloudEventBatch buildEventMeshCloudEventBatch(final List<T> messageList, final EventMeshGrpcClientConfig clientConfig,
-                                                                    final EventMeshProtocolType protocolType) {
+        final EventMeshProtocolType protocolType) {
         if (CollectionUtils.isEmpty(messageList)) {
             return null;
         }

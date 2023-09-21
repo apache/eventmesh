@@ -83,7 +83,7 @@ public class EventMeshUtil {
     }
 
     public static String buildMeshTcpClientID(final String clientSysId, final String purpose,
-                                              final String meshCluster) {
+        final String meshCluster) {
         return StringUtils.joinWith("-", StringUtils.trim(clientSysId), StringUtils.trim(purpose),
             StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
     }
@@ -243,7 +243,7 @@ public class EventMeshUtil {
     }
 
     private static void getIpResult(final List<String> ipv4Result, final List<String> ipv6Result,
-                                    final Enumeration<InetAddress> en) {
+        final Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (address.isLoopbackAddress()) {
@@ -313,7 +313,7 @@ public class EventMeshUtil {
     }
 
     public static Map<String, Object> getCloudEventExtensionMap(final String protocolVersion,
-                                                                final CloudEvent cloudEvent) {
+        final CloudEvent cloudEvent) {
         final EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
             && cloudEvent instanceof CloudEventV1) {

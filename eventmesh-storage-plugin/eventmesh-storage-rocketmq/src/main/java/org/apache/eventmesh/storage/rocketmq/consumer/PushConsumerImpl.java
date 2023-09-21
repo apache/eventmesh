@@ -163,7 +163,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -234,7 +234,7 @@ public class PushConsumerImpl {
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
-                                                                EventMeshConsumeConcurrentlyContext context) {
+            EventMeshConsumeConcurrentlyContext context) {
             if (msg == null) {
                 return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }

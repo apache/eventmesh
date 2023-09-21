@@ -377,7 +377,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public JdbcConnection preparedQuery(String sql, PreparedStatementFactory preparedStatementFactory, JdbcResultSetConsumer resultConsumer,
-                                        PreparedParameter... preparedParameters)
+        PreparedParameter... preparedParameters)
         throws SQLException {
 
         Connection conn = connection();
@@ -433,7 +433,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public <T> T preparedQuery(String sql, PreparedStatementFactory preparedStatementFactory, ResultSetMapper<T> resultSetMapper,
-                               PreparedParameter... preparedParameters)
+        PreparedParameter... preparedParameters)
         throws SQLException {
 
         Connection conn = connection();

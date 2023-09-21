@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CloudEventUtils {
 
     public static SendResult convertSendResult(
-                                               org.apache.rocketmq.client.producer.SendResult rmqResult) {
+        org.apache.rocketmq.client.producer.SendResult rmqResult) {
         SendResult sendResult = new SendResult();
         sendResult.setTopic(rmqResult.getMessageQueue().getTopic());
         sendResult.setMessageId(rmqResult.getMsgId());

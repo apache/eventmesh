@@ -42,5 +42,5 @@ public interface WebHookConfigOperation {
     WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
 
     List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                         Integer pageSize);
+        Integer pageSize);
 }

@@ -48,8 +48,8 @@ public class SendMessageBatchResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static SendMessageBatchResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                             String eventMeshIp, String eventMeshEnv,
-                                                             String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader = new SendMessageBatchResponseHeader();
         sendMessageBatchResponseHeader.setCode(requestCode);
         sendMessageBatchResponseHeader.setEventMeshCluster(eventMeshCluster);

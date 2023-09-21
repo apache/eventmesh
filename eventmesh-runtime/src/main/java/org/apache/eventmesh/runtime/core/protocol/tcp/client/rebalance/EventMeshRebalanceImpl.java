@@ -123,7 +123,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
     }
 
     private void doRebalanceRedirect(String currEventMeshName, String group, String purpose, Map<String, String> eventMeshMap,
-                                     Map<String, Integer> clientDistributionMap)
+        Map<String, Integer> clientDistributionMap)
         throws Exception {
         if (MapUtils.isEmpty(clientDistributionMap)) {
             return;
@@ -176,8 +176,8 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
     }
 
     private List<String> selectRedirectEventMesh(String group, Map<String, String> eventMeshMap,
-                                                 Map<String, Integer> clientDistributionMap, int judge,
-                                                 String eventMeshName)
+        Map<String, Integer> clientDistributionMap, int judge,
+        String eventMeshName)
         throws Exception {
         EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
         return eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap,
@@ -219,7 +219,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
     }
 
     private Map<String, Integer> queryLocalEventMeshDistributeData(String cluster, String group, String purpose,
-                                                                   Map<String, String> eventMeshMap) {
+        Map<String, String> eventMeshMap) {
         Map<String, Integer> localEventMeshDistributeData = null;
         Map<String, Map<String, Integer>> eventMeshClientDistributionDataMap = null;
         try {

@@ -91,7 +91,7 @@ public final class HttpClientGroupMapping {
     }
 
     public boolean addSubscription(final String consumerGroup, final String url, final String clientIdc,
-                                   final List<SubscriptionItem> subscriptionList) {
+        final List<SubscriptionItem> subscriptionList) {
         Objects.requireNonNull(url, "url can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(clientIdc, "clientIdc can not be null");
@@ -110,7 +110,7 @@ public final class HttpClientGroupMapping {
     }
 
     public boolean removeSubscription(final String consumerGroup, final String unSubscribeUrl, final String clientIdc,
-                                      final List<String> unSubTopicList) {
+        final List<String> unSubTopicList) {
         Objects.requireNonNull(unSubTopicList, "unSubTopicList can not be null");
 
         boolean isChange = false;
@@ -183,9 +183,9 @@ public final class HttpClientGroupMapping {
     }
 
     public boolean addSubscriptionForRequestCode(final SubscribeRequestHeader subscribeRequestHeader,
-                                                 final String consumerGroup,
-                                                 final String url,
-                                                 final List<SubscriptionItem> subscriptionList) {
+        final String consumerGroup,
+        final String url,
+        final List<SubscriptionItem> subscriptionList) {
         Objects.requireNonNull(url, "url can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(subscribeRequestHeader, "subscribeRequestHeader can not be null");
@@ -207,7 +207,7 @@ public final class HttpClientGroupMapping {
     }
 
     private boolean addSubscriptionByTopic(final String consumerGroup, final String url, final String clientIdc,
-                                           final SubscriptionItem subTopic) {
+        final SubscriptionItem subTopic) {
         Objects.requireNonNull(url, "url can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(clientIdc, "clientIdc can not be null");
@@ -296,7 +296,7 @@ public final class HttpClientGroupMapping {
     }
 
     private boolean removeSubscriptionByTopic(final String consumerGroup, final String unSubscribeUrl,
-                                              final String clientIdc, final String unSubTopic) {
+        final String clientIdc, final String unSubTopic) {
         Objects.requireNonNull(unSubscribeUrl, "unSubscribeUrl can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(clientIdc, "clientIdc can not be null");
@@ -374,7 +374,7 @@ public final class HttpClientGroupMapping {
     }
 
     private void registerClientForSub(final SubscribeRequestHeader subscribeRequestHeader, final String consumerGroup,
-                                      final List<SubscriptionItem> subscriptionItems, final String url) {
+        final List<SubscriptionItem> subscriptionItems, final String url) {
         Objects.requireNonNull(subscribeRequestHeader, "subscribeRequestHeader can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
@@ -406,9 +406,9 @@ public final class HttpClientGroupMapping {
     }
 
     public boolean removeSubscriptionForRequestCode(final UnSubscribeRequestHeader unSubscribeRequestHeader,
-                                                    final String consumerGroup,
-                                                    final String unSubscribeUrl,
-                                                    final List<String> unSubTopicList) {
+        final String consumerGroup,
+        final String unSubscribeUrl,
+        final List<String> unSubTopicList) {
         Objects.requireNonNull(unSubTopicList, "unSubTopicList can not be null");
         Objects.requireNonNull(unSubscribeRequestHeader, "unSubscribeRequestHeader can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
@@ -433,9 +433,9 @@ public final class HttpClientGroupMapping {
     }
 
     private void registerClientForUnsub(final UnSubscribeRequestHeader unSubscribeRequestHeader,
-                                        final String consumerGroup,
-                                        final List<String> topicList,
-                                        final String url) {
+        final String consumerGroup,
+        final List<String> topicList,
+        final String url) {
         Objects.requireNonNull(topicList, "topicList can not be null");
         Objects.requireNonNull(unSubscribeRequestHeader, "unSubscribeRequestHeader can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");

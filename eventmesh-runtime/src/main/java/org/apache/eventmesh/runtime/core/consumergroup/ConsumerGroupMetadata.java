@@ -46,7 +46,7 @@ public class ConsumerGroupMetadata {
     }
 
     public void setConsumerGroupTopicMetadataMap(
-                                                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap) {
+        Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap) {
         this.consumerGroupTopicMetadataMap = consumerGroupTopicMetadataMap;
     }
 }

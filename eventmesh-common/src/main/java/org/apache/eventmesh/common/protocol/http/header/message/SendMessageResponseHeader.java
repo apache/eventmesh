@@ -48,8 +48,8 @@ public class SendMessageResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static SendMessageResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                        String eventMeshIp, String eventMeshEnv,
-                                                        String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         SendMessageResponseHeader sendMessageResponseHeader = new SendMessageResponseHeader();
         sendMessageResponseHeader.setCode(requestCode);
         sendMessageResponseHeader.setEventMeshCluster(eventMeshCluster);

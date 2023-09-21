@@ -45,8 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EventMeshTcp2Client {
 
     public static InetSocketAddress serverGoodby2Client(TCPThreadPoolGroup tcpThreadPoolGroup,
-                                                        Session session,
-                                                        ClientSessionGroupMapping mapping) {
+        Session session,
+        ClientSessionGroupMapping mapping) {
         log.info("serverGoodby2Client client[{}]", session.getClient());
         try {
             long startTime = System.currentTimeMillis();
@@ -73,8 +73,8 @@ public class EventMeshTcp2Client {
     }
 
     public static InetSocketAddress goodBye2Client(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
-                                                   String errMsg, int eventMeshStatus,
-                                                   ClientSessionGroupMapping mapping) {
+        String errMsg, int eventMeshStatus,
+        ClientSessionGroupMapping mapping) {
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
@@ -98,7 +98,7 @@ public class EventMeshTcp2Client {
     }
 
     public static void goodBye2Client(ChannelHandlerContext ctx, String errMsg, ClientSessionGroupMapping mapping,
-                                      EventMeshTcpMonitor eventMeshTcpMonitor) {
+        EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
         eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
@@ -118,7 +118,7 @@ public class EventMeshTcp2Client {
     }
 
     public static String redirectClient2NewEventMesh(TCPThreadPoolGroup tcpThreadPoolGroup, String newEventMeshIp,
-                                                     int port, Session session, ClientSessionGroupMapping mapping) {
+        int port, Session session, ClientSessionGroupMapping mapping) {
         log.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(), newEventMeshIp + ":"
             + port);
         try {
@@ -144,7 +144,7 @@ public class EventMeshTcp2Client {
     }
 
     public static void closeSessionIfTimeout(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
-                                             ClientSessionGroupMapping mapping) {
+        ClientSessionGroupMapping mapping) {
         tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
 
             @Override

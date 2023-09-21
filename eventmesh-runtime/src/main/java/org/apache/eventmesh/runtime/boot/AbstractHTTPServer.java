@@ -192,7 +192,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * Registers the processors required by the runtime module
      */
     public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor,
-                                  final ThreadPoolExecutor executor) {
+        final ThreadPoolExecutor executor) {
         AssertUtils.notNull(requestCode, "requestCode can't be null");
         AssertUtils.notNull(processor, "processor can't be null");
         AssertUtils.notNull(executor, "executor can't be null");

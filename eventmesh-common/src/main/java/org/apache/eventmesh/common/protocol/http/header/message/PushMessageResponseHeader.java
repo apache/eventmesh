@@ -65,7 +65,7 @@ public class PushMessageResponseHeader extends Header {
     private String passwd;
 
     public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
-                                                        String clientSysId, String clientPid, String clientIP) {
+        String clientSysId, String clientPid, String clientIP) {
         PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
         pushMessageResponseHeader.setCode(requestCode);
         pushMessageResponseHeader.setVersion(ProtocolVersion.V1);

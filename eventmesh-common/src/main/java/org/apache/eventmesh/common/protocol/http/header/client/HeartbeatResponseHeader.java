@@ -43,8 +43,8 @@ public class HeartbeatResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static HeartbeatResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                      String eventMeshIp, String eventMeshEnv,
-                                                      String eventMeshIDC) {
+        String eventMeshIp, String eventMeshEnv,
+        String eventMeshIDC) {
         HeartbeatResponseHeader heartbeatResponseHeader = new HeartbeatResponseHeader();
         heartbeatResponseHeader.setCode(requestCode);
         heartbeatResponseHeader.setEventMeshCluster(eventMeshCluster);

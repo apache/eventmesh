@@ -84,14 +84,14 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
-                                 SubscriptionType subscriptionType)
+        SubscriptionType subscriptionType)
         throws Exception {
         return this.subClient.justSubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType)
+        SubscriptionType subscriptionType)
         throws Exception {
         return this.subClient.justUnsubscribe(topic, subscriptionMode, subscriptionType);
     }

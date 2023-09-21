@@ -66,7 +66,7 @@ public class ProducerManager {
     }
 
     private synchronized EventMeshProducer createEventMeshProducer(
-                                                                   ProducerGroupConf producerGroupConfig)
+        ProducerGroupConf producerGroupConfig)
         throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());

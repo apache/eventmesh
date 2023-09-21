@@ -108,7 +108,7 @@ public class HTTPMetricsServer {
     // todo: move this into standalone metrics plugin
 
     private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
-                                       final EventMeshHTTPServer eventMeshHTTPServer) {
+        final EventMeshHTTPServer eventMeshHTTPServer) {
         if (log.isInfoEnabled()) {
             log.info("===========================================SERVER METRICS==================================================");
 

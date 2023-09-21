@@ -167,7 +167,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
      *
      */
     public void registerProcessor(final Command command, final TcpProcessor processor,
-                                  final ThreadPoolExecutor executor) {
+        final ThreadPoolExecutor executor) {
         AssertUtils.notNull(command, "command can't be null");
         AssertUtils.notNull(processor, "processor can't be null");
         AssertUtils.notNull(executor, "executor can't be null");
@@ -286,7 +286,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         }
 
         private void processHttpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
-                                               final long startTime, final Command cmd) {
+            final long startTime, final Command cmd) {
 
             Pair<TcpProcessor, ThreadPoolExecutor> pair = tcpRequestProcessorTable.get(cmd);
             pair.getObject2().submit(() -> {

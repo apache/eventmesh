@@ -49,7 +49,7 @@ public class SendMessageBatchV2ResponseHeader extends Header {
     private String eventMeshIdc;
 
     public static SendMessageBatchV2ResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                               String eventMeshEnv, String eventMeshIDC) {
+        String eventMeshEnv, String eventMeshIDC) {
         SendMessageBatchV2ResponseHeader header = new SendMessageBatchV2ResponseHeader();
         header.setCode(requestCode);
         header.setEventMeshCluster(eventMeshCluster);
