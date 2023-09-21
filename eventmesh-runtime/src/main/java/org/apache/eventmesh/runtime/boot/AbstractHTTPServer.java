@@ -114,7 +114,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private Boolean useTrace = false; // Determine whether trace is enabled
     private static final int MAX_CONNECTIONS = 20_000;
 
-    protected final transient Map<String/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
+    /**
+     * request code
+     */
+    protected final transient Map<String, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
         new ConcurrentHashMap<>(64);
 
     private HttpConnectionHandler httpConnectionHandler;
