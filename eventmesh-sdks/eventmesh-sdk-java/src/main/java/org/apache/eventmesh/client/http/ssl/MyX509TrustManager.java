@@ -46,11 +46,10 @@ public class MyX509TrustManager implements X509TrustManager {
         final String pass = System.getProperty("ssl.client.pass", "");
         final char[] filePass = StringUtils.isNotBlank(pass) ? pass.toCharArray() : new char[0];
 
-        try (
-            InputStream in = Files.newInputStream(
-                Paths.get(System.getProperty("confPath", System.getenv("confPath"))
-                    + File.separator + fileName),
-                StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(
+            Paths.get(System.getProperty("confPath", System.getenv("confPath"))
+                + File.separator + fileName),
+            StandardOpenOption.READ)) {
             keyStore.load(in, filePass);
         }
 

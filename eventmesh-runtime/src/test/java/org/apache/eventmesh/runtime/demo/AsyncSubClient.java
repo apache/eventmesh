@@ -30,9 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncSubClient {
 
     public static void main(String[] args) throws Exception {
-        try (
-            SubClientImpl client =
-                new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
+        try (SubClientImpl client =
+            new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);

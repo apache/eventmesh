@@ -46,9 +46,8 @@ public class CloudEventsSubscribeReply extends GrpcAbstractDemo implements Recei
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.SYNC);
 
-        try (
-            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 

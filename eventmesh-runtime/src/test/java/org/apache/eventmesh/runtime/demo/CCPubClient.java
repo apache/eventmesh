@@ -25,9 +25,8 @@ import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 public class CCPubClient {
 
     public static void main(String[] args) throws Exception {
-        try (
-            PubClientImpl pubClient =
-                new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+        try (PubClientImpl pubClient =
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
 

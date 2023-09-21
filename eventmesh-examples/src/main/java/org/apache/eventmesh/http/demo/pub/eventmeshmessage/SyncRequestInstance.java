@@ -35,9 +35,8 @@ public class SyncRequestInstance extends HttpAbstractDemo {
 
         final String topic = ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC;
 
-        try (
-            EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()

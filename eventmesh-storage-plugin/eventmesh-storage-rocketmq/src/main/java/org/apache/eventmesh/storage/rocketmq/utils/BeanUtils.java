@@ -128,8 +128,7 @@ public final class BeanUtils {
     }
 
     public static void setProperties(Class<?> clazz, Object obj, String methodName,
-        Object value)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> parameterClass = getMethodClass(clazz, methodName);
         Method setterMethod = clazz.getMethod(methodName, parameterClass);
         if (parameterClass == Boolean.TYPE) {

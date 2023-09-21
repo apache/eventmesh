@@ -52,8 +52,7 @@ public class GithubProtocol implements ManufacturerProtocol {
 
     @Override
     public void execute(final WebHookRequest webHookRequest, final WebHookConfig webHookConfig,
-        final Map<String, String> header)
-        throws Exception {
+        final Map<String, String> header) throws Exception {
 
         final String fromSignature = header.get(FROM_SIGNATURE);
         if (Boolean.FALSE.equals(isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret()))) {

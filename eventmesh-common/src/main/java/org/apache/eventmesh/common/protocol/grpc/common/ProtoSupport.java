@@ -33,7 +33,8 @@ public class ProtoSupport {
             || "application/json".equals(contentType)
             || "application/xml".equals(contentType)
             || contentType.endsWith("+json")
-            || contentType.endsWith("+xml");
+            || contentType.endsWith("+xml")
+            ;
     }
 
     public static boolean isProtoContent(String contentType) {

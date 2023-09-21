@@ -45,9 +45,8 @@ public class EventMeshSubscribeBroadcast extends GrpcAbstractDemo implements Rec
         subscriptionItem.setMode(SubscriptionMode.BROADCASTING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
-        try (
-            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
 
             eventMeshGrpcConsumer.init();
 

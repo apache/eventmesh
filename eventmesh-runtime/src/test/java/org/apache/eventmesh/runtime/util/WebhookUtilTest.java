@@ -42,8 +42,7 @@ public class WebhookUtilTest {
     @Test
     public void testObtainDeliveryAgreement() {
         // normal case
-        try (
-            CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+        try (CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
             CloseableHttpClient httpClient2 = mock(CloseableHttpClient.class)) {
 

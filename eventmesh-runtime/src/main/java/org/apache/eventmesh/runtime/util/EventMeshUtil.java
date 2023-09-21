@@ -297,14 +297,12 @@ public class EventMeshUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> T cloneObject(final T object) throws IOException, ClassNotFoundException {
-        try (
-            ByteArrayOutputStream byOut = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream byOut = new ByteArrayOutputStream();
             ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
 
             outputStream.writeObject(object);
 
-            try (
-                ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
+            try (ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
                 ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
                 return (T) inputStream.readObject();
             }

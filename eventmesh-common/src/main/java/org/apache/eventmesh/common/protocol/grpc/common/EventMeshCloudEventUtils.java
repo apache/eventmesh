@@ -285,6 +285,7 @@ public abstract class EventMeshCloudEventUtils {
         ByteString binaryData = cloudEvent.getBinaryData();
         return ByteString.EMPTY == binaryData ? defaultValue : binaryData.toStringUtf8();
 
+
     }
 
     public static Map<String, String> getAttributes(final CloudEvent cloudEvent) {

@@ -29,9 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SyncPubClient {
 
     public static void main(String[] args) throws Exception {
-        try (
-            PubClientImpl pubClient =
-                new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+        try (PubClientImpl pubClient =
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
 

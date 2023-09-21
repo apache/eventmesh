@@ -37,9 +37,8 @@ public class CloudEventsBatchPublishInstance extends GrpcAbstractDemo {
 
     public static void main(String[] args) throws Exception {
 
-        try (
-            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testBatchPublishMessage");

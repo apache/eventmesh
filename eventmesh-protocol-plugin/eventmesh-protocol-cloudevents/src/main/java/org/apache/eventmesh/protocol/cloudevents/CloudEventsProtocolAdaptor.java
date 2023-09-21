@@ -86,8 +86,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
         org.apache.eventmesh.common.protocol.http.header.Header header,
-        Body body)
-        throws ProtocolHandleException {
+        Body body) throws ProtocolHandleException {
 
         switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:

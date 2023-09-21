@@ -87,9 +87,8 @@ public class PropertiesUtils {
         if (!file.exists()) {
             return;
         }
-        try (
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(file), cs))) {
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(new FileInputStream(file), cs))) {
             properties.load(reader);
         }
     }

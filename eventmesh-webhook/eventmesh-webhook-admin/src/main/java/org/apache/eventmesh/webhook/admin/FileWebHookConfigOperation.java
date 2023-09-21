@@ -159,9 +159,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     private WebHookConfig getWebHookConfigFromFile(final File webhookConfigFile) {
         final StringBuilder fileContent = new StringBuilder();
 
-        try (
-            BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
-                StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
+            StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {
                 fileContent.append(line);
@@ -179,8 +178,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
         // Wait for the previous cacheInit to complete in case of concurrency
         synchronized (SharedLatchHolder.lock) {
-            try (
-                FileOutputStream fos = new FileOutputStream(webhookConfigFile);
+            try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
                 // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
                 fos.getChannel().lock();

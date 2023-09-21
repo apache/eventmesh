@@ -53,9 +53,8 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
-        try (
-            EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
+        try (EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP))) {
             eventMeshGrpcConsumer.init();
             eventMeshGrpcConsumer.registerListener(new WorkflowOrderAsyncSubscribe());
 

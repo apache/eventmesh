@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import com.google.protobuf.Timestamp;
 
+
 public class EventMeshCloudEventUtilsTest {
 
     private CloudEvent cloudEvent;
@@ -265,5 +266,6 @@ public class EventMeshCloudEventUtilsTest {
         Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent, "http://127.0.0.2"));
         Assert.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getDataContent(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
     }
+
 
 }

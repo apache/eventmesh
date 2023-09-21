@@ -39,15 +39,13 @@ public class DefaultColumn extends Column<DefaultColumn> {
     }
 
     public static DefaultColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal,
-        boolean notNull,
+        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
         String comment, Object defaultValue, String defaultValueExpression) {
         return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression);
     }
 
     public static DefaultColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal,
-        boolean notNull,
+        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
         String comment, Object defaultValue, String defaultValueExpression, int order) {
         return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
     }

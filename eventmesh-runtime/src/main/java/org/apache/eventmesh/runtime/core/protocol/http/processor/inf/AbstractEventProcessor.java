@@ -198,8 +198,7 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
      */
     public static String post(CloseableHttpClient client, String uri,
         Map<String, String> requestHeader, Map<String, Object> requestBody,
-        ResponseHandler<String> responseHandler)
-        throws IOException {
+        ResponseHandler<String> responseHandler) throws IOException {
         AssertUtils.notNull(client, "client can't be null");
         AssertUtils.notBlank(uri, "uri can't be null");
         AssertUtils.notNull(requestHeader, "requestParam can't be null");

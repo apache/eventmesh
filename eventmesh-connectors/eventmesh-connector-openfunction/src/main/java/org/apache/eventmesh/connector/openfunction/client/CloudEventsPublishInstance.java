@@ -45,9 +45,8 @@ public class CloudEventsPublishInstance {
 
     public static void main(String[] args) throws Exception {
 
-        try (
-            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig("FUNCTION_PRODUCER_GROUP"))) {
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+            initEventMeshGrpcClientConfig("FUNCTION_PRODUCER_GROUP"))) {
 
             final Map<String, String> content = new HashMap<>();
             content.put("content", "testAsyncMessage");

@@ -29,6 +29,5 @@ public interface EventMeshRecommendStrategy {
 
     List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap,
         Map<String, Integer> clientDistributeMap, String group,
-        int recommendNum, String eventMeshName)
-        throws Exception;
+        int recommendNum, String eventMeshName) throws Exception;
 }

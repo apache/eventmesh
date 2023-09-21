@@ -47,9 +47,8 @@ public class WorkflowAsyncPublishInstance extends GrpcAbstractDemo {
         final String workflowServerName = properties.getProperty(ExampleConstants.EVENTMESH_WORKFLOW_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
-        try (
-            EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
-                initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(
+            initEventMeshGrpcClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
 
             NacosSelector nacosSelector = new NacosSelector();
             nacosSelector.init();

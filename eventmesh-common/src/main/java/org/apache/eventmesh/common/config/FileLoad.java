@@ -70,15 +70,13 @@ public interface FileLoad {
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             final Properties properties = new Properties();
             if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {
-                try (
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    Objects.requireNonNull(getClass().getResourceAsStream(configInfo.getResourceUrl())), Constants.DEFAULT_CHARSET))) {
                     properties.load(reader);
                 }
             } else {
-                try (
-                    BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(Files.newInputStream(Paths.get(configInfo.getFilePath())), Constants.DEFAULT_CHARSET))) {
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(Files.newInputStream(Paths.get(configInfo.getFilePath())), Constants.DEFAULT_CHARSET))) {
                     properties.load(reader);
                 }
             }

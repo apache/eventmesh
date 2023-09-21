@@ -112,8 +112,7 @@ public class Acl {
     }
 
     public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-        String requestURI)
-        throws AclException {
+        String requestURI) throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
@@ -123,20 +122,17 @@ public class Acl {
     }
 
     public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-        int requestCode)
-        throws AclException {
+        int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
     public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-        String requestURI)
-        throws AclException {
+        String requestURI) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
     public void doAclCheckInTcpReceive(String remoteAddr, String token, String subsystem, String topic,
-        String requestURI, Object obj)
-        throws AclException {
+        String requestURI, Object obj) throws AclException {
         aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
     }
 
@@ -145,8 +141,7 @@ public class Acl {
     }
 
     public void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
-        int requestCode)
-        throws AclException {
+        int requestCode) throws AclException {
         aclService.doAclCheckInHeartbeat(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 

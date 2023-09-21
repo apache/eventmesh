@@ -34,9 +34,8 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
 
     public static void main(String[] args) throws Exception {
 
-        try (
-            EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
-                initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .bizSeqNo(RandomStringUtils.generateNum(30))

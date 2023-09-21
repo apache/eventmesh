@@ -108,8 +108,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         final Map<String, Integer> clientDistributedMap,
         final String group,
         final int recommendProxyNum,
-        final String eventMeshName)
-        throws Exception {
+        final String eventMeshName) throws Exception {
         Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
         Objects.requireNonNull(clientDistributedMap, "clientDistributedMap can not be null");
 
