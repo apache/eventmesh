@@ -179,13 +179,9 @@ public class WebhookPushRequest extends AbstractPushRequest {
             long cost = System.currentTimeMillis() - lastPushTime;
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-
-                MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}",
-                    selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
-
+                MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", selectedPushUrl,
+                    EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 delayRetry();
             } else {
                 String res = "";
