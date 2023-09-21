@@ -279,11 +279,8 @@ public class EventMeshUtil {
     public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
         if (log.isInfoEnabled()) {
             log.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
-                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(),
-                scheduledExecutorService
-                    .getPoolSize(),
-                scheduledExecutorService.getActiveCount(), scheduledExecutorService
-                    .getCompletedTaskCount());
+                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService.getPoolSize(),
+                scheduledExecutorService.getActiveCount(), scheduledExecutorService.getCompletedTaskCount());
         }
     }
 
