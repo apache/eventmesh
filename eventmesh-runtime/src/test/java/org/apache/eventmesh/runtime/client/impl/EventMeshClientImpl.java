@@ -126,15 +126,17 @@ public class EventMeshClientImpl implements EventMeshClient {
         // (busiTag, subSystem));
     }
 
-    // @Override
-    // public void sysLog() throws Exception {
-    // subClient.sysLog();
-    // }
-    //
-    // @Override
-    // public void traceLog() throws Exception {
-    // subClient.traceLog();
-    // }
+    /**
+     * @Override
+     * public void sysLog() throws Exception {
+     *     subClient.sysLog();
+     * }
+     *
+     *@Override
+     *public void traceLog() throws Exception {
+     *    subClient.traceLog();
+     *}
+     */
 
     @Override
     public void goodbye() throws Exception {

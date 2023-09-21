@@ -139,16 +139,21 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    // @Override
-    // public void traceLog() throws Exception {
-    // Package msg = MessageUtils.traceLog();
-    // this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    // }
+    /**
+     * @Override
+     * public void traceLog() throws Exception {
+     *     Package msg = MessageUtils.traceLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+    **/
 
-    // public void sysLog() throws Exception {
-    // Package msg = MessageUtils.sysLog();
-    // this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    // }
+    /**
+     *
+     * public void sysLog() throws Exception {
+     *     Package msg = MessageUtils.sysLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+     */
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
         SubscriptionType subscriptionType) throws Exception {
