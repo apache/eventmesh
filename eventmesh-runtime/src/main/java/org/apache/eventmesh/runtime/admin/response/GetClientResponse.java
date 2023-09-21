@@ -39,17 +39,17 @@ public class GetClientResponse {
 
     @JsonCreator
     public GetClientResponse(
-                             @JsonProperty("env") String env,
-                             @JsonProperty("subsystem") String subsystem,
-                             @JsonProperty("url") String url,
-                             @JsonProperty("pid") String pid,
-                             @JsonProperty("host") String host,
-                             @JsonProperty("port") int port,
-                             @JsonProperty("version") String version,
-                             @JsonProperty("idc") String idc,
-                             @JsonProperty("group") String group,
-                             @JsonProperty("purpose") String purpose,
-                             @JsonProperty("protocol") String protocol) {
+        @JsonProperty("env") String env,
+        @JsonProperty("subsystem") String subsystem,
+        @JsonProperty("url") String url,
+        @JsonProperty("pid") String pid,
+        @JsonProperty("host") String host,
+        @JsonProperty("port") int port,
+        @JsonProperty("version") String version,
+        @JsonProperty("idc") String idc,
+        @JsonProperty("group") String group,
+        @JsonProperty("purpose") String purpose,
+        @JsonProperty("protocol") String protocol) {
 
         super();
         this.env = env;

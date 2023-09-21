@@ -51,8 +51,8 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     private final ThreadPoolExecutor replyThreadPoolExecutor;
 
     public ConsumerService(EventMeshGrpcServer eventMeshGrpcServer,
-                           ThreadPoolExecutor subscribeThreadPoolExecutor,
-                           ThreadPoolExecutor replyThreadPoolExecutor) {
+        ThreadPoolExecutor subscribeThreadPoolExecutor,
+        ThreadPoolExecutor replyThreadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.subscribeThreadPoolExecutor = subscribeThreadPoolExecutor;
         this.replyThreadPoolExecutor = replyThreadPoolExecutor;

@@ -88,9 +88,9 @@ public class ClientManageController {
      * @param eventMeshMetaStorage the registry adaptor of EventMesh
      */
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
-                                  EventMeshHTTPServer eventMeshHTTPServer,
-                                  EventMeshGrpcServer eventMeshGrpcServer,
-                                  MetaStorage eventMeshMetaStorage) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        MetaStorage eventMeshMetaStorage) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;

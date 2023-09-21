@@ -43,7 +43,7 @@ public class MysqlJdbcConnection extends JdbcConnection {
     }
 
     public MysqlJdbcConnection(JdbcConfig jdbcConfig, InitialOperation initialOperation, ConnectionFactory connectionFactory,
-                               boolean lazyConnection) {
+        boolean lazyConnection) {
         super(jdbcConfig, initialOperation, connectionFactory, lazyConnection);
     }
 

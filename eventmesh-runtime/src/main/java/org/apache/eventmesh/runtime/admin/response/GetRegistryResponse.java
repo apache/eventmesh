@@ -33,11 +33,11 @@ public class GetRegistryResponse {
 
     @JsonCreator
     public GetRegistryResponse(
-                               @JsonProperty("eventMeshClusterName") String eventMeshClusterName,
-                               @JsonProperty("eventMeshName") String eventMeshName,
-                               @JsonProperty("endpoint") String endpoint,
-                               @JsonProperty("lastUpdateTimestamp") long lastUpdateTimestamp,
-                               @JsonProperty("metadata") String metadata) {
+        @JsonProperty("eventMeshClusterName") String eventMeshClusterName,
+        @JsonProperty("eventMeshName") String eventMeshName,
+        @JsonProperty("endpoint") String endpoint,
+        @JsonProperty("lastUpdateTimestamp") long lastUpdateTimestamp,
+        @JsonProperty("metadata") String metadata) {
         super();
         this.eventMeshClusterName = eventMeshClusterName;
         this.eventMeshName = eventMeshName;

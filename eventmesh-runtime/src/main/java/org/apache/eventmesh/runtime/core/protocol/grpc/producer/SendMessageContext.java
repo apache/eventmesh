@@ -46,7 +46,7 @@ public class SendMessageContext extends RetryContext {
     public EventMeshGrpcServer eventMeshGrpcServer;
 
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
-                              EventMeshGrpcServer eventMeshGrpcServer) {
+        EventMeshGrpcServer eventMeshGrpcServer) {
         this.bizSeqNo = bizSeqNo;
         this.event = event;
         this.eventMeshProducer = eventMeshProducer;

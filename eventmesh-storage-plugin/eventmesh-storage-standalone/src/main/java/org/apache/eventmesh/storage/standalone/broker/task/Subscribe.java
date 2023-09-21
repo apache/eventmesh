@@ -42,8 +42,8 @@ public class Subscribe {
     private AtomicInteger offset;
 
     public Subscribe(String topicName,
-                     StandaloneBroker standaloneBroker,
-                     EventListener listener) {
+        StandaloneBroker standaloneBroker,
+        EventListener listener) {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;

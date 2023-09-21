@@ -33,7 +33,7 @@ public class EventMeshThreadFactory implements ThreadFactory {
     private final Integer priority;
 
     public EventMeshThreadFactory(final String threadNamePrefix, final AtomicInteger threadIndex, final boolean daemon,
-                                  final Integer priority) {
+        final Integer priority) {
         this.threadNamePrefix = threadNamePrefix;
         this.threadIndex = threadIndex;
         this.daemon = daemon;
@@ -41,7 +41,7 @@ public class EventMeshThreadFactory implements ThreadFactory {
     }
 
     public EventMeshThreadFactory(final String threadNamePrefix, final AtomicInteger threadIndex,
-                                  final boolean daemon) {
+        final boolean daemon) {
         this(threadNamePrefix, threadIndex, daemon, null);
     }
 

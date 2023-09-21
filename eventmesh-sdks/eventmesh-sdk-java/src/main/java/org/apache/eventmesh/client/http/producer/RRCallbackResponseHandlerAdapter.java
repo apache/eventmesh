@@ -50,7 +50,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
     private final transient long timeout;
 
     public RRCallbackResponseHandlerAdapter(final ProtocolMessage protocolMessage, final RRCallback<ProtocolMessage> rrCallback,
-                                            final long timeout) {
+        final long timeout) {
         Objects.requireNonNull(rrCallback, "rrCallback invalid");
         Objects.requireNonNull(protocolMessage, "message invalid");
 

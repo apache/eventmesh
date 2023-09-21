@@ -34,8 +34,7 @@ public class MysqlColumn extends Column<MysqlColumn> {
     private String collationName;
 
     public MysqlColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-                       String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
-                       String collationName) {
+        String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0);
         this.autoIncremented = autoIncremented;
         this.generated = generated;
@@ -43,9 +42,8 @@ public class MysqlColumn extends Column<MysqlColumn> {
     }
 
     public MysqlColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-                       String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated,
-                       String collationName,
-                       int order) {
+        String comment, Object defaultValue, String defaultValueExpression, boolean autoIncremented, boolean generated, String collationName,
+        int order) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
         this.autoIncremented = autoIncremented;
         this.generated = generated;

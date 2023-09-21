@@ -29,12 +29,12 @@ import lombok.NoArgsConstructor;
 public class DefaultColumn extends Column<DefaultColumn> {
 
     public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-                         String comment, Object defaultValue, String defaultValueExpression) {
+        String comment, Object defaultValue, String defaultValueExpression) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0);
     }
 
     public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-                         String comment, Object defaultValue, String defaultValueExpression, int order) {
+        String comment, Object defaultValue, String defaultValueExpression, int order) {
         super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
     }
 

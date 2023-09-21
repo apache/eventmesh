@@ -76,17 +76,17 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(final String msgRandomNo,
-                            final String consumerGroup,
-                            final EventMeshConsumer eventMeshConsumer,
-                            final String topic,
-                            final CloudEvent event,
-                            final SubscriptionItem subscriptionItem,
-                            final AbstractContext context,
-                            final ConsumerGroupConf consumerGroupConfig,
-                            final EventMeshHTTPServer eventMeshHTTPServer,
-                            final String bizSeqNo,
-                            final String uniqueId,
-                            final ConsumerGroupTopicConf consumeTopicConfig) {
+        final String consumerGroup,
+        final EventMeshConsumer eventMeshConsumer,
+        final String topic,
+        final CloudEvent event,
+        final SubscriptionItem subscriptionItem,
+        final AbstractContext context,
+        final ConsumerGroupConf consumerGroupConfig,
+        final EventMeshHTTPServer eventMeshHTTPServer,
+        final String bizSeqNo,
+        final String uniqueId,
+        final ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;

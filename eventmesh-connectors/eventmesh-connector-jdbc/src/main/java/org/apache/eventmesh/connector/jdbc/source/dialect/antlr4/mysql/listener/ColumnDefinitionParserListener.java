@@ -60,7 +60,7 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
     private AtomicReference<Boolean> ignoreColumn = new AtomicReference<>(false);
 
     public ColumnDefinitionParserListener(List<ParseTreeListener> listeners, TableEditor tableEditor, MysqlColumnEditor columnEditor,
-                                          MysqlAntlr4DdlParser parser) {
+        MysqlAntlr4DdlParser parser) {
         this.listeners = listeners;
         this.tableEditor = tableEditor;
         this.columnEditor = columnEditor;

@@ -76,8 +76,8 @@ public class EventHandler extends AbstractHttpHandler {
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public EventHandler(
-                        String connectorPluginType,
-                        HttpHandlerManager httpHandlerManager) {
+        String connectorPluginType,
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {

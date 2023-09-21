@@ -42,8 +42,8 @@ public class HandleMsgContext {
     private final AbstractContext context;
 
     public HandleMsgContext(String consumerGroup, CloudEvent event, SubscriptionMode subscriptionMode, GrpcType grpcType,
-                            AbstractContext context, EventMeshGrpcServer eventMeshGrpcServer,
-                            EventMeshConsumer eventMeshConsumer, ConsumerGroupTopicConfig consumeTopicConfig) {
+        AbstractContext context, EventMeshGrpcServer eventMeshGrpcServer,
+        EventMeshConsumer eventMeshConsumer, ConsumerGroupTopicConfig consumeTopicConfig) {
         this.msgRandomNo = EventMeshUtil.buildPushMsgSeqNo();
         this.consumerGroup = consumerGroup;
         this.grpcType = grpcType;

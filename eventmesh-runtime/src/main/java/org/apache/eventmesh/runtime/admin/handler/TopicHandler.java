@@ -69,8 +69,8 @@ public class TopicHandler extends AbstractHttpHandler {
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public TopicHandler(
-                        String connectorPluginType,
-                        HttpHandlerManager httpHandlerManager) {
+        String connectorPluginType,
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {

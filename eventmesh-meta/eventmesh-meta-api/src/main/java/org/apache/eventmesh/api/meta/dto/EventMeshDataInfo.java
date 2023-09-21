@@ -36,7 +36,7 @@ public class EventMeshDataInfo {
     }
 
     public EventMeshDataInfo(String eventMeshClusterName, String eventMeshName, String endpoint, long lastUpdateTimestamp,
-                             Map<String, String> metadata) {
+        Map<String, String> metadata) {
         this.eventMeshClusterName = eventMeshClusterName;
         this.eventMeshName = eventMeshName;
         this.endpoint = endpoint;

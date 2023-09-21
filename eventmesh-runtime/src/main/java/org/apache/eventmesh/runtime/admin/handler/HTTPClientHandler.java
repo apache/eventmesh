@@ -68,7 +68,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public HTTPClientHandler(
-                             EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }

@@ -55,7 +55,7 @@ public class CatalogChanges {
     private List<? extends Column> columns;
 
     private CatalogChanges(String type, String operationType, CatalogSchema catalog, Table table,
-                           List<? extends Column> columns) {
+        List<? extends Column> columns) {
         this.type = type;
         this.operationType = operationType;
         this.catalog = catalog;

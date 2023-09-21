@@ -66,7 +66,7 @@ public class MetaHandler extends AbstractHttpHandler {
      *                           for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public MetaHandler(MetaStorage eventMeshMetaStorage,
-                       HttpHandlerManager httpHandlerManager) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshMetaStorage = eventMeshMetaStorage;
     }

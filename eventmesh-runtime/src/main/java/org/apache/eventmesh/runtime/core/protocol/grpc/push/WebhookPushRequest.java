@@ -78,7 +78,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
     private final SubscriptionMode subscriptionMode;
 
     public WebhookPushRequest(HandleMsgContext handleMsgContext,
-                              Map<String, Set<AbstractPushRequest>> waitingRequests) {
+        Map<String, Set<AbstractPushRequest>> waitingRequests) {
         super(handleMsgContext, waitingRequests);
 
         WebhookTopicConfig topicConfig = (WebhookTopicConfig) handleMsgContext.getConsumeTopicConfig();

@@ -31,7 +31,7 @@ public class MysqlTableSchema extends TableSchema {
     private Options tableOptions;
 
     public MysqlTableSchema(TableId tableId, Map<String, MysqlColumn> columnMap, List<MysqlColumn> columns, PrimaryKey primaryKey,
-                            List<UniqueKey> uniqueKeys, String comment) {
+        List<UniqueKey> uniqueKeys, String comment) {
         super(tableId, columnMap, columns, primaryKey, uniqueKeys, comment);
     }
 

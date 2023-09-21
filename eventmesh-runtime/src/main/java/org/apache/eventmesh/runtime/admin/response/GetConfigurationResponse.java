@@ -46,28 +46,28 @@ public class GetConfigurationResponse {
 
     @JsonCreator
     public GetConfigurationResponse(
-                                    // Common Configuration
-                                    @JsonProperty("sysID") String sysID,
-                                    @JsonProperty("namesrvAddr") String namesrvAddr,
-                                    @JsonProperty("eventMeshEnv") String eventMeshEnv,
-                                    @JsonProperty("eventMeshIDC") String eventMeshIDC,
-                                    @JsonProperty("eventMeshCluster") String eventMeshCluster,
-                                    @JsonProperty("eventMeshServerIp") String eventMeshServerIp,
-                                    @JsonProperty("eventMeshName") String eventMeshName,
-                                    @JsonProperty("eventMeshWebhookOrigin") String eventMeshWebhookOrigin,
-                                    @JsonProperty("eventMeshServerSecurityEnable") boolean eventMeshServerSecurityEnable,
-                                    @JsonProperty("eventMeshServerRegistryEnable") boolean eventMeshServerRegistryEnable,
+        // Common Configuration
+        @JsonProperty("sysID") String sysID,
+        @JsonProperty("namesrvAddr") String namesrvAddr,
+        @JsonProperty("eventMeshEnv") String eventMeshEnv,
+        @JsonProperty("eventMeshIDC") String eventMeshIDC,
+        @JsonProperty("eventMeshCluster") String eventMeshCluster,
+        @JsonProperty("eventMeshServerIp") String eventMeshServerIp,
+        @JsonProperty("eventMeshName") String eventMeshName,
+        @JsonProperty("eventMeshWebhookOrigin") String eventMeshWebhookOrigin,
+        @JsonProperty("eventMeshServerSecurityEnable") boolean eventMeshServerSecurityEnable,
+        @JsonProperty("eventMeshServerRegistryEnable") boolean eventMeshServerRegistryEnable,
 
-                                    // TCP Configuration
-                                    @JsonProperty("eventMeshTcpServerPort") int eventMeshTcpServerPort,
+        // TCP Configuration
+        @JsonProperty("eventMeshTcpServerPort") int eventMeshTcpServerPort,
 
-                                    // HTTP Configuration
-                                    @JsonProperty("eventMeshHttpServerPort") int eventMeshHttpServerPort,
-                                    @JsonProperty("eventMeshHttpServerUseTls") boolean eventMeshHttpServerUseTls,
+        // HTTP Configuration
+        @JsonProperty("eventMeshHttpServerPort") int eventMeshHttpServerPort,
+        @JsonProperty("eventMeshHttpServerUseTls") boolean eventMeshHttpServerUseTls,
 
-                                    // gRPC Configuration
-                                    @JsonProperty("eventMeshGrpcServerPort") int eventMeshGrpcServerPort,
-                                    @JsonProperty("eventMeshGrpcServerUseTls") boolean eventMeshGrpcServerUseTls) {
+        // gRPC Configuration
+        @JsonProperty("eventMeshGrpcServerPort") int eventMeshGrpcServerPort,
+        @JsonProperty("eventMeshGrpcServerUseTls") boolean eventMeshGrpcServerUseTls) {
 
         super();
         this.sysID = sysID;

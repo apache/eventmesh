@@ -146,7 +146,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
-                                       ConcurrentHashMap<Object, RequestContext> contexts) {
+            ConcurrentHashMap<Object, RequestContext> contexts) {
             super(contexts);
         }
 

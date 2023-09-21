@@ -66,8 +66,8 @@ public class MetricsHandler extends AbstractHttpHandler {
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
-                          EventMeshTCPServer eventMeshTcpServer,
-                          HttpHandlerManager httpHandlerManager) {
+        EventMeshTCPServer eventMeshTcpServer,
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();

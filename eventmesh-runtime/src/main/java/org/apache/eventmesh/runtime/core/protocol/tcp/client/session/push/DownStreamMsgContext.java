@@ -63,8 +63,8 @@ public class DownStreamMsgContext extends RetryContext {
     public final boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
-                                AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
-                                SubscriptionItem subscriptionItem) {
+        AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh,
+        SubscriptionItem subscriptionItem) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.event = event;
         this.session = session;

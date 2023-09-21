@@ -74,7 +74,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
      *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public TCPClientHandler(
-                            EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }

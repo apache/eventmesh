@@ -150,12 +150,12 @@ public class RecordOffsetManagement {
         private final int largestDequeSize;
 
         CommittableOffsets(
-                           Map<RecordPartition, RecordOffset> offsets,
-                           int numCommittableMessages,
-                           int numUncommittableMessages,
-                           int numDeques,
-                           int largestDequeSize,
-                           RecordPartition largestDequePartition) {
+            Map<RecordPartition, RecordOffset> offsets,
+            int numCommittableMessages,
+            int numUncommittableMessages,
+            int numDeques,
+            int largestDequeSize,
+            RecordPartition largestDequePartition) {
             this.offsets = offsets != null ? new HashMap<>(offsets) : Collections.emptyMap();
             this.numCommittableMessages = numCommittableMessages;
             this.numUncommittableMessages = numUncommittableMessages;

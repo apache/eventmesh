@@ -47,7 +47,7 @@ public class EventMeshCatalogClient {
     private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<>();
 
     public EventMeshCatalogClient(final EventMeshCatalogClientConfig clientConfig,
-                                  final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
+        final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
         this.clientConfig = clientConfig;
         this.eventMeshGrpcConsumer = eventMeshGrpcConsumer;
     }

@@ -39,7 +39,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
     private final transient ThreadPoolExecutor threadPoolExecutor;
 
     public HeartbeatService(final EventMeshGrpcServer eventMeshGrpcServer,
-                            final ThreadPoolExecutor threadPoolExecutor) {
+        final ThreadPoolExecutor threadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.threadPoolExecutor = threadPoolExecutor;
     }

@@ -111,9 +111,9 @@ public class HttpSummaryMetrics implements Metric {
     private Lock lock = new ReentrantLock();
 
     public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
-                              final ThreadPoolExecutor sendMsgExecutor,
-                              final ThreadPoolExecutor pushMsgExecutor,
-                              final DelayQueue<?> httpFailedQueue) {
+        final ThreadPoolExecutor sendMsgExecutor,
+        final ThreadPoolExecutor pushMsgExecutor,
+        final DelayQueue<?> httpFailedQueue) {
         this.batchMsgExecutor = batchMsgExecutor;
         this.sendMsgExecutor = sendMsgExecutor;
         this.pushMsgExecutor = pushMsgExecutor;

@@ -42,7 +42,7 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
     private final ThreadPoolExecutor threadPoolExecutor;
 
     public PublisherService(EventMeshGrpcServer eventMeshGrpcServer,
-                            ThreadPoolExecutor threadPoolExecutor) {
+        ThreadPoolExecutor threadPoolExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.threadPoolExecutor = threadPoolExecutor;
     }

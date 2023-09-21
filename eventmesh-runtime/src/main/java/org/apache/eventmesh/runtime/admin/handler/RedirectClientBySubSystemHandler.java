@@ -72,7 +72,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
      *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer,
-                                            final HttpHandlerManager httpHandlerManager) {
+        final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }

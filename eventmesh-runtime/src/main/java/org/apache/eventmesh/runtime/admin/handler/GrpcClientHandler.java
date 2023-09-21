@@ -70,7 +70,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public GrpcClientHandler(
-                             EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager) {
+        EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }

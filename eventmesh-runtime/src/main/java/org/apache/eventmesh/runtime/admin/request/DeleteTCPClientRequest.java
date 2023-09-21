@@ -31,8 +31,8 @@ public class DeleteTCPClientRequest {
 
     @JsonCreator
     public DeleteTCPClientRequest(
-                                  @JsonProperty("host") String host,
-                                  @JsonProperty("port") int port) {
+        @JsonProperty("host") String host,
+        @JsonProperty("port") int port) {
 
         super();
         this.host = host;

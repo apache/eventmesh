@@ -67,10 +67,10 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public ConfigurationHandler(
-                                EventMeshTCPConfiguration eventMeshTCPConfiguration,
-                                EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-                                EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-                                HttpHandlerManager httpHandlerManager) {
+        EventMeshTCPConfiguration eventMeshTCPConfiguration,
+        EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
+        EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;

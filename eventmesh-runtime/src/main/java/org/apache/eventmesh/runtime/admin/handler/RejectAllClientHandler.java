@@ -63,7 +63,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
      *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
-                                  final HttpHandlerManager httpHandlerManager) {
+        final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
