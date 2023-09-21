@@ -115,7 +115,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private static final int MAX_CONNECTIONS = 20_000;
 
     /**
-     * request code
+     * key: request code
      */
     protected final transient Map<String, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
         new ConcurrentHashMap<>(64);
