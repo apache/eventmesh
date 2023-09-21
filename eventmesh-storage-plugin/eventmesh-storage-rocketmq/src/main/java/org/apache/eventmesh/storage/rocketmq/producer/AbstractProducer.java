@@ -114,8 +114,7 @@ public abstract class AbstractProducer {
                     if (e.getCause() instanceof RemotingConnectException) {
                         RemotingConnectException connectException =
                             (RemotingConnectException) e.getCause();
-                        return new StorageRuntimeException(
-                            String.format("Network connection experiences failures. Topic=%s, msgId=%s, %s",
+                        return new StorageRuntimeException(String.format("Network connection experiences failures. Topic=%s, msgId=%s, %s",
                                 topic, msgId, connectException.getMessage()), e);
                     }
                 }
@@ -123,10 +122,8 @@ public abstract class AbstractProducer {
                 // Exception thrown by local.
                 MQClientException clientException = (MQClientException) e;
                 if (-1 == clientException.getResponseCode()) {
-                    return new StorageRuntimeException(
-                        String.format("Topic does not exist, Topic=%s, msgId=%s",
-                            topic, msgId),
-                        e);
+                    return new StorageRuntimeException(String.format("Topic does not exist, Topic=%s, msgId=%s",
+                            topic, msgId), e);
                 } else if (ResponseCode.MESSAGE_ILLEGAL == clientException.getResponseCode()) {
                     return new RMQMessageFormatException(
                         String.format("A illegal message for RocketMQ, Topic=%s, msgId=%s",
