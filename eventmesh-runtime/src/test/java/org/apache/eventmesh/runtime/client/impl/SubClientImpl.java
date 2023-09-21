@@ -127,7 +127,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
         this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception {
+    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);

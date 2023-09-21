@@ -89,8 +89,7 @@ public class StreamPushRequest extends AbstractPushRequest {
             } catch (Throwable t) {
                 long cost = System.currentTimeMillis() - lastPushTime;
                 log.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}",
-                    t.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    t.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, t);
 
                 delayRetry();

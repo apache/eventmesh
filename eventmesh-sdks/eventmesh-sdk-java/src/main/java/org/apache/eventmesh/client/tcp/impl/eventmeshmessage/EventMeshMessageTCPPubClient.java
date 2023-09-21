@@ -89,7 +89,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     }
 
     @Override
-    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout) throws EventMeshException {
+    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout)
+        throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
             super.send(msg);

@@ -67,7 +67,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     }
 
     @Override
-    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) throws Exception {
+    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
+        throws Exception {
         HttpCommand responseEventMeshCommand;
         final HttpCommand request = asyncContext.getRequest();
         final String localAddress = IPUtils.getLocalAddress();

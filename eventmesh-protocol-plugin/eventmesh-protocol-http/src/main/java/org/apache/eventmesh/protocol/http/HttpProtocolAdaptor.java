@@ -76,7 +76,8 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
+        throws ProtocolHandleException {
         return null;
     }
 

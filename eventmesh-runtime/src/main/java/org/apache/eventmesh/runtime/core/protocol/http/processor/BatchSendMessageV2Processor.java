@@ -76,7 +76,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
     }
 
     @Override
-    public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
+    public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext)
+        throws Exception {
         final HttpCommand request = asyncContext.getRequest();
         final Integer requestCode = Integer.valueOf(request.getRequestCode());
 

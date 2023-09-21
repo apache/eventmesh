@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
+
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
@@ -59,13 +60,13 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         if (client.getGrpcType() != grpcType) {
             if (log.isWarnEnabled()) {
                 log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
-                        client.getGrpcType(), grpcType, client);
+                    client.getGrpcType(), grpcType, client);
             }
             return;
         }
 
         idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
-                .put(client.getIp() + ":" + client.getPid(), client.getEventEmitter());
+            .put(client.getIp() + ":" + client.getPid(), client.getEventEmitter());
 
         idcEmitters = buildIdcEmitter(idcEmitterMap);
         totalEmitters = buildTotalEmitter(idcEmitters);
@@ -99,8 +100,8 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     @Override
     public String toString() {
         return "StreamConsumeTopicConfig={consumerGroup=" + consumerGroup
-                + ",grpcType=" + grpcType
-                + ",topic=" + topic + "}";
+            + ",grpcType=" + grpcType
+            + ",topic=" + topic + "}";
     }
 
     public Map<String, Map<String, EventEmitter<CloudEvent>>> getIdcEmitterMap() {

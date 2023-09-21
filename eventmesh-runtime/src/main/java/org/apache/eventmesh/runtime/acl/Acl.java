@@ -106,8 +106,7 @@ public class Acl {
         aclService.doAclCheckInSend(buildTcpAclProperties(remoteAddr, userAgent, topic, requestCode));
     }
 
-    public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                     int requestCode)
+    public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic, int requestCode)
         throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
@@ -118,8 +117,7 @@ public class Acl {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
-    public void doAclCheckInHttpSend(String remoteAddr, String token, String subsystem, String topic, String requestURI,
-                                     Object obj)
+    public void doAclCheckInHttpSend(String remoteAddr, String token, String subsystem, String topic, String requestURI, Object obj)
         throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
     }

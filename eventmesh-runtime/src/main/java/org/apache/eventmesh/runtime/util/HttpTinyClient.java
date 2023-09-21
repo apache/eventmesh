@@ -63,7 +63,8 @@ public class HttpTinyClient {
         }
     }
 
-    private static String encodingParams(Collection<String> paramValues, String encoding) throws UnsupportedEncodingException {
+    private static String encodingParams(Collection<String> paramValues, String encoding)
+        throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
             return null;

@@ -139,8 +139,7 @@ public class SessionPusher {
                                 ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
                                 : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
                             downStreamMsgContext.delay(delayTime);
-                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
-                                .pushRetry(downStreamMsgContext);
+                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                         } else {
                             deliveredMsgsCount.incrementAndGet();
                             log.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,

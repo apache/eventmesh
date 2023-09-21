@@ -33,6 +33,7 @@ public interface EventMeshProtocolProducer<ProtocolMessage> extends AutoCloseabl
 
     ProtocolMessage request(ProtocolMessage message, long timeout) throws EventMeshException;
 
-    void request(ProtocolMessage message, RRCallback<ProtocolMessage> rrCallback, long timeout) throws EventMeshException;
+    void request(ProtocolMessage message, RRCallback<ProtocolMessage> rrCallback, long timeout)
+        throws EventMeshException;
 
 }

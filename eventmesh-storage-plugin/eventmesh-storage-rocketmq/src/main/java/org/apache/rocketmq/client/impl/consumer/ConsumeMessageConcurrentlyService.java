@@ -350,8 +350,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                                            final MessageQueue messageQueue) {
 
         this.scheduledExecutorService.schedule(
-            () -> ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true), 5000,
-            TimeUnit.MILLISECONDS);
+            () -> ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true), 5000, TimeUnit.MILLISECONDS);
     }
 
     private void submitConsumeRequestLater(final ConsumeRequest consumeRequest) {

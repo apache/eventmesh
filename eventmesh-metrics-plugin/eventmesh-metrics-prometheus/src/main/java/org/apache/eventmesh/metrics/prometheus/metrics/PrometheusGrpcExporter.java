@@ -60,7 +60,7 @@ public class PrometheusGrpcExporter {
     public static void export(final String meterName, final GrpcSummaryMetrics summaryMetrics) {
         final Meter meter = GlobalMeterProvider.getMeter(meterName);
 
-        paramPairs.forEach((metricInfo, getMetric) -> observeOfValue(meter, METRICS_GRPC_PREFIX + metricInfo[0], metricInfo[1], GRPC, summaryMetrics,
-            getMetric));
+        paramPairs.forEach(
+            (metricInfo, getMetric) -> observeOfValue(meter, METRICS_GRPC_PREFIX + metricInfo[0], metricInfo[1], GRPC, summaryMetrics, getMetric));
     }
 }

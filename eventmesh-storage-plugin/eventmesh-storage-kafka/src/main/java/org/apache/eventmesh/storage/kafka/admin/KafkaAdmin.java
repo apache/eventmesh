@@ -116,8 +116,7 @@ public class KafkaAdmin extends AbstractAdmin {
         return latestOffset - earliestOffset;
     }
 
-    private long getOffset(TopicPartition topicPartition, OffsetSpec offsetSpec,
-                           Admin client)
+    private long getOffset(TopicPartition topicPartition, OffsetSpec offsetSpec, Admin client)
         throws ExecutionException, InterruptedException, TimeoutException {
         Map<TopicPartition, OffsetSpec> offsetSpecMap = Collections.singletonMap(topicPartition, offsetSpec);
         Map<TopicPartition, ListOffsetsResultInfo> offsetResultMap =

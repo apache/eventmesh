@@ -161,8 +161,7 @@ public class EventMeshCloudEventBuilderTest {
         Object event = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh, EventMeshProtocolType.CLOUD_EVENTS);
         Assert.assertNull(event);
         CloudEvent eventmesh1 = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
-            .setId(UUID.randomUUID().toString())
-            .putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
+            .setId(UUID.randomUUID().toString()).putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
             .build();
         Object event1 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.CLOUD_EVENTS);
         Assert.assertTrue(event1 instanceof io.cloudevents.CloudEvent);

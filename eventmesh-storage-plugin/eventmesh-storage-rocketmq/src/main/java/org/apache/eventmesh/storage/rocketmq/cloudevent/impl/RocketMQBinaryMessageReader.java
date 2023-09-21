@@ -25,7 +25,8 @@ import io.cloudevents.SpecVersion;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.core.message.impl.BaseGenericBinaryMessageReaderImpl;
 
-public class RocketMQBinaryMessageReader extends BaseGenericBinaryMessageReaderImpl<String, String> {
+public class RocketMQBinaryMessageReader
+    extends BaseGenericBinaryMessageReaderImpl<String, String> {
 
     private final Map<String, String> headers;
 

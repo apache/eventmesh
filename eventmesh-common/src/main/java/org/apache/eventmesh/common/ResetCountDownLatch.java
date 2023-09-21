@@ -98,7 +98,8 @@ public class ResetCountDownLatch {
      * @return {@code true} if the count reached zero and {@code false} if the waiting time elapsed before the count reached zero
      * @throws InterruptedException if the current thread is interrupted while waiting
      */
-    public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean await(long timeout, TimeUnit unit)
+        throws InterruptedException {
         return restSync.tryAcquireSharedNanos(1, unit.toNanos(timeout));
     }
 

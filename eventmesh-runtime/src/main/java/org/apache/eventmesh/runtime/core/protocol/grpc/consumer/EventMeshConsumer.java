@@ -289,7 +289,8 @@ public class EventMeshConsumer {
         }
     }
 
-    public void updateOffset(final SubscriptionMode subscriptionMode, final List<CloudEvent> events, final AbstractContext context) throws Exception {
+    public void updateOffset(final SubscriptionMode subscriptionMode, final List<CloudEvent> events, final AbstractContext context)
+        throws Exception {
         switch (subscriptionMode) {
             case CLUSTERING:
                 persistentMqConsumer.updateOffset(events, context);

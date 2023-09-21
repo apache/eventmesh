@@ -96,7 +96,8 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     }
 
     @Override
-    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws EventMeshException {
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws EventMeshException {
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);

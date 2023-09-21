@@ -357,8 +357,7 @@ public class JdbcConnection implements AutoCloseable {
      * @return The JdbcConnection instance.
      * @throws SQLException if a database access error occurs.
      */
-    public JdbcConnection preparedQuery(String sql, JdbcResultSetConsumer resultConsumer,
-                                        PreparedParameter... preparedParameters)
+    public JdbcConnection preparedQuery(String sql, JdbcResultSetConsumer resultConsumer, PreparedParameter... preparedParameters)
         throws SQLException {
         // Check if the connection is connected and valid
         if (isConnected() && isValid()) {
@@ -414,7 +413,8 @@ public class JdbcConnection implements AutoCloseable {
      * @return The mapped object.
      * @throws SQLException if a database access error occurs.
      */
-    public <T> T preparedQuery(String sql, ResultSetMapper<T> resultSetMapper, PreparedParameter... preparedParameters) throws SQLException {
+    public <T> T preparedQuery(String sql, ResultSetMapper<T> resultSetMapper, PreparedParameter... preparedParameters)
+        throws SQLException {
         // Check if the connection is connected and valid
         if (isConnected() && isValid()) {
             connection();

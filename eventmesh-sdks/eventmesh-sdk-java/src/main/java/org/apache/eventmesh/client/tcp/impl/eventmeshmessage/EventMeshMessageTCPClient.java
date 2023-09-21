@@ -56,7 +56,8 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     }
 
     @Override
-    public void asyncRR(final EventMeshMessage eventMeshMessage, final AsyncRRCallback callback, final long timeout) throws EventMeshException {
+    public void asyncRR(final EventMeshMessage eventMeshMessage, final AsyncRRCallback callback, final long timeout)
+        throws EventMeshException {
         validateMessage(eventMeshMessage);
         eventMeshMessageTCPPubClient.asyncRR(eventMeshMessage, callback, timeout);
     }

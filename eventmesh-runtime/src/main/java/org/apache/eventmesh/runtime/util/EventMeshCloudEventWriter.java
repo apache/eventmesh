@@ -34,7 +34,8 @@ public class EventMeshCloudEventWriter implements CloudEventContextWriter {
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(@Nonnull String key, @Nonnull String value) throws CloudEventRWException {
+    public CloudEventContextWriter withContextAttribute(@Nonnull String key, @Nonnull String value)
+        throws CloudEventRWException {
         extensionMap.put(key, value);
         return this;
     }

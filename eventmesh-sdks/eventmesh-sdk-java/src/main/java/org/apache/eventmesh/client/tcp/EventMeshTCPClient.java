@@ -44,7 +44,8 @@ public interface EventMeshTCPClient<ProtocolMessage> extends AutoCloseable {
 
     void listen() throws EventMeshException;
 
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws EventMeshException;
+    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws EventMeshException;
 
     void unsubscribe() throws EventMeshException;
 

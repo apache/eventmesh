@@ -41,7 +41,8 @@ public interface HttpRequestProcessor {
 
     Logger log = LoggerFactory.getLogger(HttpRequestProcessor.class);
 
-    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) throws Exception;
+    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
+        throws Exception;
 
     default boolean rejectRequest() {
         return false;

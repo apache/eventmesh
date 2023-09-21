@@ -60,7 +60,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest) throws Exception {
+    public void handler(final HandlerService.HandlerSpecific handlerSpecific, final HttpRequest httpRequest)
+        throws Exception {
 
         final Channel channel = handlerSpecific.getCtx().channel();
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();

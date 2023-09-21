@@ -37,7 +37,8 @@ import com.google.common.base.Preconditions;
 
 public class TcpMessageProtocolResolver {
 
-    public static CloudEvent buildEvent(Header header, String cloudEventJson) throws ProtocolHandleException {
+    public static CloudEvent buildEvent(Header header, String cloudEventJson)
+        throws ProtocolHandleException {
         final CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();

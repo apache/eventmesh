@@ -70,7 +70,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
     }
 
     @Override
-    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) throws Exception {
+    public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
+        throws Exception {
 
         HttpCommand responseEventMeshCommand;
         HttpCommand request = asyncContext.getRequest();

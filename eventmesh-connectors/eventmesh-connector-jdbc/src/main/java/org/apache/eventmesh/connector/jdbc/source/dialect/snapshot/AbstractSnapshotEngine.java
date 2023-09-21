@@ -86,13 +86,14 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
     protected BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>(10000);
 
     public AbstractSnapshotEngine(JdbcSourceConfig jdbcSourceConfig, DbDialect databaseDialect, Jc jdbcContext, Part partition,
-                                  Offset context) {
+        Offset context) {
         super(jdbcSourceConfig, databaseDialect);
         this.context = jdbcContext;
         this.partition = partition;
         this.offsetContext = context;
         this.jdbcConnection = databaseDialect.getConnection();
     }
+
 
     @Override
     public SnapshotResult<Jc> execute() {
@@ -102,6 +103,7 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
         SnapshotContext<Part, Offset> snapshotContext = new SnapshotContext<>(partition, offsetContext);
         return doExecute(context, snapshotContext);
     }
+
 
     /**
      * Template method that executes the snapshot logic.
@@ -133,10 +135,10 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
             log.info("Snapshot 5: Obtain the schema of the captured tables");
             readStructureOfTables(context, snapshotContext);
 
-            // Release locks
+            //Release locks
             releaseSnapshotLocks(context, snapshotContext);
 
-            // Whether to determine whether to process the table data?
+            //Whether to determine whether to process the table data?
             if (sourceConnectorConfig.isSnapshotData()) {
                 connectionPool = createConnectionPool(snapshotContext);
                 createDataEvents(context, snapshotContext, connectionPool);
@@ -146,14 +148,14 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            // close connection pool's connection
+            //close connection pool's connection
             try {
                 if (CollectionUtils.isNotEmpty(connectionPool)) {
                     for (JdbcConnection conn : connectionPool) {
                         conn.close();
                     }
                 }
-                // Roll back master connection transaction
+                //Roll back master connection transaction
                 rollbackMasterConnTransaction(masterConnection);
             } catch (Exception e) {
                 log.warn("Handle snapshot finally error", e);
@@ -186,12 +188,13 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
      * @param connectionPool  The connection pool.
      * @throws SQLException If an error occurs.
      */
-    private void createDataEvents(Jc context, SnapshotContext<Part, Offset> snapshotContext, Queue<JdbcConnection> connectionPool) throws Exception {
+    private void createDataEvents(Jc context, SnapshotContext<Part, Offset> snapshotContext, Queue<JdbcConnection> connectionPool)
+        throws Exception {
 
         int handleDataThreadNum = connectionPool.size();
-        // Create thread pool to process table data
+        //Create thread pool to process table data
         ThreadPoolExecutor tableDataPoolExecutor = ThreadPoolFactory.createThreadPoolExecutor(handleDataThreadNum, handleDataThreadNum,
-                "snapshot-table-data-thread");
+            "snapshot-table-data-thread");
         CompletionService<Void> completionService = new ExecutorCompletionService<>(tableDataPoolExecutor);
         try {
             for (TableId tableId : snapshotContext.determineTables) {
@@ -209,7 +212,7 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
     }
 
     private Callable<Void> createSnapshotDataEvent4TableCallable(Jc context, SnapshotContext<Part, Offset> snapshotContext,
-                                                                 Queue<JdbcConnection> connectionPool, String sql, TableId tableId) {
+        Queue<JdbcConnection> connectionPool, String sql, TableId tableId) {
         UniversalJdbcContext<?, ?, ?> universalJdbcContext = (UniversalJdbcContext<?, ?, ?>) context;
         universalJdbcContext.withTableId(tableId);
         return () -> {
@@ -237,8 +240,8 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
                     List<? extends Column> columns = tableSchema.getColumns();
                     if (CollectionUtils.isNotEmpty(columns)) {
                         List<Field> fields = columns.stream()
-                                .map(col -> new Field(col.getDataType().getName(), col.isNotNull(), col.getName(), tableId.toString()))
-                                .collect(Collectors.toList());
+                            .map(col -> new Field(col.getDataType().getName(), col.isNotNull(), col.getName(), tableId.toString()))
+                            .collect(Collectors.toList());
                         field.withRequired(true).withFields(fields);
                     }
                     event.getJdbcConnectData().setSchema(new Schema(Collections.singletonList(field)));
@@ -258,7 +261,7 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
 
         for (int i = 0; i < snapshotMaxThreads; i++) {
             JdbcConnection conn = databaseDialect.newConnection().setAutoCommit(false);
-            // Get transaction isolation from master connection and then set to connection of pool
+            //Get transaction isolation from master connection and then set to connection of pool
             conn.connection().setTransactionIsolation(jdbcConnection.connection().getTransactionIsolation());
             connectionPool.add(conn);
         }

@@ -44,8 +44,7 @@ public class TestUtils {
         return messageContainer;
     }
 
-    public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata,
-                                                                                        MessageEntity messageEntity)
+    public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata, MessageEntity messageEntity)
         throws InterruptedException {
         ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
         MessageQueue messageQueue = new MessageQueue();

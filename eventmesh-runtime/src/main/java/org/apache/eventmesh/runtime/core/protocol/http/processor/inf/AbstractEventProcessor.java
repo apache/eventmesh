@@ -70,7 +70,8 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList) throws Exception {
+    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
+        throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
         if (!httpConfiguration.isEventMeshServerMetaStorageEnable()) {

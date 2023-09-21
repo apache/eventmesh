@@ -39,11 +39,13 @@ public class EventMeshProducer {
 
     private ServiceState serviceState;
 
-    public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
+    public void send(SendMessageContext sendMsgContext, SendCallback sendCallback)
+        throws Exception {
         mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout) throws Exception {
+    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
+        throws Exception {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 

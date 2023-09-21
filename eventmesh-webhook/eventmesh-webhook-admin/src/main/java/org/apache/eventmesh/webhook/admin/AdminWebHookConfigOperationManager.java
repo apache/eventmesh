@@ -50,7 +50,8 @@ public class AdminWebHookConfigOperationManager {
         return webHookConfigOperation;
     }
 
-    public void init() throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    public void init() throws InvocationTargetException, InstantiationException, IllegalAccessException,
+        NoSuchMethodException {
 
         adminConfiguration = ConfigService.getInstance().buildConfigInstance(AdminConfiguration.class);
         if (!adminConfiguration.isAdminStart()) {

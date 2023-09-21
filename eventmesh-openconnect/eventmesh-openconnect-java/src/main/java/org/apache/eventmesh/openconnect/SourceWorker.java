@@ -335,5 +335,4 @@ public class SourceWorker implements ConnectorWorker {
         }
         return true;
     }
-
 }

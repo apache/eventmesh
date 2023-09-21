@@ -262,8 +262,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
 
             List<Client> localClients =
-                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().computeIfAbsent(groupTopicKey,
-                    list -> new ArrayList<>());
+                eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().computeIfAbsent(groupTopicKey, list -> new ArrayList<>());
 
             boolean isContains = false;
             for (final Client localClient : localClients) {

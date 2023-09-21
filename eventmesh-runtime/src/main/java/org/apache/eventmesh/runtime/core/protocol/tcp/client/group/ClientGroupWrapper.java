@@ -159,7 +159,8 @@ public class ClientGroupWrapper {
         return has;
     }
 
-    public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback) throws Exception {
+    public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback)
+        throws Exception {
         mqProducerWrapper.send(upStreamMsgContext.getEvent(), sendCallback);
         return true;
     }
@@ -194,7 +195,8 @@ public class ClientGroupWrapper {
         return mqProducerWrapper;
     }
 
-    public boolean addSubscription(SubscriptionItem subscriptionItem, Session session) throws Exception {
+    public boolean addSubscription(SubscriptionItem subscriptionItem, Session session)
+        throws Exception {
         if (subscriptionItem == null) {
             log.error("addSubscription param error,subscriptionItem is null, session:{}", session);
             return false;

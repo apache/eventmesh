@@ -62,7 +62,8 @@ public final class RocketMQMessageWriter<R>
     }
 
     @Override
-    public CloudEventContextWriter withContextAttribute(@Nonnull String name, @Nonnull String value) throws CloudEventRWException {
+    public CloudEventContextWriter withContextAttribute(@Nonnull String name, @Nonnull String value)
+        throws CloudEventRWException {
         message.putUserProperty(name, value);
         return this;
     }
@@ -74,7 +75,8 @@ public final class RocketMQMessageWriter<R>
     }
 
     @Override
-    public Message setEvent(@Nonnull final EventFormat format, @Nonnull final byte[] value) throws CloudEventRWException {
+    public Message setEvent(@Nonnull final EventFormat format, @Nonnull final byte[] value)
+        throws CloudEventRWException {
         message.putUserProperty(RocketMQHeaders.CONTENT_TYPE, format.serializedContentType());
         message.setBody(value);
         return message;

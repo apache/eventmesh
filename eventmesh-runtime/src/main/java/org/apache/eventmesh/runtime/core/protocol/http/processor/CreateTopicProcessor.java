@@ -58,7 +58,8 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
     }
 
     @Override
-    public void handler(HandlerService.HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception {
+    public void handler(HandlerService.HandlerSpecific handlerSpecific, HttpRequest httpRequest)
+        throws Exception {
         final AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
         final ChannelHandlerContext ctx = handlerSpecific.getCtx();
         final HttpEventWrapper requestWrapper = asyncContext.getRequest();
