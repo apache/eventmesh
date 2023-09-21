@@ -48,7 +48,8 @@ public class RabbitmqClient {
      */
     public Connection getConnection(String host, String username,
                                     String passwd, int port,
-                                    String virtualHost) throws Exception {
+                                    String virtualHost)
+        throws Exception {
         ConnectionFactory factory = rabbitmqConnectionFactory.createConnectionFactory();
         factory.setHost(host.trim());
         factory.setPort(port);
@@ -71,7 +72,8 @@ public class RabbitmqClient {
      * @throws Exception Exception
      */
     public void publish(Channel channel, String exchangeName,
-                        String routingKey, byte[] message) throws Exception {
+                        String routingKey, byte[] message)
+        throws Exception {
         channel.basicPublish(exchangeName, routingKey, null, message);
     }
 

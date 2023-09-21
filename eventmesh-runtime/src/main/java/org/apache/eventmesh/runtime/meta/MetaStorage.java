@@ -101,7 +101,8 @@ public class MetaStorage {
     }
 
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group,
-                                                                                 String purpose) throws MetaException {
+                                                                                 String purpose)
+        throws MetaException {
         return metaService.findEventMeshClientDistributionData(clusterName, group, purpose);
     }
 

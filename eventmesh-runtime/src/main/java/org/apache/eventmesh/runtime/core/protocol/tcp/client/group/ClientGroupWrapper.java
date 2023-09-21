@@ -165,7 +165,8 @@ public class ClientGroupWrapper {
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, RequestReplyCallback rrCallback,
-                        long timeout) throws Exception {
+                        long timeout)
+        throws Exception {
         mqProducerWrapper.request(upStreamMsgContext.getEvent(), rrCallback, timeout);
     }
 

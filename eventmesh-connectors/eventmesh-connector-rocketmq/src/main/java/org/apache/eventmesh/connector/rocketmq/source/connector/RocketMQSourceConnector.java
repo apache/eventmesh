@@ -220,7 +220,7 @@ public class RocketMQSourceConnector implements Source {
             byte[] body = messageExt.getBody();
             String bodyStr = new String(body, StandardCharsets.UTF_8);
             RecordPartition recordPartition = convertToRecordPartition(messageExt.getTopic(),
-                    messageExt.getBrokerName(), messageExt.getQueueId());
+                messageExt.getBrokerName(), messageExt.getQueueId());
             RecordOffset recordOffset = convertToRecordOffset(messageExt.getQueueOffset());
             ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, bodyStr);
             connectRecord.addExtension("topic", messageExt.getTopic());
@@ -273,7 +273,7 @@ public class RocketMQSourceConnector implements Source {
 
     private void execScheduleTask() {
         commitOffsetScheduleService.scheduleAtFixedRate(this::commitOffsetSchedule, sourceConfig.connectorConfig.getCommitOffsetIntervalMs(),
-                sourceConfig.connectorConfig.getCommitOffsetIntervalMs(), TimeUnit.MILLISECONDS);
+            sourceConfig.connectorConfig.getCommitOffsetIntervalMs(), TimeUnit.MILLISECONDS);
     }
 
     private void commitOffsetSchedule() {

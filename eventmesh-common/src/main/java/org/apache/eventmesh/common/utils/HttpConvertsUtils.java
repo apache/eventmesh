@@ -167,7 +167,8 @@ public class HttpConvertsUtils {
 
     private void setFiledValue(Header header, Map<String, Object> headerParam, ProtocolKey protocolKey,
                                Field[] protocolKeyFields, Field headerField,
-                               String headerFieldName) throws IllegalAccessException {
+                               String headerFieldName)
+        throws IllegalAccessException {
         for (Field protocolKeyField : protocolKeyFields) {
             protocolKeyField.setAccessible(true);
             switch (headerFieldName) {

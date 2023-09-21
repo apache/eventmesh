@@ -308,8 +308,8 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
      * @throws SQLException         if a database error occurs
      * @throws InterruptedException if interrupted
      */
-    protected abstract void readStructureOfTables(Jc jdbcContext,
-                                                  SnapshotContext<Part, Offset> snapshotContext) throws SQLException, InterruptedException;
+    protected abstract void readStructureOfTables(Jc jdbcContext, SnapshotContext<Part, Offset> snapshotContext)
+        throws SQLException, InterruptedException;
 
     /**
      * Release locks after snapshot.

@@ -361,7 +361,8 @@ public class EventMeshConsumer {
     }
 
     public void sendMessageBack(final String consumerGroup, final CloudEvent event,
-                                final String uniqueId, final String bizSeqNo) throws Exception {
+                                final String uniqueId, final String bizSeqNo)
+        throws Exception {
         final EventMeshProducer producer = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {

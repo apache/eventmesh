@@ -80,7 +80,8 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void subscribe(final String topic, final SubscriptionMode subscriptionMode,
-                          final SubscriptionType subscriptionType) throws EventMeshException {
+                          final SubscriptionType subscriptionType)
+        throws EventMeshException {
         eventMeshMessageTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 

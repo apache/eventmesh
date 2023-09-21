@@ -114,7 +114,8 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback,
-                        long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+                        long timeout)
+        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =

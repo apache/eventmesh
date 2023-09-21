@@ -46,7 +46,8 @@ public final class RocketMQMessageFactory {
     }
 
     public static MessageReader createReader(final Map<String, String> props,
-                                             @Nullable final byte[] body) throws CloudEventRWException {
+                                             @Nullable final byte[] body)
+        throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
             () -> null,

@@ -52,7 +52,8 @@ public class EventMeshProducer {
     }
 
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+                                  ProducerGroupConf producerGroupConfig)
+        throws Exception {
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();

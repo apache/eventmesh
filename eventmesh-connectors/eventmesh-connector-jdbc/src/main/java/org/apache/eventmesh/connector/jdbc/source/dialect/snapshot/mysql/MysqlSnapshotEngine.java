@@ -96,8 +96,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void lockTables4SchemaSnapshot(MysqlJdbcContext jdbcContext,
-                                             SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException {
+    protected void lockTables4SchemaSnapshot(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
+        throws SQLException {
         // Set the REPEATABLE_READ isolation level to avoid the MySQL transaction isolation level being changed unexpectedly.
         connection.connection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
         connection.executeWithoutCommitting("SET SESSION lock_wait_timeout=10", "SET SESSION innodb_lock_wait_timeout=10");
@@ -111,8 +111,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void determineSnapshotOffset(MysqlJdbcContext jdbcContext,
-                                           SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws SQLException {
+    protected void determineSnapshotOffset(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
+        throws SQLException {
 
         if (!globalLockAcquired && !tableLockAcquired) {
             return;
@@ -245,8 +245,8 @@ public class MysqlSnapshotEngine extends
     }
 
     @Override
-    protected void releaseSnapshotLocks(MysqlJdbcContext jdbcContext,
-                                        SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) throws Exception {
+    protected void releaseSnapshotLocks(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
+        throws Exception {
         if (globalLockAcquired) {
             connection.executeWithoutCommitting(MysqlDialectSql.UNLOCK_TABLES.ofSQL());
             globalLockAcquired = false;

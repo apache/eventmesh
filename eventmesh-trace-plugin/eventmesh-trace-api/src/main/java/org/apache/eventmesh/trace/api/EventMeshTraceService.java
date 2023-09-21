@@ -43,10 +43,12 @@ public interface EventMeshTraceService {
     void inject(Context context, Map<String, Object> carrier);
 
     Span createSpan(String spanName, SpanKind spanKind, long startTimestamp, TimeUnit timeUnit,
-                    Context context, boolean isSpanFinishInOtherThread) throws TraceException;
+                    Context context, boolean isSpanFinishInOtherThread)
+        throws TraceException;
 
     Span createSpan(String spanName, SpanKind spanKind, Context context,
-                    boolean isSpanFinishInOtherThread) throws TraceException;
+                    boolean isSpanFinishInOtherThread)
+        throws TraceException;
 
     void shutdown() throws TraceException;
 }

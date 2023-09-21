@@ -149,7 +149,8 @@ public class ConfigService {
         return (T) object;
     }
 
-    private void populateConfig(Object object, Class<?> clazz, Config config) throws NoSuchFieldException, IOException, IllegalAccessException {
+    private void populateConfig(Object object, Class<?> clazz, Config config)
+        throws NoSuchFieldException, IOException, IllegalAccessException {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setField(config.field());
         configInfo.setMonitor(config.monitor());

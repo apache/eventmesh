@@ -52,7 +52,8 @@ public final class HttpUtils {
 
     public static String post(final CloseableHttpClient client,
                               final String uri,
-                              final RequestParam requestParam) throws IOException {
+                              final RequestParam requestParam)
+        throws IOException {
 
         return post(client, null, uri, requestParam);
     }
@@ -60,7 +61,8 @@ public final class HttpUtils {
     public static String post(final CloseableHttpClient client,
                               final HttpHost forwardAgent,
                               final String uri,
-                              final RequestParam requestParam) throws IOException {
+                              final RequestParam requestParam)
+        throws IOException {
 
         return post(client, forwardAgent, uri, requestParam, new EventMeshResponseHandler());
 
@@ -70,7 +72,8 @@ public final class HttpUtils {
                               final HttpHost forwardAgent,
                               final String uri,
                               final RequestParam requestParam,
-                              final ResponseHandler<String> responseHandler) throws IOException {
+                              final ResponseHandler<String> responseHandler)
+        throws IOException {
 
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
@@ -117,7 +120,8 @@ public final class HttpUtils {
 
     public static String get(final CloseableHttpClient client,
                              final String url,
-                             final RequestParam requestParam) throws IOException {
+                             final RequestParam requestParam)
+        throws IOException {
 
         return get(client, null, url, requestParam, new EventMeshResponseHandler());
     }
@@ -125,7 +129,8 @@ public final class HttpUtils {
     public static String get(final CloseableHttpClient client,
                              final HttpHost forwardAgent,
                              final String url,
-                             final RequestParam requestParam) throws IOException {
+                             final RequestParam requestParam)
+        throws IOException {
 
         return get(client, forwardAgent, url, requestParam, new EventMeshResponseHandler());
     }
@@ -134,7 +139,8 @@ public final class HttpUtils {
                              final HttpHost forwardAgent,
                              final String uri,
                              final RequestParam requestParam,
-                             final ResponseHandler<String> responseHandler) throws IOException {
+                             final ResponseHandler<String> responseHandler)
+        throws IOException {
 
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
