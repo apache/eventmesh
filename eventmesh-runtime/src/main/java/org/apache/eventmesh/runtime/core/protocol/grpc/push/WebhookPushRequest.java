@@ -135,21 +135,17 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
             addToWaitingMap(this);
 
-            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                IPUtils.getLocalAddress(), selectedPushUrl);
+            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode, IPUtils.getLocalAddress(), selectedPushUrl);
 
             try {
                 eventMeshGrpcServer.getHttpClient().execute(builder, handleResponse(selectedPushUrl));
-                MESSAGE_LOGGER
-                    .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                MESSAGE_LOGGER.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
                         selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                         EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
                         EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent));
             } catch (IOException e) {
                 long cost = System.currentTimeMillis() - lastPushTime;
-                MESSAGE_LOGGER.error(
-                    "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}",
+                MESSAGE_LOGGER.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
                     e.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, e);
                 removeWaitingMap(this);
@@ -193,9 +189,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
                     return new Object();
                 }
                 ClientRetCode result = processResponseContent(res, selectedPushUrl);
-                MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}",
+                MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
                     result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 switch (result) {
