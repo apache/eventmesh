@@ -61,8 +61,7 @@ public class EtcdCustomService extends EtcdMetaService {
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
                     EventMeshServicePubTopicInfo eventMeshServicePubTopicInfo =
-                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET),
-                            EventMeshServicePubTopicInfo.class);
+                        JsonUtils.parseObject(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshServicePubTopicInfo.class);
                     eventMeshServicePubTopicInfoList.add(eventMeshServicePubTopicInfo);
                 }
                 return eventMeshServicePubTopicInfoList;

@@ -66,8 +66,7 @@ public class RemoteSubscribeInstance {
 
     private static void unsubscribeRemote() {
         final RequestParam subscribeParam = buildCommonRequestParam()
-            .addBody(SubscribeRequestBody.TOPIC,
-                JsonUtils.toJSONString(Collections.singletonList(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)))
+            .addBody(SubscribeRequestBody.TOPIC, JsonUtils.toJSONString(Collections.singletonList(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)))
             .addBody(SubscribeRequestBody.CONSUMERGROUP, ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .addBody(SubscribeRequestBody.URL, "http://127.0.0.1:8088/sub/test");
 

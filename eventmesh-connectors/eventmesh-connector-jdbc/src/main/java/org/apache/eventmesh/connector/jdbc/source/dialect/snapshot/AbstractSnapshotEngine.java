@@ -226,11 +226,11 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
                     }
                     payload.withAfterValue(values);
                     MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
-                            .name(sourceConnectorConfig.getName())
-                            .snapshot(true)
-                            .withTableId(tableId)
-                            .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
-                            .build();
+                        .name(sourceConnectorConfig.getName())
+                        .snapshot(true)
+                        .withTableId(tableId)
+                        .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
+                        .build();
                     payload.withSource(sourceMateData);
                     TableSchema tableSchema = universalJdbcContext.getCatalogTableSet().getTableSchema(tableId);
                     Field field = new Field().withField("after").withType("field").withName("payload.after").withRequired(false);
@@ -254,7 +254,7 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
     private Queue<JdbcConnection> createConnectionPool(final SnapshotContext<Part, Offset> snapshotContext) throws SQLException {
         Queue<JdbcConnection> connectionPool = new ConcurrentLinkedQueue<>();
         int snapshotMaxThreads = Math.max(1,
-                Math.min(this.jdbcSourceConfig.getSourceConnectorConfig().getSnapshotMaxThreads(), snapshotContext.determineTables.size()));
+            Math.min(this.jdbcSourceConfig.getSourceConnectorConfig().getSnapshotMaxThreads(), snapshotContext.determineTables.size()));
 
         for (int i = 0; i < snapshotMaxThreads; i++) {
             JdbcConnection conn = databaseDialect.newConnection().setAutoCommit(false);

@@ -159,7 +159,7 @@ public class MysqlSnapshotEngine extends
             addParseDdlAndEvent(jdbcContext, dropTableDdl.toString(), tableId);
         }
         final HashMap<String/* database Name */, List<TableId>/* table list */> databaseMapTables = determineTables.stream()
-                .collect(Collectors.groupingBy(TableId::getCatalogName, HashMap::new, Collectors.toList()));
+            .collect(Collectors.groupingBy(TableId::getCatalogName, HashMap::new, Collectors.toList()));
         Set<String> databaseSet = databaseMapTables.keySet();
         // Read all table structures, construct DDL statements
         for (String database : databaseSet) {

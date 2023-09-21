@@ -330,8 +330,7 @@ public class ZookeeperMetaService implements MetaService {
                 .creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
                 .forPath(path,
-                    Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null")
-                        .getBytes(StandardCharsets.UTF_8));
+                    Objects.requireNonNull(JsonUtils.toJSONString(eventMeshInstance), "instance must not be Null").getBytes(StandardCharsets.UTF_8));
 
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (Exception e) {
