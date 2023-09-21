@@ -372,8 +372,8 @@ public class ClientSessionGroupMapping {
         eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
                 for (Session tmp : sessionTable.values()) {
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > eventMeshTCPServer.getEventMeshTCPConfiguration()
-                        .getEventMeshTcpSessionExpiredInMills()) {
+                    long interval = System.currentTimeMillis() - tmp.getLastHeartbeatTime();
+                    if (interval > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills()) {
                         try {
                             if (log.isWarnEnabled()) {
                                 log.warn("clean expired session,client:{}", tmp.getClient());
