@@ -90,8 +90,7 @@ public class FileSinkConnector implements Sink {
         } else {
             this.outputStream =
                 new PrintStream(Files.newOutputStream(Paths.get(filePath + fileName), StandardOpenOption.CREATE, StandardOpenOption.APPEND),
-                    false,
-                    StandardCharsets.UTF_8.name());
+                    false, StandardCharsets.UTF_8.name());
         }
     }
 
