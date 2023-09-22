@@ -24,7 +24,7 @@ public enum EventMeshExtensionType {
     UNKNOWN("unknown"),
     CONNECTOR("connector"),
     STORAGE("storage"),
-    META("meta"),
+    META("metaStorage"),
     SECURITY("security"),
     PROTOCOL("protocol"),
     METRICS("metrics"),
