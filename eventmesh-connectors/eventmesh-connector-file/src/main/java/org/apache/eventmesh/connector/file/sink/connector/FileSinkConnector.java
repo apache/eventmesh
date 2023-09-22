@@ -157,6 +157,9 @@ public class FileSinkConnector implements Sink {
     private PrintStream openWithNewFile() throws IOException {
         this.filePath = buildFilePath();
         this.fileName = buildFileName();
+        if (fileName.length() == 0 || filePath == null || filePath.length() == 0) {
+            return System.out;
+        }
         return new PrintStream(Files.newOutputStream(Paths.get(filePath + fileName),
             StandardOpenOption.CREATE, StandardOpenOption.APPEND),
             false, StandardCharsets.UTF_8.name());
