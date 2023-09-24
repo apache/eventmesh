@@ -29,6 +29,10 @@ public final class LogUtils {
         return logger.isTraceEnabled();
     }
 
+    public static boolean isTraceEnabled(Logger logger, Marker marker) {
+        return logger.isTraceEnabled(marker);
+    }
+
     public static void trace(Logger logger, String msg) {
         if (isTraceEnabled(logger)) {
             logger.trace(msg);
@@ -41,9 +45,9 @@ public final class LogUtils {
         }
     }
 
-    public static void trace(Logger logger, String format, Object arg1, Object arg2) {
+    public static void trace(Logger logger, String msg, Throwable t) {
         if (isTraceEnabled(logger)) {
-            logger.trace(format, arg1, arg2);
+            logger.trace(msg, t);
         }
     }
 
@@ -53,14 +57,10 @@ public final class LogUtils {
         }
     }
 
-    public static void trace(Logger logger, String msg, Throwable t) {
+    public static void trace(Logger logger, String format, Object arg1, Object arg2) {
         if (isTraceEnabled(logger)) {
-            logger.trace(msg, t);
+            logger.trace(format, arg1, arg2);
         }
-    }
-
-    public static boolean isTraceEnabled(Logger logger, Marker marker) {
-        return logger.isTraceEnabled(marker);
     }
 
     public static void trace(Logger logger, Marker marker, String msg) {
