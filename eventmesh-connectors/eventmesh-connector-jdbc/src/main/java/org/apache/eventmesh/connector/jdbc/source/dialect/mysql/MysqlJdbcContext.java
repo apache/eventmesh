@@ -36,11 +36,18 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
 
     private volatile long currentHandleEventSize = 0;
 
-    private volatile boolean isStartTransaction = false;
+    private volatile boolean onTransaction = false;
 
+    //need to load from store when start
     private String restartGtidSet;
 
     private String currentGtidSet;
+
+    private String restartBinlogFilename;
+
+    private long restartBinlogPosition;
+
+    private String transactionId;
 
     private JdbcSourceConfig jdbcSourceConfig;
 
@@ -80,19 +87,22 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     }
 
     public void startTransaction() {
-        this.isStartTransaction = true;
+        this.onTransaction = true;
     }
 
     public void commitTransaction() {
-        this.isStartTransaction = false;
+        this.onTransaction = false;
+        this.restartGtidSet = this.currentGtidSet;
+        this.restartBinlogFilename = sourceInfo.getCurrentBinlogFileName();
+        this.restartBinlogPosition = sourceInfo.getCurrentBinlogPosition() + this.currentHandleEventSize;
+        resetTransactionId();
     }
 
     public void complete() {
-        //TODO: What to do?
         this.currentHandleEventSize = 0;
     }
 
-    public void setCompletedGtidSet(String gtidSet) {
+    public void completedGtidSet(String gtidSet) {
         if (StringUtils.isNotBlank(gtidSet)) {
             String trimmedGtidSet = gtidSet.replace("\n", "").replace("\r", "");
             this.currentGtidSet = trimmedGtidSet;
@@ -101,8 +111,14 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     }
 
     public String getGtidSet() {
-        return this.currentGtidSet != null ? this.currentGtidSet : null;
+        return this.currentGtidSet;
     }
 
+    public void beginGtid(String gtid) {
+        this.sourceInfo.beginGtid(gtid);
+    }
 
+    private void resetTransactionId() {
+        transactionId = null;
+    }
 }
