@@ -40,17 +40,21 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     /**
      * Key: IDC Value: list of emitters with Client_IP:port
      */
-    private final transient Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap = new ConcurrentHashMap<>();
 
     /**
      * Key: IDC Value: list of emitters
      */
-    private transient Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
+    private Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
 
-    private transient List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
+    private List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
 
     public StreamTopicConfig(final String consumerGroup, final String topic, final SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
+    }
+
+    public String createKey(String ip, String pid) {
+        return ip + ":" + pid;
     }
 
     @Override
@@ -66,7 +70,7 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         }
 
         idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
-            .put(client.getIp() + ":" + client.getPid(), client.getEventEmitter());
+            .put(createKey(client.getIp(), client.getPid()), client.getEventEmitter());
 
         idcEmitters = buildIdcEmitter(idcEmitterMap);
         totalEmitters = buildTotalEmitter(idcEmitters);
@@ -119,9 +123,7 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(
         final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap) {
         final Map<String, List<EventEmitter<CloudEvent>>> result = new HashMap<>();
-        idcEmitterMap.forEach((k, v) -> {
-            result.put(k, new LinkedList<EventEmitter<CloudEvent>>(v.values()));
-        });
+        idcEmitterMap.forEach((k, v) -> result.put(k, new LinkedList<>(v.values())));
         return result;
     }
 
@@ -132,3 +134,4 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         return emitterList;
     }
 }
+
