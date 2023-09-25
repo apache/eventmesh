@@ -19,21 +19,20 @@ package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.core.retry.Retryable;
+import org.apache.eventmesh.runtime.core.protocol.AbstractRetryer;
+import org.apache.eventmesh.runtime.core.retry.core.RetryContext;
 
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HttpRetryer {
+public class HttpRetryer extends AbstractRetryer {
 
     private final Logger retryLogger = LoggerFactory.getLogger("retry");
 
@@ -43,20 +42,16 @@ public class HttpRetryer {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    private final DelayQueue<Retryable> failed = new DelayQueue<>();
-
-    private ThreadPoolExecutor pool;
-
-    private Thread dispatcher;
-
-    public void pushRetry(Retryable retryable) {
-        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
+    @Override
+    public void pushRetry(RetryContext retryable) {
+        if (retrys.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
-        failed.offer(retryable);
+        retrys.offer(retryable);
     }
 
+    @Override
     public void init() {
         pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
@@ -66,52 +61,7 @@ public class HttpRetryer {
             new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
             new ThreadPoolExecutor.AbortPolicy());
 
-        dispatcher = new Thread(() -> {
-            try {
-                Retryable retryObj;
-                while (!Thread.currentThread().isInterrupted() && (retryObj = failed.take()) != null) {
-                    final Retryable retryable = retryObj;
-                    pool.execute(() -> {
-                        try {
-                            retryable.retry();
-                            if (retryLogger.isDebugEnabled()) {
-                                retryLogger.debug("retryObj : {}", retryable);
-                            }
-                        } catch (Exception e) {
-                            retryLogger.error("http-retry-dispatcher error!", e);
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
-                retryLogger.error("http-retry-dispatcher error!", e);
-            }
-        }, "http-retry-dispatcher");
-        dispatcher.setDaemon(true);
-        log.info("HttpRetryer inited......");
+        initDispatcher();
     }
 
-    public int size() {
-        return failed.size();
-    }
-
-    /**
-     * Get failed queue, this method is just used for metrics.
-     */
-    public DelayQueue<Retryable> getFailedQueue() {
-        return failed;
-    }
-
-    public void shutdown() {
-        dispatcher.interrupt();
-        pool.shutdown();
-        log.info("HttpRetryer shutdown......");
-    }
-
-    public void start() throws Exception {
-        dispatcher.start();
-        log.info("HttpRetryer started......");
-    }
 }

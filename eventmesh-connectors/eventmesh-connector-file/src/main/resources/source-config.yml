@@ -15,10 +15,26 @@
 # limitations under the License.
 #
 
-distributionBase=GRADLE_USER_HOME
-distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.2.1-bin.zip
-networkTimeout=10000
-validateDistributionUrl=true
-zipStoreBase=GRADLE_USER_HOME
-zipStorePath=wrapper/dists
+pubSubConfig:
+    meshAddress: 127.0.0.1:10000
+    subject: TopicTest
+    idc: FT
+    env: PRD
+    group: fileSource
+    appId: 5032
+    userName: fileSourceUser
+    passWord: filePassWord
+connectorConfig:
+    connectorName: fileSource
+    nameserver: 127.0.0.1:9877
+    topic: TopicTest
+    commitOffsetIntervalMs: 5000
+offsetStorageConfig:
+    offsetStorageType: nacos
+    offsetStorageAddr: 127.0.0.1:8848
+    extensions: {
+                    #same with topic
+                    dataId: TopicTest,
+                    #same with group
+                    group: fileSource
+    }
