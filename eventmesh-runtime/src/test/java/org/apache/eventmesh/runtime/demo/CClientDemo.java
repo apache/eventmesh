@@ -45,13 +45,10 @@ public class CClientDemo {
         client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
         client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
         client.listen();
-        client.registerSubBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    if (log.isInfoEnabled()) {
-                        log.info("receive message: {}", msg);
-                    }
+        client.registerSubBusiHandler((msg, ctx) -> {
+            if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
+                if (log.isInfoEnabled()) {
+                    log.info("receive message: {}", msg);
                 }
             }
         });
