@@ -39,7 +39,7 @@ public abstract class AbstractRetryer {
         return retrys.size();
     }
 
-    protected void initDispatcher(Thread dispatcher) {
+    protected void initDispatcher() {
         dispatcher = new Thread(() -> {
             try {
                 DelayRetryable retryObj;
