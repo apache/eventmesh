@@ -89,7 +89,7 @@ public class EventMeshTcpRetryer extends AbstractRetryer {
 
     @Override
     public void init() {
-        initDispatcher(dispatcher);
+        initDispatcher();
     }
 
     public void printRetryThreadPoolState() {

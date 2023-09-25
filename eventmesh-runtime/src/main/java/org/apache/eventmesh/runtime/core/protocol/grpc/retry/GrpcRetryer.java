@@ -56,7 +56,7 @@ public class GrpcRetryer extends AbstractRetryer {
             new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
             new ThreadPoolExecutor.AbortPolicy());
 
-        initDispatcher(dispatcher);
+        initDispatcher();
     }
 
 }

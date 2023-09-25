@@ -62,7 +62,7 @@ public class HttpRetryer extends AbstractRetryer {
             new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
             new ThreadPoolExecutor.AbortPolicy());
 
-        initDispatcher(dispatcher);
+        initDispatcher();
     }
 
 }
