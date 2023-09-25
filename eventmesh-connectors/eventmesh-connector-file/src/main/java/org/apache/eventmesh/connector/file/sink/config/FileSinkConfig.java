@@ -15,35 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.connector.file.sink.config;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    META("metaStorage"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-    private final String extensionTypeName;
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class FileSinkConfig extends SinkConfig {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    public SinkConnectorConfig connectorConfig;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    private Integer flushSize = 1000;
+
+    private boolean hourlyFlushEnabled = false;
 
 }

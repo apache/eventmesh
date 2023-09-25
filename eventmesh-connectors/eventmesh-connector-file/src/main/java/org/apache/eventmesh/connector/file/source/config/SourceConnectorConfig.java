@@ -15,35 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
+package org.apache.eventmesh.connector.file.source.config;
 
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    STORAGE("storage"),
-    META("metaStorage"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
-    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
-    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
-    OFFSETMGMT("offsetMgmt"),
-    ;
+import lombok.Data;
 
-    private final String extensionTypeName;
+@Data
+public class SourceConnectorConfig {
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    private String connectorName;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    private String nameserver;
 
+    private String topic;
+
+    private long commitOffsetIntervalMs = 5 * 1000;
 }
