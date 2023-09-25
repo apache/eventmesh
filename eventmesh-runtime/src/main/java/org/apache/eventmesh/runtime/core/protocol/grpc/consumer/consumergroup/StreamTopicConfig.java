@@ -53,8 +53,8 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
     }
 
-    public String createKey(String ip, String pid) {
-        return ip + ":" + pid;
+    private String concatKey(String ip, String pid) {
+        return ip.concat(":").concat(pid);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         }
 
         idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
-            .put(createKey(client.getIp(), client.getPid()), client.getEventEmitter());
+            .put(concatKey(client.getIp(), client.getPid()), client.getEventEmitter());
 
         idcEmitters = buildIdcEmitter(idcEmitterMap);
         totalEmitters = buildTotalEmitter(idcEmitters);
