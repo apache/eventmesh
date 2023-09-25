@@ -78,7 +78,6 @@ public final class SimpleTimeLimiter implements TimeLimiter {
         this(Executors.newCachedThreadPool());
     }
 
-    // TODO: replace with version in common.reflect if and when it's open-sourced
     private static <T> T newProxy(
         Class<T> interfaceType, InvocationHandler handler) {
         Object object = Proxy.newProxyInstance(interfaceType.getClassLoader(),
