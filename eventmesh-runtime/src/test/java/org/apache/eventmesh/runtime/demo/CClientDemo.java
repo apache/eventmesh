@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
