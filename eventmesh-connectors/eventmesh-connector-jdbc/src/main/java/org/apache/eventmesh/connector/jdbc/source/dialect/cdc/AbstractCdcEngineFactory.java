@@ -15,27 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.jdbc;
+package org.apache.eventmesh.connector.jdbc.source.dialect.cdc;
 
-import java.util.ArrayList;
-import java.util.List;
+public abstract class AbstractCdcEngineFactory implements CdcEngineFactory {
 
-import lombok.Data;
-
-@Data
-public class Schema {
-
-    private List<Field> fields;
-
-    public Schema(List<Field> fields) {
-        this.fields = fields;
-    }
-
-    public Schema() {
-        this.fields = new ArrayList<>();
-    }
-
-    public void add(Field field) {
-        this.fields.add(field);
-    }
 }

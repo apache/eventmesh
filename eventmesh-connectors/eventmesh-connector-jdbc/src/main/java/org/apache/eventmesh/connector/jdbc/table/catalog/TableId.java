@@ -159,4 +159,8 @@ public class TableId implements Serializable {
             return tableId(tableId.getCatalogName(), tableId.getSchemaName(), tableId.getTableName());
         }
     }
+
+    public TableId copy() {
+        return new TableId(this.catalogName, this.schemaName, this.tableName);
+    }
 }

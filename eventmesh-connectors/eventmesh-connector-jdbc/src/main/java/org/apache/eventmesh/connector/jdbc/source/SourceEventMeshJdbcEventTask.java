@@ -53,11 +53,11 @@ public class SourceEventMeshJdbcEventTask extends AbstractEventMeshJdbcEventTask
     public void run() {
         while (isRunning) {
             try {
-                Event snapshotEvent = eventBlockingQueue.poll(5, TimeUnit.SECONDS);
-                if (Objects.isNull(snapshotEvent)) {
+                Event event = eventBlockingQueue.poll(5, TimeUnit.SECONDS);
+                if (Objects.isNull(event)) {
                     continue;
                 }
-                eventHandler.handle(snapshotEvent);
+                eventHandler.handle(event);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
