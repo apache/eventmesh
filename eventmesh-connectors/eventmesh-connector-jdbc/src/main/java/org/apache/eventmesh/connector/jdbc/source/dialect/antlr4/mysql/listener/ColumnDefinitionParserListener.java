@@ -129,8 +129,7 @@ public class ColumnDefinitionParserListener extends MySqlParserBaseListener {
     @SuppressWarnings("unchecked")
     public void exitColumnDefinition(ColumnDefinitionContext ctx) {
         if (!ignoreColumn.get().booleanValue()) {
-            this.tableEditor.addColumns(columnEditor.build());
-            ignoreColumn.set(false);
+            this.ignoreColumn.set(false);
         }
 
         // When exit column definition needs to remove DefaultValueParserListener from listener list

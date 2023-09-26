@@ -24,6 +24,7 @@ import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.event.EventConsumer;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
+import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlConstants;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDialectSql;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlJdbcContext;
@@ -38,7 +39,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -51,15 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MysqlSnapshotEngine extends
     AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
-
-    private static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
-
-    static {
-        DEFAULT_EXCLUDE_DATABASE.add("information_schema");
-        DEFAULT_EXCLUDE_DATABASE.add("mysql");
-        DEFAULT_EXCLUDE_DATABASE.add("performance_schema");
-        DEFAULT_EXCLUDE_DATABASE.add("sys");
-    }
 
     private volatile boolean globalLockAcquired = false;
 
@@ -77,7 +68,7 @@ public class MysqlSnapshotEngine extends
 
     @Override
     protected Set<String> defaultExcludeDatabase() {
-        return DEFAULT_EXCLUDE_DATABASE;
+        return MysqlConstants.DEFAULT_EXCLUDE_DATABASE;
     }
 
     @Override
@@ -133,7 +124,7 @@ public class MysqlSnapshotEngine extends
                 jdbcContext.setBinlogStartPoint(binlogFilename, position);
                 if (resultSet.getMetaData().getColumnCount() >= 5) {
                     final String gtidSet = resultSet.getString(5);
-                    jdbcContext.setCompletedGtidSet(gtidSet);
+                    jdbcContext.completedGtidSet(gtidSet);
                     log.info("Using binlog '{}' at position '{}' and gtid '{}'", binlogFilename, position, gtidSet);
                 } else {
                     log.info("Using binlog '{}' at position '{}' ", binlogFilename, position);

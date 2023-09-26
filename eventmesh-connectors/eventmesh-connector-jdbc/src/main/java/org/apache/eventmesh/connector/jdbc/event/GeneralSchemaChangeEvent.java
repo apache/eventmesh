@@ -23,7 +23,7 @@ import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 public abstract class GeneralSchemaChangeEvent extends AbstractEvent implements SchemaChangeEvent {
 
     public GeneralSchemaChangeEvent(TableId tableId) {
-        super(tableId);
+        super(tableId, new JdbcConnectData(JdbcConnectData.SCHEMA_CHANGES));
     }
 
     public GeneralSchemaChangeEvent(TableId tableId, JdbcConnectData data) {

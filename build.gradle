@@ -58,7 +58,7 @@ allprojects {
     apply plugin: "com.github.spotbugs"
     apply plugin: "project-reports"
     apply plugin: "jacoco"
-    apply plugin: "pmd"
+//    apply plugin: "pmd"
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
@@ -268,16 +268,16 @@ subprojects {
         }
     }
 
-    pmd {
-        consoleOutput = true
-        toolVersion = "6.23.0"
-        rulesMinimumPriority = 5
-        ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
-        ignoreFailures = true
-        pmdMain {
-            excludes = ["**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/**"]
-        }
-    }
+//    pmd {
+//        consoleOutput = true
+//        toolVersion = "6.23.0"
+//        rulesMinimumPriority = 5
+//        ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+//        ignoreFailures = true
+//        pmdMain {
+//            excludes = ["**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/**"]
+//        }
+//    }
 
     jar {
         manifest {

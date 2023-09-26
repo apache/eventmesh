@@ -78,6 +78,6 @@ public class MysqlColumnEditorImpl extends AbstractColumnEditorImpl<MysqlColumnE
     @Override
     public MysqlColumn build() {
         return MysqlColumn.of(ofName(), ofEventMeshDataType(), ofJdbcType(), ofColumnLength(), ofScale(), isNotNull(), ofComment(), ofDefaultValue(),
-            ofDefaultValueExpression(), autoIncremented, generated, collationName);
+            ofDefaultValueExpression(), autoIncremented, generated, collationName, ofOrder());
     }
 }

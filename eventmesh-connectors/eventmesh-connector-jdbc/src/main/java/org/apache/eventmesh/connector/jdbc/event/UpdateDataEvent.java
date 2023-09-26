@@ -35,6 +35,6 @@ public class UpdateDataEvent extends GeneralDataChangeEvent {
 
     @Override
     public DataChangeEventType getDataChangeEventType() {
-        return DataChangeEventType.INSERT;
+        return DataChangeEventType.UPDATE;
     }
 }

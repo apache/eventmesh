@@ -120,6 +120,8 @@ public class CreateTableParserListener extends TableBaseParserListener {
             payload.withSource(sourceMateData).withDdl(ddl).withCatalogChanges(changes);
             parser.handleEvent(event);
         }, tableEditor);
+        // reset column order
+        columnOrder.set(1);
         super.exitColumnCreateTable(ctx);
     }
 
