@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#mysql=org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql.MysqlCdcEngineFactory
+mysql=org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql.MysqlCdcEngineFactory

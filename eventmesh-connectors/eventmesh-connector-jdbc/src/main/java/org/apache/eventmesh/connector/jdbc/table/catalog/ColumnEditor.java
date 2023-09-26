@@ -70,6 +70,14 @@ public interface ColumnEditor<CE extends ColumnEditor, Col extends Column> {
     CE withEventMeshType(EventMeshDataType<?> eventMeshType);
 
     /**
+     * Sets the order or position of the column within a table.
+     *
+     * @param order The order or position of the column.
+     * @return The column editor instance.
+     */
+    CE withOrder(int order);
+
+    /**
      * Sets the length of the column (if applicable).
      *
      * @param length The length of the column.

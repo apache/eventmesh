@@ -32,19 +32,19 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public final class GtidSet {
+public final class EventMeshGtidSet {
 
     private final Map<String, UUIDSet> uuidSetsByServerId = new TreeMap<>(); // sorts on keys
     public static Pattern GTID_DELIMITER = Pattern.compile(":");
 
-    protected GtidSet(Map<String, UUIDSet> uuidSetsByServerId) {
+    protected EventMeshGtidSet(Map<String, UUIDSet> uuidSetsByServerId) {
         this.uuidSetsByServerId.putAll(uuidSetsByServerId);
     }
 
     /**
      * @param gtids the string representation of the GTIDs.
      */
-    public GtidSet(String gtids) {
+    public EventMeshGtidSet(String gtids) {
         new com.github.shyiko.mysql.binlog.GtidSet(gtids).getUUIDSets().forEach(uuidSet -> {
             uuidSetsByServerId.put(uuidSet.getServerId().toString(), new UUIDSet(uuidSet));
         });
@@ -58,12 +58,12 @@ public final class GtidSet {
     }
 
     /**
-     * Obtain a copy of this {@link GtidSet} except with only the GTID ranges that have server UUIDs that match the given predicate.
+     * Obtain a copy of this {@link EventMeshGtidSet} except with only the GTID ranges that have server UUIDs that match the given predicate.
      *
      * @param sourceFilter the predicate that returns whether a server UUID is to be included
      * @return the new GtidSet, or this object if {@code sourceFilter} is null; never null
      */
-    public GtidSet retainAll(Predicate<String> sourceFilter) {
+    public EventMeshGtidSet retainAll(Predicate<String> sourceFilter) {
         if (sourceFilter == null) {
             return this;
         }
@@ -71,7 +71,7 @@ public final class GtidSet {
             .stream()
             .filter(entry -> sourceFilter.test(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return new GtidSet(newSets);
+        return new EventMeshGtidSet(newSets);
     }
 
     /**
@@ -99,7 +99,7 @@ public final class GtidSet {
      * @param other the other set of GTIDs; may be null
      * @return {@code true} if all of the GTIDs in this set are completely contained within the supplied set of GTIDs, or {@code false} otherwise
      */
-    public boolean isContainedWithin(GtidSet other) {
+    public boolean isContainedWithin(EventMeshGtidSet other) {
         if (other == null) {
             return false;
         }
@@ -116,19 +116,19 @@ public final class GtidSet {
     }
 
     /**
-     * Obtain a copy of this {@link GtidSet} except overwritten with all of the GTID ranges in the supplied {@link GtidSet}.
+     * Obtain a copy of this {@link EventMeshGtidSet} except overwritten with all of the GTID ranges in the supplied {@link EventMeshGtidSet}.
      *
-     * @param other the other {@link GtidSet} with ranges to add/overwrite on top of those in this set;
+     * @param other the other {@link EventMeshGtidSet} with ranges to add/overwrite on top of those in this set;
      * @return the new GtidSet, or this object if {@code other} is null or empty; never null
      */
-    public GtidSet with(GtidSet other) {
+    public EventMeshGtidSet with(EventMeshGtidSet other) {
         if (other == null || other.uuidSetsByServerId.isEmpty()) {
             return this;
         }
         Map<String, UUIDSet> newSet = new HashMap<>();
         newSet.putAll(this.uuidSetsByServerId);
         newSet.putAll(other.uuidSetsByServerId);
-        return new GtidSet(newSet);
+        return new EventMeshGtidSet(newSet);
     }
 
     /**
@@ -136,7 +136,7 @@ public final class GtidSet {
      *
      * @return The starting state of the GTID set.
      */
-    public GtidSet getGtidSetBeginning() {
+    public EventMeshGtidSet getGtidSetBeginning() {
         // Create a new map to store the GTID set
         Map<String, UUIDSet> newSet = new HashMap<>();
 
@@ -147,7 +147,7 @@ public final class GtidSet {
         }
 
         // Create and return a new GTID set object using the new map
-        return new GtidSet(newSet);
+        return new EventMeshGtidSet(newSet);
     }
 
     public boolean contains(String gtid) {
@@ -161,7 +161,7 @@ public final class GtidSet {
         return uuidSet.contains(transactionId);
     }
 
-    public GtidSet subtract(GtidSet other) {
+    public EventMeshGtidSet subtract(EventMeshGtidSet other) {
         if (other == null) {
             return this;
         }
@@ -170,7 +170,7 @@ public final class GtidSet {
             .filter(entry -> !entry.getValue().isContainedWithin(other.forServerWithId(entry.getKey())))
             .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().subtract(other.forServerWithId(entry.getKey()))))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return new GtidSet(newSets);
+        return new EventMeshGtidSet(newSets);
     }
 
     @Override
@@ -183,8 +183,8 @@ public final class GtidSet {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof GtidSet) {
-            GtidSet that = (GtidSet) obj;
+        if (obj instanceof EventMeshGtidSet) {
+            EventMeshGtidSet that = (EventMeshGtidSet) obj;
             return this.uuidSetsByServerId.equals(that.uuidSetsByServerId);
         }
         return false;

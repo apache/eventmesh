@@ -18,6 +18,8 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.connector.jdbc.DataChanges;
+import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
 import org.apache.eventmesh.connector.jdbc.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.Field;
 import org.apache.eventmesh.connector.jdbc.JdbcContext;
@@ -217,6 +219,21 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
         universalJdbcContext.withTableId(tableId);
         return () -> {
             JdbcConnection connection = connectionPool.poll();
+            MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
+                .name(sourceConnectorConfig.getName())
+                .snapshot(true)
+                .withTableId(tableId)
+                .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
+                .build();
+            TableSchema tableSchema = universalJdbcContext.getCatalogTableSet().getTableSchema(tableId);
+            Field field = new Field().withField("after").withType("field").withName("payload.after").withRequired(false);
+            List<? extends Column> columns = tableSchema.getColumns();
+            if (CollectionUtils.isNotEmpty(columns)) {
+                List<Field> fields = columns.stream()
+                    .map(col -> new Field(col.getDataType().getName(), col.isNotNull(), col.getName(), tableId.toString()))
+                    .collect(Collectors.toList());
+                field.withRequired(true).withFields(fields);
+            }
             try (Statement statement = connection.createStatement(jdbcSourceConfig.getSourceConnectorConfig().getSnapshotFetchSize(), 100)) {
                 ResultSet resultSet = statement.executeQuery(sql);
                 while (resultSet.next()) {
@@ -227,23 +244,10 @@ public abstract class AbstractSnapshotEngine<DbDialect extends DatabaseDialect<J
                     for (int index = 1; index <= columnCount; ++index) {
                         values.put(resultSet.getMetaData().getColumnName(index), resultSet.getObject(index));
                     }
-                    payload.withAfterValue(values);
-                    MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
-                        .name(sourceConnectorConfig.getName())
-                        .snapshot(true)
-                        .withTableId(tableId)
-                        .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
-                        .build();
+                    Builder builder = DataChanges.newBuilder();
+                    builder.withAfter(values);
+                    payload.withDataChanges(builder.build());
                     payload.withSource(sourceMateData);
-                    TableSchema tableSchema = universalJdbcContext.getCatalogTableSet().getTableSchema(tableId);
-                    Field field = new Field().withField("after").withType("field").withName("payload.after").withRequired(false);
-                    List<? extends Column> columns = tableSchema.getColumns();
-                    if (CollectionUtils.isNotEmpty(columns)) {
-                        List<Field> fields = columns.stream()
-                            .map(col -> new Field(col.getDataType().getName(), col.isNotNull(), col.getName(), tableId.toString()))
-                            .collect(Collectors.toList());
-                        field.withRequired(true).withFields(fields);
-                    }
                     event.getJdbcConnectData().setSchema(new Schema(Collections.singletonList(field)));
                     eventQueue.put(event);
                 }

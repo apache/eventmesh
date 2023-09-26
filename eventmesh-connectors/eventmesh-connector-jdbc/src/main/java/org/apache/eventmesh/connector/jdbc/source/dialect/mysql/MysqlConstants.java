@@ -15,27 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.jdbc;
+package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import lombok.Data;
+public final class MysqlConstants {
 
-@Data
-public class Schema {
+    public static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
 
-    private List<Field> fields;
-
-    public Schema(List<Field> fields) {
-        this.fields = fields;
+    static {
+        DEFAULT_EXCLUDE_DATABASE.add("information_schema");
+        DEFAULT_EXCLUDE_DATABASE.add("mysql");
+        DEFAULT_EXCLUDE_DATABASE.add("performance_schema");
+        DEFAULT_EXCLUDE_DATABASE.add("sys");
     }
 
-    public Schema() {
-        this.fields = new ArrayList<>();
-    }
-
-    public void add(Field field) {
-        this.fields.add(field);
-    }
 }

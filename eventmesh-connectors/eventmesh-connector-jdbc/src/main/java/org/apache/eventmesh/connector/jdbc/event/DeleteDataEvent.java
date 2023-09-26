@@ -33,6 +33,6 @@ public class DeleteDataEvent extends GeneralDataChangeEvent {
 
     @Override
     public DataChangeEventType getDataChangeEventType() {
-        return DataChangeEventType.INSERT;
+        return DataChangeEventType.DELETE;
     }
 }
