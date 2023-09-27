@@ -55,10 +55,8 @@ public class EventMeshTcp2Client {
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(),
                 "graceful normal quit from eventmesh", null));
               tcpThreadPoolGroup.getScheduler().submit(() -> {
-                  
                     long taskExecuteTime = System.currentTimeMillis();
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
-                  
             });
             InetSocketAddress address = (InetSocketAddress) session.getContext().channel().remoteAddress();
 
