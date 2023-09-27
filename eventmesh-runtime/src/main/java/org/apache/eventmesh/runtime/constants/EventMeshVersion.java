@@ -17,21 +17,137 @@
 
 package org.apache.eventmesh.runtime.constants;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventMeshVersion {
 
-    public static final String CURRENT_VERSION = Version.V3_0_0.name();
+    private static String CURRENT_VERSION = "";
 
+    private static final String VERSION_KEY = "Implementation-Version";
+
+    private static final String SPEC_VERSION_KEY = "Specification-Version";
+
+    /**
+     * The version pattern in build.gradle. In general, it is like version='0.0.1' or version="0.0.1" if exists.
+     */
+    private static final String VERSION_PATTERN = "version\\s*=\\s*['\"](.+)['\"]";
+
+    /**
+     * @return Eg: "v0.0.1-release"
+     */
     public static String getCurrentVersionDesc() {
-        return CURRENT_VERSION.replace("V", "")
-            .replace("_", ".")
-            .replace("_SNAPSHOT", "-SNAPSHOT");
+        if (StringUtils.isNotBlank(getCurrentVersion())) {
+            return "v" + CURRENT_VERSION;
+        }
+        return "";
     }
 
-    public enum Version {
-        V3_0_0,
-        V3_0_1,
-        V3_1_0,
-        V3_2_0,
-        V3_3_0
+    /**
+     * @return Eg: "0.0.1-release"
+     */
+    public static String getCurrentVersion() {
+        if (StringUtils.isNotBlank(CURRENT_VERSION)) {
+            return CURRENT_VERSION;
+        }
+        // get version from jar.
+        getVersionFromJarFile();
+        // get version from build file.
+        if (StringUtils.isBlank(CURRENT_VERSION)) {
+            getVersionFromBuildFile();
+        }
+        return CURRENT_VERSION;
+    }
+
+    private static void getVersionFromJarFile() {
+        // get version from MANIFEST.MF in jar.
+        CodeSource codeSource = EventMeshVersion.class.getProtectionDomain().getCodeSource();
+        if (Objects.isNull(codeSource)) {
+            log.warn("Failed to get CodeSource for EventMeshVersion.class");
+            return;
+        }
+        URL url = codeSource.getLocation();
+        if (Objects.isNull(url)) {
+            log.warn("Failed to get URL for EventMeshVersion.class");
+            return;
+        }
+        try (JarFile jarFile = new JarFile(url.getPath())) {
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            CURRENT_VERSION = StringUtils.isBlank(attributes.getValue(VERSION_KEY))
+                ? attributes.getValue(SPEC_VERSION_KEY) : attributes.getValue(VERSION_KEY);
+
+            // get version from the file name of jar.
+            if (StringUtils.isBlank(CURRENT_VERSION)) {
+                getVersionFromJarFileName(url.getFile());
+            }
+        } catch (IOException e) {
+            log.error("Failed to load project version from MANIFEST.MF due to IOException {}.", e.getMessage());
+        }
+    }
+
+    private static void getVersionFromBuildFile() {
+        String projectDir = System.getProperty("user.dir");
+
+        String gradlePropertiesPath = projectDir + File.separator + "gradle.properties";
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream(gradlePropertiesPath)) {
+            properties.load(fis);
+            CURRENT_VERSION = properties.getProperty("version");
+        } catch (IOException e) {
+            log.error("Failed to load version from gradle.properties due to IOException {}.", e.getMessage());
+        }
+
+        if (StringUtils.isBlank(CURRENT_VERSION)) {
+            String buildGradlePath = projectDir + File.separator + "build.gradle";
+            try {
+                File buildFile = new File(buildGradlePath);
+                String content = new String(Files.readAllBytes(buildFile.toPath()));
+                Pattern pattern = Pattern.compile(VERSION_PATTERN);
+                Matcher matcher = pattern.matcher(content);
+                if (matcher.find()) {
+                    CURRENT_VERSION = matcher.group(1);
+                } else {
+                    log.warn("Failed to load version from build.gradle due to missing the configuration of \"version='xxx'\".");
+                }
+            } catch (IOException e) {
+                log.error("Failed to load version from build.gradle due to IOException {}.", e.getMessage());
+            }
+        }
+    }
+
+    // path: /.../.../eventmesh-runtime-0.0.1-xxx.jar, version: 0.0.1-xxx
+    private static void getVersionFromJarFileName(String path) {
+        if (!StringUtils.isEmpty(path) && path.endsWith(".jar")) {
+            Path filePath = Paths.get(path);
+            String fileName = filePath.getFileName().toString();
+            fileName = fileName.replace(".jar", "");
+            Pattern pattern = Pattern.compile("-\\d");
+            Matcher matcher = pattern.matcher(fileName);
+            if (matcher.find()) {
+                int index = matcher.start();
+                CURRENT_VERSION = fileName.substring(index + 1);
+            } else {
+                log.info("Failed to load version from jar name due to missing related info.");
+            }
+        }
     }
 }
