@@ -1,11 +1,6 @@
 package com.apache.eventmesh.adminkotlin.service;
 
-import org.springframework.stereotype.Service;
+public interface ConnectionService {
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@Service
-public class ConnectionService {
-
+    String listConnections(Integer page, String size);
 }

@@ -28,7 +28,7 @@ public class ConnectionController {
      */
     @GetMapping("/connections")
     public String listConnections(@RequestParam("page") Integer page, @RequestParam("size") String size) {
-        return "connections list";
+        return connectionService.listConnections(page, size);
     }
 
 }
