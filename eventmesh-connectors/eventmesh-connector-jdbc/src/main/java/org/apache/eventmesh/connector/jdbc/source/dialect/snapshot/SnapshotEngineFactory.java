@@ -40,4 +40,3 @@ public interface SnapshotEngineFactory {
     SnapshotEngine<? extends JdbcContext> createSnapshotEngine(final JdbcSourceConfig jdbcSourceConfig,
         final DatabaseDialect databaseDialect);
 }
-

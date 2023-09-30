@@ -247,7 +247,6 @@ public class RowDeserializers {
         return inputStream.read(stringLength);
     }
 
-
     private static Serializable deserializeVarString(int meta, ByteArrayInputStream inputStream) throws IOException {
         int varcharLength = meta < 256 ? inputStream.readInteger(1) : inputStream.readInteger(2);
         return inputStream.read(varcharLength);

@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -133,17 +132,18 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
 
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
-                        .getMessage()).getBytes(Constants.DEFAULT_CHARSET));
+                        .getMessage())
+                    .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
+                +
+                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
                 .getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("redirectClientBySubSystem fail...", e);

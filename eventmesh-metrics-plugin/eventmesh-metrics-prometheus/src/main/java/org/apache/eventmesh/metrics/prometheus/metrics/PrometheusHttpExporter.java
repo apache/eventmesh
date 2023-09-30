@@ -42,135 +42,136 @@ public class PrometheusHttpExporter {
 
     static {
         paramPairs = new HashMap<String[], Function<HttpSummaryMetrics, Number>>() {
+
             {
-                //maxHTTPTPS
+                // maxHTTPTPS
                 put(join("eventmesh.http.request.tps.max", "max TPS of HTTP."),
-                        HttpSummaryMetrics::maxHTTPTPS);
+                    HttpSummaryMetrics::maxHTTPTPS);
 
-                //avgHTTPTPS
+                // avgHTTPTPS
                 put(join("eventmesh.http.request.tps.avg", "avg TPS of HTTP."),
-                        HttpSummaryMetrics::avgHTTPTPS);
+                    HttpSummaryMetrics::avgHTTPTPS);
 
-                //maxHTTPCost
+                // maxHTTPCost
                 put(join("eventmesh.http.request.cost.max", "max cost of HTTP."),
-                        HttpSummaryMetrics::maxHTTPCost);
+                    HttpSummaryMetrics::maxHTTPCost);
 
-                //avgHTTPCost
+                // avgHTTPCost
                 put(join("eventmesh.http.request.cost.avg", "avg cost of HTTP."),
-                        HttpSummaryMetrics::avgHTTPCost);
+                    HttpSummaryMetrics::avgHTTPCost);
 
-                //avgHTTPBodyDecodeCost
+                // avgHTTPBodyDecodeCost
                 put(join("eventmesh.http.body.decode.cost.avg", "avg body decode cost of HTTP."),
-                        HttpSummaryMetrics::avgHTTPBodyDecodeCost);
+                    HttpSummaryMetrics::avgHTTPBodyDecodeCost);
 
-                //httpDiscard
+                // httpDiscard
                 put(join("eventmesh.http.request.discard.num", "http request discard num."),
-                        HttpSummaryMetrics::getHttpDiscard);
+                    HttpSummaryMetrics::getHttpDiscard);
 
-                //maxBatchSendMsgTPS
+                // maxBatchSendMsgTPS
                 put(join("eventmesh.batch.send.message.tps.max", "max of batch send message tps."),
-                        HttpSummaryMetrics::maxSendBatchMsgTPS);
+                    HttpSummaryMetrics::maxSendBatchMsgTPS);
 
-                //avgBatchSendMsgTPS
+                // avgBatchSendMsgTPS
                 put(join("eventmesh.batch.send.message.tps.avg", "avg of batch send message tps."),
-                        HttpSummaryMetrics::avgSendBatchMsgTPS);
+                    HttpSummaryMetrics::avgSendBatchMsgTPS);
 
-                //sum
+                // sum
                 put(join("eventmesh.batch.send.message.num", "sum of batch send message number."),
-                        HttpSummaryMetrics::getSendBatchMsgNumSum);
+                    HttpSummaryMetrics::getSendBatchMsgNumSum);
 
-                //sumFail
+                // sumFail
                 put(join("eventmesh.batch.send.message.fail.num", "sum of batch send message fail message number."),
-                        HttpSummaryMetrics::getSendBatchMsgFailNumSum);
+                    HttpSummaryMetrics::getSendBatchMsgFailNumSum);
 
-                //sumFailRate
+                // sumFailRate
                 put(join("eventmesh.batch.send.message.fail.rate", "send batch message fail rate."),
-                        HttpSummaryMetrics::getSendBatchMsgFailRate);
-                //discard
+                    HttpSummaryMetrics::getSendBatchMsgFailRate);
+                // discard
                 put(join("eventmesh.batch.send.message.discard.num", "sum of send batch message discard number."),
-                        HttpSummaryMetrics::getSendBatchMsgDiscardNumSum);
+                    HttpSummaryMetrics::getSendBatchMsgDiscardNumSum);
 
-                //maxSendMsgTPS
+                // maxSendMsgTPS
                 put(join("eventmesh.send.message.tps.max", "max of send message tps."),
-                        HttpSummaryMetrics::maxSendMsgTPS);
+                    HttpSummaryMetrics::maxSendMsgTPS);
 
-                //avgSendMsgTPS
+                // avgSendMsgTPS
                 put(join("eventmesh.send.message.tps.avg", "avg of send message tps."),
-                        HttpSummaryMetrics::avgSendMsgTPS);
+                    HttpSummaryMetrics::avgSendMsgTPS);
 
-                //sum
+                // sum
                 put(join("eventmesh.send.message.num", "sum of send message number."),
-                        HttpSummaryMetrics::getSendMsgNumSum);
+                    HttpSummaryMetrics::getSendMsgNumSum);
 
-                //sumFail
+                // sumFail
                 put(join("eventmesh.send.message.fail.num", "sum of send message fail number."),
-                        HttpSummaryMetrics::getSendMsgFailNumSum);
+                    HttpSummaryMetrics::getSendMsgFailNumSum);
 
-                //sumFailRate
+                // sumFailRate
                 put(join("eventmesh.send.message.fail.rate", "send message fail rate."),
-                        HttpSummaryMetrics::getSendMsgFailRate);
+                    HttpSummaryMetrics::getSendMsgFailRate);
 
-                //replyMsg
+                // replyMsg
                 put(join("eventmesh.reply.message.num", "sum of reply message number."),
-                        HttpSummaryMetrics::getReplyMsgNumSum);
+                    HttpSummaryMetrics::getReplyMsgNumSum);
 
-                //replyFail
+                // replyFail
                 put(join("eventmesh.reply.message.fail.num", "sum of reply message fail number."),
-                        HttpSummaryMetrics::getReplyMsgFailNumSum);
+                    HttpSummaryMetrics::getReplyMsgFailNumSum);
 
-                //maxPushMsgTPS
+                // maxPushMsgTPS
                 put(join("eventmesh.push.message.tps.max", "max of push message tps."),
-                        HttpSummaryMetrics::maxPushMsgTPS);
+                    HttpSummaryMetrics::maxPushMsgTPS);
 
-                //avgPushMsgTPS
+                // avgPushMsgTPS
                 put(join("eventmesh.push.message.tps.avg", "avg of push message tps."),
-                        HttpSummaryMetrics::avgPushMsgTPS);
+                    HttpSummaryMetrics::avgPushMsgTPS);
 
-                //sum
+                // sum
                 put(join("eventmesh.http.push.message.num", "sum of http push message number."),
-                        HttpSummaryMetrics::getHttpPushMsgNumSum);
-                //sumFail
+                    HttpSummaryMetrics::getHttpPushMsgNumSum);
+                // sumFail
                 put(join("eventmesh.http.push.message.fail.num", "sum of http push message fail number."),
-                        HttpSummaryMetrics::getHttpPushFailNumSum);
+                    HttpSummaryMetrics::getHttpPushFailNumSum);
 
-                //sumFailRate
+                // sumFailRate
                 put(join("eventmesh.http.push.message.fail.rate", "http push message fail rate."),
-                        HttpSummaryMetrics::getHttpPushMsgFailRate);
+                    HttpSummaryMetrics::getHttpPushMsgFailRate);
 
-                //maxClientLatency
+                // maxClientLatency
                 put(join("eventmesh.http.push.latency.max", "max of http push latency."),
-                        HttpSummaryMetrics::maxHTTPPushLatency);
+                    HttpSummaryMetrics::maxHTTPPushLatency);
 
-                //avgClientLatency
+                // avgClientLatency
                 put(join("eventmesh.http.push.latency.avg", "avg of http push latency."),
-                        HttpSummaryMetrics::avgHTTPPushLatency);
-                //batchMsgQ
+                    HttpSummaryMetrics::avgHTTPPushLatency);
+                // batchMsgQ
                 put(join("eventmesh.batch.message.queue.size", "size of batch message queue."),
-                        HttpSummaryMetrics::getBatchMsgQueueSize);
+                    HttpSummaryMetrics::getBatchMsgQueueSize);
 
-                //sendMsgQ
+                // sendMsgQ
                 put(join("eventmesh.send.message.queue.size", "size of send message queue."),
-                        HttpSummaryMetrics::getSendMsgQueueSize);
+                    HttpSummaryMetrics::getSendMsgQueueSize);
 
-                //pushMsgQ
+                // pushMsgQ
                 put(join("eventmesh.push.message.queue.size", "size of push message queue."),
-                        HttpSummaryMetrics::getPushMsgQueueSize);
+                    HttpSummaryMetrics::getPushMsgQueueSize);
 
-                //httpRetryQ
+                // httpRetryQ
                 put(join("eventmesh.http.retry.queue.size", "size of http retry queue."),
-                        HttpSummaryMetrics::getHttpRetryQueueSize);
+                    HttpSummaryMetrics::getHttpRetryQueueSize);
 
-                //batchAvgSend2MQCost
+                // batchAvgSend2MQCost
                 put(join("eventmesh.batch.send.message.cost.avg", "avg of batch send message cost."),
-                        HttpSummaryMetrics::avgBatchSendMsgCost);
+                    HttpSummaryMetrics::avgBatchSendMsgCost);
 
-                //avgSend2MQCost
+                // avgSend2MQCost
                 put(join("eventmesh.send.message.cost.avg", "avg of send message cost."),
-                        HttpSummaryMetrics::avgSendMsgCost);
+                    HttpSummaryMetrics::avgSendMsgCost);
 
-                //avgReply2MQCost
+                // avgReply2MQCost
                 put(join("eventmesh.reply.message.cost.avg", "avg of reply message cost."),
-                        HttpSummaryMetrics::avgReplyMsgCost);
+                    HttpSummaryMetrics::avgReplyMsgCost);
             }
         };
     }

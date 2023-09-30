@@ -29,5 +29,3 @@ public interface SchemaChangeEvent extends Event {
      */
     SchemaChangeEventType getSchemaChangeEventType();
 }
-
-

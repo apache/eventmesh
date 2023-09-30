@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,7 +61,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
         }
 
         final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
-        //get eventmesh of local idc
+        // get eventmesh of local idc
         Map<String, String> localEventMeshMap = queryLocalEventMeshMap(cluster);
         if (MapUtils.isEmpty(localEventMeshMap)) {
             return;
@@ -110,7 +109,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
     private void doRebalanceByGroup(String cluster, String group, String purpose, Map<String, String> eventMeshMap) throws Exception {
         log.info("doRebalanceByGroup start, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
 
-        //query distribute data of local idc
+        // query distribute data of local idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose,
             eventMeshMap);
         if (MapUtils.isEmpty(clientDistributionMap)) {
@@ -129,12 +128,12 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
             return;
         }
 
-        //calculate client num need to redirect in currEventMesh
+        // calculate client num need to redirect in currEventMesh
         int judge = calculateRedirectNum(currEventMeshName, group, purpose, clientDistributionMap);
 
         if (judge > 0) {
 
-            //select redirect target eventmesh list
+            // select redirect target eventmesh list
             List<String> eventMeshRecommendResult = selectRedirectEventMesh(group, eventMeshMap, clientDistributionMap,
                 judge, currEventMeshName);
             if (eventMeshRecommendResult == null || eventMeshRecommendResult.size() != judge) {
@@ -143,7 +142,7 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 return;
             }
 
-            //do redirect
+            // do redirect
             doRedirect(group, purpose, judge, eventMeshRecommendResult);
         } else {
             log.info("rebalance condition not satisfy,group:{}, purpose:{},judge:{}", group, purpose, judge);
@@ -211,8 +210,8 @@ public class EventMeshRebalanceImpl implements EventMeshRebalanceStrategy {
             rebalanceResult = (modNum != 0 && index < modNum && index >= 0) ? avgNum + 1 : avgNum;
         }
         log.info("rebalance caculateRedirectNum,group:{}, purpose:{},sum:{},avgNum:{},"
-                +
-                "modNum:{}, index:{}, currentNum:{}, rebalanceResult:{}", group, purpose, sum,
+            +
+            "modNum:{}, index:{}, currentNum:{}, rebalanceResult:{}", group, purpose, sum,
             avgNum, modNum, index, currentNum, rebalanceResult);
         return currentNum - rebalanceResult;
     }

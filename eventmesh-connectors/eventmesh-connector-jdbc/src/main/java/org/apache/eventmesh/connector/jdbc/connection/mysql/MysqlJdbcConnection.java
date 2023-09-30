@@ -70,6 +70,7 @@ public class MysqlJdbcConnection extends JdbcConnection {
         boolean enableGTID = false;
         try {
             enableGTID = query(MysqlDialectSql.SHOW_GTID_STATUS.ofSQL(), new ResultSetMapper<Boolean>() {
+
                 /**
                  * Maps a ResultSet to an object of type T.
                  *
@@ -103,6 +104,7 @@ public class MysqlJdbcConnection extends JdbcConnection {
 
         try {
             return query(MysqlDialectSql.SHOW_MASTER_STATUS.ofSQL(), new ResultSetMapper<String>() {
+
                 /**
                  * Maps a ResultSet to an object of type T.
                  *
@@ -142,6 +144,7 @@ public class MysqlJdbcConnection extends JdbcConnection {
              * +----------------------------------------------+
              */
             return query(MysqlDialectSql.SELECT_PURGED_GTID.ofSQL(), new ResultSetMapper<String>() {
+
                 /**
                  * Maps a ResultSet to an object of type T.
                  *
@@ -166,9 +169,9 @@ public class MysqlJdbcConnection extends JdbcConnection {
 
     public OptionalLong getRowCount4Table(TableId tableId) {
         try {
-            //select database
+            // select database
             execute(MysqlDialectSql.SELECT_DATABASE.ofWrapperSQL(MysqlUtils.wrapper(tableId.getCatalogName())));
-            //The number of rows. Some storage engines, such as MyISAM, store the exact count. For other storage engines,
+            // The number of rows. Some storage engines, such as MyISAM, store the exact count. For other storage engines,
             // such as InnoDB, this value is an approximation, and may vary from the actual value by as much as 40% to 50%.
             // In such cases, use SELECT COUNT(*) to obtain an accurate count.
             return query(MysqlDialectSql.SHOW_TABLE_STATUS.ofWrapperSQL(tableId.getTableName()), rs -> {

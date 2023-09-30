@@ -23,7 +23,6 @@ import java.time.LocalTime;
 import java.time.temporal.Temporal;
 import java.util.Objects;
 
-
 public class CalendarType<T extends Temporal> implements EventMeshDataType<T> {
 
     // Constants for LocalDate, LocalTime, and LocalDateTime types

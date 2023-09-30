@@ -67,7 +67,6 @@ public class EtcdMetaServiceTest {
         etcdMetaService.shutdown();
     }
 
-
     @Test
     public void testInit() {
         etcdMetaService.init();

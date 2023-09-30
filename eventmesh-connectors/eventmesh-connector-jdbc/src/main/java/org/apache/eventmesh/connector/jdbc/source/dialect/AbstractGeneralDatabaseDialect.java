@@ -26,7 +26,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-
 public abstract class AbstractGeneralDatabaseDialect<JC extends JdbcConnection> implements DatabaseDialect<JC> {
 
     private static final int DEFAULT_BATCH_MAX_ROWS = 20;
@@ -52,6 +51,5 @@ public abstract class AbstractGeneralDatabaseDialect<JC extends JdbcConnection> 
         }
         return preparedStatement;
     }
-
 
 }

@@ -107,7 +107,7 @@ public class SendMessageContext extends RetryContext {
             return;
         }
 
-        if (retryTimes > 0) { //retry once
+        if (retryTimes > 0) { // retry once
             logger.error("Exception happends during retry. The retryTimes > 0.");
             return;
         }

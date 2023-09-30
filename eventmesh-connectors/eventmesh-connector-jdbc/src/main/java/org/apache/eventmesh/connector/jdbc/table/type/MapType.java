@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-
 public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
 
     private static final List<SQLType> SUPPORTED_KEY_TYPES =

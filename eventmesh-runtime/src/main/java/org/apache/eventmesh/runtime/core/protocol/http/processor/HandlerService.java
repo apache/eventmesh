@@ -82,7 +82,6 @@ public class HandlerService {
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
-
     public void init() {
         log.info("HandlerService start ");
     }
@@ -187,13 +186,13 @@ public class HandlerService {
         httpEventWrapper.setHttpVersion(httpRequest.protocolVersion().protocolName());
         httpEventWrapper.setRequestURI(httpRequest.uri());
 
-        //parse http header
+        // parse http header
         for (String key : httpRequest.headers().names()) {
             httpEventWrapper.getHeaderMap().put(key, httpRequest.headers().get(key));
         }
 
         final long bodyDecodeStart = System.currentTimeMillis();
-        //parse http body
+        // parse http body
         FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
         final Map<String, Object> bodyMap = new HashMap<>();
         if (HttpMethod.GET == fullHttpRequest.method()) {
@@ -210,8 +209,7 @@ public class HandlerService {
                         .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {
-                            }
-                        ))
+                            }))
                         .ifPresent(bodyMap::putAll);
                 }
             } else {
@@ -262,7 +260,6 @@ public class HandlerService {
         private Map<String, Object> traceMap;
 
         private CloudEvent ce;
-
 
         public void run() {
             String processorKey = "/";
@@ -328,7 +325,6 @@ public class HandlerService {
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
-
         public void setResponseJsonBody(String body) {
             this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
         }
@@ -385,7 +381,6 @@ public class HandlerService {
         }
 
     }
-
 
     private static class ProcessorWrapper {
 

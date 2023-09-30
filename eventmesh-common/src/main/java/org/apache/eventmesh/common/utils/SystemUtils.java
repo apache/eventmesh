@@ -53,7 +53,7 @@ public abstract class SystemUtils {
 
     public static String getProcessId() {
         try {
-            //likely works on most platforms
+            // likely works on most platforms
             final Class<?> managementFactoryClass = Class.forName("java.lang.management.ManagementFactory");
             final Method getRuntimeMXBean = managementFactoryClass.getDeclaredMethod("getRuntimeMXBean");
             final Class<?> runtimeMXBeanClass = Class.forName("java.lang.management.RuntimeMXBean");

@@ -92,10 +92,10 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         }
 
         if (MapUtils.isNotEmpty(localEventMeshMap)) {
-            //recommend eventmesh of local idc
+            // recommend eventmesh of local idc
             return recommendProxyByDistributeData(cluster, group, purpose, localEventMeshMap, true);
         } else if (MapUtils.isNotEmpty(remoteEventMeshMap)) {
-            //recommend eventmesh of other idc
+            // recommend eventmesh of other idc
             return recommendProxyByDistributeData(cluster, group, purpose, remoteEventMeshMap, false);
         } else {
             log.error("localEventMeshMap or remoteEventMeshMap size error");
@@ -121,7 +121,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
                 eventMeshMap, clientDistributedMap, group, recommendProxyNum, eventMeshName);
         }
 
-        //find eventmesh with least client
+        // find eventmesh with least client
         final List<Map.Entry<String, Integer>> clientDistributedList = new ArrayList<>();
         final ValueComparator vc = new ValueComparator();
         clientDistributedMap.entrySet().forEach(clientDistributedList::add);
@@ -235,7 +235,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
         eventMeshMap.keySet().forEach(proxy -> clientDistributionMap.putIfAbsent(proxy, 0));
 
-        //select the eventmesh with least instances
+        // select the eventmesh with least instances
         if (MapUtils.isEmpty(clientDistributionMap)) {
             if (log.isErrorEnabled()) {
                 log.error("no legal distribute data,check eventMeshMap and distributeData, group:{}", group);

@@ -24,7 +24,6 @@ import java.net.SocketAddress;
 
 import io.netty.channel.Channel;
 
-
 public abstract class RemotingHelper {
 
     public static String exceptionSimpleDesc(final Throwable e) {
@@ -91,4 +90,3 @@ public abstract class RemotingHelper {
     }
 
 }
-

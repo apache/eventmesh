@@ -31,7 +31,6 @@ public final class Payload extends HashMap<String, Object> {
 
     public static final String DDL = "ddl";
 
-
     /**
      * Constructs an empty <code>HashMap</code> with the default initial capacity (16) and the default load factor (0.75).
      */

@@ -38,7 +38,6 @@ public class EventMeshExtensionFactoryTest {
         TestSingletonExtension singletonExtension1 = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         Assert.assertNotNull(singletonExtension1);
 
-
     }
 
     @Test

@@ -49,7 +49,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -108,7 +107,7 @@ public class SessionSender {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                            event),
+                        event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
@@ -133,7 +132,7 @@ public class SessionSender {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                            event),
+                        event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
@@ -169,6 +168,7 @@ public class SessionSender {
     private RequestReplyCallback initSyncRRCallback(Header header, long startTime, long taskExecuteTime,
         CloudEvent cloudEvent) {
         return new RequestReplyCallback() {
+
             @Override
             public void onSuccess(CloudEvent event) {
                 String seq = header.getSeq();

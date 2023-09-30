@@ -40,12 +40,11 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
-
 public class AuthTokenUtils {
 
     public static void authTokenByPublicKey(AclProperties aclProperties) {
 
-        String token =  aclProperties.getToken();
+        String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             if (!authAccess(aclProperties)) {
                 throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
@@ -87,9 +86,7 @@ public class AuthTokenUtils {
             }
 
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -131,9 +128,7 @@ public class AuthTokenUtils {
                 throw new AclException("invalid token!", e);
             }
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 

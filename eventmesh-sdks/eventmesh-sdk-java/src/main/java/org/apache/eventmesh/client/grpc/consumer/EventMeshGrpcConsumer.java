@@ -269,7 +269,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                     mapping(SubscriptionInfo::getSubscriptionItem, toList())));
 
         subscriptionGroup.forEach((url, items) -> {
-            //Subscription subscription = buildSubscription(items, url);
+            // Subscription subscription = buildSubscription(items, url);
             CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
                 items);
             subStreamHandler.sendSubscription(subscription);

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.event;
 
-
 /**
  * Represents a data change event, extending the common event interface.
  */
@@ -31,4 +30,3 @@ public interface DataChangeEvent extends Event {
     DataChangeEventType getDataChangeEventType();
 
 }
-

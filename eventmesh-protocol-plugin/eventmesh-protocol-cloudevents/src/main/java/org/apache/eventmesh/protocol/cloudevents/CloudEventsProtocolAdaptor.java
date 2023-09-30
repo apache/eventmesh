@@ -118,6 +118,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             case "http":
                 HttpCommand httpCommand = new HttpCommand();
                 Body body = new Body() {
+
                     final Map<String, Object> map = new HashMap<>();
 
                     @Override

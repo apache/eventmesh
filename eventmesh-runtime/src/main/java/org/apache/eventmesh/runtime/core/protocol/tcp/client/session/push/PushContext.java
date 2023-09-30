@@ -25,7 +25,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -61,7 +60,6 @@ public class PushContext {
     public int getTotalUnackMsgs() {
         return unAckMsg.size();
     }
-
 
     public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
         return unAckMsg;

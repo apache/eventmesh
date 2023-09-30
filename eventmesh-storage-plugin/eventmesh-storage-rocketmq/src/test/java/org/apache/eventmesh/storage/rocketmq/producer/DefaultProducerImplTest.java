@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.storage.rocketmq.producer;
 
-
 import org.junit.After;
 import org.junit.Before;
 
@@ -27,30 +26,31 @@ public class DefaultProducerImplTest {
     public void before() {
     }
 
-
     @After
     public void after() {
-        //TBD:Remove topic
+        // TBD:Remove topic
     }
 
-    //@Test
-    //public void testCreate_EmptyTopic() {
-    //    MeshMQProducer meshPub = new RocketMQProducerImpl();
-    //    try {
-    //        meshPub.createTopic(" ");
-    //    } catch (OMSRuntimeException e) {
-    //        assertThat(e.getMessage()).isEqualToIgnoringWhitespace("RocketMQ can not create topic");
-    //    }
-    //}
-    //
-    //@Test
-    //public void testCreate_NullTopic() {
-    //    MeshMQProducer meshPub = new RocketMQProducerImpl();
-    //    try {
-    //        meshPub.createTopic(null);
-    //    } catch (OMSRuntimeException e) {
-    //        String errorMessage = e.getMessage();
-    //        assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null");
-    //    }
-    //}
+    /**
+     * @Test
+     * public void testCreate_EmptyTopic() {
+     *     MeshMQProducer meshPub = new RocketMQProducerImpl();
+     *     try {
+     *         meshPub.createTopic(" ");
+     *         catch (OMSRuntimeException e) {
+     *         assertThat(e.getMessage()).isEqualToIgnoringWhitespace("RocketMQ can not create topic");
+     *     }
+     * }
+     *
+     * @Test
+     * public void testCreate_NullTopic() {
+     *     MeshMQProducer meshPub = new RocketMQProducerImpl();
+     *     try {
+     *         meshPub.createTopic(null);
+     *     } catch (OMSRuntimeException e) {
+     *         String errorMessage = e.getMessage();
+     *         assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null");
+     *     }
+     * }
+     */
 }

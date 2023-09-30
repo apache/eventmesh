@@ -119,7 +119,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
         for (CloudEvent event : eventList) {
-            //validate event
+            // validate event
             if (!ObjectUtils.allNotNull(event.getSource(), event.getSpecVersion())
                 || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
@@ -139,7 +139,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
             String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-            //validate event-extension
+            // validate event-extension
             if (StringUtils.isAnyBlank(idc, pid, sys) || !StringUtils.isNumeric(pid)) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
@@ -193,7 +193,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             String pass = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
             String subsystem = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-            //do acl check
+            // do acl check
             if (httpConfiguration.isEventMeshServerSecurityEnable()) {
                 try {
                     this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
@@ -249,6 +249,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 sendMessageContext.setEventList(eventlist);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
                     }
@@ -265,6 +266,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             for (CloudEvent event : eventList) {
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
 

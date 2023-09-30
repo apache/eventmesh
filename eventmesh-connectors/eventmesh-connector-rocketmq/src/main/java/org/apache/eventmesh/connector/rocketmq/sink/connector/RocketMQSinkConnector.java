@@ -62,7 +62,6 @@ public class RocketMQSinkConnector implements Sink {
         producer.setNamesrvAddr(sinkConfig.getConnectorConfig().getNameServer());
     }
 
-
     @Override
     public void start() throws Exception {
         producer.start();

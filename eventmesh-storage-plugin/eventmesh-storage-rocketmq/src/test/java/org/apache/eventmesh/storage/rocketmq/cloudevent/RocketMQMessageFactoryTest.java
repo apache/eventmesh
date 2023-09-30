@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.storage.rocketmq.cloudevent;
 
 import org.apache.eventmesh.storage.rocketmq.cloudevent.impl.RocketMQHeaders;

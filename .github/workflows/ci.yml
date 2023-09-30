@@ -74,7 +74,7 @@ jobs:
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
-        run: ./gradlew clean build jar dist jacocoTestReport -x generateGrammarSource --parallel --daemon
+        run: ./gradlew clean build jar dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
 
       - name: Install plugin
         run: ./gradlew installPlugin
@@ -100,4 +100,4 @@ jobs:
 
       - name: Check third party dependencies
         run: |
-          ./gradlew clean jar dist -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar && sh tools/dependency-check/check-dependencies.sh && echo "Thirty party dependencies check success"
+          ./gradlew clean jar dist -x spotlessJava -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar && sh tools/dependency-check/check-dependencies.sh && echo "Thirty party dependencies check success"

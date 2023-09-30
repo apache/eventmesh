@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
 import com.github.shyiko.mysql.binlog.event.EventData;
 
-
 public class StopEventData implements EventData {
 
     private static final long serialVersionUID = -7056169406695094519L;

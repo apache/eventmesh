@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.client.grpc.util;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -118,7 +117,6 @@ public class EventMeshCloudEventBuilderTest {
         Assert.assertNotNull(cloudEvent1);
         Assert.assertEquals("org.apache.eventmesh", cloudEvent1.getType());
         Assert.assertEquals(id, EventMeshCloudEventUtils.getUniqueId(cloudEvent1));
-
 
     }
 

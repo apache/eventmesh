@@ -57,7 +57,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
     @Override
     public void shutdown() throws Exception {
-        //server shutdown
+        // server shutdown
         if (eventMeshHttpServer != null) {
             eventMeshHttpServer.shutdown();
         }

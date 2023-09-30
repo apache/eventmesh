@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import com.sun.net.httpserver.HttpExchange;
 
-
 public class RequestMappingTest {
 
     @Test

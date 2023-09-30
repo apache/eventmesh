@@ -42,7 +42,6 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class HttpAbstractDemo {
 
-
     protected static EventMeshHttpClientConfig initEventMeshHttpClientConfig(final String groupName)
         throws IOException {
         final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);

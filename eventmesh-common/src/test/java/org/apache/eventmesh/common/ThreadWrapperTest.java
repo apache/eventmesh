@@ -61,6 +61,7 @@ public class ThreadWrapperTest {
     public void shutdown() {
         AtomicInteger counter = new AtomicInteger();
         ThreadWrapper wrapper = new ThreadWrapper() {
+
             @Override
             public String getThreadName() {
                 return "EventMesh-Wrapper-mxsm";
@@ -85,6 +86,7 @@ public class ThreadWrapperTest {
     public void shutdownImmediately() {
         AtomicInteger counter = new AtomicInteger();
         ThreadWrapper wrapper = new ThreadWrapper() {
+
             @Override
             public String getThreadName() {
                 return "EventMesh-Wrapper-mxsm";
@@ -118,6 +120,7 @@ public class ThreadWrapperTest {
 
     private ThreadWrapper createThreadWrapper(boolean daemon) {
         ThreadWrapper wrapper = new ThreadWrapper() {
+
             @Override
             public String getThreadName() {
                 return "EventMesh-Wrapper-mxsm";

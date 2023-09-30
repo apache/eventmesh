@@ -63,7 +63,6 @@ public enum MysqlDialectSql {
 
     UNLOCK_TABLES("UNLOCK TABLES", "unlock tables");
 
-
     private final String sql;
 
     private final String desc;

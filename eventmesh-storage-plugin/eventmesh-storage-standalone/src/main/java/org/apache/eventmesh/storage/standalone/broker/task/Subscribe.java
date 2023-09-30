@@ -68,6 +68,7 @@ public class Subscribe {
                 CloudEvent message = standaloneBroker.getMessage(topicName, offset.get());
                 if (message != null) {
                     EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
                         @Override
                         public void commit(EventMeshAction action) {
                             switch (action) {

@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,9 +49,9 @@ public class CClientDemo {
             }
         });
         for (int i = 0; i < 10000; i++) {
-            //broadcast message
+            // broadcast message
             client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
-            //asynchronous message
+            // asynchronous message
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }
     }

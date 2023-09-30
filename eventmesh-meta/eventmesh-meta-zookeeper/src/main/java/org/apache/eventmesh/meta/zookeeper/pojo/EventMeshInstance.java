@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.meta.zookeeper.pojo;
 
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -35,6 +34,5 @@ public class EventMeshInstance implements Serializable {
     private Map<String, Map<String, Integer>> instanceNumMap;
 
     private Map<String, String> metaData;
-
 
 }

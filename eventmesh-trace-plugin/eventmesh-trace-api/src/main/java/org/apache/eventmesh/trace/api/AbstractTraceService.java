@@ -70,6 +70,7 @@ public abstract class AbstractTraceService implements EventMeshTraceService {
     @Override
     public Context extractFrom(final Context context, final Map<String, Object> carrier) throws TraceException {
         textMapPropagator.extract(context, carrier, new TextMapGetter<Map<String, Object>>() {
+
             @Override
             public Iterable<String> keys(@Nonnull final Map<String, Object> carrier) {
                 return carrier.keySet();

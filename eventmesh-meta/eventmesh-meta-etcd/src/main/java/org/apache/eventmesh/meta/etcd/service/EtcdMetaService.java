@@ -106,8 +106,7 @@ public class EtcdMetaService implements MetaService {
             break;
         }
         etcdRegistryMonitorExecutorService = ThreadPoolFactory.createSingleScheduledExecutor(
-            "EtcdRegistryMonitorThread"
-        );
+            "EtcdRegistryMonitorThread");
     }
 
     @Override
@@ -225,7 +224,7 @@ public class EtcdMetaService implements MetaService {
                 new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                     endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
             ByteSequence etcdValue = ByteSequence.from(Objects.requireNonNull(JsonUtils.toJSONString(eventMeshDataInfo))
-                                                 .getBytes(Constants.DEFAULT_CHARSET));
+                .getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 

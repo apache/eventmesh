@@ -26,7 +26,6 @@ import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-
 import java.util.Map;
 
 import io.grpc.Server;

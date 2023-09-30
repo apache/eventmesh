@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -64,17 +63,17 @@ public class EventMeshServer {
 
     public EventMeshServer() {
 
-        //Initialize configuration
+        // Initialize configuration
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
         AssertUtils.notNull(this.configuration, "configuration is null");
 
-        //Initialize acl, registry, trace and storageResource
+        // Initialize acl, registry, trace and storageResource
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.metaStorage = MetaStorage.getInstance(this.configuration.getEventMeshMetaStoragePluginType());
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
-        //Initialize BOOTSTRAP_LIST based on protocols provided in configuration
+        // Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
             switch (provideServerProtocol.toUpperCase()) {
@@ -88,11 +87,11 @@ public class EventMeshServer {
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
                     break;
                 default:
-                    //nothing to do
+                    // nothing to do
             }
         }
 
-        //If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
+        // If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }

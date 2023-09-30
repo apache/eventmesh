@@ -27,7 +27,6 @@ import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConf
 import org.apache.eventmesh.connector.openfunction.sink.connector.OpenFunctionSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.BlockingQueue;
@@ -48,7 +47,6 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     private final BlockingQueue<ConnectRecord> queue;
 
     private final CallbackServiceBlockingStub publisherClient;
-
 
     public ConsumerService(OpenFunctionSinkConnector openFunctionSinkConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSinkConnector = openFunctionSinkConnector;
@@ -85,6 +83,5 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         }
         return cloudEventBuilder.build();
     }
-
 
 }

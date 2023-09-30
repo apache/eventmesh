@@ -44,7 +44,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -125,6 +124,7 @@ public abstract class TCPClient implements Closeable {
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+
             public void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
                     .addLast(handler, newExceptionHandler());
@@ -144,6 +144,7 @@ public abstract class TCPClient implements Closeable {
 
     private ChannelDuplexHandler newExceptionHandler() {
         return new ChannelDuplexHandler() {
+
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
                 log.warn("exceptionCaught, close connection.|remote address={}", ctx.channel().remoteAddress(), cause);

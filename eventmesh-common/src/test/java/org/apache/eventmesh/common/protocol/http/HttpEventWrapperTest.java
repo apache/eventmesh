@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http;
 
-
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
@@ -67,7 +66,7 @@ public class HttpEventWrapperTest {
 
     @Test
     public void testGetBody() {
-        byte[] bodyArray = new byte[] {'0'};
+        byte[] bodyArray = new byte[]{'0'};
         httpEventWrapper.setBody(bodyArray);
         byte[] result = httpEventWrapper.getBody();
         Assert.assertNotNull(result);
@@ -76,12 +75,12 @@ public class HttpEventWrapperTest {
 
     @Test
     public void testSetBody() {
-        httpEventWrapper.setBody(new byte[] {(byte) 0});
+        httpEventWrapper.setBody(new byte[]{(byte) 0});
     }
 
     @Test
     public void testHttpResponse() throws Exception {
-        httpEventWrapper.setBody(new byte[] {(byte) 0});
+        httpEventWrapper.setBody(new byte[]{(byte) 0});
         DefaultFullHttpResponse result = httpEventWrapper.httpResponse();
         Assert.assertNotNull(result);
     }

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.event;
 
-
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
@@ -31,10 +30,8 @@ public class AlertDatabaseEvent extends GeneralSchemaChangeEvent {
         super(tableId, data);
     }
 
-
     @Override
     public SchemaChangeEventType getSchemaChangeEventType() {
         return SchemaChangeEventType.DATABASE_ALERT;
     }
 }
-

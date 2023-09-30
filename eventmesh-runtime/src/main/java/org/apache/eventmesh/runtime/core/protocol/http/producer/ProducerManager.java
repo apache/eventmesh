@@ -22,7 +22,6 @@ import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -30,7 +29,10 @@ public class ProducerManager {
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
-    private final ConcurrentHashMap<String /** groupName*/, EventMeshProducer> producerTable = new ConcurrentHashMap<String, EventMeshProducer>();
+    /**
+     * key: group name
+     */
+    private final ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<String, EventMeshProducer>();
 
     public ProducerManager(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

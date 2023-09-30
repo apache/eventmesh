@@ -108,7 +108,6 @@ public class EventMeshTestUtils {
         return mqMsg;
     }
 
-
     private static EventMeshMessage generateAsyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);

@@ -31,8 +31,7 @@ public enum SubscriptionMode {
     /**
      * UNRECOGNIZED
      */
-    UNRECOGNIZED("UNRECOGNIZED")
-    ;
+    UNRECOGNIZED("UNRECOGNIZED");
 
     private final String mode;
 

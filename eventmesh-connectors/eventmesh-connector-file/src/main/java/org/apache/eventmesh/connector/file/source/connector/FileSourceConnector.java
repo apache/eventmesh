@@ -25,7 +25,6 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
-
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,6 @@ public class FileSourceConnector implements Source {
     private FileSourceConfig sourceConfig;
 
     private OffsetStorageReader offsetStorageReader;
-
 
     @Override
     public Class<? extends Config> configClass() {
@@ -62,7 +60,6 @@ public class FileSourceConnector implements Source {
     public void start() throws Exception {
 
     }
-
 
     @Override
     public void commit(ConnectRecord record) {

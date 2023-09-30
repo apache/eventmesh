@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.utils;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshDateFormat;
 import org.apache.eventmesh.common.exception.JsonException;

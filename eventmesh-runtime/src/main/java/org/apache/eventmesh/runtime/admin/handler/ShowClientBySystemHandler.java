@@ -33,7 +33,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -98,8 +97,8 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
-                                userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
-                                userAgent.getPath(), userAgent.getPurpose()))
+                            userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                            userAgent.getPath(), userAgent.getPurpose()))
                             .append(newLine);
                     }
                 }
@@ -108,6 +107,5 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         }
     }
-
 
 }

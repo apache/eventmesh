@@ -44,4 +44,3 @@ public @interface EventMeshSPI {
     EventMeshExtensionType eventMeshExtensionType();
 
 }
-

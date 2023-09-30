@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
-
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -352,7 +351,6 @@ public final class EventMeshGtidSet {
             return new UUIDSet(uuid, result);
         }
     }
-
 
     public static class Interval implements Comparable<Interval> {
 

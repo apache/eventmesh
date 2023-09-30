@@ -29,7 +29,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -79,7 +78,6 @@ public class TraceUtils {
         }
         return span;
     }
-
 
     public static void finishSpan(Span span, CloudEvent event) {
         try {

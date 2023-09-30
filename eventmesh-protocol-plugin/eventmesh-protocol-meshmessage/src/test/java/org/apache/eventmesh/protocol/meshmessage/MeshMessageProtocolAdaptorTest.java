@@ -33,8 +33,7 @@ public class MeshMessageProtocolAdaptorTest {
         Assert.assertNotNull(protocolAdaptor);
 
         Assert.assertEquals(
-            MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
-        );
+            MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
     }
 
     @Test

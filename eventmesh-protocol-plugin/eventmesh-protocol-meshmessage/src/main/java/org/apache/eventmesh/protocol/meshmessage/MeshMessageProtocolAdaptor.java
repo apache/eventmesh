@@ -75,8 +75,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
-                                               org.apache.eventmesh.common.protocol.http.header.Header header,
-                                               Body body) throws ProtocolHandleException {
+        org.apache.eventmesh.common.protocol.http.header.Header header,
+        Body body) throws ProtocolHandleException {
 
         switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:
@@ -112,6 +112,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             case MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP:
                 HttpCommand httpCommand = new HttpCommand();
                 Body body = new Body() {
+
                     final Map<String, Object> map = new HashMap<>();
 
                     @Override

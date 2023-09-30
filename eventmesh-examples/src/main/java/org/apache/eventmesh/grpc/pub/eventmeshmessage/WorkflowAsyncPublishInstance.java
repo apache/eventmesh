@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 
 import lombok.extern.slf4j.Slf4j;

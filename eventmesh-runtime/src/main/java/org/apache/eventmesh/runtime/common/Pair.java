@@ -43,4 +43,3 @@ public class Pair<T1, T2> {
         this.object2 = object2;
     }
 }
-

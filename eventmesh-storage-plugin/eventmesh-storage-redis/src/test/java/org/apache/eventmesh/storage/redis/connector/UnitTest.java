@@ -71,10 +71,9 @@ public class UnitTest extends AbstractRedisServer {
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
 
         redisConsumer.registerEventListener((cloudEvent, context) -> {
-                downLatch.countDown();
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        );
+            downLatch.countDown();
+            context.commit(EventMeshAction.CommitMessage);
+        });
 
         final String topic = RedisConsumerTest.class.getSimpleName();
 

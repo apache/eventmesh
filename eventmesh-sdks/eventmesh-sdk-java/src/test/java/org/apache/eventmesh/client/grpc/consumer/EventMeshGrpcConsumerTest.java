@@ -83,6 +83,7 @@ public class EventMeshGrpcConsumerTest {
         when(consumerAsyncClient.subscribeStream(any())).thenAnswer(invocation -> {
             StreamObserver<CloudEvent> receiver = invocation.getArgument(0);
             return new StreamObserver<CloudEvent>() {
+
                 @Override
                 public void onNext(CloudEvent value) {
                     Builder builder = CloudEvent.newBuilder(value)
@@ -126,6 +127,7 @@ public class EventMeshGrpcConsumerTest {
     public void testSubscribeStream() {
         List<Object> result = new ArrayList<>();
         eventMeshGrpcConsumer.registerListener(new ReceiveMsgHook<Object>() {
+
             @Override
             public Optional<Object> handle(Object msg) {
                 result.add(msg);

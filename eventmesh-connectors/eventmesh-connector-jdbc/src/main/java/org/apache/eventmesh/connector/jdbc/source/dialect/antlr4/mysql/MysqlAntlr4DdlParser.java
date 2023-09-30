@@ -76,7 +76,6 @@ public class MysqlAntlr4DdlParser extends Antlr4DdlParser<MySqlLexer, MySqlParse
         return new MySqlAntlr4DdlParserListener(this);
     }
 
-
     /**
      * Runs the given EventMeshRunner if all the nullableObjects are not null.
      *

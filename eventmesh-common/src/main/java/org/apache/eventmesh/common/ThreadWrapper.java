@@ -55,7 +55,7 @@ public abstract class ThreadWrapper implements Runnable {
         if (hasWakeup.compareAndSet(true, false)) {
             return;
         }
-        //reset count
+        // reset count
         waiter.reset();
         try {
             waiter.await();
@@ -74,7 +74,7 @@ public abstract class ThreadWrapper implements Runnable {
         if (hasWakeup.compareAndSet(true, false)) {
             return;
         }
-        //reset count
+        // reset count
         waiter.reset();
         try {
             waiter.await(timeout, timeUnit == null ? TimeUnit.MILLISECONDS : timeUnit);
@@ -104,7 +104,7 @@ public abstract class ThreadWrapper implements Runnable {
             return;
         }
         this.isRunning = false;
-        //wakeup the thread to run
+        // wakeup the thread to run
         wakeup();
 
         try {
@@ -112,7 +112,7 @@ public abstract class ThreadWrapper implements Runnable {
                 this.thread.interrupt();
             }
             if (!this.isDaemon) {
-                //wait main thread to wait this thread finish
+                // wait main thread to wait this thread finish
                 this.thread.join(TimeUnit.SECONDS.toMillis(60));
             }
         } catch (InterruptedException e) {

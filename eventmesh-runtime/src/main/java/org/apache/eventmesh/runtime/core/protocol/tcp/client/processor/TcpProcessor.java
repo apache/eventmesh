@@ -25,5 +25,6 @@ import io.netty.channel.ChannelHandlerContext;
  * TcpProcessor
  */
 public interface TcpProcessor {
+
     void process(final Package pkg, final ChannelHandlerContext ctx, long startTime);
 }

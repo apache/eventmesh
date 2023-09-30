@@ -17,9 +17,7 @@
 
 package org.apache.eventmesh.api.meta.bo;
 
-
 import java.util.Set;
-
 
 public class EventMeshAppSubTopicInfo {
 

@@ -67,12 +67,11 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
         final ThreadPoolExecutor customExecutor)
-        throws EventMeshException {
+                                                 throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
             () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
-                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume")
-        );
+                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume"));
         this.scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
             new EventMeshThreadFactory("HTTPClientScheduler", true));
     }
@@ -114,8 +113,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem
-                    -> {
+                final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem -> {
                     final HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
                     heartbeatEntity.topic = subscriptionItem.getTopic();
                     heartbeatEntity.url = subscribeUrl;
