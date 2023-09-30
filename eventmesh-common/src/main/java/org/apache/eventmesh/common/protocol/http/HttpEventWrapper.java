@@ -42,7 +42,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-
 public class HttpEventWrapper implements ProtocolTransportObject {
 
     public static final long serialVersionUID = -8547334421415366981L;
@@ -59,10 +58,10 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
     private String httpVersion;
 
-    //Command request time
+    // Command request time
     private long reqTime;
 
-    //Command response time
+    // Command response time
     private long resTime;
 
     private HttpResponseStatus httpResponseStatus = HttpResponseStatus.OK;

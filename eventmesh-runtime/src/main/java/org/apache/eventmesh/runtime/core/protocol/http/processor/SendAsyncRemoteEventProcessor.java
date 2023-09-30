@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -168,7 +167,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         final ProtocolAdaptor<ProtocolTransportObject> httpProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpProtocolAdaptor.toCloudEvent(requestWrapper);
 
-        //validate event
+        // validate event
         if (event == null
             || StringUtils.isBlank(event.getId())
             || event.getSource() == null
@@ -185,7 +184,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
         final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-        //validate event-extension
+        // validate event-extension
         if (StringUtils.isBlank(getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey()))
             || StringUtils.isBlank(pid)
             || !StringUtils.isNumeric(pid)
@@ -198,7 +197,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         final String producerGroup = getExtension(event, ProtocolKey.ClientInstanceKey.PRODUCERGROUP.getKey());
         final String topic = event.getSubject();
 
-        //validate body
+        // validate body
         if (StringUtils.isBlank(bizNo)
             || StringUtils.isBlank(uniqueId)
             || StringUtils.isBlank(producerGroup)
@@ -209,7 +208,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        //do acl check
+        // do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             try {
                 this.acl.doAclCheckInHttpSend(RemotingHelper.parseChannelRemoteAddr(ctx.channel()),

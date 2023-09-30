@@ -32,7 +32,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class MessageUtilsTest {
 
     @Test
@@ -120,7 +119,7 @@ public class MessageUtilsTest {
         // Positive Test Case
         Package msg = MessageUtils.unsubscribe();
         Assert.assertNotNull(msg);
-        Assert.assertEquals(Command.UNSUBSCRIBE_REQUEST, msg.getHeader().getCommand());   
+        Assert.assertEquals(Command.UNSUBSCRIBE_REQUEST, msg.getHeader().getCommand());
         Assert.assertNull(msg.getBody());
         // Negative Test Case
         msg = null;
@@ -136,7 +135,7 @@ public class MessageUtilsTest {
         in.setBody("testBody");
         Package msg = MessageUtils.asyncMessageAck(in);
         Assert.assertNotNull(msg);
-        Assert.assertEquals(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, msg.getHeader().getCommand());      
+        Assert.assertEquals(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, msg.getHeader().getCommand());
         Assert.assertEquals(msg.getHeader().getSeq(), in.getHeader().getSeq());
         Assert.assertNotNull(msg.getBody());
         Assert.assertEquals(msg.getBody(), in.getBody());

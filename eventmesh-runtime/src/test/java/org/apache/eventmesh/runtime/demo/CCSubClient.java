@@ -28,7 +28,6 @@ import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,6 +41,7 @@ public class CCSubClient {
             subClient.listen();
             subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             subClient.registerBusiHandler(new ReceiveMsgHook() {
+
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (log.isInfoEnabled()) {

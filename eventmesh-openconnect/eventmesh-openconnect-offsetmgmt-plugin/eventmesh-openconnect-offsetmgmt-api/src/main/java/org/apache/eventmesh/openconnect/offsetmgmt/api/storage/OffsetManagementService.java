@@ -25,7 +25,6 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Interface for offset manager.
  */

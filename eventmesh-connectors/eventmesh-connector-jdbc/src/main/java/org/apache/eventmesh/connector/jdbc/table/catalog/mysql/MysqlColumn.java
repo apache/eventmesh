@@ -78,4 +78,3 @@ public class MysqlColumn extends Column<MysqlColumn> {
         return null;
     }
 }
-

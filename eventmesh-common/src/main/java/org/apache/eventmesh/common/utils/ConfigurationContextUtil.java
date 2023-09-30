@@ -38,7 +38,6 @@ public class ConfigurationContextUtil {
 
     public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC);
 
-
     /**
      * Save http, tcp, grpc configuration at startup for global use.
      *
@@ -61,7 +60,6 @@ public class ConfigurationContextUtil {
     public static CommonConfiguration get(String key) {
         return CONFIGURATION_MAP.get(key);
     }
-
 
     /**
      * Removes all of the mappings from this map.

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.pulsar.source.connector;
 
-
 import org.apache.eventmesh.connector.pulsar.source.config.PulsarSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -31,9 +30,6 @@ import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.Messages;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
-
-
-
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

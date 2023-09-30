@@ -52,7 +52,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -179,6 +178,7 @@ public class Session {
 
             context.writeAndFlush(pkg).addListener(
                 new ChannelFutureListener() {
+
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if (!future.isSuccess()) {
@@ -191,8 +191,7 @@ public class Session {
                                 .incrementAndGet();
                         }
                     }
-                }
-            );
+                });
         } catch (Exception e) {
             log.error("exception while write2Client", e);
         }
@@ -236,14 +235,14 @@ public class Session {
         if (!Objects.equals(context, session.context)) {
             return false;
         }
-        
+
         return Objects.equals(sessionState, session.sessionState);
 
     }
 
     @Override
     public int hashCode() {
-        int result = 1001;   //primeNumber
+        int result = 1001; // primeNumber
         if (null != client) {
             result += 31 * result + Objects.hash(client);
         }

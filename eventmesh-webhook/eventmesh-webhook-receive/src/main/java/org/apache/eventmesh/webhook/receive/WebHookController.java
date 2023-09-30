@@ -119,6 +119,7 @@ public class WebHookController {
 
         // 4. send cloudEvent
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
                 if (log.isDebugEnabled()) {

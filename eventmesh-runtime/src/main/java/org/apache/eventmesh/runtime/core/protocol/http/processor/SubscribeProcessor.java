@@ -48,7 +48,6 @@ import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -82,30 +81,30 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         final SubscribeResponseHeader subscribeResponseHeader =
             SubscribeResponseHeader
                 .buildHeader(requestCode,
-                        eventMeshHttpConfiguration.getEventMeshCluster(),
-                        localAddress,
-                        eventMeshHttpConfiguration.getEventMeshEnv(),
-                        eventMeshHttpConfiguration.getEventMeshIDC());
+                    eventMeshHttpConfiguration.getEventMeshCluster(),
+                    localAddress,
+                    eventMeshHttpConfiguration.getEventMeshEnv(),
+                    eventMeshHttpConfiguration.getEventMeshIDC());
 
-        //validate header
+        // validate header
         if (StringUtils.isAnyBlank(subscribeRequestHeader.getIdc(),
-                subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
+            subscribeRequestHeader.getPid(), subscribeRequestHeader.getSys())
             || !StringUtils.isNumeric(subscribeRequestHeader.getPid())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SubscribeResponseBody.class);
             return;
         }
 
-        //validate body
+        // validate body
         if (StringUtils.isAnyBlank(subscribeRequestBody.getUrl(), subscribeRequestBody.getConsumerGroup())
             || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SubscribeResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SubscribeResponseBody.class);
             return;
         }
         final List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
 
-        //do acl check
+        // do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subTopicList) {
                 try {
@@ -116,7 +115,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         requestCode);
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, subscribeResponseHeader,
-                            EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SubscribeResponseBody.class);
+                        EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SubscribeResponseBody.class);
                     if (log.isWarnEnabled()) {
                         log.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
                     }
@@ -131,12 +130,12 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         // validate URL
         try {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-                    eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
+                eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
                 log.error("subscriber url {} is not valid", url);
                 completeResponse(request, asyncContext, subscribeResponseHeader,
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
-                        SubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
+                    SubscribeResponseBody.class);
                 return;
             }
         } catch (Exception e) {
@@ -144,9 +143,9 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 log.error("subscriber url:{} is invalid.", url, e);
             }
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
-                    SubscribeResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
+                SubscribeResponseBody.class);
             return;
         }
 
@@ -155,9 +154,9 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin())) {
             log.error("subscriber url {} is not allowed by the target system", url);
             completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url,
-                    SubscribeResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url,
+                SubscribeResponseBody.class);
             return;
         }
 
@@ -172,7 +171,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             try {
                 // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                        subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
+                    subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
 
                 final CompleteHandler<HttpCommand> handler = httpCommand -> {
                     try {
@@ -191,14 +190,15 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
                 completeResponse(request, asyncContext, subscribeResponseHeader,
-                        EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR,
-                        EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
-                        SubscribeResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR,
+                    EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                    SubscribeResponseBody.class);
                 final long endTime = System.currentTimeMillis();
                 if (log.isErrorEnabled()) {
                     log.error(
                         "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                            + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                            + "|bizSeqNo={}|uniqueId={}",
+                        endTime - startTime,
                         JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
                         subscribeRequestBody.getUrl(), e);
                 }

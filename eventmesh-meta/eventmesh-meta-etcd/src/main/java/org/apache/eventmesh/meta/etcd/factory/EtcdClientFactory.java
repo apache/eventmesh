@@ -33,14 +33,12 @@ import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
 import io.etcd.jetcd.options.LeaseOption;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EtcdClientFactory {
 
     private static final Map<String, EtcdLeaseId> etcdLeaseIdMap = new ConcurrentHashMap<>();
-
 
     public static Client createClient(Properties properties) {
         String serverAddr = properties.getProperty(EtcdConstant.SERVER_ADDR);
@@ -85,7 +83,6 @@ public class EtcdClientFactory {
         }
         return etcdLeaseId.getClientWrapper();
     }
-
 
     public static void renewalLeaseId(EtcdLeaseId etcdLeaseId) {
         log.info("renewal of contract. server url: {}", etcdLeaseId.getUrl());

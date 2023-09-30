@@ -82,7 +82,6 @@ public class FileSinkConnector implements Sink {
         this.hourlyFlushEnabled = sinkConfig.isHourlyFlushEnabled();
     }
 
-
     @Override
     public void start() throws Exception {
         if (fileName == null || fileName.length() == 0 || filePath == null || filePath.length() == 0) {

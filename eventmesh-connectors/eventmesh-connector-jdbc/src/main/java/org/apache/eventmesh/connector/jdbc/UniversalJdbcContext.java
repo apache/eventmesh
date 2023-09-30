@@ -42,12 +42,10 @@ public abstract class UniversalJdbcContext<Part extends Partition, OffSetCtx ext
         this.parser = parser;
     }
 
-
     @Override
     public Part getPartition() {
         return poCtx.getPartition();
     }
-
 
     @Override
     public OffSetCtx getOffsetContext() {

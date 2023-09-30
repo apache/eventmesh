@@ -43,14 +43,12 @@ import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.Stri
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     private static final String CONSTANTS_WEBHOOK = "webhook";
 
     private final ConfigService configService;
-
 
     public NacosWebHookConfigOperation(final Properties properties) throws NacosException {
         configService = ConfigFactory.createConfigService(properties);
@@ -100,7 +98,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                     JsonUtils.toJSONString(manufacturer), ConfigType.JSON.getType());
             } catch (NacosException e) {
                 log.error("update manufacturersInfo error", e);
-                //rollback insert
+                // rollback insert
                 try {
                     configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
                 } catch (NacosException ex) {
@@ -217,7 +215,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     private Manufacturer getManufacturersInfo() throws NacosException {
         final String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         return StringUtil.isNullOrEmpty(manufacturersContent)
-            ? new Manufacturer() : JsonUtils.parseObject(manufacturersContent, Manufacturer.class);
+            ? new Manufacturer()
+            : JsonUtils.parseObject(manufacturersContent, Manufacturer.class);
     }
 
 }

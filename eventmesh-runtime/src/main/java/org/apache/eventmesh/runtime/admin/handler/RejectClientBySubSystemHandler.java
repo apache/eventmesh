@@ -133,8 +133,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
-                        +
-                        "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
+                    +
+                    "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
                     subSystem, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));

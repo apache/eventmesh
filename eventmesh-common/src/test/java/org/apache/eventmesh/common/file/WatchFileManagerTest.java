@@ -37,6 +37,7 @@ public class WatchFileManagerTest {
         String file = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
         File f = new File(file);
         final FileChangeListener fileChangeListener = new FileChangeListener() {
+
             @Override
             public void onChanged(FileChangeContext changeContext) {
                 Assert.assertEquals(f.getName(), changeContext.getFileName());

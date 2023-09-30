@@ -77,8 +77,7 @@ public class EventHandler extends AbstractHttpHandler {
      */
     public EventHandler(
         String connectorPluginType,
-        HttpHandlerManager httpHandlerManager
-    ) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {
@@ -162,8 +161,8 @@ public class EventHandler extends AbstractHttpHandler {
             List<String> eventJsonList = new ArrayList<>();
             for (CloudEvent event : eventList) {
                 byte[] serializedEvent = Objects.requireNonNull(EventFormatProvider
-                        .getInstance()
-                        .resolveFormat(JsonFormat.CONTENT_TYPE))
+                    .getInstance()
+                    .resolveFormat(JsonFormat.CONTENT_TYPE))
                     .serialize(event);
                 eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
             }

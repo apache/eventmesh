@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc;
 
-
 import org.apache.eventmesh.common.ThreadWrapper;
 import org.apache.eventmesh.connector.jdbc.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.JdbcContext;
@@ -66,7 +65,6 @@ public abstract class AbstractCdcEngine<Parse extends DdlParser, Ctx extends Jdb
     public Set<TableId> getHandledTables() {
         return includeDatabaseTable;
     }
-
 
     protected Set<TableId> calculateNeedHandleTable() {
         // Get the database and table include and exclude lists from the connector configuration
@@ -119,7 +117,6 @@ public abstract class AbstractCdcEngine<Parse extends DdlParser, Ctx extends Jdb
         return includeDatabaseTable;
     }
 
-
     private List<TableId> buildTableId(List<String> tables) {
         return Optional.ofNullable(tables).orElse(new ArrayList<>(0)).stream().map(table -> {
             String[] split = table.split("\\.");
@@ -131,4 +128,3 @@ public abstract class AbstractCdcEngine<Parse extends DdlParser, Ctx extends Jdb
 
     protected abstract Parse getDdlParser();
 }
-

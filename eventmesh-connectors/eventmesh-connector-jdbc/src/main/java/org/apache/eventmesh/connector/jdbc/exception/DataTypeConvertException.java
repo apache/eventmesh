@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.jdbc.exception;
-
 
 public class DataTypeConvertException extends RuntimeException {
 

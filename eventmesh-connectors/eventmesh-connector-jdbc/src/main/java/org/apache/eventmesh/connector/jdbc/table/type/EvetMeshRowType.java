@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.jdbc.table.type;
 
 import java.util.List;
 
 public class EvetMeshRowType implements EventMeshDataType<EventMeshRow> {
 
-    private List<Pair<String/*field name*/, EventMeshDataType<?>>> fields;
-
+    private List<Pair<String/* field name */, EventMeshDataType<?>>> fields;
 
     public EvetMeshRowType(List<Pair<String, EventMeshDataType<?>>> fields) {
         this.fields = fields;

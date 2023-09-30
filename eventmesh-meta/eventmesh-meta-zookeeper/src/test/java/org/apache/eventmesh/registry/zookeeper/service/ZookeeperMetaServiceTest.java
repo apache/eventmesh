@@ -117,7 +117,6 @@ public class ZookeeperMetaServiceTest {
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }
 
-
     @Test
     public void testFindEventMeshInfoByCluster() {
         zkRegistryService.init();

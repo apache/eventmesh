@@ -27,7 +27,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -74,7 +73,6 @@ public class JsonUtilsTest {
         Assert.assertNotNull(mxsm1);
         Assert.assertEquals("2", mxsm1.mxsm);
     }
-
 
     @Test
     public void getJsonNode() {

@@ -93,9 +93,7 @@ public interface KeyValueStore<K, V> {
      */
     void persist();
 
-
     Stage getStage();
-
 
     enum Stage {
         CONNECTOR,

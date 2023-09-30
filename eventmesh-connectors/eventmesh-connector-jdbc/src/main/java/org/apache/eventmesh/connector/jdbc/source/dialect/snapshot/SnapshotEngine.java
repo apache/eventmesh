@@ -42,4 +42,3 @@ public interface SnapshotEngine<Jc extends JdbcContext> extends Engine, AutoClos
      */
     void registerSnapshotEventConsumer(EventConsumer consumer);
 }
-

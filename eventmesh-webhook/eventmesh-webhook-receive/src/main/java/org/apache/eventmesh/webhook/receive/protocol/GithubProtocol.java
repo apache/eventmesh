@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.webhook.receive.protocol;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;

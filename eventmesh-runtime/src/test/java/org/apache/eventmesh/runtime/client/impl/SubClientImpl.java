@@ -97,6 +97,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     public void heartbeat() throws Exception {
         task = scheduler.scheduleAtFixedRate(new Runnable() {
+
             @Override
             public void run() {
                 try {
@@ -106,11 +107,11 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     Package msg = MessageUtils.heartBeat();
                     if (log.isDebugEnabled()) {
                         log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
-                                msg.getHeader().getCommand(), msg);
+                            msg.getHeader().getCommand(), msg);
                     }
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
                 } catch (Exception e) {
-                    //ignore
+                    // ignore
                 }
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
@@ -127,7 +128,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws Exception {
+        throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -138,19 +139,24 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    //@Override
-    //public void traceLog() throws Exception {
-    //    Package msg = MessageUtils.traceLog();
-    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    //}
+    /**
+     * @Override
+     * public void traceLog() throws Exception {
+     *     Package msg = MessageUtils.traceLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+    **/
 
-    //public void sysLog() throws Exception {
-    //    Package msg = MessageUtils.sysLog();
-    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    //}
+    /**
+     *
+     * public void sysLog() throws Exception {
+     *     Package msg = MessageUtils.sysLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+     */
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -199,12 +205,13 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
+
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             if (log.isInfoEnabled()) {
                 log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
-                        msg.getHeader().getCommand(), msg);
+                    msg.getHeader().getCommand(), msg);
             }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
@@ -237,7 +244,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 log.info("server goodby request: ---------------------------" + msg);
                 close();
             } else {
-                //control instruction set
+                // control instruction set
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());

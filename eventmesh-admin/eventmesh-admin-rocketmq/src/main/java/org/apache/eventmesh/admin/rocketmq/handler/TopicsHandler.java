@@ -105,7 +105,7 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
 
-            //TBD: A new rocketmq service will be implemented for creating topics
+            // TBD: A new rocketmq service will be implemented for creating topics
             TopicResponse topicResponse = null; // Temporary variable for topic response
             if (topicResponse != null) {
                 log.info("create a new topic: {}", topic);

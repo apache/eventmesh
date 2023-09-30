@@ -42,35 +42,34 @@ public class PropertiesUtils {
         }
 
         from.forEach((key, value) -> {
-                String keyStr = String.valueOf(key);
-                if (StringUtils.startsWith(keyStr, prefix)) {
-                    String realKey = StringUtils.substring(keyStr, prefix.length());
-                    String[] hierarchicalKeys = StringUtils.split(realKey, Constants.DOT);
-                    if (hierarchicalKeys != null) {
-                        Properties hierarchical = to;
-                        for (int idx = 0; idx < hierarchicalKeys.length; idx++) {
-                            String hierarchicalKey = hierarchicalKeys[idx];
-                            if (StringUtils.isBlank(hierarchicalKey)) {
+            String keyStr = String.valueOf(key);
+            if (StringUtils.startsWith(keyStr, prefix)) {
+                String realKey = StringUtils.substring(keyStr, prefix.length());
+                String[] hierarchicalKeys = StringUtils.split(realKey, Constants.DOT);
+                if (hierarchicalKeys != null) {
+                    Properties hierarchical = to;
+                    for (int idx = 0; idx < hierarchicalKeys.length; idx++) {
+                        String hierarchicalKey = hierarchicalKeys[idx];
+                        if (StringUtils.isBlank(hierarchicalKey)) {
+                            return;
+                        }
+                        if (idx < hierarchicalKeys.length - 1) {
+                            Object pending = hierarchical.get(hierarchicalKey);
+                            if (pending == null) {
+                                hierarchical.put(hierarchicalKey, hierarchical = new Properties());
+                            } else if (pending instanceof Properties) {
+                                hierarchical = (Properties) pending;
+                            } else {
+                                // Not Properties No need to parse anymore.
                                 return;
                             }
-                            if (idx < hierarchicalKeys.length - 1) {
-                                Object pending = hierarchical.get(hierarchicalKey);
-                                if (pending == null) {
-                                    hierarchical.put(hierarchicalKey, hierarchical = new Properties());
-                                } else if (pending instanceof Properties) {
-                                    hierarchical = (Properties) pending;
-                                } else {
-                                    // Not Properties No need to parse anymore.
-                                    return;
-                                }
-                            } else {
-                                hierarchical.put(hierarchicalKey, value);
-                            }
+                        } else {
+                            hierarchical.put(hierarchicalKey, value);
                         }
                     }
                 }
             }
-        );
+        });
         return to;
     }
 

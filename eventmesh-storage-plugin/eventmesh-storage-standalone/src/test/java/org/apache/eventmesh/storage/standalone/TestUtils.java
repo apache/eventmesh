@@ -71,8 +71,7 @@ public class TestUtils {
             new TopicMetadata(TEST_TOPIC),
             createDefaultCloudEvent(),
             OFF_SET,
-            System.currentTimeMillis()
-        );
+            System.currentTimeMillis());
     }
 
     public static MessageEntity createMessageEntity(TopicMetadata topicMetadata, CloudEvent cloudEvent, long offSet, long currentTimeMillis) {
@@ -80,7 +79,6 @@ public class TestUtils {
             topicMetadata,
             cloudEvent,
             offSet,
-            currentTimeMillis
-        );
+            currentTimeMillis);
     }
 }

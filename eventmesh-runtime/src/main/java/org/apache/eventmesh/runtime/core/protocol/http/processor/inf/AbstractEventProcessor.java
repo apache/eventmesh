@@ -208,18 +208,18 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         httpPost.addHeader(CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 
-        //header
+        // header
         if (MapUtils.isNotEmpty(requestHeader)) {
             requestHeader.forEach(httpPost::addHeader);
         }
 
-        //body
+        // body
         if (MapUtils.isNotEmpty(requestBody)) {
             String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 
-        //ttl
+        // ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
             .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))

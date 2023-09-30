@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -47,9 +46,15 @@ public class SubscriptionManager {
 
     private final MetaStorage metaStorage;
 
-    private final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
+    /**
+     * key: group
+     */
+    private final ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>(64);
 
-    private final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
+    /**
+     * key: group@topic
+     */
+    private final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
     public SubscriptionManager(boolean isEventMeshServerMetaStorageEnable, MetaStorage metaStorage) {
         this.isEventMeshServerMetaStorageEnable = isEventMeshServerMetaStorageEnable;
@@ -78,7 +83,7 @@ public class SubscriptionManager {
 
             boolean isContains = false;
             for (final Client localClient : localClients) {
-                //TODO: compare the whole Client would be better?
+                // TODO: compare the whole Client would be better?
                 if (StringUtils.equals(localClient.getUrl(), url)) {
                     isContains = true;
                     localClient.setLastUpTime(new Date());
@@ -140,7 +145,7 @@ public class SubscriptionManager {
             if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
                 consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
             }
-            //TODO: idcUrl list is not thread-safe
+            // TODO: idcUrl list is not thread-safe
             consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
         }
     }
@@ -160,8 +165,8 @@ public class SubscriptionManager {
 
                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     new HashMap<>(1 << 4);
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry :
-                    consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
+                    .entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();

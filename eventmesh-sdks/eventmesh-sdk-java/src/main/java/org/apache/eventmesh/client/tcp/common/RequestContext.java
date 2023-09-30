@@ -78,7 +78,6 @@ public class RequestContext {
         return context;
     }
 
-
     public static Object key(final Package request) {
         return request.getHeader().getSeq();
     }

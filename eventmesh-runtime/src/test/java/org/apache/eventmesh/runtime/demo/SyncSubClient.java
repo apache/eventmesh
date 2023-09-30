@@ -24,12 +24,10 @@ import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SyncSubClient {
-
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =

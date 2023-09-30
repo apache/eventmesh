@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
@@ -89,9 +88,9 @@ public class ClientManageController {
      * @param eventMeshMetaStorage the registry adaptor of EventMesh
      */
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
-                                  EventMeshHTTPServer eventMeshHTTPServer,
-                                  EventMeshGrpcServer eventMeshGrpcServer,
-                                  MetaStorage eventMeshMetaStorage) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        MetaStorage eventMeshMetaStorage) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -111,7 +110,7 @@ public class ClientManageController {
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
 
-        //TODO: Optimized for automatic injection
+        // TODO: Optimized for automatic injection
 
         // Initialize the client handler and register it with the HTTP handler manager.
         initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
@@ -127,10 +126,10 @@ public class ClientManageController {
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
-                                   EventMeshHTTPServer eventMeshHTTPServer,
-                                   EventMeshGrpcServer eventMeshGrpcServer,
-                                   MetaStorage eventMeshMetaStorage,
-                                   HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        MetaStorage eventMeshMetaStorage,
+        HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
         new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);
@@ -162,6 +161,5 @@ public class ClientManageController {
             new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation, httpHandlerManager);
         }
     }
-
 
 }

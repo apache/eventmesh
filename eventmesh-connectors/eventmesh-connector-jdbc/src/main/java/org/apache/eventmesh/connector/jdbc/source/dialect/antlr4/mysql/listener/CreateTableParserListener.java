@@ -79,13 +79,13 @@ public class CreateTableParserListener extends TableBaseParserListener {
 
     @Override
     public void enterCopyCreateTable(CopyCreateTableContext ctx) {
-        //TODO support next version
+        // TODO support next version
         super.enterCopyCreateTable(ctx);
     }
 
     @Override
     public void enterQueryCreateTable(QueryCreateTableContext ctx) {
-        //TODO support next version
+        // TODO support next version
         super.enterQueryCreateTable(ctx);
     }
 
@@ -101,7 +101,7 @@ public class CreateTableParserListener extends TableBaseParserListener {
         String ddl = ctx.getText();
         parser.runIfAllNotNull(() -> {
             listeners.remove(columnDefinitionListener);
-            //help JVM GC
+            // help JVM GC
             columnDefinitionListener = null;
             MysqlTableSchema tableSchema = tableEditor.build();
             parser.getCatalogTableSet().overrideTable(tableSchema);
@@ -120,7 +120,7 @@ public class CreateTableParserListener extends TableBaseParserListener {
             payload.withSource(sourceMateData).withDdl(ddl).withCatalogChanges(changes);
             parser.handleEvent(event);
         }, tableEditor);
-        //reset column order
+        // reset column order
         columnOrder.set(1);
         super.exitColumnCreateTable(ctx);
     }

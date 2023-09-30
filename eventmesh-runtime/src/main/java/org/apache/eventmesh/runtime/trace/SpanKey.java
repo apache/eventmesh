@@ -50,4 +50,3 @@ public final class SpanKey {
     public static final ContextKey<Span> CONSUMER_PROCESS_KEY =
         ContextKey.named("opentelemetry-traces-span-key-consumer-process");
 }
-

@@ -37,7 +37,7 @@ public class HttpSummaryMetrics implements Metric {
 
     private final AtomicLong wholeRequestNum = new AtomicLong(0);
 
-    //cumulative value
+    // cumulative value
     private final AtomicLong httpDiscard = new AtomicLong(0);
 
     private final AtomicLong maxCost = new AtomicLong(0);
@@ -120,7 +120,6 @@ public class HttpSummaryMetrics implements Metric {
         this.httpFailedQueue = httpFailedQueue;
     }
 
-
     public float avgHTTPCost() {
         return (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
     }
@@ -191,7 +190,6 @@ public class HttpSummaryMetrics implements Metric {
         httpDecodeTimeCost = 0f;
     }
 
-
     public void recordDecodeTimeCost(long cost) {
         httpDecodeNum.incrementAndGet();
         httpDecodeTimeCost = httpDecodeTimeCost + cost;
@@ -200,7 +198,6 @@ public class HttpSummaryMetrics implements Metric {
     public float avgHTTPBodyDecodeCost() {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
-
 
     public void recordSendBatchMsgDiscard(long delta) {
         sendBatchMsgDiscardNumSum.addAndGet(delta);
@@ -252,7 +249,6 @@ public class HttpSummaryMetrics implements Metric {
     public long getSendBatchMsgDiscardNumSum() {
         return sendBatchMsgDiscardNumSum.longValue();
     }
-
 
     public void snapshotSendMsgTPS() {
         Integer tps = sendMsgNumPerSecond.intValue();
@@ -314,7 +310,6 @@ public class HttpSummaryMetrics implements Metric {
         sendMsgFailNumSum.set(0L);
         replyMsgFailNumSum.set(0L);
     }
-
 
     public void snapshotPushMsgTPS() {
         Integer tps = pushMsgNumPerSecond.intValue();
@@ -378,7 +373,6 @@ public class HttpSummaryMetrics implements Metric {
         maxCost.set(0L);
     }
 
-
     public void recordBatchSendMsgCost(long cost) {
         batchSend2MQNum.incrementAndGet();
         batchSend2MQWholeCost = batchSend2MQWholeCost + cost;
@@ -415,7 +409,6 @@ public class HttpSummaryMetrics implements Metric {
         reply2MQNum.set(0L);
     }
 
-
     public int getBatchMsgQueueSize() {
         return batchMsgExecutor.getQueue().size();
     }
@@ -431,7 +424,6 @@ public class HttpSummaryMetrics implements Metric {
     public int getHttpRetryQueueSize() {
         return httpFailedQueue.size();
     }
-
 
     private float avg(LinkedList<Integer> linkedList) {
         if (linkedList.isEmpty()) {

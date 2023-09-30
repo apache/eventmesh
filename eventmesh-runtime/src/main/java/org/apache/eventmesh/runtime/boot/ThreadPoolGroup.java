@@ -22,6 +22,7 @@ package org.apache.eventmesh.runtime.boot;
  *
  */
 public interface ThreadPoolGroup {
+
     void initThreadPool();
 
     void shutdownThreadPool();

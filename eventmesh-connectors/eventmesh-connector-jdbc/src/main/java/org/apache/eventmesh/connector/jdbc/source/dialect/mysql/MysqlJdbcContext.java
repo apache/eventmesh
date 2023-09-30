@@ -38,7 +38,7 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
 
     private volatile boolean onTransaction = false;
 
-    //need to load from store when start
+    // need to load from store when start
     private String restartGtidSet;
 
     private String currentGtidSet;
@@ -121,4 +121,5 @@ public class MysqlJdbcContext extends UniversalJdbcContext<MysqlPartition, Mysql
     private void resetTransactionId() {
         transactionId = null;
     }
+
 }

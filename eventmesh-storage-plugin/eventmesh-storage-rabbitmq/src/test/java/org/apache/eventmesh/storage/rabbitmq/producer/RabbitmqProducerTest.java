@@ -74,6 +74,7 @@ public class RabbitmqProducerTest extends RabbitmqServer {
                 .build();
 
             rabbitmqProducer.publish(cloudEvent, new SendCallback() {
+
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     Assert.assertEquals(cloudEvent.getId(), sendResult.getMessageId());

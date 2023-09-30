@@ -32,7 +32,6 @@ import java.util.Map;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -129,7 +128,7 @@ public class SendMessageContext extends RetryContext {
             return;
         }
 
-        if (retryTimes > 0) { //retry once
+        if (retryTimes > 0) { // retry once
             log.error("Exception happends during retry. The retryTimes > 0.");
             return;
         }

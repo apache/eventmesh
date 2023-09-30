@@ -221,7 +221,8 @@ public class NacosMetaService implements MetaService {
                     EventMeshDataInfo eventMeshDataInfo =
                         new EventMeshDataInfo(instance.getClusterName(), instance.getServiceName(),
                             instance.getIp() + ":"
-                                + instance.getPort(), 0L, instance.getMetadata());
+                                + instance.getPort(),
+                            0L, instance.getMetadata());
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             } catch (NacosException e) {

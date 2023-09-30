@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -69,8 +68,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public HTTPClientHandler(
-        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager
-    ) {
+        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }

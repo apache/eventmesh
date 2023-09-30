@@ -147,7 +147,7 @@ public class SourceWorker implements ConnectorWorker {
     public void start() {
         log.info("source worker starting {}", source.name());
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
-        //start offsetMgmtService
+        // start offsetMgmtService
         offsetManagementService.start();
         isRunning = true;
         pollService.execute(this::startPollAndSend);
@@ -160,8 +160,7 @@ public class SourceWorker implements ConnectorWorker {
                     log.error("source worker[{}] start fail", source.name(), e);
                     this.stop();
                 }
-            }
-        );
+            });
     }
 
     public void startPollAndSend() {
@@ -194,11 +193,11 @@ public class SourceWorker implements ConnectorWorker {
                     }
                     retryTimes++;
                     log.warn("{} failed to send record to {}, retry times = {}, failed record {}",
-                            this, event.getSubject(), retryTimes, connectRecord);
+                        this, event.getSubject(), retryTimes, connectRecord);
                 } catch (Throwable t) {
                     retryTimes++;
                     log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",
-                            this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
+                        this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
                 }
             }
 
@@ -289,26 +288,23 @@ public class SourceWorker implements ConnectorWorker {
         if (committableOffsets.isEmpty()) {
             log.debug("Either no records were produced since the last offset commit, "
                 + "or every record has been filtered out by a transformation "
-                + "or dropped due to transformation or conversion errors."
-            );
+                + "or dropped due to transformation or conversion errors.");
             // We continue with the offset commit process here instead of simply returning immediately
             // in order to invoke SourceTask::commit and record metrics for a successful offset commit
         } else {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                        + "The source partition with the most pending messages is {}, with {} pending messages",
+                    + "The source partition with the most pending messages is {}, with {} pending messages",
                     this,
                     committableOffsets.numUncommittableMessages(),
                     committableOffsets.numDeques(),
                     committableOffsets.largestDequePartition(),
-                    committableOffsets.largestDequeSize()
-                );
+                    committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
-                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
-                    this
-                );
+                    + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                    this);
             }
         }
 

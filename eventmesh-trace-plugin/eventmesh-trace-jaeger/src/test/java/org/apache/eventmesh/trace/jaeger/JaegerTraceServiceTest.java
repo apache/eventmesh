@@ -43,8 +43,7 @@ public class JaegerTraceServiceTest {
         assertNotNull(jaegerTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () ->
-                Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
+            assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(jaegerTraceService.getShutdownHook()));
         assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 

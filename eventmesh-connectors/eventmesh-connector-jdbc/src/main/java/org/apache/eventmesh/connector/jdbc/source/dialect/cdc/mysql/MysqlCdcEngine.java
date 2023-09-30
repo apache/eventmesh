@@ -102,7 +102,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
 
     private final EnumMap<EventType, Consumer<Event>> eventHandlers = new EnumMap<>(EventType.class);
 
-    private Map<Long/*table number*/, TableId> tableIdMap = new HashMap<>(64);
+    private Map<Long/* table number */, TableId> tableIdMap = new HashMap<>(64);
 
     private MysqlJdbcContext context;
 
@@ -138,6 +138,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
 
         // mysql dev url:https://dev.mysql.com/doc/dev/mysql-server/latest/
         EventDeserializer eventDeserializer = new EventDeserializer() {
+
             /**
              * @param inputStream input stream to fetch event from
              * @return deserialized event or null in case of end-of-stream
@@ -211,6 +212,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         client.registerEventListener((event) -> eventMeshMysqlEventListener(event, context));
         // Register a lifecycle listener for the MySQL client
         client.registerLifecycleListener(new LifecycleListener() {
+
             @Override
             public void onConnect(BinaryLogClient client) {
                 log.info("Client connect MySQL Server success");
@@ -232,7 +234,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             }
         });
 
-        //Register custom event handlers...
+        // Register custom event handlers...
         eventHandlers.put(EventType.STOP, event -> handleStopEvent(context, event));
         eventHandlers.put(EventType.HEARTBEAT, event -> handleHeartbeatEvent(context, event));
         eventHandlers.put(EventType.INCIDENT, event -> handleServerIncident(context, event));
@@ -241,7 +243,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         eventHandlers.put(EventType.QUERY, event -> handleQueryEvent(context, event));
         eventHandlers.put(EventType.TRANSACTION_PAYLOAD, event -> handleTransactionPayload(context, event));
 
-        //Used to support 5.1.16 - mysql-trunk
+        // Used to support 5.1.16 - mysql-trunk
         eventHandlers.put(EventType.WRITE_ROWS, event -> handleInsertEvent(context, event));
         eventHandlers.put(EventType.UPDATE_ROWS, event -> handleUpdateEvent(context, event));
         eventHandlers.put(EventType.DELETE_ROWS, event -> handleDeleteEvent(context, event));
@@ -275,7 +277,6 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
 
         return mergedEventMeshGtidSet;
     }
-
 
     /**
      * handles events from the MySQL
@@ -316,7 +317,6 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         }
         context.complete();
     }
-
 
     @Override
     public String getThreadName() {
@@ -376,15 +376,15 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     }
 
     private void enableGtidHandle() {
-        //Query whether mysql supports GTID
+        // Query whether mysql supports GTID
         if (this.connection.enableGTID()) {
             eventHandlers.put(EventType.GTID, event -> handleGtidEvent(context, event));
 
-            //Query GtidSet from the MySQL Server
+            // Query GtidSet from the MySQL Server
             String availableServerGtid = this.connection.executedGTID();
             EventMeshGtidSet executedEventMeshGtidSet = new EventMeshGtidSet(availableServerGtid);
 
-            //Get purged GTID
+            // Get purged GTID
             String purgedServerGtid = this.connection.purgedGTID();
             EventMeshGtidSet purgedServerEventMeshGtidSet = new EventMeshGtidSet(purgedServerGtid);
 
@@ -411,7 +411,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
      * @param event   the event to be handled
      */
     protected void handleStopEvent(MysqlJdbcContext context, Event event) {
-        //The purpose of STOP_EVENT is to inform MySQL that the slave or replication client has reached the end of the binary log
+        // The purpose of STOP_EVENT is to inform MySQL that the slave or replication client has reached the end of the binary log
         // and no new events will be generated. When the slave receives a STOP_EVENT, it can take appropriate actions based on its needs,
         // such as closing the connection to the master server or reconnecting to obtain a new binary log file.
         log.debug("Replication client has reached the end of the binary log: {}", event);
@@ -491,7 +491,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         final String sql = queryEventData.getSql().trim();
         log.debug("Received query event SQL:{}", sql);
         if (StringUtils.equalsIgnoreCase("BEGIN", sql)) {
-            //start transaction
+            // start transaction
             context.startTransaction();
             return;
         }
@@ -502,7 +502,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         }
 
         if (StringUtils.startsWithIgnoreCase("XA", sql)) {
-            //TODO: next version support
+            // TODO: next version support
 
             return;
         }
@@ -512,7 +512,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             return;
         }
 
-        //set current parse database to Ddl parser
+        // set current parse database to Ddl parser
         ddlParser.setCurrentDatabase(queryEventData.getDatabase());
         ddlParser.parse(sql, this::handleDdlEvent);
     }
@@ -540,7 +540,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     protected void handleTransactionPayload(MysqlJdbcContext context, Event event) {
 
         TransactionPayloadEventData transactionPayloadEventData = event.getData();
-        //unpack Event and handle
+        // unpack Event and handle
         ArrayList<Event> uncompressedEvents = transactionPayloadEventData.getUncompressedEvents();
         for (Event uncompressedEvent : uncompressedEvents) {
             final EventType eventType = uncompressedEvent.getHeader().getEventType();
@@ -631,7 +631,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                 BitSet includedColumns = beforePair.getRight();
                 Map<String, Object> beforeValues = new HashMap<>(beforeRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
-                    //Filter out empty fields
+                    // Filter out empty fields
                     if (!includedColumns.get(index)) {
                         continue;
                     }
@@ -649,7 +649,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                 BitSet includedColumns = afterPair.getRight();
                 Map<String, Object> afterValues = new HashMap<>(afterRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
-                    //Filter out empty fields
+                    // Filter out empty fields
                     if (!includedColumns.get(index)) {
                         continue;
                     }

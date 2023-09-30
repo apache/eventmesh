@@ -44,7 +44,6 @@ public interface ColumnEditor<CE extends ColumnEditor, Col extends Column> {
      */
     String ofName();
 
-
     /**
      * Sets the data type of the column.
      *
@@ -140,4 +139,3 @@ public interface ColumnEditor<CE extends ColumnEditor, Col extends Column> {
      */
     Col build();
 }
-

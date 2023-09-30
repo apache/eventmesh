@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.http.util;
 
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,7 +36,6 @@ import org.junit.Test;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class HttpUtilsTest {
-
 
     @Test
     public void testPostPositive() {

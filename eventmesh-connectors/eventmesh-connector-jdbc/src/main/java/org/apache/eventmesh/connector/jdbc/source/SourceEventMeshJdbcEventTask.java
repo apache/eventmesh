@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SourceEventMeshJdbcEventTask extends AbstractEventMeshJdbcEventTask {
 
-
     private final String taskName;
 
     private EventHandler eventHandler;
@@ -63,7 +62,6 @@ public class SourceEventMeshJdbcEventTask extends AbstractEventMeshJdbcEventTask
             }
         }
     }
-
 
     /**
      * Registers a snapshot event handler to be executed when snapshot events occur.

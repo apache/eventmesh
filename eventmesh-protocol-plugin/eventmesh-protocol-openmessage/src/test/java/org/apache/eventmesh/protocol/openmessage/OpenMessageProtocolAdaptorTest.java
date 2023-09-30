@@ -33,8 +33,7 @@ public class OpenMessageProtocolAdaptorTest {
 
         Assert.assertNotNull(protocolAdaptor);
         Assert.assertEquals(
-            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
-        );
+            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
         Assert.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.protocol;
 
 public enum SubscriptionType {
+
     /**
      * SYNC
      */

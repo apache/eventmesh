@@ -166,7 +166,6 @@ public class JdbcConnection implements AutoCloseable {
         return new JdbcDriverMetaData(majorVersion, minorVersion, driverName, productName, productVersion);
     }
 
-
     public JdbcDriverMetaData getJdbcDriverMetaData() {
         return jdbcDriverMetaData;
     }
@@ -404,7 +403,6 @@ public class JdbcConnection implements AutoCloseable {
         return this;
     }
 
-
     /**
      * Executes a prepared query on the JDBC connection and maps the result set using the provided ResultSetMapper.
      *
@@ -465,7 +463,6 @@ public class JdbcConnection implements AutoCloseable {
         statement.setFetchSize(fetchSize <= 0 ? defaultFetchSize : fetchSize);
         return statement;
     }
-
 
     /**
      * Functional interface for the initial operation on the JDBC connection.

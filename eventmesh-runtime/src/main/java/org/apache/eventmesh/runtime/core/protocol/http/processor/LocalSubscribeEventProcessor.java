@@ -48,7 +48,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @EventMeshTrace
 @Slf4j
 public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
@@ -82,19 +81,18 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
         final Map<String, Object> responseBodyMap = new HashMap<>();
 
-        //validate header
+        // validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        //validate body
+        // validate body
         final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {
-            }
-        )).orElseGet(HashMap::new);
+            })).orElseGet(HashMap::new);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -110,10 +108,9 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final List<SubscriptionItem> subscriptionList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             topic,
             new TypeReference<List<SubscriptionItem>>() {
-            }
-        )).orElseGet(Collections::emptyList);
+            })).orElseGet(Collections::emptyList);
 
-        //do acl check
+        // do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionList) {
                 try {

@@ -22,9 +22,7 @@ import java.util.Objects;
 
 import lombok.Getter;
 
-
 public class DecimalType extends PrimitiveType<BigDecimal> {
-
 
     @Getter
     private final int scale;

@@ -57,7 +57,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     protected Map<String, Set<AbstractPushRequest>> waitingRequests;
 
     protected HandleMsgContext handleMsgContext;
-    //  protected CloudEvent event;
+    // protected CloudEvent event;
     protected CloudEvent eventMeshCloudEvent;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);

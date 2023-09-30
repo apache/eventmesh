@@ -34,4 +34,3 @@ public interface EventMeshJdbcTask extends AutoCloseable {
     void shutdown();
 
 }
-

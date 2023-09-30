@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;

@@ -217,8 +217,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     }
                     ClientRetCode result = processResponseContent(res);
                     MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
-                            result, currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                        result, currPushUrl, handleMsgContext.getTopic(),
+                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     switch (result) {
                         case OK:
                         case REMOTE_OK:
@@ -242,7 +242,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     if (MESSAGE_LOGGER.isInfoEnabled()) {
                         MESSAGE_LOGGER.info(
                             "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
+                                + "|uniqueId={}|cost={}",
+                            currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     }
 

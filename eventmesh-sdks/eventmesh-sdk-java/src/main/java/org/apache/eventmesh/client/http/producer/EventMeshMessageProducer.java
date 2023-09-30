@@ -80,7 +80,7 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.EM_MESSAGE_PROTOCOL)
             .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
-            //default ce version is 1.0
+            // default ce version is 1.0
             .addHeader(ProtocolKey.PROTOCOL_VERSION, SpecVersion.V1.toString())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())

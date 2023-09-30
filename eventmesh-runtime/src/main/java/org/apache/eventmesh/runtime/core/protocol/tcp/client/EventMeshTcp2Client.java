@@ -39,7 +39,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -56,6 +55,7 @@ public class EventMeshTcp2Client {
                 "graceful normal quit from eventmesh", null));
 
             tcpThreadPoolGroup.getScheduler().submit(new Runnable() {
+
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
@@ -73,13 +73,14 @@ public class EventMeshTcp2Client {
     }
 
     public static InetSocketAddress goodBye2Client(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
-                                                   String errMsg, int eventMeshStatus,
-                                                   ClientSessionGroupMapping mapping) {
+        String errMsg, int eventMeshStatus,
+        ClientSessionGroupMapping mapping) {
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, eventMeshStatus, errMsg, null));
             tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
+
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
@@ -103,6 +104,7 @@ public class EventMeshTcp2Client {
         eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
         log.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(new ChannelFutureListener() {
+
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
@@ -126,6 +128,7 @@ public class EventMeshTcp2Client {
             pkg.setHeader(new Header(REDIRECT_TO_CLIENT, OPStatus.SUCCESS.getCode(), null, null));
             pkg.setBody(new RedirectInfo(newEventMeshIp, port));
             tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
+
                 @Override
                 public void run() {
                     long taskExecuteTime = System.currentTimeMillis();
@@ -143,6 +146,7 @@ public class EventMeshTcp2Client {
     public static void closeSessionIfTimeout(TCPThreadPoolGroup tcpThreadPoolGroup, Session session,
         ClientSessionGroupMapping mapping) {
         tcpThreadPoolGroup.getScheduler().schedule(new Runnable() {
+
             @Override
             public void run() {
                 try {

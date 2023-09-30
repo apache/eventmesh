@@ -69,7 +69,7 @@ public class HttpTinyClient {
             return null;
         }
 
-        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext(); ) {
+        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext();) {
             sb.append(iter.next()).append("=");
             sb.append(URLEncoder.encode(iter.next(), encoding));
             if (iter.hasNext()) {
@@ -81,7 +81,7 @@ public class HttpTinyClient {
 
     private static void setHeaders(HttpURLConnection conn, Collection<String> headers, String encoding) {
         if (null != headers) {
-            for (Iterator<String> iter = headers.iterator(); iter.hasNext(); ) {
+            for (Iterator<String> iter = headers.iterator(); iter.hasNext();) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
         }
