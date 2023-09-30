@@ -10,8 +10,4 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class EtcdConnectionService implements ConnectionService {
 
-    @Override
-    public String listConnections(Integer page, String size) {
-        return "etcd";
-    }
 }

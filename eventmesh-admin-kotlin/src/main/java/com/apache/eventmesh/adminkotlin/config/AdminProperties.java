@@ -1,5 +1,8 @@
 package com.apache.eventmesh.adminkotlin.config;
 
+import static com.apache.eventmesh.adminkotlin.config.Constants.ADMIN_PROPS_PREFIX;
+import static com.apache.eventmesh.adminkotlin.config.Constants.META_TYPE_NACOS;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -7,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "eventmesh")
+@ConfigurationProperties(prefix = ADMIN_PROPS_PREFIX)
 public class AdminProperties {
 
     private MetaProperties meta = new MetaProperties();
@@ -17,25 +20,37 @@ public class AdminProperties {
     @Data
     public static class MetaProperties {
 
-        private String type;
+        private String type = META_TYPE_NACOS;
+
         private NacosProperties nacos = new NacosProperties();
+
         private EtcdProperties etcd = new EtcdProperties();
 
         @Data
         public static class NacosProperties {
-            private String addr;
-            private String username;
-            private String password;
+
+            private String addr = "127.0.0.1:8848";
+
+            private String username = "nacos";
+
+            private String password = "nacos";
+
+            private String namespace = "";
+
         }
 
         @Data
         public static class EtcdProperties {
+
             private String addr;
+
         }
     }
 
     @Data
     public static class ConfigProperties {
-        private int timeoutMillis;
+
+        private int timeoutMs = 5000;
+
     }
 }

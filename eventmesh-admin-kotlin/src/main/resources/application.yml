@@ -38,21 +38,9 @@ eventmesh:
       addr: 127.0.0.1:8848
       username: nacos
       password: nacos
-#      endpoint:
-#      accessKey:
-#      secretKey:
-#      clusterName:
-#      namespace:
-#      namingPollingThreadCount:
+#      namespace: # namespace id
     etcd:
       addr: # TODO
   config:
     # timeout for admin client
-    timeoutMillis: 5000
-
-thread-pool:
-  config:
-    coreSize: 10
-    maxSize: 10
-    keepAliveTime: 3000
-    queueSize: 5000
+    timeoutMs: 5000

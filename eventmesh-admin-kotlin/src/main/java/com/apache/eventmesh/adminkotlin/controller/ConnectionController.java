@@ -26,9 +26,9 @@ public class ConnectionController {
      * @param size the page size
      * @return A paged list of connection configuration and total number of pages
      */
-    @GetMapping("/connections")
+    @GetMapping("/connection")
     public String listConnections(@RequestParam("page") Integer page, @RequestParam("size") String size) {
-        return connectionService.listConnections(page, size);
+        return null;
     }
 
 }
