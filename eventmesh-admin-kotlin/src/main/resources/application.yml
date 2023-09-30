@@ -36,9 +36,13 @@ eventmesh:
     type: nacos
     nacos:
       addr: 127.0.0.1:8848
-      username: nacos
-      password: nacos
-#      namespace: # namespace id
+      authEnabled: false # TODO check auth enabled function
+      username:
+      password:
+      # TODO aliyun nacos auth
+#      accessKey:
+#      secretKey:
+      namespace: # namespace id
     etcd:
       addr: # TODO
   config:

@@ -31,9 +31,15 @@ public class AdminProperties {
 
             private String addr = "127.0.0.1:8848";
 
-            private String username = "nacos";
+            private boolean authEnabled;
 
-            private String password = "nacos";
+            private String username;
+
+            private String password;
+
+            private String accessKey;
+
+            private String secretKey;
 
             private String namespace = "";
 

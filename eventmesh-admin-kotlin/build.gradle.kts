@@ -29,6 +29,7 @@ repositories {
 // utility
 val commonsLang3Version by extra("3.13.0")
 val guavaVersion by extra("32.1.2-jre") // not used for now
+val fastjsonVersion by extra("2.0.40")
 // swagger
 val springdocVersion by extra("1.7.0")
 // unit test
@@ -47,6 +48,7 @@ dependencies {
 
     // utility
     implementation("org.apache.commons:commons-lang3:${commonsLang3Version}")
+    implementation("com.alibaba.fastjson2:fastjson2:${fastjsonVersion}")
     // swagger
     implementation("org.springdoc:springdoc-openapi-ui:${springdocVersion}")
     implementation("org.springdoc:springdoc-openapi-javadoc:${springdocVersion}")
