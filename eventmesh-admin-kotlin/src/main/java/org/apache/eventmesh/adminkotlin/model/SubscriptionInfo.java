@@ -15,4 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'eventmesh-admin-new'
+package org.apache.eventmesh.adminkotlin.model;
+
+public class SubscriptionInfo {
+}

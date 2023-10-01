@@ -15,4 +15,16 @@
  * limitations under the License.
  */
 
-rootProject.name = 'eventmesh-admin-new'
+package org.apache.eventmesh.adminnew;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EventmeshAdminApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EventmeshAdminApplication.class, args);
+    }
+
+}

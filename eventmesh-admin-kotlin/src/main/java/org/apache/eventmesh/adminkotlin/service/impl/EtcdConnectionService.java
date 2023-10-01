@@ -15,4 +15,16 @@
  * limitations under the License.
  */
 
-rootProject.name = 'eventmesh-admin-new'
+package org.apache.eventmesh.adminkotlin.service.impl;
+
+import org.apache.eventmesh.adminkotlin.service.ConnectionService;
+
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class EtcdConnectionService implements ConnectionService {
+
+}

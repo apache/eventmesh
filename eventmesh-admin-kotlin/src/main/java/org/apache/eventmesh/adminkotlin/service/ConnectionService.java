@@ -15,4 +15,13 @@
  * limitations under the License.
  */
 
-rootProject.name = 'eventmesh-admin-new'
+package org.apache.eventmesh.adminkotlin.service;
+
+/**
+ * "Connection" refers to the subscription relationship between connectors.
+ * It focuses on the configuration deployed on the source and sink connectors themselves,
+ * reported by the connector.
+ */
+public interface ConnectionService {
+
+}

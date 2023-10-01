@@ -15,4 +15,26 @@
  * limitations under the License.
  */
 
-rootProject.name = 'eventmesh-admin-new'
+package org.apache.eventmesh.adminkotlin.service.impl;
+
+import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
+import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
+
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class EtcdSubscriptionService implements SubscriptionService {
+
+    @Override
+    public CommonResponse retrieveConfig(String dataId, String group) {
+        return null;
+    }
+
+    @Override
+    public String retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+        return null;
+    }
+}
