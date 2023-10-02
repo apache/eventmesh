@@ -36,6 +36,9 @@ public class SubscriptionController {
     @Autowired
     public SubscriptionService subscriptionService;
 
+    // the subscription dataId naming pattern of EventMesh clients: ip-protocol
+    private static final String CLIENT_DATA_ID_PATTERN = "*.*.*.*-*";
+
     /**
      * retrieve a specified config
      *
@@ -64,8 +67,10 @@ public class SubscriptionController {
      */
     @GetMapping("/subscriptions")
     public ResponseEntity<String> listSubscriptions(
-        @RequestParam(name = "page", defaultValue = "1") Integer page, @RequestParam(name = "size", defaultValue = "10") Integer size,
-        @RequestParam(name = "dataId", defaultValue = "") String dataId, @RequestParam(name = "group", defaultValue = "") String group) {
+        @RequestParam(name = "page", defaultValue = "1") Integer page,
+        @RequestParam(name = "size", defaultValue = "10") Integer size,
+        @RequestParam(name = "dataId", defaultValue = CLIENT_DATA_ID_PATTERN) String dataId,
+        @RequestParam(name = "group", defaultValue = "") String group) {
         return ResponseEntity.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
     }
 

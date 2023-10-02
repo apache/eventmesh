@@ -22,6 +22,7 @@ import org.apache.eventmesh.adminkotlin.config.Constants;
 import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
 import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
 
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -36,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -112,7 +114,20 @@ public class NacosSubscriptionService implements SubscriptionService {
         }
 
         ResponseEntity<String> response = restTemplate.getForEntity(urlBuilder.toUriString(), String.class);
-        return response.getBody();
+        return configContentBase64Encode(response.getBody());
+    }
+
+    /**
+     * the subscription content of Nacos config should be base64 encoded to protect special characters
+     */
+    private String configContentBase64Encode(String str) {
+        JSONObject obj = JSON.parseObject(str);
+        // iterate through "pageItems" and encode each "content" field
+        for (Object pageItem : obj.getJSONArray("pageItems")) {
+            JSONObject pageItemObj = (JSONObject) pageItem;
+            pageItemObj.put("content", Base64.getEncoder().encodeToString(pageItemObj.getString("content").getBytes()));
+        }
+        return obj.toJSONString();
     }
 
     /**
