@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.adminkotlin.controller;
 
-import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
+import org.apache.eventmesh.adminkotlin.exception.EventMeshAdminException;
 import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
+@RequestMapping("/api/v1")
 public class SubscriptionController {
 
     @Autowired
@@ -40,30 +42,29 @@ public class SubscriptionController {
     private static final String CLIENT_DATA_ID_PATTERN = "*.*.*.*-*";
 
     /**
-     * retrieve a specified config
+     * Retrieve a specified config.
      *
      * @param dataId nacos config data id (Exact Matching)
      * @param group  config group (Exact Matching)
-     * @return the config content
+     * @return config content
      */
     @GetMapping("/subscription")
     public ResponseEntity<String> retrieveSubscription(@RequestParam("dataId") String dataId, @RequestParam("group") String group) {
-        CommonResponse response = subscriptionService.retrieveConfig(dataId, group);
-        if (response.getData() != null) {
-            return ResponseEntity.ok(response.getData());
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response.getMessage());
+        try {
+            return ResponseEntity.ok(subscriptionService.retrieveConfig(dataId, group));
+        } catch (EventMeshAdminException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     /**
-     * retrieve a list of configs
+     * Retrieve a list of configs.
      *
      * @param page page number
      * @param size page size
      * @param dataId nacos config data id (Fuzzy Matching)
      * @param group config group (Fuzzy Matching)
-     * @return the config content and config properties
+     * @return config properties and base64 encoded config content
      */
     @GetMapping("/subscriptions")
     public ResponseEntity<String> listSubscriptions(
@@ -71,7 +72,11 @@ public class SubscriptionController {
         @RequestParam(name = "size", defaultValue = "10") Integer size,
         @RequestParam(name = "dataId", defaultValue = CLIENT_DATA_ID_PATTERN) String dataId,
         @RequestParam(name = "group", defaultValue = "") String group) {
-        return ResponseEntity.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
+        try {
+            return ResponseEntity.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
+        } catch (EventMeshAdminException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
 }

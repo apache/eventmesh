@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.adminkotlin.dto;
+package org.apache.eventmesh.adminkotlin.exception;
 
-import lombok.Data;
+public class EventMeshException extends EventMeshAdminException {
 
-@Data
-public class CommonResponse {
+    private static final long serialVersionUID = 5648256502005456586L;
 
-    private String data;
-
-    private String message;
-
-    public CommonResponse(String data) {
-        this.data = data;
+    public EventMeshException(String message) {
+        super(message);
     }
 
-    public CommonResponse(String message, Exception e) {
-        this.message = message;
-        if (e != null) {
-            this.message += ": " + e.getMessage();
-        }
+    public EventMeshException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public EventMeshException(Throwable cause) {
+        super(cause);
+    }
+
+    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public EventMeshException(Integer errCode, String errMsg) {
+        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
     }
 }

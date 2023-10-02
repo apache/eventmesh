@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.adminkotlin.service;
 
-import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
-
 /**
  * "Subscription" refers to the traditional MQ producer-consumer topic subscription relationship,
  * emphasizing the subscription relationship between EventMesh clients (including SDK and connectors) and topics,
@@ -26,7 +24,7 @@ import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
  */
 public interface SubscriptionService {
 
-    CommonResponse retrieveConfig(String dataId, String group);
+    String retrieveConfig(String dataId, String group);
 
     String retrieveConfigs(Integer page, Integer size, String dataId, String group);
 }

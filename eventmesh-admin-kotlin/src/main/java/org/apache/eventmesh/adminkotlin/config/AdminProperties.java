@@ -45,7 +45,11 @@ public class AdminProperties {
 
             private String addr = "127.0.0.1:8848";
 
-            private boolean authEnabled;
+            private String namespace = "";
+
+            private boolean authEnabled = false;
+
+            private String protocol = "http";
 
             private String username;
 
@@ -54,8 +58,6 @@ public class AdminProperties {
             private String accessKey;
 
             private String secretKey;
-
-            private String namespace = "";
 
         }
 

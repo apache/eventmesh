@@ -36,13 +36,14 @@ eventmesh:
     type: nacos
     nacos:
       addr: 127.0.0.1:8848
-      authEnabled: false # TODO check auth enabled function
+      namespace: # namespace id, empty by default
+      authEnabled: false
+      protocol: http # http or https
       username:
       password:
-      # TODO aliyun nacos auth
-#      accessKey:
-#      secretKey:
-      namespace: # namespace id
+      # Alibaba Cloud MSE Nacos auth, not nacos.token.secret.key
+      accessKey:
+      secretKey:
     etcd:
       addr: # TODO
   config:

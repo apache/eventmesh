@@ -17,9 +17,13 @@
 
 package org.apache.eventmesh.adminkotlin.service.impl;
 
+import static org.apache.eventmesh.adminkotlin.config.Constants.NACOS_CONFIGS_API;
+import static org.apache.eventmesh.adminkotlin.config.Constants.NACOS_LOGIN_API;
+
 import org.apache.eventmesh.adminkotlin.config.AdminProperties;
 import org.apache.eventmesh.adminkotlin.config.Constants;
-import org.apache.eventmesh.adminkotlin.dto.CommonResponse;
+import org.apache.eventmesh.adminkotlin.exception.EventMeshAdminException;
+import org.apache.eventmesh.adminkotlin.exception.MetaException;
 import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
 
 import java.util.Base64;
@@ -54,10 +58,13 @@ public class NacosSubscriptionService implements SubscriptionService {
 
     RestTemplate restTemplate = new RestTemplate();
 
+    private static String HTTP_PREFIX = Constants.HTTP_PREFIX;
+
     public NacosSubscriptionService(AdminProperties adminProperties) {
         this.adminProperties = adminProperties;
 
         nacosProps.setProperty(PropertyKeyConst.SERVER_ADDR, adminProperties.getMeta().getNacos().getAddr());
+        nacosProps.setProperty(PropertyKeyConst.NAMESPACE, adminProperties.getMeta().getNacos().getNamespace());
         if (adminProperties.getMeta().getNacos().isAuthEnabled()) {
             if (!adminProperties.getMeta().getNacos().getUsername().isEmpty()) {
                 nacosProps.setProperty(PropertyKeyConst.USERNAME, adminProperties.getMeta().getNacos().getUsername());
@@ -72,37 +79,38 @@ public class NacosSubscriptionService implements SubscriptionService {
                 nacosProps.setProperty(PropertyKeyConst.SECRET_KEY, adminProperties.getMeta().getNacos().getSecretKey());
             }
         }
-        nacosProps.setProperty(PropertyKeyConst.NAMESPACE, adminProperties.getMeta().getNacos().getNamespace());
+        if (adminProperties.getMeta().getNacos().getProtocol().equalsIgnoreCase("https")) {
+            HTTP_PREFIX = Constants.HTTPS_PREFIX;
+        }
     }
 
     /**
-     * retrieve a specified config with Nacos SDK
+     * Retrieve a specified config with Nacos SDK.
      */
     @Override
-    public CommonResponse retrieveConfig(String dataId, String group) {
+    public String retrieveConfig(String dataId, String group) {
         ConfigService configService;
         try {
             configService = NacosFactory.createConfigService(nacosProps);
         } catch (Exception e) {
-            log.error("Create Nacos ConfigService error", e);
-            return new CommonResponse("Create Nacos ConfigService error", e);
+            log.error("Failed to create Nacos ConfigService", e);
+            throw new EventMeshAdminException("Failed to create Nacos ConfigService: " + e.getMessage());
         }
         try {
-            String configData = configService.getConfig(dataId, group, adminProperties.getConfig().getTimeoutMs());
-            return new CommonResponse(configData);
+            return configService.getConfig(dataId, group, adminProperties.getConfig().getTimeoutMs());
         } catch (Exception e) {
-            log.error("Get Nacos config error", e);
-            return new CommonResponse("Get Nacos config error", e);
+            log.error("Failed to retrieve Nacos config", e);
+            throw new MetaException("Failed to retrieve Nacos config: " + e.getMessage());
         }
     }
 
     /**
-     * retrieve a list of configs with Nacos OpenAPI, because Nacos SDK doesn't support listing and fuzzy matching
+     * Retrieve a list of configs with Nacos OpenAPI, because Nacos SDK doesn't support listing and fuzzy matching.
      */
     @Override
     public String retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
-            .fromHttpUrl(Constants.HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + Constants.NACOS_CONFIGS_API)
+            .fromHttpUrl(HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_CONFIGS_API)
             .queryParam("pageNo", page)
             .queryParam("pageSize", size)
             .queryParam("dataId", dataId)
@@ -113,12 +121,18 @@ public class NacosSubscriptionService implements SubscriptionService {
             urlBuilder.queryParam("accessToken", loginGetAccessToken());
         }
 
-        ResponseEntity<String> response = restTemplate.getForEntity(urlBuilder.toUriString(), String.class);
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.getForEntity(urlBuilder.toUriString(), String.class);
+        } catch (Exception e) {
+            log.error("Failed to retrieve Nacos config list.", e);
+            throw new MetaException("Failed to retrieve Nacos config list: " + e.getMessage());
+        }
         return configContentBase64Encode(response.getBody());
     }
 
     /**
-     * the subscription content of Nacos config should be base64 encoded to protect special characters
+     * The subscription content of Nacos config should be base64 encoded to protect special characters.
      */
     private String configContentBase64Encode(String str) {
         JSONObject obj = JSON.parseObject(str);
@@ -132,7 +146,7 @@ public class NacosSubscriptionService implements SubscriptionService {
     }
 
     /**
-     * login if auth enabled and return accessToken
+     * Login if auth enabled and return accessToken.
      */
     private String loginGetAccessToken() {
         HttpHeaders headers = new HttpHeaders();
@@ -142,14 +156,18 @@ public class NacosSubscriptionService implements SubscriptionService {
         bodyParams.put("username", Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.USERNAME)));
         bodyParams.put("password", Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.PASSWORD)));
 
-        String loginUrl = Constants.HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + Constants.NACOS_LOGIN_API;
+        String loginUrl = HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_LOGIN_API;
         HttpEntity<MultiValueMap<String, String>> loginRequest = new HttpEntity<>(bodyParams, headers);
         ResponseEntity<String> loginResponse;
         try {
             loginResponse = restTemplate.postForEntity(loginUrl, loginRequest, String.class);
         } catch (Exception e) {
             log.error("Nacos login failed.", e);
-            return "";
+            throw new MetaException("Nacos login failed: " + e.getMessage());
+        }
+        if (loginResponse.getBody() == null || loginResponse.getBody().isEmpty()) {
+            log.error("Nacos didn't return accessToken. Please check Nacos. Status code: {}", loginResponse.getStatusCode());
+            throw new MetaException("Nacos didn't return accessToken. Please check Nacos. Status code: " + loginResponse.getStatusCode());
         }
         return JSON.parseObject(loginResponse.getBody()).getString("accessToken");
     }

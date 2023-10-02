@@ -27,7 +27,6 @@ public class Constants {
     // Open-API
     public static final String HTTP_PREFIX = "http://";
     public static final String HTTPS_PREFIX = "https://";
-    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     // Nacos
     public static final String NACOS_LOGIN_API = "/nacos/v1/auth/login";
