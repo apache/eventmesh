@@ -26,5 +26,5 @@ pubSubConfig:
     passWord: rocketmqPassWord
 connectorConfig:
     connectorName: rocketmqSink
-    nameServer: 192.168.123.52:9876
+    nameServer: 127.0.0.1:9876
     topic: TopicTest

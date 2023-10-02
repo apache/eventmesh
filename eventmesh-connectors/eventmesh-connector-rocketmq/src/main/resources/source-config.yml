@@ -26,7 +26,7 @@ pubSubConfig:
     passWord: rocketmqPassWord
 connectorConfig:
     connectorName: rocketmqSource
-    nameserver: 192.168.123.50:9876
+    nameserver: 127.0.0.1:9876
     topic: TopicTest
     commitOffsetIntervalMs: 5000
 offsetStorageConfig:

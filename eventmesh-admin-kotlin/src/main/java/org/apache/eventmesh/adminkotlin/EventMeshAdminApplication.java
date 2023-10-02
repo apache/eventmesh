@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.adminkotlin;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootTest
-class EventmeshAdminApplicationTests {
+@SpringBootApplication
+public class EventMeshAdminApplication {
 
-    @Test
-    void contextLoads() {
+    public static void main(String[] args) {
+        SpringApplication.run(EventMeshAdminApplication.class, args);
     }
 
 }
