@@ -125,7 +125,8 @@ public class NacosSubscriptionService implements SubscriptionService {
         // iterate through "pageItems" and encode each "content" field
         for (Object pageItem : obj.getJSONArray("pageItems")) {
             JSONObject pageItemObj = (JSONObject) pageItem;
-            pageItemObj.put("content", Base64.getEncoder().encodeToString(pageItemObj.getString("content").getBytes()));
+            String content = pageItemObj.getString("content");
+            pageItemObj.put("content", Base64.getEncoder().encodeToString(content.getBytes()));
         }
         return obj.toJSONString();
     }
