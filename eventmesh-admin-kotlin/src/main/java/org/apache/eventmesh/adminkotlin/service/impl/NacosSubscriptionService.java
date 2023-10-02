@@ -22,12 +22,16 @@ import static org.apache.eventmesh.adminkotlin.config.Constants.NACOS_LOGIN_API;
 
 import org.apache.eventmesh.adminkotlin.config.AdminProperties;
 import org.apache.eventmesh.adminkotlin.config.Constants;
+import org.apache.eventmesh.adminkotlin.dto.SubscriptionResponse;
 import org.apache.eventmesh.adminkotlin.exception.EventMeshAdminException;
 import org.apache.eventmesh.adminkotlin.exception.MetaException;
+import org.apache.eventmesh.adminkotlin.model.SubscriptionInfo;
 import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.springframework.http.HttpEntity;
@@ -108,7 +112,7 @@ public class NacosSubscriptionService implements SubscriptionService {
      * Retrieve a list of configs with Nacos OpenAPI, because Nacos SDK doesn't support listing and fuzzy matching.
      */
     @Override
-    public String retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
             .fromHttpUrl(HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_CONFIGS_API)
             .queryParam("pageNo", page)
@@ -128,21 +132,39 @@ public class NacosSubscriptionService implements SubscriptionService {
             log.error("Failed to retrieve Nacos config list.", e);
             throw new MetaException("Failed to retrieve Nacos config list: " + e.getMessage());
         }
-        return configContentBase64Encode(response.getBody());
+        if (response.getBody() == null || response.getBody().isEmpty()) {
+            log.error("No result returned by Nacos. Please check Nacos.");
+            throw new MetaException("No result returned by Nacos. Please check Nacos.");
+        }
+
+        return toSubscriptionResponse(JSON.parseObject(response.getBody()));
     }
 
-    /**
-     * The subscription content of Nacos config should be base64 encoded to protect special characters.
-     */
-    private String configContentBase64Encode(String str) {
-        JSONObject obj = JSON.parseObject(str);
-        // iterate through "pageItems" and encode each "content" field
+    private SubscriptionResponse toSubscriptionResponse(JSONObject obj) {
+        return SubscriptionResponse.builder()
+            .subscriptionInfos(toSubscriptionInfos(obj))
+            .pages(obj.getInteger("pagesAvailable"))
+            .message("success")
+            .build();
+    }
+
+    private List<SubscriptionInfo> toSubscriptionInfos(JSONObject obj) {
+        List<SubscriptionInfo> subscriptionInfos = new ArrayList<>();
         for (Object pageItem : obj.getJSONArray("pageItems")) {
             JSONObject pageItemObj = (JSONObject) pageItem;
-            String content = pageItemObj.getString("content");
-            pageItemObj.put("content", Base64.getEncoder().encodeToString(content.getBytes()));
+            subscriptionInfos.add(toSubscriptionInfo(pageItemObj));
         }
-        return obj.toJSONString();
+        return subscriptionInfos;
+    }
+
+    private SubscriptionInfo toSubscriptionInfo(JSONObject obj) {
+        String content = obj.getString("content");
+        return SubscriptionInfo.builder()
+            .clientName(obj.getString("dataId"))
+            .group(obj.getString("group"))
+            // The subscription content of Nacos config should be base64 encoded to protect special characters.
+            .subscription(Base64.getEncoder().encodeToString(content.getBytes()))
+            .build();
     }
 
     /**
@@ -166,8 +188,8 @@ public class NacosSubscriptionService implements SubscriptionService {
             throw new MetaException("Nacos login failed: " + e.getMessage());
         }
         if (loginResponse.getBody() == null || loginResponse.getBody().isEmpty()) {
-            log.error("Nacos didn't return accessToken. Please check Nacos. Status code: {}", loginResponse.getStatusCode());
-            throw new MetaException("Nacos didn't return accessToken. Please check Nacos. Status code: " + loginResponse.getStatusCode());
+            log.error("Nacos didn't return accessToken. Please check Nacos status. Status code: {}", loginResponse.getStatusCode());
+            throw new MetaException("Nacos didn't return accessToken. Please check Nacos status. Status code: " + loginResponse.getStatusCode());
         }
         return JSON.parseObject(loginResponse.getBody()).getString("accessToken");
     }

@@ -15,21 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.adminkotlin.model;
+package org.apache.eventmesh.adminkotlin.dto;
 
+import org.apache.eventmesh.adminkotlin.model.SubscriptionInfo;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class SubscriptionInfo {
+@NoArgsConstructor
+@AllArgsConstructor
+public class SubscriptionResponse {
 
-    // client name
-    private String clientName;
+    private List<SubscriptionInfo> subscriptionInfos;
 
-    // group name
-    private String group;
+    private Integer pages;
 
-    // config content
-    private String subscription;
+    private String message;
+
+    public SubscriptionResponse(String message) {
+        this.message = message;
+    }
 }

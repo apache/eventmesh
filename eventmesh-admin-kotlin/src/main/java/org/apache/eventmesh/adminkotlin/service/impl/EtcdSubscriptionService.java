@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.adminkotlin.service.impl;
 
+import org.apache.eventmesh.adminkotlin.dto.SubscriptionResponse;
 import org.apache.eventmesh.adminkotlin.service.SubscriptionService;
 
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class EtcdSubscriptionService implements SubscriptionService {
     }
 
     @Override
-    public String retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         return null;
     }
 }
