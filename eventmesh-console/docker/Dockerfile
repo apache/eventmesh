@@ -15,10 +15,8 @@
 # limitations under the License.
 #
 
-# TODO to be verified
-FROM java:8
+FROM openjdk:8-jre-alpine
 VOLUME /tmp
-ADD eventmesh-admin-*.jar eventmesh-admin.jar
-RUN sh -c 'touch /eventmesh-admin.jar'
+COPY build/libs/eventmesh-console-*.jar eventmesh-console.jar
 ENV JAVA_OPTS=""
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /eventmesh-admin.jar" ]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /eventmesh-console.jar"]
