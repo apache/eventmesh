@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.demo;
 
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -28,59 +29,30 @@ import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
-public class ReplacedWithLambda implements SubClientImpl {
 
-    public ReplacedWithLambda() {
-        super("localhost", 10000, MessageUtils.generateSubServer());
-    }
-
-    @Override
-    public void handle(Package msg, ChannelHandlerContext ctx) {
-        if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-            if (msg.getBody() instanceof EventMeshMessage) {
-                String body = ((EventMeshMessage) msg.getBody()).getBody();
-                if (log.isInfoEnabled()) {
-                    log.info("receive message -------------------------------" + body);
-                }
-            }
-        }
-    }
-}
-
-
-
+@Slf4j
 public class BroadCastSubClient {
 
     public static void main(String[] args) throws Exception {
-        try (ReplacedWithLambda client = new ReplacedWithLambda()) {
+        try (SubClientImpl client = new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
+            client.registerBusiHandler(new ReceiveMsgHook() {
 
-            client.registerBusiHandler(new ReceiveMsgHook());
-            client.handle();
-
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
+                        if (msg.getBody() instanceof EventMeshMessage) {
+                            String body = ((EventMeshMessage) msg.getBody()).getBody();
+                            if (log.isInfoEnabled()) {
+                                log.info("receive message -------------------------------" + body);
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 }
-
-            //client.registerBusiHandler(new ReceiveMsgHook() {
-
-               // @Override
-//                public void handle(Package msg, ChannelHandlerContext ctx)-> {
-//                    if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-//                        if (msg.getBody() instanceof EventMeshMessage) {
-//                            String body = ((EventMeshMessage) msg.getBody()).getBody();
-//                            if (log.isInfoEnabled()) {
-//                                log.info("receive message -------------------------------"+body);
-//                            }
-//                        }
-//                    }
-//                }
-          //  });
-//
-//        }
-//    }
-//}
