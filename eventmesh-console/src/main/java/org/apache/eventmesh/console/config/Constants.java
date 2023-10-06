@@ -15,29 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.config;
 
-public class EventMeshException extends RuntimeException {
+public class Constants {
 
-    private static final long serialVersionUID = 5648256502005456586L;
+    // config
+    public static final String ADMIN_PROPS_PREFIX = "eventmesh";
+    public static final String META_TYPE_NACOS = "nacos";
+    public static final String META_TYPE_ETCD = "etcd";
 
-    public EventMeshException(String message) {
-        super(message);
-    }
+    // Open-API
+    public static final String HTTP_PREFIX = "http://";
+    public static final String HTTPS_PREFIX = "https://";
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
+    // Nacos
+    public static final String NACOS_LOGIN_API = "/nacos/v1/auth/login";
+    public static final String NACOS_CONFIGS_API = "/nacos/v1/cs/configs";
 }

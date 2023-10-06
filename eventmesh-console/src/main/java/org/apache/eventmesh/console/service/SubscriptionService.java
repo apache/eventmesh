@@ -15,29 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.service;
 
-public class EventMeshException extends RuntimeException {
+import org.apache.eventmesh.console.dto.SubscriptionResponse;
 
-    private static final long serialVersionUID = 5648256502005456586L;
+/**
+ * "Subscription" refers to the traditional MQ producer-consumer topic subscription relationship,
+ * emphasizing the subscription relationship between EventMesh clients (including SDK and connectors) and topics,
+ * reported by the EventMesh runtime.
+ */
+public interface SubscriptionService {
 
-    public EventMeshException(String message) {
-        super(message);
-    }
+    String retrieveConfig(String dataId, String group);
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
+    SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group);
 }

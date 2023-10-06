@@ -15,29 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.model;
 
-public class EventMeshException extends RuntimeException {
+public class ConnectionInfo {
 
-    private static final long serialVersionUID = 5648256502005456586L;
-
-    public EventMeshException(String message) {
-        super(message);
-    }
-
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
 }

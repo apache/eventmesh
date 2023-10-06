@@ -15,26 +15,37 @@
 # limitations under the License.
 #
 
-pubSubConfig:
-    meshAddress: 127.0.0.1:10000
-    subject: TopicTest
-    idc: FT
-    env: PRD
-    group: rocketmqSource
-    appId: 5032
-    userName: rocketmqSourceUser
-    passWord: rocketmqPassWord
-connectorConfig:
-    connectorName: rocketmqSource
-    nameserver: 127.0.0.1:9876
-    topic: TopicTest
-    commitOffsetIntervalMs: 5000
-offsetStorageConfig:
-    offsetStorageType: nacos
-    offsetStorageAddr: 127.0.0.1:8848
-    extensions: {
-                    #same with topic
-                    dataId: TopicTest,
-                    #same with group
-                    group: rocketmqSource
-    }
+spring:
+  application:
+    name: eventmesh-admin
+
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+logging:
+  config: classpath:logback.xml
+
+eventmesh:
+  meta:
+    # registry type: nacos, etcd
+    type: nacos
+    nacos:
+      addr: 127.0.0.1:8848
+      namespace: # namespace id, empty by default
+      authEnabled: false
+      protocol: http # http or https
+      username:
+      password:
+      # Alibaba Cloud MSE Nacos auth, not nacos.token.secret.key
+      accessKey:
+      secretKey:
+    etcd:
+      addr: # TODO
+  config:
+    # timeout for admin client
+    timeoutMs: 5000

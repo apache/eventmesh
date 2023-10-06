@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.dto;
 
-public class EventMeshException extends RuntimeException {
+import org.apache.eventmesh.console.model.SubscriptionInfo;
 
-    private static final long serialVersionUID = 5648256502005456586L;
+import java.util.List;
 
-    public EventMeshException(String message) {
-        super(message);
-    }
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SubscriptionResponse {
 
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
+    private List<SubscriptionInfo> subscriptionInfos;
 
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+    private Integer pages;
 
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
+    private String message;
+
+    public SubscriptionResponse(String message) {
+        this.message = message;
     }
 }

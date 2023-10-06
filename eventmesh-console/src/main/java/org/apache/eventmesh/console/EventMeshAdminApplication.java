@@ -15,29 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console;
 
-public class EventMeshException extends RuntimeException {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    private static final long serialVersionUID = 5648256502005456586L;
+@SpringBootApplication
+public class EventMeshAdminApplication {
 
-    public EventMeshException(String message) {
-        super(message);
+    public static void main(String[] args) {
+        SpringApplication.run(EventMeshAdminApplication.class, args);
     }
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
 }

@@ -15,26 +15,8 @@
 # limitations under the License.
 #
 
-pubSubConfig:
-    meshAddress: 127.0.0.1:10000
-    subject: TopicTest
-    idc: FT
-    env: PRD
-    group: rocketmqSource
-    appId: 5032
-    userName: rocketmqSourceUser
-    passWord: rocketmqPassWord
-connectorConfig:
-    connectorName: rocketmqSource
-    nameserver: 127.0.0.1:9876
-    topic: TopicTest
-    commitOffsetIntervalMs: 5000
-offsetStorageConfig:
-    offsetStorageType: nacos
-    offsetStorageAddr: 127.0.0.1:8848
-    extensions: {
-                    #same with topic
-                    dataId: TopicTest,
-                    #same with group
-                    group: rocketmqSource
-    }
+FROM openjdk:8-jre-alpine
+VOLUME /tmp
+COPY build/libs/eventmesh-console-*.jar eventmesh-console.jar
+ENV JAVA_OPTS=""
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /eventmesh-console.jar"]
