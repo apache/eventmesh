@@ -153,14 +153,14 @@ public class ZookeeperMetaServiceTest {
         Assert.assertNotNull(infoList);
     }
 
-    @Test()
+    @Test
     public void testRegister() {
         zkRegistryService.init();
         zkRegistryService.start();
         zkRegistryService.register(eventMeshRegisterInfo);
     }
 
-    @Test()
+    @Test
     public void testUnRegister() {
         zkRegistryService.init();
         zkRegistryService.start();
