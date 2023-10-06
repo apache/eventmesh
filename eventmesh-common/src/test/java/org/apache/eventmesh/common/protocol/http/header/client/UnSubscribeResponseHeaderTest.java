@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnSubscribeResponseHeaderTest extends AbstractResponseHeaderTest {
 

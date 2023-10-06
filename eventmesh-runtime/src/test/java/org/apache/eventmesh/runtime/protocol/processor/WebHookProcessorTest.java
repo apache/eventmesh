@@ -32,16 +32,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.data.BytesCloudEventData;
@@ -53,7 +53,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class WebHookProcessorTest {
 
     @Mock
@@ -68,7 +68,7 @@ public class WebHookProcessorTest {
     @InjectMocks
     private transient WebHookController controller = new WebHookController();
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         Mockito.when(hookConfigOperationManager.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
         Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
@@ -82,13 +82,13 @@ public class WebHookProcessorTest {
             processor.handler(buildMockWebhookRequest());
 
             CloudEvent msgSendToMq = captor.getValue();
-            Assert.assertNotNull(msgSendToMq);
-            Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
-            Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
-            Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
-            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
+            Assertions.assertNotNull(msgSendToMq);
+            Assertions.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
+            Assertions.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
+            Assertions.assertEquals("github.ForkEvent", msgSendToMq.getType());
+            Assertions.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 

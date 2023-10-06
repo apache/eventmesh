@@ -19,8 +19,8 @@ package org.apache.eventmesh.common.utils;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ReflectUtilsTest {
 
@@ -44,10 +44,10 @@ public class ReflectUtilsTest {
         Field fieldName = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "name");
         Field fieldAge = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "age");
         Field fieldTel = ReflectUtils.lookUpFieldByParentClass(TestObj.class, "tel");
-        Assert.assertNull(fieldName);
-        Assert.assertNull(fieldAge);
-        Assert.assertNotNull(fieldTel);
-        Assert.assertEquals("tel", fieldTel.getName());
+        Assertions.assertNull(fieldName);
+        Assertions.assertNull(fieldAge);
+        Assertions.assertNotNull(fieldTel);
+        Assertions.assertEquals("tel", fieldTel.getName());
     }
 
 }

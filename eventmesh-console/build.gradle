@@ -74,7 +74,3 @@ dependencies {
     // meta
     implementation("com.alibaba.nacos:nacos-client:${nacosVersion}")
 }
-
-tasks.named('test') {
-    useJUnitPlatform()
-}

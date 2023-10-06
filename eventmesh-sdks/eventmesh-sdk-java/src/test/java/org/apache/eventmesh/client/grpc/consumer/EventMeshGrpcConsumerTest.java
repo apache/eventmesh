@@ -44,18 +44,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import io.cloudevents.core.v1.CloudEventV1;
 import io.grpc.stub.StreamObserver;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class EventMeshGrpcConsumerTest {
 
     @Mock
@@ -66,7 +69,7 @@ public class EventMeshGrpcConsumerTest {
     private HeartbeatServiceBlockingStub heartbeatClient;
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(EventMeshGrpcClientConfig.builder().build());
         eventMeshGrpcConsumer.init();
@@ -140,7 +143,7 @@ public class EventMeshGrpcConsumerTest {
 
         assertThat(result).hasSize(1).first().isInstanceOf(CloudEventV1.class);
         CloudEventV1 v1 = (CloudEventV1) result.get(0);
-        Assert.assertEquals(new String(v1.getData().toBytes(), Constants.DEFAULT_CHARSET), "mockContent");
+        Assertions.assertEquals(new String(v1.getData().toBytes(), Constants.DEFAULT_CHARSET), "mockContent");
         verify(consumerAsyncClient, times(1)).subscribeStream(any());
         assertThat(eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(buildMockSubscriptionItem()))).isEqualTo(
             Response.builder().build());

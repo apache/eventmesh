@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -36,7 +36,7 @@ public class RedirectClientByIpPortHandlerTest {
 
     private static transient RedirectClientByIpPortHandler redirectClientByIpPortHandler;
 
-    @Before
+    @BeforeEach
     public void init() {
         EventMeshTCPServer mockServer = Mockito.mock(EventMeshTCPServer.class);
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
@@ -55,7 +55,7 @@ public class RedirectClientByIpPortHandlerTest {
         redirectClientByIpPortHandler.handle(mockExchange);
 
         String response = outputStream.toString();
-        Assert.assertEquals("params illegal!", response);
+        Assertions.assertEquals("params illegal!", response);
 
     }
 }

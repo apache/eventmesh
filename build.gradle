@@ -103,7 +103,7 @@ allprojects {
                 url "https://maven.aliyun.com/repository/public"
             }
         }
-        testImplementation "junit:junit:4.13.2"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
     }
 
     spotless {
@@ -126,6 +126,10 @@ allprojects {
         }
     }
     spotlessJava.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
 task tar(type: Tar) {
@@ -516,12 +520,13 @@ subprojects {
             dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "junit:junit:4.13.2"
-            dependency "com.github.stefanbirkner:system-rules:1.16.1"
+            dependency "org.junit.jupiter:junit-jupiter:5.6.0"
+            dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
             dependency "org.mockito:mockito-core:3.8.0"
             dependency "org.mockito:mockito-inline:3.8.0"
+            dependency "org.mockito:mockito-junit-jupiter:3.8.0"
 
             dependency "io.cloudevents:cloudevents-core:2.4.2"
             dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"

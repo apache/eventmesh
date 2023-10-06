@@ -28,10 +28,10 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
@@ -41,14 +41,14 @@ public class RedisConsumerTest extends AbstractRedisServer {
 
     private RedisConsumer redisConsumer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         redisConsumer = new RedisConsumer();
         redisConsumer.init(new Properties());
         redisConsumer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         redisConsumer.shutdown();
     }
@@ -83,7 +83,7 @@ public class RedisConsumerTest extends AbstractRedisServer {
             redissonTopic.publish(cloudEvent);
         }
 
-        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
+        Assertions.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
 
         redisConsumer.unsubscribe(topic);
     }

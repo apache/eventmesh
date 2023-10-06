@@ -19,22 +19,22 @@ package org.apache.eventmesh.common.utils;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RandomStringUtilsTest {
 
     @Test
     public void testGenerateNum() {
         String result = RandomStringUtils.generateNum(2);
-        Assert.assertTrue(NumberUtils.isDigits(result));
-        Assert.assertEquals(2, result.length());
+        Assertions.assertTrue(NumberUtils.isDigits(result));
+        Assertions.assertEquals(2, result.length());
     }
 
     @Test
     public void testGenerateUUID() {
         String result = RandomStringUtils.generateUUID();
-        Assert.assertTrue(result.matches("^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$"));
+        Assertions.assertTrue(result.matches("^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$"));
     }
 
 }

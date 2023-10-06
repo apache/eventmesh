@@ -24,8 +24,8 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ValueComparatorTest {
 
@@ -36,7 +36,7 @@ public class ValueComparatorTest {
             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(map);
         } catch (IOException e) {
-            Assert.fail();
+            Assertions.fail();
         }
     }
 

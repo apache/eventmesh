@@ -79,6 +79,7 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     testImplementation "org.mockito:mockito-inline"
+    testImplementation "org.mockito:mockito-junit-jupiter"
     testImplementation "commons-io:commons-io"
 
     testCompileOnly 'org.projectlombok:lombok'

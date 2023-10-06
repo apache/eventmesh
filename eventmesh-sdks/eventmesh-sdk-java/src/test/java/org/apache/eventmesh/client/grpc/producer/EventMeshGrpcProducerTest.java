@@ -40,14 +40,17 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class EventMeshGrpcProducerTest {
 
     private EventMeshGrpcProducer producer;
@@ -59,7 +62,7 @@ public class EventMeshGrpcProducerTest {
     @Mock
     private EventMeshMessageProducer eventMeshMessageProducer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         producer = new EventMeshGrpcProducer(EventMeshGrpcClientConfig.builder().build());
         producer.setCloudEventProducer(cloudEventProducer);

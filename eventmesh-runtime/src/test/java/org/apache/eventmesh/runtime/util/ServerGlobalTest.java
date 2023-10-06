@@ -19,8 +19,8 @@ package org.apache.eventmesh.runtime.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * ServerGlobal test cases.
@@ -30,12 +30,12 @@ public class ServerGlobalTest {
     @Test
     public void testGetMsgCounter() {
         ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
-        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
+        Assertions.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
     }
 
     @Test
     public void testSetMsgCounter() {
         ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
-        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
+        Assertions.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
     }
 }

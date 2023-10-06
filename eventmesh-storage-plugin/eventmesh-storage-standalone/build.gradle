@@ -23,4 +23,5 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation "org.mockito:mockito-inline"
+    testImplementation "org.mockito:mockito-junit-jupiter"
 }
