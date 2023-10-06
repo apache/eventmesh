@@ -153,6 +153,8 @@ public class EventMeshCloudEventBuilder {
         attributeValueMap.put(ProtocolKey.TTL, CloudEventAttributeValue.newBuilder().setCeString(ttl).build());
         attributeValueMap.put(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString(seqNum).build());
         attributeValueMap.put(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString(uniqueId).build());
+        attributeValueMap.put(ProtocolKey.PROTOCOL_DESC,
+            CloudEventAttributeValue.newBuilder().setCeString(Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT).build());
         attributeValueMap.put(ProtocolKey.PRODUCERGROUP,
             CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getProducerGroup()).build());
         if (null != message.getTopic()) {
@@ -197,7 +199,7 @@ public class EventMeshCloudEventBuilder {
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
-        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, "grpc-cloud-event");
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT);
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_VERSION, message.getSpecVersion().toString());
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
