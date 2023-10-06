@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
@@ -39,7 +40,9 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
@@ -199,25 +202,17 @@ public class Session {
 
     @Override
     public String toString() {
-        return "Session{"
-            +
-            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-            +
-            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-            +
-            ",client=" + client
-            +
-            ",sessionState=" + sessionState
-            +
-            ",sessionContext=" + sessionContext
-            +
-            ",pusher=" + pusher
-            +
-            ",sender=" + sender
-            +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-            +
-            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+        Map<String, Object> sessionJson = new HashMap<>();
+        sessionJson.put("sysId", Objects.requireNonNull(clientGroupWrapper.get()).getSysId());
+        sessionJson.put("remoteAddr", RemotingHelper.parseSocketAddressAddr(remoteAddress));
+        sessionJson.put("client", client);
+        sessionJson.put("sessionState", sessionState);
+        sessionJson.put("sessionContext", sessionContext);
+        sessionJson.put("pusher", pusher);
+        sessionJson.put("sender", sender);
+        sessionJson.put("createTime", DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT));
+        sessionJson.put("lastHeartbeatTime", DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT));
+        return JsonUtils.toJSONString(sessionJson);
     }
 
     @Override

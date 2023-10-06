@@ -15,29 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.service.impl;
 
-public class EventMeshException extends RuntimeException {
+import org.apache.eventmesh.console.dto.SubscriptionResponse;
+import org.apache.eventmesh.console.service.SubscriptionService;
 
-    private static final long serialVersionUID = 5648256502005456586L;
+import org.springframework.stereotype.Service;
 
-    public EventMeshException(String message) {
-        super(message);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class EtcdSubscriptionService implements SubscriptionService {
+
+    @Override
+    public String retrieveConfig(String dataId, String group) {
+        return null;
     }
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
+    @Override
+    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+        return null;
     }
 }

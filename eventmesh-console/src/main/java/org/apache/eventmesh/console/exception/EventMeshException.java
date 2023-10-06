@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.exception;
+package org.apache.eventmesh.console.exception;
 
-public class EventMeshException extends RuntimeException {
+public class EventMeshException extends EventMeshAdminException {
 
     private static final long serialVersionUID = 5648256502005456586L;
 
