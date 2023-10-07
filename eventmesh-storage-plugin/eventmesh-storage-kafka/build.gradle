@@ -34,8 +34,6 @@ dependencies {
     testImplementation project(":eventmesh-common")
 
     testImplementation "org.mockito:mockito-core"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
 
     compileOnly 'org.projectlombok:lombok'
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'

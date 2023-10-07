@@ -28,7 +28,7 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
+import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -38,7 +38,7 @@ public class RedirectClientByIpPortHandlerTest {
 
     @Before
     public void init() {
-        EventMeshTCPServer mockServer = PowerMockito.mock(EventMeshTCPServer.class);
+        EventMeshTCPServer mockServer = Mockito.mock(EventMeshTCPServer.class);
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
         redirectClientByIpPortHandler = new RedirectClientByIpPortHandler(mockServer, httpHandlerManager);
     }
@@ -48,9 +48,9 @@ public class RedirectClientByIpPortHandlerTest {
         OutputStream outputStream = new ByteArrayOutputStream();
         URI uri = URI.create("ip=127.0.0.1&port=1234&desteventMeshIp=127.0.0.1&desteventMeshPort=");
 
-        HttpExchange mockExchange = PowerMockito.mock(HttpExchange.class);
-        PowerMockito.when(mockExchange.getResponseBody()).thenReturn(outputStream);
-        PowerMockito.when(mockExchange.getRequestURI()).thenReturn(uri);
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        Mockito.when(mockExchange.getResponseBody()).thenReturn(outputStream);
+        Mockito.when(mockExchange.getRequestURI()).thenReturn(uri);
 
         redirectClientByIpPortHandler.handle(mockExchange);
 
