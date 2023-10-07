@@ -169,6 +169,13 @@ public class Constants {
 
     public static final int SUCCESS_CODE = 200;
 
+    // protocol desc
+    public static final String PROTOCOL_DESC_GRPC_CLOUD_EVENT = "grpc-cloud-event";
+
+    public static final String PROTOCOL_DESC_HTTP = "http";
+
+    public static final String PROTOCOL_DESC_TCP = "tcp";
+
     /**
      * GRPC PROTOCOL
      */
