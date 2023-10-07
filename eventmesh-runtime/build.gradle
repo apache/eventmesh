@@ -78,7 +78,6 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
-    testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
     testImplementation "commons-io:commons-io"
 
