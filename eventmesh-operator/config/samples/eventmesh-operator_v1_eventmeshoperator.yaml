@@ -1,0 +1,12 @@
+apiVersion: eventmesh-operator.eventmesh/v1
+kind: EventMeshOperator
+metadata:
+  labels:
+    app.kubernetes.io/name: eventmeshoperator
+    app.kubernetes.io/instance: eventmeshoperator-sample
+    app.kubernetes.io/part-of: eventmesh-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: eventmesh-operator
+  name: eventmeshoperator-sample
+spec:
+  # TODO(user): Add fields here
