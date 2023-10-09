@@ -15,27 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.common.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+public enum ProtocolType {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+    GRPC("GRPC"),
+    HTTP("HTTP"),
+    TCP("TCP");
 
-    private String respCode;
+    private String name;
 
-    private String respMsg;
+    ProtocolType(String name) {
+        this.name = name;
+    }
 
-    private String respTime;
+    public String protocolTypeName() {
+        return this.name;
+    }
+
+    public static ProtocolType eventMeshProtocolType(String name) {
+        for (ProtocolType protocolType : ProtocolType.values()) {
+            if (protocolType.protocolTypeName().equals(name)) {
+                return protocolType;
+            }
+        }
+        return null;
+    }
 
 }

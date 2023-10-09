@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.grpc.consumer;
 
-import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
 
 import java.util.Optional;
 
@@ -34,6 +34,6 @@ public interface ReceiveMsgHook<T> {
      */
     Optional<T> handle(T msg) throws Exception;
 
-    EventMeshProtocolType getProtocolType();
+    EventMeshMessageProtocolType getProtocolType();
 
 }

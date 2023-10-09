@@ -44,7 +44,7 @@ public class RequestReplyInstance extends GrpcAbstractDemo {
             content.put("content", "testRequestReplyMessage");
 
             for (int i = 0; i < MESSAGE_SIZE; i++) {
-                eventMeshGrpcProducer.requestReply(buildEventMeshMessage(content,
+                eventMeshGrpcProducer.request(buildEventMeshMessage(content,
                     ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC),
                     EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);

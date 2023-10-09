@@ -15,27 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.source;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.apache.eventmesh.common.enums.ProtocolType;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+/**
+ * Operations for sending messages to a destination.
+ */
+public interface MessageSendingOperations {
 
-    private String respCode;
+    /**
+     * Send a message to the given destination.
+     * @param message the message to send
+     */
+    void send(Object message, ProtocolType protocolType);
 
-    private String respMsg;
-
-    private String respTime;
+    /**
+     * Send a message to the given destination.
+     * @param message the message to send
+     * @param timeout the message send timeout.
+     */
+    void send(Object message, ProtocolType protocolType, Long timeout);
 
 }

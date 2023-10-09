@@ -19,7 +19,7 @@ package org.apache.eventmesh.client.grpc.producer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
-import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEvent> {
 
-    private static final EventMeshProtocolType PROTOCOL_TYPE = EventMeshProtocolType.CLOUD_EVENTS;
+    private static final EventMeshMessageProtocolType PROTOCOL_TYPE = EventMeshMessageProtocolType.CLOUD_EVENTS;
 
     private final transient EventMeshGrpcClientConfig clientConfig;
 

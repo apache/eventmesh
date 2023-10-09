@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.common.enums;
 
-public enum EventMeshProtocolType {
+public enum EventMeshMessageProtocolType {
 
     CLOUD_EVENTS("cloudevents"),
     EVENT_MESH_MESSAGE("eventmeshmessage"),
     OPEN_MESSAGE("openmessage");
 
-    private String name;
+    private final String name;
 
-    EventMeshProtocolType(String name) {
+    EventMeshMessageProtocolType(String name) {
         this.name = name;
     }
 
@@ -33,8 +33,8 @@ public enum EventMeshProtocolType {
         return this.name;
     }
 
-    public static EventMeshProtocolType eventMeshProtocolType(String name) {
-        for (EventMeshProtocolType protocolType : EventMeshProtocolType.values()) {
+    public static EventMeshMessageProtocolType eventMeshMessageProtocolType(String name) {
+        for (EventMeshMessageProtocolType protocolType : EventMeshMessageProtocolType.values()) {
             if (protocolType.protocolTypeName().equals(name)) {
                 return protocolType;
             }

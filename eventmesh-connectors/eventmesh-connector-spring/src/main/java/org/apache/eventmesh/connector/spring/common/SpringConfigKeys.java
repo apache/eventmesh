@@ -15,27 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+/**
+ * Spring config key constants.
+ */
+public interface SpringConfigKeys {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+    String EVENTMESH_IP = "eventmesh.ip";
 
-    private String respCode;
+    String EVENTMESH_IDC = "eventmesh.idc";
 
-    private String respMsg;
+    String EVENTMESH_ENV = "eventmesh.env";
 
-    private String respTime;
+    String EVENTMESH_SYS = "eventmesh.sys";
+
+    String EVENTMESH_HTTP_PORT = "eventmesh.http.port";
+
+    String EVENTMESH_GRPC_PORT = "eventmesh.grpc.port";
+
+    String EVENTMESH_TCP_PORT = "eventmesh.tcp.port";
 
 }

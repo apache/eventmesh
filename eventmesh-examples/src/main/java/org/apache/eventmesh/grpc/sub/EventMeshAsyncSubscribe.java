@@ -21,7 +21,7 @@ import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -67,7 +67,7 @@ public class EventMeshAsyncSubscribe extends GrpcAbstractDemo implements Receive
     }
 
     @Override
-    public EventMeshProtocolType getProtocolType() {
-        return EventMeshProtocolType.EVENT_MESH_MESSAGE;
+    public EventMeshMessageProtocolType getProtocolType() {
+        return EventMeshMessageProtocolType.EVENT_MESH_MESSAGE;
     }
 }

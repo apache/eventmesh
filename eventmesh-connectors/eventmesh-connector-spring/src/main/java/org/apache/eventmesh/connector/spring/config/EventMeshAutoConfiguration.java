@@ -15,27 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.apache.eventmesh.connector.spring.source.EventMeshClientTemplate;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-    private String respCode;
+/**
+ * Spring auto configuration.
+ */
+@Configuration
+public class EventMeshAutoConfiguration {
 
-    private String respMsg;
+    public static final String ROCKETMQ_TEMPLATE_DEFAULT_GLOBAL_NAME = "rocketMQClientTemplate";
 
-    private String respTime;
-
+    @Bean(destroyMethod = "destroy")
+    @ConditionalOnMissingBean(name = ROCKETMQ_TEMPLATE_DEFAULT_GLOBAL_NAME)
+    public EventMeshClientTemplate rocketMQClientTemplate() {
+        return new EventMeshClientTemplate();
+    }
 }

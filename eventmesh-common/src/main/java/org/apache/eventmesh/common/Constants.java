@@ -149,6 +149,8 @@ public class Constants {
 
     public static final String UNDER_LINE = "_";
 
+    public static final String UNKNOWN = "unknown";
+
     public static final String LEFT_PARENTHESIS = "(";
 
     public static final String RIGHT_PARENTHESIS = ")";

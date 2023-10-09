@@ -103,30 +103,28 @@ public class EventMeshGrpcProducerTest {
 
     @Test
     public void testPublishEventMeshMessage() {
-        assertThat(producer.publish(defaultEventMeshMessageBuilder().build())).isEqualTo(Response.builder().build());
+        producer.publish(defaultEventMeshMessageBuilder().build());
     }
 
     @Test
     public void testPublishEmptyList() {
-        assertThat(producer.publish(Collections.emptyList())).isNull();
+        producer.publish(Collections.emptyList());
     }
 
     @Test
     public void testPublishGenericMessageList() {
-        assertThat(producer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(
-            Response.builder().build());
+        producer.publish(Collections.singletonList(new MockCloudEvent()));
         EventMeshMessageBuilder eventMeshMessageBuilder = defaultEventMeshMessageBuilder();
         eventMeshMessageBuilder.prop(Collections.singletonMap(Constants.EVENTMESH_MESSAGE_CONST_TTL, "1000"));
-        assertThat(producer.publish(Collections.singletonList(eventMeshMessageBuilder.build()))).isEqualTo(
-            Response.builder().build());
+        producer.publish(Collections.singletonList(eventMeshMessageBuilder.build()));
     }
 
     @Test
     public void testRequestReply() {
-        assertThat(producer.requestReply(defaultEventMeshMessageBuilder().content(StringUtils.EMPTY).build(),
+        assertThat(producer.request(defaultEventMeshMessageBuilder().content(StringUtils.EMPTY).build(),
             1000L)).isNull();
         EventMeshMessage eventMeshMessage = defaultEventMeshMessageBuilder().build();
-        assertThat(producer.requestReply(eventMeshMessage, 1000L)).hasFieldOrPropertyWithValue("content",
+        assertThat(producer.request(eventMeshMessage, 1000L)).hasFieldOrPropertyWithValue("content",
             eventMeshMessage.getContent()).hasFieldOrPropertyWithValue("topic", eventMeshMessage.getTopic());
     }
 
