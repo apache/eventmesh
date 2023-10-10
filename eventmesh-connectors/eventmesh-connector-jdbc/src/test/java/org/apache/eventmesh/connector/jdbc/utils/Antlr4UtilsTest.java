@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.utils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +25,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class Antlr4UtilsTest {
 

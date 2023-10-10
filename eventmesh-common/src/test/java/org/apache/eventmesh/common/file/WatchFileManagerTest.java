@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WatchFileManagerTest {
 
@@ -40,8 +40,8 @@ public class WatchFileManagerTest {
 
             @Override
             public void onChanged(FileChangeContext changeContext) {
-                Assert.assertEquals(f.getName(), changeContext.getFileName());
-                Assert.assertEquals(f.getParent(), changeContext.getDirectoryPath());
+                Assertions.assertEquals(f.getName(), changeContext.getFileName());
+                Assertions.assertEquals(f.getParent(), changeContext.getDirectoryPath());
             }
 
             @Override

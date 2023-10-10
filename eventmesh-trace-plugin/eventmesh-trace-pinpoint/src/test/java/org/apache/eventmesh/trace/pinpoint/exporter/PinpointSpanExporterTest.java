@@ -27,9 +27,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -48,7 +48,7 @@ public class PinpointSpanExporterTest {
 
     private PinpointSpanExporter exporter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         PinpointTraceService pinpointTrace =
             (PinpointTraceService) TracePluginFactory.getEventMeshTraceService("pinpoint");
@@ -65,24 +65,24 @@ public class PinpointSpanExporterTest {
     @Test
     public void exportTest() {
         Collection<SpanData> spans = new ArrayList<>();
-        Assert.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
+        Assertions.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
 
         spans.add(null);
-        Assert.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
+        Assertions.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
 
         spans.clear();
         spans.add(new SpanDateTest());
-        Assert.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
+        Assertions.assertEquals(CompletableResultCode.ofSuccess(), exporter.export(spans));
     }
 
     @Test
     public void flushTest() {
-        Assert.assertEquals(CompletableResultCode.ofSuccess(), exporter.flush());
+        Assertions.assertEquals(CompletableResultCode.ofSuccess(), exporter.flush());
     }
 
     @Test
     public void shutdownTest() {
-        Assert.assertEquals(CompletableResultCode.ofSuccess(), exporter.shutdown());
+        Assertions.assertEquals(CompletableResultCode.ofSuccess(), exporter.shutdown());
     }
 
     /**

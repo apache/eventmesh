@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -39,7 +39,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-@Ignore
+@Disabled
 public class S3SourceConnectorTest {
 
     private static final S3SourceConfig sourceConfig;
@@ -73,7 +73,7 @@ public class S3SourceConnectorTest {
 
     private S3AsyncClient s3Client;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.SOURCE_CONNECTOR_CONFIG.getAccessKey(),
             this.SOURCE_CONNECTOR_CONFIG.getSecretKey());
@@ -84,7 +84,7 @@ public class S3SourceConnectorTest {
         this.writeMockedRecords(200);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         // clear file
         this.s3Client.deleteObject(builder -> builder.bucket(this.SOURCE_CONNECTOR_CONFIG.getBucket())
@@ -102,13 +102,13 @@ public class S3SourceConnectorTest {
             if (connectRecords.isEmpty()) {
                 break;
             }
-            Assert.assertEquals(20, connectRecords.size());
+            Assertions.assertEquals(20, connectRecords.size());
             for (ConnectRecord connectRecord : connectRecords) {
                 byte[] data = (byte[]) connectRecord.getData();
-                Assert.assertEquals(eachRecordSize, data.length);
+                Assertions.assertEquals(eachRecordSize, data.length);
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 int id = byteBuffer.getInt();
-                Assert.assertEquals(expectedId++, id);
+                Assertions.assertEquals(expectedId++, id);
             }
         }
 

@@ -22,15 +22,15 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class AuthHttpBasicServiceTest {
 
     private static AuthHttpBasicService service;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         service = (AuthHttpBasicService) EventMeshExtensionFactory.getExtension(
             AuthService.class, "auth-http-basic");
@@ -42,10 +42,10 @@ public class AuthHttpBasicServiceTest {
             service.init();
             Map<String, String> authParams = service.getAuthParams();
             String authorization = authParams.get("Authorization");
-            Assert.assertNotNull(authorization);
-            Assert.assertTrue(authorization.length() > 5);
+            Assertions.assertNotNull(authorization);
+            Assertions.assertTrue(authorization.length() > 5);
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -54,7 +54,7 @@ public class AuthHttpBasicServiceTest {
         try {
             service.start();
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
     }
@@ -64,7 +64,7 @@ public class AuthHttpBasicServiceTest {
         try {
             service.shutdown();
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
     }

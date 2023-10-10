@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PropertiesUtilsTest {
 
@@ -38,8 +38,8 @@ public class PropertiesUtilsTest {
         from.put(PREFIX + "c.f", "inner f");
         Properties to = PropertiesUtils.getPropertiesByPrefix(from, PREFIX);
 
-        Assert.assertEquals(3, to.size());
-        Assert.assertEquals(2, ((Properties) to.get("c")).size());
+        Assertions.assertEquals(3, to.size());
+        Assertions.assertEquals(2, ((Properties) to.get("c")).size());
     }
 
     @Test
@@ -51,10 +51,10 @@ public class PropertiesUtilsTest {
         String path = configService.getRootPath();
         try {
             PropertiesUtils.loadPropertiesWhenFileExist(properties, path);
-            Assert.assertEquals("env-succeed!!!", properties.get("eventMesh.server.env").toString());
-            Assert.assertEquals("idc-succeed!!!", properties.get("eventMesh.server.idc").toString());
+            Assertions.assertEquals("env-succeed!!!", properties.get("eventMesh.server.env").toString());
+            Assertions.assertEquals("idc-succeed!!!", properties.get("eventMesh.server.idc").toString());
         } catch (Exception e) {
-            Assert.fail();
+            Assertions.fail();
         }
     }
 }

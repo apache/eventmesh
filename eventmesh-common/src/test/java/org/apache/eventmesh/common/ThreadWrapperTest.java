@@ -20,8 +20,9 @@ package org.apache.eventmesh.common;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class ThreadWrapperTest {
 
@@ -29,26 +30,27 @@ public class ThreadWrapperTest {
     public void getThreadName() {
         ThreadWrapper wrapper = createThreadWrapper(false);
         wrapper.start();
-        Assert.assertEquals("EventMesh-Wrapper-mxsm", wrapper.thread.getName());
+        Assertions.assertEquals("EventMesh-Wrapper-mxsm", wrapper.thread.getName());
     }
 
     @Test
     public void start() {
         ThreadWrapper wrapper = createThreadWrapper(false);
         wrapper.start();
-        Assert.assertTrue(wrapper.isStated());
+        Assertions.assertTrue(wrapper.isStated());
     }
 
-    @Test(timeout = 1000)
+    @Test
+    @Timeout(1000)
     public void await() {
         ThreadWrapper wrapper = createThreadWrapper(false);
         wrapper.start();
         wrapper.await(1, TimeUnit.MILLISECONDS);
-        Assert.assertFalse(wrapper.hasWakeup.get());
+        Assertions.assertFalse(wrapper.hasWakeup.get());
         wrapper.wakeup();
-        Assert.assertTrue(wrapper.hasWakeup.get());
+        Assertions.assertTrue(wrapper.hasWakeup.get());
         wrapper.await();
-        Assert.assertFalse(wrapper.hasWakeup.get());
+        Assertions.assertFalse(wrapper.hasWakeup.get());
         wrapper.await(2, TimeUnit.MILLISECONDS);
 
     }
@@ -79,7 +81,7 @@ public class ThreadWrapperTest {
         };
         wrapper.start();
         wrapper.shutdown();
-        Assert.assertEquals(100, counter.get());
+        Assertions.assertEquals(100, counter.get());
     }
 
     @Test
@@ -104,18 +106,18 @@ public class ThreadWrapperTest {
         };
         wrapper.start();
         wrapper.shutdownImmediately();
-        Assert.assertEquals(0, counter.get());
+        Assertions.assertEquals(0, counter.get());
     }
 
     @Test
     public void setDaemon() {
         ThreadWrapper threadWrapper = createThreadWrapper(true);
         threadWrapper.start();
-        Assert.assertTrue(threadWrapper.thread.isDaemon());
+        Assertions.assertTrue(threadWrapper.thread.isDaemon());
 
         ThreadWrapper threadWrapper1 = createThreadWrapper(false);
         threadWrapper1.start();
-        Assert.assertFalse(threadWrapper1.thread.isDaemon());
+        Assertions.assertFalse(threadWrapper1.thread.isDaemon());
     }
 
     private ThreadWrapper createThreadWrapper(boolean daemon) {

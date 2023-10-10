@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.storage.rocketmq.producer;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class DefaultProducerImplTest {
 
-    @Before
+    @BeforeEach
     public void before() {
     }
 
-    @After
+    @AfterEach
     public void after() {
         // TBD:Remove topic
     }

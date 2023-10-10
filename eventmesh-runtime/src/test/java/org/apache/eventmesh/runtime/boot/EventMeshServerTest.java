@@ -26,8 +26,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EventMeshServerTest {
 
@@ -60,56 +60,56 @@ public class EventMeshServerTest {
     }
 
     private void assertTCPConfig(EventMeshTCPConfiguration config) {
-        Assert.assertEquals(config.getEventMeshTcpServerPort(), 816);
-        Assert.assertEquals(config.getEventMeshTcpIdleAllSeconds(), 1816);
-        Assert.assertEquals(config.getEventMeshTcpIdleWriteSeconds(), 2816);
-        Assert.assertEquals(config.getEventMeshTcpIdleReadSeconds(), 3816);
-        Assert.assertEquals(config.getEventMeshTcpMsgReqnumPerSecond(), Integer.valueOf(4816));
-        Assert.assertEquals(config.getEventMeshTcpClientMaxNum(), 5816);
-        Assert.assertEquals(config.getEventMeshTcpGlobalScheduler(), 6816);
-        Assert.assertEquals(config.getEventMeshTcpTaskHandleExecutorPoolSize(), 7816);
-        Assert.assertEquals(config.getEventMeshTcpMsgDownStreamExecutorPoolSize(), 8816);
-        Assert.assertEquals(config.getEventMeshTcpSessionExpiredInMills(), 1816);
-        Assert.assertEquals(config.getEventMeshTcpSessionUpstreamBufferSize(), 11816);
-        Assert.assertEquals(config.getEventMeshTcpMsgAsyncRetryTimes(), 12816);
-        Assert.assertEquals(config.getEventMeshTcpMsgSyncRetryTimes(), 13816);
-        Assert.assertEquals(config.getEventMeshTcpMsgRetrySyncDelayInMills(), 14816);
-        Assert.assertEquals(config.getEventMeshTcpMsgRetryAsyncDelayInMills(), 15816);
-        Assert.assertEquals(config.getEventMeshTcpMsgRetryQueueSize(), 16816);
-        Assert.assertEquals(config.getEventMeshTcpRebalanceIntervalInMills(), Integer.valueOf(17816));
-        Assert.assertEquals(config.getEventMeshServerAdminPort(), 18816);
-        Assert.assertEquals(config.isEventMeshTcpSendBackEnabled(), Boolean.TRUE);
-        Assert.assertEquals(config.getEventMeshTcpSendBackMaxTimes(), 3);
-        Assert.assertEquals(config.getEventMeshTcpPushFailIsolateTimeInMills(), 21816);
-        Assert.assertEquals(config.getGracefulShutdownSleepIntervalInMills(), 22816);
-        Assert.assertEquals(config.getSleepIntervalInRebalanceRedirectMills(), 23816);
-        Assert.assertEquals(config.getEventMeshEventSize(), 22816);
-        Assert.assertEquals(config.getEventMeshEventBatchSize(), 23816);
+        Assertions.assertEquals(config.getEventMeshTcpServerPort(), 816);
+        Assertions.assertEquals(config.getEventMeshTcpIdleAllSeconds(), 1816);
+        Assertions.assertEquals(config.getEventMeshTcpIdleWriteSeconds(), 2816);
+        Assertions.assertEquals(config.getEventMeshTcpIdleReadSeconds(), 3816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgReqnumPerSecond(), Integer.valueOf(4816));
+        Assertions.assertEquals(config.getEventMeshTcpClientMaxNum(), 5816);
+        Assertions.assertEquals(config.getEventMeshTcpGlobalScheduler(), 6816);
+        Assertions.assertEquals(config.getEventMeshTcpTaskHandleExecutorPoolSize(), 7816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgDownStreamExecutorPoolSize(), 8816);
+        Assertions.assertEquals(config.getEventMeshTcpSessionExpiredInMills(), 1816);
+        Assertions.assertEquals(config.getEventMeshTcpSessionUpstreamBufferSize(), 11816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgAsyncRetryTimes(), 12816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgSyncRetryTimes(), 13816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgRetrySyncDelayInMills(), 14816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgRetryAsyncDelayInMills(), 15816);
+        Assertions.assertEquals(config.getEventMeshTcpMsgRetryQueueSize(), 16816);
+        Assertions.assertEquals(config.getEventMeshTcpRebalanceIntervalInMills(), Integer.valueOf(17816));
+        Assertions.assertEquals(config.getEventMeshServerAdminPort(), 18816);
+        Assertions.assertEquals(config.isEventMeshTcpSendBackEnabled(), Boolean.TRUE);
+        Assertions.assertEquals(config.getEventMeshTcpSendBackMaxTimes(), 3);
+        Assertions.assertEquals(config.getEventMeshTcpPushFailIsolateTimeInMills(), 21816);
+        Assertions.assertEquals(config.getGracefulShutdownSleepIntervalInMills(), 22816);
+        Assertions.assertEquals(config.getSleepIntervalInRebalanceRedirectMills(), 23816);
+        Assertions.assertEquals(config.getEventMeshEventSize(), 22816);
+        Assertions.assertEquals(config.getEventMeshEventBatchSize(), 23816);
     }
 
     private void assertCommonConfig(CommonConfiguration config) {
-        Assert.assertEquals("env-succeed!!!", config.getEventMeshEnv());
-        Assert.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
-        Assert.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
-        Assert.assertEquals("name-succeed!!!", config.getEventMeshName());
-        Assert.assertEquals("816", config.getSysID());
-        Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
-        Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
-        Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
-        Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
-        Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
+        Assertions.assertEquals("env-succeed!!!", config.getEventMeshEnv());
+        Assertions.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
+        Assertions.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
+        Assertions.assertEquals("name-succeed!!!", config.getEventMeshName());
+        Assertions.assertEquals("816", config.getSysID());
+        Assertions.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
+        Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
+        Assertions.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
+        Assertions.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
+        Assertions.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
+        Assertions.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
 
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");
         list.add("metrics-succeed2!!!");
         list.add("metrics-succeed3!!!");
-        Assert.assertEquals(list, config.getEventMeshMetricsPluginType());
+        Assertions.assertEquals(list, config.getEventMeshMetricsPluginType());
 
-        Assert.assertTrue(config.isEventMeshServerSecurityEnable());
-        Assert.assertTrue(config.isEventMeshServerMetaStorageEnable());
-        Assert.assertTrue(config.isEventMeshServerTraceEnable());
+        Assertions.assertTrue(config.isEventMeshServerSecurityEnable());
+        Assertions.assertTrue(config.isEventMeshServerMetaStorageEnable());
+        Assertions.assertTrue(config.isEventMeshServerTraceEnable());
 
-        Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
+        Assertions.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
     }
 }

@@ -26,16 +26,19 @@ import org.apache.eventmesh.meta.nacos.service.NacosMetaService;
 
 import java.lang.reflect.Field;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class NacosMetaServiceTest {
 
     @Mock
@@ -45,7 +48,7 @@ public class NacosMetaServiceTest {
 
     private NacosMetaService nacosMetaService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         nacosMetaService = new NacosMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
@@ -63,7 +66,7 @@ public class NacosMetaServiceTest {
         Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
     }
 
-    @After
+    @AfterEach
     public void after() {
         nacosMetaService.shutdown();
     }
@@ -72,14 +75,14 @@ public class NacosMetaServiceTest {
     public void testInit() {
         nacosMetaService.init();
         nacosMetaService.start();
-        Assert.assertNotNull(nacosMetaService.getServerAddr());
+        Assertions.assertNotNull(nacosMetaService.getServerAddr());
     }
 
     @Test
     public void testStart() {
         nacosMetaService.init();
         nacosMetaService.start();
-        Assert.assertNotNull(nacosMetaService.getNacosNamingService());
+        Assertions.assertNotNull(nacosMetaService.getNacosNamingService());
 
     }
 
@@ -98,22 +101,26 @@ public class NacosMetaServiceTest {
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(nacosMetaService);
 
-        Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
-        Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testRegister() {
-        nacosMetaService.init();
-        nacosMetaService.start();
-        nacosMetaService.register(eventMeshRegisterInfo);
+        Assertions.assertThrows(MetaException.class, () -> {
+            nacosMetaService.init();
+            nacosMetaService.start();
+            nacosMetaService.register(eventMeshRegisterInfo);
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testUnRegister() {
-        nacosMetaService.init();
-        nacosMetaService.start();
-        nacosMetaService.unRegister(eventMeshUnRegisterInfo);
+        Assertions.assertThrows(MetaException.class, () -> {
+            nacosMetaService.init();
+            nacosMetaService.start();
+            nacosMetaService.unRegister(eventMeshUnRegisterInfo);
+        });
     }
 
 }

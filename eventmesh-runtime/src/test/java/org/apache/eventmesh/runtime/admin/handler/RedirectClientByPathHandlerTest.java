@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -60,7 +60,7 @@ public class RedirectClientByPathHandlerTest {
     @Mock
     private static transient EventMeshTCPServer eventMeshTCPServer;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
     }
@@ -103,7 +103,7 @@ public class RedirectClientByPathHandlerTest {
                     any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(StandardCharsets.UTF_8.name());
-                Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
+                Assertions.assertTrue(response.startsWith("redirectClientByPath success!"));
             }
 
             // case 2: params illegal
@@ -113,7 +113,7 @@ public class RedirectClientByPathHandlerTest {
                 dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(Boolean.TRUE);
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(StandardCharsets.UTF_8.name());
-                Assert.assertEquals("params illegal!", response);
+                Assertions.assertEquals("params illegal!", response);
             }
 
             // case 3: redirectClient2NewEventMesh fail
@@ -124,7 +124,7 @@ public class RedirectClientByPathHandlerTest {
                     any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(Constants.DEFAULT_CHARSET.name());
-                Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
+                Assertions.assertTrue(response.startsWith("redirectClientByPath fail!"));
             }
         }
     }

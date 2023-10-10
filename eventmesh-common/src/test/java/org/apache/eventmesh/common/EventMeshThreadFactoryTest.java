@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EventMeshThreadFactoryTest {
 
@@ -26,7 +26,7 @@ public class EventMeshThreadFactoryTest {
     public void testGetThreadNamePrefix() {
         final String threadNamePrefix = "threadNamePrefix";
         EventMeshThreadFactory factory = new EventMeshThreadFactory(threadNamePrefix, false);
-        Assert.assertEquals(threadNamePrefix, factory.getThreadNamePrefix());
+        Assertions.assertEquals(threadNamePrefix, factory.getThreadNamePrefix());
     }
 
     @Test
@@ -36,8 +36,8 @@ public class EventMeshThreadFactoryTest {
         Thread t = factory.newThread(() -> {
 
         });
-        Assert.assertNotNull(t);
-        Assert.assertEquals(threadNamePrefix + "-1", t.getName());
-        Assert.assertTrue(t.isDaemon());
+        Assertions.assertNotNull(t);
+        Assertions.assertEquals(threadNamePrefix + "-1", t.getName());
+        Assertions.assertTrue(t.isDaemon());
     }
 }
