@@ -33,7 +33,7 @@ public enum EventMeshProtocolType {
         return this.name;
     }
 
-    public static EventMeshProtocolType eventMeshMessageProtocolType(String name) {
+    public static EventMeshProtocolType eventMeshProtocolType(String name) {
         for (EventMeshProtocolType protocolType : EventMeshProtocolType.values()) {
             if (protocolType.protocolTypeName().equals(name)) {
                 return protocolType;
