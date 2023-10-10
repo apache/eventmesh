@@ -23,8 +23,8 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -43,8 +43,8 @@ public class CodecTest {
         Codec.Decoder cd = new Codec.Decoder();
         ArrayList<Object> result = new ArrayList<>();
         cd.decode(null, buf, result);
-        Assert.assertNotNull(result.get(0));
-        Assert.assertEquals(testP.getHeader(), ((Package) result.get(0)).getHeader());
+        Assertions.assertNotNull(result.get(0));
+        Assertions.assertEquals(testP.getHeader(), ((Package) result.get(0)).getHeader());
     }
 
 }

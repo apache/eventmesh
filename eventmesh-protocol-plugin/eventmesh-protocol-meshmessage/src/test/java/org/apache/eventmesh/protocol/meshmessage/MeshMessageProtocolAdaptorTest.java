@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MeshMessageProtocolAdaptorTest {
 
@@ -30,9 +30,9 @@ public class MeshMessageProtocolAdaptorTest {
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
             ProtocolPluginFactory.getProtocolAdaptor(MeshMessageProtocolConstant.PROTOCOL_NAME);
-        Assert.assertNotNull(protocolAdaptor);
+        Assertions.assertNotNull(protocolAdaptor);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
             MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
     }
 

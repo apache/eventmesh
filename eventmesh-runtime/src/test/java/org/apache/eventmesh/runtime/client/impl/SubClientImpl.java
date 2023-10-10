@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -167,32 +167,32 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package dispatcher(Package request, long timeout) throws Exception {
-        Assert.assertNotNull(request);
+        Assertions.assertNotNull(request);
         Package response = super.io(request, timeout);
         switch (request.getHeader().getCommand()) {
             case HELLO_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
                 break;
             case LISTEN_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
                 break;
             case SUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
                 break;
             case UNSUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
                 break;
             case SYS_LOG_TO_LOGSERVER:
-                Assert.assertNull(response);
+                Assertions.assertNull(response);
                 break;
             case TRACE_LOG_TO_LOGSERVER:
-                Assert.assertNull(response);
+                Assertions.assertNull(response);
                 break;
             default:
                 break;

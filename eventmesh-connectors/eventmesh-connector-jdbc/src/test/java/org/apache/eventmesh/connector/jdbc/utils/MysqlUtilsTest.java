@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.connector.jdbc.utils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MysqlUtilsTest {
 

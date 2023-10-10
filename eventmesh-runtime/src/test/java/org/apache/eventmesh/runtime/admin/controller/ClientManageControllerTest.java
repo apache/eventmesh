@@ -38,8 +38,8 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -89,7 +89,7 @@ public class ClientManageControllerTest {
                 Mockito.doNothing().when(adminController).run(server);
                 controller.start();
             } catch (IOException e) {
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
             }
 
         }

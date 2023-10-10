@@ -30,8 +30,8 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -44,8 +44,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, null, null, "utf-8", 0);
-            Assert.assertEquals(content, result.getContent());
-            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
+            Assertions.assertEquals(content, result.getContent());
+            Assertions.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
 
         List<String> paramValues = new ArrayList<>();
@@ -60,8 +60,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpGet(requestUrl, headers, paramValues, "utf-8", 0);
-            Assert.assertEquals(content, result.getContent());
-            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
+            Assertions.assertEquals(content, result.getContent());
+            Assertions.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
     }
 
@@ -72,8 +72,8 @@ public class HttpTinyClientTest {
             dummyStatic.when(() -> IOUtils.toString(any(InputStream.class), any(String.class))).thenReturn(content);
             String requestUrl = "https://eventmesh.apache.org";
             HttpResult result = HttpTinyClient.httpPost(requestUrl, anyList(), anyList(), "utf-8", 0);
-            Assert.assertEquals(content, result.getContent());
-            Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
+            Assertions.assertEquals(content, result.getContent());
+            Assertions.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         }
     }
 }

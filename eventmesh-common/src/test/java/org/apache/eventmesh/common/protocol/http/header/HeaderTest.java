@@ -32,60 +32,60 @@ import org.apache.eventmesh.common.protocol.http.header.message.SendMessageReque
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HeaderTest {
 
     private Map<String, Object> originalMap;
 
-    @Before
+    @BeforeEach
     public void before() {
         originalMap = new HashMap<>();
     }
 
     @Test
     public void testBuildHeader() throws Exception {
-        Assert.assertThrows(Exception.class, () -> Header.buildHeader("-1", originalMap));
+        Assertions.assertThrows(Exception.class, () -> Header.buildHeader("-1", originalMap));
         Header messageBatchRequestHeader = Header.buildHeader(String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()), originalMap);
-        Assert.assertNotNull(messageBatchRequestHeader);
-        Assert.assertEquals(messageBatchRequestHeader.getClass(), SendMessageBatchRequestHeader.class);
+        Assertions.assertNotNull(messageBatchRequestHeader);
+        Assertions.assertEquals(messageBatchRequestHeader.getClass(), SendMessageBatchRequestHeader.class);
         Header sendMessageBatchV2RequestHeader = Header.buildHeader(String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()), originalMap);
-        Assert.assertNotNull(sendMessageBatchV2RequestHeader);
-        Assert.assertEquals(sendMessageBatchV2RequestHeader.getClass(), SendMessageBatchV2RequestHeader.class);
+        Assertions.assertNotNull(sendMessageBatchV2RequestHeader);
+        Assertions.assertEquals(sendMessageBatchV2RequestHeader.getClass(), SendMessageBatchV2RequestHeader.class);
         Header sendMessageRequestHeaderSync = Header.buildHeader(String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()), originalMap);
-        Assert.assertNotNull(sendMessageRequestHeaderSync);
-        Assert.assertEquals(sendMessageRequestHeaderSync.getClass(), SendMessageRequestHeader.class);
+        Assertions.assertNotNull(sendMessageRequestHeaderSync);
+        Assertions.assertEquals(sendMessageRequestHeaderSync.getClass(), SendMessageRequestHeader.class);
         Header sendMessageRequestHeaderAsync = Header.buildHeader(String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()), originalMap);
-        Assert.assertNotNull(sendMessageRequestHeaderAsync);
-        Assert.assertEquals(sendMessageRequestHeaderAsync.getClass(), SendMessageRequestHeader.class);
+        Assertions.assertNotNull(sendMessageRequestHeaderAsync);
+        Assertions.assertEquals(sendMessageRequestHeaderAsync.getClass(), SendMessageRequestHeader.class);
         Header pushMessageRequestHeaderSync = Header.buildHeader(String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode()), originalMap);
-        Assert.assertNotNull(pushMessageRequestHeaderSync);
-        Assert.assertEquals(pushMessageRequestHeaderSync.getClass(), PushMessageRequestHeader.class);
+        Assertions.assertNotNull(pushMessageRequestHeaderSync);
+        Assertions.assertEquals(pushMessageRequestHeaderSync.getClass(), PushMessageRequestHeader.class);
         Header pushMessageRequestHeaderAsync = Header.buildHeader(String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode()), originalMap);
-        Assert.assertNotNull(pushMessageRequestHeaderAsync);
-        Assert.assertEquals(pushMessageRequestHeaderAsync.getClass(), PushMessageRequestHeader.class);
+        Assertions.assertNotNull(pushMessageRequestHeaderAsync);
+        Assertions.assertEquals(pushMessageRequestHeaderAsync.getClass(), PushMessageRequestHeader.class);
         Header regRequestHeader = Header.buildHeader(String.valueOf(RequestCode.REGISTER.getRequestCode()), originalMap);
-        Assert.assertNotNull(regRequestHeader);
-        Assert.assertEquals(regRequestHeader.getClass(), RegRequestHeader.class);
+        Assertions.assertNotNull(regRequestHeader);
+        Assertions.assertEquals(regRequestHeader.getClass(), RegRequestHeader.class);
         Header unRegRequestHeader = Header.buildHeader(String.valueOf(RequestCode.UNREGISTER.getRequestCode()), originalMap);
-        Assert.assertNotNull(unRegRequestHeader);
-        Assert.assertEquals(unRegRequestHeader.getClass(), UnRegRequestHeader.class);
+        Assertions.assertNotNull(unRegRequestHeader);
+        Assertions.assertEquals(unRegRequestHeader.getClass(), UnRegRequestHeader.class);
         Header subscribeRequestHeader = Header.buildHeader(String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()), originalMap);
-        Assert.assertNotNull(subscribeRequestHeader);
-        Assert.assertEquals(subscribeRequestHeader.getClass(), SubscribeRequestHeader.class);
+        Assertions.assertNotNull(subscribeRequestHeader);
+        Assertions.assertEquals(subscribeRequestHeader.getClass(), SubscribeRequestHeader.class);
         Header unSubscribeRequestHeader = Header.buildHeader(String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()), originalMap);
-        Assert.assertNotNull(unSubscribeRequestHeader);
-        Assert.assertEquals(unSubscribeRequestHeader.getClass(), UnSubscribeRequestHeader.class);
+        Assertions.assertNotNull(unSubscribeRequestHeader);
+        Assertions.assertEquals(unSubscribeRequestHeader.getClass(), UnSubscribeRequestHeader.class);
         Header heartbeatRequestHeader = Header.buildHeader(String.valueOf(RequestCode.HEARTBEAT.getRequestCode()), originalMap);
-        Assert.assertNotNull(heartbeatRequestHeader);
-        Assert.assertEquals(heartbeatRequestHeader.getClass(), HeartbeatRequestHeader.class);
+        Assertions.assertNotNull(heartbeatRequestHeader);
+        Assertions.assertEquals(heartbeatRequestHeader.getClass(), HeartbeatRequestHeader.class);
         Header replyMessageRequestHeader = Header.buildHeader(String.valueOf(RequestCode.REPLY_MESSAGE.getRequestCode()), originalMap);
-        Assert.assertNotNull(replyMessageRequestHeader);
-        Assert.assertEquals(replyMessageRequestHeader.getClass(), ReplyMessageRequestHeader.class);
+        Assertions.assertNotNull(replyMessageRequestHeader);
+        Assertions.assertEquals(replyMessageRequestHeader.getClass(), ReplyMessageRequestHeader.class);
         Header baseRequestHeader = Header.buildHeader(String.valueOf(RequestCode.ADMIN_SHUTDOWN.getRequestCode()), originalMap);
-        Assert.assertNotNull(baseRequestHeader);
-        Assert.assertEquals(baseRequestHeader.getClass(), BaseRequestHeader.class);
+        Assertions.assertNotNull(baseRequestHeader);
+        Assertions.assertEquals(baseRequestHeader.getClass(), BaseRequestHeader.class);
     }
 }

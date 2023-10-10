@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.trace.jaeger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.opentelemetry.sdk.trace.SdkTracerProvider;

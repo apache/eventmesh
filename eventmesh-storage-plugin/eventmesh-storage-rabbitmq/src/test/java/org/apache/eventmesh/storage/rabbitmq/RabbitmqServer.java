@@ -23,15 +23,15 @@ import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class RabbitmqServer {
 
     protected RabbitmqConsumer rabbitmqConsumer;
     protected RabbitmqProducer rabbitmqProducer;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
 
@@ -47,7 +47,7 @@ public class RabbitmqServer {
         rabbitmqProducer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         rabbitmqConsumer.shutdown();
         rabbitmqProducer.shutdown();

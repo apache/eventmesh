@@ -27,16 +27,19 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ConsulMetaServiceTest {
 
     @Mock
@@ -46,7 +49,7 @@ public class ConsulMetaServiceTest {
 
     private ConsulMetaService consulMetaService;
 
-    @Before
+    @BeforeEach
     public void registryTest() {
         consulMetaService = new ConsulMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
@@ -60,7 +63,7 @@ public class ConsulMetaServiceTest {
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
     }
 
-    @After
+    @AfterEach
     public void after() {
         consulMetaService.shutdown();
     }
@@ -69,14 +72,14 @@ public class ConsulMetaServiceTest {
     public void testInit() {
         consulMetaService.init();
         consulMetaService.start();
-        Assert.assertNotNull(consulMetaService.getConsulClient());
+        Assertions.assertNotNull(consulMetaService.getConsulClient());
     }
 
     @Test
     public void testStart() {
         consulMetaService.init();
         consulMetaService.start();
-        Assert.assertNotNull(consulMetaService.getConsulClient());
+        Assertions.assertNotNull(consulMetaService.getConsulClient());
     }
 
     @Test
@@ -84,7 +87,7 @@ public class ConsulMetaServiceTest {
         consulMetaService.init();
         consulMetaService.start();
         consulMetaService.shutdown();
-        Assert.assertNull(consulMetaService.getConsulClient());
+        Assertions.assertNull(consulMetaService.getConsulClient());
         Class<ConsulMetaService> consulRegistryServiceClass = ConsulMetaService.class;
         Field initStatus = consulRegistryServiceClass.getDeclaredField("initStatus");
         initStatus.setAccessible(true);
@@ -94,35 +97,41 @@ public class ConsulMetaServiceTest {
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(consulMetaService);
 
-        Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
-        Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testRegister() {
-        consulMetaService.init();
-        consulMetaService.start();
-        consulMetaService.register(eventMeshRegisterInfo);
-        List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(1, eventmesh.size());
+        Assertions.assertThrows(MetaException.class, () -> {
+            consulMetaService.init();
+            consulMetaService.start();
+            consulMetaService.register(eventMeshRegisterInfo);
+            List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
+            Assertions.assertEquals(1, eventmesh.size());
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testUnRegister() {
-        consulMetaService.init();
-        consulMetaService.start();
-        consulMetaService.unRegister(eventMeshUnRegisterInfo);
-        List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(0, eventmesh.size());
+        Assertions.assertThrows(MetaException.class, () -> {
+            consulMetaService.init();
+            consulMetaService.start();
+            consulMetaService.unRegister(eventMeshUnRegisterInfo);
+            List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
+            Assertions.assertEquals(0, eventmesh.size());
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void findEventMeshInfoByCluster() {
-        consulMetaService.init();
-        consulMetaService.start();
-        consulMetaService.register(eventMeshRegisterInfo);
-        List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(1, eventmesh.size());
-        consulMetaService.unRegister(eventMeshUnRegisterInfo);
+        Assertions.assertThrows(MetaException.class, () -> {
+            consulMetaService.init();
+            consulMetaService.start();
+            consulMetaService.register(eventMeshRegisterInfo);
+            List<EventMeshDataInfo> eventmesh = consulMetaService.findEventMeshInfoByCluster("eventmesh");
+            Assertions.assertEquals(1, eventmesh.size());
+            consulMetaService.unRegister(eventMeshUnRegisterInfo);
+        });
     }
 }

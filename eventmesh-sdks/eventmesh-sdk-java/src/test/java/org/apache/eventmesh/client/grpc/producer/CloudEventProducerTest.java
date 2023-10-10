@@ -28,18 +28,17 @@ import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({PublisherServiceBlockingStub.class, Response.class})
-@PowerMockIgnore({"javax.management.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CloudEventProducerTest {
 
     private CloudEventProducer cloudEventProducer;
@@ -49,7 +48,7 @@ public class CloudEventProducerTest {
     @Mock
     private CloudEvent mockCloudEvent;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         cloudEventProducer = new CloudEventProducer(EventMeshGrpcClientConfig.builder().build(), blockingStub);
         when(blockingStub.batchPublish(Mockito.isA(CloudEventBatch.class))).thenReturn(mockCloudEvent);
