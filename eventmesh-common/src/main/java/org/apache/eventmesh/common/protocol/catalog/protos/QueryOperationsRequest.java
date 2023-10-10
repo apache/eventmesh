@@ -383,7 +383,7 @@ public final class QueryOperationsRequest extends
 
     @Override
     public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
+        return this.equals(DEFAULT_INSTANCE)
             ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -518,7 +518,7 @@ public final class QueryOperationsRequest extends
         }
 
         public Builder mergeFrom(QueryOperationsRequest other) {
-            if (other == QueryOperationsRequest.getDefaultInstance()) {
+            if (other.equals(QueryOperationsRequest.getDefaultInstance())) {
                 return this;
             }
             if (!other.getServiceName().isEmpty()) {
