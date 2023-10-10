@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UrlMappingPatternTest {
 
@@ -38,7 +38,7 @@ public class UrlMappingPatternTest {
 
     private TestUrlMappingPattern urlMappingPattern;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         urlMappingPattern = new TestUrlMappingPattern(TEST_URL_MAPPING_PATTERN);
     }

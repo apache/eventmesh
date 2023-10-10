@@ -29,5 +29,6 @@ dependencies {
     implementation project(":eventmesh-common")
 
     testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'org.apache.curator:curator-test'
 }

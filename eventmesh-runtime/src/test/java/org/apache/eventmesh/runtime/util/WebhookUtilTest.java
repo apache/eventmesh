@@ -32,8 +32,8 @@ import org.apache.http.message.BasicHeader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -49,20 +49,20 @@ public class WebhookUtilTest {
             Mockito.when(response.getLastHeader("WebHook-Allowed-Origin"))
                 .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
             Mockito.when(httpClient.execute(any())).thenReturn(response);
-            Assert.assertTrue("match logic must return true",
-                WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"));
+            Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient, "https://eventmesh.apache.org", "*"),
+                "match logic must return true");
 
             // abnormal case
             Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
             try {
-                Assert.assertTrue("when throw exception ,default return true",
-                    WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"));
+                Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"),
+                    "when throw exception ,default return true");
             } catch (RuntimeException e) {
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
             }
 
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -81,7 +81,7 @@ public class WebhookUtilTest {
             dummyStatic.when(() -> EventMeshExtensionFactory.getExtension(AuthService.class, authType)).thenReturn(authService);
             final HttpPost post = new HttpPost();
             WebhookUtil.setWebhookHeaders(post, "application/json", "eventmesh.FT", authType);
-            Assert.assertEquals("match expect value", post.getLastHeader(key).getValue(), value);
+            Assertions.assertEquals(post.getLastHeader(key).getValue(), value, "match expect value");
         }
     }
 }

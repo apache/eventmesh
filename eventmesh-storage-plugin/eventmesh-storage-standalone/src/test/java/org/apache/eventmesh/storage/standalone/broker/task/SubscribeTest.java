@@ -28,16 +28,16 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.cloudevents.CloudEvent;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SubscribeTest {
 
     @Mock
@@ -59,6 +59,6 @@ public class SubscribeTest {
     @Test
     public void testShutdown() {
         subscribe = new Subscribe(TEST_TOPIC, standaloneBroker, eventListener);
-        Assert.assertTrue(subscribe.isRunning());
+        Assertions.assertTrue(subscribe.isRunning());
     }
 }

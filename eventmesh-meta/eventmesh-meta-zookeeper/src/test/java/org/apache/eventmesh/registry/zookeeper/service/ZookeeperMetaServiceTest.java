@@ -31,18 +31,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import com.google.common.collect.Maps;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ZookeeperMetaServiceTest {
 
     @Mock
@@ -54,7 +57,7 @@ public class ZookeeperMetaServiceTest {
 
     private TestingServer testingServer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         testingServer = new TestingServer(1500, true);
         testingServer.start();
@@ -78,7 +81,7 @@ public class ZookeeperMetaServiceTest {
         Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         zkRegistryService.shutdown();
         testingServer.close();
@@ -88,14 +91,14 @@ public class ZookeeperMetaServiceTest {
     public void testInit() {
         zkRegistryService.init();
         zkRegistryService.start();
-        Assert.assertNotNull(zkRegistryService.getServerAddr());
+        Assertions.assertNotNull(zkRegistryService.getServerAddr());
     }
 
     @Test
     public void testStart() {
         zkRegistryService.init();
         zkRegistryService.start();
-        Assert.assertNotNull(zkRegistryService.getZkClient());
+        Assertions.assertNotNull(zkRegistryService.getZkClient());
     }
 
     @Test
@@ -113,8 +116,8 @@ public class ZookeeperMetaServiceTest {
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(zkRegistryService);
 
-        Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
-        Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
+        Assertions.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }
 
     @Test
@@ -125,7 +128,7 @@ public class ZookeeperMetaServiceTest {
 
         final List<EventMeshDataInfo> result = zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
 
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test
@@ -136,7 +139,7 @@ public class ZookeeperMetaServiceTest {
 
         List<EventMeshDataInfo> result = zkRegistryService.findAllEventMeshInfo();
 
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test
@@ -150,26 +153,26 @@ public class ZookeeperMetaServiceTest {
         List<EventMeshDataInfo> infoList =
             zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
 
-        Assert.assertNotNull(infoList);
+        Assertions.assertNotNull(infoList);
     }
 
-    @Test()
+    @Test
     public void testRegister() {
         zkRegistryService.init();
         zkRegistryService.start();
         zkRegistryService.register(eventMeshRegisterInfo);
     }
 
-    @Test()
+    @Test
     public void testUnRegister() {
         zkRegistryService.init();
         zkRegistryService.start();
         boolean register = zkRegistryService.register(eventMeshRegisterInfo);
 
-        Assert.assertTrue(register);
+        Assertions.assertTrue(register);
 
         boolean unRegister = zkRegistryService.unRegister(eventMeshUnRegisterInfo);
 
-        Assert.assertTrue(unRegister);
+        Assertions.assertTrue(unRegister);
     }
 }

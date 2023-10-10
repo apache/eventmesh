@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.trace.pinpoint;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -40,7 +40,7 @@ public class PinpointTraceServiceTest {
 
         IllegalArgumentException illegalArgumentException =
             assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(pinpointTraceService.getShutdownHook()));
-        Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
+        Assertions.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test

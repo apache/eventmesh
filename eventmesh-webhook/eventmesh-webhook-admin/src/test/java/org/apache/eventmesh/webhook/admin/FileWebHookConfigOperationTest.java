@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FileWebHookConfigOperationTest {
 
@@ -49,15 +49,15 @@ public class FileWebHookConfigOperationTest {
         try {
             FileWebHookConfigOperation fileWebHookConfigOperation = new FileWebHookConfigOperation(properties);
             Integer result = fileWebHookConfigOperation.insertWebHookConfig(config);
-            Assert.assertTrue(Objects.nonNull(result) && result == 1);
+            Assertions.assertTrue(Objects.nonNull(result) && result == 1);
 
             WebHookConfig queryConfig = new WebHookConfig();
             queryConfig.setManufacturerName("github");
             List<WebHookConfig> queryResult = fileWebHookConfigOperation.queryWebHookConfigByManufacturer(queryConfig, 1, 1);
-            Assert.assertTrue(Objects.nonNull(queryResult) && queryResult.size() == 1);
-            Assert.assertEquals(queryResult.get(0).getCallbackPath(), config.getCallbackPath());
+            Assertions.assertTrue(Objects.nonNull(queryResult) && queryResult.size() == 1);
+            Assertions.assertEquals(queryResult.get(0).getCallbackPath(), config.getCallbackPath());
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         } finally {
             deleteDir("test_dir");
         }

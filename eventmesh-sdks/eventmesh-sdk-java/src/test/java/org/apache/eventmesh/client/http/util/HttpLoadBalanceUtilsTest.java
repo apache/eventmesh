@@ -22,8 +22,8 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class HttpLoadBalanceUtilsTest {
 
@@ -34,7 +34,7 @@ public class HttpLoadBalanceUtilsTest {
             .build();
         LoadBalanceSelector<String> randomSelector = HttpLoadBalanceUtils
             .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
-        Assert.assertEquals(LoadBalanceType.RANDOM, randomSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.RANDOM, randomSelector.getType());
     }
 
     @Test
@@ -44,7 +44,7 @@ public class HttpLoadBalanceUtilsTest {
             .loadBalanceType(LoadBalanceType.WEIGHT_ROUND_ROBIN).build();
         LoadBalanceSelector<String> weightRoundRobinSelector = HttpLoadBalanceUtils
             .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
-        Assert.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinSelector.getType());
     }
 
     @Test
@@ -54,6 +54,6 @@ public class HttpLoadBalanceUtilsTest {
             .loadBalanceType(LoadBalanceType.WEIGHT_RANDOM).build();
         LoadBalanceSelector<String> weightRoundRobinSelector = HttpLoadBalanceUtils
             .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
-        Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRoundRobinSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRoundRobinSelector.getType());
     }
 }

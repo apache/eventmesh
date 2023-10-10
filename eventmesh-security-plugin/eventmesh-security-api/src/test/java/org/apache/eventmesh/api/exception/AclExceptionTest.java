@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.api.exception;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AclExceptionTest {
 
@@ -29,7 +29,7 @@ public class AclExceptionTest {
 
             new AclException(null);
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -40,7 +40,7 @@ public class AclExceptionTest {
 
             new AclException(null, null);
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 }

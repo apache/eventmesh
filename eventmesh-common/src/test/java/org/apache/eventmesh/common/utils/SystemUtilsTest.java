@@ -17,29 +17,29 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SystemUtilsTest {
 
     @Test
     public void isLinuxPlatform() {
         if (null != SystemUtils.OS_NAME && SystemUtils.OS_NAME.toLowerCase().contains("linux")) {
-            Assert.assertTrue(SystemUtils.isLinuxPlatform());
-            Assert.assertFalse(SystemUtils.isWindowsPlatform());
+            Assertions.assertTrue(SystemUtils.isLinuxPlatform());
+            Assertions.assertFalse(SystemUtils.isWindowsPlatform());
         }
     }
 
     @Test
     public void isWindowsPlatform() {
         if (null != SystemUtils.OS_NAME && SystemUtils.OS_NAME.toLowerCase().contains("windows")) {
-            Assert.assertFalse(SystemUtils.isLinuxPlatform());
-            Assert.assertTrue(SystemUtils.isWindowsPlatform());
+            Assertions.assertFalse(SystemUtils.isLinuxPlatform());
+            Assertions.assertTrue(SystemUtils.isWindowsPlatform());
         }
     }
 
     @Test
     public void getProcessId() {
-        Assert.assertNotEquals("-1", SystemUtils.getProcessId());
+        Assertions.assertNotEquals("-1", SystemUtils.getProcessId());
     }
 }

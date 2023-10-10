@@ -20,8 +20,8 @@ package org.apache.eventmesh.metrics.prometheus.config;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.prometheus.PrometheusMetricsRegistry;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PrometheusConfigurationTest {
 
@@ -35,6 +35,6 @@ public class PrometheusConfigurationTest {
     }
 
     private void assertConfig(PrometheusConfiguration config) {
-        Assert.assertEquals(config.getEventMeshPrometheusPort(), 19091);
+        Assertions.assertEquals(config.getEventMeshPrometheusPort(), 19091);
     }
 }

@@ -17,25 +17,23 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class AbstractResponseHeaderTest {
 
     public void assertMapContent(Header header) {
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is(200));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER), is("CLUSTER"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP), is("127.0.0.1"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV), is("DEV"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC), is("IDC"));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
+        Assertions.assertEquals(200, header.toMap().get(ProtocolKey.REQUEST_CODE));
+        Assertions.assertEquals("CLUSTER", header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        Assertions.assertEquals("127.0.0.1", header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        Assertions.assertEquals("DEV", header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        Assertions.assertEquals("IDC", header.toMap().get(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
     }
 }

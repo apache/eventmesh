@@ -23,20 +23,20 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HttpEventWrapperTest {
 
     private HttpEventWrapper httpEventWrapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         httpEventWrapper = new HttpEventWrapper("POST", "1.1", "hello");
     }
@@ -48,20 +48,20 @@ public class HttpEventWrapperTest {
         HashMap<String, Object> responseBodyMap = new HashMap<>();
         responseBodyMap.put("String", "responseBodyMap");
         HttpEventWrapper result = httpEventWrapper.createHttpResponse(headMap, responseBodyMap);
-        Assert.assertEquals("1.1", result.getHttpVersion());
-        Assert.assertEquals("POST", result.getHttpMethod());
-        Assert.assertEquals("hello", result.getRequestURI());
-        Assert.assertEquals("responseHeaderMap", result.getHeaderMap().get("String"));
+        Assertions.assertEquals("1.1", result.getHttpVersion());
+        Assertions.assertEquals("POST", result.getHttpMethod());
+        Assertions.assertEquals("hello", result.getRequestURI());
+        Assertions.assertEquals("responseHeaderMap", result.getHeaderMap().get("String"));
         Map responseMap = JsonUtils.parseObject(new String(result.getBody()), Map.class);
-        Assert.assertEquals("responseBodyMap", responseMap.get("String"));
+        Assertions.assertEquals("responseBodyMap", responseMap.get("String"));
     }
 
     @Test
     public void testCreateHttpResponse2() {
         HttpEventWrapper result = httpEventWrapper.createHttpResponse(EventMeshRetCode.SUCCESS);
         Map responseMap = JsonUtils.parseObject(new String(result.getBody()), Map.class);
-        Assert.assertEquals(EventMeshRetCode.SUCCESS.getRetCode(), responseMap.get("retCode"));
-        Assert.assertEquals(EventMeshRetCode.SUCCESS.getErrMsg(), responseMap.get("retMessage"));
+        Assertions.assertEquals(EventMeshRetCode.SUCCESS.getRetCode(), responseMap.get("retCode"));
+        Assertions.assertEquals(EventMeshRetCode.SUCCESS.getErrMsg(), responseMap.get("retMessage"));
     }
 
     @Test
@@ -69,8 +69,8 @@ public class HttpEventWrapperTest {
         byte[] bodyArray = new byte[]{'0'};
         httpEventWrapper.setBody(bodyArray);
         byte[] result = httpEventWrapper.getBody();
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result[0], '0');
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(result[0], '0');
     }
 
     @Test
@@ -82,7 +82,7 @@ public class HttpEventWrapperTest {
     public void testHttpResponse() throws Exception {
         httpEventWrapper.setBody(new byte[]{(byte) 0});
         DefaultFullHttpResponse result = httpEventWrapper.httpResponse();
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test

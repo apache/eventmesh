@@ -28,15 +28,15 @@ import org.apache.eventmesh.meta.etcd.service.EtcdMetaService;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EtcdMetaServiceTest {
 
     @Mock
@@ -46,7 +46,7 @@ public class EtcdMetaServiceTest {
 
     private EtcdMetaService etcdMetaService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         etcdMetaService = new EtcdMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
@@ -62,7 +62,7 @@ public class EtcdMetaServiceTest {
         // Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:2379");
     }
 
-    @After
+    @AfterEach
     public void after() {
         etcdMetaService.shutdown();
     }
@@ -72,51 +72,60 @@ public class EtcdMetaServiceTest {
         etcdMetaService.init();
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testStart() {
-        etcdMetaService.init();
-        etcdMetaService.start();
-        Assert.assertNotNull(etcdMetaService);
+        Assertions.assertThrows(MetaException.class, () -> {
+            etcdMetaService.init();
+            etcdMetaService.start();
+            Assertions.assertNotNull(etcdMetaService);
+        });
 
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
-        etcdMetaService.init();
-        etcdMetaService.start();
-        etcdMetaService.shutdown();
+        Assertions.assertThrows(MetaException.class, () -> {
+            etcdMetaService.init();
+            etcdMetaService.start();
+            etcdMetaService.shutdown();
 
-        Class<EtcdMetaService> etcdRegistryServiceClass = EtcdMetaService.class;
-        Field initStatus = etcdRegistryServiceClass.getDeclaredField("initStatus");
-        initStatus.setAccessible(true);
-        Object initStatusField = initStatus.get(etcdMetaService);
+            Class<EtcdMetaService> etcdRegistryServiceClass = EtcdMetaService.class;
+            Field initStatus = etcdRegistryServiceClass.getDeclaredField("initStatus");
+            initStatus.setAccessible(true);
+            Object initStatusField = initStatus.get(etcdMetaService);
 
-        Field startStatus = etcdRegistryServiceClass.getDeclaredField("startStatus");
-        startStatus.setAccessible(true);
-        Object startStatusField = startStatus.get(etcdMetaService);
-
+            Field startStatus = etcdRegistryServiceClass.getDeclaredField("startStatus");
+            startStatus.setAccessible(true);
+            Object startStatusField = startStatus.get(etcdMetaService);
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testRegister() {
-        etcdMetaService.init();
-        etcdMetaService.start();
-        etcdMetaService.register(eventMeshRegisterInfo);
+        Assertions.assertThrows(MetaException.class, () -> {
+            etcdMetaService.init();
+            etcdMetaService.start();
+            etcdMetaService.register(eventMeshRegisterInfo);
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testFindEventMeshInfo() {
-        etcdMetaService.init();
-        etcdMetaService.start();
-        etcdMetaService.register(eventMeshRegisterInfo);
-        List<EventMeshDataInfo> eventMeshDataInfoList = etcdMetaService.findAllEventMeshInfo();
+        Assertions.assertThrows(MetaException.class, () -> {
+            etcdMetaService.init();
+            etcdMetaService.start();
+            etcdMetaService.register(eventMeshRegisterInfo);
+            List<EventMeshDataInfo> eventMeshDataInfoList = etcdMetaService.findAllEventMeshInfo();
+        });
     }
 
-    @Test(expected = MetaException.class)
+    @Test
     public void testUnRegister() {
-        etcdMetaService.init();
-        etcdMetaService.start();
-        etcdMetaService.unRegister(eventMeshUnRegisterInfo);
+        Assertions.assertThrows(MetaException.class, () -> {
+            etcdMetaService.init();
+            etcdMetaService.start();
+            etcdMetaService.unRegister(eventMeshUnRegisterInfo);
+        });
     }
 
 }
