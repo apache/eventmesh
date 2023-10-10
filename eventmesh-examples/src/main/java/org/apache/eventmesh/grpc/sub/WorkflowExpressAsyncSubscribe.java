@@ -26,7 +26,7 @@ import org.apache.eventmesh.client.workflow.EventMeshWorkflowClient;
 import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -103,7 +103,7 @@ public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements R
     }
 
     @Override
-    public EventMeshMessageProtocolType getProtocolType() {
-        return EventMeshMessageProtocolType.EVENT_MESH_MESSAGE;
+    public EventMeshProtocolType getProtocolType() {
+        return EventMeshProtocolType.EVENT_MESH_MESSAGE;
     }
 }

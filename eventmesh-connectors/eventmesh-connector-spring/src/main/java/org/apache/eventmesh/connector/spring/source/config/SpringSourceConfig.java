@@ -15,31 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.enums;
+package org.apache.eventmesh.connector.spring.source.config;
 
-public enum ProtocolType {
+import org.apache.eventmesh.connector.spring.source.connector.SourceConnectorConfig;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
-    GRPC("GRPC"),
-    HTTP("HTTP"),
-    TCP("TCP");
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-    private String name;
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class SpringSourceConfig extends SourceConfig {
 
-    ProtocolType(String name) {
-        this.name = name;
-    }
-
-    public String protocolTypeName() {
-        return this.name;
-    }
-
-    public static ProtocolType eventMeshProtocolType(String name) {
-        for (ProtocolType protocolType : ProtocolType.values()) {
-            if (protocolType.protocolTypeName().equals(name)) {
-                return protocolType;
-            }
-        }
-        return null;
-    }
-
+    private SourceConnectorConfig sourceConnectorConfig;
 }

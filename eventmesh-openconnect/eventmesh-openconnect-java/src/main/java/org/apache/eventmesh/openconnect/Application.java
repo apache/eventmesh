@@ -23,7 +23,9 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +37,20 @@ public class Application {
 
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
+    private static final String SPRING = "spring";
+
     public void run(Class<? extends Connector> clazz) throws Exception {
 
-        Connector connector;
+        Connector connector = null;
         try {
-            connector = clazz.getDeclaredConstructor().newInstance();
+            SourceCreateService createService =
+                EventMeshExtensionFactory.getExtension(SourceCreateService.class, SPRING);
+            if (createService != null) {
+                connector = createService.create();
+            }
+            if (connector == null) {
+                connector = clazz.getDeclaredConstructor().newInstance();
+            }
         } catch (Exception e) {
             log.error("new connector error", e);
             return;
@@ -64,9 +75,10 @@ public class Application {
         worker.init();
 
         CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
+        Connector finalConnector = connector;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
-            log.info("connector {} stopped", connector.name());
+            log.info("connector {} stopped", finalConnector.name());
         }));
         worker.start();
         log.info("connector {} started", connector.name());

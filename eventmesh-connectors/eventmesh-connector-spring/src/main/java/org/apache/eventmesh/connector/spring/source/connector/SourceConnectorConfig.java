@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-configurations {
-    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
-    implementation.exclude group: 'log4j', module: 'log4j'
-}
+package org.apache.eventmesh.connector.spring.source.connector;
 
-dependencies {
-    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
-    implementation "org.springframework.boot:spring-boot-starter:$spring_boot_version"
-    implementation "org.springframework.boot:spring-boot-starter-validation:$spring_boot_version"
-    implementation "org.springframework:spring-messaging:$spring_version"
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+import lombok.Data;
+
+@Data
+public class SourceConnectorConfig {
+
+    private String connectorName;
+
 }

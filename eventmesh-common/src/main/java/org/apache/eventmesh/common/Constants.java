@@ -32,6 +32,8 @@ public class Constants {
 
     public static final String LANGUAGE_JAVA = "JAVA";
 
+    public static final String CONNECT_SERVER_CONFIG_FILE_NAME = "server-config.yml";
+
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
 
     public static final String HTTPS_PROTOCOL_PREFIX = "https://";

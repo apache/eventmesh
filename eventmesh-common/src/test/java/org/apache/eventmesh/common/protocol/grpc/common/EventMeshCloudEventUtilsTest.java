@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.protocol.grpc.common;
 
-import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
 
@@ -70,7 +70,7 @@ public class EventMeshCloudEventUtilsTest {
         attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
         attributeValueMap.put(ProtocolKey.CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
         attributeValueMap.put(ProtocolKey.PROTOCOL_TYPE,
-            CloudEventAttributeValue.newBuilder().setCeString(EventMeshMessageProtocolType.CLOUD_EVENTS.protocolTypeName()).build());
+            CloudEventAttributeValue.newBuilder().setCeString(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName()).build());
         attributeValueMap.put(ProtocolKey.PROTOCOL_VERSION, CloudEventAttributeValue.newBuilder().setCeString("1.0").build());
         cloudEvent = CloudEvent.newBuilder().putAllAttributes(attributeValueMap).setId("123").setSource(URI.create("/").toString())
             .setType("eventmesh")
@@ -135,8 +135,8 @@ public class EventMeshCloudEventUtilsTest {
 
     @Test
     public void testGetProtocolType() {
-        Assert.assertEquals(EventMeshMessageProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent));
-        Assert.assertEquals(EventMeshMessageProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent, "Go"));
+        Assert.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent));
+        Assert.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent, "Go"));
         Assert.assertEquals("eventmeshMessage", EventMeshCloudEventUtils.getProtocolType(CloudEvent.newBuilder().build(), "eventmeshMessage"));
     }
 

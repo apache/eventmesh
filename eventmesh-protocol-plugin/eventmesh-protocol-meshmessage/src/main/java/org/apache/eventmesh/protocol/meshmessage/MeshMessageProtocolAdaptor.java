@@ -18,7 +18,7 @@
 package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchEventMeshCloudEventWrapper;
@@ -140,7 +140,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public String getProtocolType() {
-        return EventMeshMessageProtocolType.EVENT_MESH_MESSAGE.protocolTypeName();
+        return EventMeshProtocolType.EVENT_MESH_MESSAGE.protocolTypeName();
     }
 
     private void validateCloudEvent(CloudEvent cloudEvent) {

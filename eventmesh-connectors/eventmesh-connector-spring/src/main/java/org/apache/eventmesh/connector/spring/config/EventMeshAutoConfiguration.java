@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.connector.spring.config;
 
-import org.apache.eventmesh.connector.spring.source.EventMeshClientTemplate;
+import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
+import org.apache.eventmesh.connector.spring.server.SpringConnectServer;
+import org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnector;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +31,25 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EventMeshAutoConfiguration {
 
-    public static final String ROCKETMQ_TEMPLATE_DEFAULT_GLOBAL_NAME = "rocketMQClientTemplate";
+    public static final String SPRING_SOURCE_CONNECTOR_BEAN_NAME = "springSourceConnector";
+    public static final String SPRING_CONNECT_SERVER_BEAN_NAME = "springConnectServer";
+    public static final String SPRING_APPLICATION_CONTEXT_HOLDER = "springApplicationContextHolder";
 
-    @Bean(destroyMethod = "destroy")
-    @ConditionalOnMissingBean(name = ROCKETMQ_TEMPLATE_DEFAULT_GLOBAL_NAME)
-    public EventMeshClientTemplate rocketMQClientTemplate() {
-        return new EventMeshClientTemplate();
+    @Bean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
+    @ConditionalOnMissingBean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
+    public SpringSourceConnector springSourceConnector() {
+        return new SpringSourceConnector();
+    }
+
+    @Bean(name = SPRING_CONNECT_SERVER_BEAN_NAME)
+    @ConditionalOnMissingBean(name = SPRING_CONNECT_SERVER_BEAN_NAME)
+    public SpringConnectServer springConnectServer() {
+        return new SpringConnectServer();
+    }
+
+    @Bean(name = SPRING_APPLICATION_CONTEXT_HOLDER)
+    @ConditionalOnMissingBean(name = SPRING_APPLICATION_CONTEXT_HOLDER)
+    public SpringApplicationContextHolder springApplicationContextHolder() {
+        return new SpringApplicationContextHolder();
     }
 }

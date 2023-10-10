@@ -17,24 +17,11 @@
 
 package org.apache.eventmesh.connector.spring.source;
 
-import org.apache.eventmesh.common.enums.ProtocolType;
-
 /**
- * Operations for sending messages to a destination.
+ * Operations for sending messages.
  */
 public interface MessageSendingOperations {
 
-    /**
-     * Send a message to the given destination.
-     * @param message the message to send
-     */
-    void send(Object message, ProtocolType protocolType);
-
-    /**
-     * Send a message to the given destination.
-     * @param message the message to send
-     * @param timeout the message send timeout.
-     */
-    void send(Object message, ProtocolType protocolType, Long timeout);
+    void send(Object message);
 
 }

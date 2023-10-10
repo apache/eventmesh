@@ -15,31 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.enums;
+package org.apache.eventmesh.connector.spring.source.connector;
 
-public enum EventMeshMessageProtocolType {
+import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
+import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
+import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 
-    CLOUD_EVENTS("cloudevents"),
-    EVENT_MESH_MESSAGE("eventmeshmessage"),
-    OPEN_MESSAGE("openmessage");
+public class SpringSourceConnectorCreateServiceImpl implements SourceCreateService {
 
-    private final String name;
-
-    EventMeshMessageProtocolType(String name) {
-        this.name = name;
-    }
-
-    public String protocolTypeName() {
-        return this.name;
-    }
-
-    public static EventMeshMessageProtocolType eventMeshMessageProtocolType(String name) {
-        for (EventMeshMessageProtocolType protocolType : EventMeshMessageProtocolType.values()) {
-            if (protocolType.protocolTypeName().equals(name)) {
-                return protocolType;
-            }
+    @Override
+    public Source create() {
+        if (SpringApplicationContextHolder.isStarted()) {
+            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
         }
         return null;
     }
-
 }

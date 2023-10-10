@@ -24,7 +24,7 @@ import java.util.List;
 import lombok.SneakyThrows;
 
 /**
- * Producer interface.
+ * Top interface of producer.
  */
 public interface IProducer {
 

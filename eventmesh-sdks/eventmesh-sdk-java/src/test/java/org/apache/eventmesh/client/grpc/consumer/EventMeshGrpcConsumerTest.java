@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.enums.EventMeshMessageProtocolType;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -135,8 +135,8 @@ public class EventMeshGrpcConsumerTest {
             }
 
             @Override
-            public EventMeshMessageProtocolType getProtocolType() {
-                return EventMeshMessageProtocolType.CLOUD_EVENTS;
+            public EventMeshProtocolType getProtocolType() {
+                return EventMeshProtocolType.CLOUD_EVENTS;
             }
         });
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()));
