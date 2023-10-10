@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client;
+package org.apache.eventmesh.client.support;
 
 import org.apache.eventmesh.client.http.producer.RRCallback;
 
@@ -26,7 +26,7 @@ import lombok.SneakyThrows;
 /**
  * Top interface of producer.
  */
-public interface IProducer {
+public interface Producer {
 
     @SneakyThrows
     default <T> void publish(T message) {

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import org.apache.eventmesh.client.IProducer;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.support.Producer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
@@ -28,7 +28,7 @@ import io.openmessaging.api.Message;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshHttpProducer implements IProducer, AutoCloseable {
+public class EventMeshHttpProducer implements Producer, AutoCloseable {
 
     private final EventMeshMessageProducer eventMeshMessageProducerDelegate;
     private final CloudEventProducer cloudEventProducerDelegate;

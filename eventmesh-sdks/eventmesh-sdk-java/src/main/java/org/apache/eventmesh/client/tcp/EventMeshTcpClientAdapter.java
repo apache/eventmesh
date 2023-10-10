@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.client.tcp;
 
-import org.apache.eventmesh.client.IProducer;
+import org.apache.eventmesh.client.support.Producer;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 
-public class EventMeshTcpClientAdapter extends EventMeshMessageTCPClient implements IProducer {
+public class EventMeshTcpClientAdapter extends EventMeshMessageTCPClient implements Producer {
 
     public EventMeshTcpClientAdapter(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);

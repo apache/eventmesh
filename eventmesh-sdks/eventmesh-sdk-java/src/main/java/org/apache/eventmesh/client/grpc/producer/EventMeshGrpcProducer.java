@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.client.grpc.producer;
 
-import org.apache.eventmesh.client.IProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.client.support.Producer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-public class EventMeshGrpcProducer implements IProducer, AutoCloseable {
+public class EventMeshGrpcProducer implements Producer, AutoCloseable {
 
     private static final String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
 
