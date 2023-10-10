@@ -18,7 +18,6 @@
 package org.apache.eventmesh.storage.rocketmq.producer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
@@ -40,6 +39,7 @@ import java.net.URI;
 import java.util.Properties;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,7 +117,7 @@ public class ProducerImplTest {
         MQClientException exception = new MQClientException("Send message to RocketMQ broker failed.", new Exception());
         Mockito.when(rocketmqProducer.send(any(Message.class))).thenThrow(exception);
 
-        try {
+        StorageRuntimeException e = Assertions.assertThrows(StorageRuntimeException.class, () -> {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                 .withId("id1")
                 .withSource(URI.create("https://github.com/cloudevents/*****"))
@@ -126,10 +126,8 @@ public class ProducerImplTest {
                 .withData(new byte[]{'a'})
                 .build();
             producer.send(cloudEvent);
-            failBecauseExceptionWasNotThrown(StorageRuntimeException.class);
-        } catch (Exception e) {
-            assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
-        }
+        });
+        assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
 
         Mockito.verify(rocketmqProducer).send(any(Message.class));
     }

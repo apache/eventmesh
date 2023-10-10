@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 public class FileWebHookConfigOperationTest {
 
     @Test
-    public void testInsertWebHookConfig() {
+    public void testInsertWebHookConfig() throws Exception {
         Properties properties = new Properties();
         properties.setProperty("filePath", "test_dir");
 
@@ -56,8 +56,6 @@ public class FileWebHookConfigOperationTest {
             List<WebHookConfig> queryResult = fileWebHookConfigOperation.queryWebHookConfigByManufacturer(queryConfig, 1, 1);
             Assertions.assertTrue(Objects.nonNull(queryResult) && queryResult.size() == 1);
             Assertions.assertEquals(queryResult.get(0).getCallbackPath(), config.getCallbackPath());
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
         } finally {
             deleteDir("test_dir");
         }

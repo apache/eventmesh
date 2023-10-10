@@ -49,23 +49,7 @@ public class EventMeshExtensionFactoryTest {
 
     @Test
     public void testGetExtension() {
-        ExtensionException exception = null;
-        try {
-            EventMeshExtensionFactory.getExtension(null, "eventmesh");
-        } catch (Exception ex) {
-            if (ex instanceof ExtensionException) {
-                exception = (ExtensionException) ex;
-            }
-        }
-        Assertions.assertNotNull(exception);
-        exception = null;
-        try {
-            EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null);
-        } catch (Exception ex) {
-            if (ex instanceof ExtensionException) {
-                exception = (ExtensionException) ex;
-            }
-        }
-        Assertions.assertNotNull(exception);
+        Assertions.assertThrows(ExtensionException.class, () -> EventMeshExtensionFactory.getExtension(null, "eventmesh"));
+        Assertions.assertThrows(ExtensionException.class, () -> EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null));
     }
 }

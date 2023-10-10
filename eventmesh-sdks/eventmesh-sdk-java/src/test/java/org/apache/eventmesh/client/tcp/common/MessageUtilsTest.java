@@ -44,14 +44,7 @@ public class MessageUtilsTest {
         Assertions.assertNotNull(msg.getBody());
         Assertions.assertTrue(msg.getBody() instanceof UserAgent);
         // Negative Test Case
-        user = null;
-        try {
-            msg = null;
-            msg = MessageUtils.hello(user);
-
-        } catch (Exception e) {
-            Assertions.assertNull(msg);
-        }
+        Assertions.assertDoesNotThrow(() -> MessageUtils.hello(null));
     }
 
     @Test
@@ -102,16 +95,7 @@ public class MessageUtilsTest {
         Assertions.assertNotNull(msg.getBody());
         Assertions.assertTrue(msg.getBody() instanceof Subscription);
         // Negative Test Case
-        topic = null;
-        subscriptionMode = null;
-        subscriptionType = null;
-        try {
-            msg = null;
-            msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
-
-        } catch (Exception e) {
-            Assertions.assertNull(msg);
-        }
+        Assertions.assertDoesNotThrow(() -> MessageUtils.subscribe(null, null, null));
     }
 
     @Test
@@ -140,13 +124,7 @@ public class MessageUtilsTest {
         Assertions.assertNotNull(msg.getBody());
         Assertions.assertEquals(msg.getBody(), in.getBody());
         // Negative Test Case
-        in = null;
-        msg = null;
-        try {
-            msg = MessageUtils.asyncMessageAck(in);
-        } catch (Exception e) {
-            Assertions.assertNull(msg);
-        }
+        Assertions.assertThrows(Exception.class, () -> MessageUtils.asyncMessageAck(null));
     }
 
     @Test
