@@ -49,7 +49,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -59,13 +58,13 @@ public class SessionSender {
 
     private final transient Session session;
 
-    public transient long createTime = System.currentTimeMillis();
+    public final transient long createTime = System.currentTimeMillis();
 
-    public transient AtomicLong upMsgs = new AtomicLong(0);
+    public final transient AtomicLong upMsgs = new AtomicLong(0);
 
-    public transient AtomicLong failMsgCount = new AtomicLong(0);
+    public final transient AtomicLong failMsgCount = new AtomicLong(0);
 
-    private static final int TRY_PERMIT_TIME_OUT = 5;
+    public static final int TRY_PERMIT_TIME_OUT = 5;
 
     @Override
     public String toString() {
@@ -108,7 +107,7 @@ public class SessionSender {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                            event),
+                        event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
@@ -133,7 +132,7 @@ public class SessionSender {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion,
-                            event),
+                        event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
                         Objects.requireNonNull(session.getClientGroupWrapper().get())
@@ -169,6 +168,7 @@ public class SessionSender {
     private RequestReplyCallback initSyncRRCallback(Header header, long startTime, long taskExecuteTime,
         CloudEvent cloudEvent) {
         return new RequestReplyCallback() {
+
             @Override
             public void onSuccess(CloudEvent event) {
                 String seq = header.getSeq();
@@ -220,5 +220,9 @@ public class SessionSender {
                     "exception occur while sending RR message", e);
             }
         };
+    }
+
+    public AtomicLong getFailMsgCount() {
+        return failMsgCount;
     }
 }

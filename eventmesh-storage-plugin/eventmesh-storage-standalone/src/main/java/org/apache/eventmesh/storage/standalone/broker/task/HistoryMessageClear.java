@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.storage.standalone.broker.task;
 
-
-
 import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;

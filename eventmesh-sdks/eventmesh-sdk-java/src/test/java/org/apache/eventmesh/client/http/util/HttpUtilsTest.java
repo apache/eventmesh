@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.http.util;
 
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,13 +30,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class HttpUtilsTest {
-
 
     @Test
     public void testPostPositive() {
@@ -49,11 +47,11 @@ public class HttpUtilsTest {
             String expectedResult = "Success";
             when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.post(client, uri, requestParam);
-            Assert.assertEquals(expectedResult, result);
+            Assertions.assertEquals(expectedResult, result);
         } catch (IOException e) {
             exception = e;
         }
-        Assert.assertNull(exception);
+        Assertions.assertNull(exception);
     }
 
     @Test
@@ -65,9 +63,9 @@ public class HttpUtilsTest {
         try {
             when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.post(client, uri, requestParam);
-            Assert.assertNotEquals(expectedResult, result);
+            Assertions.assertNotEquals(expectedResult, result);
         } catch (Exception e) {
-            Assert.assertNotNull(e);
+            Assertions.assertNotNull(e);
         }
     }
 
@@ -81,11 +79,11 @@ public class HttpUtilsTest {
         try {
             when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.get(client, uri, requestParam);
-            Assert.assertEquals(expectedResult, result);
+            Assertions.assertEquals(expectedResult, result);
         } catch (IOException e) {
             exception = e;
         }
-        Assert.assertNull(exception);
+        Assertions.assertNull(exception);
     }
 
     @Test
@@ -97,9 +95,9 @@ public class HttpUtilsTest {
         try {
             when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
             String result = HttpUtils.get(client, uri, requestParam);
-            Assert.assertNotEquals(expectedResult, result);
+            Assertions.assertNotEquals(expectedResult, result);
         } catch (Exception e) {
-            Assert.assertNotNull(e);
+            Assertions.assertNotNull(e);
         }
     }
 }

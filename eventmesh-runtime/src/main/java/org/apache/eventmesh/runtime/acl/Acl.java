@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.acl;
 import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.api.registry.bo.EventMeshAppSubTopicInfo;
-import org.apache.eventmesh.api.registry.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
+import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Acl {
+
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;
@@ -196,6 +197,7 @@ public class Acl {
         aclProperties.setPwd(userAgent.getPassword());
         aclProperties.setSubsystem(userAgent.getSubsystem());
         aclProperties.setRequestCode(requestCode);
+        aclProperties.setVersion(userAgent.getVersion());
         if (StringUtils.isNotBlank(topic)) {
             aclProperties.setTopic(topic);
         }

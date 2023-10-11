@@ -37,7 +37,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 
@@ -194,6 +193,18 @@ public class Codec {
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
+            case HELLO_RESPONSE:
+            case RECOMMEND_RESPONSE:
+            case SUBSCRIBE_RESPONSE:
+            case LISTEN_RESPONSE:
+            case UNSUBSCRIBE_RESPONSE:
+            case HEARTBEAT_RESPONSE:
+            case ASYNC_MESSAGE_TO_SERVER_ACK:
+            case BROADCAST_MESSAGE_TO_SERVER_ACK:
+            case CLIENT_GOODBYE_REQUEST:
+            case CLIENT_GOODBYE_RESPONSE:
+            case SERVER_GOODBYE_REQUEST:
+            case SERVER_GOODBYE_RESPONSE:
                 // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
                 // just a string.
                 return bodyJsonString;

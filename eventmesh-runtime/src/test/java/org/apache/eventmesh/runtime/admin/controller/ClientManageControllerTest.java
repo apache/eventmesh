@@ -30,16 +30,16 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
-import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -75,9 +75,9 @@ public class ClientManageControllerTest {
         when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
 
         EventMeshGrpcServer eventMeshGrpcServer = mock(EventMeshGrpcServer.class);
-        Registry registry = mock(Registry.class);
+        MetaStorage metaStorage = mock(MetaStorage.class);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer,
-            eventMeshHTTPServer, eventMeshGrpcServer, registry);
+            eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
         controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
 
         eventMeshTCPServer.getEventMeshTCPConfiguration().setEventMeshStoragePluginType("standalone");
@@ -89,7 +89,7 @@ public class ClientManageControllerTest {
                 Mockito.doNothing().when(adminController).run(server);
                 controller.start();
             } catch (IOException e) {
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
             }
 
         }

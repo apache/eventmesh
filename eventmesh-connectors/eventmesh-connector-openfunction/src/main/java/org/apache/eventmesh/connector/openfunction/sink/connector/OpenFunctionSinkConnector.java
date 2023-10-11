@@ -19,8 +19,10 @@ package org.apache.eventmesh.connector.openfunction.sink.connector;
 
 import org.apache.eventmesh.connector.openfunction.sink.config.OpenFunctionSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -50,6 +52,14 @@ public class OpenFunctionSinkConnector implements Sink {
     }
 
     @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        // init config for openfunction source connector
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        this.sinkConfig = (OpenFunctionSinkConfig) sinkConnectorContext.getSinkConfig();
+        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    @Override
     public void start() throws Exception {
         isRunning = true;
     }
@@ -74,7 +84,10 @@ public class OpenFunctionSinkConnector implements Sink {
             try {
                 queue.put(connectRecord);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                Thread currentThread = Thread.currentThread();
+                log.warn("[OpenFunctionSinkConnector] Interrupting thread {} due to exception {}",
+                    currentThread.getName(), e.getMessage());
+                currentThread.interrupt();
             }
         }
     }

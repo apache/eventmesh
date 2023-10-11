@@ -19,8 +19,10 @@ package org.apache.eventmesh.connector.rocketmq.sink.connector;
 
 import org.apache.eventmesh.connector.rocketmq.sink.config.RocketMQSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -52,6 +54,15 @@ public class RocketMQSinkConnector implements Sink {
     }
 
     @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        // init config for rocketmq source connector
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        this.sinkConfig = (RocketMQSinkConfig) sinkConnectorContext.getSinkConfig();
+        producer.setProducerGroup(sinkConfig.getPubSubConfig().getGroup());
+        producer.setNamesrvAddr(sinkConfig.getConnectorConfig().getNameServer());
+    }
+
+    @Override
     public void start() throws Exception {
         producer.start();
     }
@@ -77,8 +88,13 @@ public class RocketMQSinkConnector implements Sink {
             Message message = convertRecordToMessage(connectRecord);
             try {
                 SendResult sendResult = producer.send(message);
+            } catch (InterruptedException e) {
+                Thread currentThread = Thread.currentThread();
+                log.warn("[RocketMQSinkConnector] Interrupting thread {} due to exception {}",
+                    currentThread.getName(), e.getMessage());
+                currentThread.interrupt();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("[RocketMQSinkConnector] sendResult has error : ", e);
             }
         }
     }

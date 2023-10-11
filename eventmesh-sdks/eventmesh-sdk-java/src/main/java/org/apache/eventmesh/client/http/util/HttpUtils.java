@@ -80,14 +80,14 @@ public final class HttpUtils {
 
         final HttpPost httpPost = new HttpPost(uri);
 
-        //header
+        // header
         if (MapUtils.isNotEmpty(requestParam.getHeaders())) {
             for (final Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
                 httpPost.addHeader(entry.getKey(), entry.getValue());
             }
         }
 
-        //body
+        // body
         if (MapUtils.isNotEmpty(requestParam.getBody())) {
             final List<NameValuePair> pairs = new ArrayList<>();
             for (final Map.Entry<String, String> entry : requestParam.getBody().entrySet()) {
@@ -96,7 +96,7 @@ public final class HttpUtils {
             httpPost.setEntity(new UrlEncodedFormEntity(pairs, Constants.DEFAULT_CHARSET));
         }
 
-        //ttl
+        // ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
             .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
@@ -143,14 +143,14 @@ public final class HttpUtils {
 
         final HttpGet httpGet = new HttpGet(MapUtils.isNotEmpty(requestParam.getQueryParamsMap()) ? uri + "?" + requestParam.getQueryParams() : uri);
 
-        //header
+        // header
         if (MapUtils.isNotEmpty(requestParam.getHeaders())) {
             for (final Map.Entry<String, String> entry : requestParam.getHeaders().entrySet()) {
                 httpGet.addHeader(entry.getKey(), entry.getValue());
             }
         }
 
-        //ttl
+        // ttl
         final RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
             .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
@@ -183,7 +183,7 @@ public final class HttpUtils {
         public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
 
             int statusCode = response.getStatusLine().getStatusCode();
-            //Successful responses (200-299)
+            // Successful responses (200-299)
             if (statusCode >= 200 && statusCode < 300) {
                 HttpEntity entity = response.getEntity();
                 return entity != null ? EntityUtils.toString(entity, Constants.DEFAULT_CHARSET) : null;

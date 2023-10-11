@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConfig;
 import org.apache.eventmesh.connector.openfunction.source.connector.OpenFunctionSourceConnector;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -44,11 +44,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBase {
 
-    public OpenFunctionSourceConnector openFunctionSourceConnector;
+    private final OpenFunctionSourceConnector openFunctionSourceConnector;
 
-    public BlockingQueue<ConnectRecord> queue;
+    private final BlockingQueue<ConnectRecord> queue;
 
-    public OpenFunctionServerConfig config;
+    private final OpenFunctionServerConfig config;
 
     public ProducerService(OpenFunctionSourceConnector openFunctionSourceConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSourceConnector = openFunctionSourceConnector;
@@ -72,7 +72,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             // put record to source connector
             queue.put(connectRecord);
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
+                CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getErrMsg()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
@@ -80,12 +80,12 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         } catch (InterruptedException e) {
             log.error("publish event error {}", e.getMessage());
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode()).build())
+                CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
                     .setCeTimestamp(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build()).build());
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
 
         responseObserver.onNext(builder.build());

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,10 +26,9 @@ import org.apache.eventmesh.common.enums.HttpMethod;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.sun.net.httpserver.HttpExchange;
-
 
 public class RequestMappingTest {
 

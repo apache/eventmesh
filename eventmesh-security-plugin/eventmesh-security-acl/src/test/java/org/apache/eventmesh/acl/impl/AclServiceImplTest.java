@@ -21,16 +21,15 @@ import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 
-
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class AclServiceImplTest {
 
     private static AclService service;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         service = new AclServiceImpl();
     }
@@ -40,7 +39,7 @@ public class AclServiceImplTest {
         try {
             service.init();
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -49,7 +48,7 @@ public class AclServiceImplTest {
         try {
             service.start();
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -58,7 +57,7 @@ public class AclServiceImplTest {
         try {
             service.shutdown();
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -67,7 +66,7 @@ public class AclServiceImplTest {
         try {
             service.doAclCheckInConnect(new AclProperties());
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -76,7 +75,7 @@ public class AclServiceImplTest {
         try {
             service.doAclCheckInHeartbeat(new AclProperties());
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -85,7 +84,7 @@ public class AclServiceImplTest {
         try {
             service.doAclCheckInSend(new AclProperties());
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -94,7 +93,7 @@ public class AclServiceImplTest {
         try {
             service.doAclCheckInReceive(new AclProperties());
         } catch (AclException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 }

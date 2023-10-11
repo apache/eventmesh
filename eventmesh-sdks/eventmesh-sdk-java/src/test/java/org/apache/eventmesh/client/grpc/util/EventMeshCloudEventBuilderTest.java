@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.client.grpc.util;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -29,16 +28,19 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEve
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.core.builder.CloudEventBuilder;
 
@@ -46,7 +48,7 @@ public class EventMeshCloudEventBuilderTest {
 
     private EventMeshGrpcClientConfig clientConfig;
 
-    @Before
+    @BeforeEach
     public void init() {
         clientConfig = EventMeshGrpcClientConfig.builder().build();
     }
@@ -56,17 +58,19 @@ public class EventMeshCloudEventBuilderTest {
 
         Map<String, CloudEventAttributeValue> attributeValueMap = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(
             clientConfig, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNotNull(attributeValueMap);
-        Assert.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), attributeValueMap.get(ProtocolKey.PROTOCOL_TYPE).getCeString());
+        Assertions.assertNotNull(attributeValueMap);
+        Assertions.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(),
+            attributeValueMap.get(ProtocolKey.PROTOCOL_TYPE).getCeString());
         Map<String, CloudEventAttributeValue> attributeValueMap1 = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(
             clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        Assert.assertNotNull(attributeValueMap1);
-        Assert.assertEquals(EventMeshProtocolType.EVENT_MESH_MESSAGE.protocolTypeName(),
+        Assertions.assertNotNull(attributeValueMap1);
+        Assertions.assertEquals(EventMeshProtocolType.EVENT_MESH_MESSAGE.protocolTypeName(),
             attributeValueMap1.get(ProtocolKey.PROTOCOL_TYPE).getCeString());
         Map<String, CloudEventAttributeValue> attributeValueMap2 = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(
             clientConfig, EventMeshProtocolType.OPEN_MESSAGE);
-        Assert.assertNotNull(attributeValueMap2);
-        Assert.assertEquals(EventMeshProtocolType.OPEN_MESSAGE.protocolTypeName(), attributeValueMap2.get(ProtocolKey.PROTOCOL_TYPE).getCeString());
+        Assertions.assertNotNull(attributeValueMap2);
+        Assertions.assertEquals(EventMeshProtocolType.OPEN_MESSAGE.protocolTypeName(),
+            attributeValueMap2.get(ProtocolKey.PROTOCOL_TYPE).getCeString());
 
     }
 
@@ -82,7 +86,7 @@ public class EventMeshCloudEventBuilderTest {
         }
         CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, "127.0.0.1",
             subscriptionItems);
-        Assert.assertNotNull(cloudEvent);
+        Assertions.assertNotNull(cloudEvent);
     }
 
     @Test
@@ -97,25 +101,24 @@ public class EventMeshCloudEventBuilderTest {
         } catch (ClassCastException e) {
             exception = e;
         }
-        Assert.assertNotNull(exception);
+        Assertions.assertNotNull(exception);
         CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(event, clientConfig, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNotNull(cloudEvent);
-        Assert.assertEquals("eventmesh", cloudEvent.getType());
-        Assert.assertEquals(id, cloudEvent.getId());
+        Assertions.assertNotNull(cloudEvent);
+        Assertions.assertEquals("eventmesh", cloudEvent.getType());
+        Assertions.assertEquals(id, cloudEvent.getId());
         Exception exception1 = null;
         try {
             EventMeshCloudEventBuilder.buildEventMeshCloudEvent(meshMessage, clientConfig, EventMeshProtocolType.CLOUD_EVENTS);
         } catch (ClassCastException e) {
             exception1 = e;
         }
-        Assert.assertNotNull(exception1);
+        Assertions.assertNotNull(exception1);
         EventMeshMessage meshMessage1 = EventMeshMessage.builder().uniqueId(id).build();
         CloudEvent cloudEvent1 = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(meshMessage1, clientConfig,
             EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        Assert.assertNotNull(cloudEvent1);
-        Assert.assertEquals("org.apache.eventmesh", cloudEvent1.getType());
-        Assert.assertEquals(id, EventMeshCloudEventUtils.getUniqueId(cloudEvent1));
-
+        Assertions.assertNotNull(cloudEvent1);
+        Assertions.assertEquals("org.apache.eventmesh", cloudEvent1.getType());
+        Assertions.assertEquals(id, EventMeshCloudEventUtils.getUniqueId(cloudEvent1));
 
     }
 
@@ -124,10 +127,10 @@ public class EventMeshCloudEventBuilderTest {
         List<io.cloudevents.CloudEvent> cloudEventList = new ArrayList<>();
         CloudEventBatch cloudEventBatch = EventMeshCloudEventBuilder.buildEventMeshCloudEventBatch(cloudEventList, clientConfig,
             EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNull(cloudEventBatch);
+        Assertions.assertNull(cloudEventBatch);
         CloudEventBatch cloudEventBatch1 = EventMeshCloudEventBuilder.buildEventMeshCloudEventBatch(null, clientConfig,
             EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNull(cloudEventBatch1);
+        Assertions.assertNull(cloudEventBatch1);
         List<io.cloudevents.CloudEvent> cloudEventList2 = new ArrayList<>();
         for (int i = 0; i < 3; ++i) {
             String id = UUID.randomUUID().toString();
@@ -137,7 +140,7 @@ public class EventMeshCloudEventBuilderTest {
         }
         CloudEventBatch cloudEventBatch2 = EventMeshCloudEventBuilder.buildEventMeshCloudEventBatch(cloudEventList2, clientConfig,
             EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNotNull(cloudEventBatch2);
+        Assertions.assertNotNull(cloudEventBatch2);
 
         List<EventMeshMessage> messageList = new ArrayList<>();
         for (int i = 0; i < 3; ++i) {
@@ -146,25 +149,37 @@ public class EventMeshCloudEventBuilderTest {
         }
         CloudEventBatch cloudEventBatch3 = EventMeshCloudEventBuilder.buildEventMeshCloudEventBatch(messageList, clientConfig,
             EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        Assert.assertNotNull(cloudEventBatch3);
-        Assert.assertEquals(3, cloudEventBatch3.getEventsCount());
+        Assertions.assertNotNull(cloudEventBatch3);
+        Assertions.assertEquals(3, cloudEventBatch3.getEventsCount());
     }
 
     @Test
     public void testBuildMessageFromEventMeshCloudEvent() {
 
         Object object = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(null, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNull(object);
+        Assertions.assertNull(object);
         CloudEvent eventmesh = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
             .setId(UUID.randomUUID().toString()).build();
         Object event = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertNull(event);
+        Assertions.assertNull(event);
         CloudEvent eventmesh1 = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
             .setId(UUID.randomUUID().toString()).putAttributes(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString("1").build())
             .build();
         Object event1 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.CLOUD_EVENTS);
-        Assert.assertTrue(event1 instanceof io.cloudevents.CloudEvent);
+        Assertions.assertTrue(event1 instanceof io.cloudevents.CloudEvent);
         Object event2 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh1, EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        Assert.assertTrue(event2 instanceof EventMeshMessage);
+        Assertions.assertTrue(event2 instanceof EventMeshMessage);
+
+        final Map<String, CloudEventAttributeValue> attributeValueMap = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(clientConfig,
+            EventMeshProtocolType.EVENT_MESH_MESSAGE);
+        attributeValueMap.put(ProtocolKey.CONSUMERGROUP, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getConsumerGroup()).build());
+        attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("application/json").build());
+        Set<SubscriptionItem> set = new HashSet<>();
+        SubscriptionItem subscriptionItem = new SubscriptionItem("111", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+        set.add(subscriptionItem);
+        CloudEvent eventmesh2 = CloudEvent.newBuilder().setSpecVersion("1.0").setType("eventmesh").setSource(URI.create("/").toString())
+            .setId(UUID.randomUUID().toString()).putAllAttributes(attributeValueMap).setTextData(JsonUtils.toJSONString(set)).build();
+        Object event4 = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(eventmesh2, EventMeshProtocolType.CLOUD_EVENTS);
+        Assertions.assertTrue(event4 instanceof Set);
     }
 }

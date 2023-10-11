@@ -25,7 +25,7 @@ import org.apache.eventmesh.connector.openfunction.client.CallbackServiceGrpc;
 import org.apache.eventmesh.connector.openfunction.client.CallbackServiceGrpc.CallbackServiceBlockingStub;
 import org.apache.eventmesh.connector.openfunction.config.OpenFunctionServerConfig;
 import org.apache.eventmesh.connector.openfunction.sink.connector.OpenFunctionSinkConnector;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,23 +42,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
 
-    public OpenFunctionSinkConnector openFunctionSinkConnector;
+    private final OpenFunctionSinkConnector openFunctionSinkConnector;
 
-    public BlockingQueue<ConnectRecord> queue;
+    private final BlockingQueue<ConnectRecord> queue;
 
-    public OpenFunctionServerConfig config;
-
-    private final transient ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", 10115).usePlaintext().build();
-
-    private CallbackServiceBlockingStub publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
-
-    private final ExecutorService handleService = Executors.newSingleThreadExecutor();
-
+    private final CallbackServiceBlockingStub publisherClient;
 
     public ConsumerService(OpenFunctionSinkConnector openFunctionSinkConnector, OpenFunctionServerConfig serverConfig) {
         this.openFunctionSinkConnector = openFunctionSinkConnector;
         this.queue = openFunctionSinkConnector.queue();
-        this.config = serverConfig;
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(serverConfig.getTargetAddress(),
+            serverConfig.getTargetPort()).usePlaintext().build();
+        this.publisherClient = CallbackServiceGrpc.newBlockingStub(channel);
+        ExecutorService handleService = Executors.newSingleThreadExecutor();
         handleService.execute(this::startHandleConsumeEvents);
     }
 
@@ -87,6 +83,5 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         }
         return cloudEventBuilder.build();
     }
-
 
 }

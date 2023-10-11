@@ -27,23 +27,24 @@ import org.apache.eventmesh.trace.jaeger.config.JaegerConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Config(field = "jaegerConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
 public class JaegerTraceService extends AbstractTraceService {
 
     /**
      * Unified configuration class corresponding to jaeger.properties
      */
+    @Getter
+    @Setter
     private transient JaegerConfiguration jaegerConfiguration;
 
     @Override
@@ -69,7 +70,7 @@ public class JaegerTraceService extends AbstractTraceService {
             .setMaxQueueSize(eventMeshTraceMaxQueueSize)
             .build();
 
-        //set the trace service's name
+        // set the trace service's name
         final Resource serviceNameResource =
             Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 

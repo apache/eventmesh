@@ -86,4 +86,3 @@ public class ConsumerGroupClient {
             + ",lastUpTime=" + lastUpTime + "}";
     }
 }
-

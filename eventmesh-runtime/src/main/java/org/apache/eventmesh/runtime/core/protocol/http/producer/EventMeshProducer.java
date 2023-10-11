@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -77,7 +76,7 @@ public class EventMeshProducer {
     }
 
     public void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                                  ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
@@ -92,13 +91,12 @@ public class EventMeshProducer {
             keyValue.put(Constants.PRODUCER_TOKEN, producerGroupConfig.getToken());
         }
 
-        //TODO for defibus
+        // TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         log.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
-
 
     public void start() throws Exception {
 

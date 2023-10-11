@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.storage.rocketmq.cloudevent;
 
 import org.apache.eventmesh.storage.rocketmq.cloudevent.impl.RocketMQHeaders;
 
 import org.apache.rocketmq.common.message.Message;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.SpecVersion;
 
@@ -32,7 +31,7 @@ public class RocketMQMessageFactoryTest {
 
     private Message message;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         message = new Message();
         message.putUserProperty(RocketMQHeaders.SPEC_VERSION, SpecVersion.V03.toString());
@@ -41,6 +40,6 @@ public class RocketMQMessageFactoryTest {
 
     @Test
     public void testCreateReader() {
-        Assert.assertNotNull(RocketMQMessageFactory.createReader(message));
+        Assertions.assertNotNull(RocketMQMessageFactory.createReader(message));
     }
 }

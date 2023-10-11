@@ -47,9 +47,9 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private PublisherServiceBlockingStub publisherClient;
 
-    private  CloudEventProducer cloudEventProducer;
+    private CloudEventProducer cloudEventProducer;
 
-    private  EventMeshMessageProducer eventMeshMessageProducer;
+    private EventMeshMessageProducer eventMeshMessageProducer;
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;

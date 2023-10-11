@@ -262,7 +262,7 @@ public final class RegistryResponse extends
 
     @Override
     public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
+        return this.equals(DEFAULT_INSTANCE)
                 ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -390,7 +390,7 @@ public final class RegistryResponse extends
         }
 
         public Builder mergeFrom(RegistryResponse other) {
-            if (other == RegistryResponse.getDefaultInstance()) {
+            if (other.equals(RegistryResponse.getDefaultInstance())) {
                 return this;
             }
             this.mergeUnknownFields(other.unknownFields);

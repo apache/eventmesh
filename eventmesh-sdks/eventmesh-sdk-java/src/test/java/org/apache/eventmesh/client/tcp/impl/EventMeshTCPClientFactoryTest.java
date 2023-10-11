@@ -25,8 +25,8 @@ import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCP
 import org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
@@ -42,14 +42,14 @@ public class EventMeshTCPClientFactoryTest {
 
         EventMeshTCPClient<EventMeshMessage> eventMeshMessageTCPClient =
             EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, EventMeshMessage.class);
-        Assert.assertEquals(EventMeshMessageTCPClient.class, eventMeshMessageTCPClient.getClass());
+        Assertions.assertEquals(EventMeshMessageTCPClient.class, eventMeshMessageTCPClient.getClass());
 
         EventMeshTCPClient<CloudEvent> cloudEventTCPClient =
             EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, CloudEvent.class);
-        Assert.assertEquals(CloudEventTCPClient.class, cloudEventTCPClient.getClass());
+        Assertions.assertEquals(CloudEventTCPClient.class, cloudEventTCPClient.getClass());
 
         EventMeshTCPClient<Message> openMessageTCPClient =
             EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, Message.class);
-        Assert.assertEquals(OpenMessageTCPClient.class, openMessageTCPClient.getClass());
+        Assertions.assertEquals(OpenMessageTCPClient.class, openMessageTCPClient.getClass());
     }
 }

@@ -26,17 +26,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshRebalanceService {
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
-    private Integer rebalanceIntervalMills;
+    private final Integer rebalanceIntervalMills;
 
-    private EventMeshRebalanceStrategy rebalanceStrategy;
+    private final EventMeshRebalanceStrategy rebalanceStrategy;
 
     private ScheduledExecutorService serviceRebalanceScheduler;
 

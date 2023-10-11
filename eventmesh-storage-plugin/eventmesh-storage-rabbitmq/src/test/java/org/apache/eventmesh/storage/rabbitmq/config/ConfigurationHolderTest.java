@@ -21,8 +21,8 @@ import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.rabbitmq.consumer.RabbitmqConsumer;
 import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 
@@ -47,16 +47,16 @@ public class ConfigurationHolderTest {
     }
 
     private void assertConfig(ConfigurationHolder config) {
-        Assert.assertEquals(config.getHost(), "127.0.0.1");
-        Assert.assertEquals(config.getPort(), 5672);
-        Assert.assertEquals(config.getUsername(), "username-success!!!");
-        Assert.assertEquals(config.getPasswd(), "passwd-success!!!");
-        Assert.assertEquals(config.getVirtualHost(), "virtualHost-success!!!");
+        Assertions.assertEquals("127.0.0.1", config.getHost());
+        Assertions.assertEquals(5672, config.getPort());
+        Assertions.assertEquals("username-success!!!", config.getUsername());
+        Assertions.assertEquals("passwd-success!!!", config.getPasswd());
+        Assertions.assertEquals("virtualHost-success!!!", config.getVirtualHost());
 
-        Assert.assertEquals(config.getExchangeType(), BuiltinExchangeType.TOPIC);
-        Assert.assertEquals(config.getExchangeName(), "exchangeName-success!!!");
-        Assert.assertEquals(config.getRoutingKey(), "routingKey-success!!!");
-        Assert.assertEquals(config.getQueueName(), "queueName-success!!!");
-        Assert.assertTrue(config.isAutoAck());
+        Assertions.assertEquals(BuiltinExchangeType.TOPIC, config.getExchangeType());
+        Assertions.assertEquals("exchangeName-success!!!", config.getExchangeName());
+        Assertions.assertEquals("routingKey-success!!!", config.getRoutingKey());
+        Assertions.assertEquals("queueName-success!!!", config.getQueueName());
+        Assertions.assertTrue(config.isAutoAck());
     }
 }

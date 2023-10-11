@@ -61,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class TcpClient implements Closeable {
 
     protected static transient int CLIENTNO = 0;
-    
+
     static {
         try {
             CLIENTNO = SecureRandom.getInstanceStrong().nextInt(1000);
@@ -106,6 +106,7 @@ public abstract class TcpClient implements Closeable {
             .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
             .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
@@ -187,7 +188,7 @@ public abstract class TcpClient implements Closeable {
     protected Package io(Package msg, long timeout) throws Exception {
         Object key = RequestContext.key(msg);
         RequestContext context = RequestContext.context(key, msg);
-        if (!contexts.contains(context)) {
+        if (!contexts.containsValue(context)) {
             contexts.put(key, context);
         } else {
             if (log.isInfoEnabled()) {
@@ -219,6 +220,7 @@ public abstract class TcpClient implements Closeable {
 
     private ChannelDuplexHandler newExceptionHandler() {
         return new ChannelDuplexHandler() {
+
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                 if (log.isInfoEnabled()) {

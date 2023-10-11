@@ -36,8 +36,8 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubClient<EventMeshMessage> {
 
-    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private ReceiveMsgHook<EventMeshMessage> callback;
 
     public EventMeshMessageTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
@@ -117,7 +117,6 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         }
     }
 
-
     @Override
     public void registerBusiHandler(ReceiveMsgHook<EventMeshMessage> receiveMsgHook) throws EventMeshException {
         this.callback = receiveMsgHook;
@@ -147,8 +146,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
-                );
+                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

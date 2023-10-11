@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEventProcessor {
 
-
     public BatchPublishCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         super(eventMeshGrpcServer, eventMeshGrpcServer.getAcl());
     }
@@ -70,6 +69,7 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
             eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
             long startTime = System.currentTimeMillis();
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     long endTime = System.currentTimeMillis();
@@ -85,8 +85,7 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
                 }
             });
         }
-        ServiceUtils.completed(StatusCode.SUCCESS, "batch publish success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "batch publish success", emitter);
     }
-
 
 }

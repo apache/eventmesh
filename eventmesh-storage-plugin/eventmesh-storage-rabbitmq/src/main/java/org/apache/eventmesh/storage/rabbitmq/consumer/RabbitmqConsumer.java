@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
-
 import io.cloudevents.CloudEvent;
 
 import com.rabbitmq.client.Channel;
@@ -42,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RabbitmqConsumer implements Consumer {
-
 
     private RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 

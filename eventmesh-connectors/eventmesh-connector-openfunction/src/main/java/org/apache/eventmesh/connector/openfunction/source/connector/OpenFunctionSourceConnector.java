@@ -19,18 +19,23 @@ package org.apache.eventmesh.connector.openfunction.source.connector;
 
 import org.apache.eventmesh.connector.openfunction.source.config.OpenFunctionSourceConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OpenFunctionSourceConnector implements Source {
+
+    private static final int DEFAULT_BATCH_SIZE = 10;
 
     private OpenFunctionSourceConfig sourceConfig;
 
@@ -45,6 +50,14 @@ public class OpenFunctionSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for openfunction source connector
         this.sourceConfig = (OpenFunctionSourceConfig) config;
+        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    @Override
+    public void init(ConnectorContext connectorContext) throws Exception {
+        SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
+        // init config for openfunction source connector
+        this.sourceConfig = (OpenFunctionSourceConfig) sourceConnectorContext.getSourceConfig();
         this.queue = new LinkedBlockingQueue<>(1000);
     }
 
@@ -74,10 +87,22 @@ public class OpenFunctionSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>();
-        ConnectRecord connectRecord = queue.poll();
-        if (connectRecord != null) {
-            connectRecords.add(connectRecord);
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+
+        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+            try {
+                ConnectRecord connectRecord = queue.poll(3, TimeUnit.SECONDS);
+                if (connectRecord == null) {
+                    break;
+                }
+                connectRecords.add(connectRecord);
+            } catch (InterruptedException e) {
+                Thread currentThread = Thread.currentThread();
+                log.warn("[OpenFunctionSourceConnector] Interrupting thread {} due to exception {}",
+                    currentThread.getName(), e.getMessage());
+                currentThread.interrupt();
+            }
         }
         return connectRecords;
     }

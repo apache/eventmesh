@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.enums;
 import lombok.Getter;
 
 public enum EventMeshDataContentType {
+
     JSON("application/json");
 
     @Getter
@@ -28,6 +29,5 @@ public enum EventMeshDataContentType {
     EventMeshDataContentType(String code) {
         this.code = code;
     }
-
 
 }

@@ -20,15 +20,15 @@ package org.apache.eventmesh.common.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CommonConfigurationTest {
 
     public CommonConfiguration config;
 
-    @Before
+    @BeforeEach
     public void beforeCommonConfigurationTest() throws Exception {
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
@@ -40,40 +40,40 @@ public class CommonConfigurationTest {
 
     @Test
     public void testGetCommonConfiguration() {
-        Assert.assertEquals("env-succeed!!!", config.getEventMeshEnv());
-        Assert.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
-        Assert.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
-        Assert.assertEquals("name-succeed!!!", config.getEventMeshName());
-        Assert.assertEquals("816", config.getSysID());
-        //Assert.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
-        Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
-        Assert.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
-        Assert.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
-        Assert.assertEquals("registry-succeed!!!", config.getEventMeshRegistryPluginType());
-        Assert.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
-        Assert.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
-        Assert.assertEquals("username-succeed!!!", config.getEventMeshRegistryPluginUsername());
-        Assert.assertEquals("password-succeed!!!", config.getEventMeshRegistryPluginPassword());
+        Assertions.assertEquals("env-succeed!!!", config.getEventMeshEnv());
+        Assertions.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
+        Assertions.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
+        Assertions.assertEquals("name-succeed!!!", config.getEventMeshName());
+        Assertions.assertEquals("816", config.getSysID());
+        // Assertions.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
+        Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
+        Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
+        Assertions.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
+        Assertions.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
+        Assertions.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
+        Assertions.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
+        Assertions.assertEquals("username-succeed!!!", config.getEventMeshMetaStoragePluginUsername());
+        Assertions.assertEquals("password-succeed!!!", config.getEventMeshMetaStoragePluginPassword());
 
-        Assert.assertEquals(Integer.valueOf(816), config.getEventMeshRegisterIntervalInMills());
-        Assert.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchRegistryAddrInterval());
+        Assertions.assertEquals(Integer.valueOf(816), config.getEventMeshMetaStorageIntervalInMills());
+        Assertions.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchMetaStorageAddrInterval());
 
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");
         list.add("metrics-succeed2!!!");
         list.add("metrics-succeed3!!!");
-        Assert.assertEquals(list, config.getEventMeshMetricsPluginType());
+        Assertions.assertEquals(list, config.getEventMeshMetricsPluginType());
 
         List<String> list1 = new ArrayList<>();
         list1.add("TCP");
         list1.add("HTTP");
         list1.add("GRPC");
-        Assert.assertEquals(list1, config.getEventMeshProvideServerProtocols());
+        Assertions.assertEquals(list1, config.getEventMeshProvideServerProtocols());
 
-        Assert.assertTrue(config.isEventMeshServerSecurityEnable());
-        Assert.assertTrue(config.isEventMeshServerRegistryEnable());
-        Assert.assertTrue(config.isEventMeshServerTraceEnable());
+        Assertions.assertTrue(config.isEventMeshServerSecurityEnable());
+        Assertions.assertTrue(config.isEventMeshServerMetaStorageEnable());
+        Assertions.assertTrue(config.isEventMeshServerTraceEnable());
 
-        Assert.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
+        Assertions.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
     }
 }

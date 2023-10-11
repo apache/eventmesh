@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RedisPropertiesTest {
 
@@ -34,14 +34,14 @@ public class RedisPropertiesTest {
     }
 
     private void assertConfig(RedisProperties config) {
-        Assert.assertEquals("redis://127.0.0.1:6379", config.getServerAddress());
-        Assert.assertEquals(RedisProperties.ServerType.SINGLE, config.getServerType());
-        Assert.assertEquals("serverMasterName-success!!!", config.getServerMasterName());
+        Assertions.assertEquals("redis://127.0.0.1:6379", config.getServerAddress());
+        Assertions.assertEquals(RedisProperties.ServerType.SINGLE, config.getServerType());
+        Assertions.assertEquals("serverMasterName-success!!!", config.getServerMasterName());
 
         Properties properties = new Properties();
         properties.put("threads", "2");
         properties.put("nettyThreads", "2");
         Properties redissonProperties = config.getRedissonProperties();
-        Assert.assertEquals(properties, redissonProperties);
+        Assertions.assertEquals(properties, redissonProperties);
     }
 }

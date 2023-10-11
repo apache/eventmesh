@@ -27,7 +27,6 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.google.common.eventbus.Subscribe;
 
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +40,6 @@ public class ConsumerManager {
      * consumerGroup to ConsumerGroupManager.
      */
     private ConcurrentHashMap<String, ConsumerGroupManager> consumerTable = new ConcurrentHashMap<>(64);
-
 
     public ConsumerManager(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -183,7 +181,7 @@ public class ConsumerManager {
                     break;
                 }
                 default:
-                    //do nothing
+                    // do nothing
             }
         } catch (Exception ex) {
             log.error("onChange event:{} err", event, ex);
@@ -206,7 +204,7 @@ public class ConsumerManager {
                     delConsumer(event.getConsumerGroup());
                     break;
                 default:
-                    //do nothing
+                    // do nothing
             }
         } catch (Exception ex) {
             log.error("onChange event:{} err", event, ex);

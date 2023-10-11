@@ -151,10 +151,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage ->
-                        ctx.writeAndFlush(
-                            MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
-                );
+                    responseMessage -> ctx.writeAndFlush(
+                        MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

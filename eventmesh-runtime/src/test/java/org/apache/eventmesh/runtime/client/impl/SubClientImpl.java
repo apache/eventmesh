@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -97,6 +97,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     public void heartbeat() throws Exception {
         task = scheduler.scheduleAtFixedRate(new Runnable() {
+
             @Override
             public void run() {
                 try {
@@ -106,11 +107,11 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     Package msg = MessageUtils.heartBeat();
                     if (log.isDebugEnabled()) {
                         log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
-                                msg.getHeader().getCommand(), msg);
+                            msg.getHeader().getCommand(), msg);
                     }
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
                 } catch (Exception e) {
-                    //ignore
+                    // ignore
                 }
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
@@ -127,7 +128,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws Exception {
+        throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -138,19 +139,24 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    //@Override
-    //public void traceLog() throws Exception {
-    //    Package msg = MessageUtils.traceLog();
-    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    //}
+    /**
+     * @Override
+     * public void traceLog() throws Exception {
+     *     Package msg = MessageUtils.traceLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+    **/
 
-    //public void sysLog() throws Exception {
-    //    Package msg = MessageUtils.sysLog();
-    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    //}
+    /**
+     *
+     * public void sysLog() throws Exception {
+     *     Package msg = MessageUtils.sysLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * }
+     */
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -161,32 +167,32 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package dispatcher(Package request, long timeout) throws Exception {
-        Assert.assertNotNull(request);
+        Assertions.assertNotNull(request);
         Package response = super.io(request, timeout);
         switch (request.getHeader().getCommand()) {
             case HELLO_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
                 break;
             case LISTEN_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
                 break;
             case SUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
                 break;
             case UNSUBSCRIBE_REQUEST:
-                Assert.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
                 break;
             case SYS_LOG_TO_LOGSERVER:
-                Assert.assertNull(response);
+                Assertions.assertNull(response);
                 break;
             case TRACE_LOG_TO_LOGSERVER:
-                Assert.assertNull(response);
+                Assertions.assertNull(response);
                 break;
             default:
                 break;
@@ -199,12 +205,13 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
+
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             if (log.isInfoEnabled()) {
                 log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
-                        msg.getHeader().getCommand(), msg);
+                    msg.getHeader().getCommand(), msg);
             }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
@@ -237,7 +244,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 log.info("server goodby request: ---------------------------" + msg);
                 close();
             } else {
-                //control instruction set
+                // control instruction set
                 RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());

@@ -89,8 +89,7 @@ public class RedisProducer implements Producer {
                             .topic(cloudEvent.getSubject())
                             .messageId(cloudEvent.getId())
                             .exception(new StorageRuntimeException(throwable))
-                            .build()
-                    );
+                            .build());
                 } else {
                     SendResult sendResult = new SendResult();
                     sendResult.setTopic(cloudEvent.getSubject());
@@ -104,8 +103,7 @@ public class RedisProducer implements Producer {
                     .topic(cloudEvent.getSubject())
                     .messageId(cloudEvent.getId())
                     .exception(new StorageRuntimeException(e))
-                    .build()
-            );
+                    .build());
         }
     }
 

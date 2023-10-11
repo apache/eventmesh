@@ -43,11 +43,11 @@ dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-token")
 
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    implementation project(":eventmesh-meta:eventmesh-meta-api")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
 
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
+    implementation project(":eventmesh-meta:eventmesh-meta-nacos")
 
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
@@ -78,10 +78,8 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
-    testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.mockito:mockito-junit-jupiter"
     testImplementation "commons-io:commons-io"
 
     testCompileOnly 'org.projectlombok:lombok'

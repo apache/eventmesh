@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
@@ -96,27 +95,27 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         final SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader
                 .buildHeader(Integer.valueOf(request.getRequestCode()),
-                        eventMeshHttpConfiguration.getEventMeshCluster(),
-                        localAddress,
-                        eventMeshHttpConfiguration.getEventMeshEnv(),
-                        eventMeshHttpConfiguration.getEventMeshIDC());
+                    eventMeshHttpConfiguration.getEventMeshCluster(),
+                    localAddress,
+                    eventMeshHttpConfiguration.getEventMeshEnv(),
+                    eventMeshHttpConfiguration.getEventMeshIDC());
 
-        //validate event
+        // validate event
         if (!ObjectUtils.allNotNull(event, event.getSource(), event.getSpecVersion())
             || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
-        final String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC);
-        final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID);
-        final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS);
+        final String idc = getExtension(event, ProtocolKey.ClientInstanceKey.IDC.getKey());
+        final String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
+        final String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-        //validate event-extension
+        // validate event-extension
         if (StringUtils.isAnyBlank(idc, pid, sys) || !StringUtils.isNumeric(pid)) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
@@ -126,24 +125,24 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         final String topic = event.getSubject();
         final String ttl = getExtension(event, SendMessageRequestBody.TTL);
 
-        //validate body
+        // validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic, ttl) || event.getData() == null) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
-        //do acl check
+        // do acl check
         if (eventMeshHttpConfiguration.isEventMeshServerSecurityEnable()) {
-            final String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME);
-            final String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD);
+            final String user = getExtension(event, ProtocolKey.ClientInstanceKey.USERNAME.getKey());
+            final String pass = getExtension(event, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
             final int requestCode = Integer.parseInt(request.getRequestCode());
 
             try {
                 this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, sys, topic, requestCode);
             } catch (Exception e) {
                 completeResponse(request, asyncContext, sendMessageResponseHeader,
-                        EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageResponseBody.class);
+                    EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageResponseBody.class);
                 if (log.isWarnEnabled()) {
                     log.warn("CLIENT HAS NO PERMISSION,SendSyncMessageProcessor send failed", e);
                 }
@@ -156,7 +155,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         if (!eventMeshHTTPServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR, null, SendMessageResponseBody.class);
             summaryMetrics.recordHTTPDiscard();
             return;
         }
@@ -168,9 +167,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 log.error("Event size exceeds the limit: {}", eventMeshEventSize);
             }
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                    "Event size exceeds the limit: " + eventMeshEventSize,
-                    SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
+                "Event size exceeds the limit: " + eventMeshEventSize,
+                SendMessageResponseBody.class);
             return;
         }
 
@@ -179,7 +178,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         if (!eventMeshProducer.isStarted()) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
@@ -200,7 +199,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 log.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             }
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR, null, SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR, null, SendMessageResponseBody.class);
             return;
         }
 
@@ -226,11 +225,12 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         try {
             eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
+
                 @Override
                 public void onSuccess(final CloudEvent event) {
                     if (log.isInfoEnabled()) {
                         log.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                                + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
+                            + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
                             topic, bizNo, uniqueId);
                     }
 
@@ -283,16 +283,17 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     if (log.isErrorEnabled()) {
                         log.error(
                             "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                                + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
+                                + "|bizSeqNo={}|uniqueId={}",
+                            System.currentTimeMillis() - startTime,
                             topic, bizNo, uniqueId, e);
                     }
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {
             completeResponse(request, asyncContext, sendMessageResponseHeader,
-                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR,
-                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
-                    SendMessageResponseBody.class);
+                EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR,
+                EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
+                SendMessageResponseBody.class);
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10_000));
             final long endTime = System.currentTimeMillis();
             summaryMetrics.recordSendMsgFailed();

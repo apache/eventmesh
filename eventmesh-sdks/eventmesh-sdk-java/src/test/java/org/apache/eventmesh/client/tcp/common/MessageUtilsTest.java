@@ -29,9 +29,8 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MessageUtilsTest {
 
@@ -40,10 +39,10 @@ public class MessageUtilsTest {
         // Positive Test Case
         UserAgent user = new UserAgent();
         Package msg = MessageUtils.hello(user);
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.HELLO_REQUEST);
-        Assert.assertNotNull(msg.getBody());
-        Assert.assertTrue(msg.getBody() instanceof UserAgent);
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.HELLO_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNotNull(msg.getBody());
+        Assertions.assertTrue(msg.getBody() instanceof UserAgent);
         // Negative Test Case
         user = null;
         try {
@@ -51,7 +50,7 @@ public class MessageUtilsTest {
             msg = MessageUtils.hello(user);
 
         } catch (Exception e) {
-            Assert.assertNull(msg);
+            Assertions.assertNull(msg);
         }
     }
 
@@ -59,36 +58,36 @@ public class MessageUtilsTest {
     public void testHeartBeat() {
         // Positive Test Case
         Package msg = MessageUtils.heartBeat();
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.HEARTBEAT_REQUEST);
-        Assert.assertNull(msg.getBody());
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.HEARTBEAT_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNull(msg.getBody());
         // Negative Test Case
         msg = null;
-        Assert.assertNull(msg);
+        Assertions.assertNull(msg);
     }
 
     @Test
     public void testGoodbye() {
         // Positive Test Case
         Package msg = MessageUtils.goodbye();
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.CLIENT_GOODBYE_REQUEST);
-        Assert.assertNull(msg.getBody());
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.CLIENT_GOODBYE_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNull(msg.getBody());
         // Negative Test Case
         msg = null;
-        Assert.assertNull(msg);
+        Assertions.assertNull(msg);
     }
 
     @Test
     public void testListen() {
         // Positive Test Case
         Package msg = MessageUtils.listen();
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.LISTEN_REQUEST);
-        Assert.assertNull(msg.getBody());
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.LISTEN_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNull(msg.getBody());
         // Negative Test Case
         msg = null;
-        Assert.assertNull(msg);
+        Assertions.assertNull(msg);
     }
 
     @Test
@@ -98,10 +97,10 @@ public class MessageUtilsTest {
         SubscriptionMode subscriptionMode = SubscriptionMode.CLUSTERING;
         SubscriptionType subscriptionType = SubscriptionType.SYNC;
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.SUBSCRIBE_REQUEST);
-        Assert.assertNotNull(msg.getBody());
-        Assert.assertTrue(msg.getBody() instanceof Subscription);
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.SUBSCRIBE_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNotNull(msg.getBody());
+        Assertions.assertTrue(msg.getBody() instanceof Subscription);
         // Negative Test Case
         topic = null;
         subscriptionMode = null;
@@ -111,7 +110,7 @@ public class MessageUtilsTest {
             msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
 
         } catch (Exception e) {
-            Assert.assertNull(msg);
+            Assertions.assertNull(msg);
         }
     }
 
@@ -119,12 +118,12 @@ public class MessageUtilsTest {
     public void testUnsubscribe() {
         // Positive Test Case
         Package msg = MessageUtils.unsubscribe();
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.UNSUBSCRIBE_REQUEST);
-        Assert.assertNull(msg.getBody());
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.UNSUBSCRIBE_REQUEST, msg.getHeader().getCommand());
+        Assertions.assertNull(msg.getBody());
         // Negative Test Case
         msg = null;
-        Assert.assertNull(msg);
+        Assertions.assertNull(msg);
     }
 
     @Test
@@ -135,18 +134,18 @@ public class MessageUtilsTest {
         in.setHeader(header);
         in.setBody("testBody");
         Package msg = MessageUtils.asyncMessageAck(in);
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), Command.ASYNC_MESSAGE_TO_CLIENT_ACK);
-        Assert.assertEquals(msg.getHeader().getSeq(), in.getHeader().getSeq());
-        Assert.assertNotNull(msg.getBody());
-        Assert.assertEquals(msg.getBody(), in.getBody());
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, msg.getHeader().getCommand());
+        Assertions.assertEquals(msg.getHeader().getSeq(), in.getHeader().getSeq());
+        Assertions.assertNotNull(msg.getBody());
+        Assertions.assertEquals(msg.getBody(), in.getBody());
         // Negative Test Case
         in = null;
         msg = null;
         try {
             msg = MessageUtils.asyncMessageAck(in);
         } catch (Exception e) {
-            Assert.assertNull(msg);
+            Assertions.assertNull(msg);
         }
     }
 
@@ -157,11 +156,11 @@ public class MessageUtilsTest {
         eventMeshMessage.setBody("111");
         Command command = Command.ASYNC_MESSAGE_TO_SERVER;
         Package msg = MessageUtils.buildPackage(eventMeshMessage, command);
-        Assert.assertNotNull(msg);
-        Assert.assertEquals(msg.getHeader().getCommand(), command);
-        Assert.assertEquals(msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
-        Assert.assertEquals(msg.getHeader().getProperty(Constants.PROTOCOL_DESC), "tcp");
-        Assert.assertNotNull(msg.getBody());
-        Assert.assertTrue(msg.getBody() instanceof EventMeshMessage);
+        Assertions.assertNotNull(msg);
+        Assertions.assertEquals(msg.getHeader().getCommand(), command);
+        Assertions.assertEquals(EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME, msg.getHeader().getProperty(Constants.PROTOCOL_TYPE));
+        Assertions.assertEquals("tcp", msg.getHeader().getProperty(Constants.PROTOCOL_DESC));
+        Assertions.assertNotNull(msg.getBody());
+        Assertions.assertTrue(msg.getBody() instanceof EventMeshMessage);
     }
 }

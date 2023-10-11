@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.config;
 
-import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpField;
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -160,7 +160,7 @@ public class ConfigService {
         try {
             field = clazz.getDeclaredField(configInfo.getField());
         } catch (NoSuchFieldException e) {
-            field = lookUpField(clazz, configInfo.getField());
+            field = lookUpFieldByParentClass(clazz, configInfo.getField());
             if (field == null) {
                 throw e;
             }

@@ -126,11 +126,11 @@ public class Constants {
 
     public static final String OPERATION_TIMEOUT = "OPERATION_TIMEOUT";
 
-    public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
+    public static final String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
 
-    public static String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+    public static final String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
 
-    public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
+    public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 
     // delimiter define
     public static final String COMMA = ",";
@@ -168,6 +168,13 @@ public class Constants {
     public static final String EMPTY = "";
 
     public static final int SUCCESS_CODE = 200;
+
+    // protocol desc
+    public static final String PROTOCOL_DESC_GRPC_CLOUD_EVENT = "grpc-cloud-event";
+
+    public static final String PROTOCOL_DESC_HTTP = "http";
+
+    public static final String PROTOCOL_DESC_TCP = "tcp";
 
     /**
      * GRPC PROTOCOL

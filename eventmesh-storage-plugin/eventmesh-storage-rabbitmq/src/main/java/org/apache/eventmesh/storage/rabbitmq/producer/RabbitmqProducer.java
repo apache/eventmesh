@@ -118,8 +118,7 @@ public class RabbitmqProducer implements Producer {
                     .topic(cloudEvent.getSubject())
                     .messageId(cloudEvent.getId())
                     .exception(new StorageRuntimeException(ex))
-                    .build()
-            );
+                    .build());
         }
     }
 

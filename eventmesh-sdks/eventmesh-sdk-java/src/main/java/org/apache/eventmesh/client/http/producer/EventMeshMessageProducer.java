@@ -70,17 +70,17 @@ class EventMeshMessageProducer extends AbstractProducerHttpClient<EventMeshMessa
     private RequestParam buildCommonPostParam(final EventMeshMessage message) {
         final RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV.getKey(), eventMeshHttpClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC.getKey(), eventMeshHttpClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), eventMeshHttpClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID.getKey(), eventMeshHttpClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS.getKey(), eventMeshHttpClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.EM_MESSAGE_PROTOCOL)
             .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
-            //default ce version is 1.0
+            // default ce version is 1.0
             .addHeader(ProtocolKey.PROTOCOL_VERSION, SpecVersion.V1.toString())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())

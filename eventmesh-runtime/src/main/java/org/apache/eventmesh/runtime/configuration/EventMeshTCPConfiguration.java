@@ -53,7 +53,7 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "tcp.clientMaxNum")
     private int eventMeshTcpClientMaxNum = 10000;
 
-    //======================================= New add config =================================
+    // ======================================= New add config =================================
 
     @ConfigFiled(field = "global.scheduler")
     private int eventMeshTcpGlobalScheduler = 5;

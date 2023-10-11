@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.rocketmq.source.config;
 
 import lombok.Data;
@@ -28,4 +27,6 @@ public class SourceConnectorConfig {
     private String nameserver;
 
     private String topic;
+
+    private long commitOffsetIntervalMs = 5 * 1000;
 }
