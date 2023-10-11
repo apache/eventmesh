@@ -191,7 +191,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
             default:
                 break;
         }
-        assert response != null && response.getHeader().getCode() == OPStatus.SUCCESS.getCode();
+        if (response != null) {
+            Assertions.assertEquals(OPStatus.SUCCESS.getCode(), response.getHeader().getCode());
+        }
         return response;
     }
 
