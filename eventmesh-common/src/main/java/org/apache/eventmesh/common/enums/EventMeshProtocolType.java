@@ -23,7 +23,7 @@ public enum EventMeshProtocolType {
     EVENT_MESH_MESSAGE("eventmeshmessage"),
     OPEN_MESSAGE("openmessage");
 
-    private final String name;
+    private String name;
 
     EventMeshProtocolType(String name) {
         this.name = name;

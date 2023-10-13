@@ -98,9 +98,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         addSubscription(subscriptionItems, url);
 
-        final CloudEvent subscription =
-            EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
-                url, subscriptionItems);
+        final CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
+            url, subscriptionItems);
         try {
             CloudEvent response = consumerClient.subscribe(subscription);
             if (log.isInfoEnabled()) {
@@ -129,8 +128,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         addSubscription(subscriptionItems, SDK_STREAM_URL);
 
-        CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig,
-            EventMeshProtocolType.EVENT_MESH_MESSAGE, null, subscriptionItems);
+        CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
+            subscriptionItems);
         synchronized (this) {
             if (subStreamHandler == null) {
                 subStreamHandler = new SubStreamHandler<>(consumerAsyncClient, clientConfig, listener);
@@ -158,9 +157,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         removeSubscription(subscriptionItems);
 
-        final CloudEvent cloudEvent =
-            EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
-                subscriptionItems);
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
+            subscriptionItems);
         try {
             final CloudEvent response = consumerClient.unsubscribe(cloudEvent);
             if (log.isInfoEnabled()) {
@@ -185,9 +183,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         removeSubscription(subscriptionItems);
 
-        final CloudEvent cloudEvent =
-            EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
-                subscriptionItems);
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
+            subscriptionItems);
 
         try {
             final CloudEvent response = consumerClient.unsubscribe(cloudEvent);
@@ -273,9 +270,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         subscriptionGroup.forEach((url, items) -> {
             // Subscription subscription = buildSubscription(items, url);
-            CloudEvent subscription =
-                EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
-                    items);
+            CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
+                items);
             subStreamHandler.sendSubscription(subscription);
         });
     }

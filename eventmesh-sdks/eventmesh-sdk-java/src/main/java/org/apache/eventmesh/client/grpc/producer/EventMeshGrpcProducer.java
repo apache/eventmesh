@@ -18,11 +18,11 @@
 package org.apache.eventmesh.client.grpc.producer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.support.Producer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-public class EventMeshGrpcProducer implements Producer, AutoCloseable {
+public class EventMeshGrpcProducer implements AutoCloseable {
 
     private static final String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
 
@@ -59,47 +59,44 @@ public class EventMeshGrpcProducer implements Producer, AutoCloseable {
         this.eventMeshMessageProducer = new EventMeshMessageProducer(clientConfig, publisherClient);
     }
 
-    @Override
-    public <T> void publish(T message) {
+    public <T> Response publish(T message) {
         if (log.isInfoEnabled()) {
             log.info("Publish message " + message.toString());
         }
         if (message instanceof CloudEvent) {
-            cloudEventProducer.publish((CloudEvent) message);
+            return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
-            eventMeshMessageProducer.publish((EventMeshMessage) message);
+            return eventMeshMessageProducer.publish((EventMeshMessage) message);
         } else {
             throw new IllegalArgumentException("Not support message " + message.getClass().getName());
         }
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public <T> void publish(List<T> messageList) {
+    public <T> Response publish(List<T> messageList) {
         if (log.isInfoEnabled()) {
             log.info("BatchPublish message :{}", messageList);
         }
 
         if (CollectionUtils.isEmpty(messageList)) {
-            return;
+            return null;
         }
 
         T target = messageList.get(0);
         if (target instanceof CloudEvent) {
-            cloudEventProducer.publish((List<CloudEvent>) messageList);
+            return cloudEventProducer.publish((List<CloudEvent>) messageList);
         } else if (target instanceof EventMeshMessage) {
-            eventMeshMessageProducer.publish((List<EventMeshMessage>) messageList);
+            return eventMeshMessageProducer.publish((List<EventMeshMessage>) messageList);
         } else {
             throw new IllegalArgumentException("Not support message " + target.getClass().getName());
         }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T request(final T message, final long timeout) {
+    public <T> T requestReply(final T message, final long timeout) {
 
         if (message instanceof CloudEvent) {
-            return (T) cloudEventProducer.requestReply((CloudEvent) message, timeout);
+            CloudEvent cloudEvent = cloudEventProducer.requestReply((CloudEvent) message, timeout);
+            return (T) cloudEvent;
         } else if (message instanceof EventMeshMessage) {
             return (T) eventMeshMessageProducer.requestReply((EventMeshMessage) message, timeout);
         } else {

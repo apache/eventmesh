@@ -18,7 +18,6 @@
 package org.apache.eventmesh.client.http.producer;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.client.support.Producer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
@@ -28,64 +27,62 @@ import io.openmessaging.api.Message;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshHttpProducer implements Producer, AutoCloseable {
+public class EventMeshHttpProducer implements AutoCloseable {
 
-    private final EventMeshMessageProducer eventMeshMessageProducerDelegate;
-    private final CloudEventProducer cloudEventProducerDelegate;
-    private final OpenMessageProducer openMessageProducerDelegate;
+    private final EventMeshMessageProducer eventMeshMessageProducer;
+    private final CloudEventProducer cloudEventProducer;
+    private final OpenMessageProducer openMessageProducer;
 
-    public EventMeshHttpProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) {
-        this.cloudEventProducerDelegate = new CloudEventProducer(eventMeshHttpClientConfig);
-        this.eventMeshMessageProducerDelegate = new EventMeshMessageProducer(eventMeshHttpClientConfig);
-        this.openMessageProducerDelegate = new OpenMessageProducer(eventMeshHttpClientConfig);
+    public EventMeshHttpProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        this.cloudEventProducer = new CloudEventProducer(eventMeshHttpClientConfig);
+        this.eventMeshMessageProducer = new EventMeshMessageProducer(eventMeshHttpClientConfig);
+        this.openMessageProducer = new OpenMessageProducer(eventMeshHttpClientConfig);
     }
 
-    @Override
-    public <T> void publish(T message) {
-        if (message instanceof EventMeshMessage) {
-            eventMeshMessageProducerDelegate.publish((EventMeshMessage) message);
-        } else if (message instanceof CloudEvent) {
-            cloudEventProducerDelegate.publish((CloudEvent) message);
-        } else if (message instanceof Message) {
-            openMessageProducerDelegate.publish((Message) message);
-        } else {
-            throw new IllegalArgumentException("Not support message " + message.getClass().getName());
-        }
+    public void publish(final EventMeshMessage message) throws EventMeshException {
+        eventMeshMessageProducer.publish(message);
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T request(T message, long timeout) {
-        if (message instanceof EventMeshMessage) {
-            return (T) eventMeshMessageProducerDelegate.request((EventMeshMessage) message, timeout);
-        } else if (message instanceof CloudEvent) {
-            return (T) cloudEventProducerDelegate.request((CloudEvent) message, timeout);
-        } else if (message instanceof Message) {
-            return (T) openMessageProducerDelegate.request((Message) message, timeout);
-        } else {
-            throw new IllegalArgumentException("Not support message " + message.getClass().getName());
-        }
+    public void publish(final CloudEvent cloudEvent) throws EventMeshException {
+        cloudEventProducer.publish(cloudEvent);
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> void request(T message, RRCallback<T> callback, long timeout) {
-        if (message instanceof EventMeshMessage) {
-            eventMeshMessageProducerDelegate.request((EventMeshMessage) message, (RRCallback<EventMeshMessage>) callback, timeout);
-        } else if (message instanceof CloudEvent) {
-            cloudEventProducerDelegate.request((CloudEvent) message, (RRCallback<CloudEvent>) callback, timeout);
-        } else if (message instanceof Message) {
-            openMessageProducerDelegate.request((Message) message, (RRCallback<Message>) callback, timeout);
-        } else {
-            throw new IllegalArgumentException("Not support message " + message.getClass().getName());
-        }
+    public void publish(final Message openMessage) throws EventMeshException {
+        openMessageProducer.publish(openMessage);
+    }
+
+    public EventMeshMessage request(final EventMeshMessage message, final long timeout) throws EventMeshException {
+        return eventMeshMessageProducer.request(message, timeout);
+    }
+
+    public CloudEvent request(final CloudEvent cloudEvent, final long timeout) throws EventMeshException {
+        return cloudEventProducer.request(cloudEvent, timeout);
+    }
+
+    public Message request(final Message openMessage, final long timeout) throws EventMeshException {
+        return openMessageProducer.request(openMessage, timeout);
+    }
+
+    public void request(final EventMeshMessage message, final RRCallback<EventMeshMessage> rrCallback, final long timeout)
+        throws EventMeshException {
+        eventMeshMessageProducer.request(message, rrCallback, timeout);
+    }
+
+    public void request(final CloudEvent cloudEvent, final RRCallback<CloudEvent> rrCallback, final long timeout)
+        throws EventMeshException {
+        cloudEventProducer.request(cloudEvent, rrCallback, timeout);
+    }
+
+    public void request(final Message openMessage, final RRCallback<Message> rrCallback, final long timeout)
+        throws EventMeshException {
+        openMessageProducer.request(openMessage, rrCallback, timeout);
     }
 
     @Override
     public void close() throws EventMeshException {
-        try (final EventMeshMessageProducer ignored = eventMeshMessageProducerDelegate;
-            final OpenMessageProducer ignored1 = openMessageProducerDelegate;
-            final CloudEventProducer ignored2 = cloudEventProducerDelegate) {
+        try (final EventMeshMessageProducer ignored = eventMeshMessageProducer;
+            final OpenMessageProducer ignored1 = openMessageProducer;
+            final CloudEventProducer ignored2 = cloudEventProducer) {
             log.info("Close producer");
         }
     }
