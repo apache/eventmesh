@@ -49,11 +49,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubClientImpl extends TCPClient implements SubClient {
 
-    private transient UserAgent userAgent;
+    private final transient UserAgent userAgent;
 
     private transient ReceiveMsgHook callback;
 
-    private transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+    private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
 
     private transient ScheduledFuture<?> task;
 
@@ -96,23 +96,19 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public void heartbeat() throws Exception {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    if (!isActive()) {
-                        SubClientImpl.this.reconnect();
-                    }
-                    Package msg = MessageUtils.heartBeat();
-                    if (log.isDebugEnabled()) {
-                        log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
-                            msg.getHeader().getCommand(), msg);
-                    }
-                    SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-                } catch (Exception e) {
-                    // ignore
+        task = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!isActive()) {
+                    SubClientImpl.this.reconnect();
                 }
+                Package msg = MessageUtils.heartBeat();
+                if (log.isDebugEnabled()) {
+                    log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                        msg.getHeader().getCommand(), msg);
+                }
+                SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            } catch (Exception e) {
+                // ignore
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
@@ -171,26 +167,24 @@ public class SubClientImpl extends TCPClient implements SubClient {
         Package response = super.io(request, timeout);
         switch (request.getHeader().getCommand()) {
             case HELLO_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.HELLO_RESPONSE);
+                Assertions.assertEquals(Command.HELLO_RESPONSE, response.getHeader().getCommand());
                 break;
             case HEARTBEAT_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.HEARTBEAT_RESPONSE);
+                Assertions.assertEquals(Command.HEARTBEAT_RESPONSE, response.getHeader().getCommand());
                 break;
             case LISTEN_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.LISTEN_RESPONSE);
+                Assertions.assertEquals(Command.LISTEN_RESPONSE, response.getHeader().getCommand());
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.CLIENT_GOODBYE_RESPONSE);
+                Assertions.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, response.getHeader().getCommand());
                 break;
             case SUBSCRIBE_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.SUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(Command.SUBSCRIBE_RESPONSE, response.getHeader().getCommand());
                 break;
             case UNSUBSCRIBE_REQUEST:
-                Assertions.assertEquals(response.getHeader().getCommand(), Command.UNSUBSCRIBE_RESPONSE);
+                Assertions.assertEquals(Command.UNSUBSCRIBE_RESPONSE, response.getHeader().getCommand());
                 break;
             case SYS_LOG_TO_LOGSERVER:
-                Assertions.assertNull(response);
-                break;
             case TRACE_LOG_TO_LOGSERVER:
                 Assertions.assertNull(response);
                 break;
@@ -198,7 +192,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 break;
         }
         if (response != null) {
-            assert response.getHeader().getCode() == OPStatus.SUCCESS.getCode();
+            Assertions.assertEquals(OPStatus.SUCCESS.getCode(), response.getHeader().getCode());
         }
         return response;
     }
