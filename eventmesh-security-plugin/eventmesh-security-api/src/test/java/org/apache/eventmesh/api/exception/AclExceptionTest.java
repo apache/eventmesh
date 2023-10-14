@@ -24,23 +24,13 @@ public class AclExceptionTest {
 
     @Test
     public void testConstructWithMsg() {
-        try {
-            new AclException("test");
-
-            new AclException(null);
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> new AclException("test"));
+        Assertions.assertDoesNotThrow(() -> new AclException(null));
     }
 
     @Test
     public void testConstructWithMsgAndExption() {
-        try {
-            new AclException("test", new Exception("test1"));
-
-            new AclException(null, null);
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> new AclException("test", new Exception("test1")));
+        Assertions.assertDoesNotThrow(() -> new AclException(null, null));
     }
 }

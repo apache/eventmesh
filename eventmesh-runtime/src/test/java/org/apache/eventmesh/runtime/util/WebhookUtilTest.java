@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 public class WebhookUtilTest {
 
     @Test
-    public void testObtainDeliveryAgreement() {
+    public void testObtainDeliveryAgreement() throws Exception {
         // normal case
         try (CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
@@ -54,15 +54,8 @@ public class WebhookUtilTest {
 
             // abnormal case
             Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
-            try {
-                Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"),
-                    "when throw exception ,default return true");
-            } catch (RuntimeException e) {
-                Assertions.fail(e.getMessage());
-            }
-
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
+            Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"),
+                "when throw exception ,default return true");
         }
     }
 

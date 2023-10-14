@@ -95,24 +95,14 @@ public class EventMeshCloudEventBuilderTest {
         io.cloudevents.CloudEvent event =
             CloudEventBuilder.v1().withType("eventmesh").withSource(URI.create("/")).withId(id).build();
         EventMeshMessage meshMessage = EventMeshMessage.builder().build();
-        Exception exception = null;
-        try {
-            EventMeshCloudEventBuilder.buildEventMeshCloudEvent(event, clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
-        } catch (ClassCastException e) {
-            exception = e;
-        }
-        Assertions.assertNotNull(exception);
+        Assertions.assertThrows(Exception.class,
+            () -> EventMeshCloudEventBuilder.buildEventMeshCloudEvent(event, clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE));
         CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(event, clientConfig, EventMeshProtocolType.CLOUD_EVENTS);
         Assertions.assertNotNull(cloudEvent);
         Assertions.assertEquals("eventmesh", cloudEvent.getType());
         Assertions.assertEquals(id, cloudEvent.getId());
-        Exception exception1 = null;
-        try {
-            EventMeshCloudEventBuilder.buildEventMeshCloudEvent(meshMessage, clientConfig, EventMeshProtocolType.CLOUD_EVENTS);
-        } catch (ClassCastException e) {
-            exception1 = e;
-        }
-        Assertions.assertNotNull(exception1);
+        Assertions.assertThrows(Exception.class,
+            () -> EventMeshCloudEventBuilder.buildEventMeshCloudEvent(meshMessage, clientConfig, EventMeshProtocolType.CLOUD_EVENTS));
         EventMeshMessage meshMessage1 = EventMeshMessage.builder().uniqueId(id).build();
         CloudEvent cloudEvent1 = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(meshMessage1, clientConfig,
             EventMeshProtocolType.EVENT_MESH_MESSAGE);

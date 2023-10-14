@@ -167,13 +167,9 @@ public class EventMeshUtilTest {
 
     @Test
     public void testPrintState() {
-        try {
-            ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
-                .createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
-            EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
+        ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
+            .createScheduledExecutor(5, new EventMeshThreadFactory("proxy-rebalance-sch", true));
+        Assertions.assertDoesNotThrow(() -> EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler));
     }
 
     @Test
