@@ -15,27 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.openconnect.api.source;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+/**
+ * SPI interface for source connector creation.
+ */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface SourceCreateService {
 
-    private String respCode;
-
-    private String respMsg;
-
-    private String respTime;
-
+    Source create();
 }

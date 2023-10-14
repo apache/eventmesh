@@ -15,27 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.source.connector;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
+import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
+import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+public class SpringSourceConnectorCreateServiceImpl implements SourceCreateService {
 
-    private String respCode;
-
-    private String respMsg;
-
-    private String respTime;
-
+    @Override
+    public Source create() {
+        if (SpringApplicationContextHolder.isStarted()) {
+            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
+        }
+        return null;
+    }
 }

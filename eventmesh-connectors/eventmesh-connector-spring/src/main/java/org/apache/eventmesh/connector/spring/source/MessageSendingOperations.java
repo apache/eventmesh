@@ -15,27 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.source;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+/**
+ * Operations for sending messages.
+ */
+public interface MessageSendingOperations {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
-
-    private String respCode;
-
-    private String respMsg;
-
-    private String respTime;
+    void send(Object message);
 
 }
