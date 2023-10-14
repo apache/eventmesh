@@ -59,38 +59,22 @@ public class AuthServiceTest {
 
     @Test
     public void testInit() {
-        try {
-            service.init();
-        } catch (AuthException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::init);
     }
 
     @Test
     public void testStart() {
-        try {
-            service.start();
-        } catch (AuthException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::start);
     }
 
     @Test
     public void testShutdown() {
-        try {
-            service.shutdown();
-        } catch (AuthException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::shutdown);
     }
 
     @Test
     public void testGetAuthParams() {
-        try {
-            Map<String, String> authParams = service.getAuthParams();
-            Assertions.assertNull(authParams);
-        } catch (AuthException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Map<String, String> authParams = service.getAuthParams();
+        Assertions.assertNull(authParams);
     }
 }

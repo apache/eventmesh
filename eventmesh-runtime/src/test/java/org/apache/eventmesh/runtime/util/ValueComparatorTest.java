@@ -30,13 +30,11 @@ import org.junit.jupiter.api.Test;
 public class ValueComparatorTest {
 
     @Test
-    public void testSerializeOrderedCollection() {
+    public void testSerializeOrderedCollection() throws IOException {
         Map<Map.Entry<String, Integer>, Integer> map = new TreeMap<>(new ValueComparator());
         try (OutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-            oos.writeObject(map);
-        } catch (IOException e) {
-            Assertions.fail();
+            Assertions.assertDoesNotThrow(() -> oos.writeObject(map));
         }
     }
 

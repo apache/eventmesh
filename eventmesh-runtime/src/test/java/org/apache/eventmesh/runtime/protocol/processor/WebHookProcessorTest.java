@@ -76,20 +76,16 @@ public class WebHookProcessorTest {
 
     @Test
     public void testHandler() {
-        try {
-            WebHookProcessor processor = new WebHookProcessor();
-            processor.setWebHookController(controller);
-            processor.handler(buildMockWebhookRequest());
+        WebHookProcessor processor = new WebHookProcessor();
+        processor.setWebHookController(controller);
+        processor.handler(buildMockWebhookRequest());
 
-            CloudEvent msgSendToMq = captor.getValue();
-            Assertions.assertNotNull(msgSendToMq);
-            Assertions.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
-            Assertions.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
-            Assertions.assertEquals("github.ForkEvent", msgSendToMq.getType());
-            Assertions.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
+        CloudEvent msgSendToMq = captor.getValue();
+        Assertions.assertNotNull(msgSendToMq);
+        Assertions.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
+        Assertions.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
+        Assertions.assertEquals("github.ForkEvent", msgSendToMq.getType());
+        Assertions.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
     }
 
     private HttpRequest buildMockWebhookRequest() {

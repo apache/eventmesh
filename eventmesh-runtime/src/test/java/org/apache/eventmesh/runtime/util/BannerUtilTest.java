@@ -24,10 +24,6 @@ public class BannerUtilTest {
 
     @Test
     public void testGenerateBanner() {
-        try {
-            BannerUtil.generateBanner();
-        } catch (Exception e) {
-            Assertions.fail("BannerUtil.generateBanner() test failed");
-        }
+        Assertions.assertDoesNotThrow(BannerUtil::generateBanner);
     }
 }

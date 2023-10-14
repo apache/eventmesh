@@ -38,34 +38,20 @@ public class AuthHttpBasicServiceTest {
 
     @Test
     public void testInitAndGetAuthParams() {
-        try {
-            service.init();
-            Map<String, String> authParams = service.getAuthParams();
-            String authorization = authParams.get("Authorization");
-            Assertions.assertNotNull(authorization);
-            Assertions.assertTrue(authorization.length() > 5);
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
+        service.init();
+        Map<String, String> authParams = service.getAuthParams();
+        String authorization = authParams.get("Authorization");
+        Assertions.assertNotNull(authorization);
+        Assertions.assertTrue(authorization.length() > 5);
     }
 
     @Test
     public void testStart() {
-        try {
-            service.start();
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
-
+        Assertions.assertDoesNotThrow(service::start);
     }
 
     @Test
     public void testShutdown() {
-        try {
-            service.shutdown();
-        } catch (Exception e) {
-            Assertions.fail(e.getMessage());
-        }
-
+        Assertions.assertDoesNotThrow(service::shutdown);
     }
 }
