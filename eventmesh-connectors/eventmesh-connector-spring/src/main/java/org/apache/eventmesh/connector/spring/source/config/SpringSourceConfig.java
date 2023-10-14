@@ -15,27 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.connector.spring.source.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import org.apache.eventmesh.connector.spring.source.connector.SourceConnectorConfig;
+import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-@Builder
-@ToString
-public class Response {
+@EqualsAndHashCode(callSuper = true)
+public class SpringSourceConfig extends SourceConfig {
 
-    private String respCode;
-
-    private String respMsg;
-
-    private String respTime;
-
+    private SourceConnectorConfig sourceConnectorConfig;
 }

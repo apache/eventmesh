@@ -40,6 +40,7 @@ include 'eventmesh-connectors:eventmesh-connector-pravega'
 include 'eventmesh-connectors:eventmesh-connector-knative'
 include 'eventmesh-connectors:eventmesh-connector-jdbc'
 include 'eventmesh-connectors:eventmesh-connector-file'
+include 'eventmesh-connectors:eventmesh-connector-spring'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
@@ -88,3 +89,4 @@ include 'eventmesh-webhook'
 include 'eventmesh-webhook:eventmesh-webhook-api'
 include 'eventmesh-webhook:eventmesh-webhook-admin'
 include 'eventmesh-webhook:eventmesh-webhook-receive'
+
