@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.grpc.producer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -94,7 +95,8 @@ public class EventMeshGrpcProducerTest {
     @Test
     public void testPublishWithException() {
         try {
-            producer.publish(defaultEventMeshMessageBuilder().content("mockExceptionContent").build());
+            producer.publish("Not a supported message");
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
         } catch (Exception e) {
             assertThat(e).isNotNull();
         }
