@@ -60,31 +60,31 @@ public class EventMeshServerTest {
     }
 
     private void assertTCPConfig(EventMeshTCPConfiguration config) {
-        Assertions.assertEquals(816 , config.getEventMeshTcpServerPort());
-        Assertions.assertEquals(1816 , config.getEventMeshTcpIdleAllSeconds());
-        Assertions.assertEquals(2816 , config.getEventMeshTcpIdleWriteSeconds());
-        Assertions.assertEquals(3816 , config.getEventMeshTcpIdleReadSeconds());
-        Assertions.assertEquals(Integer.valueOf(4816) , config.getEventMeshTcpMsgReqnumPerSecond());
-        Assertions.assertEquals(5816 , config.getEventMeshTcpClientMaxNum());
-        Assertions.assertEquals(6816 , config.getEventMeshTcpGlobalScheduler());
-        Assertions.assertEquals(7816 , config.getEventMeshTcpTaskHandleExecutorPoolSize());
-        Assertions.assertEquals(8816 , config.getEventMeshTcpMsgDownStreamExecutorPoolSize());
-        Assertions.assertEquals(1816 , config.getEventMeshTcpSessionExpiredInMills());
-        Assertions.assertEquals(11816 , config.getEventMeshTcpSessionUpstreamBufferSize());
-        Assertions.assertEquals(12816 , config.getEventMeshTcpMsgAsyncRetryTimes());
-        Assertions.assertEquals(13816 , config.getEventMeshTcpMsgSyncRetryTimes());
-        Assertions.assertEquals(14816 , config.getEventMeshTcpMsgRetrySyncDelayInMills());
-        Assertions.assertEquals(15816 , config.getEventMeshTcpMsgRetryAsyncDelayInMills());
-        Assertions.assertEquals(16816 , config.getEventMeshTcpMsgRetryQueueSize());
-        Assertions.assertEquals(Integer.valueOf(17816) , config.getEventMeshTcpRebalanceIntervalInMills());
-        Assertions.assertEquals(18816 , config.getEventMeshServerAdminPort());
-        Assertions.assertEquals(Boolean.TRUE , config.isEventMeshTcpSendBackEnabled());
-        Assertions.assertEquals(3 , config.getEventMeshTcpSendBackMaxTimes());
-        Assertions.assertEquals(21816 , config.getEventMeshTcpPushFailIsolateTimeInMills());
-        Assertions.assertEquals(22816 , config.getGracefulShutdownSleepIntervalInMills());
-        Assertions.assertEquals(23816 , config.getSleepIntervalInRebalanceRedirectMills());
-        Assertions.assertEquals(22816 , config.getEventMeshEventSize());
-        Assertions.assertEquals(23816 , config.getEventMeshEventBatchSize());
+        Assertions.assertEquals(816, config.getEventMeshTcpServerPort());
+        Assertions.assertEquals(1816, config.getEventMeshTcpIdleAllSeconds());
+        Assertions.assertEquals(2816, config.getEventMeshTcpIdleWriteSeconds());
+        Assertions.assertEquals(3816, config.getEventMeshTcpIdleReadSeconds());
+        Assertions.assertEquals(Integer.valueOf(4816), config.getEventMeshTcpMsgReqnumPerSecond());
+        Assertions.assertEquals(5816, config.getEventMeshTcpClientMaxNum());
+        Assertions.assertEquals(6816, config.getEventMeshTcpGlobalScheduler());
+        Assertions.assertEquals(7816, config.getEventMeshTcpTaskHandleExecutorPoolSize());
+        Assertions.assertEquals(8816, config.getEventMeshTcpMsgDownStreamExecutorPoolSize());
+        Assertions.assertEquals(1816, config.getEventMeshTcpSessionExpiredInMills());
+        Assertions.assertEquals(11816, config.getEventMeshTcpSessionUpstreamBufferSize());
+        Assertions.assertEquals(12816, config.getEventMeshTcpMsgAsyncRetryTimes());
+        Assertions.assertEquals(13816, config.getEventMeshTcpMsgSyncRetryTimes());
+        Assertions.assertEquals(14816, config.getEventMeshTcpMsgRetrySyncDelayInMills());
+        Assertions.assertEquals(15816, config.getEventMeshTcpMsgRetryAsyncDelayInMills());
+        Assertions.assertEquals(16816, config.getEventMeshTcpMsgRetryQueueSize());
+        Assertions.assertEquals(Integer.valueOf(17816), config.getEventMeshTcpRebalanceIntervalInMills());
+        Assertions.assertEquals(18816, config.getEventMeshServerAdminPort());
+        Assertions.assertEquals(Boolean.TRUE, config.isEventMeshTcpSendBackEnabled());
+        Assertions.assertEquals(3, config.getEventMeshTcpSendBackMaxTimes());
+        Assertions.assertEquals(21816, config.getEventMeshTcpPushFailIsolateTimeInMills());
+        Assertions.assertEquals(22816, config.getGracefulShutdownSleepIntervalInMills());
+        Assertions.assertEquals(23816, config.getSleepIntervalInRebalanceRedirectMills());
+        Assertions.assertEquals(22816, config.getEventMeshEventSize());
+        Assertions.assertEquals(23816, config.getEventMeshEventBatchSize());
     }
 
     private void assertCommonConfig(CommonConfiguration config) {
