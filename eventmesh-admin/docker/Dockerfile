@@ -17,6 +17,6 @@
 
 FROM openjdk:8-jre-alpine
 VOLUME /tmp
-COPY build/libs/eventmesh-console-*.jar eventmesh-console.jar
+COPY build/libs/eventmesh-admin-*.jar eventmesh-admin.jar
 ENV JAVA_OPTS=""
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /eventmesh-console.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /eventmesh-admin.jar"]
