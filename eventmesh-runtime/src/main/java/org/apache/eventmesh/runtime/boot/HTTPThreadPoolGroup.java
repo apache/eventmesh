@@ -33,7 +33,7 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
     private ThreadPoolExecutor replyMsgExecutor;
     private ThreadPoolExecutor pushMsgExecutor;
     private ThreadPoolExecutor clientManageExecutor;
-    private ThreadPoolExecutor adminExecutor;
+    private ThreadPoolExecutor runtimeAdminExecutor;
     private ThreadPoolExecutor webhookExecutor;
 
     public HTTPThreadPoolGroup(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -73,11 +73,11 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
             new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
             "eventMesh-clientManage", true);
 
-        adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+        // The runtimeAdminExecutor here is for the runtime.admin package and has nothing to do with the eventmesh-admin module.
+        runtimeAdminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
             eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
-            new LinkedBlockingQueue<>(50), "eventMesh-admin",
-            true);
+            new LinkedBlockingQueue<>(50), "eventMesh-runtime-admin", true);
 
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
@@ -96,8 +96,8 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
         if (batchMsgExecutor != null) {
             batchMsgExecutor.shutdown();
         }
-        if (adminExecutor != null) {
-            adminExecutor.shutdown();
+        if (runtimeAdminExecutor != null) {
+            runtimeAdminExecutor.shutdown();
         }
         if (clientManageExecutor != null) {
             clientManageExecutor.shutdown();
@@ -140,8 +140,8 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
         return clientManageExecutor;
     }
 
-    public ThreadPoolExecutor getAdminExecutor() {
-        return adminExecutor;
+    public ThreadPoolExecutor getRuntimeAdminExecutor() {
+        return runtimeAdminExecutor;
     }
 
     public ThreadPoolExecutor getWebhookExecutor() {
