@@ -20,9 +20,9 @@ pubSubConfig:
     subject: TEST-TOPIC-SPRING
     idc: FT
     env: PRD
-    group: springSource
+    group: springSink
     appId: 5033
-    userName: springSourceUser
+    userName: springSinkUser
     passWord: springPassWord
 connectorConfig:
-    connectorName: springSource
+    connectorName: springSink

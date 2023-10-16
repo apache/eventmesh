@@ -25,7 +25,6 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
