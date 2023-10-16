@@ -17,24 +17,26 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.exception.JsonException;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import com.jayway.jsonpath.*;
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-
-import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.exception.JsonException;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.InvalidPathException;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.internal.path.CompiledPath;
 import com.jayway.jsonpath.internal.path.PathCompiler;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 
 public class JsonPathUtils {
-
     public static final String JSONPATH_SPLIT = "\\.";
     public static final String JSONPATH_PREFIX = "$";
     public static final String JSONPATH_PREFIX_WITH_POINT = "$.";
@@ -50,24 +52,9 @@ public class JsonPathUtils {
             JsonNode jsonNode = STRICT_OBJECT_MAPPER.readTree(jsonString);
             return jsonNode.isObject() && jsonNode.isEmpty();
         } catch (Exception e) {
-            throw new JsonException("INVALID_JSON_STRING",e);
+            throw new JsonException("INVALID_JSON_STRING", e);
         }
     }
-
-    public static JsonNode STRING_JSON(String json) throws JsonException {
-        try {
-            JsonParser parser = STRICT_OBJECT_MAPPER.getFactory().createParser(json);
-            JsonNode result = STRICT_OBJECT_MAPPER.readTree(parser);
-            if (parser.nextToken() != null) {
-                // Check if there are more tokens after reading the root object
-                throw new JsonException("Additional tokens found after parsing: " + json);
-            }
-            return result;
-        } catch (Exception e) {
-            throw new JsonException("Json is not valid in strict way: " + json, e);
-        }
-    }
-
 
     public static JsonNode parseStrict(String json) throws JsonException {
         try {
@@ -109,7 +96,7 @@ public class JsonPathUtils {
         return compiledPath.isDefinite();
     }
 
-    public static String getJsonPathValue(String content, String jsonPath){
+    public static String getJsonPathValue(String content, String jsonPath) {
         if (Strings.isNullOrEmpty(content) || Strings.isNullOrEmpty(jsonPath)) {
             throw new EventMeshException("invalid config" + jsonPath);
         }
@@ -117,7 +104,6 @@ public class JsonPathUtils {
         try {
             obj = JsonPath.using(JSON_PATH_CONFIG).parse(content).read(jsonPath, JsonNode.class);
         } catch (InvalidPathException invalidPathException) {
-            System.out.println("111");
             return null;
         }
         return obj.toString();
@@ -127,28 +113,18 @@ public class JsonPathUtils {
         return STRICT_OBJECT_MAPPER.readValue(object, JsonNode.class);
     }
 
-    public static String matchJsonPathValueWithString(String jsonString, String jsonPath) throws JsonProcessingException {
-        if (Strings.isNullOrEmpty(jsonString) || Strings.isNullOrEmpty(jsonPath)) {
-            throw new EventMeshException("invalid config" + jsonPath);
-        }
-        Object obj = null;
-        try {
-            final ReadContext readContext = JsonPath.using(JSON_PATH_CONFIG).parse(jsonString);
-            obj = readContext.read(jsonPath);
-        } catch (InvalidPathException invalidPathException) {
-            return null;
-        }
+    public static String matchJsonPathValueWithString(String jsonString, String jsonPath) {
+        Object obj = jsonPathParse(jsonString, jsonPath);
 
-        if(obj == null){
+        if (obj == null) {
             return "null";
         }
 
         return obj.toString();
-
     }
 
-    public static String matchJsonPathValue(String jsonString, String jsonPath) throws JsonProcessingException {
-        if (Strings.isNullOrEmpty(jsonString) || Strings.isNullOrEmpty(jsonPath)) {
+    public static Object jsonPathParse(String jsonString, String jsonPath) {
+        if (Strings.isNullOrEmpty(jsonPath) || Strings.isNullOrEmpty(jsonString)) {
             throw new EventMeshException("invalid config" + jsonPath);
         }
         Object obj = null;
@@ -158,14 +134,12 @@ public class JsonPathUtils {
         } catch (InvalidPathException invalidPathException) {
             return null;
         }
+        return obj;
+    }
 
+    public static String matchJsonPathValue(String jsonString, String jsonPath) throws JsonProcessingException {
+        Object obj = jsonPathParse(jsonString, jsonPath);
         return STRICT_OBJECT_MAPPER.writer().writeValueAsString(obj);
-//        if(obj instanceof String){
-//            return " \""+ obj.toString() + "\" ";
-//        }else if(obj instanceof ){
-//            return obj.toString();
-//        }
-
     }
 }
 
