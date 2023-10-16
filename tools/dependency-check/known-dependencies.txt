@@ -1,8 +1,10 @@
+accessors-smart-2.4.7.jar
 amqp-client-5.16.0.jar
 animal-sniffer-annotations-1.19.jar
 annotations-4.1.1.4.jar
 annotations-api-6.0.53.jar
 aopalliance-1.0.jar
+asm-9.1.jar
 asm-9.2.jar
 asm-analysis-9.2.jar
 asm-commons-9.2.jar
@@ -37,6 +39,7 @@ commons-digester-2.1.jar
 commons-io-2.11.0.jar
 commons-lang3-3.6.jar
 commons-logging-1.2.jar
+commons-net-3.9.0.jar
 commons-text-1.9.jar
 commons-validator-1.7.jar
 consul-api-1.4.5.jar
@@ -94,6 +97,8 @@ jjwt-jackson-0.11.1.jar
 jna-4.2.2.jar
 jodd-bean-5.1.6.jar
 jodd-core-5.1.6.jar
+json-path-2.7.0.jar
+json-smart-2.4.7.jar
 jsr305-3.0.2.jar
 junit-4.13.2.jar
 kafka-clients-3.0.0.jar
