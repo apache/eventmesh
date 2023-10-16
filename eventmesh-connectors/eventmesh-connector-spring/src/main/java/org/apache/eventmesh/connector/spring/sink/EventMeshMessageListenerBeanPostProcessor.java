@@ -29,7 +29,9 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +50,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshMessageListenerBeanPostProcessor implements ApplicationContextAware,
     CommandLineRunner, BeanPostProcessor {
+
+    private static final String SPRING_SINK = "springSink";
 
     private static final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors() * 2,
@@ -130,7 +134,9 @@ public class EventMeshMessageListenerBeanPostProcessor implements ApplicationCon
             Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
 
         if (springConnectServerConfig.isSinkEnable()) {
-            Application application = new Application();
+            Map<String, String> extensions = new HashMap<>();
+            extensions.put(Application.CREATE_EXTENSION_KEY, SPRING_SINK);
+            Application application = new Application(extensions);
             application.run(SpringSinkConnector.class);
         }
     }

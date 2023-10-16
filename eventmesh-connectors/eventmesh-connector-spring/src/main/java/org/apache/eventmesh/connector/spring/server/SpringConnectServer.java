@@ -23,6 +23,9 @@ import org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnec
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.CommandLineRunner;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +33,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SpringConnectServer implements CommandLineRunner {
 
+    private static final String SPRING_SOURCE = "springSource";
+
     @Override
     public void run(String... args) throws Exception {
         SpringConnectServerConfig springConnectServerConfig = ConfigUtil.parse(SpringConnectServerConfig.class,
             Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
 
         if (springConnectServerConfig.isSourceEnable()) {
-            Application application = new Application();
+            Map<String, String> extensions = new HashMap<>();
+            extensions.put(Application.CREATE_EXTENSION_KEY, SPRING_SOURCE);
+            Application application = new Application(extensions);
             application.run(SpringSourceConnector.class);
         }
     }
