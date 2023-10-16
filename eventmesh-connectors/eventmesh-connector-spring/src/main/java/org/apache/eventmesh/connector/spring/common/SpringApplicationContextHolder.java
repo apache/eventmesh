@@ -17,28 +17,40 @@
 
 package org.apache.eventmesh.connector.spring.common;
 
+import java.lang.annotation.Annotation;
+import java.util.Map;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 public class SpringApplicationContextHolder implements ApplicationContextAware {
 
-    private static ApplicationContext applicationContext;
+    private static ApplicationContext APPLICATION_CONTEXT;
+
+    public static boolean isStarted() {
+        return APPLICATION_CONTEXT != null;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        SpringApplicationContextHolder.applicationContext = applicationContext;
+        APPLICATION_CONTEXT = applicationContext;
+    }
+
+    public static <T> T getBean(Class<T> clazz) {
+        return APPLICATION_CONTEXT.getBean(clazz);
     }
 
     public static Object getBean(String beanName) {
-        return applicationContext.getBean(beanName);
+        return APPLICATION_CONTEXT.getBean(beanName);
     }
 
-    public static Object getBean(Class<?> beanClass) {
-        return applicationContext.getBean(beanClass);
+    public static <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annoClazz) {
+        return APPLICATION_CONTEXT.findAnnotationOnBean(beanName, annoClazz);
     }
 
-    public static boolean isStarted() {
-        return applicationContext != null;
+    public static Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annoClazz) {
+        return APPLICATION_CONTEXT.getBeansWithAnnotation(annoClazz);
     }
+
 }

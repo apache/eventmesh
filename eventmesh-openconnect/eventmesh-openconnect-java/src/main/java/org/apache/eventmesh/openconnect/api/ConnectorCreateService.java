@@ -15,24 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.sink;
+package org.apache.eventmesh.openconnect.api;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-import org.springframework.stereotype.Component;
+/**
+ * SPI interface for connector creation.
+ */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface ConnectorCreateService<T extends Connector> {
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Component
-public @interface EventMeshMessageListener {
-
-    /**
-     * The requestTimeout of client,it is 5s by default.
-     */
-    int requestTimeout() default 5;
+    T create();
 }

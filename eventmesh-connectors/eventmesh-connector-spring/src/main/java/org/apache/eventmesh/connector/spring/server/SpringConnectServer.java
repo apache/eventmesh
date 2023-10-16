@@ -25,6 +25,9 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import org.springframework.boot.CommandLineRunner;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SpringConnectServer implements CommandLineRunner {
 
     @Override

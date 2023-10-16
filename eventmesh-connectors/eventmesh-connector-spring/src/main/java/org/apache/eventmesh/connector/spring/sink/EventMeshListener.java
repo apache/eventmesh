@@ -17,13 +17,22 @@
 
 package org.apache.eventmesh.connector.spring.sink;
 
-import lombok.SneakyThrows;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * EventMesh consumer-sdk interface.
- */
-public interface EventMeshListener<Message> {
+import org.springframework.stereotype.Component;
 
-    @SneakyThrows
-    void onMessage(Message message);
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component
+public @interface EventMeshListener {
+
+    /**
+     * The requestTimeout of client,it is 5s by default.
+     */
+    int requestTimeout() default 5;
 }

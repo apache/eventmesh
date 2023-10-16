@@ -68,4 +68,5 @@ public class EventMeshAutoConfiguration {
     public EventMeshMessageListenerBeanPostProcessor eventMeshMessageListenerBeanPostProcessor() {
         return new EventMeshMessageListenerBeanPostProcessor();
     }
+
 }

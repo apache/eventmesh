@@ -17,25 +17,37 @@
 
 package org.apache.eventmesh.connector.spring.sink;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.spring.config.SpringConnectServerConfig;
 import org.apache.eventmesh.connector.spring.sink.connector.SpringSinkConnector;
+import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.util.ReflectionUtils;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshMessageListenerBeanPostProcessor implements ApplicationContextAware, BeanPostProcessor {
+public class EventMeshMessageListenerBeanPostProcessor implements ApplicationContextAware,
+    CommandLineRunner, BeanPostProcessor {
 
     private static final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors() * 2,
@@ -44,41 +56,82 @@ public class EventMeshMessageListenerBeanPostProcessor implements ApplicationCon
 
     private ApplicationContext applicationContext;
 
+    private List<EventMeshConsumerMetadata> metadataList = new ArrayList<>();
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @SneakyThrows
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Class<?> targetClass = AopUtils.getTargetClass(bean);
-        EventMeshMessageListener annotation = targetClass.getAnnotation(EventMeshMessageListener.class);
-        if (annotation != null) {
-            if (!(bean instanceof EventMeshListener)) {
-                throw new EventMeshException("EventMeshListener interface not implemented.");
+        Class<?> targetClass = AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass();
+        ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
+
+            @Override
+            public void doWith(final Method method) throws IllegalArgumentException, IllegalAccessException {
+                EventMeshListener annotation = AnnotatedElementUtils.findMergedAnnotation(method, EventMeshListener.class);
+                if (annotation == null || method.isBridge()) {
+                    return;
+                }
+                metadataList.add(new EventMeshConsumerMetadata(bean, method, annotation));
             }
-            EventMeshListener listener = (EventMeshListener) bean;
+        });
+        return bean;
+    }
 
+    @Override
+    public void run(String... args) throws Exception {
+        runSinkConnector();
+        metadataList.forEach(metadata -> {
+            Object bean = metadata.getBean();
+            Method method = metadata.getMethod();
+            EventMeshListener annotation = metadata.getAnnotation();
             SpringSinkConnector sinkConnector = applicationContext.getBean(SpringSinkConnector.class);
-
             executor.execute(() -> {
                 ConnectRecord poll;
                 while (sinkConnector.isRunning()) {
                     try {
                         poll = sinkConnector.getQueue().poll(annotation.requestTimeout(), TimeUnit.SECONDS);
                         if (null == poll || null == poll.getData()) {
-                            log.warn("Event is empty.");
                             continue;
                         }
-                        listener.onMessage(poll.getData());
+                        String messageBody = new String((byte[]) poll.getData());
+                        Type[] parameterizedTypes = method.getGenericParameterTypes();
+                        if (parameterizedTypes.length == 0) {
+                            throw new IllegalStateException("There has not any arguments for consumer method.");
+                        }
+                        if (parameterizedTypes.length > 1) {
+                            throw new IllegalStateException("There has more than one arguments for consumer method.");
+                        }
+                        Class<?> rawType;
+                        if (parameterizedTypes[0] instanceof Class) {
+                            rawType = (Class<?>) parameterizedTypes[0];
+                        } else {
+                            throw new IllegalStateException(
+                                "The arguments type for consumer method can't cast to be Class and ParameterizedTypeImpl");
+                        }
+                        if (rawType == String.class) {
+                            metadata.getMethod().invoke(bean, messageBody);
+                        } else {
+                            metadata.getMethod().invoke(bean, JsonUtils.parseObject(messageBody, parameterizedTypes[0]));
+                        }
                     } catch (Exception e) {
                         log.warn("Consume snapshot event error", e);
                     }
                 }
             });
-        }
-        return bean;
+        });
     }
 
+    @SneakyThrows
+    public void runSinkConnector() {
+        SpringConnectServerConfig springConnectServerConfig = ConfigUtil.parse(SpringConnectServerConfig.class,
+            Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
+
+        if (springConnectServerConfig.isSinkEnable()) {
+            Application application = new Application();
+            application.run(SpringSinkConnector.class);
+        }
+    }
 }

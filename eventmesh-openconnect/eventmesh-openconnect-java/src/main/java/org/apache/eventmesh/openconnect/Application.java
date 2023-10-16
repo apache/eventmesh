@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.openconnect;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
@@ -43,8 +45,16 @@ public class Application {
 
         Connector connector = null;
         try {
-            SourceCreateService createService =
-                EventMeshExtensionFactory.getExtension(SourceCreateService.class, SPRING);
+            String spiKey = SPRING;
+            if (isSink(clazz)) {
+                spiKey += Constants.SINK;
+            } else if (isSource(clazz)) {
+                spiKey += Constants.SOURCE;
+            } else {
+                throw new EventMeshException("Connector is invalid.");
+            }
+            ConnectorCreateService createService =
+                EventMeshExtensionFactory.getExtension(ConnectorCreateService.class, spiKey);
             if (createService != null) {
                 connector = createService.create();
             }
