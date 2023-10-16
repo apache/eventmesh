@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.controller;
+package org.apache.eventmesh.admin.controller;
 
-import org.apache.eventmesh.console.service.ConnectionService;
+import org.apache.eventmesh.admin.service.ConnectionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

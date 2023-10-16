@@ -15,13 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.service;
+package org.apache.eventmesh.admin.exception;
 
-/**
- * "Connection" refers to the subscription relationship between connectors.
- * It focuses on the configuration deployed on the source and sink connectors themselves,
- * reported by the connector.
- */
-public interface ConnectionService {
+public class EventMeshAdminException extends RuntimeException {
 
+    private static final long serialVersionUID = 2002022502005456586L;
+
+    public EventMeshAdminException(String message) {
+        super(message);
+    }
+
+    public EventMeshAdminException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public EventMeshAdminException(Throwable cause) {
+        super(cause);
+    }
+
+    public EventMeshAdminException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

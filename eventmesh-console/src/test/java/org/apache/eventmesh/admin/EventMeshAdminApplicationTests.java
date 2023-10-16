@@ -15,29 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.exception;
+package org.apache.eventmesh.admin;
 
-public class EventMeshException extends EventMeshAdminException {
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-    private static final long serialVersionUID = 5648256502005456586L;
+@SpringBootTest
+class EventMeshAdminApplicationTests {
 
-    public EventMeshException(String message) {
-        super(message);
+    @Test
+    void contextLoads() {
     }
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
 }

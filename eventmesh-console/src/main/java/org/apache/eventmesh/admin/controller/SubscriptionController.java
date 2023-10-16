@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.controller;
+package org.apache.eventmesh.admin.controller;
 
-import org.apache.eventmesh.console.dto.SubscriptionResponse;
-import org.apache.eventmesh.console.exception.EventMeshAdminException;
-import org.apache.eventmesh.console.service.SubscriptionService;
+import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.exception.EventMeshAdminException;
+import org.apache.eventmesh.admin.service.SubscriptionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

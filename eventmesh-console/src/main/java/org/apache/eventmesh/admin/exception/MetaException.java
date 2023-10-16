@@ -15,30 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.dto;
+package org.apache.eventmesh.admin.exception;
 
-import org.apache.eventmesh.console.model.SubscriptionInfo;
+public class MetaException extends EventMeshAdminException {
 
-import java.util.List;
+    private static final long serialVersionUID = 6246145526338359773L;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+    public MetaException(String message) {
+        super(message);
+    }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SubscriptionResponse {
-
-    private List<SubscriptionInfo> subscriptionInfos;
-
-    private Integer pages;
-
-    private String message;
-
-    public SubscriptionResponse(String message) {
-        this.message = message;
+    public MetaException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

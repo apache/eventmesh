@@ -15,20 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.config;
+package org.apache.eventmesh.admin.dto;
 
-public class Constants {
+import org.apache.eventmesh.admin.model.SubscriptionInfo;
 
-    // config
-    public static final String ADMIN_PROPS_PREFIX = "eventmesh";
-    public static final String META_TYPE_NACOS = "nacos";
-    public static final String META_TYPE_ETCD = "etcd";
+import java.util.List;
 
-    // Open-API
-    public static final String HTTP_PREFIX = "http://";
-    public static final String HTTPS_PREFIX = "https://";
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    // Nacos
-    public static final String NACOS_LOGIN_API = "/nacos/v1/auth/login";
-    public static final String NACOS_CONFIGS_API = "/nacos/v1/cs/configs";
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SubscriptionResponse {
+
+    private List<SubscriptionInfo> subscriptionInfos;
+
+    private Integer pages;
+
+    private String message;
+
+    public SubscriptionResponse(String message) {
+        this.message = message;
+    }
 }

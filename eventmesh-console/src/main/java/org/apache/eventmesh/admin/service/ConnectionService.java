@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.service.impl;
+package org.apache.eventmesh.admin.service;
 
-import org.apache.eventmesh.console.service.ConnectionService;
-
-import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@Service
-public class EtcdConnectionService implements ConnectionService {
+/**
+ * "Connection" refers to the subscription relationship between connectors.
+ * It focuses on the configuration deployed on the source and sink connectors themselves,
+ * reported by the connector.
+ */
+public interface ConnectionService {
 
 }

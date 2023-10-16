@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.service.impl;
+package org.apache.eventmesh.admin.service.impl;
 
-import org.apache.eventmesh.console.dto.SubscriptionResponse;
-import org.apache.eventmesh.console.service.SubscriptionService;
+import org.apache.eventmesh.admin.service.ConnectionService;
 
 import org.springframework.stereotype.Service;
 
@@ -26,15 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class EtcdSubscriptionService implements SubscriptionService {
+public class EtcdConnectionService implements ConnectionService {
 
-    @Override
-    public String retrieveConfig(String dataId, String group) {
-        return null;
-    }
-
-    @Override
-    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
-        return null;
-    }
 }

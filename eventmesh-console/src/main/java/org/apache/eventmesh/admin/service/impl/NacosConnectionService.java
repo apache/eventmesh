@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.service.impl;
+package org.apache.eventmesh.admin.service.impl;
 
-import org.apache.eventmesh.console.config.AdminProperties;
-import org.apache.eventmesh.console.service.ConnectionService;
+import org.apache.eventmesh.admin.config.AdminProperties;
+import org.apache.eventmesh.admin.service.ConnectionService;
 
 import java.util.Properties;
 

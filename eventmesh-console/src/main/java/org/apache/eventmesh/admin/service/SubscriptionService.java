@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console;
+package org.apache.eventmesh.admin.service;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.apache.eventmesh.admin.dto.SubscriptionResponse;
 
-@SpringBootTest
-class EventMeshAdminApplicationTests {
+/**
+ * "Subscription" refers to the traditional MQ producer-consumer topic subscription relationship,
+ * emphasizing the subscription relationship between EventMesh clients (including SDK and connectors) and topics,
+ * reported by the EventMesh runtime.
+ */
+public interface SubscriptionService {
 
-    @Test
-    void contextLoads() {
-    }
+    String retrieveConfig(String dataId, String group);
 
+    SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group);
 }

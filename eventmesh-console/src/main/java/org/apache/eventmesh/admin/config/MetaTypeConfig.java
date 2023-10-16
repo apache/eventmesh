@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.config;
+package org.apache.eventmesh.admin.config;
 
-import static org.apache.eventmesh.console.config.Constants.META_TYPE_ETCD;
-import static org.apache.eventmesh.console.config.Constants.META_TYPE_NACOS;
+import static org.apache.eventmesh.admin.config.Constants.META_TYPE_ETCD;
+import static org.apache.eventmesh.admin.config.Constants.META_TYPE_NACOS;
 
-import org.apache.eventmesh.console.service.ConnectionService;
-import org.apache.eventmesh.console.service.SubscriptionService;
-import org.apache.eventmesh.console.service.impl.EtcdConnectionService;
-import org.apache.eventmesh.console.service.impl.EtcdSubscriptionService;
-import org.apache.eventmesh.console.service.impl.NacosConnectionService;
-import org.apache.eventmesh.console.service.impl.NacosSubscriptionService;
+import org.apache.eventmesh.admin.service.ConnectionService;
+import org.apache.eventmesh.admin.service.SubscriptionService;
+import org.apache.eventmesh.admin.service.impl.EtcdConnectionService;
+import org.apache.eventmesh.admin.service.impl.EtcdSubscriptionService;
+import org.apache.eventmesh.admin.service.impl.NacosConnectionService;
+import org.apache.eventmesh.admin.service.impl.NacosSubscriptionService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

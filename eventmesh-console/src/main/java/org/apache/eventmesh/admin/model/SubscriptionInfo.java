@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console;
+package org.apache.eventmesh.admin.model;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import lombok.Builder;
+import lombok.Data;
 
-@SpringBootApplication
-public class EventMeshAdminApplication {
+@Data
+@Builder
+public class SubscriptionInfo {
 
-    public static void main(String[] args) {
-        SpringApplication.run(EventMeshAdminApplication.class, args);
-    }
+    // client name
+    private String clientName;
 
+    // group name
+    private String group;
+
+    // config content
+    private String subscription;
 }

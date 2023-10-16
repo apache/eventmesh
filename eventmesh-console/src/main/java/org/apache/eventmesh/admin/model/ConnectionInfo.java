@@ -15,18 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.service;
+package org.apache.eventmesh.admin.model;
 
-import org.apache.eventmesh.console.dto.SubscriptionResponse;
+public class ConnectionInfo {
 
-/**
- * "Subscription" refers to the traditional MQ producer-consumer topic subscription relationship,
- * emphasizing the subscription relationship between EventMesh clients (including SDK and connectors) and topics,
- * reported by the EventMesh runtime.
- */
-public interface SubscriptionService {
-
-    String retrieveConfig(String dataId, String group);
-
-    SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group);
 }

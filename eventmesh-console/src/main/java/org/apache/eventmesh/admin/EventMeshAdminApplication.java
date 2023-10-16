@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.exception;
+package org.apache.eventmesh.admin;
 
-public class MetaException extends EventMeshAdminException {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    private static final long serialVersionUID = 6246145526338359773L;
+@SpringBootApplication
+public class EventMeshAdminApplication {
 
-    public MetaException(String message) {
-        super(message);
+    public static void main(String[] args) {
+        SpringApplication.run(EventMeshAdminApplication.class, args);
     }
 
-    public MetaException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

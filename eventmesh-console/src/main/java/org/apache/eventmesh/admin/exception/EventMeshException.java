@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.exception;
+package org.apache.eventmesh.admin.exception;
 
-public class EventMeshAdminException extends RuntimeException {
+public class EventMeshException extends EventMeshAdminException {
 
-    private static final long serialVersionUID = 2002022502005456586L;
+    private static final long serialVersionUID = 5648256502005456586L;
 
-    public EventMeshAdminException(String message) {
+    public EventMeshException(String message) {
         super(message);
     }
 
-    public EventMeshAdminException(String message, Throwable cause) {
+    public EventMeshException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public EventMeshAdminException(Throwable cause) {
+    public EventMeshException(Throwable cause) {
         super(cause);
     }
 
-    public EventMeshAdminException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public EventMeshException(Integer errCode, String errMsg) {
+        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
     }
 }

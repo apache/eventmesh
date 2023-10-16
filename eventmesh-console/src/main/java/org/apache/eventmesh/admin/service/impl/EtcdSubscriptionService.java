@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.console.model;
+package org.apache.eventmesh.admin.service.impl;
 
-import lombok.Builder;
-import lombok.Data;
+import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.service.SubscriptionService;
 
-@Data
-@Builder
-public class SubscriptionInfo {
+import org.springframework.stereotype.Service;
 
-    // client name
-    private String clientName;
+import lombok.extern.slf4j.Slf4j;
 
-    // group name
-    private String group;
+@Slf4j
+@Service
+public class EtcdSubscriptionService implements SubscriptionService {
 
-    // config content
-    private String subscription;
+    @Override
+    public String retrieveConfig(String dataId, String group) {
+        return null;
+    }
+
+    @Override
+    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+        return null;
+    }
 }
