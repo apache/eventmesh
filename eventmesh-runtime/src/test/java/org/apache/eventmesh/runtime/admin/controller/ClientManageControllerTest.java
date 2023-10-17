@@ -22,7 +22,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -47,8 +46,6 @@ public class ClientManageControllerTest {
 
     @Test
     public void testStart() throws Exception {
-        AdminController adminController = mock(AdminController.class);
-
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
         EventMeshTCPConfiguration tcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
@@ -83,7 +80,6 @@ public class ClientManageControllerTest {
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);
-            Mockito.doNothing().when(adminController).run(server);
             Assertions.assertDoesNotThrow(controller::start);
         }
     }
