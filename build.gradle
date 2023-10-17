@@ -304,9 +304,7 @@ subprojects {
             new File("${projectDir}/dist/lib").mkdirs()
             new File("${projectDir}/dist/licenses").mkdirs()
         }
-        Set<String> rootProject = ["eventmesh-admin",
-                                   "eventmesh-admin-rocketmq",
-                                   "eventmesh-common",
+        Set<String> rootProject = ["eventmesh-common",
                                    "eventmesh-storage-api",
                                    "eventmesh-metrics-api",
                                    "eventmesh-meta-api",
@@ -318,8 +316,7 @@ subprojects {
                                    "eventmesh-spi",
                                    "eventmesh-webhook-api",
                                    "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"
-                                   ]
+                                   "eventmesh-webhook-receive"]
         doLast {
             copy {
                 into("${projectDir}/dist/apps")
