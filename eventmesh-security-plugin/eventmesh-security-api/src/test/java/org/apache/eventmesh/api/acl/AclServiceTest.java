@@ -72,65 +72,37 @@ public class AclServiceTest {
 
     @Test
     public void testInit() {
-        try {
-            service.init();
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::init);
     }
 
     @Test
     public void testStart() {
-        try {
-            service.start();
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::start);
     }
 
     @Test
     public void testShutdown() {
-        try {
-            service.shutdown();
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::shutdown);
     }
 
     @Test
     public void testDoAclCheckInConnect() {
-        try {
-            service.doAclCheckInConnect(new AclProperties());
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> service.doAclCheckInConnect(new AclProperties()));
     }
 
     @Test
     public void testDoAclCheckInHeartbeat() {
-        try {
-            service.doAclCheckInHeartbeat(new AclProperties());
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> service.doAclCheckInHeartbeat(new AclProperties()));
     }
 
     @Test
     public void testDoAclCheckInSend() {
-        try {
-            service.doAclCheckInSend(new AclProperties());
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> service.doAclCheckInSend(new AclProperties()));
     }
 
     @Test
     public void testDoAclCheckInReceive() {
-        try {
-            service.doAclCheckInReceive(new AclProperties());
-        } catch (AclException e) {
-            Assertions.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(() -> service.doAclCheckInReceive(new AclProperties()));
     }
 
 }

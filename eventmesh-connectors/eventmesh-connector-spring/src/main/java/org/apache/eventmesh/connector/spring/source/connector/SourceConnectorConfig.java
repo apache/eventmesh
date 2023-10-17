@@ -15,22 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.exception;
+package org.apache.eventmesh.connector.spring.source.connector;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import lombok.Data;
 
-public class AclExceptionTest {
+@Data
+public class SourceConnectorConfig {
 
-    @Test
-    public void testConstructWithMsg() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test"));
-        Assertions.assertDoesNotThrow(() -> new AclException(null));
-    }
+    private String connectorName;
 
-    @Test
-    public void testConstructWithMsgAndExption() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test", new Exception("test1")));
-        Assertions.assertDoesNotThrow(() -> new AclException(null, null));
-    }
 }

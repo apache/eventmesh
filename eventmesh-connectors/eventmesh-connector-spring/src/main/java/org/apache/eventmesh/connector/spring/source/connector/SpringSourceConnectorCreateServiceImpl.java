@@ -15,22 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.exception;
+package org.apache.eventmesh.connector.spring.source.connector;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
+import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
+import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 
-public class AclExceptionTest {
+public class SpringSourceConnectorCreateServiceImpl implements SourceCreateService {
 
-    @Test
-    public void testConstructWithMsg() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test"));
-        Assertions.assertDoesNotThrow(() -> new AclException(null));
-    }
-
-    @Test
-    public void testConstructWithMsgAndExption() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test", new Exception("test1")));
-        Assertions.assertDoesNotThrow(() -> new AclException(null, null));
+    @Override
+    public Source create() {
+        if (SpringApplicationContextHolder.isStarted()) {
+            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
+        }
+        return null;
     }
 }

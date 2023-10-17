@@ -15,22 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.exception;
+package org.apache.eventmesh.connector.spring.source;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+/**
+ * Operations for sending messages.
+ */
+public interface MessageSendingOperations {
 
-public class AclExceptionTest {
+    void send(Object message);
 
-    @Test
-    public void testConstructWithMsg() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test"));
-        Assertions.assertDoesNotThrow(() -> new AclException(null));
-    }
-
-    @Test
-    public void testConstructWithMsgAndExption() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test", new Exception("test1")));
-        Assertions.assertDoesNotThrow(() -> new AclException(null, null));
-    }
 }

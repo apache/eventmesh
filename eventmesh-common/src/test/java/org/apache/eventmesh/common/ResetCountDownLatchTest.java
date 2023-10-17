@@ -27,11 +27,8 @@ public class ResetCountDownLatchTest {
 
     @Test
     public void testConstructorParameterError() {
-        try {
-            new ResetCountDownLatch(-1);
-        } catch (IllegalArgumentException e) {
-            Assertions.assertEquals(e.getMessage(), "count must be greater than or equal to 0");
-        }
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> new ResetCountDownLatch(-1));
+        Assertions.assertEquals(e.getMessage(), "count must be greater than or equal to 0");
         ResetCountDownLatch resetCountDownLatch = new ResetCountDownLatch(1);
         Assertions.assertEquals(1, resetCountDownLatch.getCount());
     }

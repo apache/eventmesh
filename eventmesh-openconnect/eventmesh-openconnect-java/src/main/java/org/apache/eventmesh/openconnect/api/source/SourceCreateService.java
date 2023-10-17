@@ -15,22 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.exception;
+package org.apache.eventmesh.openconnect.api.source;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-public class AclExceptionTest {
+/**
+ * SPI interface for source connector creation.
+ */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface SourceCreateService {
 
-    @Test
-    public void testConstructWithMsg() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test"));
-        Assertions.assertDoesNotThrow(() -> new AclException(null));
-    }
-
-    @Test
-    public void testConstructWithMsgAndExption() {
-        Assertions.assertDoesNotThrow(() -> new AclException("test", new Exception("test1")));
-        Assertions.assertDoesNotThrow(() -> new AclException(null, null));
-    }
+    Source create();
 }

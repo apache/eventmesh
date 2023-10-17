@@ -36,8 +36,6 @@ import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -85,13 +83,8 @@ public class ClientManageControllerTest {
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);
-            try {
-                Mockito.doNothing().when(adminController).run(server);
-                controller.start();
-            } catch (IOException e) {
-                Assertions.fail(e.getMessage());
-            }
-
+            Mockito.doNothing().when(adminController).run(server);
+            Assertions.assertDoesNotThrow(controller::start);
         }
     }
 }

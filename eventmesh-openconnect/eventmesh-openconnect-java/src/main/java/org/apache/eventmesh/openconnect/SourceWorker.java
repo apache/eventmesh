@@ -32,6 +32,7 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReaderImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
@@ -132,12 +133,13 @@ public class SourceWorker implements ConnectorWorker {
         }
         eventMeshTCPClient.init();
         // spi load offsetMgmtService
-        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
-        String offsetMgmtPluginType = offsetStorageConfig.getOffsetStorageType();
         this.offsetManagement = new RecordOffsetManagement();
         this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
-        this.offsetManagementService =
-            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
+        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig)
+            .map(OffsetStorageConfig::getOffsetStorageType)
+            .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
+            .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
         this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
         this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
