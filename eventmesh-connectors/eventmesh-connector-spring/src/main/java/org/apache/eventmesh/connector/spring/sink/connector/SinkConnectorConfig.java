@@ -15,20 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.source.connector;
+package org.apache.eventmesh.connector.spring.sink.connector;
 
-import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
-import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
-import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.source.Source;
+import lombok.Data;
 
-public class SpringSourceConnectorCreateServiceImpl implements ConnectorCreateService<Source> {
+@Data
+public class SinkConnectorConfig {
 
-    @Override
-    public Source create() {
-        if (SpringApplicationContextHolder.isStarted()) {
-            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
-        }
-        return null;
-    }
+    private String connectorName;
+
 }

@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.source;
+package org.apache.eventmesh.connector.spring.sink;
 
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
+import java.lang.reflect.Method;
 
-/**
- * SPI interface for source connector creation.
- */
-@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
-public interface SourceCreateService {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-    Source create();
+@Data
+@AllArgsConstructor
+public class EventMeshConsumerMetadata {
+
+    private Object bean;
+
+    private Method method;
+
+    private EventMeshListener annotation;
+
 }

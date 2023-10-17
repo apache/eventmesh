@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.source.connector;
+package org.apache.eventmesh.connector.spring.sink;
 
-import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
-import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
-import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.source.Source;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class SpringSourceConnectorCreateServiceImpl implements ConnectorCreateService<Source> {
+import org.springframework.stereotype.Component;
 
-    @Override
-    public Source create() {
-        if (SpringApplicationContextHolder.isStarted()) {
-            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
-        }
-        return null;
-    }
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component
+public @interface EventMeshListener {
+
+    /**
+     * The requestTimeout of client,it is 5s by default.
+     */
+    int requestTimeout() default 5;
 }

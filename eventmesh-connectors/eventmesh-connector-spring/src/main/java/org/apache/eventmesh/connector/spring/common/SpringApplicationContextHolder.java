@@ -25,20 +25,21 @@ public class SpringApplicationContextHolder implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
 
+    public static boolean isStarted() {
+        return applicationContext != null;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         SpringApplicationContextHolder.applicationContext = applicationContext;
+    }
+
+    public static <T> T getBean(Class<T> clazz) {
+        return applicationContext.getBean(clazz);
     }
 
     public static Object getBean(String beanName) {
         return applicationContext.getBean(beanName);
     }
 
-    public static Object getBean(Class<?> beanClass) {
-        return applicationContext.getBean(beanClass);
-    }
-
-    public static boolean isStarted() {
-        return applicationContext != null;
-    }
 }
