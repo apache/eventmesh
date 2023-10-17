@@ -19,10 +19,10 @@ package org.apache.eventmesh.connector.spring.source.connector;
 
 import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
 import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 
-public class SpringSourceConnectorCreateServiceImpl implements SourceCreateService {
+public class SpringSourceConnectorCreateServiceImpl implements ConnectorCreateService<Source> {
 
     @Override
     public Source create() {

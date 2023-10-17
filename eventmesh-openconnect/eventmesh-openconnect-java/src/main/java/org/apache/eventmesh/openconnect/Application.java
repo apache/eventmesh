@@ -17,15 +17,17 @@
 
 package org.apache.eventmesh.openconnect;
 
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.openconnect.api.source.SourceCreateService;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,16 +39,29 @@ public class Application {
 
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
-    private static final String SPRING = "spring";
+    public static final String CREATE_EXTENSION_KEY = "createExtension";
+
+    private Map<String, String> extensions;
+
+    public Application() {
+
+    }
+
+    public Application(Map<String, String> extensions) {
+        this.extensions = extensions;
+    }
 
     public void run(Class<? extends Connector> clazz) throws Exception {
 
         Connector connector = null;
         try {
-            SourceCreateService createService =
-                EventMeshExtensionFactory.getExtension(SourceCreateService.class, SPRING);
-            if (createService != null) {
-                connector = createService.create();
+            if (MapUtils.isNotEmpty(extensions) && extensions.containsKey(CREATE_EXTENSION_KEY)) {
+                String spiKey = extensions.get(CREATE_EXTENSION_KEY);
+                ConnectorCreateService<?> createService =
+                    EventMeshExtensionFactory.getExtension(ConnectorCreateService.class, spiKey);
+                if (createService != null) {
+                    connector = createService.create();
+                }
             }
             if (connector == null) {
                 connector = clazz.getDeclaredConstructor().newInstance();

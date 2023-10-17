@@ -26,4 +26,3 @@ pubSubConfig:
     passWord: springPassWord
 connectorConfig:
     connectorName: springSource
-    topic: SourceTopic

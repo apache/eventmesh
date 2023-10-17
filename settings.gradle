@@ -63,9 +63,6 @@ include 'eventmesh-meta:eventmesh-meta-etcd'
 include 'eventmesh-meta:eventmesh-meta-consul'
 include 'eventmesh-meta:eventmesh-meta-zookeeper'
 
-include 'eventmesh-admin'
-include 'eventmesh-admin:eventmesh-admin-rocketmq'
-
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
