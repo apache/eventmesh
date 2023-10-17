@@ -255,9 +255,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         final SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
         this.getHandlerService().register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
-        ThreadPoolExecutor adminExecutor = httpThreadPoolGroup.getAdminExecutor();
+        ThreadPoolExecutor runtimeAdminExecutor = httpThreadPoolGroup.getRuntimeAdminExecutor();
         final AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
-        registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
+        registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, runtimeAdminExecutor);
 
         ThreadPoolExecutor clientManageExecutor = httpThreadPoolGroup.getClientManageExecutor();
         final HeartBeatProcessor heartProcessor = new HeartBeatProcessor(this);

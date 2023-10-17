@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
 import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.EventHandler;
@@ -118,8 +117,6 @@ public class ClientManageController {
 
         // Register the handlers from the HTTP handler manager with the HTTP server.
         httpHandlerManager.registerHttpHandler(server);
-        AdminController adminController = new AdminController();
-        adminController.run(server);
 
         server.start();
         log.info("ClientManageController start success, port:{}", port);
