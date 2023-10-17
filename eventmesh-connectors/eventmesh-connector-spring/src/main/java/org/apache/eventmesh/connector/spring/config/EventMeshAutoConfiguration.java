@@ -19,6 +19,8 @@ package org.apache.eventmesh.connector.spring.config;
 
 import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
 import org.apache.eventmesh.connector.spring.server.SpringConnectServer;
+import org.apache.eventmesh.connector.spring.sink.EventMeshListenerBeanPostProcessor;
+import org.apache.eventmesh.connector.spring.sink.connector.SpringSinkConnector;
 import org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnector;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,13 +34,21 @@ import org.springframework.context.annotation.Configuration;
 public class EventMeshAutoConfiguration {
 
     public static final String SPRING_SOURCE_CONNECTOR_BEAN_NAME = "springSourceConnector";
+    public static final String SPRING_SINK_CONNECTOR_BEAN_NAME = "springSinkConnector";
     public static final String SPRING_CONNECT_SERVER_BEAN_NAME = "springConnectServer";
     public static final String SPRING_APPLICATION_CONTEXT_HOLDER = "springApplicationContextHolder";
+    public static final String EVENTMESH_LISTENER_BEAN_POST_PROCESSOR = "eventMeshListenerBeanPostProcessor";
 
     @Bean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
     @ConditionalOnMissingBean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
     public SpringSourceConnector springSourceConnector() {
         return new SpringSourceConnector();
+    }
+
+    @Bean(name = SPRING_SINK_CONNECTOR_BEAN_NAME)
+    @ConditionalOnMissingBean(name = SPRING_SINK_CONNECTOR_BEAN_NAME)
+    public SpringSinkConnector springSinkConnector() {
+        return new SpringSinkConnector();
     }
 
     @Bean(name = SPRING_CONNECT_SERVER_BEAN_NAME)
@@ -52,4 +62,11 @@ public class EventMeshAutoConfiguration {
     public SpringApplicationContextHolder springApplicationContextHolder() {
         return new SpringApplicationContextHolder();
     }
+
+    @Bean(name = EVENTMESH_LISTENER_BEAN_POST_PROCESSOR)
+    @ConditionalOnMissingBean(name = EVENTMESH_LISTENER_BEAN_POST_PROCESSOR)
+    public EventMeshListenerBeanPostProcessor eventMeshListenerBeanPostProcessor() {
+        return new EventMeshListenerBeanPostProcessor();
+    }
+
 }

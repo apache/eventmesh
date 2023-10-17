@@ -15,4 +15,5 @@
 # limitations under the License.
 #
 
-spring=org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnectorCreateServiceImpl
+springSink=org.apache.eventmesh.connector.spring.sink.connector.SpringSinkConnectorCreateServiceImpl
+springSource=org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnectorCreateServiceImpl

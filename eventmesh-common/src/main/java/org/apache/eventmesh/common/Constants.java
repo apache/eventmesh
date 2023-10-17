@@ -173,6 +173,10 @@ public class Constants {
 
     public static final int SUCCESS_CODE = 200;
 
+    public static final String SINK = "Sink";
+
+    public static final String SOURCE = "Source";
+
     // protocol desc
     public static final String PROTOCOL_DESC_GRPC_CLOUD_EVENT = "grpc-cloud-event";
 

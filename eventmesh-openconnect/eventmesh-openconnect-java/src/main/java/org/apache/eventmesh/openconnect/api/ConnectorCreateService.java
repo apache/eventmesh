@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.source.connector;
+package org.apache.eventmesh.openconnect.api;
 
-import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
-import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
-import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-public class SpringSourceConnectorCreateServiceImpl implements ConnectorCreateService<Source> {
+/**
+ * SPI interface for connector creation.
+ */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface ConnectorCreateService<T extends Connector> {
 
-    @Override
-    public Source create() {
-        if (SpringApplicationContextHolder.isStarted()) {
-            return (Source) SpringApplicationContextHolder.getBean(EventMeshAutoConfiguration.SPRING_SOURCE_CONNECTOR_BEAN_NAME);
-        }
-        return null;
-    }
+    T create();
 }
