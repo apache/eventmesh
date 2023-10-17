@@ -48,7 +48,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshMessageListenerBeanPostProcessor implements ApplicationContextAware,
+public class EventMeshListenerBeanPostProcessor implements ApplicationContextAware,
     CommandLineRunner, BeanPostProcessor {
 
     private static final String SPRING_SINK = "springSink";

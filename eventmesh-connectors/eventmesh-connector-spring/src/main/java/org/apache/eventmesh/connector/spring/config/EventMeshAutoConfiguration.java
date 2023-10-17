@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.spring.config;
 
 import org.apache.eventmesh.connector.spring.common.SpringApplicationContextHolder;
 import org.apache.eventmesh.connector.spring.server.SpringConnectServer;
-import org.apache.eventmesh.connector.spring.sink.EventMeshMessageListenerBeanPostProcessor;
+import org.apache.eventmesh.connector.spring.sink.EventMeshListenerBeanPostProcessor;
 import org.apache.eventmesh.connector.spring.sink.connector.SpringSinkConnector;
 import org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnector;
 
@@ -37,7 +37,7 @@ public class EventMeshAutoConfiguration {
     public static final String SPRING_SINK_CONNECTOR_BEAN_NAME = "springSinkConnector";
     public static final String SPRING_CONNECT_SERVER_BEAN_NAME = "springConnectServer";
     public static final String SPRING_APPLICATION_CONTEXT_HOLDER = "springApplicationContextHolder";
-    public static final String EVENTMESH_MESSAGE_LISTENER_BEAN_POST_PROCESSOR = "eventMeshMessageListenerBeanPostProcessor";
+    public static final String EVENTMESH_LISTENER_BEAN_POST_PROCESSOR = "eventMeshListenerBeanPostProcessor";
 
     @Bean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
     @ConditionalOnMissingBean(name = SPRING_SOURCE_CONNECTOR_BEAN_NAME)
@@ -63,10 +63,10 @@ public class EventMeshAutoConfiguration {
         return new SpringApplicationContextHolder();
     }
 
-    @Bean(name = EVENTMESH_MESSAGE_LISTENER_BEAN_POST_PROCESSOR)
-    @ConditionalOnMissingBean(name = EVENTMESH_MESSAGE_LISTENER_BEAN_POST_PROCESSOR)
-    public EventMeshMessageListenerBeanPostProcessor eventMeshMessageListenerBeanPostProcessor() {
-        return new EventMeshMessageListenerBeanPostProcessor();
+    @Bean(name = EVENTMESH_LISTENER_BEAN_POST_PROCESSOR)
+    @ConditionalOnMissingBean(name = EVENTMESH_LISTENER_BEAN_POST_PROCESSOR)
+    public EventMeshListenerBeanPostProcessor eventMeshListenerBeanPostProcessor() {
+        return new EventMeshListenerBeanPostProcessor();
     }
 
 }
