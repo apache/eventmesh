@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.admin.controller;
 
-import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.dto.Result;
 import org.apache.eventmesh.admin.exception.EventMeshAdminException;
+import org.apache.eventmesh.admin.model.SubscriptionInfo;
 import org.apache.eventmesh.admin.service.SubscriptionService;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,15 +71,15 @@ public class SubscriptionController {
      * @return config properties and base64 encoded config content
      */
     @GetMapping("/subscriptions")
-    public ResponseEntity<SubscriptionResponse> listSubscriptions(
+    public ResponseEntity<Result<List<SubscriptionInfo>>> listSubscriptions(
         @RequestParam(name = "page", defaultValue = "1") Integer page,
         @RequestParam(name = "size", defaultValue = "10") Integer size,
         @RequestParam(name = "dataId", defaultValue = CLIENT_DATA_ID_PATTERN) String dataId,
         @RequestParam(name = "group", defaultValue = "") String group) {
         try {
-            return ResponseEntity.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
-        } catch (EventMeshAdminException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new SubscriptionResponse(e.getMessage()));
+            return Result.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(e.getMessage()));
         }
     }
 

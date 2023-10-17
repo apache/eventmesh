@@ -15,30 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.exception;
+package org.apache.eventmesh.admin.utils;
 
-import org.apache.eventmesh.admin.enums.ErrorType;
-import org.apache.eventmesh.admin.utils.ExceptionUtils;
-
-/**
- * Meta side exception with EventMeshAdmin Application
- */
-public class MetaException extends RuntimeException {
-
-    private static final long serialVersionUID = 6246145526338359773L;
-
-    public MetaException(String message) {
-        super(message);
-    }
-
-    public MetaException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public class ExceptionUtils {
 
     /**
-     * Customized error reporting with exception
+     * Remove the last period of exception description.
      */
-    public MetaException(ErrorType errorType, Throwable cause) {
-        super(ExceptionUtils.trimDesc(errorType.getDesc()) + ": " + cause.getMessage(), cause);
+    public static String trimDesc(String desc) {
+        if (desc == null) {
+            return "";
+        }
+        if (desc.charAt(desc.length() - 1) == '.') {
+            return desc.substring(0, desc.length() - 1);
+        }
+        return desc;
     }
+
 }

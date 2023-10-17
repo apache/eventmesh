@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.admin.dto;
 
-import org.apache.eventmesh.admin.model.SubscriptionInfo;
+import static org.apache.eventmesh.admin.enums.ErrorType.SUCCESS;
 
-import java.util.List;
+import org.springframework.http.ResponseEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,15 +30,38 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubscriptionResponse {
+public class Result<T> {
 
-    private List<SubscriptionInfo> subscriptionInfos;
+    private T data;
 
     private Integer pages;
 
     private String message;
 
-    public SubscriptionResponse(String message) {
+    public Result(String message) {
         this.message = message;
+    }
+
+    public Result(T data, Integer pages) {
+        this.data = data;
+        this.pages = pages;
+    }
+
+    public static <T> Result<T> success() {
+        return new Result<>(SUCCESS.getDesc());
+    }
+
+    public static <T> Result<T> success(Result<T> result) {
+        result.setMessage(SUCCESS.getDesc());
+        return result;
+    }
+
+    public static <T> ResponseEntity<Result<T>> ok() {
+        return ResponseEntity.ok(new Result<>(SUCCESS.getDesc()));
+    }
+
+    public static <T> ResponseEntity<Result<T>> ok(Result<T> result) {
+        result.setMessage(SUCCESS.getDesc());
+        return ResponseEntity.ok(result);
     }
 }

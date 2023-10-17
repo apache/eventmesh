@@ -19,6 +19,10 @@ package org.apache.eventmesh.admin.service.impl;
 
 import static org.apache.eventmesh.admin.config.Constants.NACOS_CONFIGS_API;
 import static org.apache.eventmesh.admin.config.Constants.NACOS_LOGIN_API;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_EMPTY_RESP_ERR;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_GET_CONFIG_ERR;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_LOGIN_EMPTY_RESP_ERR;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_SDK_CONFIG_ERR;
 
 import org.apache.eventmesh.admin.config.AdminProperties;
 import org.apache.eventmesh.admin.config.Constants;
@@ -97,14 +101,14 @@ public class NacosSubscriptionService implements SubscriptionService {
         try {
             configService = NacosFactory.createConfigService(nacosProps);
         } catch (Exception e) {
-            log.error("Failed to create Nacos ConfigService", e);
-            throw new EventMeshAdminException("Failed to create Nacos ConfigService: " + e.getMessage());
+            log.error(NACOS_SDK_CONFIG_ERR.getDesc(), e);
+            throw new EventMeshAdminException(NACOS_SDK_CONFIG_ERR, e);
         }
         try {
             return configService.getConfig(dataId, group, adminProperties.getConfig().getTimeoutMs());
         } catch (Exception e) {
-            log.error("Failed to retrieve Nacos config", e);
-            throw new MetaException("Failed to retrieve Nacos config: " + e.getMessage());
+            log.error(NACOS_GET_CONFIG_ERR.getDesc(), e);
+            throw new MetaException(NACOS_GET_CONFIG_ERR, e);
         }
     }
 
@@ -129,12 +133,12 @@ public class NacosSubscriptionService implements SubscriptionService {
         try {
             response = restTemplate.getForEntity(urlBuilder.toUriString(), String.class);
         } catch (Exception e) {
-            log.error("Failed to retrieve Nacos config list.", e);
-            throw new MetaException("Failed to retrieve Nacos config list: " + e.getMessage());
+            log.error(NACOS_GET_CONFIG_ERR.getDesc(), e);
+            throw new MetaException(NACOS_GET_CONFIG_ERR, e);
         }
         if (response.getBody() == null || response.getBody().isEmpty()) {
-            log.error("No result returned by Nacos. Please check Nacos.");
-            throw new MetaException("No result returned by Nacos. Please check Nacos.");
+            log.error(NACOS_EMPTY_RESP_ERR.getDesc());
+            throw new MetaException(NACOS_EMPTY_RESP_ERR.getDesc());
         }
 
         return toSubscriptionResponse(JSON.parseObject(response.getBody()));
@@ -188,8 +192,8 @@ public class NacosSubscriptionService implements SubscriptionService {
             throw new MetaException("Nacos login failed: " + e.getMessage());
         }
         if (loginResponse.getBody() == null || loginResponse.getBody().isEmpty()) {
-            log.error("Nacos didn't return accessToken. Please check Nacos status. Status code: {}", loginResponse.getStatusCode());
-            throw new MetaException("Nacos didn't return accessToken. Please check Nacos status. Status code: " + loginResponse.getStatusCode());
+            log.error(NACOS_LOGIN_EMPTY_RESP_ERR + " Status code: {}", loginResponse.getStatusCode());
+            throw new MetaException(NACOS_LOGIN_EMPTY_RESP_ERR + " Status code: " + loginResponse.getStatusCode());
         }
         return JSON.parseObject(loginResponse.getBody()).getString("accessToken");
     }

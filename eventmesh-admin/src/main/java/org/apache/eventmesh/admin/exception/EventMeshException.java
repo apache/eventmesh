@@ -17,7 +17,10 @@
 
 package org.apache.eventmesh.admin.exception;
 
-public class EventMeshException extends EventMeshAdminException {
+/**
+ * EventMesh Runtime side exception
+ */
+public class EventMeshException extends RuntimeException {
 
     private static final long serialVersionUID = 5648256502005456586L;
 
@@ -27,17 +30,5 @@ public class EventMeshException extends EventMeshAdminException {
 
     public EventMeshException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
     }
 }
