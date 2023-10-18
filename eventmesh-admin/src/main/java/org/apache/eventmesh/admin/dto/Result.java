@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.dto;
 
-import static org.apache.eventmesh.admin.enums.ErrorType.SUCCESS;
+import static org.apache.eventmesh.admin.enums.Errors.SUCCESS;
 
 import org.springframework.http.ResponseEntity;
 

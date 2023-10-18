@@ -17,6 +17,14 @@
 
 package org.apache.eventmesh.admin.common;
 
-public class NacosConstants {
+public class ConfigConst {
 
+    // yml config
+    public static final String ADMIN_PROPS_PREFIX = "eventmesh";
+    public static final String META_TYPE_NACOS = "nacos";
+    public static final String META_TYPE_ETCD = "etcd";
+
+    // Open-API
+    public static final String HTTP_PREFIX = "http://";
+    public static final String HTTPS_PREFIX = "https://";
 }

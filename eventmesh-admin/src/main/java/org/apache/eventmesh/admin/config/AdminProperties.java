@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.config;
 
-import org.apache.eventmesh.admin.common.Constants;
+import org.apache.eventmesh.admin.common.ConfigConst;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import lombok.Data;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = Constants.ADMIN_PROPS_PREFIX)
+@ConfigurationProperties(prefix = ConfigConst.ADMIN_PROPS_PREFIX)
 public class AdminProperties {
 
     private MetaProperties meta = new MetaProperties();
@@ -36,7 +36,7 @@ public class AdminProperties {
     @Data
     public static class MetaProperties {
 
-        private String type = Constants.META_TYPE_NACOS;
+        private String type = ConfigConst.META_TYPE_NACOS;
 
         private NacosProperties nacos = new NacosProperties();
 

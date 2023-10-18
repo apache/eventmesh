@@ -20,7 +20,7 @@ package org.apache.eventmesh.admin.enums;
 import lombok.Getter;
 
 @Getter
-public enum ErrorType {
+public enum Errors {
 
     SUCCESS("SUCCESS", "success"),
 
@@ -41,7 +41,7 @@ public enum ErrorType {
     // error message
     private final String desc;
 
-    ErrorType(String type, String desc) {
+    Errors(String type, String desc) {
         this.type = type;
         this.desc = desc;
     }

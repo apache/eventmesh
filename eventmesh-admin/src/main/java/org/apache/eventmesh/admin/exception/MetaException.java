@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.exception;
 
-import org.apache.eventmesh.admin.enums.ErrorType;
+import org.apache.eventmesh.admin.enums.Errors;
 import org.apache.eventmesh.admin.utils.ExceptionUtils;
 
 /**
@@ -38,11 +38,11 @@ public class MetaException extends RuntimeException {
     /**
      * Customized error reporting with exception
      */
-    public MetaException(ErrorType errorType, Throwable cause) {
-        super(ExceptionUtils.trimDesc(errorType.getDesc()) + ": " + cause.getMessage(), cause);
+    public MetaException(Errors errors, Throwable cause) {
+        super(ExceptionUtils.trimDesc(errors.getDesc()) + ": " + cause.getMessage(), cause);
     }
 
-    public MetaException(ErrorType errorType) {
-        super(ExceptionUtils.trimDesc(errorType.getDesc()));
+    public MetaException(Errors errors) {
+        super(ExceptionUtils.trimDesc(errors.getDesc()));
     }
 }
