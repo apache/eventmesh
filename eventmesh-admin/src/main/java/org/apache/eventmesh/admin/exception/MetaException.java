@@ -41,4 +41,8 @@ public class MetaException extends RuntimeException {
     public MetaException(ErrorType errorType, Throwable cause) {
         super(ExceptionUtils.trimDesc(errorType.getDesc()) + ": " + cause.getMessage(), cause);
     }
+
+    public MetaException(ErrorType errorType) {
+        super(ExceptionUtils.trimDesc(errorType.getDesc()));
+    }
 }

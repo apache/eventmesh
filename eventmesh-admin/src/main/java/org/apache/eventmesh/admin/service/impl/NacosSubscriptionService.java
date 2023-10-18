@@ -22,11 +22,12 @@ import static org.apache.eventmesh.admin.config.Constants.NACOS_LOGIN_API;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_EMPTY_RESP_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_GET_CONFIG_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_LOGIN_EMPTY_RESP_ERR;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_LOGIN_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_SDK_CONFIG_ERR;
 
 import org.apache.eventmesh.admin.config.AdminProperties;
 import org.apache.eventmesh.admin.config.Constants;
-import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.dto.Result;
 import org.apache.eventmesh.admin.exception.EventMeshAdminException;
 import org.apache.eventmesh.admin.exception.MetaException;
 import org.apache.eventmesh.admin.model.SubscriptionInfo;
@@ -116,7 +117,7 @@ public class NacosSubscriptionService implements SubscriptionService {
      * Retrieve a list of configs with Nacos OpenAPI, because Nacos SDK doesn't support listing and fuzzy matching.
      */
     @Override
-    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+    public Result<List<SubscriptionInfo>> retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
             .fromHttpUrl(HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_CONFIGS_API)
             .queryParam("pageNo", page)
@@ -138,18 +139,11 @@ public class NacosSubscriptionService implements SubscriptionService {
         }
         if (response.getBody() == null || response.getBody().isEmpty()) {
             log.error(NACOS_EMPTY_RESP_ERR.getDesc());
-            throw new MetaException(NACOS_EMPTY_RESP_ERR.getDesc());
+            throw new MetaException(NACOS_EMPTY_RESP_ERR);
         }
 
-        return toSubscriptionResponse(JSON.parseObject(response.getBody()));
-    }
-
-    private SubscriptionResponse toSubscriptionResponse(JSONObject obj) {
-        return SubscriptionResponse.builder()
-            .subscriptionInfos(toSubscriptionInfos(obj))
-            .pages(obj.getInteger("pagesAvailable"))
-            .message("success")
-            .build();
+        JSONObject obj = JSON.parseObject(response.getBody());
+        return new Result<>(toSubscriptionInfos(obj), obj.getInteger("pagesAvailable"));
     }
 
     private List<SubscriptionInfo> toSubscriptionInfos(JSONObject obj) {
@@ -188,8 +182,8 @@ public class NacosSubscriptionService implements SubscriptionService {
         try {
             loginResponse = restTemplate.postForEntity(loginUrl, loginRequest, String.class);
         } catch (Exception e) {
-            log.error("Nacos login failed.", e);
-            throw new MetaException("Nacos login failed: " + e.getMessage());
+            log.error(NACOS_LOGIN_ERR.getDesc(), e);
+            throw new MetaException(NACOS_LOGIN_ERR, e);
         }
         if (loginResponse.getBody() == null || loginResponse.getBody().isEmpty()) {
             log.error(NACOS_LOGIN_EMPTY_RESP_ERR + " Status code: {}", loginResponse.getStatusCode());
