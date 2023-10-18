@@ -26,6 +26,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * A RESTful response DTO.
+ */
+
 @Data
 @Builder
 @NoArgsConstructor

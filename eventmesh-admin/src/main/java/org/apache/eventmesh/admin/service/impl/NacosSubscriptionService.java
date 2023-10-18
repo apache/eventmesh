@@ -17,16 +17,27 @@
 
 package org.apache.eventmesh.admin.service.impl;
 
-import static org.apache.eventmesh.admin.config.Constants.NACOS_CONFIGS_API;
-import static org.apache.eventmesh.admin.config.Constants.NACOS_LOGIN_API;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_API;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_REQ_PAGE;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_REQ_PAGE_SIZE;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_REQ_SEARCH;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_RESP_CONTENT;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_RESP_CONTENT_LIST;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_RESP_DATAID;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_RESP_GROUP;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_CONFIGS_RESP_PAGES;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_LOGIN_API;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_LOGIN_REQ_PASSWORD;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_LOGIN_REQ_USERNAME;
+import static org.apache.eventmesh.admin.common.Constants.NACOS_LOGIN_RESP_TOKEN;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_EMPTY_RESP_ERR;
-import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_GET_CONFIG_ERR;
+import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_GET_CONFIGS_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_LOGIN_EMPTY_RESP_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_LOGIN_ERR;
 import static org.apache.eventmesh.admin.enums.ErrorType.NACOS_SDK_CONFIG_ERR;
 
 import org.apache.eventmesh.admin.config.AdminProperties;
-import org.apache.eventmesh.admin.config.Constants;
+import org.apache.eventmesh.admin.common.Constants;
 import org.apache.eventmesh.admin.dto.Result;
 import org.apache.eventmesh.admin.exception.EventMeshAdminException;
 import org.apache.eventmesh.admin.exception.MetaException;
@@ -108,8 +119,8 @@ public class NacosSubscriptionService implements SubscriptionService {
         try {
             return configService.getConfig(dataId, group, adminProperties.getConfig().getTimeoutMs());
         } catch (Exception e) {
-            log.error(NACOS_GET_CONFIG_ERR.getDesc(), e);
-            throw new MetaException(NACOS_GET_CONFIG_ERR, e);
+            log.error(NACOS_GET_CONFIGS_ERR.getDesc(), e);
+            throw new MetaException(NACOS_GET_CONFIGS_ERR, e);
         }
     }
 
@@ -120,22 +131,22 @@ public class NacosSubscriptionService implements SubscriptionService {
     public Result<List<SubscriptionInfo>> retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
             .fromHttpUrl(HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_CONFIGS_API)
-            .queryParam("pageNo", page)
-            .queryParam("pageSize", size)
-            .queryParam("dataId", dataId)
-            .queryParam("group", group)
-            .queryParam("search", "blur");
+            .queryParam(NACOS_CONFIGS_REQ_PAGE, page)
+            .queryParam(NACOS_CONFIGS_REQ_PAGE_SIZE, size)
+            .queryParam(NACOS_CONFIGS_RESP_DATAID, dataId)
+            .queryParam(NACOS_CONFIGS_RESP_GROUP, group)
+            .queryParam(NACOS_CONFIGS_REQ_SEARCH, "blur");
 
         if (adminProperties.getMeta().getNacos().isAuthEnabled()) {
-            urlBuilder.queryParam("accessToken", loginGetAccessToken());
+            urlBuilder.queryParam(NACOS_LOGIN_RESP_TOKEN, loginGetAccessToken());
         }
 
         ResponseEntity<String> response;
         try {
             response = restTemplate.getForEntity(urlBuilder.toUriString(), String.class);
         } catch (Exception e) {
-            log.error(NACOS_GET_CONFIG_ERR.getDesc(), e);
-            throw new MetaException(NACOS_GET_CONFIG_ERR, e);
+            log.error(NACOS_GET_CONFIGS_ERR.getDesc(), e);
+            throw new MetaException(NACOS_GET_CONFIGS_ERR, e);
         }
         if (response.getBody() == null || response.getBody().isEmpty()) {
             log.error(NACOS_EMPTY_RESP_ERR.getDesc());
@@ -143,12 +154,12 @@ public class NacosSubscriptionService implements SubscriptionService {
         }
 
         JSONObject obj = JSON.parseObject(response.getBody());
-        return new Result<>(toSubscriptionInfos(obj), obj.getInteger("pagesAvailable"));
+        return new Result<>(toSubscriptionInfos(obj), obj.getInteger(NACOS_CONFIGS_RESP_PAGES));
     }
 
     private List<SubscriptionInfo> toSubscriptionInfos(JSONObject obj) {
         List<SubscriptionInfo> subscriptionInfos = new ArrayList<>();
-        for (Object pageItem : obj.getJSONArray("pageItems")) {
+        for (Object pageItem : obj.getJSONArray(NACOS_CONFIGS_RESP_CONTENT_LIST)) {
             JSONObject pageItemObj = (JSONObject) pageItem;
             subscriptionInfos.add(toSubscriptionInfo(pageItemObj));
         }
@@ -156,10 +167,10 @@ public class NacosSubscriptionService implements SubscriptionService {
     }
 
     private SubscriptionInfo toSubscriptionInfo(JSONObject obj) {
-        String content = obj.getString("content");
+        String content = obj.getString(NACOS_CONFIGS_RESP_CONTENT);
         return SubscriptionInfo.builder()
-            .clientName(obj.getString("dataId"))
-            .group(obj.getString("group"))
+            .clientName(obj.getString(NACOS_CONFIGS_RESP_DATAID))
+            .group(obj.getString(NACOS_CONFIGS_RESP_GROUP))
             // The subscription content of Nacos config should be base64 encoded to protect special characters.
             .subscription(Base64.getEncoder().encodeToString(content.getBytes()))
             .build();
@@ -173,8 +184,8 @@ public class NacosSubscriptionService implements SubscriptionService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> bodyParams = new LinkedMultiValueMap<>();
-        bodyParams.put("username", Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.USERNAME)));
-        bodyParams.put("password", Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.PASSWORD)));
+        bodyParams.put(NACOS_LOGIN_REQ_USERNAME, Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.USERNAME)));
+        bodyParams.put(NACOS_LOGIN_REQ_PASSWORD, Collections.singletonList(nacosProps.getProperty(PropertyKeyConst.PASSWORD)));
 
         String loginUrl = HTTP_PREFIX + nacosProps.getProperty(PropertyKeyConst.SERVER_ADDR) + NACOS_LOGIN_API;
         HttpEntity<MultiValueMap<String, String>> loginRequest = new HttpEntity<>(bodyParams, headers);
@@ -189,6 +200,6 @@ public class NacosSubscriptionService implements SubscriptionService {
             log.error(NACOS_LOGIN_EMPTY_RESP_ERR + " Status code: {}", loginResponse.getStatusCode());
             throw new MetaException(NACOS_LOGIN_EMPTY_RESP_ERR + " Status code: " + loginResponse.getStatusCode());
         }
-        return JSON.parseObject(loginResponse.getBody()).getString("accessToken");
+        return JSON.parseObject(loginResponse.getBody()).getString(NACOS_LOGIN_RESP_TOKEN);
     }
 }

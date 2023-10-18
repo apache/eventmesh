@@ -26,7 +26,7 @@ public enum ErrorType {
 
     NACOS_SDK_CONFIG_ERR("SDK_CONFIG_ERR", "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
 
-    NACOS_GET_CONFIG_ERR("META_COM_ERR", "Failed to retrieve Nacos config(s)."),
+    NACOS_GET_CONFIGS_ERR("META_COM_ERR", "Failed to retrieve Nacos config(s)."),
 
     NACOS_EMPTY_RESP_ERR("META_COM_ERR", "No result returned by Nacos. Please check Nacos."),
 

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.admin.config;
 
-import static org.apache.eventmesh.admin.config.Constants.META_TYPE_ETCD;
-import static org.apache.eventmesh.admin.config.Constants.META_TYPE_NACOS;
+import static org.apache.eventmesh.admin.common.Constants.META_TYPE_ETCD;
+import static org.apache.eventmesh.admin.common.Constants.META_TYPE_NACOS;
 
 import org.apache.eventmesh.admin.service.ConnectionService;
 import org.apache.eventmesh.admin.service.SubscriptionService;

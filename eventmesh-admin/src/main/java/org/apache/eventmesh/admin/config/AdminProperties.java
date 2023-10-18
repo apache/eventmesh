@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.config;
 
+import org.apache.eventmesh.admin.common.Constants;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
