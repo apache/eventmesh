@@ -1,5 +1,3 @@
-package org.apache.eventmesh.admin.exception;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.eventmesh.admin.exception;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.eventmesh.admin.exception;
 
 import org.apache.eventmesh.admin.dto.Result;
 
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Object>> baseHandler(BaseException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("RESTful API {} service error occurred: ", requestURI, e);
-        return Result.internalError(e.getMessage());
+        return ResponseEntity.status(e.getErrors().getCode()).body(new Result<>(e.getMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)

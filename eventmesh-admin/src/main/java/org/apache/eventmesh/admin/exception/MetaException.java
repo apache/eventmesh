@@ -30,10 +30,6 @@ public class MetaException extends BaseException {
         super(message);
     }
 
-    public MetaException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     /**
      * Customized error reporting with exception
      */

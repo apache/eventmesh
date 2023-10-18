@@ -20,18 +20,17 @@ package org.apache.eventmesh.admin.exception;
 import org.apache.eventmesh.admin.enums.Errors;
 import org.apache.eventmesh.admin.utils.ExceptionUtils;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
+import lombok.Getter;
 
+@Getter
 public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 3509261993355721168L;
 
+    private Errors errors;
+
     public BaseException(String message) {
         super(message);
-    }
-
-    public BaseException(String message, Throwable cause) {
-        super(message, cause);
     }
 
     /**
@@ -39,9 +38,11 @@ public class BaseException extends RuntimeException {
      */
     public BaseException(Errors errors, Throwable cause) {
         super(ExceptionUtils.trimDesc(errors.getDesc()) + ": " + cause.getMessage(), cause);
+        this.errors = errors;
     }
 
     public BaseException(Errors errors) {
         super(ExceptionUtils.trimDesc(errors.getDesc()));
+        this.errors = errors;
     }
 }

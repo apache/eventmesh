@@ -17,23 +17,29 @@
 
 package org.apache.eventmesh.admin.enums;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 
 @Getter
 public enum Errors {
 
-    SUCCESS("SUCCESS", "success"),
+    SUCCESS(HttpStatus.OK, "SUCCESS", "success"),
 
-    NACOS_SDK_CONFIG_ERR("SDK_CONFIG_ERR", "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
+    NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, "SDK_CONFIG_ERR",
+        "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
 
-    NACOS_GET_CONFIGS_ERR("META_COM_ERR", "Failed to retrieve Nacos config(s)."),
+    NACOS_GET_CONFIGS_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "Failed to retrieve Nacos config(s)."),
 
-    NACOS_EMPTY_RESP_ERR("META_COM_ERR", "No result returned by Nacos. Please check Nacos."),
+    NACOS_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "No result returned by Nacos. Please check Nacos."),
 
-    NACOS_LOGIN_ERR("META_COM_ERR", "Nacos login failed."),
+    NACOS_LOGIN_ERR(HttpStatus.UNAUTHORIZED, "META_COM_ERR", "Nacos login failed."),
 
-    NACOS_LOGIN_EMPTY_RESP_ERR("META_COM_ERR", "Nacos didn't return accessToken. Please check Nacos status."),
+    NACOS_LOGIN_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "Nacos didn't return accessToken. Please check Nacos status."),
     ;
+
+    // error code
+    private final HttpStatus code;
 
     // error type
     private final String type;
@@ -41,7 +47,8 @@ public enum Errors {
     // error message
     private final String desc;
 
-    Errors(String type, String desc) {
+    Errors(HttpStatus code, String type, String desc) {
+        this.code = code;
         this.type = type;
         this.desc = desc;
     }

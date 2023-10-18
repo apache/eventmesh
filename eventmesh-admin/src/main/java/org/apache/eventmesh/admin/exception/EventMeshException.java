@@ -27,8 +27,4 @@ public class EventMeshException extends BaseException {
     public EventMeshException(String message) {
         super(message);
     }
-
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

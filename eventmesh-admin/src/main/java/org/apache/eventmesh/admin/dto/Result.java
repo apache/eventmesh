@@ -52,6 +52,9 @@ public class Result<T> {
         this.pages = pages;
     }
 
+    /**
+     * The request is valid and the result is wrapped in {@link Result}.
+     */
     public static <T> Result<T> success() {
         return new Result<>(SUCCESS.getDesc());
     }
@@ -61,6 +64,13 @@ public class Result<T> {
         return result;
     }
 
+    public static <T> Result<T> success(T data) {
+        return new Result<>(data, null, SUCCESS.getDesc());
+    }
+
+    /**
+     * The request is valid and the result is returned in {@link ResponseEntity}.
+     */
     public static <T> ResponseEntity<Result<T>> ok() {
         return ResponseEntity.ok(new Result<>(SUCCESS.getDesc()));
     }
@@ -70,7 +80,31 @@ public class Result<T> {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * The request is invalid.
+     */
+    public static <T> ResponseEntity<Result<T>> badRequest(String message) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Result<>(message));
+    }
+
+    /**
+     * The request is valid but cannot be processed due to business logic issues.
+     */
+    public static <T> ResponseEntity<Result<T>> unprocessable(String message) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new Result<>(message));
+    }
+
+    /**
+     * Uncaught exception happened in EventMeshAdmin application.
+     */
     public static <T> ResponseEntity<Result<T>> internalError(String message) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(message));
+    }
+
+    /**
+     * Upstream service unavailable such as Meta.
+     */
+    public static <T> ResponseEntity<Result<T>> badGateway(String message) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new Result<>(message));
     }
 }

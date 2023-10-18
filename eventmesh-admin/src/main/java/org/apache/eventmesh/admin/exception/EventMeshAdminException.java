@@ -30,10 +30,6 @@ public class EventMeshAdminException extends BaseException {
         super(message);
     }
 
-    public EventMeshAdminException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     /**
      * Customized error reporting with exception
      */
