@@ -22,10 +22,19 @@ import org.apache.eventmesh.admin.utils.ExceptionUtils;
 
 import lombok.Getter;
 
+/**
+ * Exceptions in EventMeshAdmin application
+ */
+
 @Getter
 public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 3509261993355721168L;
+
+    /**
+     * colon with space
+     */
+    public static final String COLON = ": ";
 
     private Errors errors;
 
@@ -34,15 +43,15 @@ public class BaseException extends RuntimeException {
     }
 
     /**
-     * Customized error reporting with exception
+     * Customized error reporting using enums and exceptions
      */
     public BaseException(Errors errors, Throwable cause) {
-        super(ExceptionUtils.trimDesc(errors.getDesc()) + ": " + cause.getMessage(), cause);
+        super(errors.getType() + COLON + ExceptionUtils.trimDesc(errors.getDesc()) + COLON + cause.getMessage(), cause);
         this.errors = errors;
     }
 
     public BaseException(Errors errors) {
-        super(ExceptionUtils.trimDesc(errors.getDesc()));
+        super(errors.getDesc());
         this.errors = errors;
     }
 }

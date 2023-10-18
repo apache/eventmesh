@@ -22,6 +22,7 @@ import org.apache.eventmesh.admin.enums.Errors;
 /**
  * Meta side exception with EventMeshAdmin Application
  */
+
 public class MetaException extends BaseException {
 
     private static final long serialVersionUID = 6246145526338359773L;
@@ -31,7 +32,7 @@ public class MetaException extends BaseException {
     }
 
     /**
-     * Customized error reporting with exception
+     * Customized error reporting using enums and exceptions
      */
     public MetaException(Errors errors, Throwable cause) {
         super(errors, cause);

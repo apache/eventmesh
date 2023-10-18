@@ -70,6 +70,7 @@ public class Result<T> {
 
     /**
      * The request is valid and the result is returned in {@link ResponseEntity}.
+     * Logic issues should use 422 Unprocessable Entity instead of 200 OK.
      */
     public static <T> ResponseEntity<Result<T>> ok() {
         return ResponseEntity.ok(new Result<>(SUCCESS.getDesc()));

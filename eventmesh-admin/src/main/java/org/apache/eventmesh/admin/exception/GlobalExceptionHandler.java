@@ -27,6 +27,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class, in conjunction with {@linkplain org.apache.eventmesh.admin.enums.Errors Errors} and {@link BaseException},
+ * collectively implements customized error reporting.
+ */
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

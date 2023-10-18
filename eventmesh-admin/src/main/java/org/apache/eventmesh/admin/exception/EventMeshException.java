@@ -20,6 +20,7 @@ package org.apache.eventmesh.admin.exception;
 /**
  * EventMesh Runtime side exception
  */
+
 public class EventMeshException extends BaseException {
 
     private static final long serialVersionUID = 5648256502005456586L;

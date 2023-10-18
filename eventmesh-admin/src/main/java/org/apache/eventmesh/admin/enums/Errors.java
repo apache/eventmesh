@@ -21,6 +21,15 @@ import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
 
+/**
+ * An enumeration class that conforms to the RESTful specifications and custom error reporting requirements.
+ * <ul>
+ *   <li>The 'code' field is used to return the HTTP status code using {@link HttpStatus}.</li>
+ *   <li>The 'type' field represents the major category of the error.</li>
+ *   <li>the 'desc' field represents the detailed subcategory and information of the error.</li>
+ * </ul>
+ */
+
 @Getter
 public enum Errors {
 
