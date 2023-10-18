@@ -68,4 +68,8 @@ public class Result<T> {
         result.setMessage(SUCCESS.getDesc());
         return ResponseEntity.ok(result);
     }
+
+    public static <T> Result<T> error(String message) {
+        return new Result<>(message);
+    }
 }

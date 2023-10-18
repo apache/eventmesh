@@ -18,12 +18,14 @@
 package org.apache.eventmesh.admin.exception;
 
 import org.apache.eventmesh.admin.enums.Errors;
-import org.apache.eventmesh.admin.utils.ExceptionUtils;
+
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Meta side exception with EventMeshAdmin Application
  */
-public class MetaException extends RuntimeException {
+@ResponseStatus(value = org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+public class MetaException extends BaseException {
 
     private static final long serialVersionUID = 6246145526338359773L;
 
@@ -39,10 +41,10 @@ public class MetaException extends RuntimeException {
      * Customized error reporting with exception
      */
     public MetaException(Errors errors, Throwable cause) {
-        super(ExceptionUtils.trimDesc(errors.getDesc()) + ": " + cause.getMessage(), cause);
+        super(errors, cause);
     }
 
     public MetaException(Errors errors) {
-        super(ExceptionUtils.trimDesc(errors.getDesc()));
+        super(errors);
     }
 }
