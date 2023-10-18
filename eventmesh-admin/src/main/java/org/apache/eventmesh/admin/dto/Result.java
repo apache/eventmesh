@@ -19,6 +19,7 @@ package org.apache.eventmesh.admin.dto;
 
 import static org.apache.eventmesh.admin.enums.Errors.SUCCESS;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import lombok.AllArgsConstructor;
@@ -69,7 +70,7 @@ public class Result<T> {
         return ResponseEntity.ok(result);
     }
 
-    public static <T> Result<T> error(String message) {
-        return new Result<>(message);
+    public static <T> ResponseEntity<Result<T>> internalError(String message) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(message));
     }
 }

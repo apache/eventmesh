@@ -76,11 +76,7 @@ public class SubscriptionController {
         @RequestParam(name = "size", defaultValue = "10") Integer size,
         @RequestParam(name = "dataId", defaultValue = CLIENT_DATA_ID_PATTERN) String dataId,
         @RequestParam(name = "group", defaultValue = "") String group) {
-        try {
-            return Result.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(e.getMessage()));
-        }
+        return Result.ok(subscriptionService.retrieveConfigs(page, size, dataId, group));
     }
 
 }

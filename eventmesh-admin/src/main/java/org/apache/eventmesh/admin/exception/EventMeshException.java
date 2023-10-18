@@ -17,12 +17,9 @@
 
 package org.apache.eventmesh.admin.exception;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /**
  * EventMesh Runtime side exception
  */
-@ResponseStatus(value = org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
 public class EventMeshException extends BaseException {
 
     private static final long serialVersionUID = 5648256502005456586L;

@@ -19,12 +19,9 @@ package org.apache.eventmesh.admin.exception;
 
 import org.apache.eventmesh.admin.enums.Errors;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /**
  * Meta side exception with EventMeshAdmin Application
  */
-@ResponseStatus(value = org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
 public class MetaException extends BaseException {
 
     private static final long serialVersionUID = 6246145526338359773L;
