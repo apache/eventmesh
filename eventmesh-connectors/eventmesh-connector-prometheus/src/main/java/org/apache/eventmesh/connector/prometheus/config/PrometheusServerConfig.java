@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.connector.prometheus.config;
 
+import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class PrometheusServerConfig extends Config {
 
     private boolean sourceEnable;

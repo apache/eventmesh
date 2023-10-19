@@ -22,9 +22,8 @@ import com.alibaba.fastjson.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusReq;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusRsp;
@@ -36,7 +35,6 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -49,19 +47,15 @@ import org.apache.http.util.EntityUtils;
 @Slf4j
 public class PrometheusSourceConnector implements Source {
 
-    private static final String INSTANCE_ID = "instanceId";
-
-    private OffsetStorageReader offsetStorageReader;
-
     private PrometheusSourceConfig sourceConfig;
 
     private CloseableHttpClient httpClient;
 
     private QueryPrometheusReq queryPrometheusReq;
 
-    private Long startTime;
-
     private Long initTime;
+
+    private Long startTime;
 
     private Integer interval;
 
@@ -73,16 +67,15 @@ public class PrometheusSourceConnector implements Source {
     }
 
     @Override
-    public void init(Config config) throws Exception {
+    public void init(Config config) {
         this.sourceConfig = (PrometheusSourceConfig) config;
         doInit();
     }
 
     @Override
-    public void init(ConnectorContext connectorContext) throws Exception {
+    public void init(ConnectorContext connectorContext) {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (PrometheusSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
 
         doInit();
     }
@@ -101,26 +94,9 @@ public class PrometheusSourceConnector implements Source {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         log.info("prometheus source connector start.");
-
-        Map<String, String> partitionMap = new HashMap<>();
-        partitionMap.put(INSTANCE_ID, sourceConfig.getConnectorConfig().getConnectorId());
-        RecordPartition recordPartition = new RecordPartition(partitionMap);
-        RecordOffset recordOffset = offsetStorageReader.readOffset(recordPartition);
-        if (recordOffset != null) {
-            Long pollOffset = (Long) recordOffset.getOffset().get("queueOffset");
-            if (pollOffset != null) {
-                // use offset
-                startTime = pollOffset;
-            } else if (initTime != null) {
-                // use preset time
-                startTime = initTime;
-            } else {
-                // use real time
-                startTime = System.currentTimeMillis() / 1000;
-            }
-        }
+        startTime = Objects.requireNonNullElseGet(initTime, () -> System.currentTimeMillis() / 1000);
     }
 
     @Override
@@ -134,7 +110,7 @@ public class PrometheusSourceConnector implements Source {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         log.info("prometheus source connector stop.");
     }
 
@@ -159,8 +135,8 @@ public class PrometheusSourceConnector implements Source {
                 log.info("poll message {} from prometheus: ", data);
 
                 Long timestamp = System.currentTimeMillis();
-                RecordPartition recordPartition = convertToRecordPartition();
-                RecordOffset recordOffset = convertToRecordOffset(queryPrometheusReq.getEnd());
+                RecordPartition recordPartition = new RecordPartition();
+                RecordOffset recordOffset = new RecordOffset();
                 ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, data);
 
                 connectRecords.add(connectRecord);
@@ -171,19 +147,5 @@ public class PrometheusSourceConnector implements Source {
             log.error("failed to poll message from prometheus", e);
             return null;
         }
-    }
-
-    private RecordOffset convertToRecordOffset(Long offset) {
-        Map<String, String> offsetMap = new HashMap<>();
-        offsetMap.put("queueOffset", offset + "");
-
-        return new RecordOffset(offsetMap);
-    }
-
-    private RecordPartition convertToRecordPartition() {
-        Map<String, String> map = new HashMap<>();
-        map.put(INSTANCE_ID, sourceConfig.getConnectorConfig().getConnectorId());
-
-        return new RecordPartition(map);
     }
 }

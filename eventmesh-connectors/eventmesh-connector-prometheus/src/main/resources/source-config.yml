@@ -33,12 +33,3 @@ connectorConfig:
     query: up
     interval: 60
     step: 1s
-offsetStorageConfig:
-    offsetStorageType: nacos
-    offsetStorageAddr: 127.0.0.1:8848
-    extensions: {
-      #same with topic
-        dataId: prometheusSource,
-      #same with group
-        group: prometheusSource
-    }
