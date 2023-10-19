@@ -87,5 +87,3 @@ include 'eventmesh-webhook:eventmesh-webhook-api'
 include 'eventmesh-webhook:eventmesh-webhook-admin'
 include 'eventmesh-webhook:eventmesh-webhook-receive'
 
-include 'eventmesh-sdks'
-include 'eventmesh-sdk-java'
