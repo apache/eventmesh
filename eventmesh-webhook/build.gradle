@@ -35,5 +35,4 @@ task copyEventMeshAdmin(dependsOn: ['jar']) {
             from "../eventmesh-webhook/dist/apps/eventmesh-webhook-receive.jar"
         }
     }
-    spotlessJava.enabled false
 }

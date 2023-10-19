@@ -125,7 +125,15 @@ allprojects {
             removeUnusedImports()
         }
     }
-    spotlessJava.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
+
+    afterEvaluate {
+        tasks.forEach {task ->
+            if (task.name.contains("spotlessJava")) {
+                task.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
+            }
+        }
+        spotlessJava.dependsOn(subprojects.collect {it.tasks["spotlessJava"] })
+    }
 
     test {
         useJUnitPlatform()

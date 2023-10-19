@@ -39,6 +39,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
 }
 
+spotlessJava.enabled false
+
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
     plugins {
