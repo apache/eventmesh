@@ -18,6 +18,7 @@
 package org.apache.eventmesh.admin.exception;
 
 import org.apache.eventmesh.admin.dto.Result;
+import org.apache.eventmesh.admin.dto.Result.Message;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,22 +39,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<Result<Object>> baseHandler(BaseException e, HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        log.error("RESTful API {} service error occurred: ", requestURI, e);
-        return ResponseEntity.status(e.getErrors().getCode()).body(new Result<>(e.getMessage()));
+        String uri = request.getRequestURI();
+        log.error("RESTful API {} service error occurred, name: {}, type: {}", uri, e.getErrors().name(), e.getErrors().getType().name(), e);
+        return ResponseEntity.status(e.getErrors().getCode()).body(new Result<>(new Message(e)));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Result<Object>> runtimeHandler(RuntimeException e, HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        log.error("RESTful API {} runtime error occurred: ", requestURI, e);
+        String uri = request.getRequestURI();
+        log.error("RESTful API {} runtime error occurred.", uri, e);
         return Result.internalError(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Object>> exceptionHandler(Exception e, HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        log.error("RESTful API {} unknown error occurred: ", requestURI, e);
+        String uri = request.getRequestURI();
+        log.error("RESTful API {} unknown error occurred.", uri, e);
         return Result.internalError(e.getMessage());
     }
 

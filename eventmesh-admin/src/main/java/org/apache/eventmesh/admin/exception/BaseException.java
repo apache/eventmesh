@@ -43,12 +43,12 @@ public class BaseException extends RuntimeException {
      * Customized error reporting using enums and exceptions
      */
     public BaseException(Errors errors, Throwable cause) {
-        super(ExceptionUtils.trimDesc(errors.toString()) + COLON + cause.getMessage(), cause);
+        super(ExceptionUtils.trimDesc(errors.getDesc()) + COLON + cause.getMessage(), cause);
         this.errors = errors;
     }
 
     public BaseException(Errors errors) {
-        super(errors.toString());
+        super(errors.getDesc());
         this.errors = errors;
     }
 }

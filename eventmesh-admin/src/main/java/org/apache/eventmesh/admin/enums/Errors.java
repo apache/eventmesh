@@ -35,7 +35,7 @@ import lombok.Getter;
 @Getter
 public enum Errors {
 
-    SUCCESS(HttpStatus.OK, Types.SUCCESS, "success"),
+    SUCCESS(HttpStatus.OK, Types.SUCCESS, "Operation success."),
 
     NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, Types.SDK_CONFIG_ERR,
         "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
@@ -72,7 +72,7 @@ public enum Errors {
     @Getter
     public enum Types {
 
-        SUCCESS("Operation Success"),
+        SUCCESS("Successfully received and processed"),
 
         SDK_CONFIG_ERR("The Meta SDK config in EventMeshAdmin application.yml error"),
 
