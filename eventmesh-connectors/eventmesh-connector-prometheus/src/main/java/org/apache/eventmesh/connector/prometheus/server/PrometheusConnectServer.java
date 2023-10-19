@@ -32,8 +32,8 @@ public class PrometheusConnectServer {
         PrometheusServerConfig serverConfig = ConfigUtil.parse(PrometheusServerConfig.class, "server-config.yml");
 
         if (serverConfig.isSourceEnable()) {
-            Application kafkaSourceApp = new Application();
-            kafkaSourceApp.run(PrometheusSourceConnector.class);
+            Application prometheusSourceApp = new Application();
+            prometheusSourceApp.run(PrometheusSourceConnector.class);
         }
     }
 }
