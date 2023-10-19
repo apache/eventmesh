@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.meta.consul.service;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
@@ -53,7 +55,7 @@ public class ConsulMetaServiceTest {
     public void registryTest() {
         consulMetaService = new ConsulMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
+        ConfigurationContextUtil.putIfAbsent(HTTP, configuration);
         configuration.setMetaStorageAddr("127.0.0.1:8500");
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");

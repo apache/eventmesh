@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
@@ -202,9 +203,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             final EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName()
-                + "-" + ConfigurationContextUtil.HTTP);
+                + "-" + HTTP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
-            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
+            eventMeshRegisterInfo.setProtocolType(HTTP);
             registerResult = metaStorage.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             log.error("eventMesh register to registry failed", e);
@@ -223,7 +224,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
-        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
+        eventMeshUnRegisterInfo.setProtocolType(HTTP);
         final boolean registerResult = metaStorage.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
