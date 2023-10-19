@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.prometheus.config;
 
-import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

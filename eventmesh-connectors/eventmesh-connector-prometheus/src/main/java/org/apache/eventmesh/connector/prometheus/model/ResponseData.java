@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.prometheus.model;
 
 import java.util.List;
+
 import lombok.Data;
 
 @Data

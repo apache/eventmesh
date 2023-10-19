@@ -17,14 +17,6 @@
 
 package org.apache.eventmesh.connector.prometheus.source.connector;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusReq;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusRsp;
 import org.apache.eventmesh.connector.prometheus.source.config.PrometheusSourceConfig;
@@ -35,6 +27,7 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -43,6 +36,16 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PrometheusSourceConnector implements Source {
@@ -96,7 +99,7 @@ public class PrometheusSourceConnector implements Source {
     @Override
     public void start() {
         log.info("prometheus source connector start.");
-        startTime = Objects.requireNonNullElseGet(initTime, () -> System.currentTimeMillis() / 1000);
+        startTime = initTime != null ? initTime : System.currentTimeMillis() / 1000;
     }
 
     @Override
