@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
@@ -77,13 +81,13 @@ public class EventMeshServer {
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
             switch (provideServerProtocol.toUpperCase()) {
-                case ConfigurationContextUtil.HTTP:
+                case HTTP:
                     BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
                     break;
-                case ConfigurationContextUtil.TCP:
+                case TCP:
                     BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
                     break;
-                case ConfigurationContextUtil.GRPC:
+                case GRPC:
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
                     break;
                 default:

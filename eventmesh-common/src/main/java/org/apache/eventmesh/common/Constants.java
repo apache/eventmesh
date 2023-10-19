@@ -194,5 +194,9 @@ public class Constants {
      */
     public static final String CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json";
 
+    public static final String HTTP = "HTTP";
 
+    public static final String TCP = "TCP";
+
+    public static final String GRPC = "GRPC";
 }
