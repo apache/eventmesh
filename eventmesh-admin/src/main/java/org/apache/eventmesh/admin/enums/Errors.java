@@ -33,32 +33,51 @@ import lombok.Getter;
 @Getter
 public enum Errors {
 
-    SUCCESS(HttpStatus.OK, "SUCCESS", "success"),
+    SUCCESS(HttpStatus.OK, Types.SUCCESS, "success"),
 
-    NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, "SDK_CONFIG_ERR",
+    NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, Types.SDK_CONFIG_ERR,
         "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
 
-    NACOS_GET_CONFIGS_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "Failed to retrieve Nacos config(s)."),
+    NACOS_GET_CONFIGS_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "Failed to retrieve Nacos config(s)."),
 
-    NACOS_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "No result returned by Nacos. Please check Nacos."),
+    NACOS_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "No result returned by Nacos. Please check Nacos."),
 
-    NACOS_LOGIN_ERR(HttpStatus.UNAUTHORIZED, "META_COM_ERR", "Nacos login failed."),
+    NACOS_LOGIN_ERR(HttpStatus.UNAUTHORIZED, Types.META_COM_ERR, "Nacos login failed."),
 
-    NACOS_LOGIN_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, "META_COM_ERR", "Nacos didn't return accessToken. Please check Nacos status."),
+    NACOS_LOGIN_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "Nacos didn't return accessToken. Please check Nacos status."),
     ;
 
     // error code
     private final HttpStatus code;
 
     // error type
-    private final String type;
+    private final Types type;
 
     // error message
     private final String desc;
 
-    Errors(HttpStatus code, String type, String desc) {
+    Errors(HttpStatus code, Types type, String desc) {
         this.code = code;
         this.type = type;
         this.desc = desc;
+    }
+
+    public enum Types {
+
+        SUCCESS("Operation Success"),
+
+        SDK_CONFIG_ERR("The Meta SDK config in EventMeshAdmin application.yml error"),
+
+        META_COM_ERR("Network communication to Meta error"),
+        ;
+
+        /**
+         * Helpful for understanding and not used for now
+         */
+        private final String desc;
+
+        Types(String desc) {
+            this.desc = desc;
+        }
     }
 }
