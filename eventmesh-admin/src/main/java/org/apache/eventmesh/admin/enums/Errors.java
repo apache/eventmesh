@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.enums;
 
+import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
+
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
@@ -62,6 +64,12 @@ public enum Errors {
         this.desc = desc;
     }
 
+    @Override
+    public String toString() {
+        return name() + " of " + type + COLON + desc;
+    }
+
+    @Getter
     public enum Types {
 
         SUCCESS("Operation Success"),

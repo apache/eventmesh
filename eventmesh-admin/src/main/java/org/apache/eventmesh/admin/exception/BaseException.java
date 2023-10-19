@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.exception;
 
+import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
+
 import org.apache.eventmesh.admin.enums.Errors;
 import org.apache.eventmesh.admin.utils.ExceptionUtils;
 
@@ -31,11 +33,6 @@ public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 3509261993355721168L;
 
-    /**
-     * colon with space
-     */
-    public static final String COLON = ": ";
-
     private Errors errors;
 
     public BaseException(String message) {
@@ -46,12 +43,12 @@ public class BaseException extends RuntimeException {
      * Customized error reporting using enums and exceptions
      */
     public BaseException(Errors errors, Throwable cause) {
-        super(errors.getType() + COLON + ExceptionUtils.trimDesc(errors.getDesc()) + COLON + cause.getMessage(), cause);
+        super(ExceptionUtils.trimDesc(errors.toString()) + COLON + cause.getMessage(), cause);
         this.errors = errors;
     }
 
     public BaseException(Errors errors) {
-        super(errors.getDesc());
+        super(errors.toString());
         this.errors = errors;
     }
 }
