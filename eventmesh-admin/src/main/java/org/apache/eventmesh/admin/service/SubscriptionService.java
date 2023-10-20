@@ -17,7 +17,10 @@
 
 package org.apache.eventmesh.admin.service;
 
-import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.dto.Result;
+import org.apache.eventmesh.admin.model.SubscriptionInfo;
+
+import java.util.List;
 
 /**
  * "Subscription" refers to the traditional MQ producer-consumer topic subscription relationship,
@@ -28,5 +31,5 @@ public interface SubscriptionService {
 
     String retrieveConfig(String dataId, String group);
 
-    SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group);
+    Result<List<SubscriptionInfo>> retrieveConfigs(Integer page, Integer size, String dataId, String group);
 }

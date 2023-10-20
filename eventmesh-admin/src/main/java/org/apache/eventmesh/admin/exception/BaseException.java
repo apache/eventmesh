@@ -17,15 +17,38 @@
 
 package org.apache.eventmesh.admin.exception;
 
+import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
+
+import org.apache.eventmesh.admin.enums.Errors;
+import org.apache.eventmesh.admin.utils.ExceptionUtils;
+
+import lombok.Getter;
+
 /**
- * EventMesh Runtime side exception
+ * Exceptions in EventMeshAdmin application
  */
 
-public class EventMeshException extends BaseException {
+@Getter
+public class BaseException extends RuntimeException {
 
-    private static final long serialVersionUID = 5648256502005456586L;
+    private static final long serialVersionUID = 3509261993355721168L;
 
-    public EventMeshException(String message) {
+    private Errors errors;
+
+    public BaseException(String message) {
         super(message);
+    }
+
+    /**
+     * Customized error reporting using enums and exceptions
+     */
+    public BaseException(Errors errors, Throwable cause) {
+        super(ExceptionUtils.trimDesc(errors.getDesc()) + COLON + cause.getMessage(), cause);
+        this.errors = errors;
+    }
+
+    public BaseException(Errors errors) {
+        super(errors.getDesc());
+        this.errors = errors;
     }
 }
