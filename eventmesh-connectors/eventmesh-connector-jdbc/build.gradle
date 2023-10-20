@@ -14,27 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-plugins {
-    id 'antlr'
-}
-
-repositories {
-    mavenCentral()
-}
-
-generateGrammarSource {
-    maxHeapSize = '64m'
-    arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
-    outputDirectory = file('src/main/java/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration')
-}
-
-packageSources {
-    dependsOn generateGrammarSource
-}
-
 dependencies {
-    antlr("org.antlr:antlr4:4.13.0")
     implementation 'org.antlr:antlr4-runtime:4.13.0'
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
