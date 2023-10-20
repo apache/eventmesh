@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.common;
+package org.apache.eventmesh.admin.constant;
 
 public class ConfigConst {
 

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.enums;
 
-import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
+import static org.apache.eventmesh.admin.constant.ConfigConst.COLON;
 
 import org.springframework.http.HttpStatus;
 

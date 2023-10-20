@@ -23,8 +23,8 @@ import static org.apache.eventmesh.admin.enums.Errors.NACOS_LOGIN_EMPTY_RESP_ERR
 import static org.apache.eventmesh.admin.enums.Errors.NACOS_LOGIN_ERR;
 import static org.apache.eventmesh.admin.enums.Errors.NACOS_SDK_CONFIG_ERR;
 
-import org.apache.eventmesh.admin.common.ConfigConst;
-import org.apache.eventmesh.admin.common.NacosConst;
+import org.apache.eventmesh.admin.constant.ConfigConst;
+import org.apache.eventmesh.admin.constant.NacosConst;
 import org.apache.eventmesh.admin.config.AdminProperties;
 import org.apache.eventmesh.admin.dto.Result;
 import org.apache.eventmesh.admin.exception.EventMeshAdminException;
