@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.registry.nacos.service;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
@@ -55,7 +57,7 @@ public class NacosMetaServiceTest {
         configuration.setMetaStorageAddr("127.0.0.1");
         configuration.setEventMeshMetaStoragePluginPassword("nacos");
         configuration.setEventMeshMetaStoragePluginUsername("nacos");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
+        ConfigurationContextUtil.putIfAbsent(HTTP, configuration);
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");

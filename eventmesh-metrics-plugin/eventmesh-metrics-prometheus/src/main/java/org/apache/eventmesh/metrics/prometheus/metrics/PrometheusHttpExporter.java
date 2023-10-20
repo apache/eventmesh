@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.metrics.prometheus.metrics;
 
-import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.HTTP;
+import static org.apache.eventmesh.common.Constants.HTTP;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
 

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.registry.zookeeper.service;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
@@ -66,10 +68,10 @@ public class ZookeeperMetaServiceTest {
         CommonConfiguration configuration = new CommonConfiguration();
         configuration.setMetaStorageAddr("127.0.0.1:1500");
         configuration.setEventMeshName("eventmesh");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
+        ConfigurationContextUtil.putIfAbsent(HTTP, configuration);
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
-        Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
+        Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + HTTP);
         Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
         Mockito.when(eventMeshRegisterInfo.getEventMeshInstanceNumMap()).thenReturn(Maps.newHashMap());
         HashMap<String, String> metaData = Maps.newHashMap();
@@ -77,7 +79,7 @@ public class ZookeeperMetaServiceTest {
         Mockito.when(eventMeshRegisterInfo.getMetadata()).thenReturn(metaData);
 
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
-        Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
+        Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + HTTP);
         Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
     }
 
