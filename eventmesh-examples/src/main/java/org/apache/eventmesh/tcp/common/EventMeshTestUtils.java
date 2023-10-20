@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.tcp.common;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -156,7 +156,7 @@ public class EventMeshTestUtils {
             .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .build();
@@ -171,7 +171,7 @@ public class EventMeshTestUtils {
             .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .withExtension(UtilsConstants.MSG_TYPE, "persistent")

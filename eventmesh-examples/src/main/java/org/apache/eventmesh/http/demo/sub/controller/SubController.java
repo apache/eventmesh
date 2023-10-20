@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
@@ -59,7 +60,7 @@ public class SubController {
         }
         @SuppressWarnings("unchecked")
         final Map<String, String> contentMap = JsonUtils.parseObject(content, HashMap.class);
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
+        if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (eventFormat != null) {
                 final CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));

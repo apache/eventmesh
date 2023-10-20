@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.registry.etcd.service;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
@@ -51,7 +53,7 @@ public class EtcdMetaServiceTest {
         etcdMetaService = new EtcdMetaService();
         CommonConfiguration configuration = new CommonConfiguration();
         configuration.setMetaStorageAddr("127.0.0.1:2379");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
+        ConfigurationContextUtil.putIfAbsent(HTTP, configuration);
 
         // Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
         // Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");

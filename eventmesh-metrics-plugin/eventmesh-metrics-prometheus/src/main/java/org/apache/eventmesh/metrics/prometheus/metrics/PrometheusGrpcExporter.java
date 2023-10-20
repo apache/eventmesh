@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.metrics.prometheus.metrics;
 
-import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.GRPC;
+import static org.apache.eventmesh.common.Constants.GRPC;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.METRICS_GRPC_PREFIX;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;

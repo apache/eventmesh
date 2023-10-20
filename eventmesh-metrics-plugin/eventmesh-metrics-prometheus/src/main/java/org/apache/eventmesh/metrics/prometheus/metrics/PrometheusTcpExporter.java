@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.metrics.prometheus.metrics;
 
+import static org.apache.eventmesh.common.Constants.TCP;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.METRICS_TCP_PREFIX;
-import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterConstants.TCP;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
 import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
 

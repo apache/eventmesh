@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.connector.openfunction.client;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -80,7 +81,7 @@ public class CloudEventsPublishInstance {
             .withSubject("TEST-TOPIC-FUNCTION")
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
             .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
             .build();

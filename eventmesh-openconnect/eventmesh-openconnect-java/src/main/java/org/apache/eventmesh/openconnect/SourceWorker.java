@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.openconnect;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -230,7 +231,7 @@ public class SourceWorker implements ConnectorWorker {
             .withSubject(config.getPubSubConfig().getSubject())
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", 10000)
             .build();
