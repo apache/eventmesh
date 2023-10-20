@@ -115,15 +115,15 @@ public class Result<T> {
     @Data
     public static class StatusMessage {
 
-        private String name;
+        private String status;
 
-        private String type;
+        private String category;
 
         private String desc;
 
         public StatusMessage(BaseException e) {
-            this.name = e.getStatus().name();
-            this.type = e.getStatus().getType().name();
+            this.status = e.getStatus().name();
+            this.category = e.getStatus().getCategory().name();
             this.desc = e.getMessage();
         }
 
@@ -132,8 +132,8 @@ public class Result<T> {
          * the stack trace cannot be displayed when returning unsuccessful results.
          */
         public StatusMessage(Status status) {
-            this.name = status.name();
-            this.type = status.getType().name();
+            this.status = status.name();
+            this.category = status.getCategory().name();
             this.desc = status.getDesc(); // no stack trace
         }
 

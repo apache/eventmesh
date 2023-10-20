@@ -40,7 +40,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<Result<Object>> baseHandler(BaseException e, HttpServletRequest request) {
         String uri = request.getRequestURI();
-        log.error("RESTful API {} service error occurred, name: {}, type: {}", uri, e.getStatus().name(), e.getStatus().getType().name(), e);
+        log.error("RESTful API {} service error occurred, name: {}, category: {}",
+            uri, e.getStatus().name(), e.getStatus().getCategory().name(), e);
         return ResponseEntity.status(e.getStatus().getCode()).body(new Result<>(new StatusMessage(e)));
     }
 
