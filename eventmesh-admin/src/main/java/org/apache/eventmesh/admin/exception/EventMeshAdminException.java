@@ -17,7 +17,13 @@
 
 package org.apache.eventmesh.admin.exception;
 
-public class EventMeshAdminException extends RuntimeException {
+import org.apache.eventmesh.admin.enums.Errors;
+
+/**
+ * EventMeshAdmin Application side exception
+ */
+
+public class EventMeshAdminException extends BaseException {
 
     private static final long serialVersionUID = 2002022502005456586L;
 
@@ -25,15 +31,10 @@ public class EventMeshAdminException extends RuntimeException {
         super(message);
     }
 
-    public EventMeshAdminException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshAdminException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshAdminException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    /**
+     * Customized error reporting using enums and exceptions
+     */
+    public EventMeshAdminException(Errors errors, Throwable cause) {
+        super(errors, cause);
     }
 }

@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.admin.service.impl;
 
-import org.apache.eventmesh.admin.dto.SubscriptionResponse;
+import org.apache.eventmesh.admin.dto.Result;
+import org.apache.eventmesh.admin.model.SubscriptionInfo;
 import org.apache.eventmesh.admin.service.SubscriptionService;
+
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -34,7 +37,7 @@ public class EtcdSubscriptionService implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionResponse retrieveConfigs(Integer page, Integer size, String dataId, String group) {
+    public Result<List<SubscriptionInfo>> retrieveConfigs(Integer page, Integer size, String dataId, String group) {
         return null;
     }
 }

@@ -15,30 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.dto;
+package org.apache.eventmesh.admin.utils;
 
-import org.apache.eventmesh.admin.model.SubscriptionInfo;
+public class ExceptionUtils {
 
-import java.util.List;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SubscriptionResponse {
-
-    private List<SubscriptionInfo> subscriptionInfos;
-
-    private Integer pages;
-
-    private String message;
-
-    public SubscriptionResponse(String message) {
-        this.message = message;
+    /**
+     * Remove the last period of exception description.
+     */
+    public static String trimDesc(String desc) {
+        if (desc == null) {
+            return "";
+        }
+        if (desc.charAt(desc.length() - 1) == '.') {
+            return desc.substring(0, desc.length() - 1);
+        }
+        return desc;
     }
+
 }

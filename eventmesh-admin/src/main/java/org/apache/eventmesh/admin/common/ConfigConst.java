@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.config;
+package org.apache.eventmesh.admin.common;
 
-public class Constants {
+public class ConfigConst {
 
-    // config
+    // yml config
     public static final String ADMIN_PROPS_PREFIX = "eventmesh";
     public static final String META_TYPE_NACOS = "nacos";
     public static final String META_TYPE_ETCD = "etcd";
@@ -28,7 +28,10 @@ public class Constants {
     public static final String HTTP_PREFIX = "http://";
     public static final String HTTPS_PREFIX = "https://";
 
-    // Nacos
-    public static final String NACOS_LOGIN_API = "/nacos/v1/auth/login";
-    public static final String NACOS_CONFIGS_API = "/nacos/v1/cs/configs";
+    // common
+    /**
+     * colon with space
+     */
+    public static final String COLON = ": ";
+
 }

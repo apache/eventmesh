@@ -17,7 +17,13 @@
 
 package org.apache.eventmesh.admin.exception;
 
-public class MetaException extends EventMeshAdminException {
+import org.apache.eventmesh.admin.enums.Errors;
+
+/**
+ * Meta side exception with EventMeshAdmin Application
+ */
+
+public class MetaException extends BaseException {
 
     private static final long serialVersionUID = 6246145526338359773L;
 
@@ -25,7 +31,14 @@ public class MetaException extends EventMeshAdminException {
         super(message);
     }
 
-    public MetaException(String message, Throwable cause) {
-        super(message, cause);
+    /**
+     * Customized error reporting using enums and exceptions
+     */
+    public MetaException(Errors errors, Throwable cause) {
+        super(errors, cause);
+    }
+
+    public MetaException(Errors errors) {
+        super(errors);
     }
 }
