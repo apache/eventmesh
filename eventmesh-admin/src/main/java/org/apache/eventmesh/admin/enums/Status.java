@@ -24,7 +24,7 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 /**
- * An enumeration class that conforms to the RESTful specifications and custom error reporting requirements.
+ * An error enumeration class that conforms to the RESTful specifications and custom error reporting requirements.
  * <ul>
  *   <li>The 'code' field is used to return the HTTP status code using {@link HttpStatus}.</li>
  *   <li>The 'type' field represents the major category of the error.</li>
@@ -33,7 +33,7 @@ import lombok.Getter;
  */
 
 @Getter
-public enum Errors {
+public enum Status {
 
     SUCCESS(HttpStatus.OK, Types.SUCCESS, "Operation success."),
 
@@ -58,7 +58,7 @@ public enum Errors {
     // error message
     private final String desc;
 
-    Errors(HttpStatus code, Types type, String desc) {
+    Status(HttpStatus code, Types type, String desc) {
         this.code = code;
         this.type = type;
         this.desc = desc;

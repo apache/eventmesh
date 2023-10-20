@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.utils;
+package org.apache.eventmesh.admin.util;
 
-public class ExceptionUtils {
+public class ExceptionUtil {
 
     /**
      * Remove the last period of exception description.

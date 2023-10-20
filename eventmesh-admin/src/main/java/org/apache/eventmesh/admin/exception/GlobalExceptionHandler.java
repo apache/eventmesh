@@ -18,7 +18,7 @@
 package org.apache.eventmesh.admin.exception;
 
 import org.apache.eventmesh.admin.dto.Result;
-import org.apache.eventmesh.admin.dto.Result.Message;
+import org.apache.eventmesh.admin.dto.Result.StatusMessage;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class, in conjunction with {@linkplain org.apache.eventmesh.admin.enums.Errors Errors} and {@link BaseException},
+ * This class, in conjunction with {@linkplain org.apache.eventmesh.admin.enums.Status Status} and {@link BaseException},
  * collectively implements customized error reporting.
  */
 
@@ -40,8 +40,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<Result<Object>> baseHandler(BaseException e, HttpServletRequest request) {
         String uri = request.getRequestURI();
-        log.error("RESTful API {} service error occurred, name: {}, type: {}", uri, e.getErrors().name(), e.getErrors().getType().name(), e);
-        return ResponseEntity.status(e.getErrors().getCode()).body(new Result<>(new Message(e)));
+        log.error("RESTful API {} service error occurred, name: {}, type: {}", uri, e.getStatus().name(), e.getStatus().getType().name(), e);
+        return ResponseEntity.status(e.getStatus().getCode()).body(new Result<>(new StatusMessage(e)));
     }
 
     @ExceptionHandler(RuntimeException.class)
