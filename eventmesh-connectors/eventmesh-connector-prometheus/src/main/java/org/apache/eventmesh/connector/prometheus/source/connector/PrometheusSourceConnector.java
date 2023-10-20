@@ -39,16 +39,44 @@ import org.apache.http.util.EntityUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.rholder.retry.Attempt;
+import com.github.rholder.retry.RetryListener;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PrometheusSourceConnector implements Source {
+
+    private static final int MAX_RETRY_TIME = 3;
+
+    private static final int FIXED_WAIT_SECOND = 1;
+
+    private final Retryer<Boolean> retryer =
+        RetryerBuilder.<Boolean>newBuilder()
+            .retryIfException()
+            .retryIfResult(res -> !res)
+            .withWaitStrategy(WaitStrategies.fixedWait(FIXED_WAIT_SECOND, TimeUnit.SECONDS))
+            .withStopStrategy(StopStrategies.stopAfterAttempt(MAX_RETRY_TIME))
+            .withRetryListener(
+                new RetryListener() {
+                    @Override
+                    public <V> void onRetry(Attempt<V> attempt) {
+                        long times = attempt.getAttemptNumber();
+                        log.warn("retry invoke http,times={}", times);
+                    }
+                })
+            .build();
 
     private PrometheusSourceConfig sourceConfig;
 
@@ -72,6 +100,7 @@ public class PrometheusSourceConnector implements Source {
     @Override
     public void init(Config config) {
         this.sourceConfig = (PrometheusSourceConfig) config;
+
         doInit();
     }
 
@@ -93,6 +122,7 @@ public class PrometheusSourceConnector implements Source {
 
         url = MessageFormat.format("{0}/{1}", sourceConfig.getConnectorConfig().getAddress(), sourceConfig.getConnectorConfig().getApi());
 
+        // TODO: replace with feature #4481
         httpClient = HttpClientBuilder.create().build();
     }
 
@@ -120,35 +150,43 @@ public class PrometheusSourceConnector implements Source {
     @Override
     public List<ConnectRecord> poll() {
         try {
-            queryPrometheusReq.setStart(startTime);
-            queryPrometheusReq.setEnd(startTime + interval);
-
-            HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new StringEntity(JSON.toJSONString(queryPrometheusReq), ContentType.APPLICATION_JSON));
-            CloseableHttpResponse response = httpClient.execute(httpPost);
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.error("failed to poll message from prometheus,http code={}", response.getStatusLine().getStatusCode());
-                return null;
+            if (startTime > System.currentTimeMillis() / 1000 - interval) {
+                Thread.sleep(interval * 1000);
             }
 
-            String result = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            AtomicReference<CloseableHttpResponse> response = null;
+            retryer.call(() -> {
+                try {
+                    queryPrometheusReq.setStart(startTime);
+                    queryPrometheusReq.setEnd(startTime + interval);
+
+                    HttpPost httpPost = new HttpPost(url);
+                    httpPost.setEntity(new StringEntity(JSON.toJSONString(queryPrometheusReq), ContentType.APPLICATION_JSON));
+                    response.set(httpClient.execute(httpPost));
+                    return response.get().getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+                } catch (Exception e) {
+                    log.error("invoke http failed", e);
+                    return false;
+                }
+            });
+
+            String result = EntityUtils.toString(response.get().getEntity(), StandardCharsets.UTF_8);
             QueryPrometheusRsp responseData = JSONObject.parseObject(result, QueryPrometheusRsp.class);
-            List<ConnectRecord> connectRecords = new ArrayList<>();
-            for (String data : responseData.getData().getResult()) {
-                log.info("poll message {} from prometheus: ", data);
-
-                Long timestamp = System.currentTimeMillis();
-                RecordPartition recordPartition = new RecordPartition();
-                RecordOffset recordOffset = new RecordOffset();
-                ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, data);
-
-                connectRecords.add(connectRecord);
-            }
+            List<ConnectRecord> connectRecords =
+                responseData.getData().getResult().stream().map(this::assembleRecord).collect(Collectors.toList());
 
             return connectRecords;
         } catch (Exception e) {
             log.error("failed to poll message from prometheus", e);
             return null;
         }
+    }
+
+    private ConnectRecord assembleRecord(String data) {
+        Long timestamp = System.currentTimeMillis();
+        RecordPartition recordPartition = new RecordPartition();
+        RecordOffset recordOffset = new RecordOffset();
+
+        return new ConnectRecord(recordPartition, recordOffset, timestamp, data);
     }
 }
