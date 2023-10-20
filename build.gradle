@@ -557,6 +557,8 @@ subprojects {
             dependency "com.alibaba:fastjson:1.2.83"
 
             dependency "software.amazon.awssdk:s3:2.20.29"
+            dependency "com.github.rholder:guava-retrying:2.0.0"
+
         }
     }
 }
