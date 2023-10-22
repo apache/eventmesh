@@ -22,9 +22,9 @@ import org.apache.eventmesh.storage.standalone.TestUtils;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 
@@ -32,37 +32,37 @@ public class StandaloneProducerTest {
 
     private StandaloneProducer standaloneProducer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         standaloneProducer = new StandaloneProducer(new Properties());
     }
 
     @Test
     public void testIsStarted() {
-        Assert.assertFalse(standaloneProducer.isStarted());
+        Assertions.assertFalse(standaloneProducer.isStarted());
     }
 
     @Test
     public void testIsClosed() {
-        Assert.assertTrue(standaloneProducer.isClosed());
+        Assertions.assertTrue(standaloneProducer.isClosed());
     }
 
     @Test
     public void testStart() {
         standaloneProducer.start();
-        Assert.assertTrue(standaloneProducer.isStarted());
+        Assertions.assertTrue(standaloneProducer.isStarted());
     }
 
     @Test
     public void testShutdown() {
         standaloneProducer.shutdown();
-        Assert.assertTrue(standaloneProducer.isClosed());
+        Assertions.assertTrue(standaloneProducer.isClosed());
     }
 
     @Test
     public void testPublish() {
         CloudEvent cloudEvent = TestUtils.createDefaultCloudEvent();
         SendResult sendResult = standaloneProducer.publish(cloudEvent);
-        Assert.assertNotNull(sendResult);
+        Assertions.assertNotNull(sendResult);
     }
 }

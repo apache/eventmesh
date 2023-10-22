@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.config;
 
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.assertj.core.util.Strings;
@@ -81,7 +84,7 @@ public class ConfigService {
         configInfo.setPath(config == null ? null : config.path());
         configInfo.setHump(config == null ? ConfigInfo.HUMP_SPOT : config.hump());
         configInfo.setPrefix(config == null ? null : config.prefix());
-        configInfo.setMonitor(config == null ? false : config.monitor());
+        configInfo.setMonitor(config != null && config.monitor());
         configInfo.setReloadMethodName(config == null ? null : config.reloadMethodName());
 
         try {
@@ -127,7 +130,7 @@ public class ConfigService {
         }
 
         if (filePath.contains(".jar")) {
-            try (final InputStream inputStream = getClass().getResourceAsStream(resourceUrl)) {
+            try (final InputStream inputStream = getClass().getResourceAsStream(Objects.requireNonNull(resourceUrl))) {
                 if (inputStream == null) {
                     throw new RuntimeException("file is not exists");
                 }
@@ -153,7 +156,15 @@ public class ConfigService {
         configInfo.setMonitor(config.monitor());
         configInfo.setReloadMethodName(config.reloadMethodName());
 
-        Field field = clazz.getDeclaredField(configInfo.getField());
+        Field field = null;
+        try {
+            field = clazz.getDeclaredField(configInfo.getField());
+        } catch (NoSuchFieldException e) {
+            field = lookUpFieldByParentClass(clazz, configInfo.getField());
+            if (field == null) {
+                throw e;
+            }
+        }
         configInfo.setClazz(field.getType());
 
         Config configType = field.getType().getAnnotation(Config.class);
@@ -178,4 +189,5 @@ public class ConfigService {
             configMonitorService.monitor(configInfo);
         }
     }
+
 }

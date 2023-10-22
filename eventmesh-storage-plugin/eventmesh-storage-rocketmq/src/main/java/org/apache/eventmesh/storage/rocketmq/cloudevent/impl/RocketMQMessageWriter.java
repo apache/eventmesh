@@ -8,16 +8,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.rocketmq.cloudevent.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.Message;
+
+import javax.annotation.Nonnull;
 
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
@@ -27,45 +30,37 @@ import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
-
 public final class RocketMQMessageWriter<R>
     implements MessageWriter<CloudEventWriter<Message>, Message>, CloudEventWriter<Message> {
 
-    private Message message;
-
+    private final Message message = new Message();
 
     public RocketMQMessageWriter(String topic) {
-        message = new Message();
         message.setTopic(topic);
     }
 
     public RocketMQMessageWriter(String topic, String keys) {
-        message = new Message();
-
         message.setTopic(topic);
 
-        if (keys != null && keys.length() > 0) {
+        if (StringUtils.isNotEmpty(keys)) {
             message.setKeys(keys);
         }
     }
 
     public RocketMQMessageWriter(String topic, String keys, String tags) {
-        message = new Message();
-
         message.setTopic(topic);
 
-        if (tags != null && tags.length() > 0) {
+        if (StringUtils.isNotEmpty(tags)) {
             message.setTags(tags);
         }
 
-        if (keys != null && keys.length() > 0) {
+        if (StringUtils.isNotEmpty(keys)) {
             message.setKeys(keys);
         }
     }
 
-
     @Override
-    public CloudEventContextWriter withContextAttribute(String name, String value)
+    public CloudEventContextWriter withContextAttribute(@Nonnull String name, @Nonnull String value)
         throws CloudEventRWException {
         message.putUserProperty(name, value);
         return this;
@@ -78,7 +73,7 @@ public final class RocketMQMessageWriter<R>
     }
 
     @Override
-    public Message setEvent(final EventFormat format, final byte[] value)
+    public Message setEvent(@Nonnull final EventFormat format, @Nonnull final byte[] value)
         throws CloudEventRWException {
         message.putUserProperty(RocketMQHeaders.CONTENT_TYPE, format.serializedContentType());
         message.setBody(value);
@@ -93,7 +88,6 @@ public final class RocketMQMessageWriter<R>
 
     @Override
     public Message end() {
-        message.setBody(null);
         return message;
     }
 }

@@ -25,16 +25,16 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.cloudevents.CloudEvent;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StandaloneConsumerTest {
 
     @Mock
@@ -42,7 +42,7 @@ public class StandaloneConsumerTest {
     private StandaloneConsumer standaloneConsumer;
     private List<CloudEvent> cloudEvents;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         standaloneConsumer = new StandaloneConsumer(new Properties());
         cloudEvents = createCloudEvents();
@@ -50,23 +50,23 @@ public class StandaloneConsumerTest {
 
     @Test
     public void testIsStarted() {
-        Assert.assertFalse(standaloneConsumer.isStarted());
+        Assertions.assertFalse(standaloneConsumer.isStarted());
     }
 
     @Test
     public void testIsClosed() {
-        Assert.assertTrue(standaloneConsumer.isClosed());
+        Assertions.assertTrue(standaloneConsumer.isClosed());
     }
 
     @Test
     public void testStart() {
         standaloneConsumer.start();
-        Assert.assertTrue(standaloneConsumer.isStarted());
+        Assertions.assertTrue(standaloneConsumer.isStarted());
     }
 
     @Test
     public void testShutdown() {
         standaloneConsumer.shutdown();
-        Assert.assertTrue(standaloneConsumer.isClosed());
+        Assertions.assertTrue(standaloneConsumer.isClosed());
     }
 }

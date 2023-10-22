@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.redis.producer;
@@ -29,10 +29,10 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -41,14 +41,14 @@ public class RedisProducerTest extends AbstractRedisServer {
 
     private RedisProducer redisProducer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         redisProducer = new RedisProducer();
         redisProducer.init(new Properties());
         redisProducer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         redisProducer.shutdown();
     }
@@ -74,15 +74,15 @@ public class RedisProducerTest extends AbstractRedisServer {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     downLatch.countDown();
-                    Assert.assertEquals(cloudEvent.getId(), sendResult.getMessageId());
-                    Assert.assertEquals(cloudEvent.getSubject(), sendResult.getTopic());
+                    Assertions.assertEquals(cloudEvent.getId(), sendResult.getMessageId());
+                    Assertions.assertEquals(cloudEvent.getSubject(), sendResult.getTopic());
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
                     downLatch.countDown();
-                    Assert.assertEquals(cloudEvent.getId(), context.getMessageId());
-                    Assert.assertEquals(cloudEvent.getSubject(), context.getTopic());
+                    Assertions.assertEquals(cloudEvent.getId(), context.getMessageId());
+                    Assertions.assertEquals(cloudEvent.getSubject(), context.getTopic());
                 }
             });
         }

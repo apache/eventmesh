@@ -29,23 +29,80 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
-
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The most basic server
+ */
 @Slf4j
 public abstract class AbstractRemotingServer {
 
+    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
     private static final int DEFAULT_SLEEP_SECONDS = 30;
 
     private EventLoopGroup bossGroup;
-
     private EventLoopGroup ioGroup;
-
     private EventExecutorGroup workerGroup;
 
     private int port;
 
-    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
+    private void buildBossGroup(final String threadPrefix) {
+        if (useEpoll()) {
+            bossGroup = new EpollEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyEpoll-Boss", true));
+        } else {
+            bossGroup = new NioEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyNio-Boss", true));
+        }
+
+    }
+
+    private void buildIOGroup(final String threadPrefix) {
+        if (useEpoll()) {
+            ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
+        } else {
+            ioGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyNio-IO"));
+        }
+    }
+
+    private void buildWorkerGroup(final String threadPrefix) {
+        workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
+    }
+
+    public void init(final String threadPrefix) throws Exception {
+        buildBossGroup(threadPrefix);
+        buildIOGroup(threadPrefix);
+        buildWorkerGroup(threadPrefix);
+    }
+
+    public abstract void start() throws Exception;
+
+    public void shutdown() throws Exception {
+        if (bossGroup != null) {
+            bossGroup.shutdownGracefully();
+            if (log.isInfoEnabled()) {
+                log.info("shutdown bossGroup");
+            }
+        }
+
+        ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
+
+        if (ioGroup != null) {
+            ioGroup.shutdownGracefully();
+            if (log.isInfoEnabled()) {
+                log.info("shutdown ioGroup");
+            }
+        }
+
+        if (workerGroup != null) {
+            workerGroup.shutdownGracefully();
+            if (log.isInfoEnabled()) {
+                log.info("shutdown workerGroup");
+            }
+        }
+    }
+
+    protected boolean useEpoll() {
+        return SystemUtils.isLinuxPlatform() && Epoll.isAvailable();
+    }
 
     public EventLoopGroup getBossGroup() {
         return bossGroup;
@@ -78,62 +135,4 @@ public abstract class AbstractRemotingServer {
     public void setPort(final int port) {
         this.port = port;
     }
-
-    private void buildBossGroup(final String threadPrefix) {
-        if (useEpoll()) {
-            bossGroup = new EpollEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyEpoll-Boss", true));
-        } else {
-            bossGroup = new NioEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyNio-Boss", true));
-        }
-
-    }
-
-    private void buildIOGroup(final String threadPrefix) {
-        if (useEpoll()) {
-            ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
-        } else {
-            ioGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyNio-IO"));
-        }
-    }
-
-    private void buildWorkerGroup(final String threadPrefix) {
-        workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
-    }
-
-    public void init(final String threadPrefix) throws Exception {
-        buildBossGroup(threadPrefix);
-        buildIOGroup(threadPrefix);
-        buildWorkerGroup(threadPrefix);
-    }
-
-    public void shutdown() throws Exception {
-        if (bossGroup != null) {
-            bossGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown bossGroup");
-            }
-        }
-
-        ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
-
-        if (ioGroup != null) {
-            ioGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown ioGroup");
-            }
-        }
-
-        if (workerGroup != null) {
-            workerGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown workerGroup");
-            }
-        }
-    }
-
-    protected boolean useEpoll() {
-        return SystemUtils.isLinuxPlatform() && Epoll.isAvailable();
-    }
-
-    public abstract void start() throws Exception;
 }

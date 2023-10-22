@@ -1,5 +1,3 @@
-package org.apache.eventmesh.webhook.admin;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.eventmesh.webhook.admin;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.eventmesh.webhook.admin;
 
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_EXTENSION;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
@@ -43,14 +43,12 @@ import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.Stri
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     private static final String CONSTANTS_WEBHOOK = "webhook";
 
     private final ConfigService configService;
-
 
     public NacosWebHookConfigOperation(final Properties properties) throws NacosException {
         configService = ConfigFactory.createConfigService(properties);
@@ -100,7 +98,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                     JsonUtils.toJSONString(manufacturer), ConfigType.JSON.getType());
             } catch (NacosException e) {
                 log.error("update manufacturersInfo error", e);
-                //rollback insert
+                // rollback insert
                 try {
                     configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
                 } catch (NacosException ex) {
@@ -153,6 +151,9 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         return result ? 1 : 0;
     }
 
+    /**
+     * Query WebHook configuration information based on the WebHook callback path specified in {@link WebHookConfig}.
+     */
     @Override
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         try {
@@ -214,7 +215,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     private Manufacturer getManufacturersInfo() throws NacosException {
         final String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         return StringUtil.isNullOrEmpty(manufacturersContent)
-            ? new Manufacturer() : JsonUtils.parseObject(manufacturersContent, Manufacturer.class);
+            ? new Manufacturer()
+            : JsonUtils.parseObject(manufacturersContent, Manufacturer.class);
     }
 
 }

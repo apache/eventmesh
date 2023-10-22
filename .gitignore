@@ -11,6 +11,7 @@ logs
 *.log
 *.log.*
 .idea
+!/.idea/icon.png
 build
 .classpath
 .project
@@ -30,3 +31,24 @@ h2/db.mv.db
 all-dependencies.txt
 self-modules.txt
 third-party-dependencies.txt
+
+# github codespaces or visual studio
+.vscode
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/*
+
+#rust
+Cargo.lock

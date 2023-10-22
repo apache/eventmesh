@@ -17,282 +17,168 @@
 
 package org.apache.eventmesh.metrics.prometheus.metrics;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.join;
+import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUtils.observeOfValue;
+
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PrometheusHttpExporter {
 
-    public static void export(String name, HttpSummaryMetrics summaryMetrics) {
+    /**
+     * Map structure : [metric name, description of name] -> the method of get corresponding metric.
+     */
+    private Map<String[], Function<HttpSummaryMetrics, Number>> paramPairs;
+
+    static {
+        paramPairs = new HashMap<String[], Function<HttpSummaryMetrics, Number>>() {
+
+            {
+                // maxHTTPTPS
+                put(join("eventmesh.http.request.tps.max", "max TPS of HTTP."),
+                    HttpSummaryMetrics::maxHTTPTPS);
+
+                // avgHTTPTPS
+                put(join("eventmesh.http.request.tps.avg", "avg TPS of HTTP."),
+                    HttpSummaryMetrics::avgHTTPTPS);
+
+                // maxHTTPCost
+                put(join("eventmesh.http.request.cost.max", "max cost of HTTP."),
+                    HttpSummaryMetrics::maxHTTPCost);
+
+                // avgHTTPCost
+                put(join("eventmesh.http.request.cost.avg", "avg cost of HTTP."),
+                    HttpSummaryMetrics::avgHTTPCost);
+
+                // avgHTTPBodyDecodeCost
+                put(join("eventmesh.http.body.decode.cost.avg", "avg body decode cost of HTTP."),
+                    HttpSummaryMetrics::avgHTTPBodyDecodeCost);
+
+                // httpDiscard
+                put(join("eventmesh.http.request.discard.num", "http request discard num."),
+                    HttpSummaryMetrics::getHttpDiscard);
+
+                // maxBatchSendMsgTPS
+                put(join("eventmesh.batch.send.message.tps.max", "max of batch send message tps."),
+                    HttpSummaryMetrics::maxSendBatchMsgTPS);
+
+                // avgBatchSendMsgTPS
+                put(join("eventmesh.batch.send.message.tps.avg", "avg of batch send message tps."),
+                    HttpSummaryMetrics::avgSendBatchMsgTPS);
+
+                // sum
+                put(join("eventmesh.batch.send.message.num", "sum of batch send message number."),
+                    HttpSummaryMetrics::getSendBatchMsgNumSum);
+
+                // sumFail
+                put(join("eventmesh.batch.send.message.fail.num", "sum of batch send message fail message number."),
+                    HttpSummaryMetrics::getSendBatchMsgFailNumSum);
+
+                // sumFailRate
+                put(join("eventmesh.batch.send.message.fail.rate", "send batch message fail rate."),
+                    HttpSummaryMetrics::getSendBatchMsgFailRate);
+                // discard
+                put(join("eventmesh.batch.send.message.discard.num", "sum of send batch message discard number."),
+                    HttpSummaryMetrics::getSendBatchMsgDiscardNumSum);
+
+                // maxSendMsgTPS
+                put(join("eventmesh.send.message.tps.max", "max of send message tps."),
+                    HttpSummaryMetrics::maxSendMsgTPS);
+
+                // avgSendMsgTPS
+                put(join("eventmesh.send.message.tps.avg", "avg of send message tps."),
+                    HttpSummaryMetrics::avgSendMsgTPS);
+
+                // sum
+                put(join("eventmesh.send.message.num", "sum of send message number."),
+                    HttpSummaryMetrics::getSendMsgNumSum);
+
+                // sumFail
+                put(join("eventmesh.send.message.fail.num", "sum of send message fail number."),
+                    HttpSummaryMetrics::getSendMsgFailNumSum);
+
+                // sumFailRate
+                put(join("eventmesh.send.message.fail.rate", "send message fail rate."),
+                    HttpSummaryMetrics::getSendMsgFailRate);
+
+                // replyMsg
+                put(join("eventmesh.reply.message.num", "sum of reply message number."),
+                    HttpSummaryMetrics::getReplyMsgNumSum);
+
+                // replyFail
+                put(join("eventmesh.reply.message.fail.num", "sum of reply message fail number."),
+                    HttpSummaryMetrics::getReplyMsgFailNumSum);
+
+                // maxPushMsgTPS
+                put(join("eventmesh.push.message.tps.max", "max of push message tps."),
+                    HttpSummaryMetrics::maxPushMsgTPS);
+
+                // avgPushMsgTPS
+                put(join("eventmesh.push.message.tps.avg", "avg of push message tps."),
+                    HttpSummaryMetrics::avgPushMsgTPS);
+
+                // sum
+                put(join("eventmesh.http.push.message.num", "sum of http push message number."),
+                    HttpSummaryMetrics::getHttpPushMsgNumSum);
+                // sumFail
+                put(join("eventmesh.http.push.message.fail.num", "sum of http push message fail number."),
+                    HttpSummaryMetrics::getHttpPushFailNumSum);
+
+                // sumFailRate
+                put(join("eventmesh.http.push.message.fail.rate", "http push message fail rate."),
+                    HttpSummaryMetrics::getHttpPushMsgFailRate);
+
+                // maxClientLatency
+                put(join("eventmesh.http.push.latency.max", "max of http push latency."),
+                    HttpSummaryMetrics::maxHTTPPushLatency);
+
+                // avgClientLatency
+                put(join("eventmesh.http.push.latency.avg", "avg of http push latency."),
+                    HttpSummaryMetrics::avgHTTPPushLatency);
+                // batchMsgQ
+                put(join("eventmesh.batch.message.queue.size", "size of batch message queue."),
+                    HttpSummaryMetrics::getBatchMsgQueueSize);
+
+                // sendMsgQ
+                put(join("eventmesh.send.message.queue.size", "size of send message queue."),
+                    HttpSummaryMetrics::getSendMsgQueueSize);
+
+                // pushMsgQ
+                put(join("eventmesh.push.message.queue.size", "size of push message queue."),
+                    HttpSummaryMetrics::getPushMsgQueueSize);
+
+                // httpRetryQ
+                put(join("eventmesh.http.retry.queue.size", "size of http retry queue."),
+                    HttpSummaryMetrics::getHttpRetryQueueSize);
+
+                // batchAvgSend2MQCost
+                put(join("eventmesh.batch.send.message.cost.avg", "avg of batch send message cost."),
+                    HttpSummaryMetrics::avgBatchSendMsgCost);
+
+                // avgSend2MQCost
+                put(join("eventmesh.send.message.cost.avg", "avg of send message cost."),
+                    HttpSummaryMetrics::avgSendMsgCost);
+
+                // avgReply2MQCost
+                put(join("eventmesh.reply.message.cost.avg", "avg of reply message cost."),
+                    HttpSummaryMetrics::avgReplyMsgCost);
+            }
+        };
+    }
+
+    public void export(String name, HttpSummaryMetrics summaryMetrics) {
         Meter meter = GlobalMeterProvider.getMeter(name);
-        //maxHTTPTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.request.tps.max")
-            .setDescription("max TPS of HTTP.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxHTTPTPS(), Labels.empty()))
-            .build();
-
-        //avgHTTPTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.request.tps.avg")
-            .setDescription("avg TPS of HTTP.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgHTTPTPS(), Labels.empty()))
-            .build();
-
-        //maxHTTPCost
-        meter
-            .longValueObserverBuilder("eventmesh.http.request.cost.max")
-            .setDescription("max cost of HTTP.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxHTTPCost(), Labels.empty()))
-            .build();
-
-        //avgHTTPCost
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.request.cost.avg")
-            .setDescription("avg cost of HTTP.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgHTTPCost(), Labels.empty()))
-            .build();
-
-        //avgHTTPBodyDecodeCost
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.body.decode.cost.avg")
-            .setDescription("avg body decode cost of HTTP.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgHTTPBodyDecodeCost(), Labels.empty()))
-            .build();
-
-        //httpDiscard
-        meter
-            .longValueObserverBuilder("eventmesh.http.request.discard.num")
-            .setDescription("http request discard num.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getHttpDiscard(), Labels.empty()))
-            .build();
-
-        //maxBatchSendMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.tps.max")
-            .setDescription("max of batch send message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxSendBatchMsgTPS(), Labels.empty()))
-            .build();
-
-        //avgBatchSendMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.tps.avg")
-            .setDescription("avg of batch send message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgSendBatchMsgTPS(), Labels.empty()))
-            .build();
-
-        //sum
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.num")
-            .setDescription("sum of batch send message number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendBatchMsgNumSum(), Labels.empty()))
-            .build();
-
-        //sumFail
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.fail.num")
-            .setDescription("sum of batch send message fail message number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendBatchMsgFailNumSum(), Labels.empty()))
-            .build();
-
-        //sumFailRate
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.fail.rate")
-            .setDescription("send batch message fail rate.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendBatchMsgFailRate(), Labels.empty()))
-            .build();
-
-        //discard
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.discard.num")
-            .setDescription("sum of send batch message discard number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendBatchMsgDiscardNumSum(), Labels.empty()))
-            .build();
-
-        //maxSendMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.tps.max")
-            .setDescription("max of send message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxSendMsgTPS(), Labels.empty()))
-            .build();
-
-        //avgSendMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.tps.avg")
-            .setDescription("avg of send message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgSendMsgTPS(), Labels.empty()))
-            .build();
-
-        //sum
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.num")
-            .setDescription("sum of send message number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendMsgNumSum(), Labels.empty()))
-            .build();
-
-        //sumFail
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.fail.num")
-            .setDescription("sum of send message fail number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendMsgFailNumSum(), Labels.empty()))
-            .build();
-
-        //sumFailRate
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.fail.rate")
-            .setDescription("send message fail rate.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendMsgFailRate(), Labels.empty()))
-            .build();
-
-        //replyMsg
-        meter
-            .doubleValueObserverBuilder("eventmesh.reply.message.num")
-            .setDescription("sum of reply message number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getReplyMsgNumSum(), Labels.empty()))
-            .build();
-
-        //replyFail
-        meter
-            .doubleValueObserverBuilder("eventmesh.reply.message.fail.num")
-            .setDescription("sum of reply message fail number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getReplyMsgFailNumSum(), Labels.empty()))
-            .build();
-
-        //maxPushMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.push.message.tps.max")
-            .setDescription("max of push message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxPushMsgTPS(), Labels.empty()))
-            .build();
-
-        //avgPushMsgTPS
-        meter
-            .doubleValueObserverBuilder("eventmesh.push.message.tps.avg")
-            .setDescription("avg of push message tps.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgPushMsgTPS(), Labels.empty()))
-            .build();
-
-        //sum
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.push.message.num")
-            .setDescription("sum of http push message number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getHttpPushMsgNumSum(), Labels.empty()))
-            .build();
-
-        //sumFail
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.push.message.fail.num")
-            .setDescription("sum of http push message fail number.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getHttpPushFailNumSum(), Labels.empty()))
-            .build();
-
-        //sumFailRate
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.push.message.fail.rate")
-            .setDescription("http push message fail rate.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getHttpPushMsgFailRate(), Labels.empty()))
-            .build();
-
-        //maxClientLatency
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.push.latency.max")
-            .setDescription("max of http push latency.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.maxHTTPPushLatency(), Labels.empty()))
-            .build();
-
-        //avgClientLatency
-        meter
-            .doubleValueObserverBuilder("eventmesh.http.push.latency.avg")
-            .setDescription("avg of http push latency.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgHTTPPushLatency(), Labels.empty()))
-            .build();
-
-        //batchMsgQ
-        meter
-            .longValueObserverBuilder("eventmesh.batch.message.queue.size")
-            .setDescription("size of batch message queue.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getBatchMsgQueueSize(), Labels.empty()))
-            .build();
-
-        //sendMsgQ
-        meter
-            .longValueObserverBuilder("eventmesh.send.message.queue.size")
-            .setDescription("size of send message queue.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getSendMsgQueueSize(), Labels.empty()))
-            .build();
-
-        //pushMsgQ
-        meter
-            .longValueObserverBuilder("eventmesh.push.message.queue.size")
-            .setDescription("size of push message queue.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getPushMsgQueueSize(), Labels.empty()))
-            .build();
-
-        //httpRetryQ
-        meter
-            .longValueObserverBuilder("eventmesh.http.retry.queue.size")
-            .setDescription("size of http retry queue.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.getHttpRetryQueueSize(), Labels.empty()))
-            .build();
-
-        //batchAvgSend2MQCost
-        meter
-            .doubleValueObserverBuilder("eventmesh.batch.send.message.cost.avg")
-            .setDescription("avg of batch send message cost.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgBatchSendMsgCost(), Labels.empty()))
-            .build();
-
-        //avgSend2MQCost
-        meter
-            .doubleValueObserverBuilder("eventmesh.send.message.cost.avg")
-            .setDescription("avg of send message cost.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgSendMsgCost(), Labels.empty()))
-            .build();
-
-        //avgReply2MQCost
-        meter
-            .doubleValueObserverBuilder("eventmesh.reply.message.cost.avg")
-            .setDescription("avg of reply message cost.")
-            .setUnit("HTTP")
-            .setUpdater(result -> result.observe(summaryMetrics.avgReplyMsgCost(), Labels.empty()))
-            .build();
+        paramPairs.forEach((metricInfo, getMetric) -> observeOfValue(meter, metricInfo[0], metricInfo[1], HTTP, summaryMetrics, getMetric));
     }
 
 }

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
-
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
@@ -45,16 +44,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class HttpClientGroupMapping {
 
-    private final transient Map<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
+    /**
+     * key: group
+     */
+    private final transient Map<String, ConsumerGroupConf> localConsumerGroupMapping =
         new ConcurrentHashMap<>();
 
-    private final transient Map<String /**group@topic*/, List<Client>> localClientInfoMapping =
+    /**
+     * key: group@topic
+     */
+    private final transient Map<String, List<Client>> localClientInfoMapping =
         new ConcurrentHashMap<>();
 
     private final transient Set<String> localTopicSet = new HashSet<String>(16);
@@ -158,8 +162,8 @@ public final class HttpClientGroupMapping {
 
                 final Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap =
                     new HashMap<>(1 << 4);
-                for (final Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry
-                    : consumerGroupConf.getConsumerGroupTopicConf().entrySet()) {
+                for (final Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
+                    .entrySet()) {
                     final ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     final ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
                     consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
@@ -233,7 +237,7 @@ public final class HttpClientGroupMapping {
             final Map<String, ConsumerGroupTopicConf> map =
                 consumerGroupConf.getConsumerGroupTopicConf();
             if (!map.containsKey(subTopic.getTopic())) {
-                //If there are multiple topics, append it
+                // If there are multiple topics, append it
                 final ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
                 newTopicConf.setConsumerGroup(consumerGroup);
                 newTopicConf.setTopic(subTopic.getTopic());
@@ -388,11 +392,14 @@ public final class HttpClientGroupMapping {
             client.setUrl(url);
             client.setLastUpTime(new Date());
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, key -> new ArrayList<Client>() {
-                {
-                    add(client);
-                }
-            });
+            List<Client> localClients = localClientInfoMapping.computeIfAbsent(
+                groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
+
+                    private static final long serialVersionUID = -529919988844134656L;
+                    {
+                        add(client);
+                    }
+                }));
             localClients.stream().filter(o -> StringUtils.equals(o.getUrl(), client.getUrl())).findFirst()
                 .ifPresent(o -> o.setLastUpTime(client.getLastUpTime()));
         }
@@ -415,9 +422,9 @@ public final class HttpClientGroupMapping {
             for (final String unSubTopic : unSubTopicList) {
                 isChange = isChange
                     || removeSubscriptionByTopic(consumerGroup,
-                    unSubscribeUrl,
-                    unSubscribeRequestHeader.getIdc(),
-                    unSubTopic);
+                        unSubscribeUrl,
+                        unSubscribeRequestHeader.getIdc(),
+                        unSubTopic);
             }
         } finally {
             READ_WRITE_LOCK.writeLock().unlock();
@@ -446,14 +453,16 @@ public final class HttpClientGroupMapping {
             client.setUrl(url);
             client.setLastUpTime(new Date());
             final String groupTopicKey = client.getConsumerGroup() + "@" + client.getTopic();
-            List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, key -> new ArrayList<Client>() {
-                {
-                    add(client);
-                }
-            });
+            List<Client> localClients = localClientInfoMapping.computeIfAbsent(
+                groupTopicKey, key -> Collections.unmodifiableList(new ArrayList<Client>() {
+
+                    private static final long serialVersionUID = -529919988844134656L;
+                    {
+                        add(client);
+                    }
+                }));
             localClients.stream().filter(o -> StringUtils.equals(o.getUrl(), client.getUrl())).findFirst()
                 .ifPresent(o -> o.setLastUpTime(client.getLastUpTime()));
         }
     }
 }
-

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.api;
 
-
 import io.cloudevents.CloudEvent;
 
 /**

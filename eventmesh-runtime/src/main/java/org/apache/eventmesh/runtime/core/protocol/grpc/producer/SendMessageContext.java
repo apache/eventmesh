@@ -22,7 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.core.protocol.grpc.retry.RetryContext;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -101,13 +101,15 @@ public class SendMessageContext extends RetryContext {
     }
 
     @Override
-    public boolean retry() throws Exception {
+    public void retry() throws Exception {
         if (eventMeshProducer == null) {
-            return false;
+            logger.error("Exception happends during retry. EventMeshProducer is null.");
+            return;
         }
 
-        if (retryTimes > 0) { //retry once
-            return false;
+        if (retryTimes > 0) { // retry once
+            logger.error("Exception happends during retry. The retryTimes > 0.");
+            return;
         }
 
         retryTimes++;
@@ -122,6 +124,5 @@ public class SendMessageContext extends RetryContext {
                 logger.warn("", context.getException());
             }
         });
-        return true;
     }
 }

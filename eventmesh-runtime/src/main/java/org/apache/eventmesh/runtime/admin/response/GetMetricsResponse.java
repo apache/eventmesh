@@ -70,7 +70,6 @@ public class GetMetricsResponse {
     private int allTCPConnections;
     private int subTopicTCPNum;
 
-
     @JsonCreator
     public GetMetricsResponse(
         // HTTP Metrics

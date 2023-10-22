@@ -27,9 +27,7 @@ import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 public class AsyncSyncRequestInstance extends HttpAbstractDemo {
@@ -46,6 +44,7 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
+
                 @Override
                 public void onSuccess(final EventMeshMessage o) {
                     if (log.isDebugEnabled()) {

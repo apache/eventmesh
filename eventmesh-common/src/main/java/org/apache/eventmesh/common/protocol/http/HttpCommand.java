@@ -22,11 +22,10 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -57,14 +56,14 @@ public class HttpCommand implements ProtocolTransportObject {
 
     public String httpVersion;
 
-    public Header header;
+    private transient Header header;
 
-    public Body body;
+    private transient Body body;
 
-    //Command request time
+    // Command request time
     public long reqTime;
 
-    //Command response time
+    // Command response time
     public long resTime;
 
     public CmdType cmdType = CmdType.REQ;
@@ -82,8 +81,8 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public HttpCommand createHttpCommandResponse(Header header, Body body) {
-        if (StringUtils.isBlank(requestCode)) {
-            return null;
+        if (this.requestCode == null) {
+            this.requestCode = RequestCode.UNKNOWN.getRequestCode().toString();
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);
         response.setOpaque(this.opaque);
@@ -96,8 +95,8 @@ public class HttpCommand implements ProtocolTransportObject {
     }
 
     public HttpCommand createHttpCommandResponse(EventMeshRetCode eventMeshRetCode) {
-        if (StringUtils.isBlank(requestCode)) {
-            return null;
+        if (this.requestCode == null) {
+            this.requestCode = RequestCode.UNKNOWN.getRequestCode().toString();
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);
         response.setOpaque(this.opaque);
@@ -167,6 +166,20 @@ public class HttpCommand implements ProtocolTransportObject {
             return null;
         }
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+            Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
+        HttpHeaders headers = response.headers();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
+        headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        Optional.of(this.getHeader().toMap()).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
+        return response;
+    }
+
+    public DefaultFullHttpResponse httpResponse(HttpResponseStatus httpResponseStatus) throws Exception {
+        if (cmdType == CmdType.REQ) {
+            return null;
+        }
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus,
             Unpooled.wrappedBuffer(Objects.requireNonNull(JsonUtils.toJSONString(this.getBody())).getBytes(Constants.DEFAULT_CHARSET)));
         HttpHeaders headers = response.headers();
         headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);

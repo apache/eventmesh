@@ -24,19 +24,17 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ValueComparatorTest {
 
     @Test
-    public void testSerializeOrderedCollection() {
+    public void testSerializeOrderedCollection() throws IOException {
         Map<Map.Entry<String, Integer>, Integer> map = new TreeMap<>(new ValueComparator());
         try (OutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-            oos.writeObject(map);
-        } catch (IOException e) {
-            Assert.fail();
+            Assertions.assertDoesNotThrow(() -> oos.writeObject(map));
         }
     }
 

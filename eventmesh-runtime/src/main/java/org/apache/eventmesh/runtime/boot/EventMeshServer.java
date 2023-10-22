@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
@@ -26,14 +30,13 @@ import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
-import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +45,7 @@ public class EventMeshServer {
 
     private final Acl acl;
 
-    private Registry registry;
+    private MetaStorage metaStorage;
 
     private static Trace trace;
 
@@ -63,25 +66,38 @@ public class EventMeshServer {
     private static final ConfigService configService = ConfigService.getInstance();
 
     public EventMeshServer() {
+
+        // Initialize configuration
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
         AssertUtils.notNull(this.configuration, "configuration is null");
-        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
-        this.registry = Registry.getInstance(this.configuration.getEventMeshRegistryPluginType());
 
+        // Initialize acl, registry, trace and storageResource
+        this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
+        this.metaStorage = MetaStorage.getInstance(this.configuration.getEventMeshMetaStoragePluginType());
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
+        // Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
-        for (final String provideServerProtocol : provideServerProtocols) {
-            if (ConfigurationContextUtil.HTTP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+        for (String provideServerProtocol : provideServerProtocols) {
+            switch (provideServerProtocol.toUpperCase()) {
+                case HTTP:
+                    BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+                    break;
+                case TCP:
+                    BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
+                    break;
+                case GRPC:
+                    BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+                    break;
+                default:
+                    // nothing to do
             }
-            if (ConfigurationContextUtil.TCP.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
-            }
-            if (ConfigurationContextUtil.GRPC.equals(provideServerProtocol)) {
-                BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
-            }
+        }
+
+        // If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
+        if (BOOTSTRAP_LIST.isEmpty()) {
+            BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
     }
 
@@ -90,8 +106,8 @@ public class EventMeshServer {
         if (configuration.isEventMeshServerSecurityEnable()) {
             acl.init();
         }
-        if (configuration.isEventMeshServerRegistryEnable()) {
-            registry.init();
+        if (configuration.isEventMeshServerMetaStorageEnable()) {
+            metaStorage.init();
         }
         if (configuration.isEventMeshServerTraceEnable()) {
             trace.init();
@@ -119,7 +135,7 @@ public class EventMeshServer {
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
 
-            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, registry);
+            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
             clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
         }
 
@@ -143,8 +159,8 @@ public class EventMeshServer {
                 acl.start();
             }
             // registry start
-            if (configuration.isEventMeshServerRegistryEnable()) {
-                registry.start();
+            if (configuration.isEventMeshServerMetaStorageEnable()) {
+                metaStorage.start();
             }
         }
         // server start
@@ -173,8 +189,8 @@ public class EventMeshServer {
             eventMeshBootstrap.shutdown();
         }
 
-        if (configuration != null && configuration.isEventMeshServerRegistryEnable()) {
-            registry.shutdown();
+        if (configuration != null && configuration.isEventMeshServerMetaStorageEnable()) {
+            metaStorage.shutdown();
         }
 
         storageResource.release();
@@ -203,12 +219,12 @@ public class EventMeshServer {
         return serviceState;
     }
 
-    public Registry getRegistry() {
-        return registry;
+    public MetaStorage getMetaStorage() {
+        return metaStorage;
     }
 
-    public void setRegistry(final Registry registry) {
-        this.registry = registry;
+    public void setMetaStorage(final MetaStorage metaStorage) {
+        this.metaStorage = metaStorage;
     }
 
     public Acl getAcl() {

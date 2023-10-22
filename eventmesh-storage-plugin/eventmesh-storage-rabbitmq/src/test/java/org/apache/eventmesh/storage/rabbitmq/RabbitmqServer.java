@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.rabbitmq;
@@ -23,15 +23,15 @@ import org.apache.eventmesh.storage.rabbitmq.producer.RabbitmqProducer;
 
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class RabbitmqServer {
 
     protected RabbitmqConsumer rabbitmqConsumer;
     protected RabbitmqProducer rabbitmqProducer;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         RabbitmqMockConnectionFactory rabbitmqMockConnectionFactory = new RabbitmqMockConnectionFactory();
 
@@ -47,7 +47,7 @@ public class RabbitmqServer {
         rabbitmqProducer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         rabbitmqConsumer.shutdown();
         rabbitmqProducer.shutdown();

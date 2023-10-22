@@ -19,5 +19,8 @@ package org.apache.eventmesh.protocol.cloudevents;
 
 public enum CloudEventsProtocolConstant {
     ;
+
     public static final String PROTOCOL_NAME = "cloudevents";
+
+    public static final String PROTOCOL_DESC_GRPC_CLOUD_EVENT = "grpc-cloud-event";
 }

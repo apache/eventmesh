@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -35,7 +37,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshHttpConfiguration = configService.buildConfigInstance(EventMeshHTTPConfiguration.class);
 
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
+        ConfigurationContextUtil.putIfAbsent(HTTP, eventMeshHttpConfiguration);
     }
 
     @Override
@@ -43,6 +45,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
         // server init
         if (eventMeshHttpConfiguration != null) {
             eventMeshHttpServer = new EventMeshHTTPServer(eventMeshServer, eventMeshHttpConfiguration);
+            eventMeshHttpServer.init();
         }
     }
 
@@ -56,7 +59,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
     @Override
     public void shutdown() throws Exception {
-        //server shutdown
+        // server shutdown
         if (eventMeshHttpServer != null) {
             eventMeshHttpServer.shutdown();
         }

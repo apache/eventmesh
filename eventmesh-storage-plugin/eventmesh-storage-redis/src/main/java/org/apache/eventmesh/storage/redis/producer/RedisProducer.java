@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.redis.producer;
@@ -89,8 +89,7 @@ public class RedisProducer implements Producer {
                             .topic(cloudEvent.getSubject())
                             .messageId(cloudEvent.getId())
                             .exception(new StorageRuntimeException(throwable))
-                            .build()
-                    );
+                            .build());
                 } else {
                     SendResult sendResult = new SendResult();
                     sendResult.setTopic(cloudEvent.getSubject());
@@ -104,8 +103,7 @@ public class RedisProducer implements Producer {
                     .topic(cloudEvent.getSubject())
                     .messageId(cloudEvent.getId())
                     .exception(new StorageRuntimeException(e))
-                    .build()
-            );
+                    .build());
         }
     }
 

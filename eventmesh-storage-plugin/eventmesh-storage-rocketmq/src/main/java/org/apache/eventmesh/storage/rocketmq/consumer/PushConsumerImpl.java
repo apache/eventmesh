@@ -85,7 +85,7 @@ public class PushConsumerImpl {
             MessageModel.valueOf(clientConfig.getMessageModel()));
 
         String consumerId = OMSUtil.buildInstanceName();
-        //this.rocketmqPushConsumer.setInstanceName(consumerId);
+        // this.rocketmqPushConsumer.setInstanceName(consumerId);
         this.rocketmqPushConsumer.setInstanceName(properties.getProperty("instanceName"));
         properties.put("CONSUMER_ID", consumerId);
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
@@ -101,7 +101,6 @@ public class PushConsumerImpl {
         return properties;
     }
 
-
     public void start() {
         if (this.started.compareAndSet(false, true)) {
             try {
@@ -112,18 +111,15 @@ public class PushConsumerImpl {
         }
     }
 
-
     public synchronized void shutdown() {
         if (this.started.compareAndSet(true, false)) {
             this.rocketmqPushConsumer.shutdown();
         }
     }
 
-
     public boolean isStarted() {
         return this.started.get();
     }
-
 
     public boolean isClosed() {
         return !this.isStarted();
@@ -163,7 +159,6 @@ public class PushConsumerImpl {
             .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }
 
-
     private class BroadCastingMessageListener extends EventMeshMessageListenerConcurrently {
 
         @Override
@@ -178,7 +173,7 @@ public class PushConsumerImpl {
             msg.putUserProperty(Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
                 String.valueOf(msg.getStoreTimestamp()));
 
-            //for rr request/reply
+            // for rr request/reply
             CloudEvent cloudEvent =
                 RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
 
@@ -186,7 +181,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }
@@ -203,6 +198,7 @@ public class PushConsumerImpl {
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {
@@ -232,7 +228,6 @@ public class PushConsumerImpl {
                 contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
 
-
     }
 
     private class ClusteringMessageListener extends EventMeshMessageListenerConcurrently {
@@ -257,7 +252,7 @@ public class PushConsumerImpl {
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
                 if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
                     String prop = msg.getProperty(sysPropKey);
-                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    sysPropKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
                     cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
                 }
             }
@@ -276,6 +271,7 @@ public class PushConsumerImpl {
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {

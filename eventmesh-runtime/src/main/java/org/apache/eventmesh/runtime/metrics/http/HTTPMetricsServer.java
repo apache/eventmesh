@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,10 +47,10 @@ public class HTTPMetricsServer {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricsRegistries = metricsRegistries;
         this.summaryMetrics = new HttpSummaryMetrics(
-            eventMeshHTTPServer.getBatchMsgExecutor(),
-            eventMeshHTTPServer.getSendMsgExecutor(),
-            eventMeshHTTPServer.getPushMsgExecutor(),
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor(),
+            eventMeshHTTPServer.getHttpRetryer().getRetryQueue());
 
         init();
     }
@@ -131,8 +130,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getSendBatchMsgNumSum(),
                 summaryMetrics.getSendBatchMsgFailNumSum(),
                 summaryMetrics.getSendBatchMsgFailRate(),
-                summaryMetrics.getSendBatchMsgDiscardNumSum()
-            );
+                summaryMetrics.getSendBatchMsgDiscardNumSum());
         }
 
         summaryMetrics.cleanSendBatchStat();
@@ -145,8 +143,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getSendMsgFailNumSum(),
                 summaryMetrics.getSendMsgFailRate(),
                 summaryMetrics.getReplyMsgNumSum(),
-                summaryMetrics.getReplyMsgFailNumSum()
-            );
+                summaryMetrics.getReplyMsgFailNumSum());
         }
 
         summaryMetrics.cleanSendMsgStat();
@@ -160,18 +157,17 @@ public class HTTPMetricsServer {
                 summaryMetrics.getHttpPushFailNumSum(),
                 summaryMetrics.getHttpPushMsgFailRate(),
                 summaryMetrics.maxHTTPPushLatency(),
-                summaryMetrics.avgHTTPPushLatency()
-            );
+                summaryMetrics.avgHTTPPushLatency());
         }
 
         summaryMetrics.cleanHttpPushMsgStat();
 
         if (log.isInfoEnabled()) {
             log.info("batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
-                eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpRetryer().size());
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpRetryer().getRetrySize());
         }
 
         if (log.isInfoEnabled()) {

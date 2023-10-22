@@ -24,25 +24,27 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Getter;
+
 /**
  * This is a block queue, can get entity by offset. The queue is a FIFO data structure.
  */
 public class MessageQueue {
 
-    public MessageEntity[] items;
+    @Getter
+    private final MessageEntity[] items;
 
-    private int takeIndex;
+    private volatile int takeIndex;
 
-    private int putIndex;
+    private volatile int putIndex;
 
-    private int count;
+    private volatile int count;
 
     private final ReentrantLock lock;
 
     private final Condition notEmpty;
 
     private final Condition notFull;
-
 
     public MessageQueue() {
         this(2 << 10);
@@ -59,40 +61,41 @@ public class MessageQueue {
     }
 
     /**
-     * Insert the message at the tail of this queue, waiting for space to become available if the queue is full
+     * Inserts the specified MessageEntity object into the queue.
      *
-     * @param messageEntity
+     * @param messageEntity The MessageEntity object to be inserted into the queue.
+     * @throws InterruptedException if the current thread is interrupted while waiting for space to become available in the queue.
      */
     public void put(MessageEntity messageEntity) throws InterruptedException {
         Preconditions.checkNotNull(messageEntity);
-        ReentrantLock lock = this.lock;
-        lock.lockInterruptibly();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lockInterruptibly();
         try {
             while (count == items.length) {
                 notFull.await();
             }
             enqueue(messageEntity);
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
     /**
      * Get the first message at this queue, waiting for the message is available if the queue is empty, this method will not remove the message
      *
-     * @return MessageEntity
-     * @throws InterruptedException
+     * @return The MessageEntity object at the head of the queue.
+     * @throws InterruptedException if the current thread is interrupted while waiting for an element to become available in the queue.
      */
     public MessageEntity take() throws InterruptedException {
-        ReentrantLock lock = this.lock;
-        lock.lockInterruptibly();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lockInterruptibly();
         try {
             while (count == 0) {
                 notEmpty.await();
             }
             return dequeue();
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
@@ -102,12 +105,12 @@ public class MessageQueue {
      * @return MessageEntity
      */
     public MessageEntity peek() {
-        ReentrantLock lock = this.lock;
-        lock.lock();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lock();
         try {
             return itemAt(takeIndex);
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
@@ -126,8 +129,8 @@ public class MessageQueue {
      * @return MessageEntity
      */
     public MessageEntity getTail() {
-        ReentrantLock lock = this.lock;
-        lock.lock();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lock();
         try {
             if (count == 0) {
                 return null;
@@ -138,28 +141,33 @@ public class MessageQueue {
             }
             return itemAt(tailIndex);
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
     /**
      * Get the message by offset, since the offset is increment, so we can get the first message in this queue and calculate the index of this offset
      *
-     * @param offset
-     * @return MessageEntity
+     * @param offset The offset of the MessageEntity object to be retrieved.
+     * @return The MessageEntity object with the specified offset, or null if no such object exists in the queue.
+     * @throws RuntimeException if the specified offset is less than the offset of the head MessageEntity object.
      */
     public MessageEntity getByOffset(long offset) {
-        ReentrantLock lock = this.lock;
-        lock.lock();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lock();
         try {
-            MessageEntity head = getHead();
-            if (head == null) {
+            if (count == 0) {
                 return null;
             }
+            int tailIndex = putIndex - 1;
+            MessageEntity head = itemAt(takeIndex);
             if (head.getOffset() > offset) {
                 throw new RuntimeException(String.format("The message has been deleted, offset: %s", offset));
             }
-            MessageEntity tail = getTail();
+            if (tailIndex < 0) {
+                tailIndex += items.length;
+            }
+            MessageEntity tail = itemAt(tailIndex);
             if (tail == null || tail.getOffset() < offset) {
                 return null;
             }
@@ -170,13 +178,16 @@ public class MessageQueue {
             }
             return itemAt(offsetIndex);
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
+    /**
+     * Removes the MessageEntity object at the head of the queue.
+     */
     public void removeHead() {
-        ReentrantLock lock = this.lock;
-        lock.lock();
+        ReentrantLock reentrantLock = this.lock;
+        reentrantLock.lock();
         try {
             if (count == 0) {
                 return;
@@ -187,7 +198,7 @@ public class MessageQueue {
             }
             notFull.signalAll();
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 
@@ -195,11 +206,21 @@ public class MessageQueue {
         return count;
     }
 
-
+    /**
+     * Returns the MessageEntity object at the specified index.
+     *
+     * @param index The index of the MessageEntity object to be returned.
+     * @return The MessageEntity object at the specified index.
+     */
     private MessageEntity itemAt(int index) {
         return items[index];
     }
 
+    /**
+     * Insert the message at the tail of this queue, waiting for space to become available if the queue is full
+     *
+     * @param messageEntity The MessageEntity object to be inserted into the queue.
+     */
     private void enqueue(MessageEntity messageEntity) {
         items[putIndex++] = messageEntity;
         if (putIndex == items.length) {
@@ -209,6 +230,11 @@ public class MessageQueue {
         notEmpty.signalAll();
     }
 
+    /**
+     * Removes and returns the MessageEntity object at the head of the queue.
+     *
+     * @return The MessageEntity object at the head of the queue.
+     */
     private MessageEntity dequeue() {
         MessageEntity item = items[takeIndex++];
         if (takeIndex == items.length) {

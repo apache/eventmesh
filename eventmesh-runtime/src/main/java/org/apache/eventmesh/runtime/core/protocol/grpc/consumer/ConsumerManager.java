@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,21 +40,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConsumerManager {
 
-    private final transient EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final transient ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-
-    // key: ConsumerGroup
-    private final transient Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     // key: ConsumerGroup
-    private final transient Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
+    private final Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
+
+    // key: ConsumerGroup
+    private final Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
 
     public ConsumerManager(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -89,12 +87,7 @@ public class ConsumerManager {
     }
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
-        EventMeshConsumer consumer = consumerTable.get(consumerGroup);
-        if (consumer == null) {
-            consumer = new EventMeshConsumer(eventMeshGrpcServer, consumerGroup);
-            consumerTable.put(consumerGroup, consumer);
-        }
-        return consumer;
+        return consumerTable.computeIfAbsent(consumerGroup, key -> new EventMeshConsumer(eventMeshGrpcServer, consumerGroup));
     }
 
     public synchronized void registerClient(final ConsumerGroupClient newClient) {
@@ -214,10 +207,8 @@ public class ConsumerManager {
                     log.debug("grpc client info check");
                 }
 
-                final List<ConsumerGroupClient> clientList = new LinkedList<>();
-                clientTable.values().forEach(clients -> {
-                    clientList.addAll(clients);
-                });
+                final List<ConsumerGroupClient> clientList = new ArrayList<>();
+                clientTable.values().forEach(clientList::addAll);
 
                 if (log.isDebugEnabled()) {
                     log.debug("total number of ConsumerGroupClients: {}", clientList.size());

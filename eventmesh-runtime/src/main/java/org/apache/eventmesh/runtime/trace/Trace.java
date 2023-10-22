@@ -33,7 +33,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -140,6 +139,7 @@ public class Trace {
             return span;
         }
 
+        // add trace info
         for (String entry : cloudEvent.getExtensionNames()) {
             span.setAttribute(entry, cloudEvent.getExtension(entry) != null ? cloudEvent.getExtension(entry).toString() : "");
         }
@@ -167,22 +167,10 @@ public class Trace {
     }
 
     public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode) {
-        try {
-            if (useTrace) {
-                Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
-                Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
-
-                if (span == null) {
-                    log.warn("span is null when finishSpan");
-                    return;
-                }
-                if (statusCode != null) {
-                    span.setStatus(statusCode);
-                }
-                span.end();
-            }
-        } catch (Exception e) {
-            log.warn("finishSpan occur exception,", e);
+        if (useTrace) {
+            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+            Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
+            finishSpan(span, statusCode);
         }
     }
 
@@ -199,7 +187,7 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            log.warn("finishSpan occur exception,", e);
+            log.error("finishSpan occur exception,", e);
         }
     }
 
@@ -219,30 +207,15 @@ public class Trace {
                 span.end();
             }
         } catch (Exception e) {
-            log.warn("finishSpan occur exception,", e);
+            log.error("finishSpan occur exception,", e);
         }
     }
 
     public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode, String errMsg, Throwable throwable) {
-        try {
-            if (useTrace) {
-                Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
-                Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
-
-                if (span == null) {
-                    log.warn("span is null when finishSpan");
-                    return;
-                }
-                if (statusCode != null) {
-                    span.setStatus(statusCode, errMsg);
-                }
-                if (throwable != null) {
-                    span.recordException(throwable);
-                }
-                span.end();
-            }
-        } catch (Exception e) {
-            log.warn("finishSpan occur exception,", e);
+        if (useTrace) {
+            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+            Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
+            finishSpan(span, statusCode, errMsg, throwable);
         }
     }
 

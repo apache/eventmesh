@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Licensed to Apache Software Foundation (ASF) under one or more contributor
 # license agreements. See the NOTICE file distributed with
@@ -53,6 +53,13 @@ function get_pid {
 	local ppid=""
 	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
+		# If the process does not exist, it indicates that the previous process terminated abnormally.
+    if [ ! -d /proc/$ppid ]; then
+      # Remove the residual file
+      rm ${EVENTMESH_HOME}/bin/pid.file
+      echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
+      ppid=""
+    fi
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a Bug on Msys that may not be able to kill the identified process
@@ -82,19 +89,19 @@ elif  is_java8 "/nemo/jdk/bin/java"; then
 elif is_java8 "$(which java)"; then
         JAVA="$(which java)"
 else
-        echo -e "ERROR\t java(1.8) not found, operation abort."
+        echo -e "ERROR\t Java 8 not found, operation abort."
         exit 9;
 fi
 
-echo "eventmesh use java location= "$JAVA
+echo "EventMesh use Java location: $JAVA"
 
-EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
-
+EVENTMESH_HOME=$(cd "$(dirname "$0")/.." && pwd)
 export EVENTMESH_HOME
 
-export EVENTMESH_LOG_HOME=${EVENTMESH_HOME}/logs
+EVENTMESH_LOG_HOME="${EVENTMESH_HOME}/logs"
+export EVENTMESH_LOG_HOME
 
-echo "EVENTMESH_HOME : ${EVENTMESH_HOME}, EVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
+echo -e "EVENTMESH_HOME : ${EVENTMESH_HOME}\nEVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
 
 function make_logs_dir {
         if [ ! -e "${EVENTMESH_LOG_HOME}" ]; then mkdir -p "${EVENTMESH_LOG_HOME}"; fi
@@ -102,7 +109,7 @@ function make_logs_dir {
 
 error_exit ()
 {
-    echo "ERROR: $1 !!"
+    echo -e "ERROR\t $1 !!"
     exit 1
 }
 
@@ -148,14 +155,18 @@ JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_HOME}/plugin"
 #fi
 
 pid=$(get_pid)
+if [[ $pid == "ERROR"* ]]; then
+  echo -e "${pid}"
+  exit 9
+fi
 if [ -n "$pid" ];then
-	echo -e "ERROR\t the server is already running (pid=$pid), there is no need to execute start.sh again."
-	exit 9;
+	echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
+	exit 9
 fi
 
 make_logs_dir
 
-echo "using jdk[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
+echo "Using JDK[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 
 
 EVENTMESH_MAIN=org.apache.eventmesh.runtime.boot.EventMeshStartup

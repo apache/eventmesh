@@ -20,14 +20,15 @@ package org.apache.eventmesh.common.utils;
 import org.apache.eventmesh.common.enums.HttpMethod;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -38,23 +39,23 @@ public class NetUtilsTest {
     public void testFormData2Dic() {
         String formData = "";
         Map<String, String> result = NetUtils.formData2Dic(formData);
-        Assert.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
 
         formData = "item_id=10081&item_name=test item name";
         result = NetUtils.formData2Dic(formData);
-        Assert.assertEquals(result.get("item_id"), "10081");
+        Assertions.assertEquals("10081", result.get("item_id"));
     }
 
     @Test
     public void testAddressToString() {
         List<InetSocketAddress> clients = new ArrayList<>();
         String result = NetUtils.addressToString(clients);
-        Assert.assertEquals(result, "no session had been closed");
+        Assertions.assertEquals("no session had been closed", result);
 
         InetSocketAddress localAddress = new InetSocketAddress(80);
         clients.add(localAddress);
         result = NetUtils.addressToString(clients);
-        Assert.assertEquals(result, localAddress + "|");
+        Assertions.assertEquals(localAddress + "|", result);
     }
 
     @Test
@@ -67,7 +68,15 @@ public class NetUtilsTest {
         Mockito.when(exchange.getRequestBody()).thenReturn(inputStream);
 
         String actual = NetUtils.parsePostBody(exchange);
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
 
+    }
+
+    @Test
+    public void testSendSuccessResponseHeaders() throws IOException {
+        HttpExchange exchange = Mockito.mock(HttpExchange.class);
+        NetUtils.sendSuccessResponseHeaders(exchange);
+        Mockito.verify(exchange, Mockito.times(1))
+            .sendResponseHeaders(Mockito.anyInt(), Mockito.anyLong());
     }
 }

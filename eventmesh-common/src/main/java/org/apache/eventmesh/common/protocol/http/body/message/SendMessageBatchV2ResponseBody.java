@@ -17,24 +17,21 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class SendMessageBatchV2ResponseBody extends Body {
 
-    //return code
+    // return code
     private Integer retCode;
 
-    //response message
+    // response message
     private String retMsg;
 
-    //response time
+    // response time
     private long resTime = System.currentTimeMillis();
 
     public Integer getRetCode() {
@@ -75,7 +72,7 @@ public class SendMessageBatchV2ResponseBody extends Body {
         sb.append("sendMessageBatchV2ResponseBody={")
             .append("retCode=").append(retCode).append(",")
             .append("retMsg=").append(retMsg).append(",")
-            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append("resTime=").append(resTime).append("}");
         return sb.toString();
     }
 

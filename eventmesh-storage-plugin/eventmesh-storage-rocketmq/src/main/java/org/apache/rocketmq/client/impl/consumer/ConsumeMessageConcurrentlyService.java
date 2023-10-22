@@ -106,7 +106,9 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     @Override
     public void shutdown(long awaitTerminateMillis) {
-
+        this.scheduledExecutorService.shutdown();
+        org.apache.rocketmq.common.utils.ThreadUtils.shutdownGracefully(this.consumeExecutor, awaitTerminateMillis, TimeUnit.MILLISECONDS);
+        this.cleanExpireMsgExecutors.shutdown();
     }
 
     public void shutdown() {
@@ -211,7 +213,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 this.submitConsumeRequestLater(consumeRequest);
             }
         } else {
-            for (int total = 0; total < msgs.size(); ) {
+            for (int total = 0; total < msgs.size();) {
                 List<MessageExt> msgThis = new ArrayList<>(consumeBatchSize);
                 for (int i = 0; i < consumeBatchSize; i++, total++) {
                     if (total < msgs.size()) {
@@ -325,7 +327,6 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         }
     }
 
-
     public ConsumerStatsManager getConsumerStatsManager() {
         return this.defaultMQPushConsumerImpl.getConsumerStatsManager();
     }
@@ -346,8 +347,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     private void submitConsumeRequestLater(
         final List<MessageExt> msgs,
         final ProcessQueue processQueue,
-        final MessageQueue messageQueue
-    ) {
+        final MessageQueue messageQueue) {
 
         this.scheduledExecutorService.schedule(
             () -> ConsumeMessageConcurrentlyService.this.submitConsumeRequest(msgs, processQueue, messageQueue, true), 5000, TimeUnit.MILLISECONDS);
@@ -366,7 +366,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                     success = true;
                     break;
                 } catch (RejectedExecutionException e) {
-                    //ignore
+                    // ignore
                 }
             }
             if (!success) {
@@ -429,7 +429,6 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                     for (MessageExt msg : msgs) {
                         MessageAccessor.setConsumeStartTimeStamp(msg, String.valueOf(System.currentTimeMillis()));
                     }
-
 
                 }
                 status = ConsumeMessageConcurrentlyService.this.messageListener.consumeMessage(Collections.unmodifiableList(msgs), context);

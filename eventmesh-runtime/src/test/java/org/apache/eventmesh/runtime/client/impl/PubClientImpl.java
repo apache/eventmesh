@@ -31,12 +31,11 @@ import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -128,31 +127,31 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Add test case assertions on the basis of the original IO
      */
     public Package dispatcher(Package request, long timeout) throws Exception {
-        Assert.assertNotNull(request);
+        Assertions.assertNotNull(request);
         Package response = super.io(request, timeout);
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         Command cmd = response.getHeader().getCommand();
         switch (request.getHeader().getCommand()) {
             case RECOMMEND_REQUEST:
-                Assert.assertEquals(cmd, Command.RECOMMEND_RESPONSE);
+                Assertions.assertEquals(Command.RECOMMEND_RESPONSE, cmd);
                 break;
             case HELLO_REQUEST:
-                Assert.assertEquals(cmd, Command.HELLO_RESPONSE);
+                Assertions.assertEquals(Command.HELLO_RESPONSE, cmd);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(cmd, Command.HEARTBEAT_RESPONSE);
+                Assertions.assertEquals(Command.HEARTBEAT_RESPONSE, cmd);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(cmd, Command.CLIENT_GOODBYE_RESPONSE);
+                Assertions.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, cmd);
                 break;
             case BROADCAST_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.BROADCAST_MESSAGE_TO_SERVER_ACK);
+                Assertions.assertEquals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case ASYNC_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.ASYNC_MESSAGE_TO_SERVER_ACK);
+                Assertions.assertEquals(Command.ASYNC_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case REQUEST_TO_SERVER:
-                Assert.assertEquals(cmd, Command.RESPONSE_TO_CLIENT);
+                Assertions.assertEquals(Command.RESPONSE_TO_CLIENT, cmd);
                 break;
             default:
                 break;

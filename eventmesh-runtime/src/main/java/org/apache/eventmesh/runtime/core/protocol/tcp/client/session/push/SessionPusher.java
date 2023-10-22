@@ -29,8 +29,8 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,13 +47,12 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SessionPusher {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
@@ -115,7 +114,7 @@ public class SessionPusher {
                 .getEventMesh2clientMsgNum()
                 .incrementAndGet();
 
-            //TODO uploadTrace
+            // TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, downStreamMsgContext.event),
@@ -129,13 +128,13 @@ public class SessionPusher {
                                 downStreamMsgContext.retryTimes, downStreamMsgContext.event);
                             deliverFailMsgsCount.incrementAndGet();
 
-                            //how long to isolate client when push fail
+                            // how long to isolate client when push fail
                             long isolateTime = System.currentTimeMillis()
                                 + session.getEventMeshTCPConfiguration().getEventMeshTcpPushFailIsolateTimeInMills();
                             session.setIsolateTime(isolateTime);
                             log.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
-                            //retry
+                            // retry
                             long delayTime = SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()
                                 ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
                                 : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
@@ -151,8 +150,7 @@ public class SessionPusher {
                                 session.setIsolateTime(System.currentTimeMillis());
                             }
                         }
-                    }
-                );
+                    });
             } finally {
                 TraceUtils.finishSpan(span, downStreamMsgContext.event);
             }

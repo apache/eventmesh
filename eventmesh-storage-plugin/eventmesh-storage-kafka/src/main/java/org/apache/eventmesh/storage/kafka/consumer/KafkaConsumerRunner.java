@@ -1,12 +1,12 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,11 +28,8 @@ import org.apache.kafka.common.errors.WakeupException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 import io.cloudevents.CloudEvent;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +40,6 @@ public class KafkaConsumerRunner implements Runnable {
     private final KafkaConsumer<String, CloudEvent> consumer;
     private ConcurrentHashMap<CloudEvent, Long> cloudEventToOffset;
     private EventListener listener;
-    private AtomicInteger offset;
 
     public KafkaConsumerRunner(KafkaConsumer<String, CloudEvent> kafkaConsumer) {
         this.consumer = kafkaConsumer;
@@ -73,6 +69,7 @@ public class KafkaConsumerRunner implements Runnable {
                         CloudEvent cloudEvent = rec.value();
                         String topicName = cloudEvent.getSubject();
                         EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
                             @Override
                             public void commit(EventMeshAction action) {
                                 switch (action) {
@@ -81,13 +78,11 @@ public class KafkaConsumerRunner implements Runnable {
                                         log.info("message commit, topic: {}, current offset:{}", topicName,
                                             rec.offset());
                                         break;
-                                    case ReconsumeLater:
-                                        // don't update offset
-                                        break;
                                     case ManualAck:
                                         // update offset
                                         log.info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                         break;
+                                    case ReconsumeLater:
                                     default:
                                 }
                             }

@@ -18,18 +18,17 @@
 package org.apache.eventmesh.webhook.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Manufacturer {
 
     private Set<String> manufacturerSet = new HashSet<>();
 
-    private Map<String, List<String>> manufacturerEventMap = new HashMap<>();
-
+    private Map<String, List<String>> manufacturerEventMap = new ConcurrentHashMap<>();
 
     public Set<String> getManufacturerSet() {
         return manufacturerSet;
@@ -54,11 +53,7 @@ public class Manufacturer {
     }
 
     public List<String> getManufacturerEvents(String manufacturerName) {
-        if (!manufacturerEventMap.containsKey(manufacturerName)) {
-            List<String> m = new ArrayList<>();
-            manufacturerEventMap.put(manufacturerName, m);
-            return m;
-        }
+        manufacturerEventMap.putIfAbsent(manufacturerName, new ArrayList<String>());
         return manufacturerEventMap.get(manufacturerName);
     }
 }
