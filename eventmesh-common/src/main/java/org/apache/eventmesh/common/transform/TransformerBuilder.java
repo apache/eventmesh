@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 
 public class TransformerBuilder {
 
-
     public static final class Builder {
 
         private final TransformerType transformerType;
@@ -71,6 +70,4 @@ public class TransformerBuilder {
         return new OriginalTransformer();
     }
 
-
 }
-

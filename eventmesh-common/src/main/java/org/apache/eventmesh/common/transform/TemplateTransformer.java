@@ -27,7 +27,6 @@ class TemplateTransformer implements Transformer {
 
     private final Template template;
 
-
     TemplateTransformer(JsonPathParser jsonPathParser, Template template) {
         this.template = template;
         this.jsonPathParser = jsonPathParser;
@@ -35,9 +34,9 @@ class TemplateTransformer implements Transformer {
 
     @Override
     public String transform(String json) throws JsonProcessingException {
-        //1: get variable match results
+        // 1: get variable match results
         List<Variable> variableList = jsonPathParser.match(json);
-        //2: use results replace template
+        // 2: use results replace template
         String res = template.substitute(variableList);
         return res;
     }

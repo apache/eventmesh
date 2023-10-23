@@ -20,8 +20,8 @@ package org.apache.eventmesh.common.filter;
 import org.apache.eventmesh.common.filter.pattern.Pattern;
 import org.apache.eventmesh.common.filter.patternbuild.PatternBuilder;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PatternTest {
 
@@ -52,7 +52,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(false, res);
+        Assertions.assertEquals(false, res);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class PatternTest {
             + "}";
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
-        Assert.assertEquals(false, res);
+        Assertions.assertEquals(false, res);
     }
 
 }

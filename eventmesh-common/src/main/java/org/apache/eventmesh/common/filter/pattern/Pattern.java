@@ -31,10 +31,8 @@ import com.jayway.jsonpath.PathNotFoundException;
 
 public class Pattern {
 
-    private List<PatternEntry> requiredFieldList =  new ArrayList<>();
+    private List<PatternEntry> requiredFieldList = new ArrayList<>();
     private List<PatternEntry> dataList = new ArrayList<>();
-
-
 
     private String content;
 
@@ -48,18 +46,17 @@ public class Pattern {
 
     public boolean filter(String content) {
         this.content = content;
-        //this.jsonNode = JacksonUtils.STRING_TO_JSONNODE(content);
+        // this.jsonNode = JacksonUtils.STRING_TO_JSONNODE(content);
 
-        return matchRequiredFieldList(requiredFieldList)  && matchRequiredFieldList(dataList);
+        return matchRequiredFieldList(requiredFieldList) && matchRequiredFieldList(dataList);
     }
-
 
     private boolean matchRequiredFieldList(List<PatternEntry> dataList) {
 
         for (final PatternEntry patternEntry : dataList) {
             JsonNode jsonElement = null;
             try {
-                //content:filter
+                // content:filter
                 String matchRes = JsonPathUtils.matchJsonPathValue(this.content, patternEntry.getPatternPath());
 
                 if (StringUtils.isNoneBlank(matchRes)) {
@@ -78,16 +75,13 @@ public class Pattern {
                     }
                 }
 
-
             } catch (PathNotFoundException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-
 
         }
         return true;
 
     }
-
 
 }

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common.transform;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -45,25 +45,24 @@ public class TransformTest {
 
         Transformer transformer = new TransformerBuilder.Builder(TransformerType.ORIGINAL).build();
         String output = transformer.transform(EVENT);
-        Assert.assertEquals(EVENT, output);
+        Assertions.assertEquals(EVENT, output);
 
         Transformer transformer1 = TransformerBuilder.buildOriginalTransformer();
         String output1 = transformer1.transform(EVENT);
-        Assert.assertEquals(EVENT, output1);
+        Assertions.assertEquals(EVENT, output1);
     }
 
     @Test
     public void testConstantTransformer() throws JsonProcessingException {
         Transformer transformer = new TransformerBuilder.Builder(TransformerType.CONSTANT).setContent("constant test").build();
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("constant test", output);
+        Assertions.assertEquals("constant test", output);
 
         Transformer transformer1 = TransformerBuilder.buildConstantTransformer("constant test");
         String output1 = transformer1.transform(EVENT);
-        Assert.assertEquals("constant test", output1);
+        Assertions.assertEquals("constant test", output1);
 
     }
-
 
     @Test
     public void testTemplateTransFormerWithStringValue() throws JsonProcessingException {
@@ -71,13 +70,13 @@ public class TransformTest {
         String template = "Transformers test:data name is ${data-name}";
         Transformer transform = TransformerBuilder.buildTemplateTransFormer(content, template);
         String output = transform.transform(EVENT);
-        Assert.assertEquals("Transformers test:data name is test-transformer", output);
+        Assertions.assertEquals("Transformers test:data name is test-transformer", output);
 
         Transformer transformer1 = new TransformerBuilder.Builder(TransformerType.TEMPLATE)
             .setContent(content)
             .setTemplate(template).build();
         String output1 = transformer1.transform(EVENT);
-        Assert.assertEquals("Transformers test:data name is test-transformer", output1);
+        Assertions.assertEquals("Transformers test:data name is test-transformer", output1);
 
     }
 
@@ -87,7 +86,7 @@ public class TransformTest {
         String template = "Transformers test:data num is ${data-num}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(content, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data num is ${data-num}", output);
+        Assertions.assertEquals("Transformers test:data num is ${data-num}", output);
     }
 
     @Test
@@ -96,7 +95,7 @@ public class TransformTest {
         String template = "Transformers test:data num is ${data-num}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(extractJson, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data num is null", output);
+        Assertions.assertEquals("Transformers test:data num is null", output);
     }
 
     @Test
@@ -105,7 +104,7 @@ public class TransformTest {
         String template = "Transformers test:data num is ${data-num}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(extractJson, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data num is 100", output);
+        Assertions.assertEquals("Transformers test:data num is 100", output);
     }
 
     @Test
@@ -114,7 +113,7 @@ public class TransformTest {
         String template = "Transformers test:data null is ${data-null}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(content, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data null is null", output);
+        Assertions.assertEquals("Transformers test:data null is null", output);
     }
 
     @Test
@@ -123,9 +122,8 @@ public class TransformTest {
         String template = "Transformers test:data boolean is ${boolean}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(extractJson, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data boolean is true", output);
+        Assertions.assertEquals("Transformers test:data boolean is true", output);
     }
-
 
     //
     @Test
@@ -134,9 +132,8 @@ public class TransformTest {
         String template = "Transformers test:data name is ${name}, constant is ${constant}";
         Transformer transformer = TransformerBuilder.buildTemplateTransFormer(extractJson, template);
         String output = transformer.transform(EVENT);
-        Assert.assertEquals("Transformers test:data name is test-transformer, constant is constant",
+        Assertions.assertEquals("Transformers test:data name is test-transformer, constant is constant",
             output);
     }
-
 
 }

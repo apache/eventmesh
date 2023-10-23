@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.transform;
 
-
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.JsonPathUtils;
 
@@ -59,7 +58,6 @@ public class JsonPathParser {
         }
 
     }
-
 
     /**
      * use jsonpath to match json and return result

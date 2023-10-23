@@ -37,6 +37,7 @@ import com.jayway.jsonpath.internal.path.PathCompiler;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 
 public class JsonPathUtils {
+
     public static final String JSONPATH_SPLIT = "\\.";
     public static final String JSONPATH_PREFIX = "$";
     public static final String JSONPATH_PREFIX_WITH_POINT = "$.";
@@ -44,8 +45,8 @@ public class JsonPathUtils {
     private static final ObjectMapper STRICT_OBJECT_MAPPER = new ObjectMapper();
 
     private static final Configuration JSON_PATH_CONFIG = Configuration.builder()
-            .jsonProvider(new JacksonJsonProvider(STRICT_OBJECT_MAPPER))
-            .build();
+        .jsonProvider(new JacksonJsonProvider(STRICT_OBJECT_MAPPER))
+        .build();
 
     public static boolean isEmptyJsonObject(String jsonString) {
         try {
@@ -82,7 +83,6 @@ public class JsonPathUtils {
         }
     }
 
-
     public static boolean isValidAndDefinite(String jsonPath) {
         if (Strings.isNullOrEmpty(jsonPath) || !jsonPath.startsWith(JSONPATH_PREFIX)) {
             return Boolean.FALSE;
@@ -109,7 +109,7 @@ public class JsonPathUtils {
         return obj.toString();
     }
 
-    public static JsonNode convertToJsonNode(String  object) throws JsonProcessingException {
+    public static JsonNode convertToJsonNode(String object) throws JsonProcessingException {
         return STRICT_OBJECT_MAPPER.readValue(object, JsonNode.class);
     }
 
@@ -142,7 +142,3 @@ public class JsonPathUtils {
         return STRICT_OBJECT_MAPPER.writer().writeValueAsString(obj);
     }
 }
-
-
-
-

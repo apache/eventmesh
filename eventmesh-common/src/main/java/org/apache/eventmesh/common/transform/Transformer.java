@@ -30,5 +30,3 @@ public interface Transformer {
     String transform(String json) throws JsonProcessingException;
 
 }
-
-

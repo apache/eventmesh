@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.filter;
 
-
 import org.apache.eventmesh.common.filter.condition.Condition;
 
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class PatternEntry {
-
 
     private final String patternPath;
 
@@ -39,7 +37,6 @@ public class PatternEntry {
     public void addRuleCondition(Condition patternCondition) {
         this.conditionList.add(patternCondition);
     }
-
 
     public String getPatternName() {
         return "123";

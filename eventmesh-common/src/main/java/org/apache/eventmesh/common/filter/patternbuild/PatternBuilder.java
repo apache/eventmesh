@@ -52,7 +52,7 @@ public class PatternBuilder {
             return null;
         }
 
-        //iter all json data
+        // iter all json data
         Iterator<Entry<String, JsonNode>> iterator = jsonNode.fields();
         while (iterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = iterator.next();
@@ -73,7 +73,7 @@ public class PatternBuilder {
                 throw new JsonException("INVALID_JSON_KEY");
             }
 
-            //iter all requiredField
+            // iter all requiredField
             parseRequiredField("$." + key, value, pattern);
             if (value.isEmpty()) {
                 // Empty array
@@ -81,9 +81,9 @@ public class PatternBuilder {
             }
             PatternEntry patternEntry = new PatternEntry("$." + key);
             for (final JsonNode objNode : value) {
-                //{
-                //            "suffix":".jpg"
-                //        }
+                // {
+                // "suffix":".jpg"
+                // }
                 Condition condition = parseCondition(objNode);
                 patternEntry.addRuleCondition(condition);
             }
@@ -108,15 +108,15 @@ public class PatternBuilder {
             Iterator<Map.Entry<String, JsonNode>> iterator = ele.getValue().fields();
             while (iterator.hasNext()) {
                 Map.Entry<String, JsonNode> entry = iterator.next();
-                //state
+                // state
                 String key = entry.getKey();
-                //[{"anything-but":"initializing"}]  [{"anything-but":123}]}
+                // [{"anything-but":"initializing"}] [{"anything-but":123}]}
                 JsonNode value = entry.getValue();
                 PatternEntry patternEntry = new PatternEntry(elepath + "." + key);
                 if (!value.isObject()) {
                     if (value.isArray()) {
                         for (JsonNode node11 : value) {
-                            //{"anything-but":"initializing"}
+                            // {"anything-but":"initializing"}
                             patternEntry.addRuleCondition(parseCondition(node11));
                         }
                     }
@@ -129,7 +129,6 @@ public class PatternBuilder {
 
     }
 
-
     private static Condition parseCondition(JsonNode jsonNode) {
         if (jsonNode.isValueNode()) {
             return new ConditionsBuilder().withKey("specified").withParams(jsonNode).build();
@@ -138,9 +137,9 @@ public class PatternBuilder {
         Iterator<Map.Entry<String, JsonNode>> iterator = jsonNode.fields();
         while (iterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = iterator.next();
-            //"anything-but"
+            // "anything-but"
             String key = entry.getKey();
-            //"initializing"
+            // "initializing"
             JsonNode value = entry.getValue();
             return new ConditionsBuilder().withKey(key).withParams(value).build();
         }
@@ -161,7 +160,6 @@ public class PatternBuilder {
         pattern.addRequiredFieldList(patternEntry);
 
     }
-
 
     static class Node {
 

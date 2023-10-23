@@ -33,14 +33,14 @@ class AnythingButCondition implements Condition {
         if (condition.isValueNode()) {
             this.conditionList.add(new SpecifiedCondition(condition));
         }
-        //[]
+        // []
         if (condition.isArray()) {
             for (JsonNode element : condition) {
                 this.conditionList.add(new SpecifiedCondition(element));
             }
         }
 
-        //prefix,suffix
+        // prefix,suffix
         if (condition.isObject()) {
             Iterator<Entry<String, JsonNode>> iterator = condition.fields();
             while (iterator.hasNext()) {

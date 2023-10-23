@@ -28,13 +28,11 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-
 @Data
 @AllArgsConstructor
 public class Template {
 
     private String template;
-
 
     public String substitute(List<Variable> variables) throws EventMeshException {
 
