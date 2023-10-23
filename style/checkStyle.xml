@@ -216,6 +216,12 @@
       <message key="name.invalidPattern"
                value="Member name ''{0}'' must match pattern ''{1}''."/>
     </module>
+    <module name="SuppressionXpathSingleFilter">
+      <property name="id" value="MemberName">
+      <property name="query" value="//ErrorElement[@sourceName='MemberName'][contains(@message, 'ConfigurationContextUtil.java')
+                                    or contains(@message, 'JsonUtils.java')
+                                    or contains(@message, 'RandomStringUtils.java')]"/>
+    </module>
     <module name="ParameterName">
       <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
       <message key="name.invalidPattern"
