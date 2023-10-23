@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.TypeUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -136,14 +137,15 @@ public class AuthTokenUtils {
 
         String topic = aclProperties.getTopic();
 
-        Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
+        Object topics = aclProperties.getExtendedField("topics");
 
-        if (groupTopics.contains(topic)) {
-            return true;
-        } else {
-            return false;
+        if (!(topics instanceof Set)) {
+            throw new RuntimeException("abc");
         }
 
+        Set<String> groupTopics = TypeUtils.castSet(topics, String.class);
+
+        return groupTopics.contains(topic);
     }
 
 }
