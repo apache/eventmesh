@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.file;
 
+import org.apache.eventmesh.common.utils.LogUtils;
+
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -29,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class WatchFileTask extends Thread {
@@ -39,10 +40,8 @@ public class WatchFileTask extends Thread {
     private final transient WatchService watchService;
 
     private final transient List<FileChangeListener> fileChangeListeners = new ArrayList<>();
-
-    private transient volatile boolean watch = true;
-
     private final transient String directoryPath;
+    private transient volatile boolean watch = true;
 
     public WatchFileTask(String directoryPath) {
         this.directoryPath = directoryPath;
@@ -88,7 +87,7 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        LogUtils.warn(log,"[WatchFileTask] file overflow: {}", event.context());
+                        LogUtils.warn(log, "[WatchFileTask] file overflow: {}", event.context());
                         continue;
                     }
                     precessWatchEvent(event);

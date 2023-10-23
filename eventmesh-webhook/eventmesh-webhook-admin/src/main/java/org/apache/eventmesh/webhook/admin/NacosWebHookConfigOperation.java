@@ -66,7 +66,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
             LogUtils.error(log, "webhookConfig callback path must start with {}",
-                    WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+                WebHookOperationConstant.CALLBACK_PATH_PREFIX);
             return 0;
         }
 
@@ -163,8 +163,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
-        final Integer pageNum,
-        final Integer pageSize) {
+                                                                final Integer pageNum,
+                                                                final Integer pageSize) {
         final List<WebHookConfig> webHookConfigs = new ArrayList<>();
         final String manufacturerName = webHookConfig.getManufacturerName();
 

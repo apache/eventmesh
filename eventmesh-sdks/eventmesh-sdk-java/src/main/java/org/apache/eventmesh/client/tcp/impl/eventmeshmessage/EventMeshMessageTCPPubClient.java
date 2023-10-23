@@ -31,13 +31,13 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 /**
  * EventMeshMessage TCP publish client implementation.
@@ -45,9 +45,8 @@ import org.apache.eventmesh.common.utils.LogUtils;
 @Slf4j
 class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubClient<EventMeshMessage> {
 
-    private transient ReceiveMsgHook<EventMeshMessage> callback;
-
     private final transient ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
+    private transient ReceiveMsgHook<EventMeshMessage> callback;
 
     public EventMeshMessageTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
@@ -80,7 +79,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
-            LogUtils.info(log,"{}|rr|send|type={}|msg={}",CLIENTNO, msg, msg);
+            LogUtils.info(log, "{}|rr|send|type={}|msg={}", CLIENTNO, msg, msg);
             return io(msg, timeout);
         } catch (Exception e) {
             throw new EventMeshException("rr error", e);

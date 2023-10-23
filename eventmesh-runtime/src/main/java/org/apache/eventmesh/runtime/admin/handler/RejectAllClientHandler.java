@@ -59,12 +59,12 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
-        final HttpHandlerManager httpHandlerManager) {
+                                  final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -99,7 +99,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 log.error("clientManage rejectAllClient fail", e);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
+                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
                     .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }

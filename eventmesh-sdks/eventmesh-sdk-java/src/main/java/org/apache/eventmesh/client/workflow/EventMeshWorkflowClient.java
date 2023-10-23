@@ -24,12 +24,12 @@ import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
 import org.apache.eventmesh.common.protocol.workflow.protos.WorkflowGrpc;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class EventMeshWorkflowClient {
@@ -58,7 +58,7 @@ public class EventMeshWorkflowClient {
     public ExecuteResponse execute(final ExecuteRequest request) throws Exception {
         final WorkflowGrpc.WorkflowBlockingStub workflowClient = getWorkflowClient();
         final ExecuteResponse response = workflowClient.execute(request);
-        LogUtils.info(log,"received response:{}", response);
+        LogUtils.info(log, "received response:{}", response);
         return response;
     }
 }

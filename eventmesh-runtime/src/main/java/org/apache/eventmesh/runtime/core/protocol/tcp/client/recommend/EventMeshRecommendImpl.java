@@ -17,16 +17,23 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.ValueComparator;
 
-import java.util.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
@@ -53,13 +60,13 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             eventMeshDataInfoList = eventMeshTCPServer.getMetaStorage().findEventMeshInfoByCluster(cluster);
         } catch (Exception e) {
             LogUtils.warn(log, "EventMeshRecommend failed, findEventMeshInfoByCluster failed, cluster:{}, group:{}, purpose:{}, errMsg:{}",
-                    cluster, group, purpose, e);
+                cluster, group, purpose, e);
             return null;
         }
 
         if (CollectionUtils.isEmpty(eventMeshDataInfoList)) {
             LogUtils.warn(log, "EventMeshRecommend failed,not find eventMesh instances from registry,cluster:{},group:{},purpose:{}",
-                    cluster, group, purpose);
+                cluster, group, purpose);
             return null;
         }
 
@@ -70,8 +77,8 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
                 final String dummy = StringUtils.equals(idc, localIdc)
-                        ? localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint())
-                        : remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
+                    ? localEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint())
+                    : remoteEventMeshMap.put(eventMeshDataInfo.getEventMeshName(), eventMeshDataInfo.getEndpoint());
             } else {
                 LogUtils.error(log, "EventMeshName may be illegal,idc is null,eventMeshName:{}", eventMeshDataInfo.getEventMeshName());
             }
@@ -103,7 +110,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         }
 
         LogUtils.info(log, "eventMeshMap:{},clientDistributionMap:{},group:{},recommendNum:{},currEventMeshName:{}",
-                eventMeshMap, clientDistributedMap, group, recommendProxyNum, eventMeshName);
+            eventMeshMap, clientDistributedMap, group, recommendProxyNum, eventMeshName);
 
         // find eventmesh with least client
         final List<Map.Entry<String, Integer>> clientDistributedList = new ArrayList<>();
@@ -125,7 +132,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         }
 
         LogUtils.info(log, "choose proxys with min instance num, group:{}, recommendProxyNum:{}, recommendProxyList:{}",
-                group, recommendProxyNum, recommendProxyList);
+            group, recommendProxyNum, recommendProxyList);
         return recommendProxyList;
     }
 
@@ -134,15 +141,15 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
 
         LogUtils.info(log, "eventMeshMap:{},cluster:{},group:{},purpose:{},caculateLocal:{}", eventMeshMap, cluster,
-                group, purpose, caculateLocal);
+            group, purpose, caculateLocal);
 
         Map<String, Map<String, Integer>> eventMeshClientDistributionDataMap = null;
         try {
             eventMeshClientDistributionDataMap = eventMeshTCPServer.getMetaStorage().findEventMeshClientDistributionData(
-                    cluster, group, purpose);
+                cluster, group, purpose);
         } catch (Exception e) {
             LogUtils.warn(log, "EventMeshRecommend failed,findEventMeshClientDistributionData failed,"
-                    + "cluster:{},group:{},purpose:{}, errMsg:{}", cluster, group, purpose, e);
+                + "cluster:{},group:{},purpose:{}, errMsg:{}", cluster, group, purpose, e);
         }
 
         String recommendProxyAddr;
@@ -155,7 +162,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             Collections.shuffle(tmpProxyAddrList);
             recommendProxyAddr = tmpProxyAddrList.get(0);
             LogUtils.info(log, "No distribute data in registry,cluster:{}, group:{},purpose:{}, recommendProxyAddr:{}",
-                    cluster, group, purpose, recommendProxyAddr);
+                cluster, group, purpose, recommendProxyAddr);
             return recommendProxyAddr;
         }
 
@@ -176,10 +183,10 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         });
 
         recommendProxyAddr = recommendProxy(eventMeshMap, (caculateLocal == true) ? localClientDistributionMap
-                : remoteClientDistributionMap, group);
+            : remoteClientDistributionMap, group);
 
         LogUtils.info(log, "eventMeshMap:{},group:{},purpose:{},caculateLocal:{},recommendProxyAddr:{}", eventMeshMap,
-                group, purpose, caculateLocal, recommendProxyAddr);
+            group, purpose, caculateLocal, recommendProxyAddr);
 
         return recommendProxyAddr;
     }

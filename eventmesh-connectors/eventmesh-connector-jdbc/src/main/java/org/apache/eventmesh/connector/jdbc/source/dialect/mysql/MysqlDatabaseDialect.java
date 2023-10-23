@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
-import com.mysql.cj.MysqlType;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.DataTypeConvertor;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
@@ -29,14 +27,26 @@ import org.apache.eventmesh.connector.jdbc.exception.TableNotExistException;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.AbstractGeneralDatabaseDialect;
-import org.apache.eventmesh.connector.jdbc.table.catalog.*;
+import org.apache.eventmesh.connector.jdbc.table.catalog.CatalogTable;
+import org.apache.eventmesh.connector.jdbc.table.catalog.DefaultColumn;
+import org.apache.eventmesh.connector.jdbc.table.catalog.PrimaryKey;
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableSchema;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import com.mysql.cj.MysqlType;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJdbcConnection> {
@@ -193,7 +203,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 int scale = tableMetaData.getScale(columnIndex);
                 dataTypeProperties.put(MysqlDataTypeConvertor.SCALE, scale);
                 column.setDataType(
-                        dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
+                    dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
                 column.setDecimal(scale);
             }
         });

@@ -61,7 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Add multiple managers to the underlying server
- *
  */
 @Slf4j
 public class EventMeshTCPServer extends AbstractTCPServer {
@@ -88,6 +87,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         this.metaStorage = eventMeshServer.getMetaStorage();
         this.acl = eventMeshServer.getAcl();
     }
+
     public void init() throws Exception {
         LogUtils.info(log, "==================EventMeshTCPServer Initialing==================");
         super.init();

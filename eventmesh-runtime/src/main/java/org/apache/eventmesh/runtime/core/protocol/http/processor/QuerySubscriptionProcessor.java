@@ -113,6 +113,6 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.SUBSCRIPTION_QUERY.getRequestURI()};
+        return new String[] {RequestURI.SUBSCRIPTION_QUERY.getRequestURI()};
     }
 }

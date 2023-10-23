@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -25,14 +24,16 @@ import org.apache.eventmesh.runtime.util.BannerUtil;
 
 import java.io.File;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class EventMeshStartup {
 
     public static void main(String[] args) throws Exception {
         try {
             ConfigService.getInstance()
-                    .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                    .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
+                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
 
             EventMeshServer server = new EventMeshServer();
             BannerUtil.generateBanner();

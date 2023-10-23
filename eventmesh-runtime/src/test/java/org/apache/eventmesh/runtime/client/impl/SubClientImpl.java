@@ -17,11 +17,6 @@
 
 package org.apache.eventmesh.runtime.client.impl;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -36,12 +31,21 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.RequestContext;
 import org.apache.eventmesh.runtime.client.common.TCPClient;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
-import org.junit.jupiter.api.Assertions;
+
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Assertions;
+
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubClientImpl extends TCPClient implements SubClient {
@@ -95,7 +99,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 }
                 Package msg = MessageUtils.heartBeat();
                 LogUtils.debug(log, "SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
-                        msg.getHeader().getCommand(), msg);
+                    msg.getHeader().getCommand(), msg);
                 SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception e) {
                 // ignore
@@ -114,7 +118,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-            throws Exception {
+        throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -198,7 +202,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             LogUtils.info(log, SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
-                    msg.getHeader().getCommand(), msg);
+                msg.getHeader().getCommand(), msg);
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);

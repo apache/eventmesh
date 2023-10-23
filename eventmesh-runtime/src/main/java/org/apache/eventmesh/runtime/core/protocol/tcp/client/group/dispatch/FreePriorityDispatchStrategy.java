@@ -17,16 +17,18 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy {
@@ -34,8 +36,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
     @Override
     public Session select(final String group, final String topic, final Set<Session> groupConsumerSessions) {
         if (CollectionUtils.isEmpty(groupConsumerSessions)
-                || StringUtils.isBlank(topic)
-                || StringUtils.isBlank(group)) {
+            || StringUtils.isBlank(topic)
+            || StringUtils.isBlank(group)) {
             return null;
         }
 
@@ -49,7 +51,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
             if (session.isIsolated()) {
                 isolatedSessions.add(session);
                 LogUtils.info(log, "session is not available because session is isolated,isolateTime:{},client:{}",
-                        session.getIsolateTime(), session.getClient());
+                    session.getIsolateTime(), session.getClient());
                 continue;
             }
 

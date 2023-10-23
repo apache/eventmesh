@@ -18,11 +18,11 @@
 package org.apache.eventmesh.runtime.client.common;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.concurrent.CountDownLatch;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class RequestContext {
@@ -36,6 +36,16 @@ public class RequestContext {
         this.key = key;
         this.request = request;
         this.latch = latch;
+    }
+
+    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
+        RequestContext c = new RequestContext(key, request, latch);
+        LogUtils.info(log, "_RequestContext|create|key=" + key);
+        return c;
+    }
+
+    public static Object getHeaderSeq(Package request) {
+        return request.getHeader().getSeq();
     }
 
     public Object getKey() {
@@ -73,15 +83,5 @@ public class RequestContext {
     public void finish(Package msg) {
         this.response = msg;
         latch.countDown();
-    }
-
-    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
-        RequestContext c = new RequestContext(key, request, latch);
-        LogUtils.info(log, "_RequestContext|create|key=" + key);
-        return c;
-    }
-
-    public static Object getHeaderSeq(Package request) {
-        return request.getHeader().getSeq();
     }
 }

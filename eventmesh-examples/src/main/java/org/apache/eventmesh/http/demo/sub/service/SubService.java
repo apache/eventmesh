@@ -17,8 +17,12 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
-import com.google.common.collect.Lists;
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+import static org.apache.eventmesh.util.Utils.getURL;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -30,25 +34,28 @@ import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.eventmesh.common.ExampleConstants.*;
-import static org.apache.eventmesh.util.Utils.getURL;
+import javax.annotation.PreDestroy;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Lists;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class SubService implements InitializingBean {
 
     private final List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
+        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
     private EventMeshHttpConsumer eventMeshHttpConsumer;
@@ -71,13 +78,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventMeshIP + ":" + eventMeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(ENV)
-                .idc(IDC)
-                .ip(IPUtils.getLocalAddress())
-                .sys(SUB_SYS)
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .liteEventMeshAddr(eventMeshIPPort)
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV)
+            .idc(IDC)
+            .ip(IPUtils.getLocalAddress())
+            .sys(SUB_SYS)
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, testURL);

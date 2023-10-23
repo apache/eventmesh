@@ -49,7 +49,7 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
                 @Override
                 public void onSuccess(final EventMeshMessage o) {
                     LogUtils.debug(log, "sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
-                            System.currentTimeMillis() - startTime);
+                        System.currentTimeMillis() - startTime);
                 }
 
                 @Override

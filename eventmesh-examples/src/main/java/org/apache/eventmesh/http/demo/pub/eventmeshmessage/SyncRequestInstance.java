@@ -49,7 +49,7 @@ public class SyncRequestInstance extends HttpAbstractDemo {
 
             final EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10_000);
             LogUtils.debug(log, "send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
-                    System.currentTimeMillis() - startTime);
+                System.currentTimeMillis() - startTime);
         } catch (Exception e) {
             log.error("send msg failed, ", e);
         }

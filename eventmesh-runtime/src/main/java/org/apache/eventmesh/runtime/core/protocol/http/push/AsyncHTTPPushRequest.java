@@ -76,12 +76,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     public static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     public static final Logger LOGGER = LoggerFactory.getLogger("AsyncHTTPPushRequest");
-
-    public String currPushUrl;
     private final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
+    public String currPushUrl;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
-        Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
+                                Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
         super(handleMsgContext);
         this.waitingRequests = waitingRequests;
     }
@@ -196,7 +195,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         addToWaitingMap(this);
 
         LogUtils.info(CMD_LOGGER, "cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                localAddress, currPushUrl);
+            localAddress, currPushUrl);
 
         try {
             eventMeshHTTPServer.getHttpClientPool().getClient().execute(builder, response -> {
@@ -239,9 +238,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
                     LogUtils.info(MESSAGE_LOGGER, "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                    + "|uniqueId={}|cost={}",
-                            currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                            + "|uniqueId={}|cost={}",
+                        currPushUrl, handleMsgContext.getTopic(),
+                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                     if (isComplete()) {
                         handleMsgContext.finish();
@@ -330,12 +329,12 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             return ClientRetCode.FAIL;
         } catch (NumberFormatException e) {
-            LogUtils.warn(MESSAGE_LOGGER,"url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
+                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         } catch (Exception e) {
             LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         }
     }

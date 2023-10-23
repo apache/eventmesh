@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.common.file;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class WatchFileManager {

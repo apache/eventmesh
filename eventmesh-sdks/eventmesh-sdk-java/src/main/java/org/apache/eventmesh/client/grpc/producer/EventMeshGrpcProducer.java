@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -34,7 +35,6 @@ import io.grpc.ManagedChannelBuilder;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 @Data
@@ -61,7 +61,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     }
 
     public <T> Response publish(T message) {
-        LogUtils.info(log,"Publish message " + message.toString());
+        LogUtils.info(log, "Publish message " + message.toString());
         if (message instanceof CloudEvent) {
             return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
@@ -73,7 +73,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <T> Response publish(List<T> messageList) {
-        LogUtils.info(log,"BatchPublish message :{}", messageList);
+        LogUtils.info(log, "BatchPublish message :{}", messageList);
 
         if (CollectionUtils.isEmpty(messageList)) {
             return null;

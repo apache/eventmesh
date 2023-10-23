@@ -86,7 +86,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 }
                 Package msg = MessageUtils.heartBeat();
                 LogUtils.debug(log, "PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                        clientNo, msg.getHeader().getCommand(), msg);
+                    clientNo, msg.getHeader().getCommand(), msg);
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {
                 // ignore
@@ -176,6 +176,11 @@ public class PubClientImpl extends TCPClient implements PubClient {
         return userAgent;
     }
 
+    @Override
+    public String toString() {
+        return "PubClientImpl|clientNo=" + clientNo + "|" + userAgent;
+    }
+
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
 
@@ -212,10 +217,5 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 }
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return "PubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 }

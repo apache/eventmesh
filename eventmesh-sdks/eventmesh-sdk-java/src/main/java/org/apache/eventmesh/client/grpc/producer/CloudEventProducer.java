@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.client.grpc.producer;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
@@ -29,7 +27,11 @@ import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
 import org.apache.eventmesh.common.utils.LogUtils;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEvent> {
@@ -58,10 +60,10 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
         try {
             final CloudEvent response = publisherClient.batchPublish(cloudEventBatch);
             Response parsedResponse = Response.builder()
-                    .respCode(EventMeshCloudEventUtils.getResponseCode(response))
-                    .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
-                    .respTime(EventMeshCloudEventUtils.getResponseTime(response))
-                    .build();
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
 
             LogUtils.info(log, "Received response:{}", parsedResponse);
             return parsedResponse;
@@ -78,10 +80,10 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
         try {
             final CloudEvent response = publisherClient.publish(enhancedMessage);
             Response parsedResponse = Response.builder()
-                    .respCode(EventMeshCloudEventUtils.getResponseCode(response))
-                    .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
-                    .respTime(EventMeshCloudEventUtils.getResponseTime(response))
-                    .build();
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
             LogUtils.info(log, "Received response:{} ", parsedResponse);
             return parsedResponse;
         } catch (Exception e) {

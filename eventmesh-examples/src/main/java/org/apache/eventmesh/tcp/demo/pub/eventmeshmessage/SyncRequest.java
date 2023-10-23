@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
@@ -32,6 +31,8 @@ import org.apache.eventmesh.util.Utils;
 
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class SyncRequest {
 
@@ -41,13 +42,13 @@ public class SyncRequest {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient1();
         final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
+            .userAgent(userAgent)
+            .build();
         try {
             final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                    eventMeshTcpClientConfig, EventMeshMessage.class);
+                eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();

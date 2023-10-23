@@ -84,7 +84,7 @@ public class EventMeshUtil {
     }
 
     public static String buildMeshTcpClientID(final String clientSysId, final String purpose,
-        final String meshCluster) {
+                                              final String meshCluster) {
         return StringUtils.joinWith("-", StringUtils.trim(clientSysId), StringUtils.trim(purpose),
             StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
     }
@@ -238,7 +238,7 @@ public class EventMeshUtil {
     }
 
     private static void getIpResult(final List<String> ipv4Result, final List<String> ipv6Result,
-        final Enumeration<InetAddress> en) {
+                                    final Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (address.isLoopbackAddress()) {
@@ -273,8 +273,8 @@ public class EventMeshUtil {
 
     public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
         LogUtils.info(log, "{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
-                        .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService.getPoolSize(),
-                scheduledExecutorService.getActiveCount(), scheduledExecutorService.getCompletedTaskCount());
+                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService.getPoolSize(),
+            scheduledExecutorService.getActiveCount(), scheduledExecutorService.getCompletedTaskCount());
     }
 
     /**
@@ -288,12 +288,12 @@ public class EventMeshUtil {
     @SuppressWarnings("unchecked")
     public static <T> T cloneObject(final T object) throws IOException, ClassNotFoundException {
         try (ByteArrayOutputStream byOut = new ByteArrayOutputStream();
-            ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
+             ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
 
             outputStream.writeObject(object);
 
             try (ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
-                ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
+                 ObjectInputStream inputStream = new ObjectInputStream(byIn)) {
                 return (T) inputStream.readObject();
             }
         }
@@ -301,7 +301,7 @@ public class EventMeshUtil {
     }
 
     public static Map<String, Object> getCloudEventExtensionMap(final String protocolVersion,
-        final CloudEvent cloudEvent) {
+                                                                final CloudEvent cloudEvent) {
         final EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
             && cloudEvent instanceof CloudEventV1) {

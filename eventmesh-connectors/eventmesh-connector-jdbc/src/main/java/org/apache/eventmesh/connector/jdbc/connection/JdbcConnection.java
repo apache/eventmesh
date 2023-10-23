@@ -17,14 +17,23 @@
 
 package org.apache.eventmesh.connector.jdbc.connection;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
 import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import javax.annotation.concurrent.ThreadSafe;
-import java.sql.*;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 /**
@@ -361,7 +370,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public JdbcConnection preparedQuery(String sql, JdbcResultSetConsumer resultConsumer, PreparedParameter... preparedParameters)
-            throws SQLException {
+        throws SQLException {
         // Check if the connection is connected and valid
         if (isConnected() && isValid()) {
             connection();
@@ -414,7 +423,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public <T> T preparedQuery(String sql, ResultSetMapper<T> resultSetMapper, PreparedParameter... preparedParameters)
-            throws SQLException {
+        throws SQLException {
         // Check if the connection is connected and valid
         if (isConnected() && isValid()) {
             connection();

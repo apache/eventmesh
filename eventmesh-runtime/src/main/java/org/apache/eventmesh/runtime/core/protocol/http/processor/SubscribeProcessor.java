@@ -72,7 +72,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         final String localAddress = IPUtils.getLocalAddress();
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         LogUtils.info(log, "cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(requestCode), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
+            RequestCode.get(requestCode), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         final SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
         final SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
@@ -188,10 +188,10 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     SubscribeResponseBody.class);
                 final long endTime = System.currentTimeMillis();
                 LogUtils.error(log, "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                                + "|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime,
-                        JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
-                        subscribeRequestBody.getUrl(), e);
+                        + "|bizSeqNo={}|uniqueId={}",
+                    endTime - startTime,
+                    JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
+                    subscribeRequestBody.getUrl(), e);
                 summaryMetrics.recordSendMsgFailed();
                 summaryMetrics.recordSendMsgCost(endTime - startTime);
             }

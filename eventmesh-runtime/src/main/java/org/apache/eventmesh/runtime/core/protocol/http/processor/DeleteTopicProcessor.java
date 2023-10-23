@@ -141,7 +141,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    LogUtils.debug(httpLogger,"{}", httpEventWrapper);
+                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());
@@ -173,6 +173,6 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.DELETE_TOPIC.getRequestURI()};
+        return new String[] {RequestURI.DELETE_TOPIC.getRequestURI()};
     }
 }

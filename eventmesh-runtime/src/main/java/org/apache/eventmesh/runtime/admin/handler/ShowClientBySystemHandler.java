@@ -60,9 +60,9 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
@@ -96,8 +96,8 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
-                            userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
-                            userAgent.getPath(), userAgent.getPurpose()))
+                                userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                                userAgent.getPath(), userAgent.getPurpose()))
                             .append(newLine);
                     }
                 }

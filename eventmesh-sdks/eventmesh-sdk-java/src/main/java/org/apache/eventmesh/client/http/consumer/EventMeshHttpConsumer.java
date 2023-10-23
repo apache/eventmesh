@@ -37,6 +37,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,15 +52,12 @@ import java.util.stream.Collectors;
 import io.netty.handler.codec.http.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoCloseable {
 
-    private final transient ThreadPoolExecutor consumeExecutor;
-
     private static final List<SubscriptionItem> SUBSCRIPTIONS = Collections.synchronizedList(new ArrayList<>());
-
+    private final transient ThreadPoolExecutor consumeExecutor;
     private final transient ScheduledThreadPoolExecutor scheduler;
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
@@ -67,8 +65,8 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
     }
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
-        final ThreadPoolExecutor customExecutor)
-                                                 throws EventMeshException {
+                                 final ThreadPoolExecutor customExecutor)
+        throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
             () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
@@ -168,7 +166,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     @Override
     public void close() throws EventMeshException {
-        LogUtils.info(log,"LiteConsumer shutdown begin.");
+        LogUtils.info(log, "LiteConsumer shutdown begin.");
         super.close();
 
         if (consumeExecutor != null) {
@@ -176,7 +174,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         }
         scheduler.shutdown();
 
-        LogUtils.info(log,"LiteConsumer shutdown end.");
+        LogUtils.info(log, "LiteConsumer shutdown end.");
     }
 
     private RequestParam buildCommonRequestParam() {

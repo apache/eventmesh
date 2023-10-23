@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.grpc.sub;
 
-import lombok.extern.java.Log;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.common.EventMeshMessage;

@@ -43,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeProcessor implements TcpProcessor {
 
-    private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;
+    private EventMeshTCPServer eventMeshTCPServer;
 
     public SubscribeProcessor(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

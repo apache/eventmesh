@@ -17,7 +17,10 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
@@ -36,7 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.apache.eventmesh.common.Constants.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshServer {

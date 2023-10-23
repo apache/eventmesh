@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class Codec {
@@ -51,6 +51,73 @@ public class Codec {
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
+    private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
+        Command command = header.getCmd();
+        switch (command) {
+            case HELLO_REQUEST:
+            case RECOMMEND_REQUEST:
+                return JsonUtils.parseObject(bodyJsonString, UserAgent.class);
+            case SUBSCRIBE_REQUEST:
+            case UNSUBSCRIBE_REQUEST:
+                return JsonUtils.parseObject(bodyJsonString, Subscription.class);
+            case REQUEST_TO_SERVER:
+            case RESPONSE_TO_SERVER:
+            case ASYNC_MESSAGE_TO_SERVER:
+            case BROADCAST_MESSAGE_TO_SERVER:
+            case REQUEST_TO_CLIENT:
+            case RESPONSE_TO_CLIENT:
+            case ASYNC_MESSAGE_TO_CLIENT:
+            case BROADCAST_MESSAGE_TO_CLIENT:
+            case REQUEST_TO_CLIENT_ACK:
+            case RESPONSE_TO_CLIENT_ACK:
+            case ASYNC_MESSAGE_TO_CLIENT_ACK:
+            case BROADCAST_MESSAGE_TO_CLIENT_ACK:
+            case HELLO_RESPONSE:
+            case RECOMMEND_RESPONSE:
+            case SUBSCRIBE_RESPONSE:
+            case LISTEN_RESPONSE:
+            case UNSUBSCRIBE_RESPONSE:
+            case HEARTBEAT_RESPONSE:
+            case ASYNC_MESSAGE_TO_SERVER_ACK:
+            case BROADCAST_MESSAGE_TO_SERVER_ACK:
+            case CLIENT_GOODBYE_REQUEST:
+            case CLIENT_GOODBYE_RESPONSE:
+            case SERVER_GOODBYE_REQUEST:
+            case SERVER_GOODBYE_RESPONSE:
+                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
+                // just a string.
+                return bodyJsonString;
+            case REDIRECT_TO_CLIENT:
+                return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
+            default:
+                LogUtils.warn(log, "Invalidate TCP command: {}", command);
+                return null;
+        }
+    }
+
+    /**
+     * Deserialize bytes to String.
+     *
+     * @param bytes
+     * @return
+     */
+    private static String deserializeBytes(byte[] bytes) {
+        return new String(bytes, Constants.DEFAULT_CHARSET);
+    }
+
+    /**
+     * Serialize String to bytes.
+     *
+     * @param str
+     * @return
+     */
+    private static byte[] serializeBytes(String str) {
+        if (str == null) {
+            return new byte[0];
+        }
+        return str.getBytes(Constants.DEFAULT_CHARSET);
+    }
+
     public static class Encoder extends MessageToByteEncoder<Package> {
 
         @Override
@@ -58,7 +125,7 @@ public class Codec {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            LogUtils.debug(log,"Encoder pkg={}", JsonUtils.toJSONString(pkg));
+            LogUtils.debug(log, "Encoder pkg={}", JsonUtils.toJSONString(pkg));
 
             final byte[] headerData = JsonUtils.toJSONBytes(header);
             final byte[] bodyData;
@@ -165,72 +232,5 @@ public class Codec {
                 throw new IllegalArgumentException(errorMsg);
             }
         }
-    }
-
-    private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
-        Command command = header.getCmd();
-        switch (command) {
-            case HELLO_REQUEST:
-            case RECOMMEND_REQUEST:
-                return JsonUtils.parseObject(bodyJsonString, UserAgent.class);
-            case SUBSCRIBE_REQUEST:
-            case UNSUBSCRIBE_REQUEST:
-                return JsonUtils.parseObject(bodyJsonString, Subscription.class);
-            case REQUEST_TO_SERVER:
-            case RESPONSE_TO_SERVER:
-            case ASYNC_MESSAGE_TO_SERVER:
-            case BROADCAST_MESSAGE_TO_SERVER:
-            case REQUEST_TO_CLIENT:
-            case RESPONSE_TO_CLIENT:
-            case ASYNC_MESSAGE_TO_CLIENT:
-            case BROADCAST_MESSAGE_TO_CLIENT:
-            case REQUEST_TO_CLIENT_ACK:
-            case RESPONSE_TO_CLIENT_ACK:
-            case ASYNC_MESSAGE_TO_CLIENT_ACK:
-            case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-            case HELLO_RESPONSE:
-            case RECOMMEND_RESPONSE:
-            case SUBSCRIBE_RESPONSE:
-            case LISTEN_RESPONSE:
-            case UNSUBSCRIBE_RESPONSE:
-            case HEARTBEAT_RESPONSE:
-            case ASYNC_MESSAGE_TO_SERVER_ACK:
-            case BROADCAST_MESSAGE_TO_SERVER_ACK:
-            case CLIENT_GOODBYE_REQUEST:
-            case CLIENT_GOODBYE_RESPONSE:
-            case SERVER_GOODBYE_REQUEST:
-            case SERVER_GOODBYE_RESPONSE:
-                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
-                // just a string.
-                return bodyJsonString;
-            case REDIRECT_TO_CLIENT:
-                return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
-            default:
-                LogUtils.warn(log, "Invalidate TCP command: {}", command);
-                return null;
-        }
-    }
-
-    /**
-     * Deserialize bytes to String.
-     *
-     * @param bytes
-     * @return
-     */
-    private static String deserializeBytes(byte[] bytes) {
-        return new String(bytes, Constants.DEFAULT_CHARSET);
-    }
-
-    /**
-     * Serialize String to bytes.
-     *
-     * @param str
-     * @return
-     */
-    private static byte[] serializeBytes(String str) {
-        if (str == null) {
-            return new byte[0];
-        }
-        return str.getBytes(Constants.DEFAULT_CHARSET);
     }
 }

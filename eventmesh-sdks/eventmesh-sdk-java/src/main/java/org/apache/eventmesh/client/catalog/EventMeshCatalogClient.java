@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.catalog.protos.Operation;
 import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsRequest;
 import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsResponse;
 import org.apache.eventmesh.common.utils.AssertUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -38,7 +39,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class EventMeshCatalogClient {
@@ -48,7 +48,7 @@ public class EventMeshCatalogClient {
     private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<>();
 
     public EventMeshCatalogClient(final EventMeshCatalogClientConfig clientConfig,
-        final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
+                                  final EventMeshGrpcConsumer eventMeshGrpcConsumer) {
         this.clientConfig = clientConfig;
         this.eventMeshGrpcConsumer = eventMeshGrpcConsumer;
     }
@@ -67,7 +67,7 @@ public class EventMeshCatalogClient {
         final QueryOperationsRequest request = QueryOperationsRequest.newBuilder()
             .setServiceName(clientConfig.getAppServerName()).build();
         final QueryOperationsResponse response = catalogClient.queryOperations(request);
-        LogUtils.info(log,"received response: {}", response);
+        LogUtils.info(log, "received response: {}", response);
 
         final List<Operation> operations = response.getOperationsList();
         if (CollectionUtils.isEmpty(operations)) {

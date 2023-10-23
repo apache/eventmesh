@@ -34,14 +34,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HTTPMetricsServer {
 
+    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
+        new EventMeshThreadFactory("eventMesh-metrics", true));
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
-
     private final transient List<MetricsRegistry> metricsRegistries;
-
     private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
-        final List<MetricsRegistry> metricsRegistries) {
+                             final List<MetricsRegistry> metricsRegistries) {
         Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
         Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
@@ -92,70 +92,67 @@ public class HTTPMetricsServer {
     public void shutdown() {
         metricsSchedule.shutdown();
         metricsRegistries.forEach(MetricsRegistry::showdown);
-        LogUtils.info(log,"HTTPMetricsServer shutdown.");
+        LogUtils.info(log, "HTTPMetricsServer shutdown.");
     }
-
-    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
-        new EventMeshThreadFactory("eventMesh-metrics", true));
 
     // todo: move this into standalone metrics plugin
 
     private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
-        final EventMeshHTTPServer eventMeshHTTPServer) {
+                                       final EventMeshHTTPServer eventMeshHTTPServer) {
 
         LogUtils.info(log, "===========================================SERVER METRICS==================================================");
         LogUtils.info(log, "maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
-                summaryMetrics.maxHTTPTPS(),
-                summaryMetrics.avgHTTPTPS(),
-                summaryMetrics.maxHTTPCost(),
-                summaryMetrics.avgHTTPCost(),
-                summaryMetrics.avgHTTPBodyDecodeCost(),
-                summaryMetrics.getHttpDiscard());
+            summaryMetrics.maxHTTPTPS(),
+            summaryMetrics.avgHTTPTPS(),
+            summaryMetrics.maxHTTPCost(),
+            summaryMetrics.avgHTTPCost(),
+            summaryMetrics.avgHTTPBodyDecodeCost(),
+            summaryMetrics.getHttpDiscard());
 
         summaryMetrics.httpStatInfoClear();
 
         LogUtils.info(log, "maxBatchSendMsgTPS: {}, avgBatchSendMsgTPS: {}, sum: {}. sumFail: {}, sumFailRate: {}, discard : {}",
-                summaryMetrics.maxSendBatchMsgTPS(),
-                summaryMetrics.avgSendBatchMsgTPS(),
-                summaryMetrics.getSendBatchMsgNumSum(),
-                summaryMetrics.getSendBatchMsgFailNumSum(),
-                summaryMetrics.getSendBatchMsgFailRate(),
-                summaryMetrics.getSendBatchMsgDiscardNumSum());
+            summaryMetrics.maxSendBatchMsgTPS(),
+            summaryMetrics.avgSendBatchMsgTPS(),
+            summaryMetrics.getSendBatchMsgNumSum(),
+            summaryMetrics.getSendBatchMsgFailNumSum(),
+            summaryMetrics.getSendBatchMsgFailRate(),
+            summaryMetrics.getSendBatchMsgDiscardNumSum());
 
         summaryMetrics.cleanSendBatchStat();
 
         LogUtils.info(log, "maxSendMsgTPS: {}, avgSendMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, replyMsg: {}, replyFail: {}",
-                summaryMetrics.maxSendMsgTPS(),
-                summaryMetrics.avgSendMsgTPS(),
-                summaryMetrics.getSendMsgNumSum(),
-                summaryMetrics.getSendMsgFailNumSum(),
-                summaryMetrics.getSendMsgFailRate(),
-                summaryMetrics.getReplyMsgNumSum(),
-                summaryMetrics.getReplyMsgFailNumSum());
+            summaryMetrics.maxSendMsgTPS(),
+            summaryMetrics.avgSendMsgTPS(),
+            summaryMetrics.getSendMsgNumSum(),
+            summaryMetrics.getSendMsgFailNumSum(),
+            summaryMetrics.getSendMsgFailRate(),
+            summaryMetrics.getReplyMsgNumSum(),
+            summaryMetrics.getReplyMsgFailNumSum());
 
         summaryMetrics.cleanSendMsgStat();
 
         LogUtils.info(log, "maxPushMsgTPS: {}, avgPushMsgTPS: {}, sum: {}, sumFail: {}, sumFailRate: {}, maxClientLatency: {}, avgClientLatency: {}",
-                summaryMetrics.maxPushMsgTPS(),
-                summaryMetrics.avgPushMsgTPS(),
-                summaryMetrics.getHttpPushMsgNumSum(),
-                summaryMetrics.getHttpPushFailNumSum(),
-                summaryMetrics.getHttpPushMsgFailRate(),
-                summaryMetrics.maxHTTPPushLatency(),
-                summaryMetrics.avgHTTPPushLatency());
+            summaryMetrics.maxPushMsgTPS(),
+            summaryMetrics.avgPushMsgTPS(),
+            summaryMetrics.getHttpPushMsgNumSum(),
+            summaryMetrics.getHttpPushFailNumSum(),
+            summaryMetrics.getHttpPushMsgFailRate(),
+            summaryMetrics.maxHTTPPushLatency(),
+            summaryMetrics.avgHTTPPushLatency());
 
         summaryMetrics.cleanHttpPushMsgStat();
 
         LogUtils.info(log, "batchMsgQ: {}, sendMsgQ: {}, pushMsgQ: {}, httpRetryQ: {}",
-                eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpRetryer().getRetrySize());
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
+            eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
+            eventMeshHTTPServer.getHttpRetryer().getRetrySize());
 
         LogUtils.info(log, "batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
-                summaryMetrics.avgBatchSendMsgCost(),
-                summaryMetrics.avgSendMsgCost(),
-                summaryMetrics.avgReplyMsgCost());
+            summaryMetrics.avgBatchSendMsgCost(),
+            summaryMetrics.avgSendMsgCost(),
+            summaryMetrics.avgReplyMsgCost());
         summaryMetrics.send2MQStatInfoClear();
     }
 

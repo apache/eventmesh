@@ -17,18 +17,20 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.util.concurrent.TimeUnit;
+
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The most basic server
@@ -90,7 +92,7 @@ public abstract class AbstractRemotingServer {
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
 
-            LogUtils.info(log,"shutdown workerGroup");
+            LogUtils.info(log, "shutdown workerGroup");
         }
     }
 

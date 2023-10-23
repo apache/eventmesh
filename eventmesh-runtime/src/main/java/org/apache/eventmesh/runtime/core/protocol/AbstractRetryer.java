@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
+import org.apache.eventmesh.common.utils.LogUtils;
+
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public abstract class AbstractRetryer {

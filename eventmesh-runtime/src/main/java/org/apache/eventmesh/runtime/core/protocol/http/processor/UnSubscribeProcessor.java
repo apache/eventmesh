@@ -75,9 +75,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         final String localAddress = IPUtils.getLocalAddress();
 
         LogUtils.info(log, "cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+            RequestCode.get(Integer.valueOf(request.getRequestCode())),
+            EventMeshConstants.PROTOCOL_HTTP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         final UnSubscribeRequestHeader unSubscribeRequestHeader = (UnSubscribeRequestHeader) request.getHeader();
         final UnSubscribeRequestBody unSubscribeRequestBody = (UnSubscribeRequestBody) request.getBody();
@@ -222,7 +222,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
-                        + "|topic={}|url={}", endTime - startTime,
+                            + "|topic={}|url={}", endTime - startTime,
                         JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
                         unSubscribeRequestBody.getUrl(), e);
                     summaryMetrics.recordSendMsgFailed();
@@ -234,9 +234,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     }
 
     private void registerClient(final UnSubscribeRequestHeader unSubscribeRequestHeader,
-        final String consumerGroup,
-        final List<String> topicList,
-        final String url) {
+                                final String consumerGroup,
+                                final List<String> topicList,
+                                final String url) {
         for (final String topic : topicList) {
             final Client client = new Client();
             client.setEnv(unSubscribeRequestHeader.getEnv());
