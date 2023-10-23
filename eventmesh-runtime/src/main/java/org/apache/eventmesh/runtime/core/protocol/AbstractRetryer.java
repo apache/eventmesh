@@ -20,68 +20,55 @@ package org.apache.eventmesh.runtime.core.protocol;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.runtime.core.retry.Retryer;
+import org.apache.eventmesh.runtime.core.timer.HashedWheelTimer;
+import org.apache.eventmesh.runtime.core.timer.Timer;
+import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
 @Slf4j
-public abstract class AbstractRetryer {
+public abstract class AbstractRetryer implements Retryer {
 
     protected final DelayQueue<DelayRetryable> retrys = new DelayQueue<>();
 
     protected ThreadPoolExecutor pool;
 
-    protected Thread dispatcher;
-
     protected abstract void pushRetry(DelayRetryable delayRetryable);
 
     protected abstract void init();
 
-    public int getRetrySize() {
-        return retrys.size();
-    }
+    private volatile Timer timer;
 
-    protected void initDispatcher() {
-        dispatcher = new Thread(() -> {
-            try {
-                DelayRetryable retryObj;
-                while (!Thread.currentThread().isInterrupted() && (retryObj = retrys.take()) != null) {
-                    final DelayRetryable delayRetryable = retryObj;
-                    pool.execute(() -> {
-                        try {
-                            delayRetryable.retry();
-                            if (log.isDebugEnabled()) {
-                                log.debug("retryObj : {}", delayRetryable);
-                            }
-                        } catch (Exception e) {
-                            log.error("retry-dispatcher error!", e);
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
-                log.error("retry-dispatcher error!", e);
-            }
-        }, "retry-dispatcher");
-        dispatcher.setDaemon(true);
-        log.info("EventMesh retryer inited......");
+    @Override
+    public void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit) {
+        timer.newTimeout(timerTask, delay, timeUnit);
     }
 
     public void shutdown() {
-        dispatcher.interrupt();
-        pool.shutdown();
+        timer.stop();
         log.info("EventMesh retryer shutdown......");
     }
 
     public void start() throws Exception {
-        dispatcher.start();
+        if (timer == null) {
+            synchronized (this) {
+                if (timer == null) {
+                    timer = new HashedWheelTimer(
+                        new EventMeshThreadFactory("failback-cluster-timer", true),
+                        1,
+                        TimeUnit.SECONDS, 512, 100);
+                }
+            }
+        }
         log.info("EventMesh retryer started......");
     }
 
-    /**
-     * Get fail-retry queue, this method is just used for metrics.
-     */
-    public DelayQueue<DelayRetryable> getRetryQueue() {
-        return retrys;
+    public long getPendingTimeouts() {
+        if (timer == null) {
+            return 0;
+        }
+        return timer.pendingTimeouts();
     }
 }

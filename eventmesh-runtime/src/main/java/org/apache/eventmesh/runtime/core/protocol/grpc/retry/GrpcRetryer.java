@@ -55,8 +55,6 @@ public class GrpcRetryer extends AbstractRetryer {
             new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
             new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
             new ThreadPoolExecutor.AbortPolicy());
-
-        initDispatcher();
     }
 
 }

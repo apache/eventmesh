@@ -60,8 +60,6 @@ public class HttpRetryer extends AbstractRetryer {
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
             new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
             new ThreadPoolExecutor.AbortPolicy());
-
-        initDispatcher();
     }
 
 }
