@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.core.retry.Retryer;
 import org.apache.eventmesh.runtime.core.timer.HashedWheelTimer;
@@ -40,6 +42,8 @@ public abstract class AbstractRetryer implements Retryer {
 
     @Override
     public void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit) {
+        log.debug("[HASHED-WHEEL-TIMER] executed! taskClass={}, nowTime={}",
+            timeUnit.getClass().getName(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         timer.newTimeout(timerTask, delay, timeUnit);
     }
 
