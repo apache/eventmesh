@@ -140,7 +140,7 @@ public class AuthTokenUtils {
         Object topics = aclProperties.getExtendedField("topics");
 
         if (!(topics instanceof Set)) {
-            throw new RuntimeException("abc");
+            return false;
         }
 
         Set<String> groupTopics = TypeUtils.castSet(topics, String.class);
