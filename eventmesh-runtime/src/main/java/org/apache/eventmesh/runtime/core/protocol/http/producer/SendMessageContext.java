@@ -122,7 +122,6 @@ public class SendMessageContext extends RetryContext {
         return sb.toString();
     }
 
-    @Override
     public void retry() throws Exception {
         if (eventMeshProducer == null) {
             log.error("Exception happends during retry. EventMeshProduceer is null.");

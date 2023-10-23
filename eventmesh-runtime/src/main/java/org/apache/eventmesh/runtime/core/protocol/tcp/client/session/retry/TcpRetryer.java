@@ -64,10 +64,10 @@ public class TcpRetryer extends AbstractRetryer {
             return;
         }
 
-        retrys.offer(retryContext);
+        super.newTimeout(timerTask, delay, timeUnit);
+
         log.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", retryContext.seq, retryContext.retryTimes,
             EventMeshUtil.getMessageBizSeq(retryContext.event));
 
-        super.newTimeout(timerTask, delay, timeUnit);
     }
 }

@@ -129,8 +129,10 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         }
     }
 
+    protected abstract void doRetry();
+
     @Override
     public void run(Timeout timeout) throws Exception {
-        retry();
+        doRetry();
     }
 }

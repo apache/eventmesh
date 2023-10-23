@@ -32,4 +32,10 @@ public interface TimerTask {
      * @param timeout a handle which is associated with this task
      */
     void run(Timeout timeout) throws Exception;
+
+    /**
+     * Hook method to set the execute time.
+     * @param executeTime execute time
+     */
+    void setExecuteTimeHook(long executeTime);
 }

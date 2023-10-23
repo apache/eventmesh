@@ -101,10 +101,6 @@ public abstract class AbstractPushRequest extends RetryContext {
         }
     }
 
-    public void retry() {
-        tryPushRequest();
-    }
-
     protected void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
@@ -163,6 +159,6 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     @Override
     public void run(Timeout timeout) throws Exception {
-        retry();
+        tryPushRequest();
     }
 }

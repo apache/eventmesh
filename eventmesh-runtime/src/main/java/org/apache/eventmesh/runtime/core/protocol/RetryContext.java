@@ -21,14 +21,11 @@ import org.apache.eventmesh.runtime.core.timer.Timeout;
 import org.apache.eventmesh.runtime.core.timer.Timer;
 import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
-import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
 
 import io.cloudevents.CloudEvent;
 
-public abstract class RetryContext implements DelayRetryable, TimerTask {
+public abstract class RetryContext implements TimerTask {
 
     public CloudEvent event;
 
@@ -38,21 +35,8 @@ public abstract class RetryContext implements DelayRetryable, TimerTask {
 
     public long executeTime = System.currentTimeMillis();
 
-    public RetryContext delay(long delay) {
-        this.executeTime = System.currentTimeMillis() + (retryTimes + 1) * delay;
-        return this;
-    }
-
-    @Override
-    public int compareTo(@Nonnull Delayed delayed) {
-        RetryContext obj = (RetryContext) delayed;
-        return Long.compare(this.executeTime, obj.executeTime);
-
-    }
-
-    @Override
-    public long getDelay(TimeUnit unit) {
-        return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    public long getExecuteTime() {
+        return executeTime;
     }
 
     protected void rePut(Timeout timeout, long tick, TimeUnit timeUnit) {
@@ -66,5 +50,10 @@ public abstract class RetryContext implements DelayRetryable, TimerTask {
         }
 
         timer.newTimeout(timeout.task(), tick, timeUnit);
+    }
+
+    @Override
+    public void setExecuteTimeHook(long executeTime) {
+        this.executeTime = executeTime;
     }
 }

@@ -23,15 +23,12 @@ import org.apache.eventmesh.runtime.core.timer.HashedWheelTimer;
 import org.apache.eventmesh.runtime.core.timer.Timer;
 import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractRetryer implements Retryer {
-
-    protected final DelayQueue<DelayRetryable> retrys = new DelayQueue<>();
 
     public void init() {
 

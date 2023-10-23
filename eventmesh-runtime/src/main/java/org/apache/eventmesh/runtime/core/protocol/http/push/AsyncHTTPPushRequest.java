@@ -365,7 +365,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         }
     }
 
-    public void retry() {
+    @Override
+    public void doRetry() {
         tryHTTPRequest();
     }
 }
