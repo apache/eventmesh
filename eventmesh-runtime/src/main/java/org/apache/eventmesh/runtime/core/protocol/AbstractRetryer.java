@@ -17,29 +17,29 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.core.retry.Retryer;
 import org.apache.eventmesh.runtime.core.timer.HashedWheelTimer;
 import org.apache.eventmesh.runtime.core.timer.Timer;
 import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.TimeUnit;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public abstract class AbstractRetryer implements Retryer {
 
     protected final DelayQueue<DelayRetryable> retrys = new DelayQueue<>();
 
-    protected ThreadPoolExecutor pool;
+    public void init() {
 
-    protected abstract void pushRetry(DelayRetryable delayRetryable);
-
-    protected abstract void init();
+    }
 
     private volatile Timer timer;
+
+    private static final int MAX_PENDING_TIMEOUTS = 10000;
 
     @Override
     public void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit) {
@@ -58,7 +58,7 @@ public abstract class AbstractRetryer implements Retryer {
                     timer = new HashedWheelTimer(
                         new EventMeshThreadFactory("failback-cluster-timer", true),
                         1,
-                        TimeUnit.SECONDS, 512, 100);
+                        TimeUnit.SECONDS, 512, MAX_PENDING_TIMEOUTS);
                 }
             }
         }
@@ -70,5 +70,18 @@ public abstract class AbstractRetryer implements Retryer {
             return 0;
         }
         return timer.pendingTimeouts();
+    }
+
+    public void printState() {
+        if (timer == null) {
+            log.warn("No HashedWheelTimer is provided!");
+            return;
+        }
+        HashedWheelTimer hashedWheelTimer = (HashedWheelTimer) timer;
+
+        log.info("[Retry-HashedWheelTimer] state==================");
+        log.info("Running :{}", !hashedWheelTimer.isStop());
+        log.info("Pending Timeouts: {} | Cancelled Timeouts: {}", hashedWheelTimer.pendingTimeouts(), hashedWheelTimer.cancelledTimeouts());
+        log.info("========================================");
     }
 }

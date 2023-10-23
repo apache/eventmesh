@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,7 +306,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             // retry after the time specified by the header
             Optional<Header> optHeader = Arrays.stream(httpResponse.getHeaders("Retry-After")).findAny();
             if (optHeader.isPresent() && StringUtils.isNumeric(optHeader.get().getValue())) {
-                delayRetry(Long.parseLong(optHeader.get().getValue()));
+                delayRetry(Long.parseLong(optHeader.get().getValue()), TimeUnit.MILLISECONDS);
             }
             return false;
         } else if (httpStatus == HttpStatus.SC_GONE || httpStatus == HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE) {
@@ -364,7 +365,6 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         }
     }
 
-    @Override
     public void retry() {
         tryHTTPRequest();
     }

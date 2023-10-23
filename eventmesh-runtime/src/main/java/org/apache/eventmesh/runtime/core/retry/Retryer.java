@@ -17,9 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.retry;
 
-import java.util.concurrent.TimeUnit;
 import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Retryer interface.
+ */
 public interface Retryer {
-    void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit)
+
+    void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit);
 }

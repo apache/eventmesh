@@ -47,5 +47,12 @@ public interface Timer {
      */
     Set<Timeout> stop();
 
+    /**
+     * the timer is stop
+     *
+     * @return true for stop
+     */
+    boolean isStop();
+
     long pendingTimeouts();
 }

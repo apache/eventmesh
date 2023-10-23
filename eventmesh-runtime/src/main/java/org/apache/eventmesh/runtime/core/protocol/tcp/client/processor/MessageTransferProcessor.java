@@ -259,10 +259,9 @@ public class MessageTransferProcessor implements TcpProcessor {
                 // retry
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
-                upStreamMsgContext.delay(10000);
                 Objects.requireNonNull(
-                    session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
-                    .pushRetry(upStreamMsgContext);
+                    session.getClientGroupWrapper().get()).getTcpRetryer()
+                    .newTimeout(upStreamMsgContext, 10, TimeUnit.SECONDS);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 MESSAGE_LOGGER

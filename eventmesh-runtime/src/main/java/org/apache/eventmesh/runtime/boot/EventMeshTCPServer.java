@@ -42,7 +42,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.processor.Subscribe
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.processor.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
@@ -73,7 +73,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
     private ClientSessionGroupMapping clientSessionGroupMapping;
 
-    private EventMeshTcpRetryer tcpRetryer;
+    private TcpRetryer tcpRetryer;
 
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
@@ -102,7 +102,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             metricsPlugins -> metricsPlugins.forEach(
                 pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
-        tcpRetryer = new EventMeshTcpRetryer(this);
+        tcpRetryer = new TcpRetryer(this);
         tcpRetryer.init();
 
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
@@ -288,7 +288,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         this.rateLimiter = rateLimiter;
     }
 
-    public EventMeshTcpRetryer getTcpRetryer() {
+    public TcpRetryer getTcpRetryer() {
         return tcpRetryer;
     }
 }

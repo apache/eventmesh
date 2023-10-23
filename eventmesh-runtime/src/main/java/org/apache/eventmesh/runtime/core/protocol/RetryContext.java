@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
+import org.apache.eventmesh.runtime.core.timer.Timeout;
+import org.apache.eventmesh.runtime.core.timer.Timer;
+import org.apache.eventmesh.runtime.core.timer.TimerTask;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +28,7 @@ import javax.annotation.Nonnull;
 
 import io.cloudevents.CloudEvent;
 
-public abstract class RetryContext implements DelayRetryable {
+public abstract class RetryContext implements DelayRetryable, TimerTask {
 
     public CloudEvent event;
 
@@ -49,5 +53,18 @@ public abstract class RetryContext implements DelayRetryable {
     @Override
     public long getDelay(TimeUnit unit) {
         return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    }
+
+    protected void rePut(Timeout timeout, long tick, TimeUnit timeUnit) {
+        if (timeout == null) {
+            return;
+        }
+
+        Timer timer = timeout.timer();
+        if (timer.isStop() || timeout.isCancelled()) {
+            return;
+        }
+
+        timer.newTimeout(timeout.task(), tick, timeUnit);
     }
 }

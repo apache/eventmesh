@@ -352,6 +352,11 @@ public class HashedWheelTimer implements Timer {
     }
 
     @Override
+    public boolean isStop() {
+        return WORKER_STATE_SHUTDOWN == WORKER_STATE_UPDATER.get(this);
+    }
+
+    @Override
     public Timeout newTimeout(TimerTask task, long delay, TimeUnit unit) {
         if (task == null) {
             throw new NullPointerException("task");
@@ -389,6 +394,13 @@ public class HashedWheelTimer implements Timer {
      */
     public long pendingTimeouts() {
         return pendingTimeouts.get();
+    }
+
+    /**
+     * Returns the number of cancelled timeouts of this {@link Timer}.
+     */
+    public long cancelledTimeouts() {
+        return cancelledTimeouts.size();
     }
 
     private static void reportTooManyInstances() {

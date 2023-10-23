@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
+import org.apache.eventmesh.runtime.core.timer.Timeout;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -147,5 +148,10 @@ public class SendMessageContext extends RetryContext {
             }
 
         });
+    }
+
+    @Override
+    public void run(Timeout timeout) throws Exception {
+        retry();
     }
 }
