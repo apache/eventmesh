@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.BannerUtil;
 
 import java.io.File;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshStartup {
@@ -31,8 +31,8 @@ public class EventMeshStartup {
     public static void main(String[] args) throws Exception {
         try {
             ConfigService.getInstance()
-                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
+                    .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                    .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
 
             EventMeshServer server = new EventMeshServer();
             BannerUtil.generateBanner();
@@ -40,15 +40,12 @@ public class EventMeshStartup {
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    if (log.isInfoEnabled()) {
-                        log.info("eventMesh shutting down hook begin.");
-                    }
+                    LogUtils.info(log, "eventMesh shutting down hook begin.");
                     long start = System.currentTimeMillis();
                     server.shutdown();
                     long end = System.currentTimeMillis();
-                    if (log.isInfoEnabled()) {
-                        log.info("eventMesh shutdown cost {}ms", end - start);
-                    }
+
+                    LogUtils.info(log, "eventMesh shutdown cost {}ms", end - start);
                 } catch (Exception e) {
                     log.error("exception when shutdown.", e);
                 }

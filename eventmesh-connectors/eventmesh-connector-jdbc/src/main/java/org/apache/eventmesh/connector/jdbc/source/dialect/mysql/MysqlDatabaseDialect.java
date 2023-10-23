@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
+import com.mysql.cj.MysqlType;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.DataTypeConvertor;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
@@ -26,26 +29,14 @@ import org.apache.eventmesh.connector.jdbc.exception.TableNotExistException;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.AbstractGeneralDatabaseDialect;
-import org.apache.eventmesh.connector.jdbc.table.catalog.CatalogTable;
-import org.apache.eventmesh.connector.jdbc.table.catalog.DefaultColumn;
-import org.apache.eventmesh.connector.jdbc.table.catalog.PrimaryKey;
-import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
-import org.apache.eventmesh.connector.jdbc.table.catalog.TableSchema;
+import org.apache.eventmesh.connector.jdbc.table.catalog.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import com.mysql.cj.MysqlType;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJdbcConnection> {
@@ -137,9 +128,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Build the SQL query to return a list of tables for the given database
         String sql = MysqlDialectSql.SHOW_DATABASE_TABLE.ofWrapperSQL("`" + databaseName + "`");
-        if (log.isDebugEnabled()) {
-            log.debug("List tables SQL:{}", sql);
-        }
+        LogUtils.debug(log, "List tables SQL:{}", sql);
         this.connection.query(sql, resultSet -> {
             // Execute the query and add each table ID to the list
             while (resultSet.next()) {
@@ -174,9 +163,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Get table creation SQL
         final String createTableSql = MysqlDialectSql.SHOW_CREATE_TABLE.ofWrapperSQL(tableId.getId());
-        if (log.isDebugEnabled()) {
-            log.debug("Show create table SQL:{}", createTableSql);
-        }
+        LogUtils.debug(log, "Show create table SQL:{}", createTableSql);
 
         this.connection.query(createTableSql, resultSet -> {
             boolean hasNext = resultSet.next();
@@ -189,9 +176,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Get table columns SQL
         final String selectTableSql = MysqlDialectSql.SELECT_TABLE_COLUMNS.ofWrapperSQL(tableId.getId());
-        if (log.isDebugEnabled()) {
-            log.debug("Select table SQL:{}", selectTableSql);
-        }
+        LogUtils.debug(log, "Select table SQL:{}", selectTableSql);
         Map<String, DefaultColumn> columns = new HashMap<>(16);
         // Execute query to get table columns
         this.connection.query(selectTableSql, resultSet -> {
@@ -208,16 +193,14 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
                 int scale = tableMetaData.getScale(columnIndex);
                 dataTypeProperties.put(MysqlDataTypeConvertor.SCALE, scale);
                 column.setDataType(
-                    dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
+                        dataTypeConvertor.toEventMeshType(MysqlType.getByJdbcType(tableMetaData.getColumnType(columnIndex)), dataTypeProperties));
                 column.setDecimal(scale);
             }
         });
 
         // Get table columns details SQL
         final String showTableSql = MysqlDialectSql.SHOW_TABLE_COLUMNS.ofWrapperSQL(tableId.getTableName(), tableId.getCatalogName());
-        if (log.isDebugEnabled()) {
-            log.debug("Show table columns SQL:{}", showTableSql);
-        }
+        LogUtils.debug(log, "Show table columns SQL:{}", showTableSql);
         // Execute query to get table columns details
         List<DefaultColumn> columnList = new ArrayList<>(columns.size());
         this.connection.query(showTableSql, resultSet -> {

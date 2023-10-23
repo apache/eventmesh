@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -68,12 +69,10 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         HttpCommand responseEventMeshCommand;
         final String localAddress = IPUtils.getLocalAddress();
         HttpCommand request = asyncContext.getRequest();
-        if (log.isInfoEnabled()) {
-            log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+        LogUtils.info(log, "cmd={}|{}|client2eventMesh|from={}|to={}",
                 RequestCode.get(Integer.valueOf(request.getRequestCode())),
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
-        }
         final HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) request.getHeader();
         final HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) request.getBody();
         EventMeshHTTPConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
@@ -132,9 +131,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 } catch (Exception e) {
                     completeResponse(request, asyncContext, heartbeatResponseHeader,
                         EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), HeartbeatResponseBody.class);
-                    if (log.isWarnEnabled()) {
-                        log.warn("CLIENT HAS NO PERMISSION,HeartBeatProcessor subscribe failed", e);
-                    }
+                    LogUtils.warn(log, "CLIENT HAS NO PERMISSION,HeartBeatProcessor subscribe failed", e);
                     return;
                 }
             }
@@ -167,9 +164,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         try {
             final CompleteHandler<HttpCommand> handler = httpCommand -> {
                 try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("{}", httpCommand);
-                    }
+                    LogUtils.debug(log, "{}", httpCommand);
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                     summaryMetrics.recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - request.getReqTime());
@@ -185,9 +180,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 EventMeshRetCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                 HeartbeatResponseBody.class);
             final long elapsedTime = System.currentTimeMillis() - startTime;
-            if (log.isErrorEnabled()) {
-                log.error("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms", elapsedTime, e);
-            }
+            LogUtils.error(log, "message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms", elapsedTime, e);
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(elapsedTime);
         }

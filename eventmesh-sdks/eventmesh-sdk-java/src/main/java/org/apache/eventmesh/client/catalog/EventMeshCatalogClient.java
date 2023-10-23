@@ -38,6 +38,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class EventMeshCatalogClient {
@@ -66,9 +67,7 @@ public class EventMeshCatalogClient {
         final QueryOperationsRequest request = QueryOperationsRequest.newBuilder()
             .setServiceName(clientConfig.getAppServerName()).build();
         final QueryOperationsResponse response = catalogClient.queryOperations(request);
-        if (log.isInfoEnabled()) {
-            log.info("received response: {}", response);
-        }
+        LogUtils.info(log,"received response: {}", response);
 
         final List<Operation> operations = response.getOperationsList();
         if (CollectionUtils.isEmpty(operations)) {

@@ -23,6 +23,7 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.MANUFACT
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.webhook.api.Manufacturer;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -64,10 +65,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     @Override
     public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
-            if (log.isErrorEnabled()) {
-                log.error("webhookConfig callback path must start with {}",
+            LogUtils.error(log, "webhookConfig callback path must start with {}",
                     WebHookOperationConstant.CALLBACK_PATH_PREFIX);
-            }
             return 0;
         }
 
@@ -76,9 +75,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig),
                 getManuGroupId(webHookConfig), TIMEOUT_MS) != null) {
-                if (log.isErrorEnabled()) {
-                    log.error("insertWebHookConfig failed, config has existed");
-                }
+                LogUtils.error(log, "insertWebHookConfig failed, config has existed");
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
@@ -115,9 +112,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
                 TIMEOUT_MS) == null) {
-                if (log.isErrorEnabled()) {
-                    log.error("updateWebHookConfig failed, config is not existed");
-                }
+                LogUtils.error(log, "updateWebHookConfig failed, config is not existed");
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig),
@@ -201,9 +196,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
             // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
             return URLEncoder.encode(webHookConfig.getCallbackPath(), StandardCharsets.UTF_8.name()) + DATA_ID_EXTENSION;
         } catch (UnsupportedEncodingException e) {
-            if (log.isErrorEnabled()) {
-                log.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
-            }
+            LogUtils.error(log, "get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
         }
         return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
     }

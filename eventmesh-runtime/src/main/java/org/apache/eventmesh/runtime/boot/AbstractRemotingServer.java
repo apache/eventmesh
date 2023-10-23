@@ -17,19 +17,18 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.utils.SystemUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
-
-import java.util.concurrent.TimeUnit;
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.utils.SystemUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * The most basic server
@@ -78,25 +77,20 @@ public abstract class AbstractRemotingServer {
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown bossGroup");
-            }
+            LogUtils.info(log, "shutdown bossGroup");
         }
 
         ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown ioGroup");
-            }
+            LogUtils.info(log, "shutdown ioGroup");
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
-            if (log.isInfoEnabled()) {
-                log.info("shutdown workerGroup");
-            }
+
+            LogUtils.info(log,"shutdown workerGroup");
         }
     }
 
@@ -108,28 +102,28 @@ public abstract class AbstractRemotingServer {
         return bossGroup;
     }
 
-    public EventLoopGroup getIoGroup() {
-        return ioGroup;
-    }
-
-    public EventExecutorGroup getWorkerGroup() {
-        return workerGroup;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
     public void setBossGroup(final EventLoopGroup bossGroup) {
         this.bossGroup = bossGroup;
+    }
+
+    public EventLoopGroup getIoGroup() {
+        return ioGroup;
     }
 
     public void setIoGroup(final EventLoopGroup ioGroup) {
         this.ioGroup = ioGroup;
     }
 
+    public EventExecutorGroup getWorkerGroup() {
+        return workerGroup;
+    }
+
     public void setWorkerGroup(final EventExecutorGroup workerGroup) {
         this.workerGroup = workerGroup;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public void setPort(final int port) {

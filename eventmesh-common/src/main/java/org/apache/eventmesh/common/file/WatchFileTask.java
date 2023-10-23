@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class WatchFileTask extends Thread {
@@ -87,9 +88,7 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        if (log.isWarnEnabled()) {
-                            log.warn("[WatchFileTask] file overflow: {}", event.context());
-                        }
+                        LogUtils.warn(log,"[WatchFileTask] file overflow: {}", event.context());
                         continue;
                     }
                     precessWatchEvent(event);
@@ -97,9 +96,7 @@ public class WatchFileTask extends Thread {
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
                 if (interrupted) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("[WatchFileTask] file watch is interrupted");
-                    }
+                    log.debug("[WatchFileTask] file watch is interrupted");
                 }
             } catch (Exception ex) {
                 log.error("[WatchFileTask] an exception occurred during file listening : ", ex);

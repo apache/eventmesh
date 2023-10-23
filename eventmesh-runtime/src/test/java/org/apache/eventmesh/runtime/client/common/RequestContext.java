@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import java.util.concurrent.CountDownLatch;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class RequestContext {
@@ -76,9 +77,7 @@ public class RequestContext {
 
     public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
-        if (log.isInfoEnabled()) {
-            log.info("_RequestContext|create|key=" + key);
-        }
+        LogUtils.info(log, "_RequestContext|create|key=" + key);
         return c;
     }
 

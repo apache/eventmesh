@@ -21,6 +21,7 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public abstract class AbstractRetryer {
@@ -48,9 +49,7 @@ public abstract class AbstractRetryer {
                     pool.execute(() -> {
                         try {
                             delayRetryable.retry();
-                            if (log.isDebugEnabled()) {
-                                log.debug("retryObj : {}", delayRetryable);
-                            }
+                            LogUtils.debug(log, "retryObj : {}", delayRetryable);
                         } catch (Exception e) {
                             log.error("retry-dispatcher error!", e);
                         }

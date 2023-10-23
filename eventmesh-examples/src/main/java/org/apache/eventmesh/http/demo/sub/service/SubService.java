@@ -17,12 +17,8 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
-import static org.apache.eventmesh.common.ExampleConstants.ENV;
-import static org.apache.eventmesh.common.ExampleConstants.IDC;
-import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
-import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
-import static org.apache.eventmesh.util.Utils.getURL;
-
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -30,32 +26,35 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import javax.annotation.PreDestroy;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Lists;
-
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.ExampleConstants.*;
+import static org.apache.eventmesh.util.Utils.getURL;
 
 @Slf4j
 @Component
 public class SubService implements InitializingBean {
 
+    private final List<SubscriptionItem> topicList = Lists.newArrayList(
+            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
+    // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
+    private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
     private EventMeshHttpConsumer eventMeshHttpConsumer;
-
     private Properties properties;
+    final String localPort = properties.getProperty(SERVER_PORT);
+    final String testURL = getURL(localPort, "/sub/test");
 
     {
         try {
@@ -65,15 +64,6 @@ public class SubService implements InitializingBean {
         }
     }
 
-    final String localPort = properties.getProperty(SERVER_PORT);
-    final String testURL = getURL(localPort, "/sub/test");
-
-    private final List<SubscriptionItem> topicList = Lists.newArrayList(
-        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
-
-    // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
-
     @Override
     public void afterPropertiesSet() {
         final String eventMeshIP = properties.getProperty(ExampleConstants.EVENTMESH_IP);
@@ -81,13 +71,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventMeshIP + ":" + eventMeshHttpPort;
         final EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env(ENV)
-            .idc(IDC)
-            .ip(IPUtils.getLocalAddress())
-            .sys(SUB_SYS)
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .env(ENV)
+                .idc(IDC)
+                .ip(IPUtils.getLocalAddress())
+                .sys(SUB_SYS)
+                .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, testURL);
@@ -101,18 +91,14 @@ public class SubService implements InitializingBean {
                 log.error("interrupted exception", e);
                 Thread.currentThread().interrupt();
             }
-            if (log.isInfoEnabled()) {
-                log.info("stopThread start....");
-            }
+            LogUtils.info(log, "stopThread start....");
         });
         stopThread.start();
     }
 
     @PreDestroy
     public void cleanup() {
-        if (log.isInfoEnabled()) {
-            log.info("start destroy....");
-        }
+        LogUtils.info(log, "start destroy....");
 
         try {
             final List<String> unSubList = new ArrayList<>();
@@ -128,21 +114,15 @@ public class SubService implements InitializingBean {
             eventMeshHttpConsumer.close();
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("end destroy....");
-        }
+        LogUtils.info(log, "end destroy....");
     }
 
     /**
      * Count the message already consumed
      */
     public void consumeMessage(final String msg) {
-        if (log.isInfoEnabled()) {
-            log.info("consume message: {}", msg);
-        }
+        LogUtils.info(log, "consume message: {}", msg);
         countDownLatch.countDown();
-        if (log.isInfoEnabled()) {
-            log.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
-        }
+        LogUtils.info(log, "remaining number: {} of messages to be consumed", countDownLatch.getCount());
     }
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class RequestContext {
@@ -72,9 +73,8 @@ public class RequestContext {
 
     public static RequestContext context(final Object key, final Package request) throws Exception {
         final RequestContext context = new RequestContext(key, request);
-        if (log.isInfoEnabled()) {
-            log.info("_RequestContext|create|key={}", key);
-        }
+        LogUtils.info(log,"_RequestContext|create|key={}", key);
+
         return context;
     }
 

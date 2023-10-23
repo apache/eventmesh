@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.runtime.client.impl;
 
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -24,37 +29,26 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.api.SubClient;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.RequestContext;
 import org.apache.eventmesh.runtime.client.common.TCPClient;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
-
-import org.apache.commons.collections4.CollectionUtils;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Assertions;
-
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class SubClientImpl extends TCPClient implements SubClient {
 
     private final transient UserAgent userAgent;
-
-    private transient ReceiveMsgHook callback;
-
     private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
-
+    private transient ReceiveMsgHook callback;
     private transient ScheduledFuture<?> task;
 
     public SubClientImpl(String accessIp, int port, UserAgent agent) {
@@ -69,9 +63,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        if (log.isInfoEnabled()) {
-            log.info("SubClientImpl|{}|started!", clientNo);
-        }
+        LogUtils.info(log, "SubClientImpl|{}|started!", clientNo);
     }
 
     public void reconnect() throws Exception {
@@ -102,10 +94,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     SubClientImpl.this.reconnect();
                 }
                 Package msg = MessageUtils.heartBeat();
-                if (log.isDebugEnabled()) {
-                    log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                LogUtils.debug(log, "SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
                         msg.getHeader().getCommand(), msg);
-                }
                 SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception e) {
                 // ignore
@@ -124,7 +114,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     }
 
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws Exception {
+            throws Exception {
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         Package msg = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -141,18 +131,17 @@ public class SubClientImpl extends TCPClient implements SubClient {
      *     Package msg = MessageUtils.traceLog();
      *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
      * }
-    **/
+     **/
 
     /**
-     *
      * public void sysLog() throws Exception {
-     *     Package msg = MessageUtils.sysLog();
-     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     * Package msg = MessageUtils.sysLog();
+     * this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
      * }
      */
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubscriptionType subscriptionType) throws Exception {
+                                   SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -197,16 +186,19 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return response;
     }
 
+    @Override
+    public String toString() {
+        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
+    }
+
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
 
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            if (log.isInfoEnabled()) {
-                log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
+            LogUtils.info(log, SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
                     msg.getHeader().getCommand(), msg);
-            }
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);
@@ -248,10 +240,5 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 }
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 }

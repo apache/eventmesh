@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.api.auth.AuthService;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,9 +53,7 @@ public class WebhookUtil {
         final String targetUrl,
         final String requestOrigin) {
 
-        if (log.isInfoEnabled()) {
-            log.info("obtain webhook delivery agreement for url: {}", targetUrl);
-        }
+        LogUtils.info(log, "obtain webhook delivery agreement for url: {}", targetUrl);
 
         final HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
@@ -68,10 +67,8 @@ public class WebhookUtil {
             return StringUtils.isEmpty(allowedOrigin)
                 || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
+            LogUtils.error(log, "HTTP Options Method is not supported at the Delivery Target: {}, "
                     + "unable to obtain the webhook delivery agreement.", targetUrl);
-            }
         }
         return true;
     }

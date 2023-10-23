@@ -17,14 +17,12 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import static org.apache.eventmesh.common.Constants.GRPC;
-import static org.apache.eventmesh.common.Constants.HTTP;
-import static org.apache.eventmesh.common.Constants.TCP;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -38,32 +36,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.eventmesh.common.Constants.*;
 
 @Slf4j
 public class EventMeshServer {
 
-    private final Acl acl;
-
-    private MetaStorage metaStorage;
-
-    private static Trace trace;
-
-    private final StorageResource storageResource;
-
-    private ServiceState serviceState;
-
-    private ProducerTopicManager producerTopicManager;
-
-    private final CommonConfiguration configuration;
-
-    private transient ClientManageController clientManageController;
-
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
-
     private static final String SERVER_STATE_MSG = "server state:{}";
-
     private static final ConfigService configService = ConfigService.getInstance();
+    private static Trace trace;
+    private final Acl acl;
+    private final StorageResource storageResource;
+    private final CommonConfiguration configuration;
+    private MetaStorage metaStorage;
+    private ServiceState serviceState;
+    private ProducerTopicManager producerTopicManager;
+    private transient ClientManageController clientManageController;
 
     public EventMeshServer() {
 
@@ -99,6 +87,10 @@ public class EventMeshServer {
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
+    }
+
+    public static Trace getTrace() {
+        return trace;
     }
 
     public void init() throws Exception {
@@ -141,16 +133,12 @@ public class EventMeshServer {
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        if (log.isInfoEnabled()) {
-            log.info("eventStore : {}", eventStore);
-        }
+        LogUtils.info(log, "eventStore : {}", eventStore);
         producerTopicManager = new ProducerTopicManager(this);
         producerTopicManager.init();
         serviceState = ServiceState.INITED;
 
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public void start() throws Exception {
@@ -173,17 +161,13 @@ public class EventMeshServer {
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
 
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPPING;
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
@@ -206,13 +190,7 @@ public class EventMeshServer {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
 
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
-    }
-
-    public static Trace getTrace() {
-        return trace;
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public ServiceState getServiceState() {

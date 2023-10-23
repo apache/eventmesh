@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -108,9 +109,7 @@ public final class HttpUtils {
 
         httpPost.setConfig(configBuilder.build());
 
-        if (log.isDebugEnabled()) {
-            log.debug("{}", httpPost);
-        }
+        LogUtils.debug(log,"{}", httpPost);
 
         return client.execute(httpPost, responseHandler);
     }
@@ -162,9 +161,7 @@ public final class HttpUtils {
 
         httpGet.setConfig(configBuilder.build());
 
-        if (log.isDebugEnabled()) {
-            log.debug("{}", httpGet);
-        }
+        LogUtils.debug(log,"{}", httpGet);
 
         return client.execute(httpGet, responseHandler);
     }

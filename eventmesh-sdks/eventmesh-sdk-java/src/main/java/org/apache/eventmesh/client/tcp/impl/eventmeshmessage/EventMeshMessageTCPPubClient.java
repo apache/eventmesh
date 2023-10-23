@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.netty.channel.ChannelHandlerContext;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 /**
  * EventMeshMessage TCP publish client implementation.
@@ -79,9 +80,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
-            if (log.isInfoEnabled()) {
-                log.info("{}|rr|send|type={}|msg={}", CLIENTNO, msg, msg);
-            }
+            LogUtils.info(log,"{}|rr|send|type={}|msg={}",CLIENTNO, msg, msg);
             return io(msg, timeout);
         } catch (Exception e) {
             throw new EventMeshException("rr error", e);

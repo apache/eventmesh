@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
@@ -24,6 +26,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
@@ -38,17 +41,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class SubscribeProcessor {
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
-
     private static final GrpcType grpcType = GrpcType.WEBHOOK;
-
+    private final EventMeshGrpcServer eventMeshGrpcServer;
     private final Acl acl;
 
     public SubscribeProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
@@ -72,9 +69,7 @@ public class SubscribeProcessor {
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            if (log.isWarnEnabled()) {
-                log.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            }
+            LogUtils.warn(log, "CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
@@ -84,8 +79,8 @@ public class SubscribeProcessor {
         final String consumerGroup = EventMeshCloudEventUtils.getConsumerGroup(subscription);
         // Collect new clients in the subscription
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
 
         Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
@@ -97,18 +92,18 @@ public class SubscribeProcessor {
         final List<ConsumerGroupClient> newClients = new LinkedList<>();
         for (final SubscriptionItem item : subscriptionItems) {
             final ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(env)
-                .idc(idc)
-                .sys(sys)
-                .ip(ip)
-                .pid(pid)
-                .consumerGroup(consumerGroup)
-                .topic(item.getTopic())
-                .grpcType(grpcType)
-                .subscriptionMode(item.getMode())
-                .url(url)
-                .lastUpTime(new Date())
-                .build();
+                    .env(env)
+                    .idc(idc)
+                    .sys(sys)
+                    .ip(ip)
+                    .pid(pid)
+                    .consumerGroup(consumerGroup)
+                    .topic(item.getTopic())
+                    .grpcType(grpcType)
+                    .subscriptionMode(item.getMode())
+                    .url(url)
+                    .lastUpTime(new Date())
+                    .build();
             newClients.add(newClient);
         }
 
@@ -127,28 +122,24 @@ public class SubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            if (log.isInfoEnabled()) {
-                log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
-            }
+            LogUtils.info(log, "ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            if (log.isWarnEnabled()) {
-                log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
-            }
+            LogUtils.warn(log, "EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
         ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void doAclCheck(final CloudEvent subscription) throws AclException {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
-            new TypeReference<List<SubscriptionItem>>() {
-            });
+                new TypeReference<List<SubscriptionItem>>() {
+                });
         Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionItems) {
                 this.acl.doAclCheckInHttpReceive(EventMeshCloudEventUtils.getConsumerGroup(subscription),
-                    EventMeshCloudEventUtils.getUserName(subscription), EventMeshCloudEventUtils.getPassword(subscription),
-                    EventMeshCloudEventUtils.getSys(subscription), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
+                        EventMeshCloudEventUtils.getUserName(subscription), EventMeshCloudEventUtils.getPassword(subscription),
+                        EventMeshCloudEventUtils.getSys(subscription), item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

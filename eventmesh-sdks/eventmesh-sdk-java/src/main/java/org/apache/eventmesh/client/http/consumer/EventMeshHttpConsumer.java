@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 import io.netty.handler.codec.http.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 @Slf4j
 public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoCloseable {
@@ -167,9 +168,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     @Override
     public void close() throws EventMeshException {
-        if (log.isInfoEnabled()) {
-            log.info("LiteConsumer shutdown begin.");
-        }
+        LogUtils.info(log,"LiteConsumer shutdown begin.");
         super.close();
 
         if (consumeExecutor != null) {
@@ -177,9 +176,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         }
         scheduler.shutdown();
 
-        if (log.isInfoEnabled()) {
-            log.info("LiteConsumer shutdown end.");
-        }
+        LogUtils.info(log,"LiteConsumer shutdown end.");
     }
 
     private RequestParam buildCommonRequestParam() {

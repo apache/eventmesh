@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -102,10 +103,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            if (log.isInfoEnabled()) {
-                log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
+            LogUtils.info(log, "redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
                     subSystem, destEventMeshIp, destEventMeshPort);
-            }
 
             // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
