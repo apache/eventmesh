@@ -47,9 +47,8 @@ public class TruncateTableParserListener extends MySqlParserBaseListener {
     public void enterTruncateTable(TruncateTableContext ctx) {
         String sql = Antlr4Utils.getText(ctx);
         String tableName = JdbcStringUtils.withoutWrapper(ctx.tableName().fullId().getText());
-        //TruncateTableEvent event = new TruncateTableEvent(parser.getCurrentDatabase(), tableName, sql);
+        // TruncateTableEvent event = new TruncateTableEvent(parser.getCurrentDatabase(), tableName, sql);
         parser.handleEvent(null);
         super.enterTruncateTable(ctx);
     }
 }
-

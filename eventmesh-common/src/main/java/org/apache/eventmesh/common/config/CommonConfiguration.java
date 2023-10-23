@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.common.config;
 
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -92,7 +93,6 @@ public class CommonConfiguration {
     @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
 
-
     @ConfigFiled(field = "server.trace.enabled")
     private boolean eventMeshServerTraceEnable = false;
 
@@ -104,7 +104,6 @@ public class CommonConfiguration {
 
     @ConfigFiled(field = "server.provide.protocols", reload = true)
     private List<String> eventMeshProvideServerProtocols;
-
 
     @ConfigFiled(reload = true)
     private String eventMeshWebhookOrigin;
@@ -120,7 +119,7 @@ public class CommonConfiguration {
         }
 
         if (CollectionUtils.isEmpty(eventMeshProvideServerProtocols)) {
-            this.eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
+            this.eventMeshProvideServerProtocols = Collections.singletonList(HTTP);
         }
 
         meshGroup = String.join("-", this.eventMeshEnv, this.eventMeshIDC, this.eventMeshCluster, this.sysID);

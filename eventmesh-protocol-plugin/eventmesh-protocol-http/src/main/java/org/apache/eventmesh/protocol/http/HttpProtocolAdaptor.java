@@ -42,7 +42,6 @@ import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
  *

@@ -22,10 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +33,7 @@ public class RandomLoadBalanceSelectorTest {
 
     private RandomLoadBalanceSelector<String> randomLoadBalanceSelector;
 
-    @Before
+    @BeforeEach
     public void befor() {
         List<String> address = new ArrayList<>();
         address.add("A");
@@ -42,7 +41,6 @@ public class RandomLoadBalanceSelectorTest {
         address.add("C");
         randomLoadBalanceSelector = new RandomLoadBalanceSelector<>(address);
     }
-
 
     @Test
     public void testSelect() {
@@ -53,11 +51,11 @@ public class RandomLoadBalanceSelectorTest {
         }
         addressToNum.forEach((key, value) -> log.info("{} : {}", key, value));
         // just assert success if no exception
-        Assert.assertTrue(true);
+        Assertions.assertTrue(true);
     }
 
     @Test
     public void testGetType() {
-        Assert.assertEquals(LoadBalanceType.RANDOM, randomLoadBalanceSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.RANDOM, randomLoadBalanceSelector.getType());
     }
 }

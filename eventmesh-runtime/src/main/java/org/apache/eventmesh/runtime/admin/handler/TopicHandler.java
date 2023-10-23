@@ -37,7 +37,6 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +70,7 @@ public class TopicHandler extends AbstractHttpHandler {
      */
     public TopicHandler(
         String connectorPluginType,
-        HttpHandlerManager httpHandlerManager
-    ) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {

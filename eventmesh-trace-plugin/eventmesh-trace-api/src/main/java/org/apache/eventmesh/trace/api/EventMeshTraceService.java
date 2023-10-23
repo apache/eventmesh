@@ -36,10 +36,10 @@ public interface EventMeshTraceService {
 
     void init() throws TraceException;
 
-    //extract attr from carrier to context
+    // extract attr from carrier to context
     Context extractFrom(Context context, Map<String, Object> carrier) throws TraceException;
 
-    //inject attr from context to carrier
+    // inject attr from context to carrier
     void inject(Context context, Map<String, Object> carrier);
 
     Span createSpan(String spanName, SpanKind spanKind, long startTimestamp, TimeUnit timeUnit,

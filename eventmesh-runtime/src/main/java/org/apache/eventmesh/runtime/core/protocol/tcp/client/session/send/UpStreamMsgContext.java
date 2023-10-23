@@ -37,7 +37,6 @@ import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -117,13 +116,13 @@ public class UpStreamMsgContext extends RetryContext {
         Package msg = new Package();
 
         return new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
                 log.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
                     System.currentTimeMillis() - createTime);
-                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command
-                    .ASYNC_MESSAGE_TO_SERVER_ACK) {
+                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), seq));
                     msg.setBody(event);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);

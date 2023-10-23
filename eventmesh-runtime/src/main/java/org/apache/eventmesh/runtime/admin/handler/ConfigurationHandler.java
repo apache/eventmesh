@@ -35,7 +35,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +70,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         EventMeshTCPConfiguration eventMeshTCPConfiguration,
         EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
         EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
-        HttpHandlerManager httpHandlerManager
-    ) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
@@ -129,8 +127,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
                     // gRPC Configuration
                     eventMeshGrpcConfiguration.getGrpcServerPort(),
-                    eventMeshGrpcConfiguration.isEventMeshServerUseTls()
-                );
+                    eventMeshGrpcConfiguration.isEventMeshServerUseTls());
 
                 String result = JsonUtils.toJSONString(getConfigurationResponse);
                 httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
@@ -170,7 +167,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             case GET:
                 get(httpExchange);
                 break;
-            default: //do nothing
+            default: // do nothing
                 break;
         }
     }

@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 public class RocketMQAdmin extends AbstractAdmin {
 
     private final RPCHook rpcHook;
@@ -82,8 +81,7 @@ public class RocketMQAdmin extends AbstractAdmin {
                     messageCount += topicOffset.getMaxOffset() - topicOffset.getMinOffset();
                 }
                 result.add(new TopicProperties(
-                    topic, messageCount
-                ));
+                    topic, messageCount));
             }
 
             result.sort(Comparator.comparing(t -> t.name));

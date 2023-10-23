@@ -29,13 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RabbitmqClient {
 
-
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory;
 
     public RabbitmqClient(RabbitmqConnectionFactory rabbitmqConnectionFactory) {
         this.rabbitmqConnectionFactory = rabbitmqConnectionFactory;
     }
-
 
     /**
      * get rabbitmq connection

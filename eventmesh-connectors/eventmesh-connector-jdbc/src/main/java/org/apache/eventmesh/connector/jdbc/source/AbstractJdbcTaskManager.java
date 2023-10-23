@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source;
 
-
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
@@ -39,7 +38,6 @@ public abstract class AbstractJdbcTaskManager<Task extends EventMeshJdbcTask> im
     protected List<Task> taskList = new ArrayList<>(128);
 
     protected List<TaskManagerListener> listeners = new ArrayList<>(16);
-
 
     @Override
     public void start() {

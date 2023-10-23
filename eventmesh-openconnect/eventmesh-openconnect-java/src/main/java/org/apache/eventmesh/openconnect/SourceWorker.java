@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.openconnect;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -32,6 +33,7 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReaderImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
@@ -132,12 +134,13 @@ public class SourceWorker implements ConnectorWorker {
         }
         eventMeshTCPClient.init();
         // spi load offsetMgmtService
-        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
-        String offsetMgmtPluginType = offsetStorageConfig.getOffsetStorageType();
         this.offsetManagement = new RecordOffsetManagement();
         this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
-        this.offsetManagementService =
-            EventMeshExtensionFactory.getExtension(OffsetManagementService.class, offsetMgmtPluginType);
+        OffsetStorageConfig offsetStorageConfig = config.getOffsetStorageConfig();
+        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig)
+            .map(OffsetStorageConfig::getOffsetStorageType)
+            .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
+            .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
         this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
         this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
@@ -147,7 +150,7 @@ public class SourceWorker implements ConnectorWorker {
     public void start() {
         log.info("source worker starting {}", source.name());
         log.info("event mesh address is {}", config.getPubSubConfig().getMeshAddress());
-        //start offsetMgmtService
+        // start offsetMgmtService
         offsetManagementService.start();
         isRunning = true;
         pollService.execute(this::startPollAndSend);
@@ -160,8 +163,7 @@ public class SourceWorker implements ConnectorWorker {
                     log.error("source worker[{}] start fail", source.name(), e);
                     this.stop();
                 }
-            }
-        );
+            });
     }
 
     public void startPollAndSend() {
@@ -194,11 +196,11 @@ public class SourceWorker implements ConnectorWorker {
                     }
                     retryTimes++;
                     log.warn("{} failed to send record to {}, retry times = {}, failed record {}",
-                            this, event.getSubject(), retryTimes, connectRecord);
+                        this, event.getSubject(), retryTimes, connectRecord);
                 } catch (Throwable t) {
                     retryTimes++;
                     log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",
-                            this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
+                        this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
                 }
             }
 
@@ -229,7 +231,7 @@ public class SourceWorker implements ConnectorWorker {
             .withSubject(config.getPubSubConfig().getSubject())
             .withSource(URI.create("/"))
             .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", 10000)
             .build();
@@ -289,26 +291,23 @@ public class SourceWorker implements ConnectorWorker {
         if (committableOffsets.isEmpty()) {
             log.debug("Either no records were produced since the last offset commit, "
                 + "or every record has been filtered out by a transformation "
-                + "or dropped due to transformation or conversion errors."
-            );
+                + "or dropped due to transformation or conversion errors.");
             // We continue with the offset commit process here instead of simply returning immediately
             // in order to invoke SourceTask::commit and record metrics for a successful offset commit
         } else {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                        + "The source partition with the most pending messages is {}, with {} pending messages",
+                    + "The source partition with the most pending messages is {}, with {} pending messages",
                     this,
                     committableOffsets.numUncommittableMessages(),
                     committableOffsets.numDeques(),
                     committableOffsets.largestDequePartition(),
-                    committableOffsets.largestDequeSize()
-                );
+                    committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
-                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
-                    this
-                );
+                    + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                    this);
             }
         }
 

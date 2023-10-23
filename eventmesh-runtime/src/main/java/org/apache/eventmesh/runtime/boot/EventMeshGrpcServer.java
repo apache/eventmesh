@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
@@ -178,9 +179,9 @@ public class EventMeshGrpcServer {
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName() + "-"
-                + ConfigurationContextUtil.GRPC);
+                + GRPC);
             eventMeshRegisterInfo.setEndPoint(endPoints);
-            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
+            eventMeshRegisterInfo.setProtocolType(GRPC);
             registerResult = metaStorage.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             log.warn("eventMesh register to registry failed", e);
@@ -196,7 +197,7 @@ public class EventMeshGrpcServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
-        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
+        eventMeshUnRegisterInfo.setProtocolType(GRPC);
         boolean registerResult = metaStorage.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");

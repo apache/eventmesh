@@ -48,7 +48,6 @@ public class Header {
         this.properties = properties;
     }
 
-
     public void putProperty(final String name, final Object value) {
         if (null == this.properties) {
             this.properties = new HashMap<>();

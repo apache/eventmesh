@@ -36,7 +36,7 @@ public class JdbcConnectorServer {
         }
 
         if (serverConfig.isSinkEnable()) {
-            //TODO support
+            // TODO support
         }
     }
 

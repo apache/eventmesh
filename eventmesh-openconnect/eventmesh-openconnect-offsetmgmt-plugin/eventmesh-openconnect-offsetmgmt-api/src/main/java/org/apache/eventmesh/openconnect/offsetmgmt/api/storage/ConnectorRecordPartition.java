@@ -26,6 +26,7 @@ import java.util.Objects;
  * extend record partition
  */
 public class ConnectorRecordPartition extends RecordPartition {
+
     /**
      * connect name
      */

@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AdminConfigurationTest {
 
@@ -38,11 +38,11 @@ public class AdminConfigurationTest {
     }
 
     private void assertAdminConfiguration(AdminConfiguration config) {
-        Assert.assertTrue(config.isAdminStart());
-        Assert.assertEquals("file", config.getOperationMode());
+        Assertions.assertTrue(config.isAdminStart());
+        Assertions.assertEquals("file", config.getOperationMode());
 
         Properties properties = new Properties();
         properties.put("filePath", ".");
-        Assert.assertEquals(properties, config.getOperationProperties());
+        Assertions.assertEquals(properties, config.getOperationProperties());
     }
 }

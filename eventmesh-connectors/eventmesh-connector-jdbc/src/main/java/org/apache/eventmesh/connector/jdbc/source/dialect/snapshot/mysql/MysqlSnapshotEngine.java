@@ -24,6 +24,7 @@ import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.event.EventConsumer;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
+import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlConstants;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDialectSql;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlJdbcContext;
@@ -38,7 +39,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -51,15 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MysqlSnapshotEngine extends
     AbstractSnapshotEngine<MysqlDatabaseDialect, MysqlJdbcContext, MysqlPartition, MysqlOffsetContext, MysqlJdbcConnection> {
-
-    private static final Set<String> DEFAULT_EXCLUDE_DATABASE = new HashSet<>();
-
-    static {
-        DEFAULT_EXCLUDE_DATABASE.add("information_schema");
-        DEFAULT_EXCLUDE_DATABASE.add("mysql");
-        DEFAULT_EXCLUDE_DATABASE.add("performance_schema");
-        DEFAULT_EXCLUDE_DATABASE.add("sys");
-    }
 
     private volatile boolean globalLockAcquired = false;
 
@@ -77,7 +68,7 @@ public class MysqlSnapshotEngine extends
 
     @Override
     protected Set<String> defaultExcludeDatabase() {
-        return DEFAULT_EXCLUDE_DATABASE;
+        return MysqlConstants.DEFAULT_EXCLUDE_DATABASE;
     }
 
     @Override
@@ -87,7 +78,7 @@ public class MysqlSnapshotEngine extends
 
     @Override
     protected void preSnapshot(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext) {
-        //nothing to do
+        // nothing to do
     }
 
     @Override
@@ -98,11 +89,11 @@ public class MysqlSnapshotEngine extends
     @Override
     protected void lockTables4SchemaSnapshot(MysqlJdbcContext jdbcContext, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext)
         throws SQLException {
-        //Set the REPEATABLE_READ isolation level to avoid the MySQL transaction isolation level being changed unexpectedly.
+        // Set the REPEATABLE_READ isolation level to avoid the MySQL transaction isolation level being changed unexpectedly.
         connection.connection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
         connection.executeWithoutCommitting("SET SESSION lock_wait_timeout=10", "SET SESSION innodb_lock_wait_timeout=10");
 
-        //Lock tables
+        // Lock tables
         final MysqlConfig mysqlConfig = sourceConnectorConfig.getMysqlConfig();
         if (mysqlConfig.getSnapshotLockingMode().usesLocking() && mysqlConfig.isUseGlobalLock()) {
             globalLockAcquiredTry();
@@ -133,7 +124,7 @@ public class MysqlSnapshotEngine extends
                 jdbcContext.setBinlogStartPoint(binlogFilename, position);
                 if (resultSet.getMetaData().getColumnCount() >= 5) {
                     final String gtidSet = resultSet.getString(5);
-                    jdbcContext.setCompletedGtidSet(gtidSet);
+                    jdbcContext.completedGtidSet(gtidSet);
                     log.info("Using binlog '{}' at position '{}' and gtid '{}'", binlogFilename, position, gtidSet);
                 } else {
                     log.info("Using binlog '{}' at position '{}' ", binlogFilename, position);
@@ -158,7 +149,7 @@ public class MysqlSnapshotEngine extends
             dropTableDdl.append(MysqlUtils.wrapper(tableId));
             addParseDdlAndEvent(jdbcContext, dropTableDdl.toString(), tableId);
         }
-        final HashMap<String/*database Name*/, List<TableId>/*table list*/> databaseMapTables = determineTables.stream()
+        final HashMap<String/* database Name */, List<TableId>/* table list */> databaseMapTables = determineTables.stream()
             .collect(Collectors.groupingBy(TableId::getCatalogName, HashMap::new, Collectors.toList()));
         Set<String> databaseSet = databaseMapTables.keySet();
         // Read all table structures, construct DDL statements
@@ -180,7 +171,7 @@ public class MysqlSnapshotEngine extends
             addParseDdlAndEvent(jdbcContext, databaseCreateDdl, tableId);
             addParseDdlAndEvent(jdbcContext, "USE " + database, tableId);
 
-            //build create table snapshot event
+            // build create table snapshot event
             List<TableId> tableIds = databaseMapTables.get(database);
             createTableSnapshotEvent(tableIds, jdbcContext);
         }
@@ -209,7 +200,7 @@ public class MysqlSnapshotEngine extends
         for (TableId tableId : tableIds) {
             connection.query(MysqlDialectSql.SHOW_CREATE_TABLE.ofWrapperSQL(tableId.toString()), resultSet -> {
                 if (resultSet.next()) {
-                    //Get create table sql
+                    // Get create table sql
                     String createTableDdl = resultSet.getString(2);
                     addParseDdlAndEvent(jdbcContext, createTableDdl, tableId);
                 }
@@ -264,11 +255,10 @@ public class MysqlSnapshotEngine extends
     }
 
     private void globalLockAcquiredTry() throws SQLException {
-        //Lock tables
+        // Lock tables
         connection.executeWithoutCommitting(MysqlDialectSql.LOCK_TABLE_GLOBAL.ofSQL());
         this.globalLockAcquired = true;
     }
-
 
     @Override
     public String getThreadName() {

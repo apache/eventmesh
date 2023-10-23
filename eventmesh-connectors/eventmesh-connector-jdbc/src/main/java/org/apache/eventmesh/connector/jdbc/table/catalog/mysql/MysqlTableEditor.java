@@ -35,4 +35,3 @@ public interface MysqlTableEditor extends TableEditor<MysqlTableEditor, MysqlCol
         return new MysqlTableEditorImpl(tableId);
     }
 }
-

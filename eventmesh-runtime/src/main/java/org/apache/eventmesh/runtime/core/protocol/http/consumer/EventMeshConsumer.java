@@ -59,7 +59,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -157,7 +156,7 @@ public class EventMeshConsumer {
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
                     } catch (Exception e) {
-                        //ignore
+                        // ignore
                         log.warn("sendMessageBack fail,topic:{}, bizSeqNo={}, uniqueId={}", topic, bizSeqNo, uniqueId, e);
                     }
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
@@ -168,7 +167,7 @@ public class EventMeshConsumer {
         };
         persistentMqConsumer.registerEventListener(clusterEventListener);
 
-        //broadcast consumer
+        // broadcast consumer
         Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put(IS_BROADCAST, "true");
         broadcastKeyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
@@ -219,7 +218,7 @@ public class EventMeshConsumer {
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                         return;
                     } catch (Exception ex) {
-                        //ignore
+                        // ignore
                     }
                 }
 
@@ -240,7 +239,7 @@ public class EventMeshConsumer {
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
                     } catch (Exception e) {
-                        //ignore
+                        // ignore
                     }
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                 }
@@ -313,8 +312,7 @@ public class EventMeshConsumer {
 
     public void sendMessageBack(final CloudEvent event, final String uniqueId, String bizSeqNo) throws Exception {
 
-        EventMeshProducer sendMessageBack
-            = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
+        EventMeshProducer sendMessageBack = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
 
         if (sendMessageBack == null) {
             log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
@@ -326,6 +324,7 @@ public class EventMeshConsumer {
             eventMeshHTTPServer);
 
         sendMessageBack.send(sendMessageBackContext, new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
             }

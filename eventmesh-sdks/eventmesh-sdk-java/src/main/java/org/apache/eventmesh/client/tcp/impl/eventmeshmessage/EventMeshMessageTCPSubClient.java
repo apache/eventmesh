@@ -117,7 +117,6 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         }
     }
 
-
     @Override
     public void registerBusiHandler(ReceiveMsgHook<EventMeshMessage> receiveMsgHook) throws EventMeshException {
         this.callback = receiveMsgHook;
@@ -147,8 +146,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
-                );
+                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

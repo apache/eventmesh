@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
-
 import org.apache.eventmesh.connector.jdbc.common.SourceInfo;
 
 import lombok.Data;
@@ -27,9 +26,12 @@ public class MysqlSourceInfo implements SourceInfo {
 
     private String currentBinlogFileName;
 
-    private long currentBinlogPosition = 0L;
+    private volatile long currentBinlogPosition = 0L;
 
     private int currentRowNumber = 0;
+
+    // Support mysql gtid
+    private String currentGtid;
 
     public void setBinlogPosition(String binlogFileName, long beginProcessPosition) {
         if (binlogFileName != null) {
@@ -38,5 +40,9 @@ public class MysqlSourceInfo implements SourceInfo {
         assert beginProcessPosition >= 0;
         this.currentBinlogPosition = beginProcessPosition;
         this.currentRowNumber = 0;
+    }
+
+    public void beginGtid(String gtid) {
+        this.currentGtid = gtid;
     }
 }

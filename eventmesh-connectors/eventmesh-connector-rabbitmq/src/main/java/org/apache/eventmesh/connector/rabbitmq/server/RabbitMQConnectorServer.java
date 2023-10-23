@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RabbitMQConnectorServer {
 
-
     public static void main(String[] args) throws Exception {
 
         RabbitMQServerConfig serverConfig = ConfigUtil.parse(RabbitMQServerConfig.class, "server-config.yml");

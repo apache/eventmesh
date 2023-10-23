@@ -30,9 +30,10 @@ public class MysqlTableSchema extends TableSchema {
 
     private Options tableOptions;
 
-    public MysqlTableSchema(TableId tableId, Map<String, MysqlColumn> columnMap, List<MysqlColumn> columns, PrimaryKey primaryKey,
-        List<UniqueKey> uniqueKeys, String comment) {
-        super(tableId, columnMap, columns, primaryKey, uniqueKeys, comment);
+    public MysqlTableSchema(TableId tableId, Map<String, MysqlColumn> columnMap, List<MysqlColumn> columns, Map<Integer, MysqlColumn> orderColumnMap,
+        PrimaryKey primaryKey, List<UniqueKey> uniqueKeys, String comment, Options tableOptions) {
+        super(tableId, columnMap, columns, orderColumnMap, primaryKey, uniqueKeys, comment);
+        this.tableOptions = tableOptions;
     }
 
     public MysqlTableSchema() {

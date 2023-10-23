@@ -36,6 +36,7 @@ buildscript {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.github.jk1:gradle-license-report:1.17"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
     }
 }
 
@@ -61,6 +62,7 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
+    apply plugin: 'com.diffplug.spotless'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -91,6 +93,7 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
+                  .dependsOn(spotlessApply)
 
     dependencies {
         repositories {
@@ -100,7 +103,40 @@ allprojects {
                 url "https://maven.aliyun.com/repository/public"
             }
         }
-        testImplementation "junit:junit:4.13.2"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
+    }
+
+    spotless {
+        enforceCheck false
+        java {
+            target project.fileTree(project.projectDir) {
+                include '**/*.java'
+                exclude '**/org/apache/eventmesh/**/protos**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
+                exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
+                exclude '**/org/apache/eventmesh/common/protocol/grpc**'
+                exclude '**/org/apache/eventmesh/connector/jdbc/source/dialect/snapshot/AbstractSnapshotEngine.java'
+            }
+            importOrder ('\\#org.apache.eventmesh','\\#org.apache','\\#java','\\#javax','\\#org','\\#io','\\#net','\\#junit','\\#com','\\#lombok',
+                    'org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
+            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            eclipse().configFile("${rootDir}/style/task/eventmesh-spotless-formatter.xml")
+            removeUnusedImports()
+        }
+    }
+
+    afterEvaluate {
+        tasks.forEach {task ->
+            if (task.name.contains("spotlessJava")) {
+                task.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
+            }
+        }
+        spotlessJava.dependsOn(subprojects.collect {it.tasks["spotlessJava"] })
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
@@ -276,9 +312,7 @@ subprojects {
             new File("${projectDir}/dist/lib").mkdirs()
             new File("${projectDir}/dist/licenses").mkdirs()
         }
-        Set<String> rootProject = ["eventmesh-admin",
-                                   "eventmesh-admin-rocketmq",
-                                   "eventmesh-common",
+        Set<String> rootProject = ["eventmesh-common",
                                    "eventmesh-storage-api",
                                    "eventmesh-metrics-api",
                                    "eventmesh-meta-api",
@@ -290,8 +324,7 @@ subprojects {
                                    "eventmesh-spi",
                                    "eventmesh-webhook-api",
                                    "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"
-                                   ]
+                                   "eventmesh-webhook-receive"]
         doLast {
             copy {
                 into("${projectDir}/dist/apps")
@@ -492,14 +525,13 @@ subprojects {
             dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "junit:junit:4.13.2"
-            dependency "com.github.stefanbirkner:system-rules:1.16.1"
+            dependency "org.junit.jupiter:junit-jupiter:5.6.0"
+            dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
             dependency "org.mockito:mockito-core:3.8.0"
             dependency "org.mockito:mockito-inline:3.8.0"
-            dependency "org.powermock:powermock-module-junit4:2.0.2"
-            dependency "org.powermock:powermock-api-mockito2:2.0.9"
+            dependency "org.mockito:mockito-junit-jupiter:3.8.0"
 
             dependency "io.cloudevents:cloudevents-core:2.4.2"
             dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
@@ -533,6 +565,8 @@ subprojects {
             dependency "com.alibaba:fastjson:1.2.83"
 
             dependency "software.amazon.awssdk:s3:2.20.29"
+            dependency "com.github.rholder:guava-retrying:2.0.0"
+
         }
     }
 }

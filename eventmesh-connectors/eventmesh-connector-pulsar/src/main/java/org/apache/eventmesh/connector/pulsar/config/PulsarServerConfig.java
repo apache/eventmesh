@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.connector.pulsar.config;
 
-
 import org.apache.eventmesh.openconnect.api.config.Config;
 
 import lombok.Data;
 
 @Data
 public class PulsarServerConfig extends Config {
+
     private boolean sourceEnable;
 
     private boolean sinkEnable;

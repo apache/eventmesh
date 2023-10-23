@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.pulsar.source.config;
 
-
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import lombok.Data;

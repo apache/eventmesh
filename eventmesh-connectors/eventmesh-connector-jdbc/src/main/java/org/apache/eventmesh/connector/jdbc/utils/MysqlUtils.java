@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.utils;
 
-
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
 public class MysqlUtils {

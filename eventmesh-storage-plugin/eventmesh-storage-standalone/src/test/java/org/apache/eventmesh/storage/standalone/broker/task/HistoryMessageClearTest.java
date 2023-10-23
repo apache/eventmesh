@@ -32,9 +32,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HistoryMessageClearTest {
 
@@ -42,7 +42,7 @@ public class HistoryMessageClearTest {
     private ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
     private HistoryMessageClear historyMessageClear;
 
-    @Before
+    @BeforeEach
     public void setUp() throws InterruptedException {
         messageEntity = createMessageEntity(new TopicMetadata(TEST_TOPIC), createDefaultCloudEvent(), OFF_SET, EXCEEDED_MESSAGE_STORE_WINDOW);
         messageContainer = createMessageContainer(new TopicMetadata(TEST_TOPIC), messageEntity);
@@ -53,6 +53,6 @@ public class HistoryMessageClearTest {
     public void testClearMessages() {
         historyMessageClear.clearMessages();
         MessageQueue updatedMessageQueue = messageContainer.get(new TopicMetadata(TEST_TOPIC));
-        Assert.assertTrue(Arrays.stream(updatedMessageQueue.getItems()).allMatch(Objects::isNull));
+        Assertions.assertTrue(Arrays.stream(updatedMessageQueue.getItems()).allMatch(Objects::isNull));
     }
 }

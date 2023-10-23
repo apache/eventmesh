@@ -36,7 +36,6 @@ public interface DataTypeConvertor<T> {
      */
     JDBCType toJDBCType(String connectorDataType);
 
-
     /**
      * Converts a connector data type to an EventMesh data type.
      *

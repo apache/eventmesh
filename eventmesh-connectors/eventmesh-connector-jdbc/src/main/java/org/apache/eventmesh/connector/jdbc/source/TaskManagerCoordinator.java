@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.jdbc.source;
-
 
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -33,7 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 /**
  * The TaskManagerCoordinator is responsible for coordinating multiple JDBC task managers and managing the processing of ConnectRecords. It provides
@@ -113,4 +110,3 @@ public class TaskManagerCoordinator {
         return records;
     }
 }
-

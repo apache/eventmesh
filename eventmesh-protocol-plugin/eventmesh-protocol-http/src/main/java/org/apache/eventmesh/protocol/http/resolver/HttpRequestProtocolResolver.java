@@ -83,7 +83,8 @@ public class HttpRequestProtocolResolver {
 
             if (StringUtils.equals(dataContentType, HttpProtocolConstant.APPLICATION_JSON)) {
                 Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
-                    new TypeReference<HashMap<String, Object>>() {});
+                    new TypeReference<HashMap<String, Object>>() {
+                    });
 
                 String requestURI = httpEventWrapper.getRequestURI();
 

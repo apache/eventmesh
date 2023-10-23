@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,7 +49,6 @@ public class EventMeshExtensionFactory {
         EXTENSION_CLASS_LOADERS.add(MetaInfExtensionClassLoader.getInstance());
         EXTENSION_CLASS_LOADERS.add(JarExtensionClassLoader.getInstance());
     }
-
 
     private EventMeshExtensionFactory() {
 

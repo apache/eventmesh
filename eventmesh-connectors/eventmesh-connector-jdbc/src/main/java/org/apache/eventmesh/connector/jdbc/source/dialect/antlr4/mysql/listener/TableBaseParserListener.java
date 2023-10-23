@@ -35,6 +35,7 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -48,6 +49,8 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     protected MysqlTableEditor tableEditor;
 
     protected ColumnDefinitionParserListener columnDefinitionListener;
+
+    protected AtomicInteger columnOrder = new AtomicInteger(1);
 
     public TableBaseParserListener(List<ParseTreeListener> listeners, MysqlAntlr4DdlParser parser) {
         this.listeners = listeners;
@@ -72,7 +75,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
          */
         parser.runIfAllNotNull(() -> {
             FullColumnNameContext fullColumnNameContext = ctx.fullColumnName();
-            //parse column name
+            // parse column name
             UidContext uidContext = fullColumnNameContext.uid();
             List<DottedIdContext> dottedIdContextList = fullColumnNameContext.dottedId();
             if (CollectionUtils.isNotEmpty(dottedIdContextList)) {
@@ -82,7 +85,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
             MysqlColumnEditor columnEditor = MysqlColumnEditor.ofEditor(columnName);
             if (Objects.isNull(columnDefinitionListener)) {
                 columnDefinitionListener = new ColumnDefinitionParserListener(listeners, tableEditor, columnEditor, parser);
-                //add ColumnDefinitionParserListener to listener list
+                // add ColumnDefinitionParserListener to listener list
                 listeners.add(columnDefinitionListener);
             } else {
                 columnDefinitionListener.setColumnEditor(columnEditor);
@@ -95,8 +98,11 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     @Override
     public void exitColumnDeclaration(ColumnDeclarationContext ctx) {
 
-        parser.runIfAllNotNull(() -> tableEditor.addColumns(columnDefinitionListener.getColumnEditor().build()), tableEditor,
-            columnDefinitionListener);
+        parser.runIfAllNotNull(() -> {
+            MysqlColumnEditor columnEditor = columnDefinitionListener.getColumnEditor();
+            columnEditor.withOrder(columnOrder.getAndIncrement());
+            tableEditor.addColumns(columnEditor.build());
+        }, tableEditor, columnDefinitionListener);
 
         super.exitColumnDeclaration(ctx);
     }
@@ -142,7 +148,7 @@ public class TableBaseParserListener extends MySqlParserBaseListener {
     @Override
     public void enterUniqueKeyTableConstraint(UniqueKeyTableConstraintContext ctx) {
 
-        //sql example: UNIQUE KEY `eventmesh` (`event_mesh`) USING BTREE COMMENT 'event mesh'
+        // sql example: UNIQUE KEY `eventmesh` (`event_mesh`) USING BTREE COMMENT 'event mesh'
 
         parser.runIfAllNotNull(() -> {
             IndexColumnNamesContext indexColumnNamesContext = ctx.indexColumnNames();

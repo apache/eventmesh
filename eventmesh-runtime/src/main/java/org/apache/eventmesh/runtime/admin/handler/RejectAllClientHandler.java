@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +100,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 log.error("clientManage rejectAllClient fail", e);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
+                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
                     .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }

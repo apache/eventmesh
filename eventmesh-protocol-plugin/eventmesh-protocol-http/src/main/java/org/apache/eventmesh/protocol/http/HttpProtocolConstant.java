@@ -19,6 +19,7 @@ package org.apache.eventmesh.protocol.http;
 
 public enum HttpProtocolConstant {
     ;
+
     public static final String PROTOCOL_NAME = "http";
 
     public static final String CONSTANTS_DEFAULT_SOURCE = "/";

@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SourceEventMeshJdbcEventTask extends AbstractEventMeshJdbcEventTask {
 
-
     private final String taskName;
 
     private EventHandler eventHandler;
@@ -53,17 +52,16 @@ public class SourceEventMeshJdbcEventTask extends AbstractEventMeshJdbcEventTask
     public void run() {
         while (isRunning) {
             try {
-                Event snapshotEvent = eventBlockingQueue.poll(5, TimeUnit.SECONDS);
-                if (Objects.isNull(snapshotEvent)) {
+                Event event = eventBlockingQueue.poll(5, TimeUnit.SECONDS);
+                if (Objects.isNull(event)) {
                     continue;
                 }
-                eventHandler.handle(snapshotEvent);
+                eventHandler.handle(event);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
-
 
     /**
      * Registers a snapshot event handler to be executed when snapshot events occur.

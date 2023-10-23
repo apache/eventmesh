@@ -48,7 +48,6 @@ public class MongodbSourceConnector implements Source {
 
     private MongodbSourceClient client;
 
-
     @Override
     public Class<? extends Config> configClass() {
         return MongodbSourceConfig.class;

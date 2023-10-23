@@ -35,7 +35,6 @@ public final class RocketMQMessageWriter<R>
 
     private final Message message = new Message();
 
-
     public RocketMQMessageWriter(String topic) {
         message.setTopic(topic);
     }
@@ -59,7 +58,6 @@ public final class RocketMQMessageWriter<R>
             message.setKeys(keys);
         }
     }
-
 
     @Override
     public CloudEventContextWriter withContextAttribute(@Nonnull String name, @Nonnull String value)

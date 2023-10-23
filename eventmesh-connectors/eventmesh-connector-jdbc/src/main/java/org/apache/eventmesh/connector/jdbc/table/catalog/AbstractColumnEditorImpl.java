@@ -66,13 +66,14 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
 
     private boolean optional;
 
+    private int order;
+
     public AbstractColumnEditorImpl(String name) {
         this.name = name;
     }
 
     public AbstractColumnEditorImpl() {
     }
-
 
     /**
      * Sets the name of the column.
@@ -133,6 +134,19 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
     @Override
     public CE withEventMeshType(EventMeshDataType<?> eventMeshType) {
         this.eventMeshDataType = eventMeshType;
+        return (CE) this;
+    }
+
+    /**
+     * Sets the order or position of the column within a table.
+     *
+     * @param order The order or position of the column.
+     * @return The column editor instance.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public CE withOrder(int order) {
+        this.order = order;
         return (CE) this;
     }
 
@@ -265,5 +279,9 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
 
     public boolean isOptional() {
         return optional;
+    }
+
+    public int ofOrder() {
+        return this.order;
     }
 }

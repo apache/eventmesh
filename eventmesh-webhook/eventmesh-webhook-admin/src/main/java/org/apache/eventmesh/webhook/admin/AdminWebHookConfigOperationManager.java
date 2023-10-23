@@ -32,12 +32,10 @@ import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class AdminWebHookConfigOperationManager {
 
-    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
-        = new HashMap<>();
+    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP = new HashMap<>();
 
     static {
         WEBHOOK_CONFIG_OPERATION_MAP.put(OPERATION_MODE_FILE, FileWebHookConfigOperation.class);
