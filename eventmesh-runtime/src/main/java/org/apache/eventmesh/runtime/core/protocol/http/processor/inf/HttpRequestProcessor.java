@@ -48,14 +48,14 @@ public interface HttpRequestProcessor {
         return false;
     }
 
-    default <T extends Header, E extends Body> void completeResponse(HttpCommand req, AsyncContext asyncContext,
+    default <T extends Header, E extends Body> void completeResponse(HttpCommand req, AsyncContext<HttpCommand> asyncContext,
         T respHeader, EventMeshRetCode emCode,
         String msg, Class<E> clazz) {
         try {
             Method method = clazz.getMethod("buildBody", Integer.class, String.class);
             Object o = method.invoke(null, emCode.getRetCode(),
                 StringUtils.isNotBlank(msg) ? msg : emCode.getErrMsg());
-            HttpCommand response = req.createHttpCommandResponse(respHeader, (E) o);
+            HttpCommand response = req.createHttpCommandResponse(respHeader, (Body) o);
             asyncContext.onComplete(response);
         } catch (Exception e) {
             log.error("response failed", e);
