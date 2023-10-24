@@ -145,6 +145,7 @@ public class PushConsumerImpl {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         ConsumeMessageService consumeMessageService = rocketmqPushConsumer
             .getDefaultMQPushConsumerImpl().getConsumeMessageService();
