@@ -103,7 +103,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
                 pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         tcpRetryer = new TcpRetryer(this);
-        tcpRetryer.init();
 
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
         clientSessionGroupMapping.init();

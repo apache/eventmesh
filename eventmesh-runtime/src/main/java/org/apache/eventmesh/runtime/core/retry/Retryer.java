@@ -26,8 +26,6 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Retryer {
 
-    void init();
-
     void start();
 
     void shutdown();

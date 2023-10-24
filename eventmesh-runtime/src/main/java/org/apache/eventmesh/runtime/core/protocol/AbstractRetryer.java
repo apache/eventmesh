@@ -44,11 +44,6 @@ public abstract class AbstractRetryer implements Retryer {
     }
 
     @Override
-    public void init() {
-
-    }
-
-    @Override
     public void start() {
         if (timer == null) {
             synchronized (this) {
