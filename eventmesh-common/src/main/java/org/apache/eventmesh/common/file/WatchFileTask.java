@@ -95,7 +95,7 @@ public class WatchFileTask extends Thread {
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
                 if (interrupted) {
-                    log.debug("[WatchFileTask] file watch is interrupted");
+                    LogUtils.debug(log, "[WatchFileTask] file watch is interrupted");
                 }
             } catch (Exception ex) {
                 log.error("[WatchFileTask] an exception occurred during file listening : ", ex);

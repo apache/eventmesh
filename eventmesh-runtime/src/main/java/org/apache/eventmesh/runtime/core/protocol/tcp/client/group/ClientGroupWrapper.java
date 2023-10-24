@@ -380,8 +380,7 @@ public class ClientGroupWrapper {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            log.error("removeGroupConsumerSession error! group:{} client:{}", group,
-                session.getClient(), e);
+            log.error("removeGroupConsumerSession error! group:{} client:{}", group, session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }

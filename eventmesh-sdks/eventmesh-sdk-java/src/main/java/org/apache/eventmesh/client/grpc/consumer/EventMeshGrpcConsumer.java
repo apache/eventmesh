@@ -236,7 +236,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
         }, 10_000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
-        log.info("Grpc Consumer Heartbeat started.");
+        LogUtils.info(log, "Grpc Consumer Heartbeat started.");
     }
 
     private void resubscribe() {
