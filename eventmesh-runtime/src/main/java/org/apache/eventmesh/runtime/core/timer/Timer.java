@@ -54,5 +54,9 @@ public interface Timer {
      */
     boolean isStop();
 
+    /**
+     * the pending timeouts
+     * @return count of pending timeout
+     */
     long pendingTimeouts();
 }

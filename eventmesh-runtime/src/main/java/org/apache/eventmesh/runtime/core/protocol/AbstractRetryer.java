@@ -32,10 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractRetryer implements Retryer {
 
-    public void init() {
-
-    }
-
     private volatile Timer timer;
 
     private static final int MAX_PENDING_TIMEOUTS = 10000;
@@ -47,12 +43,13 @@ public abstract class AbstractRetryer implements Retryer {
         timer.newTimeout(timerTask, delay, timeUnit);
     }
 
-    public void shutdown() {
-        timer.stop();
-        log.info("EventMesh retryer shutdown......");
+    @Override
+    public void init() {
+
     }
 
-    public void start() throws Exception {
+    @Override
+    public void start() {
         if (timer == null) {
             synchronized (this) {
                 if (timer == null) {
@@ -66,6 +63,13 @@ public abstract class AbstractRetryer implements Retryer {
         log.info("EventMesh retryer started......");
     }
 
+    @Override
+    public void shutdown() {
+        timer.stop();
+        log.info("EventMesh retryer shutdown......");
+    }
+
+    @Override
     public long getPendingTimeouts() {
         if (timer == null) {
             return 0;
@@ -73,6 +77,7 @@ public abstract class AbstractRetryer implements Retryer {
         return timer.pendingTimeouts();
     }
 
+    @Override
     public void printState() {
         if (timer == null) {
             log.warn("No HashedWheelTimer is provided!");
