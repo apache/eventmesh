@@ -279,7 +279,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                                     + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err, handler);
 
-                    eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10_000));
+                    eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     if (log.isErrorEnabled()) {
                         log.error(
                             "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
@@ -294,7 +294,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR,
                 EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2),
                 SendMessageResponseBody.class);
-            eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10_000));
+            eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
             final long endTime = System.currentTimeMillis();
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(endTime - startTime);

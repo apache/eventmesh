@@ -15,21 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.runtime.core.timer;
 
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.AbstractRetryer;
+import java.util.concurrent.TimeUnit;
 
-import lombok.extern.slf4j.Slf4j;
+/**
+ * A task which is executed after the delay specified with
+ * {@link Timer#newTimeout(TimerTask, long, TimeUnit)} (TimerTask, long, TimeUnit)}.
+ */
+public interface TimerTask {
 
-@Slf4j
-public class GrpcRetryer extends AbstractRetryer {
+    /**
+     * Executed after the delay specified with
+     * {@link Timer#newTimeout(TimerTask, long, TimeUnit)}.
+     *
+     * @param timeout a handle which is associated with this task
+     */
+    void run(Timeout timeout) throws Exception;
 
-    private final EventMeshGrpcConfiguration grpcConfiguration;
-
-    public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
-    }
-
+    /**
+     * Hook method to set the execute time.
+     * @param executeTime execute time
+     */
+    void setExecuteTimeHook(long executeTime);
 }

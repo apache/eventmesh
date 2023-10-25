@@ -55,13 +55,13 @@ public class GetMetricsResponse {
     private int batchMsgQueueSize;
     private int sendMsgQueueSize;
     private int pushMsgQueueSize;
-    private int retryHTTPQueueSize;
+    private long retryHTTPQueueSize;
     private float avgBatchSendMsgCost;
     private float avgSendMsgCost;
     private float avgReplyMsgCost;
 
     // TCP Metrics
-    private int retryTCPQueueSize;
+    private long retryTCPQueueSize;
     private double client2eventMeshTCPTPS;
     private double eventMesh2mqTCPTPS;
     private double mq2eventMeshTCPTPS;
@@ -102,12 +102,12 @@ public class GetMetricsResponse {
         @JsonProperty("batchMsgQueueSize") int batchMsgQueueSize,
         @JsonProperty("sendMsgQueueSize") int sendMsgQueueSize,
         @JsonProperty("pushMsgQueueSize") int pushMsgQueueSize,
-        @JsonProperty("retryHTTPQueueSize") int retryHTTPQueueSize,
+        @JsonProperty("retryHTTPQueueSize") long retryHTTPQueueSize,
         @JsonProperty("avgBatchSendMsgCost") float avgBatchSendMsgCost,
         @JsonProperty("avgSendMsgCost") float avgSendMsgCost,
         @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
         // TCP Metrics
-        @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
+        @JsonProperty("retryTCPQueueSize") long retryTCPQueueSize,
         @JsonProperty("client2eventMeshTCPTPS") double client2eventMeshTCPTPS,
         @JsonProperty("eventMesh2mqTCPTPS") double eventMesh2mqTCPTPS,
         @JsonProperty("mq2eventMeshTCPTPS") double mq2eventMeshTCPTPS,

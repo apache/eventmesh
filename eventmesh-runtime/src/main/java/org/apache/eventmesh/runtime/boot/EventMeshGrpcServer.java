@@ -119,7 +119,6 @@ public class EventMeshGrpcServer {
         consumerManager.init();
 
         grpcRetryer = new GrpcRetryer(this);
-        grpcRetryer.init();
 
         int serverPort = eventMeshGrpcConfiguration.getGrpcServerPort();
 

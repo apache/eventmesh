@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol;
+package org.apache.eventmesh.metrics.api.model;
 
-import java.util.concurrent.Delayed;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-/**
- * Retry
- */
-public interface DelayRetryable extends Delayed {
+@Data
+@AllArgsConstructor
+public class RetrySummaryMetrics {
 
-    void retry() throws Exception;
+    private long pendingRetryTimeouts;
 }
