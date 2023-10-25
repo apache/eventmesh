@@ -18,6 +18,7 @@
 package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchEventMeshCloudEventWrapper;
@@ -75,8 +76,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
-                                               org.apache.eventmesh.common.protocol.http.header.Header header,
-                                               Body body) throws ProtocolHandleException {
+        org.apache.eventmesh.common.protocol.http.header.Header header,
+        Body body) throws ProtocolHandleException {
 
         switch (RequestCode.get(Integer.parseInt(requestCode))) {
             case MSG_BATCH_SEND:
@@ -109,9 +110,10 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         switch (Objects.requireNonNull(protocolDesc)) {
-            case MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP:
+            case Constants.PROTOCOL_DESC_HTTP:
                 HttpCommand httpCommand = new HttpCommand();
                 Body body = new Body() {
+
                     final Map<String, Object> map = new HashMap<>();
 
                     @Override
@@ -127,9 +129,9 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                 body.toMap();
                 httpCommand.setBody(body);
                 return httpCommand;
-            case MeshMessageProtocolConstant.PROTOCOL_DESC_TCP:
+            case Constants.PROTOCOL_DESC_TCP:
                 return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
-            case MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC_CLOUD_EVENT:
+            case Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT:
                 return GrpcEventMeshCloudEventProtocolResolver.buildEventMeshCloudEvent(cloudEvent);
             default:
                 throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
@@ -138,7 +140,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public String getProtocolType() {
-        return MeshMessageProtocolConstant.PROTOCOL_NAME;
+        return EventMeshProtocolType.EVENT_MESH_MESSAGE.protocolTypeName();
     }
 
     private void validateCloudEvent(CloudEvent cloudEvent) {

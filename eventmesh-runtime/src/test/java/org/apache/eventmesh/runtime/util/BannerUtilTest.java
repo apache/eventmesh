@@ -17,17 +17,13 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BannerUtilTest {
 
     @Test
     public void testGenerateBanner() {
-        try {
-            BannerUtil.generateBanner();
-        } catch (Exception e) {
-            Assert.fail("BannerUtil.generateBanner() test failed");
-        }
+        Assertions.assertDoesNotThrow(BannerUtil::generateBanner);
     }
 }

@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +40,7 @@ public class HTTPMetricsServer {
     private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
-                             final List<MetricsRegistry> metricsRegistries) {
+        final List<MetricsRegistry> metricsRegistries) {
         Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
         Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
@@ -51,7 +50,7 @@ public class HTTPMetricsServer {
             eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor(),
-            eventMeshHTTPServer.getHttpRetryer().getFailedQueue());
+            eventMeshHTTPServer.getHttpRetryer().getRetryQueue());
 
         init();
     }
@@ -131,8 +130,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getSendBatchMsgNumSum(),
                 summaryMetrics.getSendBatchMsgFailNumSum(),
                 summaryMetrics.getSendBatchMsgFailRate(),
-                summaryMetrics.getSendBatchMsgDiscardNumSum()
-            );
+                summaryMetrics.getSendBatchMsgDiscardNumSum());
         }
 
         summaryMetrics.cleanSendBatchStat();
@@ -145,8 +143,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getSendMsgFailNumSum(),
                 summaryMetrics.getSendMsgFailRate(),
                 summaryMetrics.getReplyMsgNumSum(),
-                summaryMetrics.getReplyMsgFailNumSum()
-            );
+                summaryMetrics.getReplyMsgFailNumSum());
         }
 
         summaryMetrics.cleanSendMsgStat();
@@ -160,8 +157,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getHttpPushFailNumSum(),
                 summaryMetrics.getHttpPushMsgFailRate(),
                 summaryMetrics.maxHTTPPushLatency(),
-                summaryMetrics.avgHTTPPushLatency()
-            );
+                summaryMetrics.avgHTTPPushLatency());
         }
 
         summaryMetrics.cleanHttpPushMsgStat();
@@ -171,7 +167,7 @@ public class HTTPMetricsServer {
                 eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
                 eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpRetryer().size());
+                eventMeshHTTPServer.getHttpRetryer().getRetrySize());
         }
 
         if (log.isInfoEnabled()) {

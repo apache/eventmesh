@@ -71,7 +71,7 @@ public class MongodbStandaloneSinkClient implements MongodbSinkClient {
         Document doc = MongodbCloudEventUtil.convertToDocument(cloudEvent);
         int i = getNextSeq(MongodbConstants.TOPIC);
         doc.append(MongodbConstants.CAPPED_COL_TOPIC_FN, MongodbConstants.TOPIC)
-                .append(MongodbConstants.CAPPED_COL_CURSOR_FN, i);
+            .append(MongodbConstants.CAPPED_COL_CURSOR_FN, i);
         cappedCol.insertOne(doc);
     }
 

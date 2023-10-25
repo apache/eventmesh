@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.table.catalog;
 
-
 import java.util.List;
 
 /**
@@ -79,7 +78,6 @@ public interface TableEditor<TE extends TableEditor, Col extends Column, TB exte
      */
     TE withPrimaryKeyNames(String... pkColumnNames);
 
-
     /**
      * Sets the primary key for the table.
      *
@@ -115,5 +113,3 @@ public interface TableEditor<TE extends TableEditor, Col extends Column, TB exte
      */
     TB build();
 }
-
-

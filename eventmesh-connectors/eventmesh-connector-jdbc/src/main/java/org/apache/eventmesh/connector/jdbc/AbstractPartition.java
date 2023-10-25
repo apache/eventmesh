@@ -19,5 +19,4 @@ package org.apache.eventmesh.connector.jdbc;
 
 public abstract class AbstractPartition implements Partition {
 
-
 }

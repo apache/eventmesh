@@ -70,6 +70,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
     private StreamObserver<CloudEvent> createReceiver() {
         return new StreamObserver<CloudEvent>() {
+
             @Override
             public void onNext(final CloudEvent message) {
                 T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());

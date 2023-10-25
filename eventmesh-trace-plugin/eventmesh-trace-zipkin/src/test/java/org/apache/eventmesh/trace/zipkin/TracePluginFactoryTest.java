@@ -17,33 +17,30 @@
 
 package org.apache.eventmesh.trace.zipkin;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
-import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TracePluginFactoryTest {
 
     @Test
     public void testFailedGetTraceService() {
-        NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class,
+        NullPointerException nullPointerException1 = Assertions.assertThrows(NullPointerException.class,
             () -> TracePluginFactory.getEventMeshTraceService(null));
-        MatcherAssert.assertThat(nullPointerException1.getMessage(), is("traceServiceType cannot be null"));
+        Assertions.assertEquals("traceServiceType cannot be null", nullPointerException1.getMessage());
 
         String traceServiceType = "non-Existing";
         NullPointerException nullPointerException2 =
-            Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(traceServiceType));
-        MatcherAssert.assertThat(nullPointerException2.getMessage(), is("traceServiceType: " + traceServiceType + " is not supported"));
+            Assertions.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(traceServiceType));
+        Assertions.assertEquals("traceServiceType: " + traceServiceType + " is not supported", nullPointerException2.getMessage());
     }
 
     @Test
     public void testSuccessfulGetTraceService() {
         EventMeshTraceService zipkinTraceService = TracePluginFactory.getEventMeshTraceService("zipkin");
-        Assert.assertNotNull(zipkinTraceService);
-        Assert.assertTrue(zipkinTraceService instanceof ZipkinTraceService);
+        Assertions.assertNotNull(zipkinTraceService);
+        Assertions.assertTrue(zipkinTraceService instanceof ZipkinTraceService);
     }
 }

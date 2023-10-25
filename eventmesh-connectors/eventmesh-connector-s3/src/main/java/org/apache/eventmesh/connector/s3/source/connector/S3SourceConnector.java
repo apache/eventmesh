@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.s3.source.connector;
 
-
 import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
 import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -70,7 +69,6 @@ public class S3SourceConnector implements Source {
     private S3AsyncClient s3Client;
 
     private long position;
-
 
     @Override
     public Class<? extends Config> configClass() {

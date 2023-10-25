@@ -55,12 +55,12 @@ public class BannerUtil {
 
     public void generateBanner() {
         String banner =
-                          System.lineSeparator()
-                        + System.lineSeparator()
-                        + LOGO
-                        + System.lineSeparator()
-                        + LOGONAME
-                        + System.lineSeparator();
+            System.lineSeparator()
+                + System.lineSeparator()
+                + LOGO
+                + System.lineSeparator()
+                + LOGONAME
+                + System.lineSeparator();
         if (log.isInfoEnabled()) {
             log.info(banner);
         } else {

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -92,21 +91,20 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
         final Map<String, Object> responseBodyMap = new HashMap<>();
 
-        //validate header
+        // validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        //validate body
+        // validate body
         final byte[] requestBody = requestWrapper.getBody();
 
         final Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {
-            }
-        )).orElseGet(Maps::newHashMap);
+            })).orElseGet(Maps::newHashMap);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -121,8 +119,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         final List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
             new TypeReference<List<String>>() {
-            }
-        )).orElseGet(Collections::emptyList);
+            })).orElseGet(Collections::emptyList);
 
         final String pid = sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID.getKey()).toString();
 
@@ -147,7 +144,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 }
 
                 if (CollectionUtils.isNotEmpty(groupTopicClients)) {
-                    //change url
+                    // change url
                     final Map<String, List<String>> idcUrls = new HashMap<>();
                     final Set<String> clientUrls = new HashSet<>();
                     for (final Client client : groupTopicClients) {
@@ -199,14 +196,14 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 } catch (Exception e) {
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
-                                + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                            + "|topic={}|url={}", System.currentTimeMillis() - startTime,
                             JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 }
             } else {
-                //remove
+                // remove
                 try {
                     eventMeshHTTPServer.getConsumerManager()
                         .notifyConsumerManager(consumerGroup, null);
@@ -223,7 +220,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 } catch (Exception e) {
                     if (log.isErrorEnabled()) {
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
-                                + "|topic={}|url={}", System.currentTimeMillis() - startTime,
+                            + "|topic={}|url={}", System.currentTimeMillis() - startTime,
                             JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
                     }
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
@@ -240,7 +237,6 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
     public String[] paths() {
         return new String[]{RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI()};
     }
-
 
     private void registerClient(final HttpEventWrapper requestWrapper,
         final String consumerGroup,

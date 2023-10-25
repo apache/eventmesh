@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.event;
 
-
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
@@ -36,7 +35,6 @@ public class UpdateDataEvent extends GeneralDataChangeEvent {
 
     @Override
     public DataChangeEventType getDataChangeEventType() {
-        return DataChangeEventType.INSERT;
+        return DataChangeEventType.UPDATE;
     }
 }
-

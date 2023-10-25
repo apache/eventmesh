@@ -17,16 +17,25 @@
 
 package org.apache.eventmesh.connector.jdbc;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Schema {
 
     private List<Field> fields;
+
+    public Schema(List<Field> fields) {
+        this.fields = fields;
+    }
+
+    public Schema() {
+        this.fields = new ArrayList<>();
+    }
+
+    public void add(Field field) {
+        this.fields.add(field);
+    }
 }

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.pulsar.sink.connector;
 
-
-
 import org.apache.eventmesh.connector.pulsar.sink.config.PulsarSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -105,9 +103,9 @@ public class PulsarSinkConnector implements Sink {
                     props.put(key, connectRecord.getExtension(key));
                 }
                 MessageId messageId = producer.newMessage()
-                        .value((byte[]) connectRecord.getData())
-                        .properties(props)
-                        .send();
+                    .value((byte[]) connectRecord.getData())
+                    .properties(props)
+                    .send();
             } catch (Exception e) {
                 log.error("put records to pulsar failed", e);
             }

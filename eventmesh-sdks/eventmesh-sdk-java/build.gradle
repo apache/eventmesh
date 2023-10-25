@@ -59,8 +59,6 @@ dependencies {
 
     testImplementation "org.assertj:assertj-core"
 
-    testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.mockito:mockito-junit-jupiter"
 }

@@ -81,7 +81,6 @@ public class TraceUtils {
         return span;
     }
 
-
     public void finishSpan(Span span, CloudEvent event) {
         try {
             log.debug("finishSpan with event:{}", event);

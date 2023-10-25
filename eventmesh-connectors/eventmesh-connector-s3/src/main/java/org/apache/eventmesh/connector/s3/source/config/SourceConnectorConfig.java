@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.s3.source.config;
 
 import java.util.Map;
@@ -40,7 +39,7 @@ public class SourceConnectorConfig {
     /**
      * The schema for the data to be read from S3.
      */
-    private Map<String/*column name*/, Integer/*bytes*/> schema;
+    private Map<String/* column name */, Integer/* bytes */> schema;
 
     /**
      * The maximum number of records that should be returned in each batch poll.

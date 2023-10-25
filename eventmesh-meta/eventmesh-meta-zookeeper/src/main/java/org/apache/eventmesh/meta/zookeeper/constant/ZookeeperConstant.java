@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.meta.zookeeper.constant;
 
-
 public class ZookeeperConstant {
 
     public static final String NAMESPACE = "eventmesh";

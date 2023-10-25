@@ -33,7 +33,6 @@ import java.util.Arrays;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -66,7 +65,7 @@ public class GoodbyeProcessor implements TcpProcessor {
                 pkg.getHeader().getSeq()));
         } finally {
             this.eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler()
-                    .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
+                .submit(() -> Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session));
         }
         EventMeshTcp2Client
             .closeSessionIfTimeout(this.eventMeshTCPServer.getTcpThreadPoolGroup(), session, eventMeshTCPServer.getClientSessionGroupMapping());

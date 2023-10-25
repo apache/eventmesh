@@ -45,7 +45,6 @@ public class ConnectRecord {
         this.data = data;
     }
 
-
     public Long getTimestamp() {
         return timestamp;
     }

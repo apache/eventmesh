@@ -19,13 +19,13 @@ package org.apache.eventmesh.storage.redis.client;
 
 import org.apache.eventmesh.storage.redis.AbstractRedisServer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RedissonClientTest extends AbstractRedisServer {
 
     @Test
     public void testInstance() {
-        Assert.assertNotNull(RedissonClient.INSTANCE);
+        Assertions.assertNotNull(RedissonClient.INSTANCE);
     }
 }

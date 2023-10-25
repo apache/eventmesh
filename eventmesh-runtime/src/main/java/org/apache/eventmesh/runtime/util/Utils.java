@@ -39,7 +39,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 
-
 import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.UtilityClass;
 
@@ -78,8 +77,7 @@ public class Utils {
                                 .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
                     }
-                }
-            );
+                });
         } catch (Exception e) {
             log.error("exception while sending message to client", e);
         }
@@ -155,8 +153,8 @@ public class Utils {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsAnyIgnoreCase(key, HttpHeaderNames.CONTENT_TYPE.toString(),
-                    HttpHeaderNames.ACCEPT_ENCODING.toString(),
-                    HttpHeaderNames.CONTENT_LENGTH.toString())) {
+                HttpHeaderNames.ACCEPT_ENCODING.toString(),
+                HttpHeaderNames.CONTENT_LENGTH.toString())) {
                 continue;
             }
             headerParam.put(key, fullReq.headers().get(key));

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.meta.zookeeper.service;
 
-
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -340,7 +339,6 @@ public class ZookeeperMetaService implements MetaService {
         log.info("EventMesh successfully registered to zookeeper");
         return true;
     }
-
 
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {

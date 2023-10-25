@@ -33,5 +33,3 @@ public interface DdlParserCallback {
     void handle(Event event);
 
 }
-
-

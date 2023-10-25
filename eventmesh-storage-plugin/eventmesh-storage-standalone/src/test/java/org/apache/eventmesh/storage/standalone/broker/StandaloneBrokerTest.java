@@ -27,8 +27,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 
@@ -36,14 +36,14 @@ public class StandaloneBrokerTest {
 
     @Test
     public void testGetInstance() {
-        Assert.assertNotNull(StandaloneBroker.getInstance());
+        Assertions.assertNotNull(StandaloneBroker.getInstance());
     }
 
     @Test
     public void testCreateTopicIfAbsent() {
         StandaloneBroker instance = StandaloneBroker.getInstance();
         Pair<MessageQueue, AtomicLong> pair = instance.createTopicIfAbsent(TEST_TOPIC);
-        Assert.assertNotNull(pair);
+        Assertions.assertNotNull(pair);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class StandaloneBrokerTest {
         StandaloneBroker instance = StandaloneBroker.getInstance();
         CloudEvent cloudEvent = createDefaultCloudEvent();
         MessageEntity messageEntity = instance.putMessage(TEST_TOPIC, cloudEvent);
-        Assert.assertNotNull(messageEntity);
+        Assertions.assertNotNull(messageEntity);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class StandaloneBrokerTest {
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         CloudEvent message = instance.takeMessage(TEST_TOPIC);
-        Assert.assertNotNull(message);
+        Assertions.assertNotNull(message);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class StandaloneBrokerTest {
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC);
-        Assert.assertNotNull(cloudEventResult);
+        Assertions.assertNotNull(cloudEventResult);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class StandaloneBrokerTest {
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC, OFF_SET);
-        Assert.assertNotNull(cloudEventResult);
+        Assertions.assertNotNull(cloudEventResult);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class StandaloneBrokerTest {
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         boolean exists = instance.checkTopicExist(TEST_TOPIC);
-        Assert.assertTrue(exists);
+        Assertions.assertTrue(exists);
     }
 
     @Test
@@ -97,6 +97,6 @@ public class StandaloneBrokerTest {
         instance.putMessage(TEST_TOPIC, cloudEvent);
         instance.deleteTopicIfExist(TEST_TOPIC);
         boolean exists = instance.checkTopicExist(TEST_TOPIC);
-        Assert.assertFalse(exists);
+        Assertions.assertFalse(exists);
     }
 }

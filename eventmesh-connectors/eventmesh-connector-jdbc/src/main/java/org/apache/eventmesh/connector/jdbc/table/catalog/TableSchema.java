@@ -28,12 +28,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class TableSchema implements Serializable {
 
@@ -49,6 +47,8 @@ public class TableSchema implements Serializable {
      */
     private List<? extends Column> columns;
 
+    private Map<Integer, ? extends Column> orderColumnMap;
+
     /**
      * The primary key of the table.
      */
@@ -57,6 +57,17 @@ public class TableSchema implements Serializable {
     private List<UniqueKey> uniqueKeys;
 
     private String comment;
+
+    public TableSchema(TableId tableId, Map<String, ? extends Column> columnMap, List<? extends Column> columns,
+        Map<Integer, ? extends Column> orderColumnMap, PrimaryKey primaryKey, List<UniqueKey> uniqueKeys, String comment) {
+        this.tableId = tableId;
+        this.columnMap = columnMap;
+        this.columns = columns;
+        this.orderColumnMap = orderColumnMap;
+        this.primaryKey = primaryKey;
+        this.uniqueKeys = uniqueKeys;
+        this.comment = comment;
+    }
 
     public TableSchema(String name) {
         this.tableId.setTableName(name);
@@ -78,6 +89,7 @@ public class TableSchema implements Serializable {
 
         private TableId tableId;
         private Map<String, Column> columnMap;
+        private Map<Integer, Column> orderColumnMap;
         private List<Column> columns;
         private PrimaryKey primaryKey;
         private List<UniqueKey> uniqueKeys;
@@ -118,7 +130,7 @@ public class TableSchema implements Serializable {
         }
 
         public TableSchema build() {
-            return new TableSchema(tableId, columnMap, columns, primaryKey, uniqueKeys, comment);
+            return new TableSchema(tableId, columnMap, columns, orderColumnMap, primaryKey, uniqueKeys, comment);
         }
 
     }
@@ -131,6 +143,7 @@ public class TableSchema implements Serializable {
 
         private TableId tableId = new TableId();
         private Map<String, MysqlColumn> columnMap;
+        private Map<Integer, MysqlColumn> orderColumnMap;
         private List<MysqlColumn> columns;
         private PrimaryKey primaryKey;
         private List<UniqueKey> uniqueKeys;
@@ -155,6 +168,8 @@ public class TableSchema implements Serializable {
             this.columns = columns;
             this.columnMap = Optional.ofNullable(columns).orElse(new ArrayList<>(0)).stream()
                 .collect(Collectors.toMap(MysqlColumn::getName, Function.identity()));
+            this.orderColumnMap = Optional.ofNullable(columns).orElse(new ArrayList<>(0)).stream()
+                .collect(Collectors.toMap(MysqlColumn::getOrder, Function.identity()));
             return this;
         }
 
@@ -184,7 +199,7 @@ public class TableSchema implements Serializable {
         }
 
         public MysqlTableSchema build() {
-            return new MysqlTableSchema(tableId, columnMap, columns, primaryKey, uniqueKeys, comment);
+            return new MysqlTableSchema(tableId, columnMap, columns, orderColumnMap, primaryKey, uniqueKeys, comment, tableOptions);
         }
 
     }

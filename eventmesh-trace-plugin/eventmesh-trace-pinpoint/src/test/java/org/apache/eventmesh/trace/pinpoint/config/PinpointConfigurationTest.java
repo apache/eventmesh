@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.pinpoint.PinpointTraceService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
 
@@ -41,25 +40,25 @@ public class PinpointConfigurationTest {
     }
 
     private void assertClientConfig(PinpointConfiguration config) {
-        Assert.assertEquals("eventmesh", config.getApplicationName());
-        Assert.assertEquals("eventmesh", config.getAgentName());
-        Assert.assertEquals("eventmesh-01", config.getAgentId());
+        Assertions.assertEquals("eventmesh", config.getApplicationName());
+        Assertions.assertEquals("eventmesh", config.getAgentName());
+        Assertions.assertEquals("eventmesh-01", config.getAgentId());
 
         GrpcTransportConfig grpcTransportConfig = config.getGrpcTransportConfig();
-        Assert.assertNotNull(grpcTransportConfig);
-        Assert.assertEquals("127.0.0.1", grpcTransportConfig.getAgentCollectorIp());
-        Assert.assertEquals(9991, grpcTransportConfig.getAgentCollectorPort());
-        Assert.assertEquals("localhost", grpcTransportConfig.getSpanCollectorIp());
-        Assert.assertEquals(9993, grpcTransportConfig.getSpanCollectorPort());
+        Assertions.assertNotNull(grpcTransportConfig);
+        Assertions.assertEquals("127.0.0.1", grpcTransportConfig.getAgentCollectorIp());
+        Assertions.assertEquals(9991, grpcTransportConfig.getAgentCollectorPort());
+        Assertions.assertEquals("localhost", grpcTransportConfig.getSpanCollectorIp());
+        Assertions.assertEquals(9993, grpcTransportConfig.getSpanCollectorPort());
 
-        Assert.assertEquals(123, grpcTransportConfig.getSpanClientOption().getLimitCount());
-        Assert.assertEquals(6700, grpcTransportConfig.getSpanClientOption().getLimitTime());
+        Assertions.assertEquals(123, grpcTransportConfig.getSpanClientOption().getLimitCount());
+        Assertions.assertEquals(6700, grpcTransportConfig.getSpanClientOption().getLimitTime());
     }
 
     private void assertBaseConfig(ExporterConfiguration config) {
-        Assert.assertEquals(816, config.getEventMeshTraceMaxExportSize());
-        Assert.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());
-        Assert.assertEquals(2816, config.getEventMeshTraceExportTimeout());
-        Assert.assertEquals(3816, config.getEventMeshTraceExportInterval());
+        Assertions.assertEquals(816, config.getEventMeshTraceMaxExportSize());
+        Assertions.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());
+        Assertions.assertEquals(2816, config.getEventMeshTraceExportTimeout());
+        Assertions.assertEquals(3816, config.getEventMeshTraceExportInterval());
     }
 }

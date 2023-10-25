@@ -70,7 +70,6 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
         }
     }
 
-
     private boolean isFlushing() {
         return toFlush != null;
     }
@@ -131,11 +130,11 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
         executorService.shutdown();
     }
 
-
     /**
      * send offset callback
      */
     private class SendOffsetCallback implements Callable<Void> {
+
         long flushId;
 
         public SendOffsetCallback(long flushId) {

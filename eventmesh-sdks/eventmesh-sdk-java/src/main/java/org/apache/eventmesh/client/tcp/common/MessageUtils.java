@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -27,7 +29,6 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +84,7 @@ public class MessageUtils {
         if (message instanceof CloudEvent) {
             final CloudEvent cloudEvent = (CloudEvent) message;
             Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
-            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, CLOUD_EVENTS_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
 

@@ -72,7 +72,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             // put record to source connector
             queue.put(connectRecord);
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
+                CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getErrMsg()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
@@ -80,7 +80,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         } catch (InterruptedException e) {
             log.error("publish event error {}", e.getMessage());
             builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
-                    CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode()).build())
+                CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                     CloudEventAttributeValue.newBuilder().setCeString(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()).build())
                 .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()

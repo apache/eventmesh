@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.connector.jdbc.event;
 
 /**

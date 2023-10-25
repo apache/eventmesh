@@ -57,9 +57,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
-
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @EventMeshTrace(isEnable = true)
@@ -132,7 +130,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
         CloudEvent event = httpProtocolAdaptor.toCloudEvent(requestWrapper);
 
-        //validate event
+        // validate event
         if (event == null
             || event.getSource() == null
             || event.getSpecVersion() == null
@@ -148,7 +146,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         final String pid = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID.getKey())).toString();
         final String sys = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS.getKey())).toString();
 
-        //validate event-extension
+        // validate event-extension
 
         if (StringUtils.isAnyBlank(idc, pid, sys)
             || !StringUtils.isNumeric(pid)) {
@@ -161,7 +159,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP.getKey())).toString();
         final String topic = event.getSubject();
 
-        //validate body
+        // validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic)
             || event.getData() == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -170,7 +168,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         }
 
         final String token = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.TOKEN.getKey())).toString();
-        //do acl check
+        // do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             final String requestURI = requestWrapper.getRequestURI();

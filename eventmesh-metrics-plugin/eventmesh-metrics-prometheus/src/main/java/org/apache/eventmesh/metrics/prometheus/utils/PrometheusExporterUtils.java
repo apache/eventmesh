@@ -48,18 +48,18 @@ public class PrometheusExporterUtils {
     public void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
         Metric summaryMetrics, Function getMetric) {
         Method method = getMetric.getClass().getMethod("apply", Object.class);
-        Class metricType = (Class) method.getGenericReturnType();
+        Class<?> metricType = (Class<?>) method.getGenericReturnType();
         if (metricType == Long.class) {
             meter.longValueObserverBuilder(metricName)
                 .setDescription(metricDesc)
                 .setUnit(protocol)
-                .setUpdater(result -> result.observe((long) getMetric.apply(summaryMetrics), Labels.empty()))
+                .setUpdater(result -> result.observe((long) getMetric.apply(clazz.cast(summaryMetrics)), Labels.empty()))
                 .build();
         } else if (metricType == Double.class) {
             meter.doubleValueObserverBuilder(metricName)
                 .setDescription(metricDesc)
                 .setUnit(protocol)
-                .setUpdater(result -> result.observe((double) getMetric.apply(summaryMetrics), Labels.empty()))
+                .setUpdater(result -> result.observe((double) getMetric.apply(clazz.cast(summaryMetrics)), Labels.empty()))
                 .build();
         }
     }

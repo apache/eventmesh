@@ -33,12 +33,10 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcessor {
-
 
     public RequestCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         super(eventMeshGrpcServer, eventMeshGrpcServer.getAcl());
@@ -65,6 +63,7 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
         eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
+
             @Override
             public void onSuccess(io.cloudevents.CloudEvent event) {
                 try {

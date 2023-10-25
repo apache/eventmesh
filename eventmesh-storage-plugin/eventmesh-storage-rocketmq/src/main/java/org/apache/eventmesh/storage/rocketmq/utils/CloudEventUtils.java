@@ -45,7 +45,6 @@ public class CloudEventUtils {
         return sendResult;
     }
 
-
     public Message msgConvert(MessageExt rmqMsg) {
         Message message = new Message();
         initProperty(rmqMsg, message, MessageExt::getTopic, Message::setTopic);
@@ -72,7 +71,7 @@ public class CloudEventUtils {
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
             String.valueOf(rmqMsg.getStoreTimestamp()));
 
-        //use in manual ack
+        // use in manual ack
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_ID, String.valueOf(rmqMsg.getQueueId()));
         MessageAccessor.putProperty(message, Constants.PROPERTY_MESSAGE_QUEUE_OFFSET,
             String.valueOf(rmqMsg.getQueueOffset()));
@@ -99,12 +98,12 @@ public class CloudEventUtils {
                 rmqMessageExt.setBody(message.getBody());
             }
 
-            //All destinations in RocketMQ use Topic
+            // All destinations in RocketMQ use Topic
             rmqMessageExt.setTopic(message.getTopic());
 
             int queueId = Integer.parseInt(message.getProperty(Constants.PROPERTY_MESSAGE_QUEUE_ID));
             long queueOffset = Long.parseLong(message.getProperty(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
-            //use in manual ack
+            // use in manual ack
             rmqMessageExt.setQueueId(queueId);
             rmqMessageExt.setQueueOffset(queueOffset);
 

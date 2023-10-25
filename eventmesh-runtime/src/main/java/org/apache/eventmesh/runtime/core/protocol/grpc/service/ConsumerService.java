@@ -83,6 +83,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
 
         return new StreamObserver<CloudEvent>() {
+
             @Override
             public void onNext(CloudEvent subscription) {
                 Set<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),

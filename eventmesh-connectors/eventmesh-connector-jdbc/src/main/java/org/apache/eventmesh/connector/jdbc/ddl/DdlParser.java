@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.ddl;
 
-
 /**
  * Interface for parsing Data Definition Language (DDL) SQL statements.
  */
@@ -54,4 +53,3 @@ public interface DdlParser {
      */
     void setCurrentSchema(String schema);
 }
-

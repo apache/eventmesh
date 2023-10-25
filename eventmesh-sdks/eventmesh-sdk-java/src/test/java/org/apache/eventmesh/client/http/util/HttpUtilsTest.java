@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.http.util;
 
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,75 +30,52 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class HttpUtilsTest {
 
-
     @Test
-    public void testPostPositive() {
+    public void testPostPositive() throws IOException {
         CloseableHttpClient client = mock(CloseableHttpClient.class);
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        IOException exception = null;
-        try {
-            String expectedResult = "Success";
-            when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
-            String result = HttpUtils.post(client, uri, requestParam);
-            Assert.assertEquals(expectedResult, result);
-        } catch (IOException e) {
-            exception = e;
-        }
-        Assert.assertNull(exception);
+        String expectedResult = "Success";
+        when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
+        String result = HttpUtils.post(client, uri, requestParam);
+        Assertions.assertEquals(expectedResult, result);
     }
 
     @Test
-    public void testPostNegative() {
+    public void testPostNegative() throws IOException {
         CloseableHttpClient client = mock(CloseableHttpClient.class);
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.GET);
         String expectedResult = "Failure";
-        try {
-            when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
-            String result = HttpUtils.post(client, uri, requestParam);
-            Assert.assertNotEquals(expectedResult, result);
-        } catch (Exception e) {
-            Assert.assertNotNull(e);
-        }
+        when(client.execute(any(HttpPost.class), any(ResponseHandler.class))).thenReturn(expectedResult);
+        Assertions.assertThrows(Exception.class, () -> HttpUtils.post(client, uri, requestParam));
     }
 
     @Test
-    public void testGetPositive() {
+    public void testGetPositive() throws IOException {
         CloseableHttpClient client = mock(CloseableHttpClient.class);
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.GET);
         String expectedResult = "Success";
-        IOException exception = null;
-        try {
-            when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
-            String result = HttpUtils.get(client, uri, requestParam);
-            Assert.assertEquals(expectedResult, result);
-        } catch (IOException e) {
-            exception = e;
-        }
-        Assert.assertNull(exception);
+        when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
+        String result = HttpUtils.get(client, uri, requestParam);
+        Assertions.assertEquals(expectedResult, result);
     }
 
     @Test
-    public void testGetNegative() {
+    public void testGetNegative() throws IOException {
         CloseableHttpClient client = mock(CloseableHttpClient.class);
         String uri = "http://example.com";
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         String expectedResult = "Failure";
-        try {
-            when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
-            String result = HttpUtils.get(client, uri, requestParam);
-            Assert.assertNotEquals(expectedResult, result);
-        } catch (Exception e) {
-            Assert.assertNotNull(e);
-        }
+        when(client.execute(any(HttpGet.class), any(ResponseHandler.class))).thenReturn(expectedResult);
+        Assertions.assertThrows(Exception.class, () -> HttpUtils.get(client, uri, requestParam));
     }
 }

@@ -53,7 +53,7 @@ public class DefaultValueParserListener extends MySqlParserBaseListener {
          */
         String sign = "";
 
-        //Default value is NULL
+        // Default value is NULL
         if (ctx.NULL_LITERAL() != null) {
             return;
         }
@@ -127,7 +127,7 @@ public class DefaultValueParserListener extends MySqlParserBaseListener {
                 }
             }
         } else if (ctx.expression() != null) {
-            //e.g. CREATE TABLE t2 (b BLOB DEFAULT ('abc'));
+            // e.g. CREATE TABLE t2 (b BLOB DEFAULT ('abc'));
             columnEditor.defaultValueExpression(ctx.expression().getText());
         } else if (ctx.fullId() != null) {
             columnEditor.defaultValueExpression(ctx.expression().getText());

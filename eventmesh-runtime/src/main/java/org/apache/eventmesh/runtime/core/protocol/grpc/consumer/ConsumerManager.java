@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -41,21 +40,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConsumerManager {
 
-    private final transient EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final transient ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-
-    // key: ConsumerGroup
-    private final transient Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     // key: ConsumerGroup
-    private final transient Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
+    private final Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
+
+    // key: ConsumerGroup
+    private final Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
 
     public ConsumerManager(final EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -210,9 +208,7 @@ public class ConsumerManager {
                 }
 
                 final List<ConsumerGroupClient> clientList = new ArrayList<>();
-                clientTable.values().forEach(clients -> {
-                    clientList.addAll(clients);
-                });
+                clientTable.values().forEach(clientList::addAll);
 
                 if (log.isDebugEnabled()) {
                     log.debug("total number of ConsumerGroupClients: {}", clientList.size());

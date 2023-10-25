@@ -61,5 +61,4 @@ public class AssertUtils {
         isTrue(StringUtils.isNoneBlank(str), message);
     }
 
-
 }

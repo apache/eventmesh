@@ -46,7 +46,6 @@ public class MessageQueue {
 
     private final Condition notFull;
 
-
     public MessageQueue() {
         this(2 << 10);
     }

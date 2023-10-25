@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.jdbc.table.type;
 
 import java.util.Objects;
 
-
 public class PrimitiveArrayType<E, T> implements EventMeshDataType<T> {
 
     @SuppressWarnings("unchecked")
@@ -55,7 +54,6 @@ public class PrimitiveArrayType<E, T> implements EventMeshDataType<T> {
         this.typeClass = arrayClass;
         this.sqlType = elementType;
     }
-
 
     /**
      * Returns the type class of the data.

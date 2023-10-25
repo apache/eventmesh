@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.pulsar.server;
 
-
 import org.apache.eventmesh.connector.pulsar.config.PulsarServerConfig;
 import org.apache.eventmesh.connector.pulsar.sink.connector.PulsarSinkConnector;
 import org.apache.eventmesh.openconnect.Application;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PulsarConnectServer {
-
 
     public static void main(String[] args) throws Exception {
 

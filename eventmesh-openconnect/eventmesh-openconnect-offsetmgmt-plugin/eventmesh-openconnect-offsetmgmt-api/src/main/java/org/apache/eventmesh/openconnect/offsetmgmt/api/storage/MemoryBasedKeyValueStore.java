@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

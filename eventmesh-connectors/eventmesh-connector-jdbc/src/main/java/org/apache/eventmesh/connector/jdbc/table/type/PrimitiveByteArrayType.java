@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.table.type;
 
-
 public class PrimitiveByteArrayType implements EventMeshDataType<byte[]> {
 
     public static final PrimitiveByteArrayType BYTES_TYPE = new PrimitiveByteArrayType();

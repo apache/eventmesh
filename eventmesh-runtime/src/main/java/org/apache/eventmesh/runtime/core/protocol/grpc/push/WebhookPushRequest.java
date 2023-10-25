@@ -32,7 +32,6 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -134,24 +133,20 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
             builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
-
             addToWaitingMap(this);
 
-            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                IPUtils.getLocalAddress(), selectedPushUrl);
+            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode, IPUtils.getLocalAddress(), selectedPushUrl);
 
             try {
                 eventMeshGrpcServer.getHttpClient().execute(builder, handleResponse(selectedPushUrl));
-                MESSAGE_LOGGER
-                    .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                        selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                        EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
-                        EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent));
+                MESSAGE_LOGGER.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                    selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent));
             } catch (IOException e) {
                 long cost = System.currentTimeMillis() - lastPushTime;
-                MESSAGE_LOGGER.error(
-                    "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", e.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                MESSAGE_LOGGER.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
+                    e.getMessage(), EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost, e);
                 removeWaitingMap(this);
                 delayRetry();
@@ -178,14 +173,11 @@ public class WebhookPushRequest extends AbstractPushRequest {
         return response -> {
             removeWaitingMap(WebhookPushRequest.this);
             long cost = System.currentTimeMillis() - lastPushTime;
-            
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                
-                MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
-                    EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
 
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", selectedPushUrl,
+                    EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent), EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent),
+                    EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 delayRetry();
             } else {
                 String res = "";
@@ -197,9 +189,8 @@ public class WebhookPushRequest extends AbstractPushRequest {
                     return new Object();
                 }
                 ClientRetCode result = processResponseContent(res, selectedPushUrl);
-                MESSAGE_LOGGER.info(
-                    "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
+                MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
+                    result, selectedPushUrl, EventMeshCloudEventUtils.getSubject(eventMeshCloudEvent),
                     EventMeshCloudEventUtils.getSeqNum(eventMeshCloudEvent), EventMeshCloudEventUtils.getUniqueId(eventMeshCloudEvent), cost);
                 switch (result) {
                     case OK:
@@ -211,7 +202,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
                         delayRetry();
                         break;
                     default:
-                        //do nothing
+                        // do nothing
                 }
             }
             return new Object();

@@ -117,24 +117,26 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Deprecated
     public EventMeshClientImpl(String accessServer, String busiTag, String subSystem) {
-        //this.accessServer = accessServer;
-        //this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
-        //        (busiTag, subSystem));
-        //this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
-        //        (busiTag, subSystem));
+        // this.accessServer = accessServer;
+        // this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        // Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
+        // (busiTag, subSystem));
+        // this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        // Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
+        // (busiTag, subSystem));
     }
 
-    //@Override
-    //public void sysLog() throws Exception {
-    //    subClient.sysLog();
-    //}
-    //
-    //@Override
-    //public void traceLog() throws Exception {
-    //    subClient.traceLog();
-    //}
+    /**
+     * @Override
+     * public void sysLog() throws Exception {
+     *     subClient.sysLog();
+     * }
+     *
+     *@Override
+     *public void traceLog() throws Exception {
+     *    subClient.traceLog();
+     *}
+     */
 
     @Override
     public void goodbye() throws Exception {

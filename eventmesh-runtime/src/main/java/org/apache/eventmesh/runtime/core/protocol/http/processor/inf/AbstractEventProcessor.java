@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -26,7 +27,6 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -82,8 +82,8 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
         MetaStorage metaStorage = eventMeshHTTPServer.getMetaStorage();
         List<EventMeshDataInfo> allEventMeshInfo = metaStorage.findAllEventMeshInfo();
         String httpServiceName =
-            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
-                + "-" + ConfigurationContextUtil.HTTP;
+            HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
+                + "-" + HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
@@ -208,18 +208,18 @@ public abstract class AbstractEventProcessor implements AsyncHttpProcessor {
 
         httpPost.addHeader(CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 
-        //header
+        // header
         if (MapUtils.isNotEmpty(requestHeader)) {
             requestHeader.forEach(httpPost::addHeader);
         }
 
-        //body
+        // body
         if (MapUtils.isNotEmpty(requestBody)) {
             String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
             httpPost.setEntity(new StringEntity(jsonStr, ContentType.APPLICATION_JSON));
         }
 
-        //ttl
+        // ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
             .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))

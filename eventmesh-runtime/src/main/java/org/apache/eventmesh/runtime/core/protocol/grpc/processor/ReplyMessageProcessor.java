@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -113,6 +112,7 @@ public class ReplyMessageProcessor {
         eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.reply(sendMessageContext, new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
                 long endTime = System.currentTimeMillis();

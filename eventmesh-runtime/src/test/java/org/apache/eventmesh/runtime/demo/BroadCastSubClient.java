@@ -29,7 +29,6 @@ import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,6 +40,7 @@ public class BroadCastSubClient {
             client.heartbeat();
             client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
             client.registerBusiHandler(new ReceiveMsgHook() {
+
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {

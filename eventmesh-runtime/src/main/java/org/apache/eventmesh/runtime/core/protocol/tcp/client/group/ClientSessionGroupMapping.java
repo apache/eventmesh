@@ -64,10 +64,16 @@ public class ClientSessionGroupMapping {
 
     private final ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap =
+    /**
+     * key: subsystem eg . 5109 or 5109-1A0
+     */
+    private final ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap =
         new ConcurrentHashMap<String, ClientGroupWrapper>();
 
-    private final ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap =
+    /**
+     * key: subsystem eg . 5109 or 5109-1A0
+     */
+    private final ConcurrentHashMap<String, Object> lockMap =
         new ConcurrentHashMap<String, Object>();
 
     private EventMeshTCPServer eventMeshTCPServer;
@@ -137,7 +143,7 @@ public class ClientSessionGroupMapping {
 
         closeSession(session);
 
-        //remove session from sessionTable
+        // remove session from sessionTable
         sessionTable.remove(addr);
 
         SESSION_LOGGER.info("session|close|succeed|user={}", session.getClient());
@@ -150,7 +156,7 @@ public class ClientSessionGroupMapping {
             return;
         }
 
-        //session must be synchronized to avoid SessionState be confound, for example adding subscribe when session closing
+        // session must be synchronized to avoid SessionState be confound, for example adding subscribe when session closing
         synchronized (session) {
 
             if (SessionState.CLOSED == session.getSessionState()) {
@@ -298,7 +304,8 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void handleUnackMsgsInSession(Session session) {
-        ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
+        // key: seq
+        ConcurrentHashMap<String, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
         ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
         if (unAckMsg.size() > 0 && !clientGroupWrapper.getGroupConsumerSessions().isEmpty()) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
@@ -355,7 +362,6 @@ public class ClientSessionGroupMapping {
         }
     }
 
-
     private void shutdownClientGroupProducer(ClientGroupWrapper clientGroupWrapper) throws Exception {
         if (clientGroupWrapper.getProducerStarted().get()) {
             clientGroupWrapper.shutdownProducer();
@@ -366,8 +372,8 @@ public class ClientSessionGroupMapping {
         eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
                 for (Session tmp : sessionTable.values()) {
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
-                        > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills()) {
+                    long interval = System.currentTimeMillis() - tmp.getLastHeartbeatTime();
+                    if (interval > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills()) {
                         try {
                             if (log.isWarnEnabled()) {
                                 log.warn("clean expired session,client:{}", tmp.getClient());
@@ -385,7 +391,7 @@ public class ClientSessionGroupMapping {
         eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(
             () -> {
 
-                //scan non-broadcast msg
+                // scan non-broadcast msg
                 for (Session tmp : sessionTable.values()) {
                     for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
                         String seqKey = entry.getKey();
@@ -401,7 +407,6 @@ public class ClientSessionGroupMapping {
                 }
             }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);
     }
-
 
     public void init() throws Exception {
         initSessionCleaner();

@@ -33,7 +33,6 @@ import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class HeartBeatProcessor implements TcpProcessor {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            //do acl check in heartbeat
+            // do acl check in heartbeat
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 this.acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.getValue());

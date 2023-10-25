@@ -67,14 +67,12 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
         HttpEventWrapper responseWrapper;
 
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
         String requestIp = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP.getKey(), requestIp);
-
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
@@ -84,12 +82,12 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
-        //validate body
+        // validate body
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
-            new TypeReference<HashMap<String, Object>>() {});
-
+            new TypeReference<HashMap<String, Object>>() {
+            });
 
         if (requestBodyMap.get("topic") == null || StringUtils.isBlank(requestBodyMap.get("topic").toString())) {
             Map<String, Object> responseBodyMap = new HashMap<>();

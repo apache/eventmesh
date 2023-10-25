@@ -72,9 +72,9 @@ public class PravegaSourceConnector implements Source {
     private BlockingQueue<CloudEvent> queue;
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "EventMesh-RabbitMQSourceConnector-");
+        Runtime.getRuntime().availableProcessors() * 2,
+        Runtime.getRuntime().availableProcessors() * 2,
+        "EventMesh-RabbitMQSourceConnector-");
 
     @Override
     public Class<? extends Config> configClass() {
@@ -93,12 +93,12 @@ public class PravegaSourceConnector implements Source {
 
         streamManager = StreamManager.create(sourceConfig.getConnectorConfig().getControllerURI());
         ClientConfig.ClientConfigBuilder clientConfigBuilder =
-                ClientConfig.builder().controllerURI(sourceConfig.getConnectorConfig().getControllerURI());
+            ClientConfig.builder().controllerURI(sourceConfig.getConnectorConfig().getControllerURI());
         if (sourceConfig.getConnectorConfig().isAuthEnabled()) {
             clientConfigBuilder.credentials(
-                    new DefaultCredentials(
-                            sourceConfig.getConnectorConfig().getPassword(),
-                            sourceConfig.getConnectorConfig().getUsername()));
+                new DefaultCredentials(
+                    sourceConfig.getConnectorConfig().getPassword(),
+                    sourceConfig.getConnectorConfig().getUsername()));
         }
         if (sourceConfig.getConnectorConfig().isTlsEnable()) {
             clientConfigBuilder.trustStore(sourceConfig.getConnectorConfig().getTruststore()).validateHostName(false);
@@ -112,24 +112,24 @@ public class PravegaSourceConnector implements Source {
 
     private void initReaders() {
         streamManager.listStreams(sourceConfig.getConnectorConfig().getScope())
-                .forEachRemaining(stream -> {
-                    if (stream.getStreamName().startsWith("_")) {
-                        return;
-                    }
-                    ReaderGroupConfig readerGroupConfig =
-                            ReaderGroupConfig.builder()
-                                    .stream(NameUtils.getScopedStreamName(sourceConfig.getConnectorConfig().getScope(), stream.getStreamName()))
-                                    .retentionType(ReaderGroupConfig.StreamDataRetention.AUTOMATIC_RELEASE_AT_LAST_CHECKPOINT)
-                                    .build();
-                    readerGroupManager.createReaderGroup(stream.getStreamName(), readerGroupConfig);
+            .forEachRemaining(stream -> {
+                if (stream.getStreamName().startsWith("_")) {
+                    return;
+                }
+                ReaderGroupConfig readerGroupConfig =
+                    ReaderGroupConfig.builder()
+                        .stream(NameUtils.getScopedStreamName(sourceConfig.getConnectorConfig().getScope(), stream.getStreamName()))
+                        .retentionType(ReaderGroupConfig.StreamDataRetention.AUTOMATIC_RELEASE_AT_LAST_CHECKPOINT)
+                        .build();
+                readerGroupManager.createReaderGroup(stream.getStreamName(), readerGroupConfig);
 
-                    EventStreamReader<byte[]> reader = clientFactory.createReader(
-                            "PravegaSourceConnector-reader",
-                            stream.getStreamName(),
-                            new ByteArraySerializer(),
-                            ReaderConfig.builder().build());
-                    this.sourceHandlerMap.put(stream.getStreamName(), new PravegaSourceHandler(reader));
-                });
+                EventStreamReader<byte[]> reader = clientFactory.createReader(
+                    "PravegaSourceConnector-reader",
+                    stream.getStreamName(),
+                    new ByteArraySerializer(),
+                    ReaderConfig.builder().build());
+                this.sourceHandlerMap.put(stream.getStreamName(), new PravegaSourceHandler(reader));
+            });
 
     }
 

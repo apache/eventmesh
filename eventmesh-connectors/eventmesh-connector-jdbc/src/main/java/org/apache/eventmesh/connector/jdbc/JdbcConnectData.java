@@ -33,4 +33,20 @@ public class CloudEventUtils {
         sendResult.setMessageId(cloudEvent.getId());
         return sendResult;
     }
+
+    public byte getType() {
+        return type;
+    }
+
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    public void markDataChanges() {
+        this.type |= DATA_CHANGES;
+    }
+
+    public void markSchemaChanges() {
+        this.type |= SCHEMA_CHANGES;
+    }
 }

@@ -69,6 +69,7 @@ public class KafkaConsumerRunner implements Runnable {
                         CloudEvent cloudEvent = rec.value();
                         String topicName = cloudEvent.getSubject();
                         EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
                             @Override
                             public void commit(EventMeshAction action) {
                                 switch (action) {

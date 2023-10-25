@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.utils;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshDateFormat;
 import org.apache.eventmesh.common.exception.JsonException;
@@ -25,6 +24,7 @@ import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

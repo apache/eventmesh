@@ -87,7 +87,7 @@ public class EventMeshUtil {
     public String buildMeshTcpClientID(final String clientSysId, final String purpose,
         final String meshCluster) {
         return StringUtils.joinWith("-", StringUtils.trim(clientSysId), StringUtils.trim(purpose),
-                StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
+            StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
     }
 
     public String buildClientGroup(final String systemId) {
@@ -133,7 +133,6 @@ public class EventMeshUtil {
             .setTimeZone(TimeZone.getDefault());
     }
 
-
     /**
      * print part of the mq message
      *
@@ -165,7 +164,7 @@ public class EventMeshUtil {
         final Map<String, String> propMap = new HashMap<>();
         event.getExtensionNames().forEach((extensionKey) -> {
             propMap.put(extensionKey, event.getExtension(extensionKey) == null ? ""
-                    : event.getExtension(extensionKey).toString());
+                : event.getExtension(extensionKey).toString());
         });
         return propMap;
     }
@@ -189,8 +188,7 @@ public class EventMeshUtil {
                 if (!preferList.contains(networkInterface.getName())) {
                     continue;
                 } else if (preferNetworkInterface == null
-                        || preferList.indexOf(networkInterface.getName())
-                                > preferList.indexOf(preferNetworkInterface.getName())) {
+                    || preferList.indexOf(networkInterface.getName()) > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -229,7 +227,7 @@ public class EventMeshUtil {
             } else if (!ipv6Result.isEmpty()) {
                 return ipv6Result.get(0);
             }
-            //If failed to find,fall back to localhost
+            // If failed to find,fall back to localhost
             return normalizeHostAddress(InetAddress.getLocalHost());
         } catch (SocketException | UnknownHostException e) {
             log.error("failed to get local address", e);
@@ -283,9 +281,8 @@ public class EventMeshUtil {
     public void printState(final ThreadPoolExecutor scheduledExecutorService) {
         if (log.isInfoEnabled()) {
             log.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory())
-                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
-                .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
-                .getCompletedTaskCount());
+                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService.getPoolSize(),
+                scheduledExecutorService.getActiveCount(), scheduledExecutorService.getCompletedTaskCount());
         }
     }
 
@@ -309,7 +306,6 @@ public class EventMeshUtil {
                 return (T) inputStream.readObject();
             }
         }
-
 
     }
 

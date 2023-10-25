@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +70,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
      *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public GrpcClientHandler(
-        EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager
-    ) {
+        EventMeshGrpcServer eventMeshGrpcServer, HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
@@ -175,8 +173,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                         Optional.ofNullable(client.idc).orElse(""),
                         Optional.ofNullable(client.consumerGroup).orElse(""),
                         "",
-                        "gRPC"
-                    );
+                        "gRPC");
                     getClientResponseList.add(getClientResponse);
                 }
             }
