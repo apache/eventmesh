@@ -70,6 +70,7 @@ public class PrometheusSourceConnector implements Source {
             .withStopStrategy(StopStrategies.stopAfterAttempt(MAX_RETRY_TIME))
             .withRetryListener(
                 new RetryListener() {
+
                     @Override
                     public <V> void onRetry(Attempt<V> attempt) {
                         long times = attempt.getAttemptNumber();

@@ -19,7 +19,6 @@ package org.apache.eventmesh.metrics.api.model;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -106,18 +105,18 @@ public class HttpSummaryMetrics implements Metric {
 
     private final ThreadPoolExecutor pushMsgExecutor;
 
-    private final DelayQueue<?> httpFailedQueue;
+    private final RetrySummaryMetrics retrySummaryMetrics;
 
     private Lock lock = new ReentrantLock();
 
     public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
         final ThreadPoolExecutor sendMsgExecutor,
         final ThreadPoolExecutor pushMsgExecutor,
-        final DelayQueue<?> httpFailedQueue) {
+        final RetrySummaryMetrics retrySummaryMetrics) {
         this.batchMsgExecutor = batchMsgExecutor;
         this.sendMsgExecutor = sendMsgExecutor;
         this.pushMsgExecutor = pushMsgExecutor;
-        this.httpFailedQueue = httpFailedQueue;
+        this.retrySummaryMetrics = retrySummaryMetrics;
     }
 
     public float avgHTTPCost() {
@@ -421,8 +420,8 @@ public class HttpSummaryMetrics implements Metric {
         return pushMsgExecutor.getQueue().size();
     }
 
-    public int getHttpRetryQueueSize() {
-        return httpFailedQueue.size();
+    public long getHttpRetryQueueSize() {
+        return retrySummaryMetrics.getPendingRetryTimeouts();
     }
 
     private float avg(LinkedList<Integer> linkedList) {

@@ -17,51 +17,17 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
-import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.protocol.AbstractRetryer;
-import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpRetryer extends AbstractRetryer {
 
-    private final Logger retryLogger = LoggerFactory.getLogger("retry");
-
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
-
-    @Override
-    public void pushRetry(DelayRetryable delayRetryable) {
-        if (retrys.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()) {
-            retryLogger.error("[RETRY-QUEUE] is full!");
-            return;
-        }
-        retrys.offer(delayRetryable);
-    }
-
-    @Override
-    public void init() {
-        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryThreadNum(),
-            60000,
-            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerRetryBlockQSize()),
-            new EventMeshThreadFactory("http-retry", true, Thread.NORM_PRIORITY),
-            new ThreadPoolExecutor.AbortPolicy());
-
-        initDispatcher();
-    }
-
 }

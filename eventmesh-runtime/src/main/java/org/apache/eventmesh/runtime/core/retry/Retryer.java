@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.runtime.core.retry;
 
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.AbstractRetryer;
+import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.TimeUnit;
 
-@Slf4j
-public class GrpcRetryer extends AbstractRetryer {
+/**
+ * Retryer interface.
+ */
+public interface Retryer {
 
-    private final EventMeshGrpcConfiguration grpcConfiguration;
+    void start();
 
-    public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
-    }
+    void shutdown();
+
+    long getPendingTimeouts();
+
+    void printState();
+
+    void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit);
 
 }

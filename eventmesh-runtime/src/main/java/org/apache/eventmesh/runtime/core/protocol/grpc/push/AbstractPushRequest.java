@@ -32,11 +32,13 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
+import org.apache.eventmesh.runtime.core.timer.Timeout;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Sets;
@@ -99,16 +101,10 @@ public abstract class AbstractPushRequest extends RetryContext {
         }
     }
 
-    @Override
-    public void retry() {
-        tryPushRequest();
-    }
-
     protected void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
-            grpcRetryer.pushRetry(this);
+            grpcRetryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
         } else {
             complete();
         }
@@ -159,5 +155,10 @@ public abstract class AbstractPushRequest extends RetryContext {
         if (waitingRequests.containsKey(handleMsgContext.getConsumerGroup())) {
             waitingRequests.get(handleMsgContext.getConsumerGroup()).remove(request);
         }
+    }
+
+    @Override
+    public void run(Timeout timeout) throws Exception {
+        tryPushRequest();
     }
 }

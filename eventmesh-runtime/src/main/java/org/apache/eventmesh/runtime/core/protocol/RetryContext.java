@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
+import org.apache.eventmesh.runtime.core.timer.Timeout;
+import org.apache.eventmesh.runtime.core.timer.Timer;
+import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
-import javax.annotation.Nonnull;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
-public abstract class RetryContext implements DelayRetryable {
+public abstract class RetryContext implements TimerTask {
 
     public CloudEvent event;
 
@@ -34,20 +35,25 @@ public abstract class RetryContext implements DelayRetryable {
 
     public long executeTime = System.currentTimeMillis();
 
-    public RetryContext delay(long delay) {
-        this.executeTime = System.currentTimeMillis() + (retryTimes + 1) * delay;
-        return this;
+    public long getExecuteTime() {
+        return executeTime;
+    }
+
+    protected void rePut(Timeout timeout, long tick, TimeUnit timeUnit) {
+        if (timeout == null) {
+            return;
+        }
+
+        Timer timer = timeout.timer();
+        if (timer.isStop() || timeout.isCancelled()) {
+            return;
+        }
+
+        timer.newTimeout(timeout.task(), tick, timeUnit);
     }
 
     @Override
-    public int compareTo(@Nonnull Delayed delayed) {
-        RetryContext obj = (RetryContext) delayed;
-        return Long.compare(this.executeTime, obj.executeTime);
-
-    }
-
-    @Override
-    public long getDelay(TimeUnit unit) {
-        return unit.convert(this.executeTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    public void setExecuteTimeHook(long executeTime) {
+        this.executeTime = executeTime;
     }
 }
