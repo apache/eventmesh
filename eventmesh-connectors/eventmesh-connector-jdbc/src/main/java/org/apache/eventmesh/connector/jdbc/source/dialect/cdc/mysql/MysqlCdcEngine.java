@@ -96,9 +96,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, MysqlJdbcContext, MysqlDatabaseDialect> {
 
-    private final EnumMap<EventType, Consumer<Event>> eventHandlers = new EnumMap<>(EventType.class);
     private BinaryLogClient client;
+
     private BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>(10000);
+
+    private final EnumMap<EventType, Consumer<Event>> eventHandlers = new EnumMap<>(EventType.class);
+
     private Map<Long/* table number */, TableId> tableIdMap = new HashMap<>(64);
 
     private MysqlJdbcContext context;
@@ -146,7 +149,9 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                 try {
                     // Delegate to the superclass
                     Event event = super.nextEvent(inputStream);
-                    LogUtils.debug(log, "MYSQL Binlog---EventType={}, EventData={}", event.getHeader().getEventType(), event);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MYSQL Binlog---EventType={}, EventData={}", event.getHeader().getEventType(), event);
+                    }
                     // We have to record the most recent TableMapEventData for each table number for our custom deserializers
                     if (event.getHeader().getEventType() == EventType.TABLE_MAP) {
                         TableMapEventData tableMapEvent = event.getData();
@@ -254,7 +259,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     }
 
     public EventMeshGtidSet filterGtidSet(MysqlJdbcContext offsetContext, EventMeshGtidSet availableServerEventMeshGtidSet,
-                                          EventMeshGtidSet purgedServerGtid) {
+        EventMeshGtidSet purgedServerGtid) {
         String gtidStr = offsetContext.getGtidSet();
         if (gtidStr == null) {
             return null;
@@ -581,6 +586,12 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         return sourceMateData;
     }
 
+    private enum CdcDmlType {
+        INSERT,
+        UPDATE,
+        DELETE
+    }
+
     private GeneralDataChangeEvent buildEvent(CdcDmlType type, TableId tableId) {
         switch (type) {
             case UPDATE:
@@ -595,7 +606,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     }
 
     private void handleCdcDmlData(MysqlJdbcContext context, MysqlSourceMateData sourceMateData, TableId tableId,
-                                  List<Pair<Pair<Serializable[], BitSet>, Pair<Serializable[], BitSet>>> rows, CdcDmlType type) {
+        List<Pair<Pair<Serializable[], BitSet>, Pair<Serializable[], BitSet>>> rows, CdcDmlType type) {
 
         TableSchema tableSchema = context.getCatalogTableSet().getTableSchema(tableId);
         Map<Integer, ? extends Column> orderColumnMap = tableSchema.getOrderColumnMap();
@@ -792,11 +803,5 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             context = MysqlJdbcContext.initialize(this.jdbcSourceConfig);
         }
         this.context = context;
-    }
-
-    private enum CdcDmlType {
-        INSERT,
-        UPDATE,
-        DELETE
     }
 }

@@ -40,8 +40,10 @@ public class WatchFileTask extends Thread {
     private final transient WatchService watchService;
 
     private final transient List<FileChangeListener> fileChangeListeners = new ArrayList<>();
-    private final transient String directoryPath;
+
     private transient volatile boolean watch = true;
+
+    private final transient String directoryPath;
 
     public WatchFileTask(String directoryPath) {
         this.directoryPath = directoryPath;

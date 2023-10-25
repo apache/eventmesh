@@ -35,11 +35,11 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 /**
  * JdbcConnection class representing a JDBC connection.
  * Implements the AutoCloseable interface.
  */
+@Slf4j
 public class JdbcConnection implements AutoCloseable {
 
     private static final int CONNECTION_VALID_CHECK_TIMEOUT_IN_SEC = 3;
@@ -47,9 +47,13 @@ public class JdbcConnection implements AutoCloseable {
     private static final String STATEMENT_DELIMITER = ";";
 
     private final JdbcConfig jdbcConfig;
-    private final InitialOperation initialOperation;
-    private final ConnectionFactory connectionFactory;
+
     private volatile Connection connection;
+
+    private final InitialOperation initialOperation;
+
+    private final ConnectionFactory connectionFactory;
+
     private JdbcDriverMetaData jdbcDriverMetaData;
 
     private boolean lazyConnection = true;
@@ -71,29 +75,6 @@ public class JdbcConnection implements AutoCloseable {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    /**
-     * Creates a ConnectionFactory that uses a pattern-based URL with placeholder values.
-     *
-     * @param urlWithPlaceholder The URL pattern with placeholders.
-     * @param replaces           The replacement values for the placeholders.
-     * @return The ConnectionFactory instance.
-     */
-    @SuppressWarnings("unchecked")
-    public static ConnectionFactory createPatternConnectionFactory(String urlWithPlaceholder, String... replaces) {
-        return config -> {
-            String url;
-            if (replaces != null && replaces.length > 0) {
-                url = String.format(urlWithPlaceholder, (Object[]) replaces);
-            } else {
-                url = urlWithPlaceholder;
-            }
-            LogUtils.debug(log, "URL: {}", url);
-            Connection connection = DriverManager.getConnection(url, config.asProperties());
-            LogUtils.debug(log, "User [{}] Connected to {}", config.getUser(), url);
-            return connection;
-        };
     }
 
     /**
@@ -389,7 +370,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public JdbcConnection preparedQuery(String sql, PreparedStatementFactory preparedStatementFactory, JdbcResultSetConsumer resultConsumer,
-                                        PreparedParameter... preparedParameters) throws SQLException {
+        PreparedParameter... preparedParameters) throws SQLException {
 
         Connection conn = connection();
         try (PreparedStatement preparedStatement = preparedStatementFactory.createPreparedStatement(conn, sql)) {
@@ -442,7 +423,7 @@ public class JdbcConnection implements AutoCloseable {
      * @throws SQLException if a database access error occurs.
      */
     public <T> T preparedQuery(String sql, PreparedStatementFactory preparedStatementFactory, ResultSetMapper<T> resultSetMapper,
-                               PreparedParameter... preparedParameters) throws SQLException {
+        PreparedParameter... preparedParameters) throws SQLException {
 
         Connection conn = connection();
         try (PreparedStatement preparedStatement = preparedStatementFactory.createPreparedStatement(conn, sql)) {
@@ -569,6 +550,29 @@ public class JdbcConnection implements AutoCloseable {
          */
         void accept(ResultSet resultSet) throws SQLException;
 
+    }
+
+    /**
+     * Creates a ConnectionFactory that uses a pattern-based URL with placeholder values.
+     *
+     * @param urlWithPlaceholder The URL pattern with placeholders.
+     * @param replaces           The replacement values for the placeholders.
+     * @return The ConnectionFactory instance.
+     */
+    @SuppressWarnings("unchecked")
+    public static ConnectionFactory createPatternConnectionFactory(String urlWithPlaceholder, String... replaces) {
+        return config -> {
+            String url;
+            if (replaces != null && replaces.length > 0) {
+                url = String.format(urlWithPlaceholder, (Object[]) replaces);
+            } else {
+                url = urlWithPlaceholder;
+            }
+            LogUtils.debug(log, "URL: {}", url);
+            Connection connection = DriverManager.getConnection(url, config.asProperties());
+            LogUtils.debug(log, "User [{}] Connected to {}", config.getUser(), url);
+            return connection;
+        };
     }
 
 }
