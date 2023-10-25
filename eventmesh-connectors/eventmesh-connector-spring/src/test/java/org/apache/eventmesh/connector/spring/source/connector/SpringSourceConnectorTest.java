@@ -39,8 +39,8 @@ public class SpringSourceConnectorTest {
         SpringSourceConfig sourceConfig = new SpringSourceConfig();
         connector.init(sourceConfig);
         connector.start();
-        int count = 5;
-        String message = "testMessage";
+        final int count = 5;
+        final String message = "testMessage";
         writeMockedRecords(count, message);
         List<ConnectRecord> connectRecords = connector.poll();
         Assertions.assertEquals(count, connectRecords.size());
