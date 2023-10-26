@@ -75,13 +75,13 @@ public class HandlerService {
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
-    public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
-
     @Setter
     private HTTPMetricsServer metrics;
 
     @Setter
     private HTTPTrace httpTrace;
+
+    public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
     public void init() {
         log.info("HandlerService start ");
@@ -240,28 +240,24 @@ public class HandlerService {
         return httpEventWrapper;
     }
 
-    private static class ProcessorWrapper {
-
-        private ThreadPoolExecutor threadPoolExecutor;
-
-        private HttpProcessor httpProcessor;
-
-        private AsyncHttpProcessor async;
-
-        private boolean traceEnabled;
-    }
-
     @Getter
     @Setter
     class HandlerSpecific implements Runnable {
 
-        long requestTime = System.currentTimeMillis();
         private TraceOperation traceOperation;
+
         private ChannelHandlerContext ctx;
+
         private HttpRequest request;
+
         private HttpResponse response;
+
         private AsyncContext<HttpEventWrapper> asyncContext;
+
         private Throwable exception;
+
+        long requestTime = System.currentTimeMillis();
+
         private Map<String, Object> traceMap;
 
         private CloudEvent ce;
@@ -301,7 +297,6 @@ public class HandlerService {
 
         private void postHandler(ConnectionType type) {
             metrics.getSummaryMetrics().recordHTTPRequest();
-
             LogUtils.debug(httpLogger, "{}", request);
             if (Objects.isNull(response)) {
                 this.response = HttpResponseUtils.createSuccess();
@@ -382,6 +377,17 @@ public class HandlerService {
             metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
         }
 
+    }
+
+    private static class ProcessorWrapper {
+
+        private ThreadPoolExecutor threadPoolExecutor;
+
+        private HttpProcessor httpProcessor;
+
+        private AsyncHttpProcessor async;
+
+        private boolean traceEnabled;
     }
 
 }

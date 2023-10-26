@@ -76,52 +76,33 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientGroupWrapper {
 
     private final String sysId;
-
-    private String group;
-
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-
     private final EventMeshTCPServer eventMeshTCPServer;
-
-    private TcpRetryer tcpRetryer;
-
-    private EventMeshTcpMonitor eventMeshTcpMonitor;
-
-    private DownstreamDispatchStrategy downstreamDispatchStrategy;
-
     private final ReadWriteLock groupLock = new ReentrantReadWriteLock();
-
     @Getter
     private final Set<Session> groupConsumerSessions = new HashSet<Session>();
-
     @Getter
     private final Set<Session> groupProducerSessions = new HashSet<Session>();
-
     @Getter
     private final AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
-
     @Getter
     private final AtomicBoolean started4Broadcast = new AtomicBoolean(Boolean.FALSE);
-
     @Getter
     private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
-
     @Getter
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
-
     @Getter
     private final AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
-
-    private MQConsumerWrapper persistentMsgConsumer;
-
-    private MQConsumerWrapper broadCastMsgConsumer;
-
     private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping =
         new ConcurrentHashMap<String, Map<String, Session>>();
-
     private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
-
     private final MQProducerWrapper mqProducerWrapper;
+    private String group;
+    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
+    private TcpRetryer tcpRetryer;
+    private EventMeshTcpMonitor eventMeshTcpMonitor;
+    private DownstreamDispatchStrategy downstreamDispatchStrategy;
+    private MQConsumerWrapper persistentMsgConsumer;
+    private MQConsumerWrapper broadCastMsgConsumer;
 
     public ClientGroupWrapper(String sysId, String group,
         EventMeshTCPServer eventMeshTCPServer,

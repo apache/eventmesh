@@ -98,10 +98,10 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     @Override
     public List<String> calculateRedirectRecommendEventMesh(final Map<String, String> eventMeshMap,
-                                                            final Map<String, Integer> clientDistributedMap,
-                                                            final String group,
-                                                            final int recommendProxyNum,
-                                                            final String eventMeshName) throws Exception {
+        final Map<String, Integer> clientDistributedMap,
+        final String group,
+        final int recommendProxyNum,
+        final String eventMeshName) throws Exception {
         Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
         Objects.requireNonNull(clientDistributedMap, "clientDistributedMap can not be null");
 
@@ -137,7 +137,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
     }
 
     private String recommendProxyByDistributeData(final String cluster, final String group, final String purpose,
-                                                  final Map<String, String> eventMeshMap, final boolean caculateLocal) {
+        final Map<String, String> eventMeshMap, final boolean caculateLocal) {
         Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
 
         LogUtils.info(log, "eventMeshMap:{},cluster:{},group:{},purpose:{},caculateLocal:{}", eventMeshMap, cluster,
@@ -192,8 +192,8 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
     }
 
     private String recommendProxy(final Map<String, String> eventMeshMap,
-                                  final Map<String, Integer> clientDistributionMap,
-                                  final String group) {
+        final Map<String, Integer> clientDistributionMap,
+        final String group) {
         Objects.requireNonNull(eventMeshMap, "eventMeshMap can not be null");
         Objects.requireNonNull(clientDistributionMap, "clientDistributionMap can not be null");
 

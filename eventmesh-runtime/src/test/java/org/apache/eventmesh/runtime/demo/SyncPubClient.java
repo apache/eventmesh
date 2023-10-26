@@ -31,7 +31,7 @@ public class SyncPubClient {
 
     public static void main(String[] args) throws Exception {
         try (PubClientImpl pubClient =
-                 new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
+            new PubClientImpl("localhost", 10000, UserAgentUtils.createUserAgent())) {
             pubClient.init();
             pubClient.heartbeat();
 

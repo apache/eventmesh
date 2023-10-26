@@ -30,24 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RequestContext {
 
-    private final CompletableFuture<Package> future = new CompletableFuture<>();
     private Object key;
     private Package request;
+    private final CompletableFuture<Package> future = new CompletableFuture<>();
 
     public RequestContext(final Object key, final Package request) {
         this.key = key;
         this.request = request;
-    }
-
-    public static RequestContext context(final Object key, final Package request) throws Exception {
-        final RequestContext context = new RequestContext(key, request);
-        LogUtils.info(log, "_RequestContext|create|key={}", key);
-
-        return context;
-    }
-
-    public static Object key(final Package request) {
-        return request.getHeader().getSeq();
     }
 
     public Object getKey() {
@@ -80,5 +69,15 @@ public class RequestContext {
 
     public void finish(final Package msg) {
         this.future.complete(msg);
+    }
+
+    public static RequestContext context(final Object key, final Package request) throws Exception {
+        final RequestContext context = new RequestContext(key, request);
+        LogUtils.info(log, "_RequestContext|create|key={}", key);
+        return context;
+    }
+
+    public static Object key(final Package request) {
+        return request.getHeader().getSeq();
     }
 }

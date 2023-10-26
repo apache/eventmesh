@@ -64,7 +64,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         // Wait for the previous cacheInit to complete in case of concurrency
         synchronized (SharedLatchHolder.lock) {
             try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
-                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
                 // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
                 fos.getChannel().lock();
                 bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
@@ -135,8 +135,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(final WebHookConfig webHookConfig,
-                                                                final Integer pageNum,
-                                                                final Integer pageSize) {
+        final Integer pageNum,
+        final Integer pageSize) {
         final String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         final File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {

@@ -51,8 +51,11 @@ import lombok.extern.slf4j.Slf4j;
 public class SubClientImpl extends TCPClient implements SubClient {
 
     private final transient UserAgent userAgent;
-    private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+
     private transient ReceiveMsgHook callback;
+
+    private final transient List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+
     private transient ScheduledFuture<?> task;
 
     public SubClientImpl(String accessIp, int port, UserAgent agent) {
@@ -138,14 +141,15 @@ public class SubClientImpl extends TCPClient implements SubClient {
      **/
 
     /**
+     *
      * public void sysLog() throws Exception {
-     * Package msg = MessageUtils.sysLog();
-     * this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+     *     Package msg = MessageUtils.sysLog();
+     *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
      * }
      */
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-                                   SubscriptionType subscriptionType) throws Exception {
+        SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -188,11 +192,6 @@ public class SubClientImpl extends TCPClient implements SubClient {
             Assertions.assertEquals(OPStatus.SUCCESS.getCode(), response.getHeader().getCode());
         }
         return response;
-    }
-
-    @Override
-    public String toString() {
-        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 
     @ChannelHandler.Sharable
@@ -244,5 +243,10 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 }

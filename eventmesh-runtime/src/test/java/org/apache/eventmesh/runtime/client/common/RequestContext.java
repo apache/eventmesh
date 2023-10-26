@@ -38,16 +38,6 @@ public class RequestContext {
         this.latch = latch;
     }
 
-    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
-        RequestContext c = new RequestContext(key, request, latch);
-        LogUtils.info(log, "_RequestContext|create|key=" + key);
-        return c;
-    }
-
-    public static Object getHeaderSeq(Package request) {
-        return request.getHeader().getSeq();
-    }
-
     public Object getKey() {
         return key;
     }
@@ -83,5 +73,15 @@ public class RequestContext {
     public void finish(Package msg) {
         this.response = msg;
         latch.countDown();
+    }
+
+    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
+        RequestContext c = new RequestContext(key, request, latch);
+        LogUtils.info(log, "_RequestContext|create|key=" + key);
+        return c;
+    }
+
+    public static Object getHeaderSeq(Package request) {
+        return request.getHeader().getSeq();
     }
 }

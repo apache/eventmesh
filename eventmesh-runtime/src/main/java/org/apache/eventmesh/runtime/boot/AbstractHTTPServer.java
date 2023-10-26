@@ -95,33 +95,40 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * HTTP serves as the runtime module server for the protocol
+ *
  */
 @Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
+    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+
+    private HTTPMetricsServer metrics;
+
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
-    private static final int MAX_CONNECTIONS = 20_000;
 
     static {
         DiskAttribute.deleteOnExitTemporaryFile = false;
     }
+
+    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    private final transient boolean useTLS;
+    private Boolean useTrace = false; // Determine whether trace is enabled
+    private static final int MAX_CONNECTIONS = 20_000;
 
     /**
      * key: request code
      */
     protected final transient Map<String, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
         new ConcurrentHashMap<>(64);
-    private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
-    private final transient boolean useTLS;
-    private final transient ThreadPoolExecutor asyncContextCompleteHandler =
-        ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
-    private final HTTPThreadPoolGroup httpThreadPoolGroup;
-    private HTTPMetricsServer metrics;
-    private Boolean useTrace = false; // Determine whether trace is enabled
+
     private HttpConnectionHandler httpConnectionHandler;
     private HttpDispatcher httpDispatcher;
+
     private HandlerService handlerService;
+    private final transient ThreadPoolExecutor asyncContextCompleteHandler =
+        ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
+
+    private final HTTPThreadPoolGroup httpThreadPoolGroup;
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
         final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -270,34 +277,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         }
         decoder.destroy();
-    }
-
-    public Boolean getUseTrace() {
-        return useTrace;
-    }
-
-    public void setUseTrace(final Boolean useTrace) {
-        this.useTrace = useTrace;
-    }
-
-    public HTTPMetricsServer getMetrics() {
-        return metrics;
-    }
-
-    public void setMetrics(final HTTPMetricsServer metrics) {
-        this.metrics = metrics;
-    }
-
-    public HTTPThreadPoolGroup getHttpThreadPoolGroup() {
-        return httpThreadPoolGroup;
-    }
-
-    public HandlerService getHandlerService() {
-        return handlerService;
-    }
-
-    public void setHandlerService(HandlerService handlerService) {
-        this.handlerService = handlerService;
     }
 
     @Sharable
@@ -560,5 +539,33 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 new HttpObjectAggregator(Integer.MAX_VALUE),
                 httpDispatcher);
         }
+    }
+
+    public void setUseTrace(final Boolean useTrace) {
+        this.useTrace = useTrace;
+    }
+
+    public Boolean getUseTrace() {
+        return useTrace;
+    }
+
+    public HTTPMetricsServer getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(final HTTPMetricsServer metrics) {
+        this.metrics = metrics;
+    }
+
+    public HTTPThreadPoolGroup getHttpThreadPoolGroup() {
+        return httpThreadPoolGroup;
+    }
+
+    public HandlerService getHandlerService() {
+        return handlerService;
+    }
+
+    public void setHandlerService(HandlerService handlerService) {
+        this.handlerService = handlerService;
     }
 }

@@ -84,13 +84,17 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private final MetaStorage metaStorage;
     private final Acl acl;
     private final EventBus eventBus = new EventBus();
-    private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
+
     private ConsumerManager consumerManager;
     private ProducerManager producerManager;
     private SubscriptionManager subscriptionManager;
+
     private HttpRetryer httpRetryer;
+
     private transient RateLimiter msgRateLimiter;
     private transient RateLimiter batchRateLimiter;
+
+    private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
 

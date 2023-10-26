@@ -99,7 +99,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         try {
             CloudEvent response = consumerClient.subscribe(subscription);
             LogUtils.info(log, "Received response:{}", response);
-
             return Response.builder()
                 .respCode(EventMeshCloudEventUtils.getResponseCode(response))
                 .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))

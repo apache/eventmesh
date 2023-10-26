@@ -50,8 +50,8 @@ public class WebhookUtil {
     private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
-                                                  final String targetUrl,
-                                                  final String requestOrigin) {
+        final String targetUrl,
+        final String requestOrigin) {
 
         LogUtils.info(log, "obtain webhook delivery agreement for url: {}", targetUrl);
 
@@ -74,9 +74,9 @@ public class WebhookUtil {
     }
 
     public static void setWebhookHeaders(final HttpPost builder,
-                                         final String contentType,
-                                         final String requestOrigin,
-                                         final String urlAuthType) {
+        final String contentType,
+        final String requestOrigin,
+        final String urlAuthType) {
         builder.setHeader(CONTENT_TYPE_HEADER, contentType);
         builder.setHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 

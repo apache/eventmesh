@@ -54,14 +54,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SubService implements InitializingBean {
 
-    private final List<SubscriptionItem> topicList = Lists.newArrayList(
-        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
-    // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
     private EventMeshHttpConsumer eventMeshHttpConsumer;
+
     private Properties properties;
-    final String localPort = properties.getProperty(SERVER_PORT);
-    final String testURL = getURL(localPort, "/sub/test");
 
     {
         try {
@@ -70,6 +65,15 @@ public class SubService implements InitializingBean {
             log.error("read properties file failed", e);
         }
     }
+
+    final String localPort = properties.getProperty(SERVER_PORT);
+    final String testURL = getURL(localPort, "/sub/test");
+
+    private final List<SubscriptionItem> topicList = Lists.newArrayList(
+        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
+
+    // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
+    private final CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     @Override
     public void afterPropertiesSet() {

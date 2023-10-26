@@ -43,7 +43,7 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
     private final transient PublisherServiceBlockingStub publisherClient;
 
     public CloudEventProducer(final EventMeshGrpcClientConfig clientConfig,
-                              final PublisherServiceBlockingStub publisherClient) {
+        final PublisherServiceBlockingStub publisherClient) {
         this.clientConfig = clientConfig;
         this.publisherClient = publisherClient;
     }

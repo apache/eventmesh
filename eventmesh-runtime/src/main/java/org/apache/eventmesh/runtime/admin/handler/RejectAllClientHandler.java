@@ -40,8 +40,8 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/rejectAllClient} endpoint, which is used to reject ALL client connections belonging to
- * the current EventMesh server node.
+ * This class handles the HTTP requests of {@code /clientManage/rejectAllClient} endpoint,
+ * which is used to reject ALL client connections belonging to the current EventMesh server node.
  * <p>
  * CAUTION: USE WITH CARE
  * <p>
@@ -59,11 +59,12 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer the TCP server instance of EventMesh
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler} for an
-     *                           {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
-    public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer, final HttpHandlerManager httpHandlerManager) {
+    public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
+        final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }

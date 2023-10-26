@@ -61,8 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class TcpClient implements Closeable {
 
-    protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
-        new EventMeshThreadFactory("TCPClientScheduler", true));
     protected static transient int CLIENTNO = 0;
 
     static {
@@ -74,13 +72,21 @@ public abstract class TcpClient implements Closeable {
     }
 
     protected final transient ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
+
     protected final transient String host;
     protected final transient int port;
     protected final transient UserAgent userAgent;
+
     private final transient Bootstrap bootstrap = new Bootstrap();
+
     private final transient EventLoopGroup workers = new NioEventLoopGroup();
+
     private transient Channel channel;
+
     private transient ScheduledFuture<?> heartTask;
+
+    protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
+        new EventMeshThreadFactory("TCPClientScheduler", true));
 
     public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
@@ -112,8 +118,7 @@ public abstract class TcpClient implements Closeable {
         ChannelFuture f = bootstrap.connect(host, port).sync();
         InetSocketAddress localAddress = (InetSocketAddress) f.channel().localAddress();
         channel = f.channel();
-        LogUtils.info(log, "connected|local={}:{}|server={}",
-            localAddress.getAddress().getHostAddress(),
+        LogUtils.info(log, "connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(),
             localAddress.getPort(), host + ":" + port);
     }
 
@@ -143,7 +148,6 @@ public abstract class TcpClient implements Closeable {
                         }
                         Package msg = MessageUtils.heartBeat();
                         io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-
                         LogUtils.debug(log, "heart beat start {}", msg);
                     } catch (Exception e) {
                         // ignore

@@ -176,11 +176,6 @@ public class PubClientImpl extends TCPClient implements PubClient {
         return userAgent;
     }
 
-    @Override
-    public String toString() {
-        return "PubClientImpl|clientNo=" + clientNo + "|" + userAgent;
-    }
-
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
 
@@ -217,5 +212,10 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "PubClientImpl|clientNo=" + clientNo + "|" + userAgent;
     }
 }

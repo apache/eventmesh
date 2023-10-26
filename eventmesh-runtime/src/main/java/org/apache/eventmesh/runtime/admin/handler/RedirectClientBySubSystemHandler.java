@@ -42,8 +42,9 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/redirectClientBySubSystem} endpoint, which is used to redirect matching clients to a
- * target EventMesh server node based on the provided client subsystem id in a Data Communication Network (DCN).
+ * This class handles the HTTP requests of {@code /clientManage/redirectClientBySubSystem} endpoint,
+ * which is used to redirect matching clients to a target EventMesh server node
+ * based on the provided client subsystem id in a Data Communication Network (DCN).
  * <p>
  * The request must specify the client's subsystem id and target EventMesh node's IP and port.
  * <p>
@@ -67,9 +68,9 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer the TCP server instance of EventMesh
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler} for an
-     *                           {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer, final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
