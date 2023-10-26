@@ -34,14 +34,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HTTPMetricsServer {
 
-    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
-        new EventMeshThreadFactory("eventMesh-metrics", true));
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
+
     private final transient List<MetricsRegistry> metricsRegistries;
+
     private final transient HttpSummaryMetrics summaryMetrics;
 
     public HTTPMetricsServer(final EventMeshHTTPServer eventMeshHTTPServer,
-                             final List<MetricsRegistry> metricsRegistries) {
+        final List<MetricsRegistry> metricsRegistries) {
         Objects.requireNonNull(eventMeshHTTPServer, "EventMeshHTTPServer can not be null");
         Objects.requireNonNull(metricsRegistries, "List<MetricsRegistry> can not be null");
 
@@ -95,11 +95,13 @@ public class HTTPMetricsServer {
         LogUtils.info(log, "HTTPMetricsServer shutdown.");
     }
 
+    private static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2,
+        new EventMeshThreadFactory("eventMesh-metrics", true));
+
     // todo: move this into standalone metrics plugin
 
     private void logPrintServerMetrics(final HttpSummaryMetrics summaryMetrics,
-                                       final EventMeshHTTPServer eventMeshHTTPServer) {
-
+        final EventMeshHTTPServer eventMeshHTTPServer) {
         LogUtils.info(log, "===========================================SERVER METRICS==================================================");
         LogUtils.info(log, "maxHTTPTPS: {}, avgHTTPTPS: {}, maxHTTPCOST: {}, avgHTTPCOST: {}, avgHTTPBodyDecodeCost: {}, httpDiscard: {}",
             summaryMetrics.maxHTTPTPS(),

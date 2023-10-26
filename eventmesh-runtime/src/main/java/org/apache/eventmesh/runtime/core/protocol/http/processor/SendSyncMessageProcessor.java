@@ -61,8 +61,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
-    private final Acl acl;
     private transient EventMeshHTTPServer eventMeshHTTPServer;
+
+    private final Acl acl;
 
     public SendSyncMessageProcessor(final EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -77,7 +78,6 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         final String localAddress = IPUtils.getLocalAddress();
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-
         LogUtils.info(log, "cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
