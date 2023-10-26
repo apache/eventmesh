@@ -47,7 +47,9 @@ import lombok.extern.slf4j.Slf4j;
 public class SubscribeProcessor {
 
     private static final GrpcType grpcType = GrpcType.WEBHOOK;
+
     private final EventMeshGrpcServer eventMeshGrpcServer;
+
     private final Acl acl;
 
     public SubscribeProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {

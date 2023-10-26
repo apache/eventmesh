@@ -44,17 +44,27 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshServer {
 
-    private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
-    private static final String SERVER_STATE_MSG = "server state:{}";
-    private static final ConfigService configService = ConfigService.getInstance();
-    private static Trace trace;
     private final Acl acl;
-    private final StorageResource storageResource;
-    private final CommonConfiguration configuration;
+
     private MetaStorage metaStorage;
+
+    private static Trace trace;
+
+    private final StorageResource storageResource;
+
     private ServiceState serviceState;
+
     private ProducerTopicManager producerTopicManager;
+
+    private final CommonConfiguration configuration;
+
     private transient ClientManageController clientManageController;
+
+    private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
+
+    private static final String SERVER_STATE_MSG = "server state:{}";
+
+    private static final ConfigService configService = ConfigService.getInstance();
 
     public EventMeshServer() {
 
@@ -90,10 +100,6 @@ public class EventMeshServer {
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
-    }
-
-    public static Trace getTrace() {
-        return trace;
     }
 
     public void init() throws Exception {
@@ -164,8 +170,8 @@ public class EventMeshServer {
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
-
         LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+
     }
 
     public void shutdown() throws Exception {
@@ -194,6 +200,10 @@ public class EventMeshServer {
         serviceState = ServiceState.STOPPED;
 
         LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+    }
+
+    public static Trace getTrace() {
+        return trace;
     }
 
     public ServiceState getServiceState() {

@@ -76,37 +76,56 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientGroupWrapper {
 
     private final String sysId;
+
+    private String group;
+
+    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
+
     private final EventMeshTCPServer eventMeshTCPServer;
+
+    private EventMeshTcpRetryer eventMeshTcpRetryer;
+
+    private EventMeshTcpMonitor eventMeshTcpMonitor;
+
+    private DownstreamDispatchStrategy downstreamDispatchStrategy;
+
     private final ReadWriteLock groupLock = new ReentrantReadWriteLock();
+
     @Getter
     private final Set<Session> groupConsumerSessions = new HashSet<Session>();
+
     @Getter
     private final Set<Session> groupProducerSessions = new HashSet<Session>();
+
     @Getter
     private final AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
+
     @Getter
     private final AtomicBoolean started4Broadcast = new AtomicBoolean(Boolean.FALSE);
+
     @Getter
     private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
+
     @Getter
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
+
     @Getter
     private final AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
-    private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping =
-        new ConcurrentHashMap<String, Map<String, Session>>();
-    private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
-    private final MQProducerWrapper mqProducerWrapper;
-    private String group;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshTcpRetryer eventMeshTcpRetryer;
-    private EventMeshTcpMonitor eventMeshTcpMonitor;
-    private DownstreamDispatchStrategy downstreamDispatchStrategy;
+
     private MQConsumerWrapper persistentMsgConsumer;
+
     private MQConsumerWrapper broadCastMsgConsumer;
 
+    private final ConcurrentHashMap<String, Map<String, Session>> topic2sessionInGroupMapping =
+        new ConcurrentHashMap<String, Map<String, Session>>();
+
+    private final ConcurrentHashMap<String, SubscriptionItem> subscriptions = new ConcurrentHashMap<>();
+
+    private final MQProducerWrapper mqProducerWrapper;
+
     public ClientGroupWrapper(String sysId, String group,
-                              EventMeshTCPServer eventMeshTCPServer,
-                              DownstreamDispatchStrategy downstreamDispatchStrategy) {
+        EventMeshTCPServer eventMeshTCPServer,
+        DownstreamDispatchStrategy downstreamDispatchStrategy) {
         this.sysId = sysId;
         this.group = group;
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -148,7 +167,7 @@ public class ClientGroupWrapper {
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, RequestReplyCallback rrCallback,
-                        long timeout)
+        long timeout)
         throws Exception {
         mqProducerWrapper.request(upStreamMsgContext.getEvent(), rrCallback, timeout);
     }
@@ -237,6 +256,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             if (topic2sessionInGroupMapping.containsKey(topic)) {
                 if (topic2sessionInGroupMapping.get(topic).remove(session.getSessionId()) != null) {
+
                     LogUtils.info(log, "removeSubscription remove session success, group:{} topic:{} client:{}",
                         group, topic, session.getClient());
                 } else {
@@ -314,6 +334,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupConsumerSessions.add(session);
             if (r) {
+
                 LogUtils.info(log, "addGroupConsumerSession success, group:{} client:{}", group,
                     session.getClient());
             }
@@ -373,6 +394,7 @@ public class ClientGroupWrapper {
             this.groupLock.writeLock().lockInterruptibly();
             r = groupConsumerSessions.remove(session);
             if (r) {
+
                 LogUtils.info(log, "removeGroupConsumerSession success, group:{} client:{}", group,
                     session.getClient());
             }
@@ -380,7 +402,8 @@ public class ClientGroupWrapper {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            log.error("removeGroupConsumerSession error! group:{} client:{}", group, session.getClient(), e);
+            log.error("removeGroupConsumerSession error! group:{} client:{}", group,
+                session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -739,6 +762,7 @@ public class ClientGroupWrapper {
 
                     @Override
                     public void onSuccess(SendResult sendResult) {
+
                         LogUtils.info(log, "group:{} consume fail, sendMessageBack success, bizSeqno:{}, "
                                 + "topic:{}",
                             group, bizSeqNo, topic);

@@ -85,11 +85,13 @@ public class EventMeshConsumer {
     private final MQConsumerWrapper broadcastMqConsumer;
 
     private final MessageHandler messageHandler;
+
+    private ServiceState serviceState;
+
     /**
      * Key: topic Value: ConsumerGroupTopicConfig
      **/
     private final Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
-    private ServiceState serviceState;
 
     public EventMeshConsumer(final EventMeshGrpcServer eventMeshGrpcServer, final String consumerGroup) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -313,8 +315,10 @@ public class EventMeshConsumer {
             if (log.isDebugEnabled()) {
                 log.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
             } else {
-                LogUtils.info(log, "message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic,
-                    bizSeqNo, uniqueId);
+                if (log.isInfoEnabled()) {
+                    log.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic,
+                        bizSeqNo, uniqueId);
+                }
                 eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
             }
 
@@ -351,7 +355,7 @@ public class EventMeshConsumer {
     }
 
     public void sendMessageBack(final String consumerGroup, final CloudEvent event,
-                                final String uniqueId, final String bizSeqNo) throws Exception {
+        final String uniqueId, final String bizSeqNo) throws Exception {
         final EventMeshProducer producer = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {

@@ -74,9 +74,12 @@ public class HandlerService {
     private final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
+
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
+
     @Setter
     private HTTPMetricsServer metrics;
+
     @Setter
     private HTTPTrace httpTrace;
 
@@ -354,7 +357,7 @@ public class HandlerService {
 
         // for error response
         public void sendErrorResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap,
-                                      Map<String, Object> traceMap) {
+            Map<String, Object> traceMap) {
             this.traceMap = traceMap;
             try {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, retCode.getRetCode());

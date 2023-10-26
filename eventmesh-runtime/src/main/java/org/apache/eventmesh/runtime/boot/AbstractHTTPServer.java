@@ -124,7 +124,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private HandlerService handlerService;
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
-                              final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
+        final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         super();
         this.setPort(port);
         this.useTLS = useTLS;

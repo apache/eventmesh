@@ -53,20 +53,6 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
     }
 
-    private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(
-        final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap) {
-        final Map<String, List<EventEmitter<CloudEvent>>> result = new HashMap<>();
-        idcEmitterMap.forEach((k, v) -> result.put(k, new LinkedList<>(v.values())));
-        return result;
-    }
-
-    private static List<EventEmitter<CloudEvent>> buildTotalEmitter(
-        final Map<String, List<EventEmitter<CloudEvent>>> idcEmitters) {
-        final List<EventEmitter<CloudEvent>> emitterList = new LinkedList<>();
-        idcEmitters.values().forEach(emitterList::addAll);
-        return emitterList;
-    }
-
     private String concatKey(String ip, String pid) {
         return ip.concat(":").concat(pid);
     }
@@ -130,5 +116,19 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
     public List<EventEmitter<CloudEvent>> getTotalEmitters() {
         return totalEmitters;
+    }
+
+    private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(
+        final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap) {
+        final Map<String, List<EventEmitter<CloudEvent>>> result = new HashMap<>();
+        idcEmitterMap.forEach((k, v) -> result.put(k, new LinkedList<>(v.values())));
+        return result;
+    }
+
+    private static List<EventEmitter<CloudEvent>> buildTotalEmitter(
+        final Map<String, List<EventEmitter<CloudEvent>>> idcEmitters) {
+        final List<EventEmitter<CloudEvent>> emitterList = new LinkedList<>();
+        idcEmitters.values().forEach(emitterList::addAll);
+        return emitterList;
     }
 }

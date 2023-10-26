@@ -75,20 +75,26 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * TCP serves as the runtime module server for the protocol
+ *
  */
 @Slf4j
 public class AbstractTCPServer extends AbstractRemotingServer {
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private final Map<Command, Pair<TcpProcessor, ThreadPoolExecutor>> tcpRequestProcessorTable =
-        new ConcurrentHashMap<>(64);
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
-    private final TCPThreadPoolGroup tcpThreadPoolGroup;
     private ClientSessionGroupMapping clientSessionGroupMapping;
+
     private EventMeshTcpMonitor eventMeshTcpMonitor;
+
     private transient GlobalTrafficShapingHandler globalTrafficShapingHandler;
     private TcpConnectionHandler tcpConnectionHandler;
     private TcpDispatcher tcpDispatcher;
+
+    private final Map<Command, Pair<TcpProcessor, ThreadPoolExecutor>> tcpRequestProcessorTable =
+        new ConcurrentHashMap<>(64);
+
+    private final transient AtomicBoolean started = new AtomicBoolean(false);
+
+    private final TCPThreadPoolGroup tcpThreadPoolGroup;
 
     public AbstractTCPServer(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
@@ -159,45 +165,14 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     /**
      * Registers the processors required by the runtime module
+     *
      */
     public void registerProcessor(final Command command, final TcpProcessor processor,
-                                  final ThreadPoolExecutor executor) {
+        final ThreadPoolExecutor executor) {
         AssertUtils.notNull(command, "command can't be null");
         AssertUtils.notNull(processor, "processor can't be null");
         AssertUtils.notNull(executor, "executor can't be null");
         this.tcpRequestProcessorTable.put(command, new Pair<>(processor, executor));
-    }
-
-    public TcpConnectionHandler getTcpConnectionHandler() {
-        return tcpConnectionHandler;
-    }
-
-    public EventMeshTcpMonitor getEventMeshTcpMonitor() {
-        return eventMeshTcpMonitor;
-    }
-
-    public void setEventMeshTcpMonitor(EventMeshTcpMonitor eventMeshTcpMonitor) {
-        this.eventMeshTcpMonitor = eventMeshTcpMonitor;
-    }
-
-    public TcpDispatcher getTcpDispatcher() {
-        return tcpDispatcher;
-    }
-
-    public void setTcpDispatcher(TcpDispatcher tcpDispatcher) {
-        this.tcpDispatcher = tcpDispatcher;
-    }
-
-    public TCPThreadPoolGroup getTcpThreadPoolGroup() {
-        return tcpThreadPoolGroup;
-    }
-
-    public ClientSessionGroupMapping getClientSessionGroupMapping() {
-        return clientSessionGroupMapping;
-    }
-
-    public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
-        this.clientSessionGroupMapping = clientSessionGroupMapping;
     }
 
     private class TcpServerInitializer extends ChannelInitializer<SocketChannel> {
@@ -273,13 +248,13 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
 
                 if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
-                    LogUtils.info(log, "pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     processHttpCommandRequest(pkg, ctx, startTime, cmd);
                     return;
                 }
 
                 if (clientSessionGroupMapping.getSession(ctx) == null) {
-                    LogUtils.info(log, "pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
+                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
                     throw new Exception("no session is found");
                 }
 
@@ -308,7 +283,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         }
 
         private void processHttpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
-                                               final long startTime, final Command cmd) {
+            final long startTime, final Command cmd) {
 
             Pair<TcpProcessor, ThreadPoolExecutor> pair = tcpRequestProcessorTable.get(cmd);
             pair.getObject2().submit(() -> {
@@ -474,6 +449,38 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         public int getConnectionCount() {
             return this.connections.get();
         }
+    }
+
+    public TcpConnectionHandler getTcpConnectionHandler() {
+        return tcpConnectionHandler;
+    }
+
+    public EventMeshTcpMonitor getEventMeshTcpMonitor() {
+        return eventMeshTcpMonitor;
+    }
+
+    public void setEventMeshTcpMonitor(EventMeshTcpMonitor eventMeshTcpMonitor) {
+        this.eventMeshTcpMonitor = eventMeshTcpMonitor;
+    }
+
+    public TcpDispatcher getTcpDispatcher() {
+        return tcpDispatcher;
+    }
+
+    public void setTcpDispatcher(TcpDispatcher tcpDispatcher) {
+        this.tcpDispatcher = tcpDispatcher;
+    }
+
+    public TCPThreadPoolGroup getTcpThreadPoolGroup() {
+        return tcpThreadPoolGroup;
+    }
+
+    public ClientSessionGroupMapping getClientSessionGroupMapping() {
+        return clientSessionGroupMapping;
+    }
+
+    public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
+        this.clientSessionGroupMapping = clientSessionGroupMapping;
     }
 
 }

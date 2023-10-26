@@ -285,7 +285,6 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
                     responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
                     responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg() + sendResult);
 
-
                     LogUtils.info(log, "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
                     handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
