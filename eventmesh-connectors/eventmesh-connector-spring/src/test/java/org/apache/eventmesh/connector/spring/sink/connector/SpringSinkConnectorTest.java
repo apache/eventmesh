@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.spring.sink.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.eventmesh.connector.spring.sink.config.SpringSinkConfig;
@@ -30,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +50,7 @@ public class SpringSinkConnectorTest {
 
     @Test
     public void testSinkConnectorRunning() {
-        assertThat(connector.isRunning(), is(true));
+        Assertions.assertTrue(connector.isRunning());
     }
 
     @Test
@@ -60,12 +59,12 @@ public class SpringSinkConnectorTest {
         final String message = "testMessage";
         writeMockedRecords(count, message);
         BlockingQueue<ConnectRecord> queue = connector.getQueue();
-        assertThat(count, is(queue.size()));
+        Assertions.assertEquals(count, queue.size());
         for (int i = 0; i < count; i++) {
             ConnectRecord poll = queue.poll();
             assertNotNull(poll);
             String expectedMessage = message + i;
-            assertThat(poll.getData(), is(expectedMessage));
+            Assertions.assertEquals(poll.getData(), expectedMessage);
         }
     }
 
