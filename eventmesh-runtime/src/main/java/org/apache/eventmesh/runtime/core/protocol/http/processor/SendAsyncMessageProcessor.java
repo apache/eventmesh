@@ -277,7 +277,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                                     + EventMeshUtil.stackTrace(context.getException(), 2)));
                         asyncContext.onComplete(err, handler);
 
-                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                        eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                         long endTime = System.currentTimeMillis();
                         summaryMetrics.recordSendMsgFailed();
                         summaryMetrics.recordSendMsgCost(endTime - startTime);
@@ -298,7 +298,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR, null, SendMessageResponseBody.class);
             spanWithException(event, protocolVersion, EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR);
 
-            eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+            eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
             long endTime = System.currentTimeMillis();
             MESSAGE_LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                 endTime - startTime, topic, bizNo, uniqueId, ex);

@@ -19,7 +19,6 @@
 name = "eventmesh"
 version = "1.9.0"
 edition = "2021"
-rust-version = "1.70"
 authors = [
     "mxsm <mxsm@apache.org>"
 ]

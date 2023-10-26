@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol;
+package org.apache.eventmesh.common.transform;
 
-import java.util.concurrent.Delayed;
-
-/**
- * Retry
- */
-public interface DelayRetryable extends Delayed {
-
-    void retry() throws Exception;
+public enum TransformerType {
+    ORIGINAL,
+    CONSTANT,
+    TEMPLATE
 }

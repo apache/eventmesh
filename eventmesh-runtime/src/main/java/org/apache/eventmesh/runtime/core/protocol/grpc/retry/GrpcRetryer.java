@@ -17,15 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 
-import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.AbstractRetryer;
-import org.apache.eventmesh.runtime.core.protocol.DelayRetryable;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,27 +30,6 @@ public class GrpcRetryer extends AbstractRetryer {
 
     public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
         this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
-    }
-
-    @Override
-    public void pushRetry(DelayRetryable delayRetryable) {
-        if (retrys.size() >= grpcConfiguration.getEventMeshServerRetryBlockQueueSize()) {
-            log.error("[RETRY-QUEUE] is full!");
-            return;
-        }
-        retrys.offer(delayRetryable);
-    }
-
-    @Override
-    public void init() {
-        pool = new ThreadPoolExecutor(
-            grpcConfiguration.getEventMeshServerRetryThreadNum(),
-            grpcConfiguration.getEventMeshServerRetryThreadNum(), 60000, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(grpcConfiguration.getEventMeshServerRetryBlockQueueSize()),
-            new EventMeshThreadFactory("grpc-retry", true, Thread.NORM_PRIORITY),
-            new ThreadPoolExecutor.AbortPolicy());
-
-        initDispatcher();
     }
 
 }

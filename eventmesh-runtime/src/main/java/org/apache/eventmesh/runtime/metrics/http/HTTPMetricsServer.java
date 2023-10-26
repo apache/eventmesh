@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
+import org.apache.eventmesh.metrics.api.model.RetrySummaryMetrics;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 import java.util.List;
@@ -51,7 +52,7 @@ public class HTTPMetricsServer {
             eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor(),
-            eventMeshHTTPServer.getHttpRetryer().getRetryQueue());
+            new RetrySummaryMetrics(eventMeshHTTPServer.getHttpRetryer().getPendingTimeouts()));
 
         init();
     }
@@ -149,7 +150,7 @@ public class HTTPMetricsServer {
             eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor().getQueue().size(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor().getQueue().size(),
             eventMeshHTTPServer.getHttpThreadPoolGroup().getPushMsgExecutor().getQueue().size(),
-            eventMeshHTTPServer.getHttpRetryer().getRetrySize());
+            eventMeshHTTPServer.getHttpRetryer().getPendingTimeouts());
 
         LogUtils.info(log, "batchAvgSend2MQCost: {}, avgSend2MQCost: {}, avgReply2MQCost: {}",
             summaryMetrics.avgBatchSendMsgCost(),

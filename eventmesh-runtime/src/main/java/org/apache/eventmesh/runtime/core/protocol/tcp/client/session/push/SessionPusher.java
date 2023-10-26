@@ -38,6 +38,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -138,8 +139,8 @@ public class SessionPusher {
                             long delayTime = SubscriptionType.SYNC == downStreamMsgContext.getSubscriptionItem().getType()
                                 ? session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetrySyncDelayInMills()
                                 : session.getEventMeshTCPConfiguration().getEventMeshTcpMsgRetryAsyncDelayInMills();
-                            downStreamMsgContext.delay(delayTime);
-                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
+                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getTcpRetryer()
+                                .newTimeout(downStreamMsgContext, delayTime, TimeUnit.MILLISECONDS);
                         } else {
                             deliveredMsgsCount.incrementAndGet();
                             log.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,

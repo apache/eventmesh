@@ -63,7 +63,7 @@ public class EventMeshGrpcMonitor {
         scheduleTask = scheduler.scheduleAtFixedRate(() -> {
             grpcSummaryMetrics.refreshTpsMetrics(SCHEDULE_PERIOD_MILLS);
             grpcSummaryMetrics.clearAllMessageCounter();
-            grpcSummaryMetrics.setRetrySize(eventMeshGrpcServer.getGrpcRetryer().getRetrySize());
+            grpcSummaryMetrics.setRetrySize(eventMeshGrpcServer.getGrpcRetryer().getPendingTimeouts());
             grpcSummaryMetrics.setSubscribeTopicNum(eventMeshGrpcServer.getConsumerManager().getAllConsumerTopic().size());
         }, DELAY_MILLS, SCHEDULE_PERIOD_MILLS, TimeUnit.MILLISECONDS);
     }

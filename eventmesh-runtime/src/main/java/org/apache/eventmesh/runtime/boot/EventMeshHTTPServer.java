@@ -118,7 +118,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                 pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         httpRetryer = new HttpRetryer(this);
-        httpRetryer.init();
 
         super.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
         subscriptionManager = new SubscriptionManager(eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable(), metaStorage);

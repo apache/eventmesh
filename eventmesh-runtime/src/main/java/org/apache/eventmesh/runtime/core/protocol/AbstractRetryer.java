@@ -17,71 +17,72 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.runtime.core.retry.Retryer;
+import org.apache.eventmesh.runtime.core.timer.HashedWheelTimer;
+import org.apache.eventmesh.runtime.core.timer.Timer;
+import org.apache.eventmesh.runtime.core.timer.TimerTask;
 
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractRetryer {
+public abstract class AbstractRetryer implements Retryer {
 
-    protected final DelayQueue<DelayRetryable> retrys = new DelayQueue<>();
+    private volatile Timer timer;
 
-    protected ThreadPoolExecutor pool;
+    private static final int MAX_PENDING_TIMEOUTS = 10000;
 
-    protected Thread dispatcher;
-
-    protected abstract void pushRetry(DelayRetryable delayRetryable);
-
-    protected abstract void init();
-
-    public int getRetrySize() {
-        return retrys.size();
+    @Override
+    public void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit) {
+        log.debug("[HASHED-WHEEL-TIMER] executed! taskClass={}, nowTime={}",
+            timeUnit.getClass().getName(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        timer.newTimeout(timerTask, delay, timeUnit);
     }
 
-    protected void initDispatcher() {
-        dispatcher = new Thread(() -> {
-            try {
-                DelayRetryable retryObj;
-                while (!Thread.currentThread().isInterrupted() && (retryObj = retrys.take()) != null) {
-                    final DelayRetryable delayRetryable = retryObj;
-                    pool.execute(() -> {
-                        try {
-                            delayRetryable.retry();
-                            LogUtils.debug(log, "retryObj : {}", delayRetryable);
-                        } catch (Exception e) {
-                            log.error("retry-dispatcher error!", e);
-                        }
-                    });
+    @Override
+    public void start() {
+        if (timer == null) {
+            synchronized (this) {
+                if (timer == null) {
+                    timer = new HashedWheelTimer(
+                        new EventMeshThreadFactory("failback-cluster-timer", true),
+                        1,
+                        TimeUnit.SECONDS, 512, MAX_PENDING_TIMEOUTS);
                 }
-            } catch (Exception e) {
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
-                log.error("retry-dispatcher error!", e);
             }
-        }, "retry-dispatcher");
-        dispatcher.setDaemon(true);
-        log.info("EventMesh retryer inited......");
-    }
-
-    public void shutdown() {
-        dispatcher.interrupt();
-        pool.shutdown();
-        log.info("EventMesh retryer shutdown......");
-    }
-
-    public void start() throws Exception {
-        dispatcher.start();
+        }
         log.info("EventMesh retryer started......");
     }
 
-    /**
-     * Get fail-retry queue, this method is just used for metrics.
-     */
-    public DelayQueue<DelayRetryable> getRetryQueue() {
-        return retrys;
+    @Override
+    public void shutdown() {
+        timer.stop();
+        log.info("EventMesh retryer shutdown......");
+    }
+
+    @Override
+    public long getPendingTimeouts() {
+        if (timer == null) {
+            return 0;
+        }
+        return timer.pendingTimeouts();
+    }
+
+    @Override
+    public void printState() {
+        if (timer == null) {
+            log.warn("No HashedWheelTimer is provided!");
+            return;
+        }
+        HashedWheelTimer hashedWheelTimer = (HashedWheelTimer) timer;
+
+        log.info("[Retry-HashedWheelTimer] state==================");
+        log.info("Running :{}", !hashedWheelTimer.isStop());
+        log.info("Pending Timeouts: {} | Cancelled Timeouts: {}", hashedWheelTimer.pendingTimeouts(), hashedWheelTimer.cancelledTimeouts());
+        log.info("========================================");
     }
 }
