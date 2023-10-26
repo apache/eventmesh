@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,13 +30,37 @@ type EventMeshOperatorSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of EventMeshOperator. Edit eventmeshoperator_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Size int `json:"size"`
+	// Image
+	Image string `json:"image"`
+	// Define the mirror pulling policy
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy"`
+	// AllowRestart defines whether allow pod restart
+	AllowRestart bool `json:"allowRestart"`
+
+	ReplicaPerGroup int `json:"replicaPerGroup"`
+
+	// Pod Security Context
+	PodSecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
+	// Container Security Context
+	ContainerSecurityContext *corev1.SecurityContext `json:"containerSecurityContext,omitempty"`
+	// Affinity the pod's scheduling constraints
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	// Tolerations the pod's tolerations.
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// NodeSelector is a selector which must be true for the pod to fit on a node
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	// PriorityClassName indicates the pod's priority
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // EventMeshOperatorStatus defines the observed state of EventMeshOperator
 type EventMeshOperatorStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Size int `json:"size"`
+
+	Nodes []string `json:"nodes"`
 }
 
 //+kubebuilder:object:root=true
