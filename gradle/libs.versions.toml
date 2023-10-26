@@ -1,0 +1,5 @@
+[versions]
+hamcrest = "2.2"
+
+[libraries]
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
