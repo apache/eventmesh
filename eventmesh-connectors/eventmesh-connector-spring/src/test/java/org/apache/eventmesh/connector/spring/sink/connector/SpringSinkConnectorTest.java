@@ -50,7 +50,12 @@ public class SpringSinkConnectorTest {
     }
 
     @Test
-    public void springSinkConnectorTest() throws Exception {
+    public void testSinkConnectorRunning() {
+        assertThat(connector.isRunning(), is(true));
+    }
+
+    @Test
+    public void testProcessRecordsInSinkConnectorQueue() throws Exception {
         final int count = 5;
         final String message = "testMessage";
         writeMockedRecords(count, message);
