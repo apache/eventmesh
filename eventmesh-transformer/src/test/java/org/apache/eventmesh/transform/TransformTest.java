@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.transform;
 
+import org.apache.eventmesh.transformer.Transformer;
+import org.apache.eventmesh.transformer.TransformerBuilder;
+import org.apache.eventmesh.transformer.TransformerType;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

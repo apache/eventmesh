@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
 
 import org.apache.eventmesh.common.utils.JsonPathUtils;
 

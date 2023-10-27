@@ -15,12 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
 
-class OriginalTransformer implements Transformer {
+public class Variable {
 
-    @Override
-    public String transform(String json) {
-        return json;
+    private String name;
+
+    private String jsonPath;
+
+    public Variable(String name, String jsonPath) {
+        this.name = name;
+        this.jsonPath = jsonPath;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getJsonPath() {
+        return jsonPath;
+    }
+
+    public void setJsonPath(String jsonPath) {
+        this.jsonPath = jsonPath;
     }
 }

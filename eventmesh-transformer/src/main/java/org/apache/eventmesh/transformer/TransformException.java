@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+package org.apache.eventmesh.transformer;
 
 /**
- * EventMesh transformer interface, specified transformer implementation includes:
- * 1. Constant
- * 2. Original
- * 3. Template
+ * Transform exception
  */
-public interface Transformer {
+public class TransformException extends RuntimeException {
 
-    String transform(String json) throws JsonProcessingException;
+    private static final long serialVersionUID = -4351489859520642285L;
+
+    public TransformException(String message) {
+        super(message);
+    }
+
+    public TransformException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

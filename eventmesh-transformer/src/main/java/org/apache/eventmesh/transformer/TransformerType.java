@@ -15,21 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
 
-/**
- * Transform exception
- */
-public class TransformException extends RuntimeException {
-
-    private static final long serialVersionUID = -4351489859520642285L;
-
-    public TransformException(String message) {
-        super(message);
-    }
-
-    public TransformException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
+public enum TransformerType {
+    ORIGINAL,
+    CONSTANT,
+    TEMPLATE
 }

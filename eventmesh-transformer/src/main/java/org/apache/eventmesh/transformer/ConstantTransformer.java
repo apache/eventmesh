@@ -15,32 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
 
-public class Variable {
+public class ConstantTransformer implements Transformer {
 
-    private String name;
+    private final String jsonpath;
 
-    private String jsonPath;
-
-    public Variable(String name, String jsonPath) {
-        this.name = name;
-        this.jsonPath = jsonPath;
+    ConstantTransformer(String jsonpath) {
+        this.jsonpath = jsonpath;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getJsonPath() {
-        return jsonPath;
-    }
-
-    public void setJsonPath(String jsonPath) {
-        this.jsonPath = jsonPath;
+    @Override
+    public String transform(String json) throws TransformException {
+        return this.jsonpath;
     }
 }

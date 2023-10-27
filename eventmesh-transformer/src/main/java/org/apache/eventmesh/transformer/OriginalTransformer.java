@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
 
-public class ConstantTransformer implements Transformer {
-
-    private final String jsonpath;
-
-    ConstantTransformer(String jsonpath) {
-        this.jsonpath = jsonpath;
-    }
+class OriginalTransformer implements Transformer {
 
     @Override
-    public String transform(String json) throws TransformException {
-        return this.jsonpath;
+    public String transform(String json) {
+        return json;
     }
 }

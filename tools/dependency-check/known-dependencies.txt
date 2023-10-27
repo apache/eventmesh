@@ -38,7 +38,6 @@ commons-digester-2.1.jar
 commons-io-2.11.0.jar
 commons-lang3-3.6.jar
 commons-logging-1.2.jar
-commons-net-3.9.0.jar
 commons-text-1.9.jar
 commons-validator-1.7.jar
 consul-api-1.4.5.jar

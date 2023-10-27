@@ -15,30 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.transform;
+package org.apache.eventmesh.transformer;
+
+import org.apache.commons.text.StringSubstitutor;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+public class Template {
 
-class TemplateTransformer implements Transformer {
+    private String template;
 
-    private final JsonPathParser jsonPathParser;
-
-    private final Template template;
-
-    TemplateTransformer(JsonPathParser jsonPathParser, Template template) {
+    public Template(String template) {
         this.template = template;
-        this.jsonPathParser = jsonPathParser;
     }
 
-    @Override
-    public String transform(String json) throws JsonProcessingException {
-        // 1: get variable match results
-        List<Variable> variableList = jsonPathParser.match(json);
-        // 2: use results replace template
-        String res = template.substitute(variableList);
-        return res;
+    public String substitute(List<Variable> variables) throws TransformException {
+
+        Map<String, String> valuesMap = variables.stream()
+            .filter(variable -> variable.getJsonPath() != null)
+            .collect(Collectors.toMap(Variable::getName, Variable::getJsonPath));
+        StringSubstitutor sub = new StringSubstitutor(valuesMap);
+
+        return sub.replace(template);
+
     }
 
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
 }

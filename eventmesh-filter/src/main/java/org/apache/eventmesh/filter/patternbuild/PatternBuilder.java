@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.filter.patternbuild;
 
+import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.filter.PatternEntry;
 import org.apache.eventmesh.filter.condition.Condition;
 import org.apache.eventmesh.filter.condition.ConditionsBuilder;
-import org.apache.eventmesh.filter.exception.JsonException;
 import org.apache.eventmesh.filter.pattern.Pattern;
 
 import java.util.ArrayDeque;

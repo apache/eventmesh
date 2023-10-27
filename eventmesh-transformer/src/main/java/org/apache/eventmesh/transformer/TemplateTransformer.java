@@ -15,20 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.filter.exception;
+package org.apache.eventmesh.transformer;
 
-/**
- * Json format exception
- */
-public class JsonException extends RuntimeException {
+import java.util.List;
 
-    private static final long serialVersionUID = -7236194555178359309L;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-    public JsonException(String message) {
-        super(message);
+class TemplateTransformer implements Transformer {
+
+    private final JsonPathParser jsonPathParser;
+
+    private final Template template;
+
+    TemplateTransformer(JsonPathParser jsonPathParser, Template template) {
+        this.template = template;
+        this.jsonPathParser = jsonPathParser;
     }
 
-    public JsonException(String message, Throwable cause) {
-        super(message, cause);
+    @Override
+    public String transform(String json) throws JsonProcessingException {
+        // 1: get variable match results
+        List<Variable> variableList = jsonPathParser.match(json);
+        // 2: use results replace template
+        String res = template.substitute(variableList);
+        return res;
     }
+
 }
