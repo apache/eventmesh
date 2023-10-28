@@ -188,8 +188,6 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     /**
-     * @param webHookConfig
-     * @return
      * Escape callback path to a valid dataId.
      */
     private String getWebHookConfigDataId(final WebHookConfig webHookConfig) {
