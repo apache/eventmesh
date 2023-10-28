@@ -307,7 +307,7 @@ public class EventMeshConsumer {
 
             final String topic = event.getSubject();
             final String bizSeqNo = Optional.ofNullable(
-                    (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS))
+                (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS))
                 .orElse("");
             final String uniqueId = Optional.ofNullable((String) event.getExtension(Constants.RMB_UNIQ_ID))
                 .orElse("");

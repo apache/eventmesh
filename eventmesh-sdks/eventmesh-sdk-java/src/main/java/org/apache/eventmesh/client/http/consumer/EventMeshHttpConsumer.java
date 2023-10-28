@@ -56,16 +56,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoCloseable {
 
-    private static final List<SubscriptionItem> SUBSCRIPTIONS = Collections.synchronizedList(new ArrayList<>());
     private final transient ThreadPoolExecutor consumeExecutor;
+
+    private static final List<SubscriptionItem> SUBSCRIPTIONS = Collections.synchronizedList(new ArrayList<>());
+
     private final transient ScheduledThreadPoolExecutor scheduler;
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         this(eventMeshHttpClientConfig, null);
     }
 
-    public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
-        final ThreadPoolExecutor customExecutor)
+    public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig, final ThreadPoolExecutor customExecutor)
         throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(

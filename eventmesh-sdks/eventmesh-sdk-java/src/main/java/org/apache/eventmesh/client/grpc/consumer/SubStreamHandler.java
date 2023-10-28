@@ -48,8 +48,10 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
     private final transient ConsumerServiceStub consumerAsyncClient;
 
     private final transient EventMeshGrpcClientConfig clientConfig;
-    private final ReceiveMsgHook<T> listener;
+
     private transient StreamObserver<CloudEvent> sender;
+
+    private final ReceiveMsgHook<T> listener;
 
     public SubStreamHandler(final ConsumerServiceStub consumerAsyncClient, final EventMeshGrpcClientConfig clientConfig,
                             final ReceiveMsgHook<T> listener) {

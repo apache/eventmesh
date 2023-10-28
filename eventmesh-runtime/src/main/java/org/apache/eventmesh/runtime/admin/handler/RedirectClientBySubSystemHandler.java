@@ -125,23 +125,19 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 }
             } catch (Exception e) {
                 log.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
-                    +
-                    "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
+                    + "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
 
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
-                            +
-                            "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                        sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
-                            .getMessage())
+                    + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage())
                     .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
+                + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
                 .getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("redirectClientBySubSystem fail...", e);

@@ -168,6 +168,7 @@ public class Codec {
             }
         }
     }
+
     private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
         Command command = header.getCmd();
         switch (command) {

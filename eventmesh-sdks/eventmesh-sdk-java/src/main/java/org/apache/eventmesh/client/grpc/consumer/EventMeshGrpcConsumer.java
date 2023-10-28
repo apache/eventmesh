@@ -65,11 +65,14 @@ import lombok.extern.slf4j.Slf4j;
 public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private static final String SDK_STREAM_URL = "grpc_stream";
+    private ManagedChannel channel;
     private final EventMeshGrpcClientConfig clientConfig;
+
     private final Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
+
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
         new EventMeshThreadFactory("GRPCClientScheduler", true));
-    private ManagedChannel channel;
+
     private ConsumerServiceBlockingStub consumerClient;
     private ConsumerServiceStub consumerAsyncClient;
     private HeartbeatServiceBlockingStub heartbeatClient;

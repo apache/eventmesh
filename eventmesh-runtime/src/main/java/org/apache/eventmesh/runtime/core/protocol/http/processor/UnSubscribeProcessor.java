@@ -194,10 +194,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                         UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
-                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
-                        endTime - startTime,
-                        JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
-                        unSubscribeRequestBody.getUrl(), e);
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}", endTime - startTime,
+                        JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()), unSubscribeRequestBody.getUrl(), e);
                     summaryMetrics.recordSendMsgFailed();
                     summaryMetrics.recordSendMsgCost(endTime - startTime);
                 }
@@ -221,10 +219,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                         UnSubscribeResponseBody.class);
                     final long endTime = System.currentTimeMillis();
-                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
-                            + "|topic={}|url={}", endTime - startTime,
-                        JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()),
-                        unSubscribeRequestBody.getUrl(), e);
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}", endTime - startTime,
+                        JsonUtils.toJSONString(unSubscribeRequestBody.getTopics()), unSubscribeRequestBody.getUrl(), e);
                     summaryMetrics.recordSendMsgFailed();
                     summaryMetrics.recordSendMsgCost(endTime - startTime);
                 }

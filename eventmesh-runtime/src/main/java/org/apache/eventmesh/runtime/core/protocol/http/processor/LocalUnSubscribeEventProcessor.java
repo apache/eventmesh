@@ -232,9 +232,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         return new String[] {RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI()};
     }
 
-    private void registerClient(final HttpEventWrapper requestWrapper,
-                                final String consumerGroup,
-                                final List<String> topicList, final String url) {
+    private void registerClient(final HttpEventWrapper requestWrapper, final String consumerGroup, final List<String> topicList, final String url) {
         Objects.requireNonNull(requestWrapper, "requestWrapper can not be null");
         Objects.requireNonNull(consumerGroup, "consumerGroup can not be null");
         Objects.requireNonNull(topicList, "topicList can not be null");

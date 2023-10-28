@@ -138,7 +138,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
      *     Package msg = MessageUtils.traceLog();
      *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
      * }
-     **/
+     */
 
     /**
      *

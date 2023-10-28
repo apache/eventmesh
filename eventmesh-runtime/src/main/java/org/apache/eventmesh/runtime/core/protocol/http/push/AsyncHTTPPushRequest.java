@@ -77,8 +77,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     public static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
     public static final Logger LOGGER = LoggerFactory.getLogger("AsyncHTTPPushRequest");
-    private final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
+
     public String currPushUrl;
+
+    private final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
         Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
