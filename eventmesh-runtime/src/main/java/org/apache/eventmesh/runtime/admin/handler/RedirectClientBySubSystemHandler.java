@@ -125,7 +125,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 }
             } catch (Exception e) {
                 log.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
-                    + "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
+                    + "={}|destEventMeshPort={}", subSystem, destEventMeshIp, destEventMeshPort, e);
 
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
