@@ -28,9 +28,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -193,19 +190,16 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     /**
-     * @param webHookConfig
-     * @return
+     * Escape callback path to a valid dataId.
      */
     private String getWebHookConfigDataId(final WebHookConfig webHookConfig) {
-        try {
-            // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
-            return URLEncoder.encode(webHookConfig.getCallbackPath(), StandardCharsets.UTF_8.name()) + DATA_ID_EXTENSION;
-        } catch (UnsupportedEncodingException e) {
-            if (log.isErrorEnabled()) {
-                log.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
-            }
+        String dataId = webHookConfig.getCallbackPath();
+        if (dataId.startsWith("/")) {
+            // remove the first slash
+            dataId = dataId.substring(1);
         }
-        return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
+        // then replace the subsequent invalid chars with dots
+        return dataId.replaceAll("[@#$%^&*,/\\\\]", ".") + DATA_ID_EXTENSION;
     }
 
     private String getManuGroupId(final WebHookConfig webHookConfig) {
