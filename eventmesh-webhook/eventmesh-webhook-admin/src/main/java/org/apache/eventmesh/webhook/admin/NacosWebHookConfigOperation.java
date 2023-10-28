@@ -190,6 +190,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     /**
      * @param webHookConfig
      * @return
+     * Escape callback path to a valid dataId.
      */
     private String getWebHookConfigDataId(final WebHookConfig webHookConfig) {
         String dataId = webHookConfig.getCallbackPath();
@@ -197,7 +198,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
             // remove the first slash
             dataId = dataId.substring(1);
         }
-        return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
+        // then replace the subsequent invalid chars with dots
+        return dataId.replaceAll("[@#$%^&*,/\\\\]", ".") + DATA_ID_EXTENSION;
     }
 
     private String getManuGroupId(final WebHookConfig webHookConfig) {
