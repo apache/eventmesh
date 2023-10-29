@@ -17,16 +17,23 @@
 //! Trait for gRPC eventmesh producer.
 
 use crate::model::response::EventMeshResponse;
+use std::future::Future;
 
 /// Trait for gRPC eventmesh producer.
-#[tonic::async_trait]
 pub trait EventMeshGrpcProducer<M> {
     /// Publish a message.
-    async fn publish(&mut self, message: M) -> crate::Result<EventMeshResponse>;
+    fn publish(&mut self, message: M) -> impl Future<Output = crate::Result<EventMeshResponse>>;
 
     /// Publish a batch of messages.
-    async fn publish_batch(&mut self, messages: Vec<M>) -> crate::Result<EventMeshResponse>;
+    fn publish_batch(
+        &mut self,
+        messages: Vec<M>,
+    ) -> impl Future<Output = crate::Result<EventMeshResponse>>;
 
     /// Request reply for a message.
-    async fn request_reply(&mut self, message: M, time_out: u64) -> crate::Result<M>;
+    fn request_reply(
+        &mut self,
+        message: M,
+        time_out: u64,
+    ) -> impl Future<Output = crate::Result<M>>;
 }

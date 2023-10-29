@@ -15,20 +15,5 @@
  * limitations under the License.
  */
 
-//! gRPC client implementations.
-
-/// EventMesh message types.
-pub(crate) mod r#impl;
-
-/// gRPC consumer client.
-pub mod grpc_consumer;
-
-/// gRPC producer client.
-pub mod grpc_producer;
-
-/// Protobuf generated definitions.
-pub(crate) mod pb;
-
 #[cfg(feature = "grpc")]
-/// Re-export gRPC eventmesh message producer when features enabled.
-pub use crate::grpc::r#impl::grpc_producer_impl::GrpcEventMeshProducer;
+pub mod grpc_producer_impl;

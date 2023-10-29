@@ -15,5 +15,12 @@
  * limitations under the License.
  */
 
-#[cfg(all(feature = "eventmesh_message", feature = "grpc"))]
-pub mod eventmesh_message_producer;
+use cloudevents::Event;
+
+use crate::proto_cloud_event::PbCloudEvent;
+
+impl From<PbCloudEvent> for Event {
+    fn from(_value: PbCloudEvent) -> Self {
+        todo!()
+    }
+}

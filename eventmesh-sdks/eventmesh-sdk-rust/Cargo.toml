@@ -26,15 +26,16 @@ description = "Rust client for Apache EventMesh"
 license = "Apache-2.0"
 keywords = ["EventMesh", "SDK", "rust-client", "rust", "eventmesh-rust-sdk"]
 readme = "./README.md"
-homepage      = "https://github.com/apache/eventmesh"
-repository    = "https://github.com/apache/eventmesh"
+homepage = "https://github.com/apache/eventmesh"
+repository = "https://github.com/apache/eventmesh"
 
 [features]
-default = ["grpc","eventmesh_message"]
-full = ["grpc","eventmesh_message"]
-eventmesh_message=[]
-tls=[]
-grpc=[]
+default = ["grpc", "eventmesh_message"]
+full = ["grpc", "eventmesh_message","cloud_events"]
+eventmesh_message = []
+cloud_events = []
+tls = []
+grpc = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
@@ -57,6 +58,9 @@ serde_json = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
+#cloudEvents
+cloudevents-sdk = "0.7.0"
+
 # tools crate
 thiserror = "1.0"
 bytes = "1"
@@ -65,6 +69,7 @@ uuid = { version = "1.4.1", features = ["v4"] }
 local-ip-address = "0.5.6"
 futures = "0.3"
 log = "0.4.20"
+chrono = "0.4"
 
 [build-dependencies]
 tonic-build = "0.10"
@@ -72,9 +77,9 @@ tonic-build = "0.10"
 [[example]]
 name = "producer_example"
 path = "examples/grpc/producer_example.rs"
-required-features = ["grpc","eventmesh_message"]
+required-features = ["grpc", "eventmesh_message","cloud_events"]
 
 [[example]]
 name = "consumer_example"
 path = "examples/grpc/consumer_example.rs"
-required-features = ["grpc","eventmesh_message"]
+required-features = ["grpc", "eventmesh_message"]

@@ -21,9 +21,10 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use cloudevents::Event;
 use serde::{Deserialize, Serialize};
 
-use crate::common::eventmesh_message_utils::EventMeshCloudEventUtils;
+use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
 use crate::model::convert::FromPbCloudEvent;
 use crate::proto_cloud_event::PbCloudEvent;
 
@@ -142,6 +143,19 @@ impl EventMeshMessage {
 impl FromPbCloudEvent<EventMeshMessage> for EventMeshMessage {
     fn from_pb_cloud_event(event: &PbCloudEvent) -> Option<EventMeshMessage> {
         Some(EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_event_mesh_message(event))
+    }
+}
+
+impl From<PbCloudEvent> for EventMeshMessage {
+    fn from(value: PbCloudEvent) -> Self {
+        EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_event_mesh_message(&value)
+    }
+}
+
+#[cfg(feature = "cloud_events")]
+impl From<Event> for EventMeshMessage {
+    fn from(value: Event) -> Self {
+        EventMeshCloudEventUtils::switch_cloud_event_2_event_mesh_message(value)
     }
 }
 
