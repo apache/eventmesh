@@ -29,9 +29,6 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;

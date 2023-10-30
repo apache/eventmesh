@@ -25,8 +25,8 @@ dependencies {
     api "org.apache.commons:commons-text"
     api "org.apache.commons:commons-lang3"
 
-    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
-    implementation 'commons-net:commons-net:3.9.0'
+    api "com.jayway.jsonpath:json-path"
+
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
 
