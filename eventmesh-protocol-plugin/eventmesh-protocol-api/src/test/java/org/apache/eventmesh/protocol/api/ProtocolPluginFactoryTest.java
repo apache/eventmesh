@@ -24,7 +24,6 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -66,16 +65,5 @@ public class ProtocolPluginFactoryTest {
     @Test
     public void testGetProtocolAdaptorThrowsException() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> ProtocolPluginFactory.getProtocolAdaptor("empty_type_name"));
-    }
-
-    @AfterEach
-    public void after() throws Exception {
-        Field field = ProtocolPluginFactory.class.getDeclaredField(PROTOCOL_ADAPTER_MAP);
-        field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField(MODIFIERS);
-        modifiersField.setAccessible(true);
-        if (!Modifier.isFinal(field.getModifiers())) {
-            modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
-        }
     }
 }
