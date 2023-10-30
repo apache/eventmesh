@@ -77,7 +77,7 @@ public class RequestContext {
 
     public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
-        LogUtils.info(log, "_RequestContext|create|key=" + key);
+        LogUtils.info(log, "_RequestContext|create|key=", key);
         return c;
     }
 

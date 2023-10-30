@@ -372,7 +372,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             Session session = clientSessionGroupMapping.getSession(ctx);
             UserAgent client = session == null ? null : session.getClient();
-            log.error("exceptionCaught, push goodbye to client|user={},errMsg={}", client, cause.fillInStackTrace());
+            log.error("exceptionCaught, push goodbye to client|user={}, errMsg={}", client, cause.fillInStackTrace());
             String errMsg;
             if (cause.toString().contains("value not one of declared Enum instance names")) {
                 errMsg = "Unknown Command type";

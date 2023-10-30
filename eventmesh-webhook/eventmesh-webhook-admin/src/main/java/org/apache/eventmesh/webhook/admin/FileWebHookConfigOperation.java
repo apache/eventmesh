@@ -60,22 +60,6 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         this.webHookFilePath = webHookFilePath;
     }
 
-    public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
-        // Wait for the previous cacheInit to complete in case of concurrency
-        synchronized (SharedLatchHolder.lock) {
-            try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
-                // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
-                fos.getChannel().lock();
-                bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
-            } catch (IOException e) {
-                LogUtils.error(log, "write webhookConfig {} to file error", webHookConfig.getCallbackPath());
-                return false;
-            }
-            return true;
-        }
-    }
-
     @Override
     public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
@@ -176,6 +160,22 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         }
 
         return JsonUtils.parseObject(fileContent.toString(), WebHookConfig.class);
+    }
+
+    public static boolean writeToFile(final File webhookConfigFile, final WebHookConfig webHookConfig) {
+        // Wait for the previous cacheInit to complete in case of concurrency
+        synchronized (SharedLatchHolder.lock) {
+            try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+                // Lock this file to prevent concurrent modification and it will be automatically unlocked when fos closes
+                fos.getChannel().lock();
+                bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
+            } catch (IOException e) {
+                LogUtils.error(log, "write webhookConfig {} to file error", webHookConfig.getCallbackPath());
+                return false;
+            }
+            return true;
+        }
     }
 
     private String getWebhookConfigManuDir(final WebHookConfig webHookConfig) {

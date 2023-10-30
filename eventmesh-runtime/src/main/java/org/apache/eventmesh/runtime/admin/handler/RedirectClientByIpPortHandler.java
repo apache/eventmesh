@@ -127,7 +127,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
                     +
-                    "={}|destEventMeshPort={},errMsg={}", ip, port, destEventMeshIp, destEventMeshPort, e);
+                    "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",

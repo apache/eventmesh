@@ -61,7 +61,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     }
 
     public <T> Response publish(T message) {
-        LogUtils.info(log, "Publish message " + message.toString());
+        LogUtils.info(log, "Publish message ", message.toString());
         if (message instanceof CloudEvent) {
             return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
