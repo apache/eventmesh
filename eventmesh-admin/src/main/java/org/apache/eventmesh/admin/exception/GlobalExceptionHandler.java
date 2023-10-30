@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class, in conjunction with {@linkplain org.apache.eventmesh.admin.enums.Errors Errors} and {@link BaseException},
+ * This class, in conjunction with {@linkplain org.apache.eventmesh.admin.enums.Status Status} and {@link BaseException},
  * collectively implements customized error reporting.
  */
 
