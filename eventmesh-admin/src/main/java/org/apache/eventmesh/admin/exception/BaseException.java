@@ -19,7 +19,7 @@ package org.apache.eventmesh.admin.exception;
 
 import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
 
-import org.apache.eventmesh.admin.enums.Errors;
+import org.apache.eventmesh.admin.enums.Status;
 import org.apache.eventmesh.admin.utils.ExceptionUtils;
 
 import lombok.Getter;
@@ -33,7 +33,7 @@ public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 3509261993355721168L;
 
-    private Errors errors;
+    private Status errors;
 
     public BaseException(String message) {
         super(message);
@@ -42,12 +42,12 @@ public class BaseException extends RuntimeException {
     /**
      * Customized error reporting using enums and exceptions
      */
-    public BaseException(Errors errors, Throwable cause) {
+    public BaseException(Status errors, Throwable cause) {
         super(ExceptionUtils.trimDesc(errors.getDesc()) + COLON + cause.getMessage(), cause);
         this.errors = errors;
     }
 
-    public BaseException(Errors errors) {
+    public BaseException(Status errors) {
         super(errors.getDesc());
         this.errors = errors;
     }
