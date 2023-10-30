@@ -33,7 +33,7 @@ import lombok.Getter;
  */
 
 @Getter
-public enum Test {
+public enum Status {
 
     SUCCESS(HttpStatus.OK, Types.SUCCESS, "Operation success."),
 
@@ -58,7 +58,7 @@ public enum Test {
     // error message
     private final String desc;
 
-    Test(HttpStatus code, Types type, String desc) {
+    Status(HttpStatus code, Types type, String desc) {
         this.code = code;
         this.type = type;
         this.desc = desc;
