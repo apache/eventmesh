@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.admin.dto;
 
-import static org.apache.eventmesh.admin.enums.Errors.SUCCESS;
+import static org.apache.eventmesh.admin.enums.Status.SUCCESS;
 
-import org.apache.eventmesh.admin.enums.Errors;
+import org.apache.eventmesh.admin.enums.Status;
 import org.apache.eventmesh.admin.exception.BaseException;
 
 import org.springframework.http.HttpStatus;
@@ -131,7 +131,7 @@ public class Result<T> {
          * Only recommended for returning successful results,
          * the stack trace cannot be displayed when returning unsuccessful results.
          */
-        public Message(Errors errors) {
+        public Message(Status errors) {
             this.name = errors.name();
             this.type = errors.getType().name();
             this.desc = errors.getDesc(); // no stack trace
