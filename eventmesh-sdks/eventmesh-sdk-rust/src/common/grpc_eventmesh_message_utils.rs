@@ -21,7 +21,7 @@ use std::fmt::Debug;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use cloudevents::Data::String as EventString;
-use cloudevents::{AttributesReader, Data, Event};
+use cloudevents::{AttributesReader, Data, Event, EventBuilder, EventBuilderV10};
 use tonic::transport::Uri;
 
 use crate::common::constants::{DataContentType, SpecVersion, DEFAULT_EVENTMESH_MESSAGE_TTL};
