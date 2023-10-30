@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.admin.service.impl;
 
-import static org.apache.eventmesh.admin.enums.Errors.NACOS_EMPTY_RESP_ERR;
-import static org.apache.eventmesh.admin.enums.Errors.NACOS_GET_CONFIGS_ERR;
-import static org.apache.eventmesh.admin.enums.Errors.NACOS_LOGIN_EMPTY_RESP_ERR;
-import static org.apache.eventmesh.admin.enums.Errors.NACOS_LOGIN_ERR;
-import static org.apache.eventmesh.admin.enums.Errors.NACOS_SDK_CONFIG_ERR;
+import static org.apache.eventmesh.admin.enums.Status.NACOS_EMPTY_RESP_ERR;
+import static org.apache.eventmesh.admin.enums.Status.NACOS_GET_CONFIGS_ERR;
+import static org.apache.eventmesh.admin.enums.Status.NACOS_LOGIN_EMPTY_RESP_ERR;
+import static org.apache.eventmesh.admin.enums.Status.NACOS_LOGIN_ERR;
+import static org.apache.eventmesh.admin.enums.Status.NACOS_SDK_CONFIG_ERR;
 
 import org.apache.eventmesh.admin.common.ConfigConst;
 import org.apache.eventmesh.admin.common.NacosConst;
