@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-use cloudevents::Event;
-
-use crate::proto_cloud_event::PbCloudEvent;
-
-impl From<PbCloudEvent> for Event {
-    fn from(_value: PbCloudEvent) -> Self {
-        todo!()
-    }
-}
+ use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
+ use cloudevents::Event;
+ 
+ use crate::proto_cloud_event::PbCloudEvent;
+ 
+ impl From<PbCloudEvent> for Event {
+     fn from(value: PbCloudEvent) -> Self {
+         EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_cloud_event(value)
+     }
+ }
+ 

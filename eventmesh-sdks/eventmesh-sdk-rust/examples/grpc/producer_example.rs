@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use chrono::Utc;
 use cloudevents::{EventBuilder, EventBuilderV10};
-use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::info;
 
+use eventmesh::common::ProtocolKey;
 use eventmesh::config::EventMeshGrpcClientConfig;
 use eventmesh::grpc::grpc_producer::EventMeshGrpcProducer;
 use eventmesh::grpc::GrpcEventMeshProducer;
@@ -70,8 +72,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let message = EventBuilderV10::new()
             .id("my_event.my_application")
             .source("http://localhost:8080")
+            .subject("mxsm")
             .ty("example.demo")
             .time(Utc::now())
+            .data(ProtocolKey::CLOUDEVENT_CONTENT_TYPE, "{\"aaa\":\"1111\"}")
             .build()?;
         let response = producer.publish(message.clone()).await?;
         info!("Publish Message to EventMesh return result: {}", response);

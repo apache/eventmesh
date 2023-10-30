@@ -403,11 +403,7 @@ impl EventMeshCloudEventUtils {
         attribute_value_map.insert(
             ProtocolKey::SUBJECT.to_string(),
             PbCloudEventAttributeValue {
-                attr: Some(PbAttr::CeString(
-                    message
-                        .subject()
-                        .map_or(String::from(""), |value| value.to_string()),
-                )),
+                attr: Some(PbAttr::CeString(message.subject().unwrap().to_string())),
             },
         );
 
@@ -491,6 +487,26 @@ impl EventMeshCloudEventUtils {
                 .duration_since(UNIX_EPOCH)
                 .map_or_else(|_err| 0u64, |time| time.as_millis() as u64),
         }
+    }
+
+    pub(crate) fn switch_event_mesh_cloud_event_2_cloud_event(cloud_event: PbCloudEvent) -> Event {
+        let topic = EventMeshCloudEventUtils::get_subject(&cloud_event);
+        let unique_id = EventMeshCloudEventUtils::get_unique_id(&cloud_event);
+        let content = EventMeshCloudEventUtils::get_text_data(&cloud_event);
+        let source = EventMeshCloudEventUtils::get_source(&cloud_event);
+
+        let mut builder = EventBuilderV10::new()
+            .id(unique_id)
+            .subject(topic)
+            .source(source)
+            .ty(ProtocolKey::CLOUD_EVENTS_PROTOCOL_NAME)
+            .data(DataContentType::JSON, content);
+
+        for (key, value) in cloud_event.attributes {
+            builder = builder.extension(key.as_str(), value.attr.clone().unwrap().to_string());
+        }
+
+        builder.build().unwrap()
     }
 
     #[allow(dead_code)]
@@ -584,6 +600,18 @@ impl EventMeshCloudEventUtils {
             .clone()
             .unwrap_or(PbData::TextData(String::new()))
             .to_string()
+    }
+
+    pub fn get_source(cloud_event: &PbCloudEvent) -> String {
+        cloud_event.attributes.get(ProtocolKey::SOURCE).map_or_else(
+            || String::new(),
+            |ce| {
+                ce.attr
+                    .clone()
+                    .unwrap_or(PbAttr::CeString(String::new()))
+                    .to_string()
+            },
+        )
     }
 
     pub fn get_response(cloud_event: &PbCloudEvent) -> EventMeshResponse {
