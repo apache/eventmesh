@@ -40,7 +40,7 @@ public class SyncPubClient {
                 if (rr.getBody() instanceof EventMeshMessage) {
                     String body = ((EventMeshMessage) rr.getBody()).getBody();
                     LogUtils.info(log, "rrMessage: ", body, "             "
-                        , "rr-reply-------------------------------------------------", rr);
+                        , "rr-reply-------------------------------------------------{}", rr);
                 }
             }
         }
