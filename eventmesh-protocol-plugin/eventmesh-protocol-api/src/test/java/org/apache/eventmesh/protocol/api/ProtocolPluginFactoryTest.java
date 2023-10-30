@@ -24,6 +24,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,16 +32,20 @@ public class ProtocolPluginFactoryTest {
 
     private static final String PROTOCOL_TYPE_NAME = "testProtocolType";
 
+    private static final String MODIFIERS = "modifiers";
+
+    private static final String PROTOCOL_ADAPTER_MAP = "PROTOCOL_ADAPTOR_MAP";
+
     @Test
-    public void testGetProtocolAdaptorWhenMapEmpty() throws IllegalAccessException, NoSuchFieldException {
+    public void testGetProtocolAdaptorWithAdaptorMap() throws IllegalAccessException, NoSuchFieldException {
         Map<String, ProtocolAdaptor<ProtocolTransportObject>> mockProtocolAdaptorMap =
             new ConcurrentHashMap<>(16);
         ProtocolAdaptor<ProtocolTransportObject> expectedAdaptor = new MockProtocolAdaptorImpl();
         mockProtocolAdaptorMap.put(PROTOCOL_TYPE_NAME, expectedAdaptor);
 
-        Field field = ProtocolPluginFactory.class.getDeclaredField("PROTOCOL_ADAPTOR_MAP");
+        Field field = ProtocolPluginFactory.class.getDeclaredField(PROTOCOL_ADAPTER_MAP);
         field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        Field modifiersField = Field.class.getDeclaredField(MODIFIERS);
         modifiersField.setAccessible(true);
         modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         field.set(null, mockProtocolAdaptorMap);
@@ -50,13 +55,24 @@ public class ProtocolPluginFactoryTest {
     }
 
     @Test
-    public void testGetProtocolAdaptorWhenMapNotEmpty() {
+    public void testGetProtocolAdaptorWithExtension() {
         ProtocolAdaptor<ProtocolTransportObject> adaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
         Assertions.assertEquals(adaptor.getClass(), MockProtocolAdaptorImpl.class);
     }
 
     @Test
-    public void testGetProtocolAdaptorWhenBothEmpty() {
+    public void testGetProtocolAdaptorThrowsException() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> ProtocolPluginFactory.getProtocolAdaptor("empty_type_name"));
+    }
+
+    @AfterEach
+    public void after() throws Exception {
+        Field field = ProtocolPluginFactory.class.getDeclaredField(PROTOCOL_ADAPTER_MAP);
+        field.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField(MODIFIERS);
+        modifiersField.setAccessible(true);
+        if (!Modifier.isFinal(field.getModifiers())) {
+            modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
+        }
     }
 }
