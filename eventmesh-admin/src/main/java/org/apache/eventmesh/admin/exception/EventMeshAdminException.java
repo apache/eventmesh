@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.exception;
 
-import org.apache.eventmesh.admin.enums.Errors;
+import org.apache.eventmesh.admin.enums.Status;
 
 /**
  * EventMeshAdmin Application side exception
@@ -34,7 +34,7 @@ public class EventMeshAdminException extends BaseException {
     /**
      * Customized error reporting using enums and exceptions
      */
-    public EventMeshAdminException(Errors errors, Throwable cause) {
+    public EventMeshAdminException(Status errors, Throwable cause) {
         super(errors, cause);
     }
 }
