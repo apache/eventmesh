@@ -28,6 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.Maps;
+
 public class ProtocolPluginFactoryTest {
 
     private static final String PROTOCOL_TYPE_NAME = "testProtocolType";
@@ -37,7 +39,7 @@ public class ProtocolPluginFactoryTest {
     private static final String PROTOCOL_ADAPTER_MAP = "PROTOCOL_ADAPTOR_MAP";
 
     @Test
-    public void testGetProtocolAdaptorWithAdaptorMap() throws IllegalAccessException, NoSuchFieldException {
+    public void testGetProtocolAdaptor() throws IllegalAccessException, NoSuchFieldException {
         Map<String, ProtocolAdaptor<ProtocolTransportObject>> mockProtocolAdaptorMap =
             new ConcurrentHashMap<>(16);
         ProtocolAdaptor<ProtocolTransportObject> expectedAdaptor = new MockProtocolAdaptorImpl();
@@ -48,16 +50,17 @@ public class ProtocolPluginFactoryTest {
         Field modifiersField = Field.class.getDeclaredField(MODIFIERS);
         modifiersField.setAccessible(true);
         modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        final Object originMap = field.get(null);
         field.set(null, mockProtocolAdaptorMap);
 
         ProtocolAdaptor<ProtocolTransportObject> actualAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
         Assertions.assertEquals(expectedAdaptor, actualAdaptor);
-    }
 
-    @Test
-    public void testGetProtocolAdaptorWithExtension() {
+        field.set(null, Maps.newHashMap());
         ProtocolAdaptor<ProtocolTransportObject> adaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
         Assertions.assertEquals(adaptor.getClass(), MockProtocolAdaptorImpl.class);
+
+        field.set(null, originMap);
     }
 
     @Test
