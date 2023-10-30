@@ -39,8 +39,8 @@ public class SyncPubClient {
                 Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
                 if (rr.getBody() instanceof EventMeshMessage) {
                     String body = ((EventMeshMessage) rr.getBody()).getBody();
-                    LogUtils.info(log, "rrMessage: " ,body ,"             "
-                        ,"rr-reply-------------------------------------------------", rr);
+                    LogUtils.info(log, "rrMessage: ", body, "             "
+                        , "rr-reply-------------------------------------------------", rr);
                 }
             }
         }
