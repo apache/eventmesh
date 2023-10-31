@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.utils;
+package org.apache.eventmesh.admin.constant;
 
-public class ExceptionUtils {
+public class ConfigConst {
 
+    // yml config
+    public static final String ADMIN_PROPS_PREFIX = "eventmesh";
+    public static final String META_TYPE_NACOS = "nacos";
+    public static final String META_TYPE_ETCD = "etcd";
+
+    // Open-API
+    public static final String HTTP_PREFIX = "http://";
+    public static final String HTTPS_PREFIX = "https://";
+
+    // common
     /**
-     * Remove the last period of exception description.
+     * colon with space
      */
-    public static String trimDesc(String desc) {
-        if (desc == null) {
-            return "";
-        }
-        if (desc.charAt(desc.length() - 1) == '.') {
-            return desc.substring(0, desc.length() - 1);
-        }
-        return desc;
-    }
+    public static final String COLON = ": ";
 
 }

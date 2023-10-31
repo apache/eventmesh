@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.enums;
 
-import static org.apache.eventmesh.admin.common.ConfigConst.COLON;
+import static org.apache.eventmesh.admin.constant.ConfigConst.COLON;
 
 import org.springframework.http.HttpStatus;
 
@@ -27,50 +27,50 @@ import lombok.Getter;
  * An enumeration class that conforms to the RESTful specifications and custom error reporting requirements.
  * <ul>
  *   <li>The 'code' field is used to return the HTTP status code using {@link HttpStatus}.</li>
- *   <li>The 'type' field represents the major category of the error.</li>
+ *   <li>The 'category' field represents the major category of the error.</li>
  *   <li>the 'desc' field represents the detailed subcategory and information of the error.</li>
  * </ul>
  */
 
 @Getter
-public enum Errors {
+public enum Status {
 
-    SUCCESS(HttpStatus.OK, Types.SUCCESS, "Operation success."),
+    SUCCESS(HttpStatus.OK, Category.SUCCESS, "Operation success."),
 
-    NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, Types.SDK_CONFIG_ERR,
+    NACOS_SDK_CONFIG_ERR(HttpStatus.INTERNAL_SERVER_ERROR, Category.SDK_CONFIG_ERR,
         "Failed to create Nacos ConfigService. Please check EventMeshAdmin application configuration."),
 
-    NACOS_GET_CONFIGS_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "Failed to retrieve Nacos config(s)."),
+    NACOS_GET_CONFIGS_ERR(HttpStatus.BAD_GATEWAY, Category.META_COM_ERR, "Failed to retrieve Nacos config(s)."),
 
-    NACOS_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "No result returned by Nacos. Please check Nacos."),
+    NACOS_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Category.META_COM_ERR, "No result returned by Nacos. Please check Nacos."),
 
-    NACOS_LOGIN_ERR(HttpStatus.UNAUTHORIZED, Types.META_COM_ERR, "Nacos login failed."),
+    NACOS_LOGIN_ERR(HttpStatus.UNAUTHORIZED, Category.META_COM_ERR, "Nacos login failed."),
 
-    NACOS_LOGIN_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Types.META_COM_ERR, "Nacos didn't return accessToken. Please check Nacos status."),
+    NACOS_LOGIN_EMPTY_RESP_ERR(HttpStatus.BAD_GATEWAY, Category.META_COM_ERR, "Nacos didn't return accessToken. Please check Nacos status."),
     ;
 
     // error code
     private final HttpStatus code;
 
     // error type
-    private final Types type;
+    private final Category category;
 
     // error message
     private final String desc;
 
-    Errors(HttpStatus code, Types type, String desc) {
+    Status(HttpStatus code, Category category, String desc) {
         this.code = code;
-        this.type = type;
+        this.category = category;
         this.desc = desc;
     }
 
     @Override
     public String toString() {
-        return name() + " of " + type + COLON + desc;
+        return name() + " of " + category + COLON + desc;
     }
 
     @Getter
-    public enum Types {
+    public enum Category {
 
         SUCCESS("Successfully received and processed"),
 
@@ -84,7 +84,7 @@ public enum Errors {
          */
         private final String desc;
 
-        Types(String desc) {
+        Category(String desc) {
             this.desc = desc;
         }
     }
