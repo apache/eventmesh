@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.admin.dto;
 
-import static org.apache.eventmesh.admin.enums.Errors.SUCCESS;
+import static org.apache.eventmesh.admin.enums.Status.SUCCESS;
 
-import org.apache.eventmesh.admin.enums.Errors;
+import org.apache.eventmesh.admin.enums.Status;
 import org.apache.eventmesh.admin.exception.BaseException;
 
 import org.springframework.http.HttpStatus;
@@ -44,10 +44,10 @@ public class Result<T> {
 
     private Integer pages;
 
-    private Message message;
+    private StatusMessage message;
 
-    public Result(Message message) {
-        this.message = message;
+    public Result(StatusMessage statusMessage) {
+        this.message = statusMessage;
     }
 
     public Result(T data, Integer pages) {
@@ -59,16 +59,16 @@ public class Result<T> {
      * The request is valid and the result is wrapped in {@link Result}.
      */
     public static <T> Result<T> success() {
-        return new Result<>(new Message(SUCCESS));
+        return new Result<>(new StatusMessage(SUCCESS));
     }
 
     public static <T> Result<T> success(Result<T> result) {
-        result.setMessage(new Message(SUCCESS));
+        result.setMessage(new StatusMessage(SUCCESS));
         return result;
     }
 
     public static <T> Result<T> success(T data) {
-        return new Result<>(data, null, new Message(SUCCESS));
+        return new Result<>(data, null, new StatusMessage(SUCCESS));
     }
 
     /**
@@ -76,11 +76,11 @@ public class Result<T> {
      * Logic issues should use 422 Unprocessable Entity instead of 200 OK.
      */
     public static <T> ResponseEntity<Result<T>> ok() {
-        return ResponseEntity.ok(new Result<>(new Message(SUCCESS)));
+        return ResponseEntity.ok(new Result<>(new StatusMessage(SUCCESS)));
     }
 
     public static <T> ResponseEntity<Result<T>> ok(Result<T> result) {
-        result.setMessage(new Message(SUCCESS));
+        result.setMessage(new StatusMessage(SUCCESS));
         return ResponseEntity.ok(result);
     }
 
@@ -88,42 +88,42 @@ public class Result<T> {
      * The request is invalid.
      */
     public static <T> ResponseEntity<Result<T>> badRequest(String message) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Result<>(new Message(message)));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Result<>(new StatusMessage(message)));
     }
 
     /**
      * The request is valid but cannot be processed due to business logic issues.
      */
     public static <T> ResponseEntity<Result<T>> unprocessable(String message) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new Result<>(new Message(message)));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new Result<>(new StatusMessage(message)));
     }
 
     /**
      * Uncaught exception happened in EventMeshAdmin application.
      */
     public static <T> ResponseEntity<Result<T>> internalError(String message) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(new Message(message)));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Result<>(new StatusMessage(message)));
     }
 
     /**
      * Upstream service unavailable such as Meta.
      */
     public static <T> ResponseEntity<Result<T>> badGateway(String message) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new Result<>(new Message(message)));
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new Result<>(new StatusMessage(message)));
     }
 
     @Data
-    public static class Message {
+    public static class StatusMessage {
 
-        private String name;
+        private String status;
 
-        private String type;
+        private String category;
 
         private String desc;
 
-        public Message(BaseException e) {
-            this.name = e.getErrors().name();
-            this.type = e.getErrors().getType().name();
+        public StatusMessage(BaseException e) {
+            this.status = e.getStatus().name();
+            this.category = e.getStatus().getCategory().name();
             this.desc = e.getMessage();
         }
 
@@ -131,13 +131,13 @@ public class Result<T> {
          * Only recommended for returning successful results,
          * the stack trace cannot be displayed when returning unsuccessful results.
          */
-        public Message(Errors errors) {
-            this.name = errors.name();
-            this.type = errors.getType().name();
-            this.desc = errors.getDesc(); // no stack trace
+        public StatusMessage(Status status) {
+            this.status = status.name();
+            this.category = status.getCategory().name();
+            this.desc = status.getDesc(); // no stack trace
         }
 
-        public Message(String desc) {
+        public StatusMessage(String desc) {
             this.desc = desc;
         }
     }
