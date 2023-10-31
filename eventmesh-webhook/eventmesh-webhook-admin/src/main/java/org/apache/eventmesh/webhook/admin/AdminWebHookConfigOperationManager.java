@@ -21,6 +21,7 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATIO
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATION_MODE_NACOS;
 
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.config.AdminConfiguration;
 
@@ -71,9 +72,8 @@ public class AdminWebHookConfigOperationManager {
         try {
             constructor.setAccessible(true);
             final Properties operationProperties = adminConfiguration.getOperationProperties();
-            if (log.isInfoEnabled()) {
-                log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
-            }
+
+            LogUtils.info(log, "operationMode is {}  properties is {} ", operationMode, operationProperties);
             this.webHookConfigOperation = constructor.newInstance(operationProperties);
         } finally {
             // Restore the original accessibility of constructor

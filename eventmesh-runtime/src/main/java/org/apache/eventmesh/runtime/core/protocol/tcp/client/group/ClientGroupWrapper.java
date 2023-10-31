@@ -28,6 +28,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -217,15 +218,11 @@ public class ClientGroupWrapper {
             }
             Session s = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session);
             if (s == null) {
-                if (log.isInfoEnabled()) {
-                    log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
-                        topic, session.getClient(), session.getSessionId());
-                }
+                LogUtils.info(log, "Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
+                    topic, session.getClient(), session.getSessionId());
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn("Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
-                        session.getClient(), session.getSessionId());
-                }
+                LogUtils.warn(log, "Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
+                    session.getClient(), session.getSessionId());
             }
 
             subscriptions.putIfAbsent(topic, subscriptionItem);
@@ -247,9 +244,7 @@ public class ClientGroupWrapper {
             return false;
         }
         String topic = subscriptionItem.getTopic();
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeSubscription param error,topic:{},session:{}", topic, session);
             return false;
         }
@@ -330,10 +325,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean addGroupConsumerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("addGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -362,10 +354,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean addGroupProducerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("addGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -392,10 +381,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean removeGroupConsumerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -424,9 +410,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean removeGroupProducerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeGroupProducerSession param error,session:{}", session);
             return false;
         }

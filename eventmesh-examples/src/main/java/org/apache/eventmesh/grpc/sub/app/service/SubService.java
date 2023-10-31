@@ -29,6 +29,7 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 
@@ -95,15 +96,11 @@ public class SubService implements InitializingBean {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                if (log.isWarnEnabled()) {
-                    log.warn("exception occurred when countDownLatch.await ", e);
-                }
+                LogUtils.warn(log, "exception occurred when countDownLatch.await ", e);
                 Thread.currentThread().interrupt();
             }
 
-            if (log.isInfoEnabled()) {
-                log.info("stopThread start....");
-            }
+            LogUtils.info(log, "stopThread start....");
 
         });
 
@@ -112,9 +109,7 @@ public class SubService implements InitializingBean {
 
     @PreDestroy
     public void cleanup() {
-        if (log.isInfoEnabled()) {
-            log.info("start destroy....");
-        }
+        LogUtils.info(log, "start destroy....");
 
         try {
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
@@ -127,21 +122,15 @@ public class SubService implements InitializingBean {
             log.error("exception occurred when close consumer ", e);
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("end destroy....");
-        }
+        LogUtils.info(log, "end destroy....");
     }
 
     /**
      * Count the message already consumed
      */
     public void consumeMessage(final String msg) {
-        if (log.isInfoEnabled()) {
-            log.info("consume message: {}", msg);
-        }
+        LogUtils.info(log, "consume message: {}", msg);
         countDownLatch.countDown();
-        if (log.isInfoEnabled()) {
-            log.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
-        }
+        LogUtils.info(log, "remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }

@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
@@ -122,16 +123,12 @@ public class WebHookController {
 
             @Override
             public void onSuccess(SendResult sendResult) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sendResult.toString());
-                }
+                LogUtils.debug(log, sendResult.toString());
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                if (log.isWarnEnabled()) {
-                    log.warn("", context.getException());
-                }
+                LogUtils.warn(log, "", context.getException());
             }
 
         });

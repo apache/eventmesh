@@ -124,7 +124,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
                     +
-                    "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
+                    "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
