@@ -91,7 +91,7 @@ public class HelloProcessor implements TcpProcessor {
                 pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
-            MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
+            MESSAGE_LOGGER.error("HelloTask failed|address={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                 .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(

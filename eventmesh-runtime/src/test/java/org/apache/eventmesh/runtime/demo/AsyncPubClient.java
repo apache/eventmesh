@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.demo;
 
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -34,9 +35,7 @@ public class AsyncPubClient {
             pubClient.init();
             pubClient.heartbeat();
             pubClient.registerBusiHandler((msg, ctx) -> {
-                if (log.isInfoEnabled()) {
-                    log.info("server good by request: {}", msg);
-                }
+                LogUtils.info(log, "server good by request: {}", msg);
             });
 
             for (int i = 0; i < 1; i++) {
