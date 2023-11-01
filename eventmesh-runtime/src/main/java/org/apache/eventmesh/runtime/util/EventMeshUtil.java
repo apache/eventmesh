@@ -40,6 +40,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -237,7 +238,7 @@ public class EventMeshUtil {
         }
     }
 
-    private static void getIpResult(final List<String> ipv4Result, final List<String> ipv6Result,
+    private static void getIpResult(final Collection<String> ipv4Result, final Collection<String> ipv6Result,
         final Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
