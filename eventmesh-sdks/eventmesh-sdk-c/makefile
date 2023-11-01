@@ -7,12 +7,12 @@ INC = -I./include -I./src
 
 DIR_THIRD_PARTY = ./third_party
 
-DIR_CURL = $(DIR_THIRD_PARTY)/curl-8.4.0
+DIR_CURL = $(DIR_THIRD_PARTY)/curl
 INC_CURL = -I$(DIR_CURL)/include
 LIB_A_CURL = $(DIR_THIRD_PARTY)/libcurl.a
 LIB_CURL = -L$(DIR_THIRD_PARTY) -lcurl
 
-DIR_JSONC = $(DIR_THIRD_PARTY)/json-c-0.17
+DIR_JSONC = $(DIR_THIRD_PARTY)/json-c
 DIR_BUILD_JSONC = $(DIR_JSONC)/cmake/build
 INC_JSONC = -I$(DIR_JSONC) -I$(DIR_BUILD_JSONC)
 LIB_A_JSONC = $(DIR_THIRD_PARTY)/libjson-c.a
