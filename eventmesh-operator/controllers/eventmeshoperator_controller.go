@@ -31,7 +31,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 	"time"
 )
@@ -57,8 +56,8 @@ type EventMeshOperatorReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *EventMeshOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-	r.Logger.Info("start reconciling", "Namespace", req.Namespace, "Namespace", req.Name)
+	r.Logger.Info("eventmesh start reconciling",
+		"Namespace", req.Namespace, "Namespace", req.Name)
 
 	eventmesh := &eventmeshoperatorv1.EventMeshOperator{}
 	err := r.Client.Get(context.TODO(), req.NamespacedName, eventmesh)
@@ -200,9 +199,9 @@ func (r *EventMeshOperatorReconciler) getEventMeshStatefulSet(eventmesh *eventme
 	var a int32 = 1
 	var c = &a
 	if replicaIndex == 0 {
-		statefulSetName = eventmesh.Name + "-" + strconv.Itoa(groupIndex) + "-master"
+		statefulSetName = eventmesh.Name + "-" + strconv.Itoa(groupIndex) + "-A"
 	} else {
-		statefulSetName = eventmesh.Name + "-" + strconv.Itoa(groupIndex) + "-replica-" + strconv.Itoa(replicaIndex)
+		statefulSetName = eventmesh.Name + "-" + strconv.Itoa(groupIndex) + "-R-" + strconv.Itoa(replicaIndex)
 	}
 	label := getLabels(eventmesh.Name)
 	deployment := &appsv1.StatefulSet{
@@ -260,5 +259,5 @@ func getContainerSecurityContext(eventmesh *eventmeshoperatorv1.EventMeshOperato
 }
 
 func getLabels(name string) map[string]string {
-	return map[string]string{"app": "eventmesh", "eventmesh_cr": name}
+	return map[string]string{"app": "eventmesh", "runtime_cr": name}
 }

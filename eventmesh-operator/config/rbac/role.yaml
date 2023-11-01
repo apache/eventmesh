@@ -8,6 +8,32 @@ rules:
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
+  - connectors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - eventmesh-operator.eventmesh
+  resources:
+  - connectors/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - eventmesh-operator.eventmesh
+  resources:
+  - connectors/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - eventmesh-operator.eventmesh
+  resources:
   - eventmeshoperators
   verbs:
   - create
