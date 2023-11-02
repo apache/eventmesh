@@ -324,7 +324,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.PUBLISH_BRIDGE.getRequestURI()};
+        return new String[]{RequestURI.PUBLISH_BRIDGE.getRequestURI()};
     }
 
 }

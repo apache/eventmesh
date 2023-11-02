@@ -36,6 +36,8 @@ public interface KeyValue {
 
     KeyValue put(String key, String value);
 
+    KeyValue put(String key, Object value);
+
     boolean getBoolean(String key);
 
     boolean getBoolean(String key, boolean defaultValue);
@@ -59,6 +61,8 @@ public interface KeyValue {
     String getString(String key);
 
     String getString(String key, String defaultValue);
+
+    Object getObject(String key);
 
     Set<String> keySet();
 

@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.spring.source.connector;
 
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
 import org.apache.eventmesh.connector.spring.source.config.SpringSourceConfig;
+import org.apache.eventmesh.openconnect.SourceWorker;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import io.openmessaging.api.SendCallback;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,6 +113,15 @@ public class SpringSourceConnector implements Source, MessageSendingOperations {
         RecordPartition partition = new RecordPartition();
         RecordOffset offset = new RecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
+        queue.offer(record);
+    }
+
+    @Override
+    public void send(Object message, SendCallback sendCallback) {
+        RecordPartition partition = new RecordPartition();
+        RecordOffset offset = new RecordOffset();
+        ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
+        record.addExtension(SourceWorker.CALLBACK_EXTENSION, sendCallback);
         queue.offer(record);
     }
 }

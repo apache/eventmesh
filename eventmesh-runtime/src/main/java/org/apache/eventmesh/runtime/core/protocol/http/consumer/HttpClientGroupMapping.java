@@ -392,9 +392,9 @@ public final class HttpClientGroupMapping {
             for (final String unSubTopic : unSubTopicList) {
                 isChange = isChange
                     || removeSubscriptionByTopic(consumerGroup,
-                    unSubscribeUrl,
-                    unSubscribeRequestHeader.getIdc(),
-                    unSubTopic);
+                        unSubscribeUrl,
+                        unSubscribeRequestHeader.getIdc(),
+                        unSubTopic);
             }
         } finally {
             READ_WRITE_LOCK.writeLock().unlock();
