@@ -19,7 +19,6 @@
 
 /// Re-export eventmesh main.
 pub use eventmesh::main;
-
 /// Re-export eventmesh as tokio.
 pub use tokio as eventmesh;
 
@@ -51,19 +50,20 @@ pub mod model;
 
 /// Module contains Protobuf CloudEvent related types and builder.
 pub mod proto_cloud_event {
-    use crate::common::ProtocolKey;
+    use cloudevents::Event;
 
+    use crate::common::ProtocolKey;
     /// Protobuf CloudEvent attribute value enum.    
     pub use crate::grpc::pb::cloud_events::cloud_event::cloud_event_attribute_value::Attr as PbAttr;
     use crate::grpc::pb::cloud_events::cloud_event::cloud_event_attribute_value::Attr;
     pub use crate::grpc::pb::cloud_events::cloud_event::CloudEventAttributeValue as PbCloudEventAttributeValue;
     pub use crate::grpc::pb::cloud_events::cloud_event::Data as PbData;
     use crate::grpc::pb::cloud_events::cloud_event::{CloudEventAttributeValue, Data};
-
     /// Protobuf CloudEvent message.
     pub use crate::grpc::pb::cloud_events::{
         CloudEvent as PbCloudEvent, CloudEventBatch as PbCloudEventBatch,
     };
+    use crate::model::message::EventMeshMessage;
 
     impl ToString for PbAttr {
         /// Convert Protobuf attribute to String.
@@ -77,6 +77,18 @@ pub mod proto_cloud_event {
                 Attr::CeUriRef(value) => value.clone(),
                 Attr::CeTimestamp(value) => value.to_string(),
             }
+        }
+    }
+
+    impl From<EventMeshMessage> for PbCloudEvent {
+        fn from(_value: EventMeshMessage) -> Self {
+            todo!()
+        }
+    }
+
+    impl From<Event> for PbCloudEvent {
+        fn from(_value: Event) -> Self {
+            todo!()
         }
     }
 
