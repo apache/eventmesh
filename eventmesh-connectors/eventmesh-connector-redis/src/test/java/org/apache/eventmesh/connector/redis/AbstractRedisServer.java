@@ -15,15 +15,27 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.connector.redis;
 
-    implementation 'org.redisson:redisson:3.17.3'
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-    api 'io.cloudevents:cloudevents-json-jackson'
+import ai.grakn.redismock.RedisServer;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+public abstract class AbstractRedisServer {
 
-    testImplementation 'ai.grakn:redis-mock:0.1.6'
+    protected static RedisServer redisServer;
+
+    @BeforeAll
+    public static void setupRedisServer() throws Exception {
+        redisServer = RedisServer.newRedisServer(6379);
+        redisServer.start();
+    }
+
+    @AfterAll
+    public static void shutdownRedisServer() {
+        if (redisServer != null) {
+            redisServer.stop();
+        }
+    }
 }
