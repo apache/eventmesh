@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#![cfg(all(feature = "eventmesh_message", feature = "grpc"))]
+use std::any::Any;
+use std::fmt::Debug;
+use std::marker::PhantomData;
 
 use tonic::transport::Uri;
 
 use crate::common::constants::{DataContentType, DEFAULT_EVENTMESH_MESSAGE_TTL};
-use crate::common::eventmesh_message_utils::EventMeshCloudEventUtils;
+use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
 use crate::config::EventMeshGrpcClientConfig;
 use crate::error::EventMeshError;
 use crate::grpc::grpc_producer::EventMeshGrpcProducer;
@@ -33,23 +34,30 @@ use crate::proto_cloud_event::{
 };
 
 /// gRPC EventMesh message producer.
-pub struct GrpcEventMeshMessageProducer {
+pub struct GrpcEventMeshProducer<M> {
     /// gRPC client.
     inner: GrpcClient,
 
     /// gRPC configuration.
     grpc_config: EventMeshGrpcClientConfig,
+
+    _mark: PhantomData<M>,
 }
 
-impl GrpcEventMeshMessageProducer {
+impl<M> GrpcEventMeshProducer<M>
+where
+    M: Any,
+{
     pub fn new(grpc_config: EventMeshGrpcClientConfig) -> Self {
         let client = GrpcClient::new(&grpc_config).unwrap();
         Self {
             inner: client,
             grpc_config,
+            _mark: PhantomData::<M>,
         }
     }
 
+    #[allow(dead_code)]
     fn build_event_mesh_cloud_event(&mut self, message: EventMeshMessage) -> PbCloudEvent {
         let mut event = EventMeshCloudEventBuilder::default()
             .with_env(self.grpc_config.env.clone())
@@ -87,7 +95,7 @@ impl GrpcEventMeshMessageProducer {
 
     fn build_event_mesh_cloud_event_batch(
         &mut self,
-        messages: Vec<EventMeshMessage>,
+        messages: Vec<M>,
     ) -> Option<PbCloudEventBatch> {
         if messages.is_empty() {
             return None;
@@ -95,7 +103,10 @@ impl GrpcEventMeshMessageProducer {
 
         let events = messages
             .into_iter()
-            .map(|msg| self.build_event_mesh_cloud_event(msg))
+            .map(|msg| {
+                EventMeshCloudEventUtils::build_event_mesh_cloud_event(msg, &self.grpc_config)
+                    .unwrap()
+            })
             .collect();
 
         let mut cloud_event_batch = PbCloudEventBatch::default();
@@ -107,15 +118,14 @@ impl GrpcEventMeshMessageProducer {
 
 /// gRPC EventMesh message producer implementation.
 #[allow(unused_variables)]
-#[tonic::async_trait]
-impl EventMeshGrpcProducer<EventMeshMessage> for GrpcEventMeshMessageProducer {
+impl<M> EventMeshGrpcProducer<M> for GrpcEventMeshProducer<M>
+where
+    M: Any + Debug + From<PbCloudEvent>,
+{
     /// Publish a message.
-    async fn publish(&mut self, message: EventMeshMessage) -> crate::Result<EventMeshResponse> {
-        let event = EventMeshCloudEventUtils::build_event_mesh_cloud_event(
-            message,
-            &self.grpc_config,
-            EventMeshProtocolType::EventMeshMessage,
-        );
+    async fn publish(&mut self, message: M) -> crate::Result<EventMeshResponse> {
+        let event =
+            EventMeshCloudEventUtils::build_event_mesh_cloud_event(message, &self.grpc_config);
         if event.is_none() {
             return Err(EventMeshError::EventMeshLocal(
                 "Create Event Mesh cloud event Error".to_string(),
@@ -127,10 +137,7 @@ impl EventMeshGrpcProducer<EventMeshMessage> for GrpcEventMeshMessageProducer {
     }
 
     /// Publish a batch of messages.
-    async fn publish_batch(
-        &mut self,
-        messages: Vec<EventMeshMessage>,
-    ) -> crate::Result<EventMeshResponse> {
+    async fn publish_batch(&mut self, messages: Vec<M>) -> crate::Result<EventMeshResponse> {
         let events = self.build_event_mesh_cloud_event_batch(messages);
         if events.is_none() {
             return Err(EventMeshError::EventMeshLocal("Vec is empty".to_string()).into());
@@ -140,19 +147,13 @@ impl EventMeshGrpcProducer<EventMeshMessage> for GrpcEventMeshMessageProducer {
     }
 
     /// Request reply for a message.
-    async fn request_reply(
-        &mut self,
-        message: EventMeshMessage,
-        time_out: u64,
-    ) -> crate::Result<EventMeshMessage> {
-        let event = self.build_event_mesh_cloud_event(message);
-        let result = self.inner.request_reply_inner(event, time_out).await?;
-        Ok(
-            EventMeshCloudEventUtils::build_message_from_event_mesh_cloud_event(
-                &result,
-                EventMeshProtocolType::EventMeshMessage,
-            )
-            .unwrap(),
-        )
+    async fn request_reply(&mut self, message: M, time_out: u64) -> crate::Result<M> {
+        let event =
+            EventMeshCloudEventUtils::build_event_mesh_cloud_event(message, &self.grpc_config);
+        let result = self
+            .inner
+            .request_reply_inner(event.unwrap(), time_out)
+            .await?;
+        Ok(EventMeshCloudEventUtils::build_message_from_event_mesh_cloud_event(&result).unwrap())
     }
 }

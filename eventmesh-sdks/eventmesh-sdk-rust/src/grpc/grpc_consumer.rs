@@ -23,7 +23,7 @@ use tonic::codegen::tokio_stream::StreamExt;
 use tracing::error;
 
 use crate::common::constants::{DataContentType, SDK_STREAM_URL};
-use crate::common::eventmesh_message_utils::EventMeshCloudEventUtils;
+use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
 use crate::common::{ProtocolKey, ReceiveMessageListener};
 use crate::config::EventMeshGrpcClientConfig;
 use crate::error::EventMeshError::{EventMeshLocal, InvalidArgs};
@@ -132,7 +132,7 @@ impl EventMeshGrpcConsumer {
                 let eventmesh_message =
                     EventMeshCloudEventUtils::build_message_from_event_mesh_cloud_event::<
                         EventMeshMessage,
-                    >(&received, EventMeshProtocolType::EventMeshMessage);
+                    >(&received);
                 if eventmesh_message.is_none() {
                     continue;
                 }
@@ -145,7 +145,7 @@ impl EventMeshGrpcConsumer {
 
                 let handled_msg = listener_inner.handle(eventmesh_message.unwrap());
                 if let Ok(msg_option) = handled_msg {
-                    if let Some(msg) = msg_option {
+                    if let Some(_msg) = msg_option {
                         let properties = HashMap::<String, String>::new();
                         let reply = SubscriptionReply::new(
                             EventMeshCloudEventUtils::get_subject(&received),
