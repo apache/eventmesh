@@ -256,7 +256,7 @@ public class SourceWorker implements ConnectorWorker {
         SendExcepionContext exceptionContext = new SendExcepionContext();
         exceptionContext.setTopic(event.getId());
         exceptionContext.setMessageId(event.getId());
-        exceptionContext.setException(cause);
+        exceptionContext.setCause(cause);
         return exceptionContext;
     }
 

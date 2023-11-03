@@ -46,7 +46,7 @@ public class SendExcepionContext {
         return this.cause;
     }
 
-    public void setException(Throwable cause) {
+    public void setCause(Throwable cause) {
         this.cause = cause;
     }
 }
