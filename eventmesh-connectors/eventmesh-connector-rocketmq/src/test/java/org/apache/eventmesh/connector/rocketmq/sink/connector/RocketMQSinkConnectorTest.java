@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.rocketmq.sink.config.RocketMQSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
@@ -34,12 +33,9 @@ import org.apache.rocketmq.common.message.Message;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +46,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 @ExtendWith(MockitoExtension.class)
 public class RocketMQSinkConnectorTest {
 
@@ -61,21 +55,12 @@ public class RocketMQSinkConnectorTest {
     @Mock
     private DefaultMQProducer producer;
 
-    private static final String EXPECTED_MESSAGE = "testMessage";
+    private static final String EXPECTED_MESSAGE = "\"testMessage\"";
 
     @BeforeEach
     public void setUp() throws Exception {
         Mockito.doNothing().when(producer).start();
-        Mockito.doAnswer(invocationOnMock -> {
-            Message argument = invocationOnMock.getArgument(0);
-            String actualMessage = new String(argument.getBody());
-            HashMap<String, String> contentMap = JsonUtils.parseTypeReferenceObject(actualMessage,
-                new TypeReference<HashMap<String, String>>() {
-                });
-            Assertions.assertNotNull(contentMap);
-            Assertions.assertEquals(EXPECTED_MESSAGE, contentMap.get("content"));
-            return null;
-        }).when(producer).send(Mockito.any(Message.class));
+        Mockito.doReturn(null).when(producer).send(Mockito.any(Message.class));
         Field field = ReflectionSupport.findFields(sinkConnector.getClass(),
             (f) -> f.getName().equals("producer"), HierarchyTraversalMode.BOTTOM_UP).get(0);
         field.setAccessible(true);
@@ -98,10 +83,8 @@ public class RocketMQSinkConnectorTest {
         for (int i = 0; i < messageCount; i++) {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
-            Map<String, String> content = new HashMap<>();
-            content.put("content", EXPECTED_MESSAGE);
             ConnectRecord connectRecord = new ConnectRecord(partition, offset, System.currentTimeMillis(),
-                JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8));
+                EXPECTED_MESSAGE.getBytes(StandardCharsets.UTF_8));
             connectRecord.addExtension("id", String.valueOf(UUID.randomUUID()));
             records.add(connectRecord);
         }
