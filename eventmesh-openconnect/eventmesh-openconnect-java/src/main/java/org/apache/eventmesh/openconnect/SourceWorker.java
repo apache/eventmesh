@@ -28,6 +28,9 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
+import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
+import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
@@ -59,10 +62,6 @@ import java.util.concurrent.TimeoutException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.openmessaging.api.OnExceptionContext;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
-import io.openmessaging.api.exception.OMSRuntimeException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -188,8 +187,8 @@ public class SourceWorker implements ConnectorWorker {
             // todo: convert connectRecord to cloudevent
             CloudEvent event = convertRecordToEvent(connectRecord);
             Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(connectRecord);
-            Optional<SendCallback> sendCallback = Optional.ofNullable(connectRecord.getExtensionObj(CALLBACK_EXTENSION))
-                .map(v -> (SendCallback) v);
+            Optional<SendMessageCallback> callback = Optional.ofNullable(connectRecord.getExtensionObj(CALLBACK_EXTENSION))
+                .map(v -> (SendMessageCallback) v);
 
             int retryTimes = 0;
             // retry until MAX_RETRY_TIMES is reached
@@ -201,7 +200,7 @@ public class SourceWorker implements ConnectorWorker {
                         // commit record
                         this.source.commit(connectRecord);
                         submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
-                        sendCallback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
+                        callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
                         break;
                     }
                     throw new EventMeshException("failed to send record.");
@@ -209,7 +208,7 @@ public class SourceWorker implements ConnectorWorker {
                     retryTimes++;
                     log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",
                         this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
-                    sendCallback.ifPresent(cb -> cb.onException(convertToExceptionContext(event, t)));
+                    callback.ifPresent(cb -> cb.onException(convertToExceptionContext(event, t)));
                 }
             }
 
@@ -253,11 +252,11 @@ public class SourceWorker implements ConnectorWorker {
         return result;
     }
 
-    private OnExceptionContext convertToExceptionContext(CloudEvent event, Throwable cause) {
-        OnExceptionContext exceptionContext = new OnExceptionContext();
+    private SendExcepionContext convertToExceptionContext(CloudEvent event, Throwable cause) {
+        SendExcepionContext exceptionContext = new SendExcepionContext();
         exceptionContext.setTopic(event.getId());
         exceptionContext.setMessageId(event.getId());
-        exceptionContext.setException(new OMSRuntimeException(cause));
+        exceptionContext.setException(cause);
         return exceptionContext;
     }
 
