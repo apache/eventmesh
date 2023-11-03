@@ -34,8 +34,6 @@ public interface KeyValue {
 
     KeyValue put(String key, double value);
 
-    KeyValue put(String key, String value);
-
     KeyValue put(String key, Object value);
 
     boolean getBoolean(String key);

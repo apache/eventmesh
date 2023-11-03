@@ -86,12 +86,6 @@ public class DefaultKeyValue implements KeyValue {
     }
 
     @Override
-    public KeyValue put(String key, String value) {
-        properties.put(key, String.valueOf(value));
-        return this;
-    }
-
-    @Override
     public KeyValue put(String key, Object value) {
         properties.put(key, value);
         return this;
