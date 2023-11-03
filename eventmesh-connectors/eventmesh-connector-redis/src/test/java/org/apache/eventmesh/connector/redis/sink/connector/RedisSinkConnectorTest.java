@@ -17,10 +17,8 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
-import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
-import org.apache.eventmesh.connector.redis.RedisProperties;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -43,15 +41,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
+import org.redisson.config.Config;
 
 import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RedisSinkConnectorTest extends AbstractRedisServer {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private RedisSinkConnector connector;
 
@@ -61,31 +57,16 @@ public class RedisSinkConnectorTest extends AbstractRedisServer {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ConfigService configService = ConfigService.getInstance();
-        RedisProperties properties = configService.buildConfigInstance(RedisProperties.class);
-        redisson = createRedisson(properties);
         connector = new RedisSinkConnector();
         sinkConfig = (RedisSinkConfig) ConfigUtil.parse(connector.configClass());
+        setupRedisServer(getPortFromUrl(sinkConfig.getConnectorConfig().getServer()));
         connector.init(sinkConfig);
         connector.start();
-    }
-
-    private Redisson createRedisson(RedisProperties properties) {
-        String serverAddress = properties.getServerAddress();
-        String serverPassword = properties.getServerPassword();
-
-        org.redisson.config.Config config =
-            OBJECT_MAPPER.convertValue(properties.getRedissonProperties(), org.redisson.config.Config.class);
-
-        if (config == null) {
-            config = new org.redisson.config.Config();
-        }
+        Config config = new Config();
         config.setCodec(CloudEventCodec.getInstance());
         config.useSingleServer()
-            .setAddress(serverAddress)
-            .setPassword(serverPassword);
-
-        return (Redisson) Redisson.create(config);
+            .setAddress(sinkConfig.getConnectorConfig().getServer());
+        redisson = (Redisson) Redisson.create(config);
     }
 
     @Test

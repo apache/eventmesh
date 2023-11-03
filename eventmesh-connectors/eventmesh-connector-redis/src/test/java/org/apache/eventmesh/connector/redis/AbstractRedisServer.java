@@ -17,25 +17,24 @@
 
 package org.apache.eventmesh.connector.redis;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-
 import ai.grakn.redismock.RedisServer;
 
 public abstract class AbstractRedisServer {
 
-    protected static RedisServer redisServer;
+    protected RedisServer redisServer;
 
-    @BeforeAll
-    public static void setupRedisServer() throws Exception {
-        redisServer = RedisServer.newRedisServer(6379);
+    public void setupRedisServer(int port) throws Exception {
+        redisServer = RedisServer.newRedisServer(port);
         redisServer.start();
     }
 
-    @AfterAll
-    public static void shutdownRedisServer() {
+    public void shutdownRedisServer() {
         if (redisServer != null) {
             redisServer.stop();
         }
+    }
+
+    public static int getPortFromUrl(String url) {
+        return Integer.parseInt(url.substring(url.lastIndexOf(":") + 1));
     }
 }
