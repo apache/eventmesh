@@ -20,7 +20,7 @@
 pub mod constants;
 
 /// Eventmesh message utilities.
-pub mod eventmesh_message_utils;
+pub mod grpc_eventmesh_message_utils;
 
 /// Local IP helper.
 pub(crate) mod local_ip;

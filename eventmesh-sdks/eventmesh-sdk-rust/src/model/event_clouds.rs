@@ -15,21 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.utils;
-
-public class ExceptionUtils {
-
-    /**
-     * Remove the last period of exception description.
-     */
-    public static String trimDesc(String desc) {
-        if (desc == null) {
-            return "";
-        }
-        if (desc.charAt(desc.length() - 1) == '.') {
-            return desc.substring(0, desc.length() - 1);
-        }
-        return desc;
-    }
-
-}
+ use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
+ use cloudevents::Event;
+ 
+ use crate::proto_cloud_event::PbCloudEvent;
+ 
+ impl From<PbCloudEvent> for Event {
+     fn from(value: PbCloudEvent) -> Self {
+         EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_cloud_event(value)
+     }
+ }
+ 

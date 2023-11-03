@@ -15,5 +15,21 @@
  * limitations under the License.
  */
 
-#[cfg(all(feature = "eventmesh_message", feature = "grpc"))]
-pub mod eventmesh_message_producer;
+package org.apache.eventmesh.admin.util;
+
+public class ExceptionUtil {
+
+    /**
+     * Remove the last period of exception description.
+     */
+    public static String trimDesc(String desc) {
+        if (desc == null) {
+            return "";
+        }
+        if (desc.charAt(desc.length() - 1) == '.') {
+            return desc.substring(0, desc.length() - 1);
+        }
+        return desc;
+    }
+
+}

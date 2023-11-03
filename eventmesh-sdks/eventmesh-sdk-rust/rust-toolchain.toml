@@ -18,4 +18,4 @@
 
 [toolchain]
 # TODO: we can remove this toolchain file when AFIT and RPITIT hits stable.
-channel = "nightly"
+channel = "nightly-x86_64-pc-windows-msvc"

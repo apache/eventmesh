@@ -53,5 +53,6 @@ impl EventMeshProtocolType {
 pub mod message;
 
 pub(crate) mod convert;
+pub mod event_clouds;
 pub(crate) mod response;
 pub mod subscription;

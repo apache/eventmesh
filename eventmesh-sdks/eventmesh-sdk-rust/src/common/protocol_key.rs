@@ -57,4 +57,8 @@ impl ProtocolKey {
 
     //protocol desc
     pub const PROTOCOL_DESC_GRPC_CLOUD_EVENT: &'static str = "grpc-cloud-event";
+
+    pub const CLOUD_EVENTS_PROTOCOL_NAME: &'static str = "cloudevents";
+
+    pub const CLOUDEVENT_CONTENT_TYPE: &'static str = "application/cloudevents+json";
 }
