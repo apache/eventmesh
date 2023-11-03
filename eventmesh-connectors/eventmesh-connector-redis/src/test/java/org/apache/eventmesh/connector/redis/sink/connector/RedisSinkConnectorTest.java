@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
@@ -28,9 +27,7 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -44,8 +41,6 @@ import org.redisson.api.RTopic;
 import org.redisson.config.Config;
 
 import io.cloudevents.CloudEvent;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 
 public class RedisSinkConnectorTest extends AbstractRedisServer {
 
@@ -73,27 +68,21 @@ public class RedisSinkConnectorTest extends AbstractRedisServer {
     public void testPutConnectRecords() throws InterruptedException {
         RTopic topic = redisson.getTopic(sinkConfig.connectorConfig.getTopic());
 
-        final String expectedMessage = "testRedisMessage";
+        final String expectedMessage = "\"testRedisMessage\"";
         final int expectedCount = 5;
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
         topic.addListener(CloudEvent.class, (channel, msg) -> {
             downLatch.countDown();
             Assertions.assertNotNull(msg.getData());
-            HashMap<String, String> contentMap = JsonUtils.parseTypeReferenceObject(new String(msg.getData().toBytes()),
-                new TypeReference<HashMap<String, String>>() {
-                });
-            Assertions.assertNotNull(contentMap);
-            Assertions.assertEquals(expectedMessage, contentMap.get("content"));
+            Assertions.assertEquals(expectedMessage, new String(msg.getData().toBytes()));
         });
 
         List<ConnectRecord> records = new ArrayList<>();
         for (int i = 0; i < expectedCount; i++) {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
-            Map<String, String> content = new HashMap<>();
-            content.put("content", expectedMessage);
             ConnectRecord connectRecord = new ConnectRecord(partition, offset, System.currentTimeMillis(),
-                JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8));
+                expectedMessage.getBytes(StandardCharsets.UTF_8));
             connectRecord.addExtension("id", String.valueOf(UUID.randomUUID()));
             connectRecord.addExtension("source", "testSource");
             connectRecord.addExtension("type", "testType");
