@@ -107,5 +107,6 @@ public class RedisSinkConnectorTest extends AbstractRedisServer {
     public void tearDown() throws Exception {
         connector.stop();
         redisson.shutdown();
+        shutdownRedisServer();
     }
 }
