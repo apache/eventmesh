@@ -17,8 +17,14 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.eventmesh.api.auth.AuthService;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +61,8 @@ public class WebhookUtil {
 
         LogUtils.info(log, "obtain webhook delivery agreement for url: {}", targetUrl);
 
+        checkUrl(targetUrl);
+
         final HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
@@ -71,6 +79,16 @@ public class WebhookUtil {
                 + "unable to obtain the webhook delivery agreement.", targetUrl);
         }
         return true;
+    }
+
+    private static void checkUrl(String url) {
+        EventMeshHTTPConfiguration configuration = (EventMeshHTTPConfiguration) ConfigurationContextUtil.get(HTTP);
+        boolean isValid =
+            IPUtils.isValidDomainOrIp(url, configuration.getEventMeshIpv4BlackList(), configuration.getEventMeshIpv6BlackList());
+        if (!isValid) {
+            LogUtils.error(log, "{} is an invalid url!", url);
+            throw new EventMeshException(String.format("%s is an invalid url!", url));
+        }
     }
 
     public static void setWebhookHeaders(final HttpPost builder,
