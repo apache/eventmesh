@@ -82,8 +82,8 @@ jobs:
 
 
       - name: Build C
-      run: |
-        make
+        run: |
+          make
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
