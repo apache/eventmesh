@@ -83,7 +83,7 @@ jobs:
 
       - name: Build C
         run: |
-          make
+          make -C ./eventmesh-sdks/eventmesh-sdk-c
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
