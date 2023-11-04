@@ -81,16 +81,6 @@ public class WebhookUtil {
         return true;
     }
 
-    private static void checkUrl(String url) {
-        EventMeshHTTPConfiguration configuration = (EventMeshHTTPConfiguration) ConfigurationContextUtil.get(HTTP);
-        boolean isValid =
-            IPUtils.isValidDomainOrIp(url, configuration.getEventMeshIpv4BlackList(), configuration.getEventMeshIpv6BlackList());
-        if (!isValid) {
-            LogUtils.error(log, "{} is an invalid url!", url);
-            throw new EventMeshException(String.format("%s is an invalid url!", url));
-        }
-    }
-
     public static void setWebhookHeaders(final HttpPost builder,
         final String contentType,
         final String requestOrigin,
@@ -101,6 +91,16 @@ public class WebhookUtil {
         final Map<String, String> authParam = getHttpAuthParam(urlAuthType);
         if (authParam != null) {
             authParam.forEach((k, v) -> builder.addHeader(new BasicHeader(k, v)));
+        }
+    }
+
+    private static void checkUrl(String url) {
+        EventMeshHTTPConfiguration configuration = (EventMeshHTTPConfiguration) ConfigurationContextUtil.get(HTTP);
+        boolean isValid =
+            IPUtils.isValidDomainOrIp(url, configuration.getEventMeshIpv4BlackList(), configuration.getEventMeshIpv6BlackList());
+        if (!isValid) {
+            LogUtils.error(log, "{} is an invalid url!", url);
+            throw new EventMeshException(String.format("%s is an invalid url!", url));
         }
     }
 
