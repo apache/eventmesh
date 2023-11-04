@@ -74,16 +74,15 @@ jobs:
           java-version: ${{ matrix.java }}
 
       # https://docs.gradle.org/current/userguide/performance.html
+      - name: Build C
+        run: |
+          make -C ~/eventmesh-sdks/eventmesh-sdk-c
+
       - name: Build
         run: ./gradlew clean build jar dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
 
       - name: Install plugin
         run: ./gradlew installPlugin
-
-
-      - name: Build C
-        run: |
-          make -C ./eventmesh-sdks/eventmesh-sdk-c
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
