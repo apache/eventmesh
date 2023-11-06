@@ -20,10 +20,11 @@ package org.apache.eventmesh.runtime.core.protocol.http.push;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
-import org.apache.eventmesh.runtime.core.timer.Timeout;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -73,6 +74,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
         this.ttl = handleMsgContext.getTtl();
         this.startIdx = ThreadLocalRandom.current().nextInt(0, totalUrls.size());
+        super.commonConfiguration = eventMeshHttpConfiguration;
     }
 
     public void tryHTTPRequest() {
@@ -129,10 +131,13 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         }
     }
 
-    protected abstract void doRetry();
+    @Override
+    protected ProducerManager getProducerManager() {
+        return eventMeshHTTPServer.getProducerManager();
+    }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
-        doRetry();
+    protected ConsumerGroupConf getConsumerGroupConf() {
+        return handleMsgContext.getConsumerGroupConfig();
     }
 }

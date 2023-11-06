@@ -111,6 +111,9 @@ public class CommonConfiguration {
     @ConfigFiled(reload = true)
     private String meshGroup;
 
+    @ConfigFiled(field = "server.retry.storageEnabled")
+    private boolean eventMeshServerRetryStorageEnabled = Boolean.FALSE;
+
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -147,6 +148,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void init() throws Exception {
         super.init("eventMesh-http");
         httpThreadPoolGroup.initThreadPool();
+    }
+
+    @Override
+    public CommonConfiguration getConfiguration() {
+        return eventMeshHttpConfiguration;
     }
 
     @Override

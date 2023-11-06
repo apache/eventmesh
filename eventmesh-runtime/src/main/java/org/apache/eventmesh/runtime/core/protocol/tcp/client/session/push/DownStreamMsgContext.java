@@ -195,7 +195,7 @@ public class DownStreamMsgContext extends RetryContext {
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
+    public void doRun(Timeout timeout) {
         retry();
     }
 }

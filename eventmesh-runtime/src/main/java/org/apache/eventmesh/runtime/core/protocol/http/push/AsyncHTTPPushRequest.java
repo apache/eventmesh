@@ -34,7 +34,9 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
+import org.apache.eventmesh.runtime.core.timer.Timeout;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
 
@@ -91,7 +93,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     @Override
     public void tryHTTPRequest() {
 
-        currPushUrl = getUrl();
+        // currPushUrl = getUrl();
+        currPushUrl = "http://127.0.0.2:8088/sub/test";
 
         if (StringUtils.isBlank(currPushUrl)) {
             LOGGER.warn("tryHTTPRequest fail, getUrl is null, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
@@ -127,6 +130,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .withExtension(EventMeshConstants.RSP_GROUP, handleMsgContext.getConsumerGroup())
             .build();
         handleMsgContext.setEvent(event);
+        super.setEvent(event);
 
         String content = "";
         try {
@@ -316,6 +320,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         return false;
     }
 
+    @Override
+    protected HandleMessageContext getHandleMessageContext() throws Exception {
+        return handleMsgContext;
+    }
+
     ClientRetCode processResponseContent(String content) {
         if (StringUtils.isBlank(content)) {
             return ClientRetCode.FAIL;
@@ -359,7 +368,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public void doRetry() {
+    public void doRun(Timeout timeout) {
         tryHTTPRequest();
     }
 }

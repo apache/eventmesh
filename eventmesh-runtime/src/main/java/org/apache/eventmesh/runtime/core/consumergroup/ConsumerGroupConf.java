@@ -27,15 +27,22 @@ public class ConsumerGroupConf implements Serializable {
     // eg . 5013-1A0
     private String consumerGroup;
 
+    private String topic;
+
     private final ConcurrentHashMap<String/* topic */, ConsumerGroupTopicConf> consumerGroupTopicConf =
         new ConcurrentHashMap<String, ConsumerGroupTopicConf>();
 
-    public ConsumerGroupConf(String consumerGroup) {
+    public ConsumerGroupConf(String consumerGroup, String topic) {
         this.consumerGroup = consumerGroup;
+        this.topic = topic;
     }
 
     public String getConsumerGroup() {
         return consumerGroup;
+    }
+
+    public String getTopic() {
+        return topic;
     }
 
     public void setConsumerGroup(String consumerGroup) {

@@ -120,7 +120,8 @@ public class SubscriptionManager {
             ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
             if (consumerGroupConf == null) {
                 // new subscription
-                ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup, new ConsumerGroupConf(consumerGroup));
+                ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup,
+                    new ConsumerGroupConf(consumerGroup, subscription.getTopic()));
                 if (prev == null) {
                     log.info("add new subscription, consumer group: {}", consumerGroup);
                 }

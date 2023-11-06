@@ -163,7 +163,7 @@ public class UpStreamMsgContext extends RetryContext {
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
+    public void doRun(Timeout timeout) throws Exception {
         retry();
     }
 }

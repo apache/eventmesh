@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -109,6 +110,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     public void init() throws Exception {
         super.init("eventMesh-tcp");
         tcpThreadPoolGroup.initThreadPool();
+    }
+
+    @Override
+    public CommonConfiguration getConfiguration() {
+        return eventMeshTCPConfiguration;
     }
 
     @Override
