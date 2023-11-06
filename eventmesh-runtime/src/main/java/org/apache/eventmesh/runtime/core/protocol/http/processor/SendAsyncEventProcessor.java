@@ -284,6 +284,6 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.PUBLISH.getRequestURI()};
+        return new String[]{RequestURI.PUBLISH.getRequestURI()};
     }
 }

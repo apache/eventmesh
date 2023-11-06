@@ -23,10 +23,14 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
+import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
+import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
@@ -68,6 +72,8 @@ public class SourceWorker implements ConnectorWorker {
     private final SourceConfig config;
 
     private static final int MAX_RETRY_TIMES = 3;
+
+    public static final String CALLBACK_EXTENSION = "callBackExtension";
 
     private OffsetStorageWriterImpl offsetStorageWriter;
 
@@ -181,6 +187,8 @@ public class SourceWorker implements ConnectorWorker {
             // todo: convert connectRecord to cloudevent
             CloudEvent event = convertRecordToEvent(connectRecord);
             Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(connectRecord);
+            Optional<SendMessageCallback> callback = Optional.ofNullable(connectRecord.getExtensionObj(CALLBACK_EXTENSION))
+                .map(v -> (SendMessageCallback) v);
 
             int retryTimes = 0;
             // retry until MAX_RETRY_TIMES is reached
@@ -192,15 +200,15 @@ public class SourceWorker implements ConnectorWorker {
                         // commit record
                         this.source.commit(connectRecord);
                         submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                        callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
                         break;
                     }
-                    retryTimes++;
-                    log.warn("{} failed to send record to {}, retry times = {}, failed record {}",
-                        this, event.getSubject(), retryTimes, connectRecord);
+                    throw new EventMeshException("failed to send record.");
                 } catch (Throwable t) {
                     retryTimes++;
                     log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",
                         this, event.getSubject(), retryTimes, connectRecord, t.getMessage());
+                    callback.ifPresent(cb -> cb.onException(convertToExceptionContext(event, t)));
                 }
             }
 
@@ -235,6 +243,21 @@ public class SourceWorker implements ConnectorWorker {
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", 10000)
             .build();
+    }
+
+    private SendResult convertToSendResult(CloudEvent event) {
+        SendResult result = new SendResult();
+        result.setMessageId(event.getId());
+        result.setTopic(event.getSubject());
+        return result;
+    }
+
+    private SendExcepionContext convertToExceptionContext(CloudEvent event, Throwable cause) {
+        SendExcepionContext exceptionContext = new SendExcepionContext();
+        exceptionContext.setTopic(event.getId());
+        exceptionContext.setMessageId(event.getId());
+        exceptionContext.setCause(cause);
+        return exceptionContext;
     }
 
     @Override

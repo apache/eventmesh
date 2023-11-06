@@ -66,8 +66,8 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         this(eventMeshHttpClientConfig, null);
     }
 
-    public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig, final ThreadPoolExecutor customExecutor)
-        throws EventMeshException {
+    public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
+        final ThreadPoolExecutor customExecutor) throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
             () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),

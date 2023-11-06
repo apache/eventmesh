@@ -19,6 +19,8 @@ package org.apache.eventmesh.connector.spring.source.connector;
 
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
 import org.apache.eventmesh.connector.spring.source.config.SpringSourceConfig;
+import org.apache.eventmesh.openconnect.SourceWorker;
+import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -105,11 +107,30 @@ public class SpringSourceConnector implements Source, MessageSendingOperations {
         return connectRecords;
     }
 
+    /**
+     * Send message.
+     * @param message message to send
+     */
     @Override
     public void send(Object message) {
         RecordPartition partition = new RecordPartition();
         RecordOffset offset = new RecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
+        queue.offer(record);
+    }
+
+    /**
+     * Send message with a callback.
+     * @param message message to send.
+     * @param workerCallback After the user sends the message to the Connector,
+     *                       the SourceWorker will fetch message and invoke.
+     */
+    @Override
+    public void send(Object message, SendMessageCallback workerCallback) {
+        RecordPartition partition = new RecordPartition();
+        RecordOffset offset = new RecordOffset();
+        ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
+        record.addExtension(SourceWorker.CALLBACK_EXTENSION, workerCallback);
         queue.offer(record);
     }
 }
