@@ -74,9 +74,12 @@ jobs:
           java-version: ${{ matrix.java }}
 
       # https://docs.gradle.org/current/userguide/performance.html
-      - name: Build C
+      - if: matrix.language == 'c'
+        name: Build C
         run: |
-          make -C ~/eventmesh-sdks/eventmesh-sdk-c
+          git submodule init
+          git submodule update
+          make -C ./eventmesh-sdks/eventmesh-sdk-c
 
       - name: Build
         run: ./gradlew clean build jar dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
