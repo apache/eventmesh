@@ -20,7 +20,6 @@ package org.apache.eventmesh.common.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -45,16 +44,5 @@ public class ReflectUtils {
             superClass = superClass.getSuperclass();
         }
         return null;
-    }
-
-    @SneakyThrows
-    public static void changeFinalFieldValue(Object object, String fieldName, Object newValue) {
-        Field field = object.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        field.set(object, newValue);
-        modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
     }
 }
