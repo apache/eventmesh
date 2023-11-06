@@ -48,6 +48,11 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ${{ matrix.language }}
 
+      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
+        name: Build C
+        run: |
+          make   
+
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
