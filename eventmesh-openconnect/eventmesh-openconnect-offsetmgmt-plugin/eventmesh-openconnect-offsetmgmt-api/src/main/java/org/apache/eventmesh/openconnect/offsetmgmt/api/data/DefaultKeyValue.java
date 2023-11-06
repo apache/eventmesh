@@ -23,14 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultKeyValue implements KeyValue {
 
-    private Map<String, String> properties = new ConcurrentHashMap<>();
+    private Map<String, Object> properties = new ConcurrentHashMap<>();
 
     @Override
     public boolean getBoolean(String key) {
         if (!properties.containsKey(key)) {
             return false;
         }
-        return Boolean.parseBoolean(properties.get(key));
+        return Boolean.parseBoolean(String.valueOf(properties.get(key)));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class DefaultKeyValue implements KeyValue {
         if (!properties.containsKey(key)) {
             return 0;
         }
-        return Short.parseShort(properties.get(key));
+        return Short.parseShort(String.valueOf(properties.get(key)));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DefaultKeyValue implements KeyValue {
     }
 
     public DefaultKeyValue() {
-        properties = new ConcurrentHashMap<String, String>();
+        properties = new ConcurrentHashMap<String, Object>();
     }
 
     @Override
@@ -86,8 +86,8 @@ public class DefaultKeyValue implements KeyValue {
     }
 
     @Override
-    public KeyValue put(String key, String value) {
-        properties.put(key, String.valueOf(value));
+    public KeyValue put(String key, Object value) {
+        properties.put(key, value);
         return this;
     }
 
@@ -96,7 +96,7 @@ public class DefaultKeyValue implements KeyValue {
         if (!properties.containsKey(key)) {
             return 0;
         }
-        return Integer.parseInt(properties.get(key));
+        return Integer.parseInt(String.valueOf(properties.get(key)));
     }
 
     @Override
@@ -109,7 +109,7 @@ public class DefaultKeyValue implements KeyValue {
         if (!properties.containsKey(key)) {
             return 0;
         }
-        return Long.parseLong(properties.get(key));
+        return Long.parseLong(String.valueOf(properties.get(key)));
     }
 
     @Override
@@ -122,7 +122,7 @@ public class DefaultKeyValue implements KeyValue {
         if (!properties.containsKey(key)) {
             return 0;
         }
-        return Double.parseDouble(properties.get(key));
+        return Double.parseDouble(String.valueOf(properties.get(key)));
     }
 
     @Override
@@ -131,8 +131,13 @@ public class DefaultKeyValue implements KeyValue {
     }
 
     @Override
-    public String getString(String key) {
+    public Object getObject(String key) {
         return properties.get(key);
+    }
+
+    @Override
+    public String getString(String key) {
+        return String.valueOf(properties.get(key));
     }
 
     @Override

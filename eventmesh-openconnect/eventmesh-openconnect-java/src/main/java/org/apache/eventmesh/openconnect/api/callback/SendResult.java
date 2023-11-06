@@ -15,17 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.source;
+package org.apache.eventmesh.openconnect.api.callback;
 
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+public class SendResult {
 
-/**
- * Operations for sending messages.
- */
-public interface MessageSendingOperations {
+    private String messageId;
+    private String topic;
 
-    void send(Object message);
+    public SendResult() {
+    }
 
-    void send(Object message, SendMessageCallback sendCallback);
+    public String getMessageId() {
+        return this.messageId;
+    }
 
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTopic() {
+        return this.topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public String toString() {
+        return "SendResult[topic=" + this.topic + ", messageId=" + this.messageId + ']';
+    }
 }

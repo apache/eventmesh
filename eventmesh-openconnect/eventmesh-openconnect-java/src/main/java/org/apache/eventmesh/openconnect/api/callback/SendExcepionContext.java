@@ -15,17 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.spring.source;
+package org.apache.eventmesh.openconnect.api.callback;
 
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+public class SendExcepionContext {
 
-/**
- * Operations for sending messages.
- */
-public interface MessageSendingOperations {
+    private String messageId;
+    private String topic;
+    private Throwable cause;
 
-    void send(Object message);
+    public SendExcepionContext() {
+    }
 
-    void send(Object message, SendMessageCallback sendCallback);
+    public String getMessageId() {
+        return this.messageId;
+    }
 
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTopic() {
+        return this.topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public Throwable getCause() {
+        return this.cause;
+    }
+
+    public void setCause(Throwable cause) {
+        this.cause = cause;
+    }
 }
