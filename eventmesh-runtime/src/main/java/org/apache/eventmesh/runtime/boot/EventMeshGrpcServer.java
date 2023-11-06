@@ -137,6 +137,8 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
 
     public void start() throws Exception {
         log.info("---------------EventMeshGRPCServer starting-------------------");
+
+        producerManager.start();
         consumerManager.start();
         grpcRetryer.start();
         server.start();
@@ -151,6 +153,8 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
 
     public void shutdown() throws Exception {
         log.info("---------------EventMeshGRPCServer stopping-------------------");
+
+        producerManager.shutdown();
         consumerManager.shutdown();
         grpcRetryer.shutdown();
 

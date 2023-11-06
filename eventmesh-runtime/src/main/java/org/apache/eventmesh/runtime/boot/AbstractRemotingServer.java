@@ -45,7 +45,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup ioGroup;
     private EventExecutorGroup workerGroup;
-    private ProducerManager producerManager;
+    protected ProducerManager producerManager;
 
     private int port;
 
