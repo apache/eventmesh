@@ -52,7 +52,7 @@ jobs:
       - if: matrix.language == 'cpp' || matrix.language == 'csharp'
         name: Build C
         run: |
-          make   
+          make -C ./eventmesh-sdks/eventmesh-sdk-c  
 
       - name: Cache Gradle packages
         uses: actions/cache@v3
