@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,8 @@ public class RedisSourceConnectorTest extends AbstractRedisServer {
 
     private RTopic topic;
 
+    private Redisson redisson;
+
     @BeforeEach
     public void setUp() throws Exception {
         connector = new RedisSourceConnector();
@@ -56,7 +59,7 @@ public class RedisSourceConnectorTest extends AbstractRedisServer {
         config.setCodec(CloudEventCodec.getInstance());
         config.useSingleServer()
             .setAddress(sourceConfig.getConnectorConfig().getServer());
-        Redisson redisson = (Redisson) Redisson.create(config);
+        redisson = (Redisson) Redisson.create(config);
         topic = redisson.getTopic(sourceConfig.connectorConfig.getTopic());
     }
 
@@ -86,4 +89,10 @@ public class RedisSourceConnectorTest extends AbstractRedisServer {
         }
     }
 
+    @AfterEach
+    public void tearDown() throws Exception {
+        connector.stop();
+        redisson.shutdown();
+        shutdownRedisServer();
+    }
 }
