@@ -46,12 +46,12 @@ public class HTTPMessageHandler implements MessageHandler {
 
     private final transient EventMeshConsumer eventMeshConsumer;
 
-    private static final transient ScheduledExecutorService SCHEDULER =
+    private static final ScheduledExecutorService SCHEDULER =
         ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout");
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
-    protected static final transient Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
+    protected static final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
     private final transient ThreadPoolExecutor pushExecutor;
 
