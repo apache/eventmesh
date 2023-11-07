@@ -93,8 +93,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     @Override
     public void tryHTTPRequest() {
 
-        // currPushUrl = getUrl();
-        currPushUrl = "http://127.0.0.2:8088/sub/test";
+        currPushUrl = getUrl();
 
         if (StringUtils.isBlank(currPushUrl)) {
             LOGGER.warn("tryHTTPRequest fail, getUrl is null, group:{}, topic:{}, bizSeqNo={}, uniqueId={}", this.handleMsgContext.getConsumerGroup(),
