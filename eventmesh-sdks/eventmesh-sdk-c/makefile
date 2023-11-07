@@ -53,7 +53,7 @@ all:$(TARGET)
 $(LIB_A_CURL):
 	@echo
 	@echo "Building $^ ==> $@..."
-	@cd $(DIR_CURL) && ./configure --without-ssl
+	@cd $(DIR_CURL) && autoreconf -fi && ./configure --without-ssl
 	@cd $(DIR_CURL) && make
 	@cp -f $(DIR_CURL)/./lib/.libs/libcurl.a $@
 
