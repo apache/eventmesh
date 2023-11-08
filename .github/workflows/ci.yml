@@ -52,6 +52,8 @@ jobs:
       - if: matrix.language == 'cpp' || matrix.language == 'csharp'
         name: Build C
         run: |
+          git submodule init
+          git submodule update
           make -C ./eventmesh-sdks/eventmesh-sdk-c  
 
       - name: Cache Gradle packages
