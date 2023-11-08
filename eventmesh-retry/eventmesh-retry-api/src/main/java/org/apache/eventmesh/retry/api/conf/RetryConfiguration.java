@@ -15,21 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.retry.api.conf;
 
-import org.apache.eventmesh.retry.api.AbstractRetryer;
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
-import lombok.extern.slf4j.Slf4j;
+import io.cloudevents.CloudEvent;
 
-@Slf4j
-public class GrpcRetryer extends AbstractRetryer {
+import lombok.Builder;
+import lombok.Data;
 
-    private final EventMeshGrpcConfiguration grpcConfiguration;
+@Data
+@Builder
+public class RetryConfiguration {
 
-    public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
-    }
+    private CloudEvent event;
 
+    private String consumerGroupName;
+
+    private Producer producer;
+
+    private String topic;
+
+    private boolean retryStorageEnabled;
+
+    private SubscriptionMode subscriptionMode;
 }

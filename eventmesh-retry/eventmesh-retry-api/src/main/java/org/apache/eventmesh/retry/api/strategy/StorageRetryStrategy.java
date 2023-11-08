@@ -15,21 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.retry.api.strategy;
 
-import org.apache.eventmesh.retry.api.AbstractRetryer;
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 
-import lombok.extern.slf4j.Slf4j;
+/**
+ * Storage retry strategy.
+ */
+public interface StorageRetryStrategy {
 
-@Slf4j
-public class GrpcRetryer extends AbstractRetryer {
-
-    private final EventMeshGrpcConfiguration grpcConfiguration;
-
-    public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
-    }
-
+    void retry(RetryConfiguration configuration);
 }

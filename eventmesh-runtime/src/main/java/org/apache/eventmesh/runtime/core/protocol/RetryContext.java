@@ -17,29 +17,25 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.api.TopicNameHelper;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
+import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
+import org.apache.eventmesh.retry.api.strategy.StorageRetryStrategy;
+import org.apache.eventmesh.retry.api.timer.Timeout;
+import org.apache.eventmesh.retry.api.timer.Timer;
+import org.apache.eventmesh.retry.api.timer.TimerTask;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
-import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
-import org.apache.eventmesh.runtime.core.timer.Timeout;
-import org.apache.eventmesh.runtime.core.timer.Timer;
-import org.apache.eventmesh.runtime.core.timer.TimerTask;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +43,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class RetryContext implements TimerTask {
 
+    private static final Map<String, Integer> STORAGE_RETRY_TIMES_MAP = new ConcurrentHashMap<>();
+
     public CloudEvent event;
 
     public String seq;
 
     public int retryTimes;
-
-    private static final Map<String, Integer> STORAGE_RETRY_TIMES_MAP = new ConcurrentHashMap<>();
 
     public CommonConfiguration commonConfiguration;
 
@@ -87,16 +83,30 @@ public abstract class RetryContext implements TimerTask {
 
     @Override
     public final void run(Timeout timeout) throws Exception {
-        boolean eventMeshServerRetryStorageEnabled = commonConfiguration.isEventMeshServerRetryStorageEnabled();
+        boolean eventMeshServerRetryStorageEnabled =
+            Optional.ofNullable(commonConfiguration).map(CommonConfiguration::isEventMeshServerRetryStorageEnabled)
+                .orElse(false);
         if (eventMeshServerRetryStorageEnabled) {
             if (!STORAGE_RETRY_TIMES_MAP.containsKey(event.getId())) {
                 STORAGE_RETRY_TIMES_MAP.put(event.getId(), 0);
             }
             Integer maxTimesPerEvent = STORAGE_RETRY_TIMES_MAP.get(event.getId());
             if (maxTimesPerEvent < 1) {
-                sendMessageBack(event);
+                StorageRetryStrategy storageRetryStrategy = EventMeshExtensionFactory.getExtension(RetryStrategy.class,
+                    commonConfiguration.getEventMeshStoragePluginType()).getStorageRetryStrategy();
+                String consumerGroupName = getConsumerGroupConf().getConsumerGroup();
+                EventMeshProducer producer = getProducerManager().getEventMeshProducer(consumerGroupName);
+                RetryConfiguration retryConfiguration = RetryConfiguration.builder()
+                    .event(event)
+                    .retryStorageEnabled(eventMeshServerRetryStorageEnabled)
+                    .consumerGroupName(getConsumerGroupConf().getConsumerGroup())
+                    .producer(producer.getMqProducerWrapper().getMeshMQProducer())
+                    .topic(getConsumerGroupConf().getTopic())
+                    .build();
+                storageRetryStrategy.retry(retryConfiguration);
                 STORAGE_RETRY_TIMES_MAP.put(event.getId(), STORAGE_RETRY_TIMES_MAP.get(event.getId()) + 1);
             } else {
+                STORAGE_RETRY_TIMES_MAP.remove(event.getId());
                 getHandleMessageContext().finish();
             }
         } else {
@@ -120,43 +130,4 @@ public abstract class RetryContext implements TimerTask {
         throw new IllegalAccessException("method not supported.");
     }
 
-    private void sendMessageBack(final CloudEvent event) throws Exception {
-        String topic = event.getSubject();
-        String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey())).toString();
-        String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID.getKey())).toString();
-
-        ConsumerGroupConf consumerGroupConf = getConsumerGroupConf();
-        String consumerGroupName = consumerGroupConf.getConsumerGroup();
-        EventMeshProducer sendMessageBack = getProducerManager().getEventMeshProducer(consumerGroupName);
-
-        if (sendMessageBack == null) {
-            log.warn("consumer:{} consume fail, sendMessageBack, topic:{}, bizSeqNo:{}, uniqueId:{}",
-                consumerGroupName, topic, bizSeqNo, uniqueId);
-            return;
-        }
-        TopicNameHelper topicNameGenerator = EventMeshExtensionFactory.getExtension(TopicNameHelper.class,
-            commonConfiguration.getEventMeshStoragePluginType());
-        String retryTopicName = topicNameGenerator.generateRetryTopicName(consumerGroupName);
-        CloudEvent retryEvent = CloudEventBuilder.from(event)
-            .withExtension(ProtocolKey.TOPIC, consumerGroupConf.getTopic())
-            .withSubject(retryTopicName)
-            .build();
-
-        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, retryEvent, sendMessageBack, null);
-
-        sendMessageBack.send(sendMessageBackContext, new SendCallback() {
-
-            @Override
-            public void onSuccess(SendResult sendResult) {
-                log.info("consumer:{} consume success,, bizSeqno:{}, uniqueId:{}",
-                    consumerGroupName, bizSeqNo, uniqueId);
-            }
-
-            @Override
-            public void onException(OnExceptionContext context) {
-                log.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
-                    consumerGroupName, bizSeqNo, uniqueId, context.getException());
-            }
-        });
-    }
 }

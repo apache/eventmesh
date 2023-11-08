@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.timer;
+package org.apache.eventmesh.retry.api.timer;
 
 import static org.apache.eventmesh.common.Constants.OS_NAME_KEY;
 import static org.apache.eventmesh.common.Constants.OS_WIN_PREFIX;

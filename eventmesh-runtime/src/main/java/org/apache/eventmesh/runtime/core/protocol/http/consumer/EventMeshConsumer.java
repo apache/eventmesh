@@ -112,8 +112,9 @@ public class EventMeshConsumer {
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
             try {
-                Optional<TopicNameHelper> topicNameGenerator = Optional.ofNullable(EventMeshExtensionFactory.getExtension(TopicNameHelper.class,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshStoragePluginType()));
+                Optional<TopicNameHelper> topicNameHelper =
+                    Optional.ofNullable(EventMeshExtensionFactory.getExtension(TopicNameHelper.class,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshStoragePluginType()));
                 String topic = event.getSubject();
                 String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey())).toString();
                 String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID.getKey())).toString();
@@ -129,7 +130,7 @@ public class EventMeshConsumer {
                     messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                 }
 
-                if (topicNameGenerator.isPresent() && topicNameGenerator.get().isRetryTopic(topic)) {
+                if (topicNameHelper.isPresent() && topicNameHelper.get().isRetryTopic(topic)) {
                     topic = String.valueOf(event.getExtension(ProtocolKey.TOPIC));
                 }
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConf(),

@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
+package org.apache.eventmesh.storage.rocketmq.common;
 
-import org.apache.eventmesh.retry.api.AbstractRetryer;
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.api.TopicNameHelper;
 
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.common.MixAll;
 
-@Slf4j
-public class GrpcRetryer extends AbstractRetryer {
+public class TopicNameHelperImpl implements TopicNameHelper {
 
-    private final EventMeshGrpcConfiguration grpcConfiguration;
-
-    public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
+    @Override
+    public String generateRetryTopicName(String topicName) {
+        return MixAll.getRetryTopic(topicName);
     }
 
+    @Override
+    public boolean isRetryTopic(String retryTopic) {
+        if (StringUtils.isBlank(retryTopic)) {
+            return false;
+        }
+        return retryTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX);
+    }
 }

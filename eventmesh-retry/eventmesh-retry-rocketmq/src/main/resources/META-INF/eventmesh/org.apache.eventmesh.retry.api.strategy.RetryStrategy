@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rocketmq=org.apache.eventmesh.storage.rocketmq.common.TopicNameHelperImpl
+rocketmq=org.apache.eventmesh.retry.rocketmq.RocketMQRetryStrategyImpl

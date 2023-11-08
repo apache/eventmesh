@@ -15,25 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.rocketmq.common;
+package org.apache.eventmesh.retry.api.strategy;
 
-import org.apache.eventmesh.api.TopicNameHelper;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.common.MixAll;
+/**
+ * Retry strategy.
+ */
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.RETRY)
+public interface RetryStrategy {
 
-public class TopicNameGeneratorImpl implements TopicNameHelper {
-
-    @Override
-    public String generateRetryTopicName(String topicName) {
-        return MixAll.getRetryTopic(topicName);
-    }
-
-    @Override
-    public boolean isRetryTopic(String retryTopic) {
-        if (StringUtils.isBlank(retryTopic)) {
-            return false;
-        }
-        return retryTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX);
-    }
+    StorageRetryStrategy getStorageRetryStrategy();
 }

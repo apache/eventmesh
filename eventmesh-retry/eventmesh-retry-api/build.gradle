@@ -15,27 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.timer;
+dependencies {
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-spi")
 
-import java.util.concurrent.TimeUnit;
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
 
-/**
- * A task which is executed after the delay specified with
- * {@link Timer#newTimeout(TimerTask, long, TimeUnit)} (TimerTask, long, TimeUnit)}.
- */
-public interface TimerTask {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    /**
-     * Executed after the delay specified with
-     * {@link Timer#newTimeout(TimerTask, long, TimeUnit)}.
-     *
-     * @param timeout a handle which is associated with this task
-     */
-    void run(Timeout timeout) throws Exception;
-
-    /**
-     * Hook method to set the execute time.
-     * @param executeTime execute time
-     */
-    void setExecuteTimeHook(long executeTime);
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 }
