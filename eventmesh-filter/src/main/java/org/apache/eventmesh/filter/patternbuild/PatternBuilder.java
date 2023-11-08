@@ -74,18 +74,18 @@ public class PatternBuilder {
             }
 
             // iter all requiredField
-            parseRequiredField("$." + key, value, pattern);
+            parseRequiredField(key, "$." + key, value, pattern);
             if (value.isEmpty()) {
                 // Empty array
                 throw new JsonException("INVALID_PATTERN_VALUE ");
             }
-            PatternEntry patternEntry = new PatternEntry("$." + key);
+            PatternEntry patternEntry = new PatternEntry(key, "$." + key);
             for (final JsonNode objNode : value) {
                 // {
                 // "suffix":".jpg"
                 // }
                 Condition condition = parseCondition(objNode);
-                patternEntry.addRuleCondition(condition);
+                patternEntry.addCondition(condition);
             }
 
             pattern.addRequiredFieldList(patternEntry);
@@ -112,12 +112,12 @@ public class PatternBuilder {
                 String key = entry.getKey();
                 // [{"anything-but":"initializing"}] [{"anything-but":123}]}
                 JsonNode value = entry.getValue();
-                PatternEntry patternEntry = new PatternEntry(elepath + "." + key);
+                PatternEntry patternEntry = new PatternEntry(key, elepath + "." + key);
                 if (!value.isObject()) {
                     if (value.isArray()) {
                         for (JsonNode node11 : value) {
                             // {"anything-but":"initializing"}
-                            patternEntry.addRuleCondition(parseCondition(node11));
+                            patternEntry.addCondition(parseCondition(node11));
                         }
                     }
                     pattern.addDataList(patternEntry);
@@ -146,15 +146,15 @@ public class PatternBuilder {
         return null;
     }
 
-    private static void parseRequiredField(String path, JsonNode jsonNode, Pattern pattern) {
+    private static void parseRequiredField(String patternName, String patternPath, JsonNode jsonNode, Pattern pattern) {
         if (jsonNode.isEmpty()) {
             // Empty array
             throw new JsonException("INVALID_PATTERN_VALUE ");
         }
-        PatternEntry patternEntry = new PatternEntry(path);
+        PatternEntry patternEntry = new PatternEntry(patternName, patternPath);
         for (final JsonNode objNode : jsonNode) {
             Condition condition = parseCondition(objNode);
-            patternEntry.addRuleCondition(condition);
+            patternEntry.addCondition(condition);
         }
 
         pattern.addRequiredFieldList(patternEntry);

@@ -82,12 +82,15 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private final MetaStorage metaStorage;
+
     private final Acl acl;
     private final EventBus eventBus = new EventBus();
 
     private ConsumerManager consumerManager;
     private ProducerManager producerManager;
     private SubscriptionManager subscriptionManager;
+
+    private FilterEngine filterEngine;
 
     private HttpRetryer httpRetryer;
 
@@ -131,6 +134,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         producerManager = new ProducerManager(this);
         producerManager.init();
+
+        filterEngine = new FilterEngine(metaStorage);
+        filterEngine.init();
 
         super.setHandlerService(new HandlerService());
         super.getHandlerService().setMetrics(this.getMetrics());
