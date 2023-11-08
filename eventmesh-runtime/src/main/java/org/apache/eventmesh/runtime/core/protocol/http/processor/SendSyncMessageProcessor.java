@@ -218,7 +218,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 @Override
                 public void onSuccess(final CloudEvent event) {
                     LogUtils.info(log, "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                            + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
+                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
                         topic, bizNo, uniqueId);
 
                     try {
@@ -266,7 +266,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     LogUtils.error(log, "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                            + "|bizSeqNo={}|uniqueId={}",
+                        + "|bizSeqNo={}|uniqueId={}",
                         System.currentTimeMillis() - startTime,
                         topic, bizNo, uniqueId, e);
                 }

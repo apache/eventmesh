@@ -54,7 +54,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
     private final ReceiveMsgHook<T> listener;
 
     public SubStreamHandler(final ConsumerServiceStub consumerAsyncClient, final EventMeshGrpcClientConfig clientConfig,
-                            final ReceiveMsgHook<T> listener) {
+        final ReceiveMsgHook<T> listener) {
         this.consumerAsyncClient = consumerAsyncClient;
         this.clientConfig = clientConfig;
         this.listener = listener;

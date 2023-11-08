@@ -297,8 +297,8 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         private boolean isNeedTrace(Command cmd) {
             return eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
                 && (Command.REQUEST_TO_SERVER == cmd
-                || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
+                    || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
         }
 
         private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {

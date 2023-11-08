@@ -189,7 +189,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
+        return new String[]{RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
     }
 
     private ClientInfo getClientInfo(final HttpEventWrapper requestWrapper) {

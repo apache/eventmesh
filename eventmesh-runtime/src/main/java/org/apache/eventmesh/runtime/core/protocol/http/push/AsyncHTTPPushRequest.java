@@ -241,7 +241,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
                     LogUtils.info(MESSAGE_LOGGER, "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                            + "|uniqueId={}|cost={}",
+                        + "|uniqueId={}|cost={}",
                         currPushUrl, handleMsgContext.getTopic(),
                         handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
