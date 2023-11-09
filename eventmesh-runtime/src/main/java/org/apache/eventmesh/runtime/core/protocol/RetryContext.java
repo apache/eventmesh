@@ -71,7 +71,7 @@ public abstract class RetryContext implements TimerTask {
                 .orElse(false);
         String eventMeshStoragePluginType = commonConfiguration.getEventMeshStoragePluginType();
         if (Constants.STANDALONE.equals(eventMeshStoragePluginType)) {
-            log.warn("Storage retry disabled, because of eventmesh storage is standalone.");
+            log.warn("Because eventmesh storage is standalone, 'retry.storageEnable' will be ignored.");
             doRun(timeout);
             return;
         }
@@ -101,7 +101,7 @@ public abstract class RetryContext implements TimerTask {
                 getHandleMessageContext().finish();
             }
         } else {
-            log.warn("Storage retry disabled, retry in memory.");
+            log.info("Storage retry disabled, retry in memory.");
             doRun(timeout);
         }
     }
