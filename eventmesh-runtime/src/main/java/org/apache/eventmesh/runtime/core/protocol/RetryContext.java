@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
@@ -29,6 +30,8 @@ import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -87,10 +90,22 @@ public abstract class RetryContext implements TimerTask {
         boolean eventMeshServerRetryStorageEnabled =
             Optional.ofNullable(commonConfiguration).map(CommonConfiguration::isEventMeshServerRetryStorageEnabled)
                 .orElse(false);
+        String eventMeshStoragePluginType = commonConfiguration.getEventMeshStoragePluginType();
+        if (Constants.STANDALONE.equals(eventMeshStoragePluginType) || StringUtils.isBlank(eventMeshStoragePluginType)) {
+            log.warn("Storage retry disabled, because of eventmesh storage is standalone.");
+            doRun(timeout);
+            return;
+        }
         if (eventMeshServerRetryStorageEnabled) {
+            Optional<StorageRetryStrategy> storageRetryStrategy = Optional.ofNullable(
+                EventMeshExtensionFactory.getExtension(RetryStrategy.class,
+                    commonConfiguration.getEventMeshStoragePluginType()).getStorageRetryStrategy());
+            if (!storageRetryStrategy.isPresent()) {
+                log.warn("Storage retry SPI not found, retry in memory.");
+                doRun(timeout);
+                return;
+            }
             if (!STORAGE_RETRY_PROCESSED_EVENT_LIST.contains(event.getId())) {
-                StorageRetryStrategy storageRetryStrategy = EventMeshExtensionFactory.getExtension(RetryStrategy.class,
-                    commonConfiguration.getEventMeshStoragePluginType()).getStorageRetryStrategy();
                 String consumerGroupName = getHandleMessageContext().getConsumerGroup();
                 EventMeshProducer producer = getProducerManager().getEventMeshProducer(consumerGroupName);
                 RetryConfiguration retryConfiguration = RetryConfiguration.builder()
@@ -100,13 +115,14 @@ public abstract class RetryContext implements TimerTask {
                     .producer(producer.getMqProducerWrapper().getMeshMQProducer())
                     .topic(getHandleMessageContext().getTopic())
                     .build();
-                storageRetryStrategy.retry(retryConfiguration);
+                storageRetryStrategy.get().retry(retryConfiguration);
                 STORAGE_RETRY_PROCESSED_EVENT_LIST.add(event.getId());
             } else {
                 STORAGE_RETRY_PROCESSED_EVENT_LIST.remove(event.getId());
                 getHandleMessageContext().finish();
             }
         } else {
+            log.warn("Storage retry disabled, retry in memory.");
             doRun(timeout);
         }
     }
