@@ -219,7 +219,7 @@ public final class HttpClientGroupMapping {
         ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
         if (consumerGroupConf == null) {
             // new subscription
-            consumerGroupConf = new ConsumerGroupConf(consumerGroup, subTopic.getTopic());
+            consumerGroupConf = new ConsumerGroupConf(consumerGroup);
             final ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
             consumeTopicConfig.setConsumerGroup(consumerGroup);
             consumeTopicConfig.setTopic(subTopic.getTopic());

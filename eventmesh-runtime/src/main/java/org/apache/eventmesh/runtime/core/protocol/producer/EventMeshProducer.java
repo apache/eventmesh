@@ -110,10 +110,6 @@ public class EventMeshProducer {
         return mqProducerWrapper;
     }
 
-    public boolean isInited() {
-        return serviceState == ServiceState.INITED;
-    }
-
     public boolean isStarted() {
         return serviceState == ServiceState.RUNNING;
     }

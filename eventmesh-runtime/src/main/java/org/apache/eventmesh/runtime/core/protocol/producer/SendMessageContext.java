@@ -27,8 +27,6 @@ import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +45,6 @@ public class SendMessageContext extends RetryContext {
     private long createTime = System.currentTimeMillis();
 
     public AbstractRemotingServer eventMeshServer;
-
-    private List<CloudEvent> eventList;
 
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
         AbstractRemotingServer eventMeshServer) {
@@ -128,14 +124,6 @@ public class SendMessageContext extends RetryContext {
                 logger.warn("", context.getException());
             }
         });
-    }
-
-    public List<CloudEvent> getEventList() {
-        return eventList;
-    }
-
-    public void setEventList(List<CloudEvent> eventList) {
-        this.eventList = eventList;
     }
 
     @Override

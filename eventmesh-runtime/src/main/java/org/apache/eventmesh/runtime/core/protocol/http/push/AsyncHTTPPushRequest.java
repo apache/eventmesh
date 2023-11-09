@@ -35,7 +35,6 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
@@ -320,7 +319,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    protected HandleMessageContext getHandleMessageContext() throws Exception {
+    protected HandleMsgContext getHandleMessageContext() {
         return handleMsgContext;
     }
 

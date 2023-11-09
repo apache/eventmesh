@@ -25,11 +25,6 @@ import org.apache.rocketmq.common.MixAll;
 public class TopicNameHelperImpl implements TopicNameHelper {
 
     @Override
-    public String generateRetryTopicName(String topicName) {
-        return MixAll.getRetryTopic(topicName);
-    }
-
-    @Override
     public boolean isRetryTopic(String retryTopic) {
         if (StringUtils.isBlank(retryTopic)) {
             return false;

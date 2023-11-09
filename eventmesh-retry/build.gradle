@@ -14,22 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.eventmesh.api;
-
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
-
-import lombok.SneakyThrows;
-
-/**
- * Topic name generator.
- */
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.STORAGE)
-public interface TopicNameHelper {
-
-    @SneakyThrows
-    default boolean isRetryTopic(String retryTopic) {
-        throw new IllegalAccessException("Method not supported.");
-    }
-}
