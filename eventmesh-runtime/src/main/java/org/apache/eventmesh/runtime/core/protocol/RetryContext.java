@@ -23,7 +23,6 @@ import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
 import org.apache.eventmesh.retry.api.strategy.StorageRetryStrategy;
 import org.apache.eventmesh.retry.api.timer.Timeout;
-import org.apache.eventmesh.retry.api.timer.Timer;
 import org.apache.eventmesh.retry.api.timer.TimerTask;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
@@ -31,13 +30,10 @@ import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 
@@ -58,23 +54,6 @@ public abstract class RetryContext implements TimerTask {
     public CommonConfiguration commonConfiguration;
 
     public long executeTime = System.currentTimeMillis();
-
-    public long getExecuteTime() {
-        return executeTime;
-    }
-
-    protected void rePut(Timeout timeout, long tick, TimeUnit timeUnit) {
-        if (timeout == null) {
-            return;
-        }
-
-        Timer timer = timeout.timer();
-        if (timer.isStop() || timeout.isCancelled()) {
-            return;
-        }
-
-        timer.newTimeout(timeout.task(), tick, timeUnit);
-    }
 
     public void setEvent(CloudEvent event) {
         this.event = event;
