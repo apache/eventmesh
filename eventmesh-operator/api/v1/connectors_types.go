@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,8 +30,30 @@ type ConnectorsSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// Foo is an example field of Connectors. Edit connectors_types.go to remove/update
 
-	// Specify the container in detail if needed
-	ConnectorDeployment v1.Deployment `json:"connectorDeployment"`
+	Size int `json:"size"`
+
+	// BaseImage is the controller image to use for the Pods
+	ConnectorImage string `json:"controllerImage"`
+
+	// ImagePullPolicy defines how the image is pulled
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+
+	// Pod Security Context
+	PodSecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
+	// Container Security Context
+	ContainerSecurityContext *corev1.SecurityContext `json:"containerSecurityContext,omitempty"`
+	// The secrets used to pull image from private registry
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+	// Affinity the pod's scheduling constraints
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	// Tolerations the pod's tolerations.
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// NodeSelector is a selector which must be true for the pod to fit on a node
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	// PriorityClassName indicates the pod's priority
+	PriorityClassName string `json:"priorityClassName,omitempty"`
+	// ServiceAccountName
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 // ConnectorsStatus defines the observed state of ConnectorsStatus
@@ -39,6 +61,8 @@ type ConnectorsStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	Nodes []string `json:"nodes"`
+	Size  int      `json:"size"`
 }
 
 //+kubebuilder:object:root=true

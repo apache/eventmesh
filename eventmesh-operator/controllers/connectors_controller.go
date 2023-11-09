@@ -18,18 +18,23 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	eventmeshoperatorv1 "github.com/apache/eventmesh/eventmesh-operator/api/v1"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strconv"
+	_ "strings"
 )
 
 // ConnectorsReconciler reconciles a Connectors object
@@ -68,78 +73,70 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	connectorDeployment := r.newConnectorDeploymentForCR(connector)
-
-	found := &appsv1.Deployment{}
-	err = r.Client.Get(context.TODO(), types.NamespacedName{
-		Name:      connectorDeployment.Name,
-		Namespace: connectorDeployment.Namespace,
-	}, found)
-
+	connectorStatefulSet := r.getConnectorStatefulSet(connector)
+	// Check if the statefulSet already exists, if not create a new one
+	found := &appsv1.StatefulSet{}
+	err = r.Client.Get(context.TODO(),
+		types.NamespacedName{
+			Name:      connectorStatefulSet.Name,
+			Namespace: connectorStatefulSet.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		r.Logger.Info("Creating RocketMQ Console Deployment",
-			"Namespace", connectorDeployment.Namespace, "Name", connectorDeployment.Name)
-		err = r.Client.Create(context.TODO(), connectorDeployment)
+		r.Logger.Info("Creating a new Connector StatefulSet.",
+			"StatefulSet.Namespace", connectorStatefulSet.Namespace,
+			"StatefulSet.Name", connectorStatefulSet.Name)
+		err = r.Client.Create(context.TODO(), connectorStatefulSet)
 		if err != nil {
-			r.Logger.Error(err, "Failed to create new connectorDeployment",
-				"Namespace", connectorDeployment.Namespace,
-				"Name", connectorDeployment.Name)
-			return ctrl.Result{}, err
+			r.Logger.Error(err, "Failed to create new Connector StatefulSet",
+				"StatefulSet.Namespace", connectorStatefulSet.Namespace,
+				"StatefulSet.Name", connectorStatefulSet.Name)
 		}
-		return ctrl.Result{}, nil
 	} else if err != nil {
-		return ctrl.Result{}, err
+		r.Logger.Error(err, "Failed to list Connector StatefulSet.")
 	}
 
-	if !reflect.DeepEqual(connector.Spec.ConnectorDeployment.Spec.Replicas, found.Spec.Replicas) {
-		found.Spec.Replicas = connector.Spec.ConnectorDeployment.Spec.Replicas
-		err = r.Client.Update(context.TODO(), found)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update connector CR ",
-				"Namespace", found.Namespace, "Name", found.Name)
-		} else {
-			r.Logger.Info("Successfully connector CR ",
-				"Namespace", found.Namespace, "Name", found.Name)
+	podList := &corev1.PodList{}
+	labelSelector := labels.SelectorFromSet(labelsForController(connector.Name))
+	listOps := &client.ListOptions{
+		Namespace:     connector.Namespace,
+		LabelSelector: labelSelector,
+	}
+	err = r.Client.List(context.TODO(), podList, listOps)
+	if err != nil {
+		r.Logger.Error(err, "Failed to list pods.", "Connector.Namespace", connector.Namespace,
+			"Connector.Name", connector.Name)
+		return reconcile.Result{}, err
+	}
+	podNames := getConnectorPodNames(podList.Items)
+	r.Logger.Info("Connector.Status.Nodes length = " + strconv.Itoa(len(connector.Status.Nodes)))
+	r.Logger.Info("podNames length = " + strconv.Itoa(len(podNames)))
+	// Ensure every pod is in running phase
+	for _, pod := range podList.Items {
+		if !reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
+			r.Logger.Info("pod " + pod.Name + " phase is " + string(pod.Status.Phase) + ", wait for a moment...")
 		}
 	}
-	r.Logger.Info("Connector Deployment already exists",
-		"Namespace", found.Namespace, "Name", found.Name)
-	return ctrl.Result{}, nil
-}
 
-func (r ConnectorsReconciler) newConnectorDeploymentForCR(connector *eventmeshoperatorv1.Connectors) *appsv1.Deployment {
-	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      connector.Name,
-			Namespace: connector.Namespace,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: connector.Spec.ConnectorDeployment.Spec.Replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: connector.Spec.ConnectorDeployment.Spec.Selector.MatchLabels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: connector.Spec.ConnectorDeployment.Spec.Template.ObjectMeta.Labels,
-				},
-				Spec: corev1.PodSpec{
-					ServiceAccountName: connector.Spec.ConnectorDeployment.Spec.Template.Spec.ServiceAccountName,
-					Affinity:           connector.Spec.ConnectorDeployment.Spec.Template.Spec.Affinity,
-					ImagePullSecrets:   connector.Spec.ConnectorDeployment.Spec.Template.Spec.ImagePullSecrets,
-					Containers: []corev1.Container{{
-						Resources:       connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].Resources,
-						Image:           connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].Image,
-						Args:            connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].Args,
-						Name:            connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].Name,
-						ImagePullPolicy: connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].ImagePullPolicy,
-						Ports:           connector.Spec.ConnectorDeployment.Spec.Template.Spec.Containers[0].Ports,
-					}},
-				},
-			},
-		},
+	// Update status.Size if needed
+	if connector.Spec.Size != connector.Status.Size {
+		r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
+		r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
+		connector.Status.Size = connector.Spec.Size
+		err = r.Client.Status().Update(context.TODO(), connector)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update Connector Size status.")
+		}
 	}
-	_ = controllerutil.SetControllerReference(connector, deployment, r.Scheme)
-	return deployment
+
+	// Update status.Nodes if needed
+	if !reflect.DeepEqual(podNames, connector.Status.Nodes) {
+		connector.Status.Nodes = podNames
+		err = r.Client.Status().Update(context.TODO(), connector)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update Connector Nodes status.")
+		}
+	}
+
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -147,4 +144,78 @@ func (r ConnectorsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&eventmeshoperatorv1.Connectors{}).
 		Complete(r)
+}
+
+func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
+	ls := labelsForController(connector.Name)
+
+	var replica = int32(connector.Spec.Size)
+	connectorDep := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connector.Name,
+			Namespace: connector.Namespace,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			ServiceName: fmt.Sprintf("%s-service", connector.Name),
+			Replicas:    &replica,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: ls,
+			},
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+				Type: appsv1.RollingUpdateStatefulSetStrategyType,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: ls,
+				},
+				Spec: corev1.PodSpec{
+
+					ServiceAccountName: connector.Spec.ServiceAccountName,
+					Affinity:           connector.Spec.Affinity,
+					Tolerations:        connector.Spec.Tolerations,
+					NodeSelector:       connector.Spec.NodeSelector,
+					PriorityClassName:  connector.Spec.PriorityClassName,
+					ImagePullSecrets:   connector.Spec.ImagePullSecrets,
+					Containers: []corev1.Container{{
+						Image:           connector.Spec.ConnectorImage,
+						Name:            "eventmesh-connector",
+						SecurityContext: getConnectorContainerSecurityContext(connector),
+						ImagePullPolicy: connector.Spec.ImagePullPolicy,
+					}},
+					SecurityContext: getConnectorPodSecurityContext(connector),
+				},
+			},
+		},
+	}
+	_ = controllerutil.SetControllerReference(connector, connectorDep, r.Scheme)
+
+	return connectorDep
+}
+
+func getConnectorContainerSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.SecurityContext {
+	var securityContext = corev1.SecurityContext{}
+	if connector.Spec.ContainerSecurityContext != nil {
+		securityContext = *connector.Spec.ContainerSecurityContext
+	}
+	return &securityContext
+}
+
+func labelsForController(name string) map[string]string {
+	return map[string]string{"app": "connector", "connectors_rocketmq": name}
+}
+
+func getConnectorPodSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.PodSecurityContext {
+	var securityContext = corev1.PodSecurityContext{}
+	if connector.Spec.PodSecurityContext != nil {
+		securityContext = *connector.Spec.PodSecurityContext
+	}
+	return &securityContext
+}
+
+func getConnectorPodNames(pods []corev1.Pod) []string {
+	var podNames []string
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames
 }

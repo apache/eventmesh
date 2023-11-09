@@ -34,7 +34,7 @@ rules:
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - eventmeshoperators
+  - runtime
   verbs:
   - create
   - delete
@@ -46,13 +46,13 @@ rules:
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - eventmeshoperators/finalizers
+  - runtime/finalizers
   verbs:
   - update
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - eventmeshoperators/status
+  - runtime/status
   verbs:
   - get
   - patch

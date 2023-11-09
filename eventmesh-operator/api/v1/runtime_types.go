@@ -24,12 +24,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// EventMeshOperatorSpec defines the desired state of EventMeshOperator
-type EventMeshOperatorSpec struct {
+// RuntimeSpec defines the desired state of Runtime
+type RuntimeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of EventMeshOperator. Edit eventmeshoperator_types.go to remove/update
+	// Foo is an example field of Runtime. Edit runtime_types.go to remove/update
 	Size int `json:"size"`
 	// Image
 	Image string `json:"image"`
@@ -54,8 +54,8 @@ type EventMeshOperatorSpec struct {
 	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
-// EventMeshOperatorStatus defines the observed state of EventMeshOperator
-type EventMeshOperatorStatus struct {
+// RuntimeStatus defines the observed state of Runtime
+type RuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Size int `json:"size"`
@@ -66,24 +66,24 @@ type EventMeshOperatorStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// EventMeshOperator is the Schema for the eventmeshoperators API
-type EventMeshOperator struct {
+// Runtime is the Schema for the Runtime API
+type Runtime struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   EventMeshOperatorSpec   `json:"spec,omitempty"`
-	Status EventMeshOperatorStatus `json:"status,omitempty"`
+	Spec   RuntimeSpec   `json:"spec,omitempty"`
+	Status RuntimeStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// EventMeshOperatorList contains a list of EventMeshOperator
-type EventMeshOperatorList struct {
+// RuntimeList contains a list of Runtime
+type RuntimeList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []EventMeshOperator `json:"items"`
+	Items           []Runtime `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&EventMeshOperator{}, &EventMeshOperatorList{})
+	SchemeBuilder.Register(&Runtime{}, &RuntimeList{})
 }

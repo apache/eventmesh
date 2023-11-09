@@ -5,20 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
   creationTimestamp: null
-  name: connectors.eventmesh-operator.eventmesh
+  name: runtimes.eventmesh-operator.eventmesh
 spec:
   group: eventmesh-operator.eventmesh
   names:
-    kind: Connectors
-    listKind: ConnectorsList
-    plural: connectors
-    singular: connectors
+    kind: Runtime
+    listKind: RuntimeList
+    plural: runtimes
+    singular: runtime
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Connectors is the Schema for the Connectors API
+        description: Runtime is the Schema for the Runtime API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,7 +33,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ConnectorsSpec defines the desired state of ConnectorsSpec
+            description: RuntimeSpec defines the desired state of Runtime
             properties:
               affinity:
                 description: Affinity the pod's scheduling constraints
@@ -863,6 +863,9 @@ spec:
                         type: array
                     type: object
                 type: object
+              allowRestart:
+                description: AllowRestart defines whether allow pod restart
+                type: boolean
               containerSecurityContext:
                 description: Container Security Context
                 properties:
@@ -1022,25 +1025,12 @@ spec:
                         type: string
                     type: object
                 type: object
-              controllerImage:
-                description: BaseImage is the controller image to use for the Pods
+              image:
+                description: Image
                 type: string
               imagePullPolicy:
-                description: ImagePullPolicy defines how the image is pulled
+                description: Define the mirror pulling policy
                 type: string
-              imagePullSecrets:
-                description: The secrets used to pull image from private registry
-                items:
-                  description: LocalObjectReference contains enough information to
-                    let you locate the referenced object inside the same namespace.
-                  properties:
-                    name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
-                      type: string
-                  type: object
-                  x-kubernetes-map-type: atomic
-                type: array
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -1050,6 +1040,8 @@ spec:
               priorityClassName:
                 description: PriorityClassName indicates the pod's priority
                 type: string
+              replicaPerGroup:
+                type: integer
               securityContext:
                 description: Pod Security Context
                 properties:
@@ -1218,10 +1210,9 @@ spec:
                         type: string
                     type: object
                 type: object
-              serviceAccountName:
-                description: ServiceAccountName
-                type: string
               size:
+                description: Foo is an example field of Runtime. Edit runtime_types.go
+                  to remove/update
                 type: integer
               tolerations:
                 description: Tolerations the pod's tolerations.
@@ -1264,17 +1255,23 @@ spec:
                   type: object
                 type: array
             required:
-            - controllerImage
+            - allowRestart
+            - image
+            - imagePullPolicy
+            - replicaPerGroup
             - size
             type: object
           status:
-            description: ConnectorsStatus defines the observed state of ConnectorsStatus
+            description: RuntimeStatus defines the observed state of Runtime
             properties:
               nodes:
                 items:
                   type: string
                 type: array
               size:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
                 type: integer
             required:
             - nodes

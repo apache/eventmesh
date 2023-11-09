@@ -89,7 +89,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.EventMeshOperatorReconciler{
+	if err = (&controllers.RuntimeReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 		Logger: ctrl.Log.WithName("eventmeshoperator"),
