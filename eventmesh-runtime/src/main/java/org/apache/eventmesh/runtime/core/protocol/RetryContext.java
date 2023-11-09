@@ -25,7 +25,7 @@ import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.retry.api.timer.Timer;
 import org.apache.eventmesh.retry.api.timer.TimerTask;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
@@ -111,7 +111,7 @@ public abstract class RetryContext implements TimerTask {
         }
     }
 
-    protected HandleMsgContext getHandleMessageContext() throws Exception {
+    protected HandleMessageContext getHandleMessageContext() throws Exception {
         throw new IllegalAccessException("method not supported.");
     }
 

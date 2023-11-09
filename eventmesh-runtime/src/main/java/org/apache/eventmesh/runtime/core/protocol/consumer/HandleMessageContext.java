@@ -23,4 +23,8 @@ package org.apache.eventmesh.runtime.core.protocol.consumer;
 public interface HandleMessageContext {
 
     void finish();
+
+    String getTopic();
+
+    String getConsumerGroup();
 }
