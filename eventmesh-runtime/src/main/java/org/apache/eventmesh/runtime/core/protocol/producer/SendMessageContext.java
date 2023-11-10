@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.runtime.boot.AbstractRemotingServer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 
@@ -127,7 +126,7 @@ public class SendMessageContext extends RetryContext {
     }
 
     @Override
-    public void doRun(Timeout timeout) throws Exception {
+    public void doRun() throws Exception {
         retry();
     }
 }

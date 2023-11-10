@@ -632,7 +632,7 @@ public class HashedWheelTimer implements Timer {
             }
 
             try {
-                task.run(this);
+                task.run();
                 task.setExecuteTimeHook(System.currentTimeMillis());
             } catch (Throwable t) {
                 if (logger.isWarnEnabled()) {

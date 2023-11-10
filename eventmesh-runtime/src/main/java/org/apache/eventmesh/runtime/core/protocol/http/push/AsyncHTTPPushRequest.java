@@ -33,7 +33,6 @@ import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -366,7 +365,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public void doRun(Timeout timeout) {
+    public void doRun() {
         tryHTTPRequest();
     }
 }

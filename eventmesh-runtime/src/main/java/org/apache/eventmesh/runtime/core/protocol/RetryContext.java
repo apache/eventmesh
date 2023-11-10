@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
 import org.apache.eventmesh.retry.api.strategy.StorageRetryStrategy;
-import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.retry.api.timer.TimerTask;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
@@ -65,14 +64,14 @@ public abstract class RetryContext implements TimerTask {
     }
 
     @Override
-    public final void run(Timeout timeout) throws Exception {
+    public final void run() throws Exception {
         boolean eventMeshServerRetryStorageEnabled =
             Optional.ofNullable(commonConfiguration).map(CommonConfiguration::isEventMeshServerRetryStorageEnabled)
                 .orElse(false);
         String eventMeshStoragePluginType = commonConfiguration.getEventMeshStoragePluginType();
         if (Constants.STANDALONE.equals(eventMeshStoragePluginType)) {
             log.warn("Because eventmesh storage is standalone, 'retry.storageEnable' will be ignored.");
-            doRun(timeout);
+            doRun();
             return;
         }
         if (eventMeshServerRetryStorageEnabled) {
@@ -81,7 +80,7 @@ public abstract class RetryContext implements TimerTask {
                     commonConfiguration.getEventMeshStoragePluginType()).getStorageRetryStrategy());
             if (!storageRetryStrategy.isPresent()) {
                 log.warn("Storage retry SPI not found, retry in memory.");
-                doRun(timeout);
+                doRun();
                 return;
             }
             if (!STORAGE_RETRY_PROCESSED_EVENT_LIST.contains(event.getId())) {
@@ -102,7 +101,7 @@ public abstract class RetryContext implements TimerTask {
             }
         } else {
             log.info("Storage retry disabled, retry in memory.");
-            doRun(timeout);
+            doRun();
         }
     }
 
@@ -110,7 +109,7 @@ public abstract class RetryContext implements TimerTask {
         throw new IllegalAccessException("method not supported.");
     }
 
-    public abstract void doRun(Timeout timeout) throws Exception;
+    public abstract void doRun() throws Exception;
 
     @SneakyThrows
     protected ProducerManager getProducerManager() {

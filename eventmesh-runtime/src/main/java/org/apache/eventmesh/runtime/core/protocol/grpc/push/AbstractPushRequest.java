@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -158,7 +157,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     }
 
     @Override
-    public void doRun(Timeout timeout) throws Exception {
+    public void doRun() throws Exception {
         tryPushRequest();
     }
 }

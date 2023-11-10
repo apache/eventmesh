@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.retry.api.timer.Timeout;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
@@ -195,7 +194,7 @@ public class DownStreamMsgContext extends RetryContext {
     }
 
     @Override
-    public void doRun(Timeout timeout) {
+    public void doRun() {
         retry();
     }
 }
