@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package eventmesh_runtime
 
 import (
 	"context"
@@ -28,18 +28,64 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
 	"time"
 )
 
 // RuntimeReconciler reconciles a Runtime object
 type RuntimeReconciler struct {
-	client.Client
+	Client client.Client
 	Scheme *runtime.Scheme
 	Logger logr.Logger
+}
+
+// SetupWithManager creates a new Runtime Controller and adds it to the Manager. The Manager will set fields on the Controller
+// and Start it when the Manager is Started.
+func SetupWithManager(mgr manager.Manager) error {
+	return add(mgr, newReconciler(mgr))
+}
+
+// newReconciler returns a new reconcile.Reconciler
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	return &RuntimeReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Logger: mgr.GetLogger(),
+	}
+}
+
+// add adds a new Controller to mgr with r as the reconcile.Reconciler
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Create a new controller
+	c, err := controller.New("runtime-controller", mgr, controller.Options{Reconciler: r})
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to primary resource Broker
+	err = c.Watch(&source.Kind{Type: &eventmeshoperatorv1.Runtime{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// TODO(user): Modify this to be the types you create that are owned by the primary resource
+	// Watch for changes to secondary resource Pods and requeue the owner runtime
+	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &eventmeshoperatorv1.Runtime{},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime,verbs=get;list;watch;create;update;patch;delete
@@ -55,7 +101,7 @@ type RuntimeReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
-func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	r.Logger.Info("eventMeshRuntime start reconciling",
 		"Namespace", req.Namespace, "Namespace", req.Name)
 
@@ -65,10 +111,10 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("eventMeshRuntime resource not found. Ignoring since object must be deleted.")
-			return ctrl.Result{}, err
+			return reconcile.Result{}, err
 		}
 		r.Logger.Error(err, "Failed to get eventMeshRuntime")
-		return ctrl.Result{}, err
+		return reconcile.Result{}, err
 	}
 	r.Logger.Info("get eventMeshRuntime object", "name", eventMeshRuntime.Name)
 
@@ -83,7 +129,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	for groupIndex := 0; groupIndex < GroupNum; groupIndex++ {
 		r.Logger.Info("Check eventMeshRuntime cluster " + strconv.Itoa(groupIndex+1) + "/" + strconv.Itoa(GroupNum))
-		deployment := r.getEventMeshStatefulSet(eventMeshRuntime, groupIndex, 0)
+		deployment := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
 		// Check if the statefulSet already exists, if not create a new one
 		found := &appsv1.StatefulSet{}
 		err = r.Client.Get(context.TODO(), types.NamespacedName{
@@ -104,13 +150,12 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			r.Logger.Error(err, "Failed to get eventMeshRuntime StatefulSet.")
 		}
 	}
-
 	if eventMeshRuntime.Spec.AllowRestart {
 		for groupIndex := 0; groupIndex < eventMeshRuntime.Spec.Size; groupIndex++ {
-			eventmeshName := eventMeshRuntime.Name + "-" + strconv.Itoa(groupIndex)
-			r.Logger.Info("update eventMeshRuntime", eventmeshName)
+			runtimeName := eventMeshRuntime.Name + "-" + strconv.Itoa(groupIndex)
+			r.Logger.Info("update eventMeshRuntime", "runtimeName", runtimeName)
 			// update
-			deployment := r.getEventMeshStatefulSet(eventMeshRuntime, groupIndex, 0)
+			deployment := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
 			found := &appsv1.StatefulSet{}
 			err = r.Client.Get(context.TODO(), types.NamespacedName{
 				Name:      deployment.Name,
@@ -121,17 +166,16 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			} else {
 				err = r.Client.Update(context.TODO(), found)
 				if err != nil {
-					r.Logger.Error(err, "Failed to update eventMeshRuntime"+eventmeshName,
+					r.Logger.Error(err, "Failed to update eventMeshRuntime "+runtimeName,
 						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
 				} else {
-					r.Logger.Info("Successfully update"+eventmeshName,
+					r.Logger.Info("Successfully update"+runtimeName,
 						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
 				}
 				time.Sleep(time.Duration(1) * time.Second)
 			}
 		}
 	}
-
 	podList := &corev1.PodList{}
 	labelSelector := labels.SelectorFromSet(getLabels(eventMeshRuntime.Name))
 	listOps := &client.ListOptions{
@@ -142,7 +186,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err != nil {
 		r.Logger.Error(err, "Failed to list pods.",
 			"eventMeshRuntime.Namespace", eventMeshRuntime.Namespace, "eventMeshRuntime.Name", eventMeshRuntime.Name)
-		return ctrl.Result{}, err
+		return reconcile.Result{}, err
 	}
 
 	podNames := getRuntimePodNames(podList.Items)
@@ -159,6 +203,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
 		r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
 		r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
+		eventMeshRuntime.Status.Nodes = podNames
 		eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
 		err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
 		if err != nil {
@@ -174,7 +219,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			r.Logger.Error(err, "Failed to update eventMeshRuntime Nodes status.")
 		}
 	}
-	return ctrl.Result{}, nil
+	return reconcile.Result{}, nil
 }
 
 func getRuntimePodNames(pods []corev1.Pod) []string {
@@ -187,21 +232,22 @@ func getRuntimePodNames(pods []corev1.Pod) []string {
 
 var GroupNum = 0
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *RuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&eventmeshoperatorv1.Runtime{}).
-		Complete(r)
-}
+//
+//// SetupWithManager sets up the controller with the Manager.
+//func (r *RuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+//	return ctrl.NewControllerManagedBy(mgr).
+//		For(&eventmeshoperatorv1.Runtime{}).
+//		Complete(r)
+//}
 
-func (r *RuntimeReconciler) getEventMeshStatefulSet(runtime *eventmeshoperatorv1.Runtime, groupIndex int, replicaIndex int) *appsv1.StatefulSet {
+func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshoperatorv1.Runtime, groupIndex int, replicaIndex int) *appsv1.StatefulSet {
 	var statefulSetName string
 	var a int32 = 1
 	var c = &a
 	if replicaIndex == 0 {
-		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-A"
+		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-a"
 	} else {
-		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-R-" + strconv.Itoa(replicaIndex)
+		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-r-" + strconv.Itoa(replicaIndex)
 	}
 	label := getLabels(runtime.Name)
 	deployment := &appsv1.StatefulSet{

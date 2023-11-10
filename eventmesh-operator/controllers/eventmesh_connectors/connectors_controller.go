@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package eventmesh_connectors
 
 import (
 	"context"
@@ -29,19 +29,64 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
 	_ "strings"
 )
 
 // ConnectorsReconciler reconciles a Connectors object
 type ConnectorsReconciler struct {
-	client.Client
+	Client client.Client
 	Scheme *runtime.Scheme
 	Logger logr.Logger
+}
+
+// SetupWithManager creates a new Connectors Controller and adds it to the Manager. The Manager will set fields on the Controller
+// and Start it when the Manager is Started.
+func SetupWithManager(mgr manager.Manager) error {
+	return add(mgr, newReconciler(mgr))
+}
+
+// newReconciler returns a new reconcile.Reconciler
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	return &ConnectorsReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Logger: mgr.GetLogger(),
+	}
+}
+
+// add adds a new Controller to mgr with r as the reconcile.Reconciler
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Create a new controller
+	c, err := controller.New("Connectors-controller", mgr, controller.Options{Reconciler: r})
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to primary resource Broker
+	err = c.Watch(&source.Kind{Type: &eventmeshoperatorv1.Connectors{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// TODO(user): Modify this to be the types you create that are owned by the primary resource
+	// Watch for changes to secondary resource Pods and requeue the owner runtime
+	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &eventmeshoperatorv1.Connectors{},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=connectors,verbs=get;list;watch;create;update;patch;delete
@@ -57,7 +102,7 @@ type ConnectorsReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
-func (r ConnectorsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	r.Logger.Info("connectors start reconciling",
 		"Namespace", req.Namespace, "Namespace", req.Name)
 
@@ -67,10 +112,10 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("connector resource not found. Ignoring since object must be deleted.")
-			return ctrl.Result{}, err
+			return reconcile.Result{}, err
 		}
 		r.Logger.Error(err, "Failed to get connector")
-		return ctrl.Result{}, err
+		return reconcile.Result{}, err
 	}
 
 	connectorStatefulSet := r.getConnectorStatefulSet(connector)
@@ -120,6 +165,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if connector.Spec.Size != connector.Status.Size {
 		r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
 		r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
+		connector.Status.Nodes = podNames
 		connector.Status.Size = connector.Spec.Size
 		err = r.Client.Status().Update(context.TODO(), connector)
 		if err != nil {
@@ -136,15 +182,15 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return reconcile.Result{}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r ConnectorsReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&eventmeshoperatorv1.Connectors{}).
-		Complete(r)
-}
+//// SetupWithManager sets up the controller with the Manager.
+//func (r ConnectorsReconciler) SetupWithManager(mgr ctrl.Manager) error {
+//	return ctrl.NewControllerManagedBy(mgr).
+//		For(&eventmeshoperatorv1.Connectors{}).
+//		Complete(r)
+//}
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
 	ls := labelsForController(connector.Name)
@@ -169,7 +215,6 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 					Labels: ls,
 				},
 				Spec: corev1.PodSpec{
-
 					ServiceAccountName: connector.Spec.ServiceAccountName,
 					Affinity:           connector.Spec.Affinity,
 					Tolerations:        connector.Spec.Tolerations,
@@ -201,7 +246,7 @@ func getConnectorContainerSecurityContext(connector *eventmeshoperatorv1.Connect
 }
 
 func labelsForController(name string) map[string]string {
-	return map[string]string{"app": "connector", "connectors_rocketmq": name}
+	return map[string]string{"app": "connector", "eventmesh_connectors": name}
 }
 
 func getConnectorPodSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.PodSecurityContext {
