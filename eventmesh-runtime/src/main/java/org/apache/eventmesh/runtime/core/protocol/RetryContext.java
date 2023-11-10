@@ -77,7 +77,7 @@ public abstract class RetryContext implements TimerTask {
         if (eventMeshServerRetryStorageEnabled) {
             Optional<StorageRetryStrategy> storageRetryStrategy = Optional.ofNullable(
                 EventMeshExtensionFactory.getExtension(RetryStrategy.class,
-                    commonConfiguration.getEventMeshStoragePluginType()).getStorageRetryStrategy());
+                    commonConfiguration.getEventMeshStoragePluginType())).map(RetryStrategy::getStorageRetryStrategy);
             if (!storageRetryStrategy.isPresent()) {
                 log.warn("Storage retry SPI not found, retry in memory.");
                 doRun();
