@@ -57,7 +57,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &RuntimeReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
-		Logger: mgr.GetLogger(),
+		Logger: mgr.GetLogger().WithName("runtime"),
 	}
 }
 
@@ -69,7 +69,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to primary resource Broker
+	// Watch for changes to primary resource runtime
 	err = c.Watch(&source.Kind{Type: &eventmeshoperatorv1.Runtime{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
@@ -91,6 +91,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=pods/exec,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="apps",resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -219,6 +222,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 			r.Logger.Error(err, "Failed to update eventMeshRuntime Nodes status.")
 		}
 	}
+	r.Logger.Info("Successful reconciliation!")
 	return reconcile.Result{}, nil
 }
 

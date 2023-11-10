@@ -58,19 +58,19 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ConnectorsReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
-		Logger: mgr.GetLogger(),
+		Logger: mgr.GetLogger().WithName("connector"),
 	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("Connectors-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("connectors-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to primary resource Broker
+	// Watch for changes to primary resource connector
 	err = c.Watch(&source.Kind{Type: &eventmeshoperatorv1.Connectors{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
@@ -92,6 +92,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=connectors,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=connectors/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=connectors/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=pods/exec,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="apps",resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -182,6 +185,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		}
 	}
 
+	r.Logger.Info("Successful reconciliation!")
 	return reconcile.Result{}, nil
 }
 
