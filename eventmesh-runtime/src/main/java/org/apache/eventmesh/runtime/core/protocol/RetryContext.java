@@ -23,7 +23,6 @@ import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
 import org.apache.eventmesh.retry.api.strategy.StorageRetryStrategy;
 import org.apache.eventmesh.retry.api.timer.TimerTask;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
@@ -77,7 +76,8 @@ public abstract class RetryContext implements TimerTask {
         if (eventMeshServerRetryStorageEnabled) {
             Optional<StorageRetryStrategy> storageRetryStrategy = Optional.ofNullable(
                 EventMeshExtensionFactory.getExtension(RetryStrategy.class,
-                    commonConfiguration.getEventMeshStoragePluginType())).map(RetryStrategy::getStorageRetryStrategy);
+                    commonConfiguration.getEventMeshStoragePluginType()))
+                .map(RetryStrategy::getStorageRetryStrategy);
             if (!storageRetryStrategy.isPresent()) {
                 log.warn("Storage retry SPI not found, retry in memory.");
                 doRun();
@@ -116,8 +116,4 @@ public abstract class RetryContext implements TimerTask {
         throw new IllegalAccessException("method not supported.");
     }
 
-    @SneakyThrows
-    protected ConsumerGroupConf getConsumerGroupConf() {
-        throw new IllegalAccessException("method not supported.");
-    }
 }
