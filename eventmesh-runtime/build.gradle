@@ -73,6 +73,7 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     implementation project(":eventmesh-retry:eventmesh-retry-api")
+    implementation project(":eventmesh-retry:eventmesh-retry-rocketmq")
 
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.mockito:mockito-junit-jupiter"
