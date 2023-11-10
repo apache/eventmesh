@@ -188,7 +188,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     SubscribeResponseBody.class);
                 final long endTime = System.currentTimeMillis();
                 LogUtils.error(log, "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                        + "|bizSeqNo={}|uniqueId={}",
+                    + "|bizSeqNo={}|uniqueId={}",
                     endTime - startTime,
                     JsonUtils.toJSONString(subscribeRequestBody.getTopics()),
                     subscribeRequestBody.getUrl(), e);

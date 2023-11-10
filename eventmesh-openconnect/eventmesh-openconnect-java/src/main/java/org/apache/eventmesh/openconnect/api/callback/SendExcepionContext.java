@@ -15,16 +15,38 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.openconnect.api.callback;
 
-    implementation 'org.redisson:redisson:3.17.3'
+public class SendExcepionContext {
 
-    api 'io.cloudevents:cloudevents-json-jackson'
+    private String messageId;
+    private String topic;
+    private Throwable cause;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    public SendExcepionContext() {
+    }
 
-    testImplementation 'ai.grakn:redis-mock:0.1.6'
-    testImplementation project(":eventmesh-common")
+    public String getMessageId() {
+        return this.messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTopic() {
+        return this.topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public Throwable getCause() {
+        return this.cause;
+    }
+
+    public void setCause(Throwable cause) {
+        this.cause = cause;
+    }
 }

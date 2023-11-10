@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+package org.apache.eventmesh.openconnect.api.callback;
 
-    implementation 'org.redisson:redisson:3.17.3'
+/**
+ * Message sending callback interface.
+ */
+public interface SendMessageCallback {
 
-    api 'io.cloudevents:cloudevents-json-jackson'
+    void onSuccess(SendResult sendResult);
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    testImplementation 'ai.grakn:redis-mock:0.1.6'
-    testImplementation project(":eventmesh-common")
+    void onException(SendExcepionContext sendExcepionContext);
 }

@@ -87,7 +87,7 @@ public class ConnectRecord {
         }
     }
 
-    public void addExtension(String key, String value) {
+    public void addExtension(String key, Object value) {
         if (this.extensions == null) {
             this.extensions = new DefaultKeyValue();
         }
@@ -99,6 +99,13 @@ public class ConnectRecord {
             return null;
         }
         return this.extensions.getString(key);
+    }
+
+    public Object getExtensionObj(String key) {
+        if (this.extensions == null) {
+            return null;
+        }
+        return this.extensions.getObject(key);
     }
 
     @Override
