@@ -52,17 +52,13 @@ jobs:
           languages: ${{ matrix.language }}
 
       - if: matrix.language == 'cpp' || matrix.language == 'csharp'
-        name: Install automake and autoconf-archive for C
+        name: Build C
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             sudo apt-get update && sudo apt-get install -y automake autoconf-archive
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          elif [[ "${{ matrix.os }}" == "macOS-latest" ]]; then
             brew install automake autoconf-archive
           fi
-
-      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
-        name: Build C
-        run: |
           make -C ./eventmesh-sdks/eventmesh-sdk-c  
 
       - name: Cache Gradle packages
