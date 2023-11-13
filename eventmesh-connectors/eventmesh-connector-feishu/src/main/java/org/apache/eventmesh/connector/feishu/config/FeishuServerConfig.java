@@ -25,8 +25,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class FeishuServerConfig extends Config {
 
-    private boolean sourceEnable;
-
     private boolean sinkEnable;
 
 }

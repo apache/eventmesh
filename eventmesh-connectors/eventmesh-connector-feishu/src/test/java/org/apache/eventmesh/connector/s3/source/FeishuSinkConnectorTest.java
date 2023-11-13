@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.s3.source;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.apache.eventmesh.connector.feishu.sink.config.FeishuSinkConfig;
 import org.apache.eventmesh.connector.feishu.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.feishu.sink.connector.FeishuSinkConnector;
@@ -28,34 +30,35 @@ import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-
 @Disabled
 public class FeishuSinkConnectorTest {
 
     private static final FeishuSinkConfig sinkConfig;
 
-    private static final SinkConnectorConfig SOURCE_CONNECTOR_CONFIG;
+    private static final SinkConnectorConfig SINK_CONNECTOR_CONFIG;
 
     static {
         sinkConfig = new FeishuSinkConfig();
-        SOURCE_CONNECTOR_CONFIG = new SinkConnectorConfig();
-        SOURCE_CONNECTOR_CONFIG.setConnectorName("FeishuSinkConnector");
-        SOURCE_CONNECTOR_CONFIG.setAppId("xxx");
-        SOURCE_CONNECTOR_CONFIG.setAppSecret("xxx");
-        SOURCE_CONNECTOR_CONFIG.setReceiveId("xxx");
-        SOURCE_CONNECTOR_CONFIG.setReceiveIdType("open_id");
-        sinkConfig.setConnectorConfig(SOURCE_CONNECTOR_CONFIG);
+        SINK_CONNECTOR_CONFIG = new SinkConnectorConfig();
+        SINK_CONNECTOR_CONFIG.setConnectorName("FeishuSinkConnector");
+        SINK_CONNECTOR_CONFIG.setAppId("xxx");
+        SINK_CONNECTOR_CONFIG.setAppSecret("xxx");
+        SINK_CONNECTOR_CONFIG.setReceiveId("xxx");
+        SINK_CONNECTOR_CONFIG.setReceiveIdType("open_id");
+        sinkConfig.setConnectorConfig(SINK_CONNECTOR_CONFIG);
     }
 
 
     @Test
-    public void testFeishuSinkConnector() throws Exception {
-        FeishuSinkConnector feishuSinkConnector = new FeishuSinkConnector();
-        feishuSinkConnector.init(sinkConfig);
-        feishuSinkConnector.start();
-        List<ConnectRecord> connectRecords = new ArrayList<>();
-        connectRecords.add(new ConnectRecord(null,null,0L,"test"));
-        feishuSinkConnector.put(connectRecords);
+    public void testFeishuSinkConnector() {
+        assertDoesNotThrow(() -> {
+            FeishuSinkConnector feishuSinkConnector = new FeishuSinkConnector();
+            feishuSinkConnector.init(sinkConfig);
+            feishuSinkConnector.start();
+            List<ConnectRecord> connectRecords = new ArrayList<>();
+            connectRecords.add(new ConnectRecord(null, null, 0L, "test"));
+            feishuSinkConnector.put(connectRecords);
+        });
     }
 
 

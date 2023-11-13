@@ -30,16 +30,7 @@ public class FeishuConnectServer {
 
     public static void main(String[] args) throws Exception {
 
-        FeishuServerConfig serverConfig = ConfigUtil.parse(FeishuServerConfig.class, "server-config.yml");
-
-        if (serverConfig.isSourceEnable()) {
-            Application feishuSourceApp = new Application();
-            feishuSourceApp.run(FeishuSinkConnector.class);
-        }
-
-        if (serverConfig.isSinkEnable()) {
-            Application feishuSinkApp = new Application();
-            feishuSinkApp.run(FeishuSinkConnector.class);
-        }
+        Application feishuSinkApp = new Application();
+        feishuSinkApp.run(FeishuSinkConnector.class);
     }
 }
