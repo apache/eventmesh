@@ -48,12 +48,13 @@ public class SpringPubController {
 
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("send message success! msgId={}, topic={}", sendResult.getMessageId(), sendResult.getTopic());
+                log.info("Spring source worker send message to EventMesh success! msgId={}, topic={}",
+                    sendResult.getMessageId(), sendResult.getTopic());
             }
 
             @Override
             public void onException(SendExcepionContext sendExcepionContext) {
-                log.info("send message failed!", sendExcepionContext.getCause());
+                log.info("Spring source worker send message to EventMesh failed!", sendExcepionContext.getCause());
             }
         });
         return "success!";
