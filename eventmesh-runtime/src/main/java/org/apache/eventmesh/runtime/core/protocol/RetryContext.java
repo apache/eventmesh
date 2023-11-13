@@ -66,7 +66,7 @@ public abstract class RetryContext implements TimerTask {
         String eventMeshRetryPluginType = Optional.ofNullable(commonConfiguration.getEventMeshRetryPluginType())
             .orElse(Constants.STANDALONE);
         if (Constants.STANDALONE.equals(eventMeshRetryPluginType)) {
-            log.warn("Because eventmesh storage is standalone or null, retry in memory.");
+            log.warn("Because eventmesh retry plugin is standalone, retry in memory.");
             doRun();
             return;
         }
