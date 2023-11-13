@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.meta;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
+import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -39,6 +40,8 @@ public class MetaStorage {
     private static final Map<String, MetaStorage> META_CACHE = new HashMap<>(16);
 
     private MetaService metaService;
+
+    private MetaServiceListener<String, String> metaServiceListener;
 
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
@@ -127,5 +130,13 @@ public class MetaStorage {
 
     public EventMeshAppSubTopicInfo findEventMeshAppSubTopicInfo(String group) throws Exception {
         return metaService.findEventMeshAppSubTopicInfoByGroup(group);
+    }
+
+    public MetaServiceListener<String, String> getMetaServiceListener() {
+        return metaServiceListener;
+    }
+
+    public void setMetaServiceListener(MetaServiceListener<String, String> metaServiceListener) {
+        this.metaServiceListener = metaServiceListener;
     }
 }

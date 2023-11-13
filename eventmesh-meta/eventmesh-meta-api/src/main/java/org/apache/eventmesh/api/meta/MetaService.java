@@ -71,4 +71,10 @@ public interface MetaService {
     default List<EventMeshServicePubTopicInfo> findEventMeshServicePubTopicInfos() throws MetaException {
         return Collections.emptyList();
     }
+
+    /**
+     * addListener
+     * @param metaServiceListener used for notify when config changed if needed
+     */
+    void addMetaServiceListener(MetaServiceListener<String, String> metaServiceListener);
 }

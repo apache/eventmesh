@@ -19,6 +19,7 @@ package org.apache.eventmesh.meta.consul.service;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
+import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
@@ -65,6 +66,8 @@ public class ConsulMetaService implements MetaService {
     private String token;
 
     private ConsulTLSConfig tlsConfig;
+
+    private MetaServiceListener<String, String> metaServiceListener;
 
     @Override
     public void init() throws MetaException {
@@ -160,6 +163,11 @@ public class ConsulMetaService implements MetaService {
         }
         log.info("EventMesh successfully unregistered to consul");
         return true;
+    }
+
+    @Override
+    public void addMetaServiceListener(MetaServiceListener<String, String> metaServiceListener) {
+        this.metaServiceListener = metaServiceListener;
     }
 
     @Override
