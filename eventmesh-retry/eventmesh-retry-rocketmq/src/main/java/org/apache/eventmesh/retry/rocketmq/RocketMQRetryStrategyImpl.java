@@ -24,7 +24,6 @@ import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
-import org.apache.eventmesh.retry.api.strategy.StorageRetryStrategy;
 
 import org.apache.rocketmq.common.MixAll;
 
@@ -40,8 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 public class RocketMQRetryStrategyImpl implements RetryStrategy {
 
     @Override
-    public StorageRetryStrategy getStorageRetryStrategy() {
-        return this::sendMessageBack;
+    public void retry(RetryConfiguration configuration) {
+        sendMessageBack(configuration);
     }
 
     @SneakyThrows

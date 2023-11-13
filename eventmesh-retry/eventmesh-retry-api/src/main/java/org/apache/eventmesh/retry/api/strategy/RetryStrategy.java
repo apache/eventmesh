@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.retry.api.strategy;
 
+import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -26,5 +27,5 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 @EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.RETRY)
 public interface RetryStrategy {
 
-    StorageRetryStrategy getStorageRetryStrategy();
+    void retry(RetryConfiguration configuration);
 }

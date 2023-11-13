@@ -37,7 +37,5 @@ public class RetryConfiguration {
 
     private String topic;
 
-    private boolean retryStorageEnabled;
-
     private SubscriptionMode subscriptionMode;
 }
