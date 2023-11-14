@@ -33,7 +33,7 @@ type ConnectorsSpec struct {
 	Size int `json:"size"`
 
 	// BaseImage is the controller image to use for the Pods
-	ConnectorImage string `json:"controllerImage"`
+	ConnectorImage string `json:"connectorImage"`
 
 	// ImagePullPolicy defines how the image is pulled
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`

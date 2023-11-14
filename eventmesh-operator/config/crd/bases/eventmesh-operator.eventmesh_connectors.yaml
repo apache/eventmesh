@@ -863,6 +863,9 @@ spec:
                         type: array
                     type: object
                 type: object
+              connectorImage:
+                description: BaseImage is the controller image to use for the Pods
+                type: string
               containerSecurityContext:
                 description: Container Security Context
                 properties:
@@ -1022,9 +1025,6 @@ spec:
                         type: string
                     type: object
                 type: object
-              controllerImage:
-                description: BaseImage is the controller image to use for the Pods
-                type: string
               imagePullPolicy:
                 description: ImagePullPolicy defines how the image is pulled
                 type: string
@@ -1264,7 +1264,7 @@ spec:
                   type: object
                 type: array
             required:
-            - controllerImage
+            - connectorImage
             - size
             type: object
           status:

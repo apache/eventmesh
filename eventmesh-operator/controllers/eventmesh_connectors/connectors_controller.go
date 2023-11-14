@@ -164,11 +164,14 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		}
 	}
 
+	r.Logger.Info("Status.Size = " + strconv.Itoa(connector.Status.Size))
+	r.Logger.Info("Spec.Size = " + strconv.Itoa(connector.Spec.Size))
 	// Update status.Size if needed
 	if connector.Spec.Size != connector.Status.Size {
 		r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
 		r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
 		connector.Status.Nodes = podNames
+		r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", connector.Status.Nodes))
 		connector.Status.Size = connector.Spec.Size
 		err = r.Client.Status().Update(context.TODO(), connector)
 		if err != nil {

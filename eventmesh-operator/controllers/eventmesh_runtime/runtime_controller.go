@@ -18,6 +18,7 @@ package eventmesh_runtime
 
 import (
 	"context"
+	"fmt"
 	eventmeshoperatorv1 "github.com/apache/eventmesh/eventmesh-operator/api/v1"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -202,11 +203,14 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 		}
 	}
 
+	r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
+	r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
 	// Update status.Size if needed
 	if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
 		r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
 		r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
 		eventMeshRuntime.Status.Nodes = podNames
+		r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
 		eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
 		err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
 		if err != nil {

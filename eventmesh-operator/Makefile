@@ -155,11 +155,13 @@ endif
 
 .PHONY: install
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+	kubectl apply -f config/crd/bases/eventmesh-operator.eventmesh_runtimes.yaml
+	kubectl apply -f config/crd/bases/eventmesh-operator.eventmesh_connectors.yaml
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/crd | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f config/crd/bases/eventmesh-operator.eventmesh_runtimes.yaml
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f config/crd/bases/eventmesh-operator.eventmesh_connectors.yaml
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
