@@ -32,6 +32,7 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.http.resolver.HttpRequestProtocolResolver;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
         throws ProtocolHandleException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -98,7 +99,7 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         // ce data
         if (null != cloudEvent.getData()) {
             Map<String, Object> dataContentMap = JsonUtils.parseTypeReferenceObject(
-                new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
+                new String(Objects.requireNonNull(cloudEvent.getData()).toBytes(), Constants.DEFAULT_CHARSET),
                 new TypeReference<Map<String, Object>>() {
                 });
             String requestHeader = JsonUtils.toJSONString(

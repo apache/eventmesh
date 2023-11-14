@@ -41,6 +41,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.MapUtils;
 
@@ -92,9 +93,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public Response subscribe(final List<SubscriptionItem> subscriptionItems, final String url) {
-        if (log.isInfoEnabled()) {
-            log.info("Create subscription: {} , url: {}", subscriptionItems, url);
-        }
+        LogUtils.info(log, "Create subscription: {} , url: {}", subscriptionItems, url);
 
         addSubscription(subscriptionItems, url);
 
@@ -102,9 +101,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             url, subscriptionItems);
         try {
             CloudEvent response = consumerClient.subscribe(subscription);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
+            LogUtils.info(log, "Received response:{}", response);
             return Response.builder()
                 .respCode(EventMeshCloudEventUtils.getResponseCode(response))
                 .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
@@ -117,9 +114,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public void subscribe(final List<SubscriptionItem> subscriptionItems) {
-        if (log.isInfoEnabled()) {
-            log.info("Create streaming subscription: {}", subscriptionItems);
-        }
+        LogUtils.info(log, "Create streaming subscription: {}", subscriptionItems);
 
         if (listener == null) {
             log.error("Error in subscriber, no Event Listener is registered.");
@@ -151,9 +146,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public Response unsubscribe(final List<SubscriptionItem> subscriptionItems, final String url) {
-        if (log.isInfoEnabled()) {
-            log.info("Removing subscription: {}, url:{}", subscriptionItems, url);
-        }
+        LogUtils.info(log, "Removing subscription: {}, url:{}", subscriptionItems, url);
 
         removeSubscription(subscriptionItems);
 
@@ -161,9 +154,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             subscriptionItems);
         try {
             final CloudEvent response = consumerClient.unsubscribe(cloudEvent);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
+            LogUtils.info(log, "Received response:{}", response);
             return Response.builder()
                 .respCode(EventMeshCloudEventUtils.getResponseCode(response))
                 .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
@@ -177,9 +168,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     public Response unsubscribe(final List<SubscriptionItem> subscriptionItems) {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-        if (log.isInfoEnabled()) {
-            log.info("Removing subscription stream: {}", subscriptionItems);
-        }
+        LogUtils.info(log, "Removing subscription stream: {}", subscriptionItems);
 
         removeSubscription(subscriptionItems);
 
@@ -193,9 +182,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                 .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
                 .respTime(EventMeshCloudEventUtils.getResponseTime(response))
                 .build();
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", parsedResponse);
-            }
+            LogUtils.info(log, "Received response:{}", parsedResponse);
 
             // there is no stream subscriptions, stop the subscription stream handler
             synchronized (this) {
@@ -242,9 +229,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                     .respMsg(EventMeshCloudEventUtils.getResponseMessage(cloudEventResp))
                     .respTime(EventMeshCloudEventUtils.getResponseTime(cloudEventResp))
                     .build();
-                if (log.isDebugEnabled()) {
-                    log.debug("Grpc Consumer Heartbeat cloudEvent: {}", response);
-                }
+                LogUtils.debug(log, "Grpc Consumer Heartbeat cloudEvent: {}", response);
                 if (StatusCode.CLIENT_RESUBSCRIBE.getRetCode().equals(response.getRespCode())) {
                     resubscribe();
                 }
@@ -253,9 +238,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
         }, 10_000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
-        if (log.isInfoEnabled()) {
-            log.info("Grpc Consumer Heartbeat started.");
-        }
+        LogUtils.info(log, "Grpc Consumer Heartbeat started.");
     }
 
     private void resubscribe() {

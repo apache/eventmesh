@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.connection;
 
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
 import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 
@@ -34,11 +35,11 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 /**
  * JdbcConnection class representing a JDBC connection.
  * Implements the AutoCloseable interface.
  */
+@Slf4j
 public class JdbcConnection implements AutoCloseable {
 
     private static final int CONNECTION_VALID_CHECK_TIMEOUT_IN_SEC = 3;
@@ -181,9 +182,7 @@ public class JdbcConnection implements AutoCloseable {
         return execute(statement -> {
             for (String sqlStatement : sqlStatements) {
                 if (sqlStatement != null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Executing '{}'", sqlStatement);
-                    }
+                    LogUtils.debug(log, "Executing '{}'", sqlStatement);
                     statement.execute(sqlStatement);
                 }
             }
@@ -221,9 +220,7 @@ public class JdbcConnection implements AutoCloseable {
 
         try (Statement statement = conn.createStatement()) {
             for (String sqlStatement : sqlStatements) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Executing sql statement: {}", sqlStatement);
-                }
+                LogUtils.debug(log, "Executing sql statement: {}", sqlStatement);
                 statement.execute(sqlStatement);
             }
         }
@@ -296,9 +293,7 @@ public class JdbcConnection implements AutoCloseable {
     public JdbcConnection query(String sql, StatementFactory statementFactory, JdbcResultSetConsumer resultConsumer) throws SQLException {
         Connection conn = connection();
         try (Statement statement = statementFactory.createStatement(conn)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Query sql '{}'", sql);
-            }
+            LogUtils.debug(log, "Query sql '{}'", sql);
             try (ResultSet resultSet = statement.executeQuery(sql)) {
                 if (resultConsumer != null) {
                     resultConsumer.accept(resultSet);
@@ -336,9 +331,7 @@ public class JdbcConnection implements AutoCloseable {
     public <T> T query(String sql, StatementFactory statementFactory, ResultSetMapper<T> resultSetMapper) throws SQLException {
         Connection conn = connection();
         try (Statement statement = statementFactory.createStatement(conn)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Query sql '{}'", sql);
-            }
+            LogUtils.debug(log, "Query sql '{}'", sql);
             try (ResultSet resultSet = statement.executeQuery(sql)) {
                 if (resultSetMapper != null) {
                     return resultSetMapper.map(resultSet);
@@ -381,9 +374,7 @@ public class JdbcConnection implements AutoCloseable {
 
         Connection conn = connection();
         try (PreparedStatement preparedStatement = preparedStatementFactory.createPreparedStatement(conn, sql)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Query sql '{}'", sql);
-            }
+            LogUtils.debug(log, "Query sql '{}'", sql);
             if (preparedParameters != null) {
                 for (int index = 0; index < preparedParameters.length; ++index) {
                     final PreparedParameter preparedParameter = preparedParameters[index];
@@ -436,9 +427,7 @@ public class JdbcConnection implements AutoCloseable {
 
         Connection conn = connection();
         try (PreparedStatement preparedStatement = preparedStatementFactory.createPreparedStatement(conn, sql)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Query sql '{}'", sql);
-            }
+            LogUtils.debug(log, "Query sql '{}'", sql);
             if (preparedParameters != null) {
                 for (int index = 0; index < preparedParameters.length; ++index) {
                     final PreparedParameter preparedParameter = preparedParameters[index];
@@ -579,13 +568,9 @@ public class JdbcConnection implements AutoCloseable {
             } else {
                 url = urlWithPlaceholder;
             }
-            if (log.isDebugEnabled()) {
-                log.debug("URL: {}", url);
-            }
+            LogUtils.debug(log, "URL: {}", url);
             Connection connection = DriverManager.getConnection(url, config.asProperties());
-            if (log.isDebugEnabled()) {
-                log.debug("User [{}] Connected to {}", config.getUser(), url);
-            }
+            LogUtils.debug(log, "User [{}] Connected to {}", config.getUser(), url);
             return connection;
         };
     }

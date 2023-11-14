@@ -17,11 +17,15 @@
 
 package org.apache.eventmesh.connector.spring.source;
 
+import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+
 /**
  * Operations for sending messages.
  */
 public interface MessageSendingOperations {
 
     void send(Object message);
+
+    void send(Object message, SendMessageCallback sendCallback);
 
 }

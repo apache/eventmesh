@@ -30,6 +30,7 @@ import org.apache.eventmesh.common.protocol.http.header.message.SendMessageReque
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -40,8 +41,8 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
+import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -77,11 +78,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         final String localAddress = IPUtils.getLocalAddress();
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        if (log.isInfoEnabled()) {
-            log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(request.getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
-        }
+        LogUtils.info(log, "cmd={}|{}|client2eventMesh|from={}|to={}",
+            RequestCode.get(Integer.valueOf(request.getRequestCode())),
+            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) request.getHeader();
 
@@ -143,9 +142,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             } catch (Exception e) {
                 completeResponse(request, asyncContext, sendMessageResponseHeader,
                     EventMeshRetCode.EVENTMESH_ACL_ERR, e.getMessage(), SendMessageResponseBody.class);
-                if (log.isWarnEnabled()) {
-                    log.warn("CLIENT HAS NO PERMISSION,SendSyncMessageProcessor send failed", e);
-                }
+                LogUtils.warn(log, "CLIENT HAS NO PERMISSION,SendSyncMessageProcessor send failed", e);
                 return;
             }
         }
@@ -163,9 +160,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         final String content = new String(Objects.requireNonNull(event.getData()).toBytes(), Constants.DEFAULT_CHARSET);
         int eventMeshEventSize = eventMeshHttpConfiguration.getEventMeshEventSize();
         if (content.length() > eventMeshEventSize) {
-            if (log.isErrorEnabled()) {
-                log.error("Event size exceeds the limit: {}", eventMeshEventSize);
-            }
+            LogUtils.error(log, "Event size exceeds the limit: {}", eventMeshEventSize);
             completeResponse(request, asyncContext, sendMessageResponseHeader,
                 EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
                 "Event size exceeds the limit: " + eventMeshEventSize,
@@ -190,14 +185,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
 
-            if (log.isDebugEnabled()) {
-                log.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
-            }
+            LogUtils.debug(log, "msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
 
         } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
-            }
+            LogUtils.error(log, "msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             completeResponse(request, asyncContext, sendMessageResponseHeader,
                 EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR, null, SendMessageResponseBody.class);
             return;
@@ -211,9 +202,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
             try {
-                if (log.isDebugEnabled()) {
-                    log.debug("{}", httpCommand);
-                }
+                LogUtils.debug(log, "{}", httpCommand);
                 eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                 eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                     System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
@@ -228,11 +217,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
                 @Override
                 public void onSuccess(final CloudEvent event) {
-                    if (log.isInfoEnabled()) {
-                        log.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                            + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
-                            topic, bizNo, uniqueId);
-                    }
+                    LogUtils.info(log, "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
+                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
+                        topic, bizNo, uniqueId);
 
                     try {
                         final CloudEvent newEvent = CloudEventBuilder.from(event)
@@ -263,9 +250,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                                     + EventMeshUtil.stackTrace(ex, 2)));
                         asyncContext.onComplete(err, handler);
 
-                        if (log.isWarnEnabled()) {
-                            log.warn("message|mq2eventMesh|RSP", ex);
-                        }
+                        LogUtils.warn(log, "message|mq2eventMesh|RSP", ex);
                     }
                 }
 
@@ -280,13 +265,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     asyncContext.onComplete(err, handler);
 
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
-                    if (log.isErrorEnabled()) {
-                        log.error(
-                            "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                                + "|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime,
-                            topic, bizNo, uniqueId, e);
-                    }
+                    LogUtils.error(log, "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
+                        + "|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime,
+                        topic, bizNo, uniqueId, e);
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {
@@ -299,11 +281,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(endTime - startTime);
 
-            if (log.isErrorEnabled()) {
-                log.error(
-                    "message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, bizNo, uniqueId, ex);
-            }
+            LogUtils.error(log, "message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                endTime - startTime, topic, bizNo, uniqueId, ex);
         }
 
         return;

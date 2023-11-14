@@ -424,9 +424,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
      * @param event   the event to be handled
      */
     protected void handleHeartbeatEvent(MysqlJdbcContext context, Event event) {
-        if (log.isDebugEnabled()) {
-            log.debug("Replication client handle {}", event.getHeader().getEventType());
-        }
+        LogUtils.debug(log, "Replication client handle {}", event.getHeader().getEventType());
     }
 
     /**

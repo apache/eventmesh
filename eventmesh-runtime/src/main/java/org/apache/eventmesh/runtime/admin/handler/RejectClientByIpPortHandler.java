@@ -122,7 +122,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
                     }
                 }
             } catch (Exception e) {
-                log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={},errMsg={}", ip, port, e);
+                log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
                 result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                     port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);

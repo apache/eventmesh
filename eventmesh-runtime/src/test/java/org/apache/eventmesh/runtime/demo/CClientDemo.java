@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.demo;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
@@ -43,9 +44,7 @@ public class CClientDemo {
         client.listen();
         client.registerSubBusiHandler((msg, ctx) -> {
             if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                if (log.isInfoEnabled()) {
-                    log.info("receive message: {}", msg);
-                }
+                LogUtils.info(log, "receive message: {}", msg);
             }
         });
         for (int i = 0; i < 10000; i++) {
