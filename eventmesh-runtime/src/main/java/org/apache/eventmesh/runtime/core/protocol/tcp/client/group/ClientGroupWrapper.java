@@ -28,6 +28,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -36,7 +37,7 @@ import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -82,7 +83,7 @@ public class ClientGroupWrapper {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    private EventMeshTcpRetryer eventMeshTcpRetryer;
+    private TcpRetryer tcpRetryer;
 
     private EventMeshTcpMonitor eventMeshTcpMonitor;
 
@@ -129,7 +130,7 @@ public class ClientGroupWrapper {
         this.group = group;
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
-        this.eventMeshTcpRetryer = eventMeshTCPServer.getTcpRetryer();
+        this.tcpRetryer = eventMeshTCPServer.getTcpRetryer();
         this.eventMeshTcpMonitor =
             Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
@@ -217,15 +218,11 @@ public class ClientGroupWrapper {
             }
             Session s = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session);
             if (s == null) {
-                if (log.isInfoEnabled()) {
-                    log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
-                        topic, session.getClient(), session.getSessionId());
-                }
+                LogUtils.info(log, "Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
+                    topic, session.getClient(), session.getSessionId());
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn("Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
-                        session.getClient(), session.getSessionId());
-                }
+                LogUtils.warn(log, "Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
+                    session.getClient(), session.getSessionId());
             }
 
             subscriptions.putIfAbsent(topic, subscriptionItem);
@@ -247,9 +244,7 @@ public class ClientGroupWrapper {
             return false;
         }
         String topic = subscriptionItem.getTopic();
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeSubscription param error,topic:{},session:{}", topic, session);
             return false;
         }
@@ -330,10 +325,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean addGroupConsumerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("addGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -362,10 +354,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean addGroupProducerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("addGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -392,10 +381,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean removeGroupConsumerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
-
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -424,9 +410,7 @@ public class ClientGroupWrapper {
     }
 
     public boolean removeGroupProducerSession(Session session) {
-        if (session == null
-            || !StringUtils.equalsIgnoreCase(group,
-                EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
+        if (session == null || !StringUtils.equalsIgnoreCase(group, EventMeshUtil.buildClientGroup(session.getClient().getGroup()))) {
             log.error("removeGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -710,12 +694,12 @@ public class ClientGroupWrapper {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
-    public EventMeshTcpRetryer getEventMeshTcpRetryer() {
-        return eventMeshTcpRetryer;
+    public TcpRetryer getTcpRetryer() {
+        return tcpRetryer;
     }
 
-    public void setEventMeshTcpRetryer(EventMeshTcpRetryer eventMeshTcpRetryer) {
-        this.eventMeshTcpRetryer = eventMeshTcpRetryer;
+    public void setTcpRetryer(TcpRetryer tcpRetryer) {
+        this.tcpRetryer = tcpRetryer;
     }
 
     public EventMeshTcpMonitor getEventMeshTcpMonitor() {

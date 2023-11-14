@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.util;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -39,6 +40,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -172,9 +174,7 @@ public class EventMeshUtil {
     public String getLocalAddr() {
         //priority of networkInterface when generating client ip
         final String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        if (log.isDebugEnabled()) {
-            log.debug("networkInterface.priority: {}", priority);
-        }
+        LogUtils.debug(log, "networkInterface.priority: {}", priority);
 
         final List<String> preferList = new ArrayList<>();
         preferList.addAll(Arrays.asList(priority.split("<")));
@@ -198,15 +198,11 @@ public class EventMeshUtil {
             final ArrayList<String> ipv6Result = new ArrayList<>();
 
             if (preferNetworkInterface != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("use preferNetworkInterface:{}", preferNetworkInterface);
-                }
+                LogUtils.debug(log, "use preferNetworkInterface:{}", preferNetworkInterface);
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("no preferNetworkInterface");
-                }
+                LogUtils.debug(log, "no preferNetworkInterface");
                 final Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
                 while (enumeration.hasMoreElements()) {
                     final NetworkInterface networkInterface = enumeration.nextElement();

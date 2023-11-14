@@ -24,6 +24,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
@@ -51,9 +52,9 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessage
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.webhook.receive.WebHookController;
@@ -73,7 +74,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Add multiple managers to the underlying server
- *
  */
 @Slf4j
 public class EventMeshHTTPServer extends AbstractHTTPServer {
@@ -109,9 +109,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     }
 
     public void init() throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("==================EventMeshHTTPServer Initialing==================");
-        }
+        LogUtils.info(log, "==================EventMeshHTTPServer Initialing==================");
         super.init();
 
         msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.getEventMeshHttpMsgReqNumPerSecond());
@@ -124,7 +122,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                 pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
         httpRetryer = new HttpRetryer(this);
-        httpRetryer.init();
 
         super.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
         subscriptionManager = new SubscriptionManager(eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable(), metaStorage);
@@ -147,9 +144,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
 
-        if (log.isInfoEnabled()) {
-            log.info("==================EventMeshHTTPServer initialized==================");
-        }
+        LogUtils.info(log, "==================EventMeshHTTPServer initialized==================");
     }
 
     @Override
@@ -164,9 +159,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
         }
-        if (log.isInfoEnabled()) {
-            log.info("==================EventMeshHTTPServer started==================");
-        }
+        LogUtils.info(log, "==================EventMeshHTTPServer started==================");
     }
 
     @Override
@@ -187,9 +180,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.unRegister();
         }
-        if (log.isInfoEnabled()) {
-            log.info("==================EventMeshHTTPServer shutdown==================");
-        }
+        LogUtils.info(log, "==================EventMeshHTTPServer shutdown==================");
     }
 
     /**

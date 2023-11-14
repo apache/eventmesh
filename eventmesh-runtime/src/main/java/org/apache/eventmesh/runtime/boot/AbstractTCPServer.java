@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -25,6 +26,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import org.apache.eventmesh.common.utils.AssertUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -108,6 +110,11 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     public void init() throws Exception {
         super.init("eventMesh-tcp");
         tcpThreadPoolGroup.initThreadPool();
+    }
+
+    @Override
+    public CommonConfiguration getConfiguration() {
+        return eventMeshTCPConfiguration;
     }
 
     @Override
@@ -247,17 +254,13 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
 
                 if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
-                    if (messageLogger.isInfoEnabled()) {
-                        messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
-                    }
+                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     processHttpCommandRequest(pkg, ctx, startTime, cmd);
                     return;
                 }
 
                 if (clientSessionGroupMapping.getSession(ctx) == null) {
-                    if (messageLogger.isInfoEnabled()) {
-                        messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
-                    }
+                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
                     throw new Exception("no session is found");
                 }
 
@@ -375,7 +378,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             Session session = clientSessionGroupMapping.getSession(ctx);
             UserAgent client = session == null ? null : session.getClient();
-            log.error("exceptionCaught, push goodbye to client|user={},errMsg={}", client, cause.fillInStackTrace());
+            log.error("exceptionCaught, push goodbye to client|user={}, errMsg={}", client, cause.fillInStackTrace());
             String errMsg;
             if (cause.toString().contains("value not one of declared Enum instance names")) {
                 errMsg = "Unknown Command type";

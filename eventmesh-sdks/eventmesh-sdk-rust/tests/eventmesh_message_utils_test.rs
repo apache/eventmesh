@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-use eventmesh::common::eventmesh_message_utils::{EventMeshCloudEventUtils, ProtoSupport};
+use eventmesh::common::grpc_eventmesh_message_utils::{EventMeshCloudEventUtils, ProtoSupport};
 use eventmesh::config::EventMeshGrpcClientConfig;
 use eventmesh::model::EventMeshProtocolType;
 use eventmesh::proto_cloud_event::PbAttr;

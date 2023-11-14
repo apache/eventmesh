@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -42,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeProcessor implements TcpProcessor {
 
-    private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;
+    private EventMeshTCPServer eventMeshTCPServer;
 
     public SubscribeProcessor(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -86,9 +87,7 @@ public class SubscribeProcessor implements TcpProcessor {
 
             synchronized (session) {
                 session.subscribe(subscriptionItems);
-                if (log.isInfoEnabled()) {
-                    log.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
-                }
+                LogUtils.info(log, "SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
             }
             eventMeshTCPServer.getClientSessionGroupMapping().updateMetaData();
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));

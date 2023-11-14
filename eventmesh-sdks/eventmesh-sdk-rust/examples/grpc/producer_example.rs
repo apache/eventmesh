@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use chrono::Utc;
+use cloudevents::{EventBuilder, EventBuilderV10};
 use tracing::info;
 
+use eventmesh::common::ProtocolKey;
 use eventmesh::config::EventMeshGrpcClientConfig;
 use eventmesh::grpc::grpc_producer::EventMeshGrpcProducer;
-use eventmesh::grpc::GrpcEventMeshMessageProducer;
+use eventmesh::grpc::GrpcEventMeshProducer;
 use eventmesh::log;
 use eventmesh::model::message::EventMeshMessage;
 
@@ -27,35 +31,72 @@ use eventmesh::model::message::EventMeshMessage;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::init_logger();
 
-    let grpc_client_config = EventMeshGrpcClientConfig::new();
-    let mut producer = GrpcEventMeshMessageProducer::new(grpc_client_config);
-
     //Publish Message
-    info!("Publish Message to EventMesh........");
-    let message = EventMeshMessage::default()
-        .with_biz_seq_no("1")
-        .with_content("123")
-        .with_create_time(SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64)
-        .with_topic("123")
-        .with_unique_id("1111");
-    let response = producer.publish(message.clone()).await?;
-    info!("Publish Message to EventMesh return result: {}", response);
+    #[cfg(feature = "eventmesh_message")]
+    {
+        let grpc_client_config = EventMeshGrpcClientConfig::new();
+        let mut producer = GrpcEventMeshProducer::new(grpc_client_config);
+        info!("Publish Message to EventMesh........");
+        let message = EventMeshMessage::default()
+            .with_biz_seq_no("1")
+            .with_content("123")
+            .with_create_time(SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64)
+            .with_topic("123")
+            .with_unique_id("1111");
+        let response = producer.publish(message.clone()).await?;
+        info!("Publish Message to EventMesh return result: {}", response);
 
-    //Publish batch message
-    info!("Publish batch message to EventMesh........");
-    let messages = vec![message.clone(), message.clone(), message.clone()];
-    let response = producer.publish_batch(messages).await?;
-    info!(
-        "Publish batch message to EventMesh return result: {}",
-        response
-    );
+        //Publish batch message
+        info!("Publish batch message to EventMesh........");
+        let messages = vec![message.clone(), message.clone(), message.clone()];
+        let response = producer.publish_batch(messages).await?;
+        info!(
+            "Publish batch message to EventMesh return result: {}",
+            response
+        );
 
-    //Publish batch message
-    info!("Publish request reply message to EventMesh........");
-    let response = producer.request_reply(message.clone(), 1000).await?;
-    info!(
-        "Publish request reply message to EventMesh return result: {}",
-        response
-    );
+        //Publish batch message
+        info!("Publish request reply message to EventMesh........");
+        let response = producer.request_reply(message.clone(), 1000).await?;
+        info!(
+            "Publish request reply message to EventMesh return result: {}",
+            response
+        );
+    }
+
+    #[cfg(feature = "cloud_events")]
+    {
+        let grpc_client_config = EventMeshGrpcClientConfig::new();
+        let mut producer = GrpcEventMeshProducer::new(grpc_client_config);
+        info!("Publish Message to EventMesh........");
+        let message = EventBuilderV10::new()
+            .id("my_event.my_application")
+            .source("http://localhost:8080")
+            .subject("mxsm")
+            .ty("example.demo")
+            .time(Utc::now())
+            .data(ProtocolKey::CLOUDEVENT_CONTENT_TYPE, "{\"aaa\":\"1111\"}")
+            .build()?;
+        let response = producer.publish(message.clone()).await?;
+        info!("Publish Message to EventMesh return result: {}", response);
+
+        //Publish batch message
+        info!("Publish batch message to EventMesh........");
+        let messages = vec![message.clone(), message.clone(), message.clone()];
+        let response = producer.publish_batch(messages).await?;
+        info!(
+            "Publish batch message to EventMesh return result: {}",
+            response
+        );
+
+        //Publish batch message
+        info!("Publish request reply message to EventMesh........");
+        let response = producer.request_reply(message.clone(), 1000).await?;
+        info!(
+            "Publish request reply message to EventMesh return result: {}",
+            response
+        );
+    }
+
     Ok(())
 }

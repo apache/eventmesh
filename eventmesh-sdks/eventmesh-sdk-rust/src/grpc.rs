@@ -18,7 +18,7 @@
 //! gRPC client implementations.
 
 /// EventMesh message types.
-pub(crate) mod eventmesh_message;
+pub(crate) mod r#impl;
 
 /// gRPC consumer client.
 pub mod grpc_consumer;
@@ -29,6 +29,6 @@ pub mod grpc_producer;
 /// Protobuf generated definitions.
 pub(crate) mod pb;
 
-#[cfg(all(feature = "eventmesh_message", feature = "grpc"))]
+#[cfg(feature = "grpc")]
 /// Re-export gRPC eventmesh message producer when features enabled.
-pub use crate::grpc::eventmesh_message::eventmesh_message_producer::GrpcEventMeshMessageProducer;
+pub use crate::grpc::r#impl::grpc_producer_impl::GrpcEventMeshProducer;

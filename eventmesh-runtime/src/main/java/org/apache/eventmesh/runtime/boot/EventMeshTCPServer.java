@@ -24,6 +24,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
@@ -42,7 +43,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.processor.Subscribe
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.processor.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
@@ -60,7 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Add multiple managers to the underlying server
- *
  */
 @Slf4j
 public class EventMeshTCPServer extends AbstractTCPServer {
@@ -73,7 +73,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
     private ClientSessionGroupMapping clientSessionGroupMapping;
 
-    private EventMeshTcpRetryer tcpRetryer;
+    private TcpRetryer tcpRetryer;
 
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
@@ -89,9 +89,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     }
 
     public void init() throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("==================EventMeshTCPServer Initialing==================");
-        }
+        LogUtils.info(log, "==================EventMeshTCPServer Initialing==================");
         super.init();
 
         rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.getEventMeshTcpMsgReqnumPerSecond());
@@ -102,8 +100,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             metricsPlugins -> metricsPlugins.forEach(
                 pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
-        tcpRetryer = new EventMeshTcpRetryer(this);
-        tcpRetryer.init();
+        tcpRetryer = new TcpRetryer(this);
 
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
         clientSessionGroupMapping.init();
@@ -122,9 +119,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         registerTCPRequestProcessor();
 
-        if (log.isInfoEnabled()) {
-            log.info("--------------------------EventMeshTCPServer Inited");
-        }
+        LogUtils.info(log, "--------------------------EventMeshTCPServer Inited");
     }
 
     @Override
@@ -140,9 +135,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             eventMeshRebalanceService.start();
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("--------------------------EventMeshTCPServer Started");
-        }
+        LogUtils.info(log, "--------------------------EventMeshTCPServer Started");
     }
 
     @Override
@@ -161,9 +154,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             this.unRegister();
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("--------------------------EventMeshTCPServer Shutdown");
-        }
+        LogUtils.info(log, "--------------------------EventMeshTCPServer Shutdown");
     }
 
     /**
@@ -288,7 +279,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         this.rateLimiter = rateLimiter;
     }
 
-    public EventMeshTcpRetryer getTcpRetryer() {
+    public TcpRetryer getTcpRetryer() {
         return tcpRetryer;
     }
 }

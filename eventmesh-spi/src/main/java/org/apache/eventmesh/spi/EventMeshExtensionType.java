@@ -34,6 +34,7 @@ public enum EventMeshExtensionType {
     JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
     JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
     OFFSETMGMT("offsetMgmt"),
+    RETRY("retry"),
     ;
 
     private final String extensionTypeName;

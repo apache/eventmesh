@@ -23,6 +23,8 @@ include 'eventmesh-common'
 include 'eventmesh-starter'
 include 'eventmesh-examples'
 include 'eventmesh-spi'
+include 'eventmesh-filter'
+include 'eventmesh-transformer'
 
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
@@ -87,4 +89,8 @@ include 'eventmesh-webhook'
 include 'eventmesh-webhook:eventmesh-webhook-api'
 include 'eventmesh-webhook:eventmesh-webhook-admin'
 include 'eventmesh-webhook:eventmesh-webhook-receive'
+
+include 'eventmesh-retry'
+include 'eventmesh-retry:eventmesh-retry-api'
+include 'eventmesh-retry:eventmesh-retry-rocketmq'
 

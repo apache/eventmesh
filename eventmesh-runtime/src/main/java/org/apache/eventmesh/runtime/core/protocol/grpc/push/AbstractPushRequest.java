@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Sets;
@@ -99,16 +100,10 @@ public abstract class AbstractPushRequest extends RetryContext {
         }
     }
 
-    @Override
-    public void retry() {
-        tryPushRequest();
-    }
-
     protected void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
-            grpcRetryer.pushRetry(this);
+            grpcRetryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
         } else {
             complete();
         }
@@ -159,5 +154,10 @@ public abstract class AbstractPushRequest extends RetryContext {
         if (waitingRequests.containsKey(handleMsgContext.getConsumerGroup())) {
             waitingRequests.get(handleMsgContext.getConsumerGroup()).remove(request);
         }
+    }
+
+    @Override
+    public void doRun() throws Exception {
+        tryPushRequest();
     }
 }

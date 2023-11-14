@@ -199,4 +199,11 @@ public class Constants {
     public static final String TCP = "TCP";
 
     public static final String GRPC = "GRPC";
+
+    public static final String OS_NAME_KEY = "os.name";
+
+    public static final String OS_WIN_PREFIX = "win";
+
+    public static final String DEFAULT = "default";
+
 }

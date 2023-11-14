@@ -121,7 +121,6 @@ public class DownStreamMsgContext extends RetryContext {
             + '}';
     }
 
-    @Override
     public void retry() {
         try {
             log.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
@@ -194,4 +193,8 @@ public class DownStreamMsgContext extends RetryContext {
         downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
     }
 
+    @Override
+    public void doRun() {
+        retry();
+    }
 }

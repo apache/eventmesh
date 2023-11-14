@@ -25,6 +25,11 @@ dependencies {
     api "org.apache.commons:commons-text"
     api "org.apache.commons:commons-lang3"
 
+    api "com.jayway.jsonpath:json-path"
+
+    api "io.cloudevents:cloudevents-core"
+    api "io.cloudevents:cloudevents-json-jackson"
+
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"

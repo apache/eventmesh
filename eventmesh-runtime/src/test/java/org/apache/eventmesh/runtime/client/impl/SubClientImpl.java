@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.api.SubClient;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -69,9 +70,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        if (log.isInfoEnabled()) {
-            log.info("SubClientImpl|{}|started!", clientNo);
-        }
+        LogUtils.info(log, "SubClientImpl|{}|started!", clientNo);
     }
 
     public void reconnect() throws Exception {
@@ -102,10 +101,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     SubClientImpl.this.reconnect();
                 }
                 Package msg = MessageUtils.heartBeat();
-                if (log.isDebugEnabled()) {
-                    log.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
-                        msg.getHeader().getCommand(), msg);
-                }
+                LogUtils.debug(log, "SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo,
+                    msg.getHeader().getCommand(), msg);
                 SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception e) {
                 // ignore
@@ -141,7 +138,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
      *     Package msg = MessageUtils.traceLog();
      *     this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
      * }
-    **/
+     */
 
     /**
      *
@@ -203,10 +200,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            if (log.isInfoEnabled()) {
-                log.info(SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
-                    msg.getHeader().getCommand(), msg);
-            }
+            LogUtils.info(log, SubClientImpl.class.getSimpleName() + "|receive|command={}|msg={}",
+                msg.getHeader().getCommand(), msg);
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);

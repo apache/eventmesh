@@ -23,6 +23,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
@@ -71,16 +73,16 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
         this.ttl = handleMsgContext.getTtl();
         this.startIdx = ThreadLocalRandom.current().nextInt(0, totalUrls.size());
+        super.commonConfiguration = eventMeshHttpConfiguration;
     }
 
     public void tryHTTPRequest() {
     }
 
-    public void delayRetry(long delayTime) {
+    public void delayRetry(long delayTime, TimeUnit timeUnit) {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
             retryTimes++;
-            delay(delayTime);
-            retryer.pushRetry(this);
+            retryer.newTimeout(this, delayTime, timeUnit);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
         }
@@ -89,8 +91,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
-            retryer.pushRetry(this);
+            retryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
         }
@@ -128,4 +129,10 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
             delayRetry();
         }
     }
+
+    @Override
+    protected ProducerManager getProducerManager() {
+        return eventMeshHTTPServer.getProducerManager();
+    }
+
 }

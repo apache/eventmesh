@@ -30,6 +30,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
@@ -101,18 +102,14 @@ public class SubService implements InitializingBean {
                 log.error("interrupted exception", e);
                 Thread.currentThread().interrupt();
             }
-            if (log.isInfoEnabled()) {
-                log.info("stopThread start....");
-            }
+            LogUtils.info(log, "stopThread start....");
         });
         stopThread.start();
     }
 
     @PreDestroy
     public void cleanup() {
-        if (log.isInfoEnabled()) {
-            log.info("start destroy....");
-        }
+        LogUtils.info(log, "start destroy....");
 
         try {
             final List<String> unSubList = new ArrayList<>();
@@ -128,21 +125,15 @@ public class SubService implements InitializingBean {
             eventMeshHttpConsumer.close();
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("end destroy....");
-        }
+        LogUtils.info(log, "end destroy....");
     }
 
     /**
      * Count the message already consumed
      */
     public void consumeMessage(final String msg) {
-        if (log.isInfoEnabled()) {
-            log.info("consume message: {}", msg);
-        }
+        LogUtils.info(log, "consume message: {}", msg);
         countDownLatch.countDown();
-        if (log.isInfoEnabled()) {
-            log.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
-        }
+        LogUtils.info(log, "remaining number: {} of messages to be consumed", countDownLatch.getCount());
     }
 }

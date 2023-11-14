@@ -24,4 +24,7 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'ai.grakn:redis-mock:0.1.6'
+    testImplementation project(":eventmesh-common")
 }
