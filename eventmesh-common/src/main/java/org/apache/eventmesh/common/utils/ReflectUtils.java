@@ -20,6 +20,9 @@ package org.apache.eventmesh.common.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ReflectUtils {
 
     /**

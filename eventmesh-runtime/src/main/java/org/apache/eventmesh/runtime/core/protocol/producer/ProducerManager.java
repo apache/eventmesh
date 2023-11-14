@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.http.producer;
+package org.apache.eventmesh.runtime.core.protocol.producer;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.boot.AbstractRemotingServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,15 +27,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProducerManager {
 
-    private final EventMeshHTTPServer eventMeshHTTPServer;
+    private final AbstractRemotingServer eventMeshServer;
 
     /**
      * key: group name
      */
-    private final ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<String, EventMeshProducer>();
+    private final ConcurrentHashMap<String, EventMeshProducer> producerTable = new ConcurrentHashMap<>();
 
-    public ProducerManager(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+    public ProducerManager(AbstractRemotingServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
     }
 
     public void init() throws Exception {
@@ -81,7 +81,7 @@ public class ProducerManager {
 
         eventMeshProducer = producerTable.get(producerGroup);
 
-        if (!eventMeshProducer.getStarted().get()) {
+        if (!eventMeshProducer.isStarted()) {
             eventMeshProducer.start();
         }
 
@@ -93,7 +93,7 @@ public class ProducerManager {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
         EventMeshProducer eventMeshProducer = new EventMeshProducer();
-        eventMeshProducer.init(eventMeshHTTPServer.getEventMeshHttpConfiguration(), producerGroupConfig);
+        eventMeshProducer.init(eventMeshServer.getConfiguration(), producerGroupConfig);
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }
@@ -109,8 +109,8 @@ public class ProducerManager {
         log.info("producerManager shutdown......");
     }
 
-    public EventMeshHTTPServer getEventMeshHTTPServer() {
-        return eventMeshHTTPServer;
+    public AbstractRemotingServer getEventMeshServer() {
+        return eventMeshServer;
     }
 
     public ConcurrentHashMap<String, EventMeshProducer> getProducerTable() {
