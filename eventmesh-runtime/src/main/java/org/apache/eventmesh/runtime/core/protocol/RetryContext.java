@@ -70,6 +70,11 @@ public abstract class RetryContext implements TimerTask {
             doRun();
             return;
         }
+        if (!eventMeshRetryPluginType.equals(commonConfiguration.getEventMeshStoragePluginType())) {
+            log.warn("Because eventmesh retry plugin type mismatched with storage plugin type, retry in memory.");
+            doRun();
+            return;
+        }
         Optional<RetryStrategy> retryStrategy = Optional.ofNullable(
             EventMeshExtensionFactory.getExtension(RetryStrategy.class,
                 commonConfiguration.getEventMeshRetryPluginType()));
