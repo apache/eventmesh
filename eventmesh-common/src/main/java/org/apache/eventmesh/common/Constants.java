@@ -204,6 +204,6 @@ public class Constants {
 
     public static final String OS_WIN_PREFIX = "win";
 
-    public static final String STANDALONE = "standalone";
+    public static final String DEFAULT = "default";
 
 }

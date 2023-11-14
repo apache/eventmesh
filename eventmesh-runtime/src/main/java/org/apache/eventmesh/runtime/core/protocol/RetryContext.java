@@ -64,9 +64,9 @@ public abstract class RetryContext implements TimerTask {
     @Override
     public final void run() throws Exception {
         String eventMeshRetryPluginType = Optional.ofNullable(commonConfiguration.getEventMeshRetryPluginType())
-            .orElse(Constants.STANDALONE);
-        if (Constants.STANDALONE.equals(eventMeshRetryPluginType)) {
-            log.warn("Because eventmesh retry plugin is standalone, retry in memory.");
+            .orElse(Constants.DEFAULT);
+        if (Constants.DEFAULT.equals(eventMeshRetryPluginType)) {
+            log.warn("Because eventmesh retry plugin is default, retry in memory.");
             doRun();
             return;
         }

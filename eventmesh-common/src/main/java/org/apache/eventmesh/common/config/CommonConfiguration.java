@@ -113,7 +113,7 @@ public class CommonConfiguration {
     private String meshGroup;
 
     @ConfigFiled(field = "server.retry.plugin.type")
-    private String eventMeshRetryPluginType = Constants.STANDALONE;
+    private String eventMeshRetryPluginType = Constants.DEFAULT;
 
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
