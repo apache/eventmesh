@@ -15,28 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.http.producer;
+package org.apache.eventmesh.runtime.core.protocol.producer;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.boot.AbstractRemotingServer;
 import org.apache.eventmesh.runtime.core.protocol.RetryContext;
-import org.apache.eventmesh.runtime.core.timer.Timeout;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class SendMessageContext extends RetryContext {
+
+    public static final Logger logger = LoggerFactory.getLogger("retry");
 
     private CloudEvent event;
 
@@ -46,28 +43,14 @@ public class SendMessageContext extends RetryContext {
 
     private long createTime = System.currentTimeMillis();
 
-    private Map<String, String> props;
+    public AbstractRemotingServer eventMeshServer;
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
-
-    private List<CloudEvent> eventList;
-
-    public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer, EventMeshHTTPServer eventMeshHTTPServer) {
+    public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
+        AbstractRemotingServer eventMeshServer) {
         this.bizSeqNo = bizSeqNo;
         this.event = event;
         this.eventMeshProducer = eventMeshProducer;
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-    }
-
-    public void addProp(String key, String val) {
-        if (props == null) {
-            props = new HashMap<>();
-        }
-        props.put(key, val);
-    }
-
-    public String getProp(String key) {
-        return props.get(key);
+        this.eventMeshServer = eventMeshServer;
     }
 
     public String getBizSeqNo() {
@@ -102,34 +85,29 @@ public class SendMessageContext extends RetryContext {
         this.createTime = createTime;
     }
 
-    public List<CloudEvent> getEventList() {
-        return eventList;
-    }
-
-    public void setEventList(List<CloudEvent> eventList) {
-        this.eventList = eventList;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
             .append("bizSeqNo=").append(bizSeqNo)
             .append(",retryTimes=").append(retryTimes)
-            .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
-            .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
-            .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
+            .append(",producer=")
+            .append(eventMeshProducer != null ? eventMeshProducer : null)
+            .append(",executeTime=")
+            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS))
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 
     public void retry() throws Exception {
         if (eventMeshProducer == null) {
-            log.error("Exception happends during retry. EventMeshProduceer is null.");
+            logger.error("Exception happends during retry. EventMeshProducer is null.");
             return;
         }
 
         if (retryTimes > 0) { // retry once
-            log.error("Exception happends during retry. The retryTimes > 0.");
+            logger.error("Exception happends during retry. The retryTimes > 0.");
             return;
         }
 
@@ -142,15 +120,13 @@ public class SendMessageContext extends RetryContext {
 
             @Override
             public void onException(OnExceptionContext context) {
-                log.warn("", context.getException());
-                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendBatchMsgFailed(1);
+                logger.warn("", context.getException());
             }
-
         });
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
+    public void doRun() throws Exception {
         retry();
     }
 }

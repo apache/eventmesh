@@ -15,25 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.retry;
+package org.apache.eventmesh.retry.api.conf;
 
-import org.apache.eventmesh.runtime.core.timer.TimerTask;
+import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
-import java.util.concurrent.TimeUnit;
+import io.cloudevents.CloudEvent;
 
-/**
- * Retryer interface.
- */
-public interface Retryer {
+import lombok.Builder;
+import lombok.Data;
 
-    void start();
+@Data
+@Builder
+public class RetryConfiguration {
 
-    void shutdown();
+    private CloudEvent event;
 
-    long getPendingTimeouts();
+    private String consumerGroupName;
 
-    void printState();
+    private Producer producer;
 
-    void newTimeout(TimerTask timerTask, long delay, TimeUnit timeUnit);
+    private String topic;
 
+    private SubscriptionMode subscriptionMode;
 }

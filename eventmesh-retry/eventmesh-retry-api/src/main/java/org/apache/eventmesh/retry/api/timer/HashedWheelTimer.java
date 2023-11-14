@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.timer;
+package org.apache.eventmesh.retry.api.timer;
 
 import static org.apache.eventmesh.common.Constants.OS_NAME_KEY;
 import static org.apache.eventmesh.common.Constants.OS_WIN_PREFIX;
@@ -632,7 +632,7 @@ public class HashedWheelTimer implements Timer {
             }
 
             try {
-                task.run(this);
+                task.run();
                 task.setExecuteTimeHook(System.currentTimeMillis());
             } catch (Throwable t) {
                 if (logger.isWarnEnabled()) {

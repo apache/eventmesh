@@ -42,8 +42,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
+import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -246,7 +246,6 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 CloudEvent event = null;
                 // TODO: Detect the maximum length of messages for different producers.
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
-                sendMessageContext.setEventList(eventlist);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                     @Override
