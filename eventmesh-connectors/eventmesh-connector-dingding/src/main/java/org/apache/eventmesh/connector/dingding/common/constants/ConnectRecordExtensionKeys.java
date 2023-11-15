@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.constants;
+package org.apache.eventmesh.connector.dingding.common.constants;
 
 /**
  * Constants of record extension key.

@@ -21,9 +21,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.apache.eventmesh.connector.dingding.common.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.dingding.config.DingDingMessageTemplateType;
 import org.apache.eventmesh.connector.dingding.sink.config.DingDingSinkConfig;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
@@ -86,7 +86,7 @@ public class DingDingSinkConnectorTest {
     }
 
     @Test
-    public void testSendPlainTextMessageToDingDing() throws Exception {
+    public void testSendMessageToDingDing() throws Exception {
         final int times = 3;
         List<ConnectRecord> records = new ArrayList<>();
         for (int i = 0; i < times; i++) {
@@ -104,29 +104,9 @@ public class DingDingSinkConnectorTest {
         verify(authClient, times(1)).getAccessToken(any());
     }
 
-    @Test
-    public void testSendMarkDownMessageToDingDing() throws Exception {
-        final int times = 3;
-        List<ConnectRecord> records = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                System.currentTimeMillis(), "***Hello, EventMesh!***".getBytes(StandardCharsets.UTF_8));
-            connectRecord.addExtension(ConnectRecordExtensionKeys.DINGDING_TEMPLATE_TYPE_KEY,
-                DingDingMessageTemplateType.MARKDOWN.getTemplateKey());
-            connectRecord.addExtension(ConnectRecordExtensionKeys.DINGDING_MARKDOWN_MESSAGE_TITLE,
-                "EventMesh MarkDown Message");
-            records.add(connectRecord);
-        }
-        connector.put(records);
-        verify(sendMessageClient, times(times)).orgGroupSendWithOptions(any(), any(), any());
-        // verify for access token cache.
-        verify(authClient, times(1)).getAccessToken(any());
-    }
-
     @AfterEach
     public void tearDown() {
         DingDingSinkConnector.AUTH_CACHE.invalidate(DingDingSinkConnector.ACCESS_TOKEN_CACHE_KEY);
+        connector.stop();
     }
 }

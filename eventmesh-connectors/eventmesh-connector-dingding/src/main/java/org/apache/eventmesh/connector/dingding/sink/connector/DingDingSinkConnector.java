@@ -18,13 +18,13 @@
 package org.apache.eventmesh.connector.dingding.sink.connector;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.dingding.common.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.dingding.config.DingDingMessageTemplateType;
 import org.apache.eventmesh.connector.dingding.sink.config.DingDingSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.HashMap;
@@ -33,7 +33,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest;
+import com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendHeaders;
+import com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendRequest;
 import com.aliyun.tea.TeaException;
+import com.aliyun.teautil.Common;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -109,8 +113,8 @@ public class DingDingSinkConnector implements Sink {
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord record : sinkRecords) {
             String accessToken = getAccessToken();
-            com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendHeaders orgGroupSendHeaders =
-                new com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendHeaders();
+            OrgGroupSendHeaders orgGroupSendHeaders =
+                new OrgGroupSendHeaders();
             orgGroupSendHeaders.xAcsDingtalkAccessToken = accessToken;
 
             String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGDING_TEMPLATE_TYPE_KEY);
@@ -129,8 +133,8 @@ public class DingDingSinkConnector implements Sink {
                 contentMap.put("text", String.valueOf(record.getData()));
             }
 
-            com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendRequest orgGroupSendRequest =
-                new com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendRequest()
+            OrgGroupSendRequest orgGroupSendRequest =
+                new OrgGroupSendRequest()
                     .setMsgParam(JsonUtils.toJSONString(contentMap))
                     .setMsgKey(templateType.getTemplateKey())
                     .setOpenConversationId(sinkConfig.getSinkConnectorConfig().getOpenConversationId())
@@ -141,7 +145,7 @@ public class DingDingSinkConnector implements Sink {
                 sendMessageClient.orgGroupSendWithOptions(orgGroupSendRequest, orgGroupSendHeaders, new com.aliyun.teautil.models.RuntimeOptions());
             } catch (Exception e) {
                 TeaException err = new TeaException(e.getMessage(), e);
-                if (!com.aliyun.teautil.Common.empty(err.code) && !com.aliyun.teautil.Common.empty(err.message)) {
+                if (!Common.empty(err.code) && !Common.empty(err.message)) {
                     String errorMessage = err.getMessage();
                     if ("invalidParameter.token.invalid".equals(errorMessage)) {
                         AUTH_CACHE.invalidate(ACCESS_TOKEN_CACHE_KEY);
@@ -154,8 +158,8 @@ public class DingDingSinkConnector implements Sink {
     @SneakyThrows
     private String getAccessToken() {
         return AUTH_CACHE.get(ACCESS_TOKEN_CACHE_KEY, () -> {
-            com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest getAccessTokenRequest =
-                new com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest()
+            GetAccessTokenRequest getAccessTokenRequest =
+                new GetAccessTokenRequest()
                     .setAppKey(sinkConfig.getSinkConnectorConfig().getAppKey())
                     .setAppSecret(sinkConfig.getSinkConnectorConfig().getAppSecret());
             return authClient.getAccessToken(getAccessTokenRequest).getBody().getAccessToken();
