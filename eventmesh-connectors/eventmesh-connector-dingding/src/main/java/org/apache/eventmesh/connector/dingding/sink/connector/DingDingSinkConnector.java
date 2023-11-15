@@ -38,11 +38,14 @@ import com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendHeaders;
 import com.aliyun.dingtalkrobot_1_0.models.OrgGroupSendRequest;
 import com.aliyun.tea.TeaException;
 import com.aliyun.teautil.Common;
+import com.aliyun.teautil.models.RuntimeOptions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DingDingSinkConnector implements Sink {
 
     public static final Cache<String, String> AUTH_CACHE = CacheBuilder.newBuilder()
@@ -112,45 +115,49 @@ public class DingDingSinkConnector implements Sink {
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord record : sinkRecords) {
-            String accessToken = getAccessToken();
-            OrgGroupSendHeaders orgGroupSendHeaders =
-                new OrgGroupSendHeaders();
-            orgGroupSendHeaders.xAcsDingtalkAccessToken = accessToken;
-
-            String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGDING_TEMPLATE_TYPE_KEY);
-            if (null == templateTypeKey || "null".equals(templateTypeKey)) {
-                templateTypeKey = DingDingMessageTemplateType.PLAIN_TEXT.getTemplateKey();
-            }
-            DingDingMessageTemplateType templateType = DingDingMessageTemplateType.of(templateTypeKey);
-
-            Map<String, String> contentMap = new HashMap<>();
-            if (DingDingMessageTemplateType.PLAIN_TEXT == templateType) {
-                contentMap.put("content", new String((byte[]) record.getData()));
-            } else if (DingDingMessageTemplateType.MARKDOWN == templateType) {
-                String title = Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.DINGDING_MARKDOWN_MESSAGE_TITLE))
-                    .orElse("EventMesh-Message");
-                contentMap.put("title", title);
-                contentMap.put("text", String.valueOf(record.getData()));
-            }
-
-            OrgGroupSendRequest orgGroupSendRequest =
-                new OrgGroupSendRequest()
-                    .setMsgParam(JsonUtils.toJSONString(contentMap))
-                    .setMsgKey(templateType.getTemplateKey())
-                    .setOpenConversationId(sinkConfig.getSinkConnectorConfig().getOpenConversationId())
-                    .setRobotCode(sinkConfig.getSinkConnectorConfig().getRobotCode())
-                    .setCoolAppCode(sinkConfig.getSinkConnectorConfig().getCoolAppCode());
-
             try {
-                sendMessageClient.orgGroupSendWithOptions(orgGroupSendRequest, orgGroupSendHeaders, new com.aliyun.teautil.models.RuntimeOptions());
-            } catch (Exception e) {
-                TeaException err = new TeaException(e.getMessage(), e);
-                if (!Common.empty(err.code) && !Common.empty(err.message)) {
-                    String errorMessage = err.getMessage();
-                    if ("invalidParameter.token.invalid".equals(errorMessage)) {
-                        AUTH_CACHE.invalidate(ACCESS_TOKEN_CACHE_KEY);
+
+                String accessToken = getAccessToken();
+                OrgGroupSendHeaders orgGroupSendHeaders =
+                    new OrgGroupSendHeaders();
+                orgGroupSendHeaders.xAcsDingtalkAccessToken = accessToken;
+
+                String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGDING_TEMPLATE_TYPE_KEY);
+                if (null == templateTypeKey || "null".equals(templateTypeKey)) {
+                    templateTypeKey = DingDingMessageTemplateType.PLAIN_TEXT.getTemplateKey();
+                }
+                DingDingMessageTemplateType templateType = DingDingMessageTemplateType.of(templateTypeKey);
+
+                Map<String, String> contentMap = new HashMap<>();
+                if (DingDingMessageTemplateType.PLAIN_TEXT == templateType) {
+                    contentMap.put("content", new String((byte[]) record.getData()));
+                } else if (DingDingMessageTemplateType.MARKDOWN == templateType) {
+                    String title = Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.DINGDING_MARKDOWN_MESSAGE_TITLE))
+                        .orElse("EventMesh-Message");
+                    contentMap.put("title", title);
+                    contentMap.put("text", String.valueOf(record.getData()));
+                }
+
+                OrgGroupSendRequest orgGroupSendRequest =
+                    new OrgGroupSendRequest()
+                        .setMsgParam(JsonUtils.toJSONString(contentMap))
+                        .setMsgKey(templateType.getTemplateKey())
+                        .setOpenConversationId(sinkConfig.getSinkConnectorConfig().getOpenConversationId())
+                        .setRobotCode(sinkConfig.getSinkConnectorConfig().getRobotCode())
+                        .setCoolAppCode(sinkConfig.getSinkConnectorConfig().getCoolAppCode());
+
+                try {
+                    sendMessageClient.orgGroupSendWithOptions(orgGroupSendRequest, orgGroupSendHeaders, new RuntimeOptions());
+                } catch (TeaException e) {
+                    if (!Common.empty(e.code) && !Common.empty(e.message)) {
+                        String errorMessage = e.getMessage();
+                        if ("invalidParameter.token.invalid".equals(errorMessage)) {
+                            AUTH_CACHE.invalidate(ACCESS_TOKEN_CACHE_KEY);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                log.error("Failed to sink message to DingDing.", e);
             }
         }
     }
