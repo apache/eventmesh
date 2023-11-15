@@ -30,7 +30,7 @@ public class DingDingConnectServer {
         DingDingConnectServerConfig dingDingConnectServerConfig = ConfigUtil.parse(DingDingConnectServerConfig.class,
             Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
 
-        if (dingDingConnectServerConfig.isSourceEnable()) {
+        if (dingDingConnectServerConfig.isSinkEnable()) {
             Application application = new Application();
             application.run(DingDingSinkConnector.class);
         }
