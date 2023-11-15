@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.producer;
+package org.apache.eventmesh.runtime.core.protocol.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.common.ServiceState;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
@@ -53,19 +53,22 @@ public class EventMeshProducer {
         mqProducerWrapper.reply(sendMessageContext.getEvent(), sendCallback);
     }
 
-    public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
+    public synchronized void init(CommonConfiguration configuration,
         ProducerGroupConf producerGroupConfig) throws Exception {
+        if (ServiceState.INITED == serviceState) {
+            return;
+        }
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();
         keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
-            producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.getEventMeshCluster()));
+            producerGroupConfig.getGroupName(), configuration.getEventMeshCluster()));
 
         // TODO for defibus
-        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, configuration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
-            eventMeshGrpcConfiguration.getEventMeshStoragePluginType());
+            configuration.getEventMeshStoragePluginType());
         mqProducerWrapper.init(keyValue);
         serviceState = ServiceState.INITED;
         log.info("EventMeshProducer [{}] inited...........", producerGroupConfig.getGroupName());
@@ -82,7 +85,7 @@ public class EventMeshProducer {
     }
 
     public synchronized void shutdown() throws Exception {
-        if (serviceState == null || ServiceState.INITED == serviceState) {
+        if (serviceState == null || ServiceState.STOPPED == serviceState) {
             return;
         }
 
@@ -101,5 +104,13 @@ public class EventMeshProducer {
         sb.append("eventMeshProducer={").append("status=").append(serviceState.name()).append(",").append("producerGroupConfig=")
             .append(producerGroupConfig).append("}");
         return sb.toString();
+    }
+
+    public MQProducerWrapper getMqProducerWrapper() {
+        return mqProducerWrapper;
+    }
+
+    public boolean isStarted() {
+        return serviceState == ServiceState.RUNNING;
     }
 }
