@@ -30,6 +30,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -116,7 +117,10 @@ public class DingDingSinkConnector implements Sink {
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord record : sinkRecords) {
             try {
-
+                if (Objects.isNull(record.getData())) {
+                    log.warn("ConnectRecord data is null, ignore.");
+                    continue;
+                }
                 String accessToken = getAccessToken();
                 OrgGroupSendHeaders orgGroupSendHeaders =
                     new OrgGroupSendHeaders();
