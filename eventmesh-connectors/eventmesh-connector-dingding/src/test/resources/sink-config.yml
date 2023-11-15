@@ -15,6 +15,15 @@
 # limitations under the License.
 #
 
+pubSubConfig:
+    meshAddress: 127.0.0.1:10000
+    subject: TEST-TOPIC-DINGDING
+    idc: FT
+    env: PRD
+    group: dingDingSink
+    appId: 5034
+    userName: dingDingSinkUser
+    passWord: dingDingPassWord
 sinkConnectorConfig:
     connectorName: dingDingSink
     appKey: dingDingAppKey
