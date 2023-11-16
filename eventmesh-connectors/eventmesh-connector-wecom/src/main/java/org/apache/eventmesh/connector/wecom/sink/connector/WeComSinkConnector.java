@@ -17,9 +17,8 @@
 
 package org.apache.eventmesh.connector.wecom.sink.connector;
 
-import org.apache.eventmesh.client.http.model.RequestParam;
-import org.apache.eventmesh.client.http.util.HttpUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.wecom.config.WeComMessageTemplateType;
 import org.apache.eventmesh.connector.wecom.constants.ConnectRecordExtensionKeys;
@@ -30,20 +29,17 @@ import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import io.netty.handler.codec.http.HttpMethod;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -55,20 +51,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WeComSinkConnector implements Sink {
 
-    public static final Cache<String, String> AUTH_CACHE = CacheBuilder.newBuilder()
-        .initialCapacity(12)
-        .maximumSize(10)
-        .concurrencyLevel(5)
-        .expireAfterWrite(20, TimeUnit.MINUTES)
-        .build();
+    private static final String ROBOT_WEBHOOK_URL_PREFIX = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=";
 
     private CloseableHttpClient httpClient;
 
     private WeComSinkConfig sinkConfig;
 
     private volatile boolean isRunning = false;
-
-    public static final String ACCESS_TOKEN_CACHE_KEY = "access_token";
 
     @Override
     public Class<? extends Config> configClass() {
@@ -120,59 +109,37 @@ public class WeComSinkConnector implements Sink {
                     log.warn("ConnectRecord data is null, ignore.");
                     continue;
                 }
-                String accessToken = getAccessToken();
-                sendMessage(record, accessToken);
+                sendMessage(record);
             } catch (Exception e) {
-                log.error("Failed to sink message to DingDing.", e);
+                log.error("Failed to sink message to WeCom.", e);
             }
         }
     }
 
     @SneakyThrows
-    private void sendMessage(ConnectRecord record, String accessToken) {
-        RequestParam param = new RequestParam(HttpMethod.POST).setTimeout(Constants.DEFAULT_HTTP_TIME_OUT);
-        String toUserId = record.getExtension(ConnectRecordExtensionKeys.WECOM_TO_USER_ID);
-        String toPartyId = record.getExtension(ConnectRecordExtensionKeys.WECOM_TO_PARTY_ID);
-        String toTagId = record.getExtension(ConnectRecordExtensionKeys.WECOM_TO_TAG_ID);
-        if (toUserId == null && toPartyId == null && toTagId == null) {
-            throw new IllegalArgumentException("toUserId, toPartyId, toTagId Not allowed All empty.");
-        }
-        param.addQueryParam("access_token", accessToken);
-        param.addBody("touser", toUserId);
-        param.addBody("toparty", toPartyId);
-        param.addBody("totag", toTagId);
+    private void sendMessage(ConnectRecord record) {
+        final String target = ROBOT_WEBHOOK_URL_PREFIX + sinkConfig.getSinkConnectorConfig().getRobotWebhookKey();
+        SendMessageRequest request = new SendMessageRequest();
+        HttpPost httpPost = new HttpPost(target);
+        httpPost.addHeader("Content-Type", EventMeshDataContentType.JSON.getCode());
         WeComMessageTemplateType templateType = WeComMessageTemplateType.of(
-                Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE_KEY))
-                        .orElse(WeComMessageTemplateType.TEXT.getTemplateKey()));
-        param.addBody("msgtype", templateType.getTemplateKey());
-        param.addBody("agentid", sinkConfig.getSinkConnectorConfig().getAppAgentId());
-        Map<String, String> contentMap = new HashMap<>();
-        contentMap.put("content", new String((byte[]) record.getData()));
-        param.addBody("text", JsonUtils.toJSONString(contentMap));
-        final String target = "https://qyapi.weixin.qq.com/cgi-bin/message/send";
-        String sendMessageResult = HttpUtils.post(httpClient, target, param);
-        SendMessageDTO sendMessageDTO = Objects.requireNonNull(JsonUtils.parseObject(sendMessageResult, SendMessageDTO.class));
+            Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE_KEY))
+                .orElse(WeComMessageTemplateType.PLAIN_TEXT.getTemplateKey()));
+        if (WeComMessageTemplateType.PLAIN_TEXT == templateType) {
+            request.setPlainText(new SendMessageRequest.ContentRequest()
+                .setContent(new String((byte[]) record.getData())));
+        } else if (WeComMessageTemplateType.MARKDOWN == templateType) {
+            request.setMarkdownText(new SendMessageRequest.ContentRequest()
+                .setContent(new String((byte[]) record.getData())));
+        }
+        request.setMessageType(templateType.getTemplateKey());
+        httpPost.setEntity(new StringEntity(Objects.requireNonNull(JsonUtils.toJSONString(request)), ContentType.APPLICATION_JSON));
+        CloseableHttpResponse httpResponse = httpClient.execute(httpPost);
+        String resultStr = EntityUtils.toString(httpResponse.getEntity(), Constants.DEFAULT_CHARSET);
+        SendMessageDTO sendMessageDTO = Objects.requireNonNull(JsonUtils.parseObject(resultStr, SendMessageDTO.class));
         if (sendMessageDTO.getErrorCode() != 0) {
             throw new IllegalAccessException(String.format("Send message to weCom error! errorCode=%s, errorMessage=%s",
                 sendMessageDTO.getErrorCode(), sendMessageDTO.getErrorMessage()));
         }
-    }
-
-    @SneakyThrows
-    private String getAccessToken() {
-        return AUTH_CACHE.get(ACCESS_TOKEN_CACHE_KEY, () -> {
-            try {
-                String uri = "https://qyapi.weixin.qq.com/cgi-bin/gettoken";
-                RequestParam requestParam = new RequestParam(HttpMethod.GET).setTimeout(Constants.DEFAULT_HTTP_TIME_OUT);
-                requestParam.addQueryParam("corpid", sinkConfig.getSinkConnectorConfig().getCorpId());
-                requestParam.addQueryParam("corpsecret", sinkConfig.getSinkConnectorConfig().getAppSecret());
-                String resultStr = HttpUtils.get(httpClient, uri, requestParam);
-                AccessTokenDTO accessTokenDTO = Objects.requireNonNull(JsonUtils.parseObject(resultStr, AccessTokenDTO.class));
-                return accessTokenDTO.getAccessToken();
-            } catch (Exception e) {
-                log.error("Get WeCom access token error.", e);
-                throw e;
-            }
-        });
     }
 }

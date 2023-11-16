@@ -29,22 +29,4 @@ public class SendMessageDTO {
 
     @JsonProperty("errmsg")
     private String errorMessage;
-
-    @JsonProperty("invaliduser")
-    private String invalidUser;
-
-    @JsonProperty("invalidparty")
-    private String invalidParty;
-
-    @JsonProperty("invalidtag")
-    private String invalidTag;
-
-    @JsonProperty("unlicenseduser")
-    private String unlicensedUser;
-
-    @JsonProperty("msgid")
-    private String messageId;
-
-    @JsonProperty("response_code")
-    private String responseCode;
 }

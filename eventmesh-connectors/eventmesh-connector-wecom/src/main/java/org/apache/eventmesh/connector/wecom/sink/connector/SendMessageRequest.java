@@ -15,15 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.wecom.sink.config;
+package org.apache.eventmesh.connector.wecom.sink.connector;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
-public class SinkConnectorConfig {
+@Accessors(chain = true)
+public class SendMessageRequest {
 
-    private String connectorName;
+    @JsonProperty("msgtype")
+    private String messageType;
 
-    private String robotWebhookKey;
+    @JsonProperty("text")
+    private ContentRequest plainText;
 
+    @JsonProperty("markdown")
+    private ContentRequest markdownText;
+
+    @Data
+    @Accessors(chain = true)
+    public static class ContentRequest {
+
+        @JsonProperty("content")
+        private String content;
+    }
 }

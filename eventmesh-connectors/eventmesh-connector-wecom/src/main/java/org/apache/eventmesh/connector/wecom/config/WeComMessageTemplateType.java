@@ -21,7 +21,8 @@ import java.util.Arrays;
 
 public enum WeComMessageTemplateType {
 
-    TEXT("text");
+    PLAIN_TEXT("text"),
+    MARKDOWN("markdown");
 
     private final String templateKey;
 

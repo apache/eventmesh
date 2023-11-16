@@ -24,9 +24,4 @@ public interface ConnectRecordExtensionKeys {
 
     String WECOM_MESSAGE_TEMPLATE_TYPE_KEY = "weCom:MessageTemplateTypeKey";
 
-    String WECOM_TO_USER_ID = "weCom:toUserId";
-
-    String WECOM_TO_PARTY_ID = "weCom:toPartyId";
-
-    String WECOM_TO_TAG_ID = "weCom:toTagId";
 }

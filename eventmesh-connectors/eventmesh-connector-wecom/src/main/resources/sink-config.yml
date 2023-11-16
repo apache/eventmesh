@@ -26,6 +26,4 @@ pubSubConfig:
     passWord: weComPassWord
 sinkConnectorConfig:
     connectorName: weComSink
-    corpId: weComCorpId
-    appAgentId: 1000002
-    appSecret: weComAppSecret
+    robotWebhookKey: weComRobotWebhookKey
