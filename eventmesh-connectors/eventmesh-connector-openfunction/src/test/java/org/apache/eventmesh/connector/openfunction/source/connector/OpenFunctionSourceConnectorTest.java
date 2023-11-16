@@ -10,16 +10,10 @@ import java.util.concurrent.BlockingQueue;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 public class OpenFunctionSourceConnectorTest {
 
-    @Spy
-    private OpenFunctionSourceConnector connector;
-
+    private final OpenFunctionSourceConnector connector = new OpenFunctionSourceConnector();
 
     @Test
     public void testSpringSourceConnector() throws Exception {
