@@ -23,22 +23,6 @@ import static org.apache.eventmesh.common.Constants.FEISHU_RECEIVE_ID;
 import static org.apache.eventmesh.common.Constants.FEISHU_SEND_MESSAGE_API;
 import static org.apache.eventmesh.common.Constants.FEISHU_UUID;
 
-import org.apache.eventmesh.connector.feishu.sink.config.FeishuSinkConfig;
-import org.apache.eventmesh.connector.feishu.sink.config.SinkConnectorConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
-import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
-import org.apache.eventmesh.openconnect.api.sink.Sink;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.github.rholder.retry.Attempt;
 import com.github.rholder.retry.RetryListener;
 import com.github.rholder.retry.Retryer;
@@ -50,8 +34,20 @@ import com.lark.oapi.core.response.RawResponse;
 import com.lark.oapi.core.token.AccessTokenType;
 import com.lark.oapi.service.im.v1.enums.MsgTypeEnum;
 import com.lark.oapi.service.im.v1.model.ext.MessageText;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.connector.feishu.sink.config.FeishuSinkConfig;
+import org.apache.eventmesh.connector.feishu.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
+import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
+import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 @Slf4j
 public class FeishuSinkConnector implements Sink {
@@ -64,22 +60,15 @@ public class FeishuSinkConnector implements Sink {
 
     private static final int FIXED_WAIT_SECOND = 1;
 
-    private final Retryer<Boolean> retryer =
-            RetryerBuilder.<Boolean>newBuilder()
-                          .retryIfException()
-                          .retryIfResult(res -> !res)
-                          .withWaitStrategy(
-                                  WaitStrategies.fixedWait(FIXED_WAIT_SECOND, TimeUnit.SECONDS))
-                          .withStopStrategy(StopStrategies.stopAfterAttempt(MAX_RETRY_TIME))
-                          .withRetryListener(
-                                  new RetryListener() {
-                                      @Override
-                                      public <V> void onRetry(Attempt<V> attempt) {
-                                          long times = attempt.getAttemptNumber();
-                                          log.warn("retry invoke http,times={}", times);
-                                      }
-                                  })
-                          .build();
+    private final Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder().retryIfException().retryIfResult(res -> !res)
+        .withWaitStrategy(WaitStrategies.fixedWait(FIXED_WAIT_SECOND, TimeUnit.SECONDS))
+        .withStopStrategy(StopStrategies.stopAfterAttempt(MAX_RETRY_TIME)).withRetryListener(new RetryListener() {
+            @Override
+            public <V> void onRetry(Attempt<V> attempt) {
+                long times = attempt.getAttemptNumber();
+                log.warn("retry invoke http,times={}", times);
+            }
+        }).build();
 
     @Override
     public Class<? extends Config> configClass() {
@@ -102,9 +91,8 @@ public class FeishuSinkConnector implements Sink {
     }
 
     private void doInit() {
-        this.feishuClient = Client.newBuilder(this.getConfig().getAppId(), this.getConfig().getAppSecret()).
-                                  requestTimeout(3,TimeUnit.SECONDS)
-                                  .build();
+        this.feishuClient = Client.newBuilder(this.getConfig().getAppId(), this.getConfig().getAppSecret()).requestTimeout(3, TimeUnit.SECONDS)
+            .build();
     }
 
     @Override
@@ -138,7 +126,7 @@ public class FeishuSinkConnector implements Sink {
                     body.put(FEISHU_MSG_TYPE, MsgTypeEnum.MSG_TYPE_TEXT.getValue());
                     body.put(FEISHU_UUID, UUID.randomUUID().toString());
                     response.set(feishuClient.post(FEISHU_SEND_MESSAGE_API + connectorConfig.getReceiveIdType(), body, AccessTokenType.Tenant));
-                    if (response.get().getStatusCode() != 200){
+                    if (response.get().getStatusCode() != 200) {
                         log.error("request feishu open api err{}", new String(response.get().getBody()));
                         return false;
                     }

@@ -1,4 +1,4 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         #
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,15 +16,15 @@
 #
 
 pubSubConfig:
-    meshAddress: 127.0.0.1:10000
-    subject: TopicTest
-    idc: FT
-    env: PRD
-    group: feishuSink
-    appId: 5031
-    userName: feishuSinkUser
-    passWord: feishuPassWord
+  meshAddress: 127.0.0.1:10000
+  subject: TopicTest
+  idc: FT
+  env: PRD
+  group: feishuSink
+  appId: 5031
+  userName: feishuSinkUser
+  passWord: feishuPassWord
 connectorConfig:
-    connectorName: feishuSink
-    reciveId: reciveIdValue
-    reciveType: open_id
+  connectorName: feishuSink
+  reciveId: reciveIdValue
+  reciveType: open_id
