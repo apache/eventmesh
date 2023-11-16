@@ -95,7 +95,7 @@ public class ConnectRecord {
     }
 
     public String getExtension(String key) {
-        if (this.extensions == null) {
+        if (this.extensions == null || !extensions.containsKey(key)) {
             return null;
         }
         return this.extensions.getString(key);

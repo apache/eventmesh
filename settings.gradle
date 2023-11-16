@@ -45,6 +45,7 @@ include 'eventmesh-connectors:eventmesh-connector-file'
 include 'eventmesh-connectors:eventmesh-connector-spring'
 include 'eventmesh-connectors:eventmesh-connector-prometheus'
 include 'eventmesh-connectors:eventmesh-connector-dingding'
+include 'eventmesh-connectors:eventmesh-connector-wecom'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
