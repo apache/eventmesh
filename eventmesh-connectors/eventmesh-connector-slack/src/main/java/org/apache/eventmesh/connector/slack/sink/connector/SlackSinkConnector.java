@@ -111,20 +111,7 @@ public class SlackSinkConnector implements Sink {
                 throw new IllegalAccessException(response.getError());
             }
         } catch (Exception e) {
-            log.error("error: {}", e.getMessage(), e);
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            MethodsClient client = Slack.getInstance().methods();
-            ChatPostMessageResponse response = client.chatPostMessage(r -> r
-                .token("xoxb-6210178185715-6196113953063-aTrzZ5wiHfyZ3tjm1jE6R6ez")
-                .channel("C06668DA3GA")
-                .text("Hello, EventMesh Slack Connector!"));
-            log.info("result {}", response);
-        } catch (Exception e) {
-            log.error("error: {}", e.getMessage(), e);
+            log.error("Send message to slack error.", e);
         }
     }
 }
