@@ -37,7 +37,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -125,21 +127,22 @@ public class WeComSinkConnector implements Sink {
         WeComMessageTemplateType templateType = WeComMessageTemplateType.of(
             Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE_KEY))
                 .orElse(WeComMessageTemplateType.PLAIN_TEXT.getTemplateKey()));
+        Map<String, Object> contentMap = new HashMap<>();
         if (WeComMessageTemplateType.PLAIN_TEXT == templateType) {
-            request.setPlainText(new SendMessageRequest.ContentRequest()
-                .setContent(new String((byte[]) record.getData())));
+            contentMap.put("content", new String((byte[]) record.getData()));
+            request.setTextContent(contentMap);
         } else if (WeComMessageTemplateType.MARKDOWN == templateType) {
-            request.setMarkdownText(new SendMessageRequest.ContentRequest()
-                .setContent(new String((byte[]) record.getData())));
+            contentMap.put("content", new String((byte[]) record.getData()));
+            request.setMarkdownContent(contentMap);
         }
         request.setMessageType(templateType.getTemplateKey());
         httpPost.setEntity(new StringEntity(Objects.requireNonNull(JsonUtils.toJSONString(request)), ContentType.APPLICATION_JSON));
         CloseableHttpResponse httpResponse = httpClient.execute(httpPost);
         String resultStr = EntityUtils.toString(httpResponse.getEntity(), Constants.DEFAULT_CHARSET);
-        SendMessageDTO sendMessageDTO = Objects.requireNonNull(JsonUtils.parseObject(resultStr, SendMessageDTO.class));
-        if (sendMessageDTO.getErrorCode() != 0) {
+        SendMessageResponse sendMessageResponse = Objects.requireNonNull(JsonUtils.parseObject(resultStr, SendMessageResponse.class));
+        if (sendMessageResponse.getErrorCode() != 0) {
             throw new IllegalAccessException(String.format("Send message to weCom error! errorCode=%s, errorMessage=%s",
-                sendMessageDTO.getErrorCode(), sendMessageDTO.getErrorMessage()));
+                sendMessageResponse.getErrorCode(), sendMessageResponse.getErrorMessage()));
         }
     }
 }

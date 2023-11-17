@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.wecom.sink.connector;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -30,16 +32,8 @@ public class SendMessageRequest {
     private String messageType;
 
     @JsonProperty("text")
-    private ContentRequest plainText;
+    private Map<String, Object> textContent;
 
     @JsonProperty("markdown")
-    private ContentRequest markdownText;
-
-    @Data
-    @Accessors(chain = true)
-    public static class ContentRequest {
-
-        @JsonProperty("content")
-        private String content;
-    }
+    private Map<String, Object> markdownContent;
 }

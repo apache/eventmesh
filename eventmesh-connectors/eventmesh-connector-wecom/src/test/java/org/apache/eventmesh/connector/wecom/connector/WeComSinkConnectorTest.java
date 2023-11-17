@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.wecom.config.WeComMessageTemplateType;
 import org.apache.eventmesh.connector.wecom.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.wecom.sink.config.WeComSinkConfig;
-import org.apache.eventmesh.connector.wecom.sink.connector.SendMessageDTO;
+import org.apache.eventmesh.connector.wecom.sink.connector.SendMessageResponse;
 import org.apache.eventmesh.connector.wecom.sink.connector.WeComSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
@@ -51,7 +51,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ReflectionSupport;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -60,7 +59,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class WeComSinkConnectorTest {
 
-    @InjectMocks
     private WeComSinkConnector connector;
 
     @Mock
@@ -68,6 +66,7 @@ public class WeComSinkConnectorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        connector = new WeComSinkConnector();
         CloseableHttpResponse mockedResponse = Mockito.mock(CloseableHttpResponse.class);
         HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
         Mockito.doReturn(mockedResponse).when(httpClient).execute(any(HttpPost.class));
@@ -86,7 +85,7 @@ public class WeComSinkConnectorTest {
     public void testSendMessageToWeCom() throws IOException {
         try (MockedStatic<EntityUtils> entityUtilsMockedStatic = Mockito.mockStatic(EntityUtils.class)) {
             entityUtilsMockedStatic.when(() -> EntityUtils.toString(any(HttpEntity.class), any(Charset.class)))
-                .thenReturn(JsonUtils.toJSONString(new SendMessageDTO()));
+                .thenReturn(JsonUtils.toJSONString(new SendMessageResponse()));
             final int times = 3;
             List<ConnectRecord> records = new ArrayList<>();
             for (int i = 0; i < times; i++) {
@@ -104,7 +103,8 @@ public class WeComSinkConnectorTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
         connector.stop();
+        httpClient.close();
     }
 }

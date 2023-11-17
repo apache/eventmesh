@@ -15,4 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.wecom;
+package org.apache.eventmesh.connector.wecom.sink.connector;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+
+@Data
+public class SendMessageResponse {
+
+    @JsonProperty("errcode")
+    private int errorCode;
+
+    @JsonProperty("errmsg")
+    private String errorMessage;
+}
