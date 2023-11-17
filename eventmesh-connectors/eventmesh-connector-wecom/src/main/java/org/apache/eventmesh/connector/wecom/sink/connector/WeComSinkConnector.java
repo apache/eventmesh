@@ -37,6 +37,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +96,9 @@ public class WeComSinkConnector implements Sink {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws IOException {
         isRunning = false;
+        httpClient.close();
     }
 
     public boolean isRunning() {
