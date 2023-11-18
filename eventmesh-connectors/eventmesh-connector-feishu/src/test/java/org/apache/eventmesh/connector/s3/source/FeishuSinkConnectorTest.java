@@ -48,7 +48,6 @@ public class FeishuSinkConnectorTest {
         sinkConfig.setConnectorConfig(SINK_CONNECTOR_CONFIG);
     }
 
-
     @Test
     public void testFeishuSinkConnector() {
         assertDoesNotThrow(() -> {
@@ -60,6 +59,5 @@ public class FeishuSinkConnectorTest {
             feishuSinkConnector.put(connectRecords);
         });
     }
-
 
 }

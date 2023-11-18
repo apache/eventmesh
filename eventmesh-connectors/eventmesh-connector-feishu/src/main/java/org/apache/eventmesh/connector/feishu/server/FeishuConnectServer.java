@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.feishu.server;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.feishu.sink.connector.FeishuSinkConnector;
 import org.apache.eventmesh.openconnect.Application;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FeishuConnectServer {

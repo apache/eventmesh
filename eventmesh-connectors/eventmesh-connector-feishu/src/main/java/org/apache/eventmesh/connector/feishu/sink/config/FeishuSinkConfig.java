@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.connector.feishu.sink.config;
 
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
