@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.connector.s3.source;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.apache.eventmesh.connector.feishu.sink.config.FeishuSinkConfig;
 import org.apache.eventmesh.connector.feishu.sink.config.SinkConnectorConfig;
@@ -35,7 +37,6 @@ import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.lark.oapi.Client;
@@ -59,7 +60,6 @@ public class FeishuSinkConnectorTest {
         sinkConfig.setConnectorConfig(SINK_CONNECTOR_CONFIG);
     }
 
-    @Spy
     private FeishuSinkConnector feishuSinkConnector;
 
     @Mock
@@ -67,6 +67,7 @@ public class FeishuSinkConnectorTest {
 
     @BeforeEach
     public void setup() throws Exception {
+        feishuSinkConnector = new FeishuSinkConnector();
         RawResponse response = new RawResponse();
         response.setStatusCode(200);
         Mockito.doReturn(response).when(feishuClient).post(Mockito.any(), Mockito.any(), Mockito.any());
@@ -87,13 +88,17 @@ public class FeishuSinkConnectorTest {
     }
 
     @Test
-    public void testFeishuSinkConnector() {
-        assertDoesNotThrow(() -> {
+    public void testFeishuSinkConnector() throws Exception {
+        final int times = 3;
+        List<ConnectRecord> connectRecords = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
             feishuSinkConnector.start();
-            List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(new ConnectRecord(null, null, 0L, "test"));
-            feishuSinkConnector.put(connectRecords);
-        });
+        }
+        feishuSinkConnector.put(connectRecords);
+
+        verify(feishuClient, times(times)).post(any(), any(), any());
+
     }
 
 }
