@@ -145,4 +145,5 @@ public class FeishuSinkConnector implements Sink {
     public SinkConnectorConfig getConfig() {
         return this.sinkConfig.getConnectorConfig();
     }
+
 }

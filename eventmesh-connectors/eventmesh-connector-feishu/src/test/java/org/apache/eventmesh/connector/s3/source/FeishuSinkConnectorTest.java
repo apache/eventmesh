@@ -24,13 +24,24 @@ import org.apache.eventmesh.connector.feishu.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.feishu.sink.connector.FeishuSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.platform.commons.support.HierarchyTraversalMode;
+import org.junit.platform.commons.support.ReflectionSupport;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@Disabled
+import com.lark.oapi.Client;
+import com.lark.oapi.core.response.RawResponse;
+
+@ExtendWith(MockitoExtension.class)
 public class FeishuSinkConnectorTest {
 
     private static final FeishuSinkConfig sinkConfig;
@@ -48,11 +59,36 @@ public class FeishuSinkConnectorTest {
         sinkConfig.setConnectorConfig(SINK_CONNECTOR_CONFIG);
     }
 
+    @Spy
+    private FeishuSinkConnector feishuSinkConnector;
+
+    @Mock
+    private Client feishuClient;
+
+    @BeforeEach
+    public void setup() throws Exception {
+        RawResponse response = new RawResponse();
+        response.setStatusCode(200);
+        Mockito.doReturn(response).when(feishuClient).post(Mockito.any(), Mockito.any(), Mockito.any());
+
+        Field feishuClientField = ReflectionSupport.findFields(feishuSinkConnector.getClass(),
+            (f) -> f.getName().equals("feishuClient"),
+            HierarchyTraversalMode.BOTTOM_UP).get(0);
+
+        feishuClientField.setAccessible(true);
+        feishuClientField.set(feishuSinkConnector, feishuClient);
+
+        Field sinkConfigField = ReflectionSupport.findFields(feishuSinkConnector.getClass(),
+            (f) -> f.getName().equals("sinkConfig"),
+            HierarchyTraversalMode.BOTTOM_UP).get(0);
+
+        sinkConfigField.setAccessible(true);
+        sinkConfigField.set(feishuSinkConnector, sinkConfig);
+    }
+
     @Test
     public void testFeishuSinkConnector() {
         assertDoesNotThrow(() -> {
-            FeishuSinkConnector feishuSinkConnector = new FeishuSinkConnector();
-            feishuSinkConnector.init(sinkConfig);
             feishuSinkConnector.start();
             List<ConnectRecord> connectRecords = new ArrayList<>();
             connectRecords.add(new ConnectRecord(null, null, 0L, "test"));
