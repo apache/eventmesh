@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -89,16 +90,21 @@ public class FeishuSinkConnectorTest {
 
     @Test
     public void testFeishuSinkConnector() throws Exception {
+        feishuSinkConnector.start();
         final int times = 3;
         List<ConnectRecord> connectRecords = new ArrayList<>();
         for (int i = 0; i < times; i++) {
-            feishuSinkConnector.start();
             connectRecords.add(new ConnectRecord(null, null, 0L, "test"));
         }
         feishuSinkConnector.put(connectRecords);
 
         verify(feishuClient, times(times)).post(any(), any(), any());
 
+    }
+
+    @AfterEach
+    public void tearDown() {
+        feishuSinkConnector.stop();
     }
 
 }
