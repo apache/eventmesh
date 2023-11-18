@@ -24,12 +24,13 @@ import static org.apache.eventmesh.metrics.prometheus.utils.PrometheusExporterUt
 
 import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
+
+import com.google.common.collect.ImmutableMap;
 
 import lombok.experimental.UtilityClass;
 
@@ -39,23 +40,15 @@ public class PrometheusGrpcExporter {
     /**
      * Map structure : [metric name, description of name] -> the method of get corresponding metric.
      */
-    private Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs;
-
-    static {
-        paramPairs = new HashMap<String[], Function<GrpcSummaryMetrics, Number>>() {
-
-            {
-                put(join("sub.topic.num", "get sub topic num."), GrpcSummaryMetrics::getSubscribeTopicNum);
-                put(join("retry.queue.size", "get size of retry queue."), GrpcSummaryMetrics::getRetrySize);
-
-                put(join("server.tps", "get size of retry queue."), GrpcSummaryMetrics::getClient2EventMeshTPS);
-                put(join("client.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2ClientTPS);
-
-                put(join("mq.provider.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2MqTPS);
-                put(join("mq.consumer.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getMq2EventMeshTPS);
-            }
-        };
-    }
+    private final Map<String[], Function<GrpcSummaryMetrics, Number>> paramPairs = ImmutableMap
+            .<String[], Function<GrpcSummaryMetrics, Number>>builder()
+            .put(join("sub.topic.num", "get sub topic num."), GrpcSummaryMetrics::getSubscribeTopicNum)
+            .put(join("retry.queue.size", "get size of retry queue."), GrpcSummaryMetrics::getRetrySize)
+            .put(join("server.tps", "get size of retry queue."), GrpcSummaryMetrics::getClient2EventMeshTPS)
+            .put(join("client.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2ClientTPS)
+            .put(join("mq.provider.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getEventMesh2MqTPS)
+            .put(join("mq.consumer.tps", "get tps of eventMesh to mq."), GrpcSummaryMetrics::getMq2EventMeshTPS)
+            .build();
 
     public static void export(final String meterName, final GrpcSummaryMetrics summaryMetrics) {
         final Meter meter = GlobalMeterProvider.getMeter(meterName);
