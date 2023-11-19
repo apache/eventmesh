@@ -245,8 +245,16 @@ public class SourceWorker implements ConnectorWorker {
 
         for (String key : connectRecord.getExtensions().keySet()) {
             Object extension = connectRecord.getExtensionObj(key);
-            if (extension instanceof String) {
-                cloudEventBuilder.withExtension(key, extension.toString());
+            if (extension instanceof Integer ||
+                    extension instanceof Long ||
+                    extension instanceof Short ||
+                    extension instanceof Byte ||
+                    extension instanceof Boolean ||
+                    extension instanceof Float ||
+                    extension instanceof Double ||
+                    extension instanceof Character ||
+                    extension instanceof String) {
+                cloudEventBuilder.withExtension(key, String.valueOf(extension));
             }
         }
 
