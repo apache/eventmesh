@@ -26,19 +26,9 @@ import java.util.Set;
  */
 public interface KeyValue {
 
-    KeyValue put(String key, boolean value);
+    KeyValue put(String key, Boolean value);
 
-    KeyValue put(String key, byte value);
-
-    KeyValue put(String key, short value);
-
-    KeyValue put(String key, int value);
-
-    KeyValue put(String key, long value);
-
-    KeyValue put(String key, float value);
-
-    KeyValue put(String key, double value);
+    KeyValue put(String key, Number value);
 
     KeyValue put(String key, byte[] value);
 

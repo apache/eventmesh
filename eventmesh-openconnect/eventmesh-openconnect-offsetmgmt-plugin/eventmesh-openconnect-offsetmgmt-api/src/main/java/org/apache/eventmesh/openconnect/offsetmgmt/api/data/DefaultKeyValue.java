@@ -31,48 +31,17 @@ public class DefaultKeyValue implements KeyValue {
         properties = new ConcurrentHashMap<>();
     }
 
-
     @Override
-    public KeyValue put(String key, boolean value) {
+    public KeyValue put(String key, Boolean value) {
         properties.put(key, value);
         return this;
     }
 
     @Override
-    public KeyValue put(String key, byte value) {
+    public KeyValue put(String key, Number value) {
         properties.put(key, value);
         return this;
 
-    }
-
-    @Override
-    public KeyValue put(String key, short value) {
-        properties.put(key, value);
-        return this;
-    }
-
-    @Override
-    public KeyValue put(String key, int value) {
-        properties.put(key, value);
-        return this;
-    }
-
-    @Override
-    public KeyValue put(String key, long value) {
-        properties.put(key, value);
-        return this;
-    }
-
-    @Override
-    public KeyValue put(String key, float value) {
-        properties.put(key, value);
-        return this;
-    }
-
-    @Override
-    public KeyValue put(String key, double value) {
-        properties.put(key, value);
-        return this;
     }
 
     @Override
