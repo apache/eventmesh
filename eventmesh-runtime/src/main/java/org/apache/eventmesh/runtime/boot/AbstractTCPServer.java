@@ -255,7 +255,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
                 if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
                     LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
-                    processHttpCommandRequest(pkg, ctx, startTime, cmd);
+                    processTcpCommandRequest(pkg, ctx, startTime, cmd);
                     return;
                 }
 
@@ -272,7 +272,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                         "this eventMesh tcp session will be closed, may be reboot or version change!");
                 }
 
-                processHttpCommandRequest(pkg, ctx, startTime, cmd);
+                processTcpCommandRequest(pkg, ctx, startTime, cmd);
             } catch (Exception e) {
                 log.error("exception occurred while pkg|cmd={}|pkg={}", cmd, pkg, e);
 
@@ -288,8 +288,8 @@ public class AbstractTCPServer extends AbstractRemotingServer {
             }
         }
 
-        private void processHttpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
-            final long startTime, final Command cmd) {
+        private void processTcpCommandRequest(final Package pkg, final ChannelHandlerContext ctx,
+                                              final long startTime, final Command cmd) {
 
             Pair<TcpProcessor, ThreadPoolExecutor> pair = tcpRequestProcessorTable.get(cmd);
             pair.getObject2().submit(() -> {
