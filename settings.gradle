@@ -47,6 +47,7 @@ include 'eventmesh-connectors:eventmesh-connector-prometheus'
 include 'eventmesh-connectors:eventmesh-connector-dingding'
 include 'eventmesh-connectors:eventmesh-connector-feishu'
 include 'eventmesh-connectors:eventmesh-connector-wecom'
+include 'eventmesh-connectors:eventmesh-connector-slack'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
