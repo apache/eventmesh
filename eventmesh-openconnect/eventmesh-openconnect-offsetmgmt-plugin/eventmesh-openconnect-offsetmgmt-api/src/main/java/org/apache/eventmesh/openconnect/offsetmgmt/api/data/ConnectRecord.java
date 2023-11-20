@@ -83,7 +83,7 @@ public class ConnectRecord {
         }
         Set<String> keySet = extensions.keySet();
         for (String key : keySet) {
-            this.extensions.put(key, extensions.getString(key));
+            this.extensions.put(key, extensions.getObject(key));
         }
     }
 
@@ -99,6 +99,13 @@ public class ConnectRecord {
             return null;
         }
         return this.extensions.getString(key);
+    }
+
+    public <T> T getExtension(String key, Class<T> c) {
+        if (this.extensions == null) {
+            return null;
+        }
+        return this.extensions.getObject(key, c);
     }
 
     public Object getExtensionObj(String key) {

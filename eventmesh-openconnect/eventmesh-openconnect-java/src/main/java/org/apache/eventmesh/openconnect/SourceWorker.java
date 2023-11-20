@@ -41,6 +41,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetMana
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReaderImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -244,17 +245,8 @@ public class SourceWorker implements ConnectorWorker {
                 .withExtension("ttl", 10000);
 
         for (String key : connectRecord.getExtensions().keySet()) {
-            Object extension = connectRecord.getExtensionObj(key);
-            if (extension instanceof Integer ||
-                    extension instanceof Long ||
-                    extension instanceof Short ||
-                    extension instanceof Byte ||
-                    extension instanceof Boolean ||
-                    extension instanceof Float ||
-                    extension instanceof Double ||
-                    extension instanceof Character ||
-                    extension instanceof String) {
-                cloudEventBuilder.withExtension(key, String.valueOf(extension));
+            if (CloudEventUtil.validateExtensionType(connectRecord.getExtensionObj(key))) {
+                cloudEventBuilder.withExtension(key, connectRecord.getExtension(key));
             }
         }
 

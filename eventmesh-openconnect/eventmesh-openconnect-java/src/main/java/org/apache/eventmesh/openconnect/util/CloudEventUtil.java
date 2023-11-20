@@ -21,6 +21,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
@@ -53,7 +54,9 @@ public class CloudEventUtil {
                     cloudEventBuilder.withType(connectRecord.getExtension(s));
                     break;
                 default:
-                    cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
+                    if (validateExtensionType(connectRecord.getExtensionObj(s))) {
+                        cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
+                    }
             }
         });
         return cloudEventBuilder.build();
@@ -74,4 +77,10 @@ public class CloudEventUtil {
         connectRecord.addExtension("datacontenttype", event.getDataContentType());
         return connectRecord;
     }
+
+    public static boolean validateExtensionType(Object obj) {
+        return obj instanceof String || obj instanceof Number || obj instanceof Boolean
+                || obj instanceof URI || obj instanceof OffsetDateTime || obj instanceof byte[];
+    }
+
 }
