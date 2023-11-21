@@ -67,8 +67,6 @@ public class ConsulMetaService implements MetaService {
 
     private ConsulTLSConfig tlsConfig;
 
-    private MetaServiceListener<String, String> metaServiceListener;
-
     @Override
     public void init() throws MetaException {
         if (initStatus.compareAndSet(false, true)) {
@@ -165,9 +163,10 @@ public class ConsulMetaService implements MetaService {
         return true;
     }
 
+    //todo: to be implemented
     @Override
-    public void addMetaServiceListener(MetaServiceListener<String, String> metaServiceListener) {
-        this.metaServiceListener = metaServiceListener;
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
+
     }
 
     @Override
@@ -200,7 +199,7 @@ public class ConsulMetaService implements MetaService {
     }
 
     @Override
-    public String getMetaData(String key) {
+    public List<Map<String, String>> getMetaData(String key, boolean fuzzyEnabled) {
         return null;
     }
 

@@ -20,7 +20,7 @@ package org.apache.eventmesh.api.meta;
 /**
  * MetaServiceListener
  */
-public interface MetaServiceListener<K, V> {
+public interface MetaServiceListener {
 
-    void onChange(K key, V value);
+    void onChange(String key,String value);
 }

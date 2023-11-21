@@ -41,8 +41,6 @@ public class MetaStorage {
 
     private MetaService metaService;
 
-    private MetaServiceListener<String, String> metaServiceListener;
-
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -132,11 +130,12 @@ public class MetaStorage {
         return metaService.findEventMeshAppSubTopicInfoByGroup(group);
     }
 
-    public MetaServiceListener<String, String> getMetaServiceListener() {
-        return metaServiceListener;
+    public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
+        return metaService.getMetaData(key, fuzzyEnabled);
     }
 
-    public void setMetaServiceListener(MetaServiceListener<String, String> metaServiceListener) {
-        this.metaServiceListener = metaServiceListener;
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) throws Exception{
+        metaService.getMetaDataWithListener(metaServiceListener, key);
     }
+
 }

@@ -19,6 +19,7 @@ package org.apache.eventmesh.meta.nacos.service;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
+import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.config.EventMeshMetaConfig;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
@@ -31,9 +32,18 @@ import org.apache.eventmesh.meta.nacos.config.NacosMetaStorageConfiguration;
 import org.apache.eventmesh.meta.nacos.constant.NacosConstant;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,16 +51,19 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +97,8 @@ public class NacosMetaService implements MetaService {
     private com.alibaba.nacos.api.config.ConfigService nacosConfigService;
 
     private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
+
+    private MetaServiceListener metaServiceListener;
 
     @Override
     public void init() throws MetaException {
@@ -174,6 +189,25 @@ public class NacosMetaService implements MetaService {
     }
 
     @Override
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
+        try {
+            nacosConfigService.addListener(key, group, new Listener() {
+                @Override
+                public Executor getExecutor() {
+                    return null;
+                }
+
+                @Override
+                public void receiveConfigInfo(String configInfo) {
+                    metaServiceListener.onChange(key, configInfo);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("add nacos listener for key " + key + "error", e);
+        }
+    }
+
+    @Override
     public void shutdown() throws MetaException {
         if (!initStatus.compareAndSet(true, false)) {
             return;
@@ -242,14 +276,62 @@ public class NacosMetaService implements MetaService {
         }
     }
 
+    // implement with http
     @Override
-    public String getMetaData(String key) {
-        try {
-            return this.nacosConfigService.getConfig(key, group, 5000L);
-        } catch (NacosException e) {
+    public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
+        if (fuzzyEnabled) {
+            key = key + "*";
+        }
+        int pageNo = 1;
+        int pageSize = 100;
+
+        Map<String, String> result = new HashMap<>();
+        Map<String, String> tmpMap;
+        do {
+            tmpMap = getResultFromNacos(pageNo, pageSize, key, group);
+            result.putAll(tmpMap);
+        } while (!(tmpMap.size() < pageSize));
+        return result;
+    }
+
+    private Map<String, String> getResultFromNacos(int pageNo, int pageSize, String key, String group) {
+        Map<String, String> result = new HashMap<>();
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            URI uri = new URIBuilder(serverAddr + "/nacos/v1/cs/configs")
+                .setParameter("dataId", key)
+                .setParameter("group", group)
+                .setParameter("pageNo", String.valueOf(pageNo))
+                .setParameter("pageSize", String.valueOf(pageSize))
+                .build();
+            HttpGet httpGet = new HttpGet(uri);
+            try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)){
+                if (closeableHttpResponse.getStatusLine().getStatusCode() == 200) {
+                    String response = EntityUtils.toString(closeableHttpResponse.getEntity(), StandardCharsets.UTF_8);
+                    result = processResponse(response);
+                }
+            } catch (Exception e) {
+                log.error("get metaData fail", e);
+                throw new RuntimeException(e);
+            }
+            return result;
+        } catch (Exception e) {
             log.error("get metaData fail", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private Map<String, String> processResponse(String response) {
+        Map<String, String> result = new HashMap<>();
+        JsonNode jsonNode = JacksonUtils.toObj(response);
+        JsonNode jsonNodeArray = jsonNode.get("pageItems");
+        if (jsonNodeArray.isArray()) {
+            for (JsonNode js : jsonNodeArray) {
+                String key = js.get("dataId").asText();
+                String value = js.get("content").asText();
+                result.put(key, value);
+            }
+        }
+        return result;
     }
 
     @Override
