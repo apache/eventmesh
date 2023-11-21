@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -24,21 +26,27 @@ import java.util.Set;
  */
 public interface KeyValue {
 
-    KeyValue put(String key, boolean value);
+    KeyValue put(String key, Boolean value);
 
-    KeyValue put(String key, short value);
+    KeyValue put(String key, Number value);
 
-    KeyValue put(String key, int value);
+    KeyValue put(String key, byte[] value);
 
-    KeyValue put(String key, long value);
+    KeyValue put(String key, String value);
 
-    KeyValue put(String key, double value);
+    KeyValue put(String key, URI value);
+
+    KeyValue put(String key, OffsetDateTime value);
 
     KeyValue put(String key, Object value);
 
     boolean getBoolean(String key);
 
     boolean getBoolean(String key, boolean defaultValue);
+
+    byte getByte(String key);
+
+    byte getByte(String key, byte defaultValue);
 
     short getShort(String key);
 
@@ -52,15 +60,37 @@ public interface KeyValue {
 
     long getLong(String key, long defaultValue);
 
+    float getFloat(String key);
+
+    float getFloat(String key, float defaultValue);
+
     double getDouble(String key);
 
     double getDouble(String key, double defaultValue);
+
+    byte[] getBytes(String key);
+
+    byte[] getBytes(String key, byte[] defaultValue);
 
     String getString(String key);
 
     String getString(String key, String defaultValue);
 
+    URI getURI(String key);
+
+    URI getURI(String key, URI defaultValue);
+
+    OffsetDateTime getOffsetDateTime(String key);
+
+    OffsetDateTime getOffsetDateTime(String key, OffsetDateTime defaultValue);
+
     Object getObject(String key);
+
+    Object getObject(String key, Object defaultValue);
+
+    <T> T getObject(String key, Class<T> c);
+
+    <T> T getObject(String key, T defaultValue, Class<T> c);
 
     Set<String> keySet();
 
