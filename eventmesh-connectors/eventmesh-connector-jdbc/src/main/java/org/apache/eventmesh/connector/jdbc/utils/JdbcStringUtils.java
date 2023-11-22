@@ -46,5 +46,4 @@ public class JdbcStringUtils {
         return isWrapped(possiblyWrapped) ? possiblyWrapped.substring(1, possiblyWrapped.length() - 1) : possiblyWrapped;
     }
 
-
 }

@@ -22,13 +22,13 @@ import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 
 import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,14 +41,13 @@ public class BroadCastSubClient {
             client.heartbeat();
             client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
             client.registerBusiHandler(new ReceiveMsgHook() {
+
                 @Override
                 public void handle(Package msg, ChannelHandlerContext ctx) {
                     if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                         if (msg.getBody() instanceof EventMeshMessage) {
                             String body = ((EventMeshMessage) msg.getBody()).getBody();
-                            if (log.isInfoEnabled()) {
-                                log.info("receive message -------------------------------" + body);
-                            }
+                            LogUtils.info(log, "receive message -------------------------------{}", body);
                         }
                     }
                 }

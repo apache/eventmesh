@@ -67,10 +67,10 @@ public class RabbitMQSinkConnector implements Sink {
         this.sinkConfig = (RabbitMQSinkConfig) ((SinkConnectorContext) connectorContext).getSinkConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sinkConfig.getConnectorConfig().getHost(),
-                sinkConfig.getConnectorConfig().getUsername(),
-                sinkConfig.getConnectorConfig().getPasswd(),
-                sinkConfig.getConnectorConfig().getPort(),
-                sinkConfig.getConnectorConfig().getVirtualHost());
+            sinkConfig.getConnectorConfig().getUsername(),
+            sinkConfig.getConnectorConfig().getPasswd(),
+            sinkConfig.getConnectorConfig().getPort(),
+            sinkConfig.getConnectorConfig().getVirtualHost());
         this.channel = rabbitmqConnectionFactory.createChannel(connection);
     }
 
@@ -78,7 +78,7 @@ public class RabbitMQSinkConnector implements Sink {
     public void start() throws Exception {
         if (!started) {
             rabbitmqClient.binding(channel, sinkConfig.getConnectorConfig().getExchangeType(), sinkConfig.getConnectorConfig().getExchangeName(),
-                    sinkConfig.getConnectorConfig().getRoutingKey(), sinkConfig.getConnectorConfig().getQueueName());
+                sinkConfig.getConnectorConfig().getRoutingKey(), sinkConfig.getConnectorConfig().getQueueName());
             started = true;
         }
     }
@@ -114,11 +114,11 @@ public class RabbitMQSinkConnector implements Sink {
                 RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(event);
                 byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
                 rabbitmqClient.publish(channel, sinkConfig.getConnectorConfig().getExchangeName(),
-                        sinkConfig.getConnectorConfig().getRoutingKey(), data);
+                    sinkConfig.getConnectorConfig().getRoutingKey(), data);
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[RabbitMQSinkConnector] Interrupting thread {} due to exception {}",
-                        currentThread.getName(), e.getMessage());
+                    currentThread.getName(), e.getMessage());
                 currentThread.interrupt();
             } catch (Exception e) {
                 log.error("[RabbitMQSinkConnector] sendResult has error : ", e);

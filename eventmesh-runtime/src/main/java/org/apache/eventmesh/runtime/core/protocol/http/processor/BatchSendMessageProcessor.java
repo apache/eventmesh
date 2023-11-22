@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -41,8 +42,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
+import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -119,7 +120,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
         for (CloudEvent event : eventList) {
-            //validate event
+            // validate event
             if (!ObjectUtils.allNotNull(event.getSource(), event.getSpecVersion())
                 || StringUtils.isAnyBlank(event.getId(), event.getType(), event.getSubject())) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
@@ -139,7 +140,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             String pid = getExtension(event, ProtocolKey.ClientInstanceKey.PID.getKey());
             String sys = getExtension(event, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-            //validate event-extension
+            // validate event-extension
             if (StringUtils.isAnyBlank(idc, pid, sys) || !StringUtils.isNumeric(pid)) {
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader,
                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, null, SendMessageBatchResponseBody.class);
@@ -193,7 +194,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             String pass = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.PASSWD.getKey());
             String subsystem = getExtension(cloudEvent, ProtocolKey.ClientInstanceKey.SYS.getKey());
 
-            //do acl check
+            // do acl check
             if (httpConfiguration.isEventMeshServerSecurityEnable()) {
                 try {
                     this.acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, cloudEvent.getSubject(), requestCode);
@@ -223,9 +224,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     topicBatchMessageMappings.put(cloudEvent.getSubject(), tmp);
                 }
 
-                if (batchMessageLogger.isDebugEnabled()) {
-                    batchMessageLogger.debug("msg2MQMsg suc, event:{}", cloudEvent.getData());
-                }
+                LogUtils.debug(batchMessageLogger, "msg2MQMsg suc, event:{}", cloudEvent.getData());
             } catch (Exception e) {
                 batchMessageLogger.error("msg2MQMsg err, event:{}", cloudEvent.getData(), e);
             }
@@ -247,8 +246,8 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 CloudEvent event = null;
                 // TODO: Detect the maximum length of messages for different producers.
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
-                sendMessageContext.setEventList(eventlist);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
                     }
@@ -256,7 +255,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     @Override
                     public void onException(OnExceptionContext context) {
                         batchMessageLogger.warn("", context.getException());
-                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                        eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     }
 
                 });
@@ -265,6 +264,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             for (CloudEvent event : eventList) {
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
 
@@ -273,7 +273,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     @Override
                     public void onException(OnExceptionContext context) {
                         batchMessageLogger.warn("", context.getException());
-                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                        eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     }
 
                 });
@@ -282,10 +282,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         summaryMetrics.recordBatchSendMsgCost(elapsed);
-        if (batchMessageLogger.isDebugEnabled()) {
-            batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
-                batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
-        }
+
+        LogUtils.debug(batchMessageLogger, "batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
+            batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
         completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS, null,
             SendMessageBatchResponseBody.class);
         return;

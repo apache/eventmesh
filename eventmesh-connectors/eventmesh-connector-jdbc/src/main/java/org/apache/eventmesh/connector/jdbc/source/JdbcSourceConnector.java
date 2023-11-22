@@ -27,6 +27,7 @@ import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotEngin
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotEngineFactory;
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotResult;
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotResult.SnapshotResultStatus;
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -37,6 +38,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -132,8 +134,10 @@ public class JdbcSourceConnector extends SourceConnector {
         this.cdcEngine.registerCdcEventConsumer(this::eventConsumer);
         this.cdcEngine.init();
 
+        Set<TableId> handledTables = this.snapshotEngine.getHandledTables();
+
         // Create the task manager and dispatcher.
-        this.sourceJdbcTaskManager = new SourceJdbcTaskManager(cdcEngine, this.sourceConfig);
+        this.sourceJdbcTaskManager = new SourceJdbcTaskManager(handledTables, this.sourceConfig);
         this.sourceJdbcTaskManager.init();
 
         this.dispatcher = new EventDispatcher(this.sourceJdbcTaskManager);
@@ -160,8 +164,9 @@ public class JdbcSourceConnector extends SourceConnector {
         this.snapshotEngine.start();
         SnapshotResult<?> result = this.snapshotEngine.execute();
         this.snapshotEngine.close();
-        //success and skip status can run cdc engine
+        // success and skip status can run cdc engine
         if (result.getStatus() != SnapshotResultStatus.ABORTED) {
+            log.info("Start Cdc Engine to handle cdc event");
             this.cdcEngine.setContext(result.getContext());
             this.cdcEngine.start();
         }

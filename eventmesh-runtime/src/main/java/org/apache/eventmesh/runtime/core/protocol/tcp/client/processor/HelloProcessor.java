@@ -66,14 +66,14 @@ public class HelloProcessor implements TcpProcessor {
         UserAgent user = (UserAgent) pkg.getBody();
         try {
 
-            //do acl check in connect
+            // do acl check in connect
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String group = user.getGroup();
             String token = user.getToken();
             String subsystem = user.getSubsystem();
 
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
-                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getRegistry().findEventMeshAppSubTopicInfo(group);
+                EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo = eventMeshTCPServer.getMetaStorage().findEventMeshAppSubTopicInfo(group);
                 if (eventMeshAppSubTopicInfo == null) {
                     throw new AclException("no group register");
                 }
@@ -91,20 +91,19 @@ public class HelloProcessor implements TcpProcessor {
                 pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
-            MESSAGE_LOGGER.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
+            MESSAGE_LOGGER.error("HelloTask failed|address={}", ctx.channel().remoteAddress(), e);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                 .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
-                    (ChannelFutureListener) future -> {
-                        if (!future.isSuccess()) {
-                            Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
-                        } else {
-                            Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
-                        }
-                        log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
-                        eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                (ChannelFutureListener) future -> {
+                    if (!future.isSuccess()) {
+                        Utils.logFailedMessageFlow(future, res, user, startTime, taskExecuteTime);
+                    } else {
+                        Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                     }
-            );
+                    log.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
+                    eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                });
         }
     }
 
@@ -116,7 +115,6 @@ public class HelloProcessor implements TcpProcessor {
         if (user.getVersion() == null) {
             throw new Exception("client version cannot be null");
         }
-
 
         if (!StringUtils.equalsAny(user.getPurpose(), EventMeshConstants.PURPOSE_PUB, EventMeshConstants.PURPOSE_SUB)) {
             throw new Exception("client purpose config is error");

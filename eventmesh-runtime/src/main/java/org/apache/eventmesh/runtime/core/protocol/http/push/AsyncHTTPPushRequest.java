@@ -29,6 +29,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +79,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     public static final Logger LOGGER = LoggerFactory.getLogger("AsyncHTTPPushRequest");
 
     public String currPushUrl;
+
     private final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
@@ -124,6 +127,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .withExtension(EventMeshConstants.RSP_GROUP, handleMsgContext.getConsumerGroup())
             .build();
         handleMsgContext.setEvent(event);
+        super.setEvent(event);
 
         String content = "";
         try {
@@ -194,10 +198,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         addToWaitingMap(this);
 
-        if (CMD_LOGGER.isInfoEnabled()) {
-            CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                localAddress, currPushUrl);
-        }
+        LogUtils.info(CMD_LOGGER, "cmd={}|eventMesh2client|from={}|to={}", requestCode,
+            localAddress, currPushUrl);
 
         try {
             eventMeshHTTPServer.getHttpClientPool().getClient().execute(builder, response -> {
@@ -217,8 +219,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     }
                     ClientRetCode result = processResponseContent(res);
                     MESSAGE_LOGGER.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
-                            result, currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                        result, currPushUrl, handleMsgContext.getTopic(),
+                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                     switch (result) {
                         case OK:
                         case REMOTE_OK:
@@ -239,12 +241,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
-                    if (MESSAGE_LOGGER.isInfoEnabled()) {
-                        MESSAGE_LOGGER.info(
-                            "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                    }
+                    LogUtils.info(MESSAGE_LOGGER, "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                        + "|uniqueId={}|cost={}",
+                        currPushUrl, handleMsgContext.getTopic(),
+                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                     if (isComplete()) {
                         handleMsgContext.finish();
@@ -304,7 +304,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             // retry after the time specified by the header
             Optional<Header> optHeader = Arrays.stream(httpResponse.getHeaders("Retry-After")).findAny();
             if (optHeader.isPresent() && StringUtils.isNumeric(optHeader.get().getValue())) {
-                delayRetry(Long.parseLong(optHeader.get().getValue()));
+                delayRetry(Long.parseLong(optHeader.get().getValue()), TimeUnit.MILLISECONDS);
             }
             return false;
         } else if (httpStatus == HttpStatus.SC_GONE || httpStatus == HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE) {
@@ -315,6 +315,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         // failed with default retry
         delayRetry();
         return false;
+    }
+
+    @Override
+    protected HandleMsgContext getHandleMessageContext() {
+        return handleMsgContext;
     }
 
     ClientRetCode processResponseContent(String content) {
@@ -333,16 +338,12 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             return ClientRetCode.FAIL;
         } catch (NumberFormatException e) {
-            if (MESSAGE_LOGGER.isWarnEnabled()) {
-                MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            }
+            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
+                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         } catch (Exception e) {
-            if (MESSAGE_LOGGER.isWarnEnabled()) {
-                MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            }
+            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
+                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         }
     }
@@ -364,7 +365,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public void retry() {
+    public void doRun() {
         tryHTTPRequest();
     }
 }

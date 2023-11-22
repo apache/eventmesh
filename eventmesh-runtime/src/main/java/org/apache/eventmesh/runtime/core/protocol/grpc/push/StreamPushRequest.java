@@ -36,7 +36,6 @@ import java.util.Set;
 
 import io.grpc.stub.StreamObserver;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -73,7 +72,8 @@ public class StreamPushRequest extends AbstractPushRequest {
 
             eventMeshCloudEvent = CloudEvent.newBuilder(eventMeshCloudEvent)
                 .putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
+                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build())
+                .build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
                 StreamObserver<CloudEvent> emitter = eventEmitter.getEmitter();

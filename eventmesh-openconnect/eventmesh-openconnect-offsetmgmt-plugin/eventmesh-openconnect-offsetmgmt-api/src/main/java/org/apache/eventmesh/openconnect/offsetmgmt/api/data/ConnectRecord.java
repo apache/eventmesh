@@ -45,7 +45,6 @@ public class ConnectRecord {
         this.data = data;
     }
 
-
     public Long getTimestamp() {
         return timestamp;
     }
@@ -84,11 +83,11 @@ public class ConnectRecord {
         }
         Set<String> keySet = extensions.keySet();
         for (String key : keySet) {
-            this.extensions.put(key, extensions.getString(key));
+            this.extensions.put(key, extensions.getObject(key));
         }
     }
 
-    public void addExtension(String key, String value) {
+    public void addExtension(String key, Object value) {
         if (this.extensions == null) {
             this.extensions = new DefaultKeyValue();
         }
@@ -96,10 +95,24 @@ public class ConnectRecord {
     }
 
     public String getExtension(String key) {
-        if (this.extensions == null) {
+        if (this.extensions == null || !extensions.containsKey(key)) {
             return null;
         }
         return this.extensions.getString(key);
+    }
+
+    public <T> T getExtension(String key, Class<T> c) {
+        if (this.extensions == null) {
+            return null;
+        }
+        return this.extensions.getObject(key, c);
+    }
+
+    public Object getExtensionObj(String key) {
+        if (this.extensions == null) {
+            return null;
+        }
+        return this.extensions.getObject(key);
     }
 
     @Override

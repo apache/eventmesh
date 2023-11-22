@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
-
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import java.util.Set;

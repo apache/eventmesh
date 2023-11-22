@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.demo;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
@@ -31,16 +32,14 @@ public class AsyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
-                     new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
+            new SubClientImpl("localhost", 10002, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerBusiHandler((msg, ctx) -> {
                 if (msg.getBody() instanceof EventMeshMessage) {
                     String body = ((EventMeshMessage) msg.getBody()).getBody();
-                    if (log.isInfoEnabled()) {
-                        log.info("receive message : {}", body);
-                    }
+                    LogUtils.info(log, "receive message : {}", body);
                 }
             });
         }

@@ -21,8 +21,8 @@ import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.auth.http.basic.impl.AuthHttpBasicService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AuthConfigsTest {
 
@@ -36,7 +36,7 @@ public class AuthConfigsTest {
     }
 
     private void assertConfig(AuthConfigs config) {
-        Assert.assertEquals(config.getUsername(), "username-success!!!");
-        Assert.assertEquals(config.getPassword(), "password-success!!!");
+        Assertions.assertEquals(config.getUsername(), "username-success!!!");
+        Assertions.assertEquals(config.getPassword(), "password-success!!!");
     }
 }

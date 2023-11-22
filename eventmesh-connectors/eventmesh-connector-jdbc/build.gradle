@@ -16,15 +16,14 @@
  */
 
 plugins {
-    id 'java'
-    //id 'antlr'
+    id 'antlr'
 }
 
 repositories {
     mavenCentral()
 }
 
-/*generateGrammarSource {
+generateGrammarSource {
     maxHeapSize = '64m'
     arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
     outputDirectory = file('src/main/java/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration')
@@ -32,10 +31,10 @@ repositories {
 
 packageSources {
     dependsOn generateGrammarSource
-}*/
+}
 
 dependencies {
-    //antlr("org.antlr:antlr4:4.13.0")
+    antlr("org.antlr:antlr4:4.13.0")
     implementation 'org.antlr:antlr4-runtime:4.13.0'
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
@@ -48,6 +47,4 @@ dependencies {
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
 }

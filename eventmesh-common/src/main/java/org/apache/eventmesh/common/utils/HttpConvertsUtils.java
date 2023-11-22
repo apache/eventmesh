@@ -71,7 +71,7 @@ public class HttpConvertsUtils {
     }
 
     public Map<String, Object> httpMapConverts(Header header, ProtocolKey protocolKey,
-                                               ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey) {
+        ProtocolKey.EventMeshInstanceKey eventMeshInstanceKey) {
         Map<String, Object> map = new HashMap<>();
         Class<? extends Header> headerClass = header.getClass();
         Class<?> protocolKeyClass = protocolKey.getClass();
@@ -166,8 +166,8 @@ public class HttpConvertsUtils {
     }
 
     private void setFiledValue(Header header, Map<String, Object> headerParam, ProtocolKey protocolKey,
-                               Field[] protocolKeyFields, Field headerField,
-                               String headerFieldName) throws IllegalAccessException {
+        Field[] protocolKeyFields, Field headerField,
+        String headerFieldName) throws IllegalAccessException {
         for (Field protocolKeyField : protocolKeyFields) {
             protocolKeyField.setAccessible(true);
             switch (headerFieldName) {
@@ -179,7 +179,8 @@ public class HttpConvertsUtils {
                     break;
                 case ProtocolKey.LANGUAGE:
                     String language = StringUtils.isBlank(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE))
-                        ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
+                        ? Constants.LANGUAGE_JAVA
+                        : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
                     headerField.set(header, language);
                     break;
                 default:

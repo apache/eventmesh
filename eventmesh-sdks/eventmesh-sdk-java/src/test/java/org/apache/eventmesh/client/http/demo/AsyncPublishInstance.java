@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

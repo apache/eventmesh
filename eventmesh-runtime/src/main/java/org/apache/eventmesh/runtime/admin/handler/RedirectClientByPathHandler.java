@@ -35,7 +35,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -125,18 +124,18 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
                     +
-                    "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
+                    "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                +
+                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                 sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

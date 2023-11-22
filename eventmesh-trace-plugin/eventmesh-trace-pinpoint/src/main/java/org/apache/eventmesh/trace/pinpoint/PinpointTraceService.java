@@ -53,11 +53,11 @@ public class PinpointTraceService extends AbstractTraceService {
         final int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
 
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(
-                new PinpointSpanExporter(
-                    pinpointConfiguration.getAgentId(),
-                    pinpointConfiguration.getAgentName(),
-                    pinpointConfiguration.getApplicationName(),
-                    pinpointConfiguration.getGrpcTransportConfig()))
+            new PinpointSpanExporter(
+                pinpointConfiguration.getAgentId(),
+                pinpointConfiguration.getAgentName(),
+                pinpointConfiguration.getApplicationName(),
+                pinpointConfiguration.getGrpcTransportConfig()))
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
             .setMaxExportBatchSize(eventMeshTraceMaxExportSize)

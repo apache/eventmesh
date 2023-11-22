@@ -34,7 +34,7 @@ public class SessionContext {
     private final ConcurrentHashMap<String, String> sendTopics = new ConcurrentHashMap<>(64);
 
     @Getter
-    private final ConcurrentHashMap<String/*Topic*/, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<>(64);
+    private final ConcurrentHashMap<String/* Topic */, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<>(64);
 
     public long createTime = System.currentTimeMillis();
 

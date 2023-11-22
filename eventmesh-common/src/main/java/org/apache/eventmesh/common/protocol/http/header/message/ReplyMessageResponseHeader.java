@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.HttpConvertsUtils;
@@ -33,19 +32,19 @@ import lombok.ToString;
 @ToString
 public class ReplyMessageResponseHeader extends Header {
 
-    //response code, as same as the request code
+    // response code, as same as the request code
     private int code;
 
-    //The cluster name of the EventMesh that processes the request
+    // The cluster name of the EventMesh that processes the request
     private String eventMeshCluster;
 
-    //IP of the EventMesh that processes the request
+    // IP of the EventMesh that processes the request
     private String eventMeshIp;
 
-    //Environment number of the EventMesh that processes the request
+    // Environment number of the EventMesh that processes the request
     private String eventMeshEnv;
 
-    //IDC of the EventMesh that processes the request
+    // IDC of the EventMesh that processes the request
     private String eventMeshIdc;
 
     public static ReplyMessageResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,

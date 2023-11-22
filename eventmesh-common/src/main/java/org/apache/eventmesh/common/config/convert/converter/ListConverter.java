@@ -79,7 +79,6 @@ public class ListConverter implements ConvertValue<List<Object>> {
         }
     }
 
-
     public static class ListConverterSemi extends ListConverter {
 
         public String separator = ";";

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.openconnect;
 
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
@@ -24,6 +25,9 @@ import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +39,33 @@ public class Application {
 
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
+    public static final String CREATE_EXTENSION_KEY = "createExtension";
+
+    private Map<String, String> extensions;
+
+    public Application() {
+
+    }
+
+    public Application(Map<String, String> extensions) {
+        this.extensions = extensions;
+    }
+
     public void run(Class<? extends Connector> clazz) throws Exception {
 
-        Connector connector;
+        Connector connector = null;
         try {
-            connector = clazz.getDeclaredConstructor().newInstance();
+            if (MapUtils.isNotEmpty(extensions) && extensions.containsKey(CREATE_EXTENSION_KEY)) {
+                String spiKey = extensions.get(CREATE_EXTENSION_KEY);
+                ConnectorCreateService<?> createService =
+                    EventMeshExtensionFactory.getExtension(ConnectorCreateService.class, spiKey);
+                if (createService != null) {
+                    connector = createService.create();
+                }
+            }
+            if (connector == null) {
+                connector = clazz.getDeclaredConstructor().newInstance();
+            }
         } catch (Exception e) {
             log.error("new connector error", e);
             return;
@@ -64,9 +90,10 @@ public class Application {
         worker.init();
 
         CONNECTOR_MAP.putIfAbsent(connector.name(), connector);
+        Connector finalConnector = connector;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.stop();
-            log.info("connector {} stopped", connector.name());
+            log.info("connector {} stopped", finalConnector.name());
         }));
         worker.start();
         log.info("connector {} started", connector.name());

@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -62,8 +63,7 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
         HttpEventWrapper responseWrapper;
 
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
@@ -79,9 +79,7 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    if (httpLogger.isDebugEnabled()) {
-                        httpLogger.debug("{}", httpEventWrapper);
-                    }
+                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());

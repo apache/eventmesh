@@ -131,7 +131,6 @@ public class ServiceUtils {
         return true;
     }
 
-
     public static boolean validateHeartBeat(CloudEvent heartbeat) {
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.SUB == clientType && StringUtils.isEmpty(

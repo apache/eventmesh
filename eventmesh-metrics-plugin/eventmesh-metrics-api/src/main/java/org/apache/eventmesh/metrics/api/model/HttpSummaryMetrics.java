@@ -19,7 +19,6 @@ package org.apache.eventmesh.metrics.api.model;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -37,7 +36,7 @@ public class HttpSummaryMetrics implements Metric {
 
     private final AtomicLong wholeRequestNum = new AtomicLong(0);
 
-    //cumulative value
+    // cumulative value
     private final AtomicLong httpDiscard = new AtomicLong(0);
 
     private final AtomicLong maxCost = new AtomicLong(0);
@@ -106,20 +105,19 @@ public class HttpSummaryMetrics implements Metric {
 
     private final ThreadPoolExecutor pushMsgExecutor;
 
-    private final DelayQueue<?> httpFailedQueue;
+    private final RetrySummaryMetrics retrySummaryMetrics;
 
     private Lock lock = new ReentrantLock();
 
     public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
         final ThreadPoolExecutor sendMsgExecutor,
         final ThreadPoolExecutor pushMsgExecutor,
-        final DelayQueue<?> httpFailedQueue) {
+        final RetrySummaryMetrics retrySummaryMetrics) {
         this.batchMsgExecutor = batchMsgExecutor;
         this.sendMsgExecutor = sendMsgExecutor;
         this.pushMsgExecutor = pushMsgExecutor;
-        this.httpFailedQueue = httpFailedQueue;
+        this.retrySummaryMetrics = retrySummaryMetrics;
     }
-
 
     public float avgHTTPCost() {
         return (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
@@ -191,7 +189,6 @@ public class HttpSummaryMetrics implements Metric {
         httpDecodeTimeCost = 0f;
     }
 
-
     public void recordDecodeTimeCost(long cost) {
         httpDecodeNum.incrementAndGet();
         httpDecodeTimeCost = httpDecodeTimeCost + cost;
@@ -200,7 +197,6 @@ public class HttpSummaryMetrics implements Metric {
     public float avgHTTPBodyDecodeCost() {
         return (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
     }
-
 
     public void recordSendBatchMsgDiscard(long delta) {
         sendBatchMsgDiscardNumSum.addAndGet(delta);
@@ -252,7 +248,6 @@ public class HttpSummaryMetrics implements Metric {
     public long getSendBatchMsgDiscardNumSum() {
         return sendBatchMsgDiscardNumSum.longValue();
     }
-
 
     public void snapshotSendMsgTPS() {
         Integer tps = sendMsgNumPerSecond.intValue();
@@ -314,7 +309,6 @@ public class HttpSummaryMetrics implements Metric {
         sendMsgFailNumSum.set(0L);
         replyMsgFailNumSum.set(0L);
     }
-
 
     public void snapshotPushMsgTPS() {
         Integer tps = pushMsgNumPerSecond.intValue();
@@ -378,7 +372,6 @@ public class HttpSummaryMetrics implements Metric {
         maxCost.set(0L);
     }
 
-
     public void recordBatchSendMsgCost(long cost) {
         batchSend2MQNum.incrementAndGet();
         batchSend2MQWholeCost = batchSend2MQWholeCost + cost;
@@ -415,7 +408,6 @@ public class HttpSummaryMetrics implements Metric {
         reply2MQNum.set(0L);
     }
 
-
     public int getBatchMsgQueueSize() {
         return batchMsgExecutor.getQueue().size();
     }
@@ -428,10 +420,9 @@ public class HttpSummaryMetrics implements Metric {
         return pushMsgExecutor.getQueue().size();
     }
 
-    public int getHttpRetryQueueSize() {
-        return httpFailedQueue.size();
+    public long getHttpRetryQueueSize() {
+        return retrySummaryMetrics.getPendingRetryTimeouts();
     }
-
 
     private float avg(LinkedList<Integer> linkedList) {
         if (linkedList.isEmpty()) {

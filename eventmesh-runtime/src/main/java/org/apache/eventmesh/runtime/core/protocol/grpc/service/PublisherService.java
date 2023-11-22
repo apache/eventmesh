@@ -74,7 +74,6 @@ public class PublisherService extends PublisherServiceGrpc.PublisherServiceImplB
         });
     }
 
-
     /**
      * <pre>
      * publish event with reply

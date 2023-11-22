@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MessageAckProcessor implements TcpProcessor {
+
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
     private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;

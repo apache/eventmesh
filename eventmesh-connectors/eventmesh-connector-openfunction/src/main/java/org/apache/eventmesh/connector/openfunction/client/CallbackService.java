@@ -44,7 +44,7 @@ public class CallbackService extends CallbackServiceGrpc.CallbackServiceImplBase
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder();
         builder.putAttributes(ProtocolKey.GRPC_RESPONSE_CODE,
-                CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
+            CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getRetCode()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                 CloudEventAttributeValue.newBuilder().setCeString(StatusCode.SUCCESS.getErrMsg()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()

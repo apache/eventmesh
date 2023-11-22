@@ -23,12 +23,10 @@ import org.apache.eventmesh.connector.rocketmq.source.connector.RocketMQSourceCo
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RocketMQConnectServer {
-
 
     public static void main(String[] args) throws Exception {
 

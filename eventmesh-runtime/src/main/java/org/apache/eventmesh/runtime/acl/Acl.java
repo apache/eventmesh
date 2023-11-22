@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Acl {
+
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;

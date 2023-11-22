@@ -38,8 +38,7 @@ public class HeatBeatScheduler {
             thread.setDaemon(true);
             thread.setName("ConsulHeartbeatService");
             return thread;
-        }
-    );
+        });
 
     public HeatBeatScheduler(ConsulClient consulClient) {
         this.consulClient = consulClient;

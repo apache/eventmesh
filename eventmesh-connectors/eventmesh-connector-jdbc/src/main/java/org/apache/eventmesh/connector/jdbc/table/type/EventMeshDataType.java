@@ -35,4 +35,13 @@ public interface EventMeshDataType<T> {
      * @return the SQL type of the data.
      */
     SQLType getSQLType();
+
+    /**
+     * Gets the name of the data type.
+     *
+     * @return The name of the data type.
+     */
+    default String getName() {
+        return EventMeshTypeNameConverter.ofName(this);
+    }
 }

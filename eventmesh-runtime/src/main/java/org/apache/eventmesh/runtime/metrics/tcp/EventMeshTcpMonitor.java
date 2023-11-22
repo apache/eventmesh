@@ -101,7 +101,7 @@ public class EventMeshTcpMonitor {
             tcpSummaryMetrics.resetMq2eventMeshMsgNum();
             tcpSummaryMetrics.setMq2eventMeshTPS((int) 1000.0d * msgNum / period);
 
-            //count topics subscribed by client in this eventMesh
+            // count topics subscribed by client in this eventMesh
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap =
                 eventMeshTCPServer.getClientSessionGroupMapping().getSessionMap();
             Iterator<Session> sessionIterator = sessionMap.values().iterator();
@@ -124,15 +124,14 @@ public class EventMeshTcpMonitor {
             tcpSummaryMetrics.setAllConnections(eventMeshTCPServer.getTcpConnectionHandler().getConnectionCount());
             printAppLogger(tcpSummaryMetrics);
 
-
         }), delay, period, TimeUnit.MILLISECONDS);
 
         monitorThreadPoolTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
             eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
-            eventMeshTCPServer.getTcpRetryer().printRetryThreadPoolState();
+            eventMeshTCPServer.getTcpRetryer().printState();
 
-            //monitor retry queue size
-            tcpSummaryMetrics.setRetrySize(eventMeshTCPServer.getTcpRetryer().getRetrySize());
+            // monitor retry queue size
+            tcpSummaryMetrics.setRetrySize(eventMeshTCPServer.getTcpRetryer().getPendingTimeouts());
             appLogger.info(
                 MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON,
                 EventMeshConstants.PROTOCOL_TCP,

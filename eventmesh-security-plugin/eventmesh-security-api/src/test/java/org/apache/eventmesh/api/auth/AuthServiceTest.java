@@ -21,9 +21,9 @@ import org.apache.eventmesh.api.exception.AuthException;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class AuthServiceTest {
 
@@ -52,45 +52,29 @@ public class AuthServiceTest {
 
     private static AuthService service;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         service = new DemoAuthService();
     }
 
     @Test
     public void testInit() {
-        try {
-            service.init();
-        } catch (AuthException e) {
-            Assert.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::init);
     }
 
     @Test
     public void testStart() {
-        try {
-            service.start();
-        } catch (AuthException e) {
-            Assert.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::start);
     }
 
     @Test
     public void testShutdown() {
-        try {
-            service.shutdown();
-        } catch (AuthException e) {
-            Assert.fail(e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(service::shutdown);
     }
 
     @Test
     public void testGetAuthParams() {
-        try {
-            Map<String, String> authParams = service.getAuthParams();
-            Assert.assertNull(authParams);
-        } catch (AuthException e) {
-            Assert.fail(e.getMessage());
-        }
+        Map<String, String> authParams = service.getAuthParams();
+        Assertions.assertNull(authParams);
     }
 }

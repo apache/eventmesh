@@ -60,10 +60,10 @@ public class HttpCommand implements ProtocolTransportObject {
 
     private transient Body body;
 
-    //Command request time
+    // Command request time
     public long reqTime;
 
-    //Command response time
+    // Command response time
     public long resTime;
 
     public CmdType cmdType = CmdType.REQ;

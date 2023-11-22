@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.enums.ConnectionType;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
@@ -81,7 +82,6 @@ public class HandlerService {
     private HTTPTrace httpTrace;
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
-
 
     public void init() {
         log.info("HandlerService start ");
@@ -187,13 +187,13 @@ public class HandlerService {
         httpEventWrapper.setHttpVersion(httpRequest.protocolVersion().protocolName());
         httpEventWrapper.setRequestURI(httpRequest.uri());
 
-        //parse http header
+        // parse http header
         for (String key : httpRequest.headers().names()) {
             httpEventWrapper.getHeaderMap().put(key, httpRequest.headers().get(key));
         }
 
         final long bodyDecodeStart = System.currentTimeMillis();
-        //parse http body
+        // parse http body
         FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
         final Map<String, Object> bodyMap = new HashMap<>();
         if (HttpMethod.GET == fullHttpRequest.method()) {
@@ -210,8 +210,7 @@ public class HandlerService {
                         .ofNullable(JsonUtils.parseTypeReferenceObject(
                             new String(body, Constants.DEFAULT_CHARSET),
                             new TypeReference<Map<String, Object>>() {
-                            }
-                        ))
+                            }))
                         .ifPresent(bodyMap::putAll);
                 }
             } else {
@@ -263,7 +262,6 @@ public class HandlerService {
 
         private CloudEvent ce;
 
-
         public void run() {
             String processorKey = "/";
             for (String eventProcessorKey : httpProcessorMap.keySet()) {
@@ -299,9 +297,7 @@ public class HandlerService {
 
         private void postHandler(ConnectionType type) {
             metrics.getSummaryMetrics().recordHTTPRequest();
-            if (httpLogger.isDebugEnabled()) {
-                httpLogger.debug("{}", request);
-            }
+            LogUtils.debug(httpLogger, "{}", request);
             if (Objects.isNull(response)) {
                 this.response = HttpResponseUtils.createSuccess();
             }
@@ -315,9 +311,7 @@ public class HandlerService {
 
         private void preHandler() {
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            if (httpLogger.isDebugEnabled()) {
-                httpLogger.debug("{}", response);
-            }
+            LogUtils.debug(httpLogger, "{}", response);
         }
 
         private void error() {
@@ -327,7 +321,6 @@ public class HandlerService {
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
-
 
         public void setResponseJsonBody(String body) {
             this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
@@ -385,7 +378,6 @@ public class HandlerService {
         }
 
     }
-
 
     private static class ProcessorWrapper {
 

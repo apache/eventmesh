@@ -48,7 +48,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -95,7 +94,7 @@ public class HTTPClientPool {
         }
     }
 
-    //@SuppressWarnings("deprecation")
+    // @SuppressWarnings("deprecation")
     public CloseableHttpClient getHttpClient(final int maxTotal, final int idleTimeInSeconds, final SSLContext sslContext) {
 
         SSLContext innerSSLContext = sslContext;
@@ -109,8 +108,7 @@ public class HTTPClientPool {
 
         if (connectionManager == null) {
             final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(innerSSLContext, NoopHostnameVerifier.INSTANCE);
-            final Registry<ConnectionSocketFactory> socketFactoryRegistry
-                = RegistryBuilder.<ConnectionSocketFactory>create()
+            final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", sslsf)
                 .build();

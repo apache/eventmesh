@@ -90,7 +90,7 @@ class CloudEventProducer extends AbstractProducerHttpClient<CloudEvent> {
             .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.CE_PROTOCOL)
+            .addHeader(ProtocolKey.PROTOCOL_TYPE, Constants.CLOUD_EVENTS_PROTOCOL_NAME)
             .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
             .addHeader(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
 

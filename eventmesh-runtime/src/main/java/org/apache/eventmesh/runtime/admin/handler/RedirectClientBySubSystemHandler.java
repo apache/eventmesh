@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -35,7 +36,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -72,8 +72,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
      * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
      *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
-    public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer,
-        final HttpHandlerManager httpHandlerManager) {
+    public RedirectClientBySubSystemHandler(final EventMeshTCPServer eventMeshTCPServer, final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -103,10 +102,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            if (log.isInfoEnabled()) {
-                log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
-                    subSystem, destEventMeshIp, destEventMeshPort);
-            }
+            LogUtils.info(log, "redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
+                subSystem, destEventMeshIp, destEventMeshPort);
 
             // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
@@ -128,22 +125,19 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 }
             } catch (Exception e) {
                 log.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
-                    +
-                    "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
+                    + "={}|destEventMeshPort={}", subSystem, destEventMeshIp, destEventMeshPort, e);
 
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
-                        .getMessage()).getBytes(Constants.DEFAULT_CHARSET));
+                    + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage())
+                    .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
+                + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
                 .getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             log.error("redirectClientBySubSystem fail...", e);

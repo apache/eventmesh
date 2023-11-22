@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.meta.zookeeper.service;
 
-
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -88,10 +87,10 @@ public class ZookeeperMetaService implements MetaService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
-                throw new MetaException("namesrvAddr cannot be null");
+            if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
+                throw new MetaException("meta storage address cannot be null");
             }
-            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.serverAddr = commonConfiguration.getMetaStorageAddr();
             break;
         }
         ZKRegistryConfiguration zkConfig = ConfigService.getInstance().buildConfigInstance(ZKRegistryConfiguration.class);
@@ -289,6 +288,21 @@ public class ZookeeperMetaService implements MetaService {
     }
 
     @Override
+    public String getMetaData(String key) {
+        return null;
+    }
+
+    @Override
+    public void updateMetaData(Map<String, String> metadataMap) {
+
+    }
+
+    @Override
+    public void removeMetaData(String key) {
+
+    }
+
+    @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
@@ -325,7 +339,6 @@ public class ZookeeperMetaService implements MetaService {
         log.info("EventMesh successfully registered to zookeeper");
         return true;
     }
-
 
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {

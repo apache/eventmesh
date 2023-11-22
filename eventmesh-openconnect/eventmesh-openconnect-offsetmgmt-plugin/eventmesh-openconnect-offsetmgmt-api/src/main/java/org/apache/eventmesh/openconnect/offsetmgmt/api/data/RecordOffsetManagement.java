@@ -37,7 +37,8 @@ public class RecordOffsetManagement {
 
     private CountDownLatch messageDrainLatch;
 
-    public RecordOffsetManagement() {}
+    public RecordOffsetManagement() {
+    }
 
     /**
      * submit record
@@ -120,7 +121,6 @@ public class RecordOffsetManagement {
             records.size(), largestDequeSize, largestDequePartition);
     }
 
-
     // Synchronize in order to ensure that the number of unacknowledged messages isn't modified in the middle of a call
     // to awaitAllMessages (which might cause us to decrement first, then create a new message drain latch, then count down
     // that latch here, effectively double-acking the message)
@@ -149,15 +149,13 @@ public class RecordOffsetManagement {
         private final int numDeques;
         private final int largestDequeSize;
 
-
         CommittableOffsets(
-                Map<RecordPartition, RecordOffset> offsets,
-                int numCommittableMessages,
-                int numUncommittableMessages,
-                int numDeques,
-                int largestDequeSize,
-                RecordPartition largestDequePartition
-        ) {
+            Map<RecordPartition, RecordOffset> offsets,
+            int numCommittableMessages,
+            int numUncommittableMessages,
+            int numDeques,
+            int largestDequeSize,
+            RecordPartition largestDequePartition) {
             this.offsets = offsets != null ? new HashMap<>(offsets) : Collections.emptyMap();
             this.numCommittableMessages = numCommittableMessages;
             this.numUncommittableMessages = numUncommittableMessages;
@@ -194,28 +192,26 @@ public class RecordOffsetManagement {
             return numUncommittableMessages > 0;
         }
 
-
         public boolean isEmpty() {
             return numCommittableMessages == 0 && numUncommittableMessages == 0 && offsets.isEmpty();
         }
-
 
         public CommittableOffsets updatedWith(CommittableOffsets newerOffsets) {
             Map<RecordPartition, RecordOffset> offsets = new HashMap<>(this.offsets);
             offsets.putAll(newerOffsets.offsets);
 
             return new CommittableOffsets(
-                    offsets,
-                    this.numCommittableMessages + newerOffsets.numCommittableMessages,
-                    newerOffsets.numUncommittableMessages,
-                    newerOffsets.numDeques,
-                    newerOffsets.largestDequeSize,
-                    newerOffsets.largestDequePartition
-            );
+                offsets,
+                this.numCommittableMessages + newerOffsets.numCommittableMessages,
+                newerOffsets.numUncommittableMessages,
+                newerOffsets.numDeques,
+                newerOffsets.largestDequeSize,
+                newerOffsets.largestDequePartition);
         }
     }
 
     public class SubmittedPosition {
+
         private final RecordPosition position;
         private final AtomicBoolean acked;
 
@@ -223,7 +219,6 @@ public class RecordOffsetManagement {
             this.position = position;
             acked = new AtomicBoolean(false);
         }
-
 
         /**
          * Acknowledge this record; signals that its offset may be safely committed.
@@ -265,6 +260,5 @@ public class RecordOffsetManagement {
             return acked.get();
         }
     }
-
 
 }

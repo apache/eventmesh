@@ -58,7 +58,6 @@ public class EtcdCustomService extends EtcdMetaService {
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             keyValues = client.getKVClient().get(keyByteSequence, getOption).get().getKvs();
 
-
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
                     EventMeshServicePubTopicInfo eventMeshServicePubTopicInfo =
@@ -88,8 +87,7 @@ public class EtcdCustomService extends EtcdMetaService {
                 EventMeshAppSubTopicInfo eventMeshAppSubTopicInfo =
                     JsonUtils.parseObject(
                         new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
-                        EventMeshAppSubTopicInfo.class
-                    );
+                        EventMeshAppSubTopicInfo.class);
                 return eventMeshAppSubTopicInfo;
             }
         } catch (Exception e) {

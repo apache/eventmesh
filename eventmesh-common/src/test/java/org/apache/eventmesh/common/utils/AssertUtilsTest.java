@@ -17,20 +17,21 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * test {@link AssertUtils}
  */
 public class AssertUtilsTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNotNull() {
-        AssertUtils.notNull(null, "error message");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> AssertUtils.notNull(null, "error message"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testIsTrue() {
-        AssertUtils.isTrue(false, "error message");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> AssertUtils.isTrue(false, "error message"));
     }
 }

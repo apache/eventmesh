@@ -63,7 +63,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
             log.info("handleMessage fail", e);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
-        //return status;
+        // return status;
     }
 
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context);

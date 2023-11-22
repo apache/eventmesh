@@ -32,12 +32,13 @@ public class ProtocolKey {
     public static final String PROTOCOL_VERSION = "protocolversion";
 
     public static final String PROTOCOL_DESC = "protocoldesc";
+    public static final String TOPIC = "topic";
 
     public static final String CONTENT_TYPE = "contenttype";
 
     public enum ClientInstanceKey {
 
-        ////////////////////////////////////Protocol layer requester description///////////
+        //////////////////////////////////// Protocol layer requester description///////////
         ENV("env", "env"),
         IDC("idc", "idc"),
         SYS("sys", "1234"),
@@ -70,10 +71,9 @@ public class ProtocolKey {
         }
     }
 
-
     public static class EventMeshInstanceKey {
 
-        ///////////////////////////////////////////////Protocol layer EventMesh description
+        /////////////////////////////////////////////// Protocol layer EventMesh description
         public static final String EVENTMESHCLUSTER = "eventmeshcluster";
         public static final String EVENTMESHIP = "eventmeship";
         public static final String EVENTMESHENV = "eventmeshenv";
@@ -88,8 +88,7 @@ public class ProtocolKey {
         public static final String TYPE = "type";
     }
 
-
-    //return of CLIENT <-> EventMesh
+    // return of CLIENT <-> EventMesh
     public static final String RETCODE = "retCode";
     public static final String RETMSG = "retMsg";
     public static final String RESTIME = "resTime";

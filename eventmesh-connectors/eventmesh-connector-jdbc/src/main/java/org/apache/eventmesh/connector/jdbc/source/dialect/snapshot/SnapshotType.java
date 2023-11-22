@@ -27,5 +27,5 @@ public enum SnapshotType {
     /**
      * Continue processing from the last handled position.
      */
-    INCREASE  //TODO Need to support next version
+    INCREASE // TODO Need to support next version
 }

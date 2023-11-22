@@ -30,7 +30,6 @@ public class Manufacturer {
 
     private Map<String, List<String>> manufacturerEventMap = new ConcurrentHashMap<>();
 
-
     public Set<String> getManufacturerSet() {
         return manufacturerSet;
     }

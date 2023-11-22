@@ -17,53 +17,56 @@
 
 package org.apache.eventmesh.common.utils;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ConfigurationContextUtilTest {
 
     private CommonConfiguration grpcConfig;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         grpcConfig = new CommonConfiguration();
         grpcConfig.setEventMeshName("grpc");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, grpcConfig);
+        ConfigurationContextUtil.putIfAbsent(GRPC, grpcConfig);
     }
 
     @Test
     public void testPutIfAbsent() {
         CommonConfiguration tcpConfig = new CommonConfiguration();
         tcpConfig.setEventMeshName("tpc");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, tcpConfig);
-        CommonConfiguration get = ConfigurationContextUtil.get(ConfigurationContextUtil.TCP);
-        Assert.assertNotNull(get);
-        Assert.assertEquals(tcpConfig, get);
+        ConfigurationContextUtil.putIfAbsent(TCP, tcpConfig);
+        CommonConfiguration get = ConfigurationContextUtil.get(TCP);
+        Assertions.assertNotNull(get);
+        Assertions.assertEquals(tcpConfig, get);
         CommonConfiguration newGrpc = new CommonConfiguration();
         newGrpc.setEventMeshName("newGrpc");
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, newGrpc);
-        CommonConfiguration getGrpc = ConfigurationContextUtil.get(ConfigurationContextUtil.GRPC);
-        Assert.assertNotNull(getGrpc);
-        Assert.assertEquals(grpcConfig, getGrpc);
-        Assert.assertNotEquals(newGrpc, getGrpc);
+        ConfigurationContextUtil.putIfAbsent(GRPC, newGrpc);
+        CommonConfiguration getGrpc = ConfigurationContextUtil.get(GRPC);
+        Assertions.assertNotNull(getGrpc);
+        Assertions.assertEquals(grpcConfig, getGrpc);
+        Assertions.assertNotEquals(newGrpc, getGrpc);
     }
 
     @Test
     public void testGet() {
-        CommonConfiguration result = ConfigurationContextUtil.get(ConfigurationContextUtil.GRPC);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(grpcConfig, result);
+        CommonConfiguration result = ConfigurationContextUtil.get(GRPC);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(grpcConfig, result);
     }
 
     @Test
     public void testClear() {
-        CommonConfiguration result0 = ConfigurationContextUtil.get(ConfigurationContextUtil.GRPC);
-        Assert.assertNotNull(result0);
+        CommonConfiguration result0 = ConfigurationContextUtil.get(GRPC);
+        Assertions.assertNotNull(result0);
         ConfigurationContextUtil.clear();
-        CommonConfiguration result = ConfigurationContextUtil.get(ConfigurationContextUtil.GRPC);
-        Assert.assertNull(result);
+        CommonConfiguration result = ConfigurationContextUtil.get(GRPC);
+        Assertions.assertNull(result);
     }
 }

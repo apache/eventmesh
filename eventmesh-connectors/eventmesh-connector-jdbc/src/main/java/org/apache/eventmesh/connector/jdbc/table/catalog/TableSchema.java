@@ -17,22 +17,25 @@
 
 package org.apache.eventmesh.connector.jdbc.table.catalog;
 
+import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlColumn;
+import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlTableSchema;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class TableSchema implements Serializable {
 
-    private String name;
+    private TableId tableId = new TableId();
 
     /**
      * A map of column names to their respective column objects.
@@ -44,6 +47,8 @@ public class TableSchema implements Serializable {
      */
     private List<? extends Column> columns;
 
+    private Map<Integer, ? extends Column> orderColumnMap;
+
     /**
      * The primary key of the table.
      */
@@ -53,8 +58,27 @@ public class TableSchema implements Serializable {
 
     private String comment;
 
+    public TableSchema(TableId tableId, Map<String, ? extends Column> columnMap, List<? extends Column> columns,
+        Map<Integer, ? extends Column> orderColumnMap, PrimaryKey primaryKey, List<UniqueKey> uniqueKeys, String comment) {
+        this.tableId = tableId;
+        this.columnMap = columnMap;
+        this.columns = columns;
+        this.orderColumnMap = orderColumnMap;
+        this.primaryKey = primaryKey;
+        this.uniqueKeys = uniqueKeys;
+        this.comment = comment;
+    }
+
     public TableSchema(String name) {
-        this.name = name;
+        this.tableId.setTableName(name);
+    }
+
+    public TableSchema(TableId tableId) {
+        this.tableId = tableId;
+    }
+
+    public String getSimpleName() {
+        return this.tableId.getTableName();
     }
 
     public static TableSchemaBuilder newTableSchemaBuilder() {
@@ -63,8 +87,9 @@ public class TableSchema implements Serializable {
 
     public static class TableSchemaBuilder {
 
-        private String name;
+        private TableId tableId;
         private Map<String, Column> columnMap;
+        private Map<Integer, Column> orderColumnMap;
         private List<Column> columns;
         private PrimaryKey primaryKey;
         private List<UniqueKey> uniqueKeys;
@@ -74,8 +99,8 @@ public class TableSchema implements Serializable {
 
         }
 
-        public TableSchemaBuilder withName(String name) {
-            this.name = name;
+        public TableSchemaBuilder withTableId(TableId tableId) {
+            this.tableId = tableId;
             return this;
         }
 
@@ -105,7 +130,76 @@ public class TableSchema implements Serializable {
         }
 
         public TableSchema build() {
-            return new TableSchema(name, columnMap, columns, primaryKey, uniqueKeys, comment);
+            return new TableSchema(tableId, columnMap, columns, orderColumnMap, primaryKey, uniqueKeys, comment);
+        }
+
+    }
+
+    public static MysqlTableSchemaBuilder newMysqlTableSchemaBuilder() {
+        return new MysqlTableSchemaBuilder();
+    }
+
+    public static class MysqlTableSchemaBuilder {
+
+        private TableId tableId = new TableId();
+        private Map<String, MysqlColumn> columnMap;
+        private Map<Integer, MysqlColumn> orderColumnMap;
+        private List<MysqlColumn> columns;
+        private PrimaryKey primaryKey;
+        private List<UniqueKey> uniqueKeys;
+        private String comment;
+        private Options tableOptions = new Options();
+
+        public MysqlTableSchemaBuilder() {
+
+        }
+
+        public MysqlTableSchemaBuilder withName(String name) {
+            this.tableId.setTableName(name);
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withTableId(TableId tableId) {
+            this.tableId = tableId;
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withColumns(List<MysqlColumn> columns) {
+            this.columns = columns;
+            this.columnMap = Optional.ofNullable(columns).orElse(new ArrayList<>(0)).stream()
+                .collect(Collectors.toMap(MysqlColumn::getName, Function.identity()));
+            this.orderColumnMap = Optional.ofNullable(columns).orElse(new ArrayList<>(0)).stream()
+                .collect(Collectors.toMap(MysqlColumn::getOrder, Function.identity()));
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withPrimaryKey(PrimaryKey primaryKey) {
+            this.primaryKey = primaryKey;
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withUniqueKeys(List<UniqueKey> uniqueKeys) {
+            this.uniqueKeys = uniqueKeys;
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withComment(String comment) {
+            this.comment = comment;
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withOption(String key, Object value) {
+            this.tableOptions.put(key, value);
+            return this;
+        }
+
+        public MysqlTableSchemaBuilder withOptions(Options options) {
+            this.tableOptions.putAll(options);
+            return this;
+        }
+
+        public MysqlTableSchema build() {
+            return new MysqlTableSchema(tableId, columnMap, columns, orderColumnMap, primaryKey, uniqueKeys, comment, tableOptions);
         }
 
     }

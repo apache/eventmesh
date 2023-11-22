@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,20 +56,17 @@ public class SubController {
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(final HttpServletRequest request) {
         final String content = request.getParameter("content");
-        if (log.isInfoEnabled()) {
-            log.info("receive message: {}", content);
-        }
-        @SuppressWarnings("unchecked") final Map<String, String> contentMap = JsonUtils.parseObject(content, HashMap.class);
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
+        LogUtils.info(log, "receive message: {}", content);
+        @SuppressWarnings("unchecked")
+        final Map<String, String> contentMap = JsonUtils.parseObject(content, HashMap.class);
+        if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (eventFormat != null) {
                 final CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
                 final CloudEventData eventData = event.getData();
                 if (eventData != null) {
                     final String data = new String(eventData.toBytes(), StandardCharsets.UTF_8);
-                    if (log.isInfoEnabled()) {
-                        log.info("receive data: {}", data);
-                    }
+                    LogUtils.info(log, "receive data: {}", data);
                 }
             }
         }

@@ -22,7 +22,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -36,10 +35,8 @@ import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -49,8 +46,6 @@ public class ClientManageControllerTest {
 
     @Test
     public void testStart() throws Exception {
-        AdminController adminController = mock(AdminController.class);
-
         ConfigService configService = ConfigService.getInstance();
         configService.setRootConfig("classPath://configuration.properties");
         EventMeshTCPConfiguration tcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
@@ -85,13 +80,7 @@ public class ClientManageControllerTest {
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);
-            try {
-                Mockito.doNothing().when(adminController).run(server);
-                controller.start();
-            } catch (IOException e) {
-                Assert.fail(e.getMessage());
-            }
-
+            Assertions.assertDoesNotThrow(controller::start);
         }
     }
 }

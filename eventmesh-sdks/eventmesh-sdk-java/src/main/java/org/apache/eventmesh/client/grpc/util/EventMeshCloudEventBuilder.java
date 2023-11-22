@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.grpc.util;
 
-
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.exception.ProtocolNotSupportException;
 import org.apache.eventmesh.common.Constants;
@@ -68,7 +67,7 @@ public class EventMeshCloudEventBuilder {
     private static final EventFormat eventProtoFormat = EventFormatProvider.getInstance().resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE);
 
     public static Map<String, CloudEventAttributeValue> buildCommonCloudEventAttributes(EventMeshGrpcClientConfig clientConfig,
-                                                                                        EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
         final Map<String, CloudEventAttributeValue> attributeValueMap = new HashMap<>(64);
         attributeValueMap.put(ProtocolKey.ENV, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getEnv()).build());
         attributeValueMap.put(ProtocolKey.IDC, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getIdc()).build());
@@ -85,7 +84,7 @@ public class EventMeshCloudEventBuilder {
     }
 
     public static CloudEvent buildEventSubscription(EventMeshGrpcClientConfig clientConfig, EventMeshProtocolType protocolType, String url,
-                                                    List<SubscriptionItem> subscriptionItems) {
+        List<SubscriptionItem> subscriptionItems) {
 
         if (CollectionUtils.isEmpty(subscriptionItems)) {
             return null;
@@ -100,13 +99,13 @@ public class EventMeshCloudEventBuilder {
             attributeValueMap.put(ProtocolKey.URL, CloudEventAttributeValue.newBuilder().setCeString(url).build());
         }
         return CloudEvent.newBuilder()
-                .setId(RandomStringUtils.generateUUID())
-                .setSource(URI.create("/").toString())
-                .setSpecVersion(SpecVersion.V1.toString())
-                .setType(CLOUD_EVENT_TYPE)
-                .setTextData(JsonUtils.toJSONString(subscriptionItemSet))
-                .putAllAttributes(attributeValueMap)
-                .build();
+            .setId(RandomStringUtils.generateUUID())
+            .setSource(URI.create("/").toString())
+            .setSpecVersion(SpecVersion.V1.toString())
+            .setType(CLOUD_EVENT_TYPE)
+            .setTextData(JsonUtils.toJSONString(subscriptionItemSet))
+            .putAllAttributes(attributeValueMap)
+            .build();
     }
 
     /**
@@ -118,7 +117,7 @@ public class EventMeshCloudEventBuilder {
      * @see <a href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#context-attributes">context-attributes</a>
      */
     public static <T> CloudEvent buildEventMeshCloudEvent(final T message, final EventMeshGrpcClientConfig clientConfig,
-                                                          final EventMeshProtocolType protocolType) {
+        final EventMeshProtocolType protocolType) {
 
         switch (protocolType) {
             case CLOUD_EVENTS: {
@@ -141,9 +140,10 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static CloudEvent switchEventMeshMessage2EventMeshCloudEvent(EventMeshMessage message, EventMeshGrpcClientConfig clientConfig,
-                                                                         EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
         final String ttl = message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-                ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
+            ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+            : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
         final Map<String, String> props = message.getProp() == null ? new HashMap<>() : message.getProp();
         final String seqNum = message.getBizSeqNo() == null ? RandomStringUtils.generateNum(30) : message.getBizSeqNo();
         final String uniqueId = message.getUniqueId() == null ? RandomStringUtils.generateNum(30) : message.getUniqueId();
@@ -153,19 +153,21 @@ public class EventMeshCloudEventBuilder {
         attributeValueMap.put(ProtocolKey.TTL, CloudEventAttributeValue.newBuilder().setCeString(ttl).build());
         attributeValueMap.put(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString(seqNum).build());
         attributeValueMap.put(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString(uniqueId).build());
+        attributeValueMap.put(ProtocolKey.PROTOCOL_DESC,
+            CloudEventAttributeValue.newBuilder().setCeString(Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT).build());
         attributeValueMap.put(ProtocolKey.PRODUCERGROUP,
-                CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getProducerGroup()).build());
+            CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getProducerGroup()).build());
         if (null != message.getTopic()) {
             attributeValueMap.put(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(message.getTopic()).build());
         }
         attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
         props.forEach((key, value) -> attributeValueMap.put(key, CloudEventAttributeValue.newBuilder().setCeString(value).build()));
         CloudEvent.Builder builder = CloudEvent.newBuilder()
-                .setId(RandomStringUtils.generateUUID())
-                .setSource(URI.create("/").toString())
-                .setSpecVersion(SpecVersion.V1.toString())
-                .setType(CLOUD_EVENT_TYPE)
-                .putAllAttributes(attributeValueMap);
+            .setId(RandomStringUtils.generateUUID())
+            .setSource(URI.create("/").toString())
+            .setSpecVersion(SpecVersion.V1.toString())
+            .setType(CLOUD_EVENT_TYPE)
+            .putAllAttributes(attributeValueMap);
         final String content = message.getContent();
         if (StringUtils.isNotEmpty(content)) {
             if (ProtoSupport.isTextContent(dataContentType)) {
@@ -186,7 +188,7 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static CloudEvent switchCloudEvent2EventMeshCloudEvent(io.cloudevents.CloudEvent message, EventMeshGrpcClientConfig clientConfig,
-                                                                   EventMeshProtocolType protocolType) {
+        EventMeshProtocolType protocolType) {
 
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(message);
 
@@ -197,7 +199,7 @@ public class EventMeshCloudEventBuilder {
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
-        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, "grpc-cloud-event");
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT);
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_VERSION, message.getSpecVersion().toString());
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
         buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
@@ -215,19 +217,19 @@ public class EventMeshCloudEventBuilder {
     }
 
     private static void buildCloudEventIfAbsent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder,
-                                                String extension, String value) {
+        String extension, String value) {
         if (Objects.isNull(message.getExtension(extension))) {
             cloudEventBuilder.withExtension(extension, value);
         }
     }
 
     public static <T> CloudEventBatch buildEventMeshCloudEventBatch(final List<T> messageList, final EventMeshGrpcClientConfig clientConfig,
-                                                                    final EventMeshProtocolType protocolType) {
+        final EventMeshProtocolType protocolType) {
         if (CollectionUtils.isEmpty(messageList)) {
             return null;
         }
         List<CloudEvent> cloudEventList = messageList.stream().map(item -> buildEventMeshCloudEvent(item, clientConfig, protocolType))
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
         return CloudEventBatch.newBuilder().addAllEvents(cloudEventList).build();
     }
 
@@ -243,11 +245,11 @@ public class EventMeshCloudEventBuilder {
 
         // This is GRPC response cloudEvent
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
-            //The SubscriptionItem collection contains the content for the subscription.
+            // The SubscriptionItem collection contains the content for the subscription.
             return (T) JsonUtils.parseTypeReferenceObject(content,
-                    new TypeReference<Set<HashMap<String, String>>>() {
+                new TypeReference<Set<HashMap<String, String>>>() {
 
-                    });
+                });
         }
         if (null == protocolType) {
             return null;
@@ -273,12 +275,12 @@ public class EventMeshCloudEventBuilder {
         Map<String, String> prop = new HashMap<>();
         Objects.requireNonNull(cloudEvent).getAttributesMap().forEach((key, value) -> prop.put(key, value.getCeString()));
         return EventMeshMessage.builder()
-                .content(cloudEvent.getTextData())
-                .topic(EventMeshCloudEventUtils.getSubject(cloudEvent))
-                .bizSeqNo(EventMeshCloudEventUtils.getSeqNum(cloudEvent))
-                .uniqueId(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
-                .prop(prop)
-                .build();
+            .content(cloudEvent.getTextData())
+            .topic(EventMeshCloudEventUtils.getSubject(cloudEvent))
+            .bizSeqNo(EventMeshCloudEventUtils.getSeqNum(cloudEvent))
+            .uniqueId(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
+            .prop(prop)
+            .build();
     }
 
 }

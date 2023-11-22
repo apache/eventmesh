@@ -57,10 +57,10 @@ public class SourceConnectorConfig {
 
     private int snapshotMaxThreads;
 
-    //The snapshot mode also require handling the database schema (database and table schema)
+    // The snapshot mode also require handling the database schema (database and table schema)
     private boolean snapshotSchema = true;
 
-    //The snapshot mode require handling table data
+    // The snapshot mode require handling table data
     private boolean snapshotData = true;
 
     private int snapshotFetchSize = DEFAULT_SNAPSHOT_FETCH_SIZE;

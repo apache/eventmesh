@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
@@ -61,9 +62,7 @@ public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements Recei
 
     @Override
     public Optional<CloudEvent> handle(final CloudEvent msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive async msg: {}", msg);
-        }
+        LogUtils.info(log, "receive async msg: {}", msg);
         return Optional.empty();
     }
 

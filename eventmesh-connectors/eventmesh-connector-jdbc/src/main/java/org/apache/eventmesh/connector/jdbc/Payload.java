@@ -23,23 +23,43 @@ import java.util.HashMap;
 
 public final class Payload extends HashMap<String, Object> {
 
+    public static final String AFTER_FIELD = "after";
+
+    public static final String BEFORE_FIELD = "before";
+
+    public static final String SOURCE = "source";
+
+    public static final String DDL = "ddl";
+
+    /**
+     * Constructs an empty <code>HashMap</code> with the default initial capacity (16) and the default load factor (0.75).
+     */
+    public Payload() {
+        this.put("timestamp", System.currentTimeMillis());
+    }
+
     public Payload withSource(SourceMateData source) {
-        super.put("source", source);
+        this.put(SOURCE, source);
         return this;
     }
 
     public Payload withDdl(String ddl) {
-        super.put("ddl", ddl);
+        this.put(DDL, ddl);
         return this;
     }
 
     public Payload withCatalogChanges(CatalogChanges catalogChanges) {
-        super.put("catalogChanges", catalogChanges);
+        this.put("catalogChanges", catalogChanges);
+        return this;
+    }
+
+    public Payload withDataChanges(DataChanges dataChanges) {
+        this.put("dataChanges", dataChanges);
         return this;
     }
 
     public SourceMateData ofSourceMateData() {
-        return (SourceMateData) super.get("source");
+        return (SourceMateData) super.get(SOURCE);
     }
 
     public static Builder builder() {
@@ -60,7 +80,7 @@ public final class Payload extends HashMap<String, Object> {
         }
 
         public Builder withSource(SourceMateData source) {
-            payload.put("source", source);
+            payload.put(SOURCE, source);
             return this;
         }
 

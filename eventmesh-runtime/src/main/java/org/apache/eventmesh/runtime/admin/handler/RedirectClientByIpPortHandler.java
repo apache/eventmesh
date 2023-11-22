@@ -35,7 +35,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -120,18 +119,18 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                             session.getClient().getPort()).equals(port)) {
                             redirectResult.append("|");
                             redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
-                                    destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, clientSessionGroupMapping));
+                                destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                session, clientSessionGroupMapping));
                         }
                     }
                 }
             } catch (Exception e) {
                 log.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
                     +
-                    "={}|destEventMeshPort={},errMsg={}", ip, port, destEventMeshIp, destEventMeshPort, e);
+                    "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
@@ -139,8 +138,8 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             }
             // Serialize the result of redirection into output stream
             result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                +
+                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                 sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

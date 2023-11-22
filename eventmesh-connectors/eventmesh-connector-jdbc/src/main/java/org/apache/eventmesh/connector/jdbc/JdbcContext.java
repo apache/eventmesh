@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc;
 
+import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
+
 /**
  * Interface representing a JDBC context.
  */
@@ -25,5 +27,7 @@ public interface JdbcContext<Part extends Partition, OffSetCtx extends OffsetCon
     Part getPartition();
 
     OffSetCtx getOffsetContext();
+
+    TableId ofCurrentTableId();
 
 }

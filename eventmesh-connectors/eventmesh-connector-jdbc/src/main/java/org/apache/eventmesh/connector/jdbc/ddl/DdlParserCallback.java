@@ -20,17 +20,16 @@ package org.apache.eventmesh.connector.jdbc.ddl;
 import org.apache.eventmesh.connector.jdbc.event.Event;
 
 /**
- * Functional interface for a DDL parser listener.
+ * A functional interface for handling events generated during DDL parsing.
  */
 @FunctionalInterface
 public interface DdlParserCallback {
 
     /**
-     * Handles the DDL event.
+     * Handles the specified event.
      *
-     * @param event The DDL event to handle.
+     * @param event The event generated during DDL parsing.
      */
     void handle(Event event);
 
 }
-

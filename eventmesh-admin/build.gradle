@@ -14,3 +14,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'org.springframework.boot' version '2.7.15'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'org.apache.eventmesh'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '1.8'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+}
+
+ext {
+    // utility
+    commonsLang3Version = '3.13.0'
+    guavaVersion = '32.1.2-jre' // not used for now
+    fastjsonVersion = '2.0.40'
+    // swagger
+    springdocVersion = '1.7.0'
+    // unit test
+    mockitoVersion = '5.5.0'
+    // meta
+    nacosVersion = '2.2.4'
+}
+
+dependencies {
+    // versions managed by spring.dependency-management
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // utility
+    implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+    implementation("com.alibaba.fastjson2:fastjson2:${fastjsonVersion}")
+    // swagger
+    implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
+    implementation "org.springdoc:springdoc-openapi-javadoc:${springdocVersion}"
+    annotationProcessor 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0'
+    // unit test
+    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
+    // meta
+    implementation("com.alibaba.nacos:nacos-client:${nacosVersion}")
+}

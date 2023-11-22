@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -146,9 +146,7 @@ public class Codec {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode headerJson={}", deserializeBytes(headerData));
-            }
+            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -158,9 +156,7 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
-            }
+            LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
@@ -212,9 +208,7 @@ public class Codec {
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                if (log.isWarnEnabled()) {
-                    log.warn("Invalidate TCP command: {}", command);
-                }
+                LogUtils.warn(log, "Invalidate TCP command: {}", command);
                 return null;
         }
     }

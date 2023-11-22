@@ -24,7 +24,6 @@ List rocketmq = [
         "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
@@ -34,7 +33,10 @@ List rocketmq = [
 
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation project(":eventmesh-common")
     implementation rocketmq
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
 }

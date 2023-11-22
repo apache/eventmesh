@@ -22,8 +22,8 @@ import static org.apache.eventmesh.common.config.ConfigService.FILE_PATH_PREFIX;
 
 import java.io.File;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ConfigServiceTest {
 
@@ -86,6 +86,6 @@ public class ConfigServiceTest {
     }
 
     public void assertCommonConfiguration(CommonConfiguration config) {
-        Assert.assertEquals("env-succeed!!!", config.getEventMeshEnv());
+        Assertions.assertEquals("env-succeed!!!", config.getEventMeshEnv());
     }
 }

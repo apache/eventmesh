@@ -77,8 +77,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
         String localAddress = IPUtils.getLocalAddress();
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress
-        );
+            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
@@ -93,21 +92,20 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
-        //validate header
+        // validate header
         if (validateSysHeader(sysHeaderMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        //validate body
+        // validate body
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
             new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {
-            }
-        )).orElseGet(Maps::newHashMap);
+            })).orElseGet(Maps::newHashMap);
 
         if (validatedRequestBodyMap(requestBodyMap)) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -140,8 +138,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             List<String> unSubTopicList = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 JsonUtils.toJSONString(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)),
                 new TypeReference<List<String>>() {
-                }
-            )).orElseGet(Collections::emptyList);
+                })).orElseGet(Collections::emptyList);
 
             String targetMesh = "";
             if (!Objects.isNull(requestBodyMap.get("remoteMesh"))) {
@@ -167,8 +164,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 remoteResult,
                 new TypeReference<Map<String, String>>() {
-                }
-            )).orElseGet(Maps::newHashMap);
+                })).orElseGet(Maps::newHashMap);
 
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
                 responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
@@ -190,6 +186,5 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
     public String[] paths() {
         return new String[]{RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
     }
-
 
 }

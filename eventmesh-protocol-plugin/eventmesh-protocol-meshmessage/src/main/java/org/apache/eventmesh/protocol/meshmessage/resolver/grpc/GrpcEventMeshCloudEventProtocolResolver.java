@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.grpc;
 
-
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventWrapper;

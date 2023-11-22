@@ -71,4 +71,3 @@ public interface DatabaseDialect<JC extends JdbcConnection> extends JdbcConnecti
      */
     String jdbcProtocol();
 }
-

@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -32,7 +33,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -85,9 +85,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            if (log.isInfoEnabled()) {
-                log.info("showClientBySubsys,subsys:{}", subSystem);
-            }
+            LogUtils.info(log, "showClientBySubsys,subsys:{}", subSystem);
             // Retrieve the mapping between Sessions and their corresponding client address
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -98,8 +96,8 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                     if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s",
-                                userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
-                                userAgent.getPath(), userAgent.getPurpose()))
+                            userAgent.getPid(), userAgent.getHost(), userAgent.getPort(),
+                            userAgent.getPath(), userAgent.getPurpose()))
                             .append(newLine);
                     }
                 }
@@ -108,6 +106,5 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         }
     }
-
 
 }

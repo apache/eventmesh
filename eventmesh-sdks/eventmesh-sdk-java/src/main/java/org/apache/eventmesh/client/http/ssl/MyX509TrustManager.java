@@ -48,7 +48,8 @@ public class MyX509TrustManager implements X509TrustManager {
 
         try (InputStream in = Files.newInputStream(
             Paths.get(System.getProperty("confPath", System.getenv("confPath"))
-                + File.separator + fileName), StandardOpenOption.READ)) {
+                + File.separator + fileName),
+            StandardOpenOption.READ)) {
             keyStore.load(in, filePass);
         }
 

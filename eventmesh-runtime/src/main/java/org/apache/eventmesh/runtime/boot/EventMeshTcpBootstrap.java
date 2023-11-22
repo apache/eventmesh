@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -35,7 +37,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshTcpConfiguration = configService.buildConfigInstance(EventMeshTCPConfiguration.class);
 
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
+        ConfigurationContextUtil.putIfAbsent(TCP, eventMeshTcpConfiguration);
     }
 
     @Override

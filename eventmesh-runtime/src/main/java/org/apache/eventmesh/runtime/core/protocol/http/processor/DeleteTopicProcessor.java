@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
@@ -24,6 +23,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -70,14 +70,12 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
         HttpEventWrapper responseWrapper;
 
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
-        );
+            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
         Map<String, Object> userRequestHeaderMap = requestWrapper.getHeaderMap();
         String requestIp = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         userRequestHeaderMap.put(ProtocolKey.ClientInstanceKey.IP.getKey(), requestIp);
-
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
@@ -87,11 +85,12 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
-        //validate body
+        // validate body
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
-            new TypeReference<HashMap<String, Object>>() {});
+            new TypeReference<HashMap<String, Object>>() {
+            });
 
         if (requestBodyMap.get("topic") == null || StringUtils.isBlank(requestBodyMap.get("topic").toString())) {
             Map<String, Object> responseBodyMap = new HashMap<>();
@@ -112,7 +111,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
             // pub topic in local cache
             String[] topicArr = topic.split(";");
 
-            //validate topic is exist in eventmesh
+            // validate topic is exist in eventmesh
             List<String> faildTopic = new ArrayList<>();
             for (String deleteTopic : topicArr) {
                 if (!HttpClientGroupMapping.getInstance().getLocalTopicSet().contains(deleteTopic)) {
@@ -142,9 +141,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    if (httpLogger.isDebugEnabled()) {
-                        httpLogger.debug("{}", httpEventWrapper);
-                    }
+                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());

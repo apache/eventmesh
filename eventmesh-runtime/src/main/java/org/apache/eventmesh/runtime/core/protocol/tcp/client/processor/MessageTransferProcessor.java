@@ -61,11 +61,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MessageTransferProcessor implements TcpProcessor {
+
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
     private EventMeshTCPServer eventMeshTCPServer;
     private final Acl acl;
@@ -95,12 +95,12 @@ public class MessageTransferProcessor implements TcpProcessor {
         try {
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
                 && RESPONSE_TO_SERVER != cmd) {
-                //attach the span to the server context
+                // attach the span to the server context
                 Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
                     startTime, TimeUnit.MILLISECONDS, true);
                 Context context = Context.current().with(SpanKey.SERVER_KEY, span);
-                //put the context in channel
+                // put the context in channel
                 ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
         } catch (Exception ex) {
@@ -133,7 +133,7 @@ public class MessageTransferProcessor implements TcpProcessor {
                 throw new Exception("event size exceeds the limit: " + eventMeshEventSize);
             }
 
-            //do acl check in sending msg
+            // do acl check in sending msg
             if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 this.acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(), cmd.getValue());
@@ -144,8 +144,7 @@ public class MessageTransferProcessor implements TcpProcessor {
 
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
-                    (ChannelFutureListener) future -> Utils.logSucceedMessageFlow(msg, session.getClient(), startTime, taskExecuteTime)
-                );
+                    (ChannelFutureListener) future -> Utils.logSucceedMessageFlow(msg, session.getClient(), startTime, taskExecuteTime));
 
                 TraceUtils.finishSpanWithException(ctx, event, "Tps overload, global flow control", null);
 
@@ -232,6 +231,7 @@ public class MessageTransferProcessor implements TcpProcessor {
         Package msg = new Package();
 
         return new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
@@ -247,7 +247,7 @@ public class MessageTransferProcessor implements TcpProcessor {
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(),
                         session);
 
-                    //async request need finish span when callback, rr request will finish span when rrCallback
+                    // async request need finish span when callback, rr request will finish span when rrCallback
                     TraceUtils.finishSpan(ctx, event);
                 }
             }
@@ -259,10 +259,9 @@ public class MessageTransferProcessor implements TcpProcessor {
                 // retry
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
-                upStreamMsgContext.delay(10000);
                 Objects.requireNonNull(
-                        session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
-                    .pushRetry(upStreamMsgContext);
+                    session.getClientGroupWrapper().get()).getTcpRetryer()
+                    .newTimeout(upStreamMsgContext, 10, TimeUnit.SECONDS);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 MESSAGE_LOGGER
@@ -276,9 +275,9 @@ public class MessageTransferProcessor implements TcpProcessor {
                 msg.setBody(event);
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
 
-                //both rr request and async request need finish span when reqeust fail
+                // both rr request and async request need finish span when reqeust fail
                 if (replyCmd != RESPONSE_TO_SERVER) {
-                    //upload trace
+                    // upload trace
                     TraceUtils.finishSpanWithException(ctx, event,
                         "upload trace fail in MessageTransferTask.createSendCallback.onException",
                         context.getException());

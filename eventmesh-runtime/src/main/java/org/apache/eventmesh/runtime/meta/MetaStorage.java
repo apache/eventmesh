@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -108,6 +107,10 @@ public class MetaStorage {
 
     public void registerMetadata(Map<String, String> metadata) {
         metaService.registerMetadata(metadata);
+    }
+
+    public void updateMetaData(Map<String, String> metadata) {
+        metaService.updateMetaData(metadata);
     }
 
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {

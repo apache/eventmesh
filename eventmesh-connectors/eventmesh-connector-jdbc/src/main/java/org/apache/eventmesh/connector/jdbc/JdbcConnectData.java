@@ -19,9 +19,22 @@ package org.apache.eventmesh.connector.jdbc;
 
 public final class JdbcConnectData {
 
+    public static final byte DATA_CHANGES = 1;
+
+    public static final byte SCHEMA_CHANGES = 1 << 1;
+
     private Payload payload = new Payload();
 
     private Schema schema;
+
+    private byte type;
+
+    public JdbcConnectData() {
+    }
+
+    public JdbcConnectData(byte type) {
+        this.type = type;
+    }
 
     public Payload getPayload() {
         return payload;
@@ -37,5 +50,21 @@ public final class JdbcConnectData {
 
     public void setSchema(Schema schema) {
         this.schema = schema;
+    }
+
+    public byte getType() {
+        return type;
+    }
+
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    public void markDataChanges() {
+        this.type |= DATA_CHANGES;
+    }
+
+    public void markSchemaChanges() {
+        this.type |= SCHEMA_CHANGES;
     }
 }

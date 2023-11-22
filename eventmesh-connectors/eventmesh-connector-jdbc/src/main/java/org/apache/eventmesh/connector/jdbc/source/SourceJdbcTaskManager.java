@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.jdbc.source;
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
-import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.CdcEngine;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.RandomTaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.TaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
@@ -28,9 +27,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,16 +43,14 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
 
     private TaskSelectStrategy<SourceEventMeshJdbcEventTask> cdcTaskSelectStrategy;
 
-    public SourceJdbcTaskManager(CdcEngine cdcEngine, JdbcSourceConfig jdbcSourceConfig) {
+    public SourceJdbcTaskManager(Set<TableId> includeDatabaseTable, JdbcSourceConfig jdbcSourceConfig) {
         this.jdbcSourceConfig = jdbcSourceConfig;
-        this.includeDatabaseTable =
-            CollectionUtils.isEmpty(cdcEngine.getHandledTables()) ? new HashSet<>() : new HashSet<>(cdcEngine.getHandledTables());
+        this.includeDatabaseTable = includeDatabaseTable == null ? new HashSet<>() : includeDatabaseTable;
     }
-
 
     @SuppressWarnings("unchecked")
     public void init() {
-        //init Jdbc Task
+        // init Jdbc Task
         int maxTaskNum = this.jdbcSourceConfig.getSourceConnectorConfig().getMaxTask();
         int taskNum = Math.min(maxTaskNum, this.includeDatabaseTable.size());
         log.info("Source jdbc task num {}", taskNum);
@@ -69,20 +64,18 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
     }
 
     private void doHandleEvent(Event event) {
-
+        if (null == event) {
+            return;
+        }
         JdbcConnectData jdbcConnectData = event.getJdbcConnectData();
         RecordPartition partition = new RecordPartition();
         RecordOffset offset = new RecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), jdbcConnectData);
-        if (null == record) {
-            return;
-        }
-        List<ConnectRecord> records = Arrays.asList(record);
+        List<ConnectRecord> records = Collections.singletonList(record);
         for (TaskManagerListener listener : listeners) {
             listener.listen(records);
         }
     }
-
 
     @Override
     public SourceEventMeshJdbcEventTask select(TableId tableId) {

@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
@@ -60,9 +61,7 @@ public class EventMeshSubscribeReply extends GrpcAbstractDemo implements Receive
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive request-reply msg: {}", msg);
-        }
+        LogUtils.info(log, "receive request-reply msg: {}", msg);
         if (msg != null) {
             return Optional.of(msg);
         } else {

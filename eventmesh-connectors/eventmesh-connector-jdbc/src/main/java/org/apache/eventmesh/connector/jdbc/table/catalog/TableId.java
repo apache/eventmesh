@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.table.catalog;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -106,12 +108,12 @@ public class TableId implements Serializable {
         }
         TableId tableId = (TableId) o;
         return Objects.equals(getCatalogName(), tableId.getCatalogName()) && Objects.equals(getSchemaName(), tableId.getSchemaName())
-            && Objects.equals(getTableName(), tableId.getTableName()) && Objects.equals(getId(), tableId.getId());
+            && Objects.equals(getTableName(), tableId.getTableName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCatalogName(), getSchemaName(), getTableName(), getId());
+        return Objects.hash(getCatalogName(), getSchemaName(), getTableName());
     }
 
     /**
@@ -132,16 +134,20 @@ public class TableId implements Serializable {
      * @return the string representation of the TableId
      */
     private static String tableId(String catalog, String schema, String table) {
-        if (catalog == null || catalog.length() == 0) {
-            if (schema == null || schema.length() == 0) {
-                return table;
-            }
-            return schema + "." + table;
+        StringBuilder tableId = new StringBuilder();
+        if (StringUtils.isNotBlank(catalog)) {
+            tableId.append(catalog).append(".");
         }
-        if (schema == null || schema.length() == 0) {
-            return catalog + "." + table;
+        if (StringUtils.isNotBlank(schema)) {
+            tableId.append(schema).append(".");
         }
-        return catalog + "." + schema + "." + table;
+        if (StringUtils.isNotBlank(table)) {
+            tableId.append(table).append(".");
+        }
+        if (tableId.length() == 0) {
+            return null;
+        }
+        return tableId.substring(0, tableId.length() - 1);
     }
 
     /**
@@ -152,5 +158,9 @@ public class TableId implements Serializable {
         public String toString(TableId tableId) {
             return tableId(tableId.getCatalogName(), tableId.getSchemaName(), tableId.getTableName());
         }
+    }
+
+    public TableId copy() {
+        return new TableId(this.catalogName, this.schemaName, this.tableName);
     }
 }

@@ -23,16 +23,25 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-
+/**
+ * Represents a unique key constraint for a database table.
+ * <p>A unique key ensures that the values in specified columns are unique across all rows in the table.</p>
+ */
 @Setter
 @Getter
 public class UniqueKey implements Serializable {
 
+    // The name of the unique key, if specified.
     private String name;
 
-    private final List<String> columnNames;
+    // The list of column names that make up the unique/primary key.
+    private List<String> columnNames;
 
+    // An optional comment or description for the unique/primary key.
     private String comment;
+
+    public UniqueKey() {
+    }
 
     public UniqueKey(String name, List<String> columnNames, String comment) {
         this.name = name;
@@ -52,5 +61,12 @@ public class UniqueKey implements Serializable {
     public UniqueKey copy() {
         return new UniqueKey(name, columnNames, comment);
     }
-}
 
+    public void addColumnNames(String... columnNames) {
+        if (columnNames != null && columnNames.length > 0) {
+            for (String columnName : columnNames) {
+                this.columnNames.add(columnName);
+            }
+        }
+    }
+}

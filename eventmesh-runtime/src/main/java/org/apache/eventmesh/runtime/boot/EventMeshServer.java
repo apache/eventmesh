@@ -17,10 +17,15 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -33,7 +38,6 @@ import org.apache.eventmesh.runtime.trace.Trace;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,35 +68,35 @@ public class EventMeshServer {
 
     public EventMeshServer() {
 
-        //Initialize configuration
+        // Initialize configuration
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
         AssertUtils.notNull(this.configuration, "configuration is null");
 
-        //Initialize acl, registry, trace and storageResource
+        // Initialize acl, registry, trace and storageResource
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
         this.metaStorage = MetaStorage.getInstance(this.configuration.getEventMeshMetaStoragePluginType());
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
-        //Initialize BOOTSTRAP_LIST based on protocols provided in configuration
+        // Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
             switch (provideServerProtocol.toUpperCase()) {
-                case ConfigurationContextUtil.HTTP:
+                case HTTP:
                     BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
                     break;
-                case ConfigurationContextUtil.TCP:
+                case TCP:
                     BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
                     break;
-                case ConfigurationContextUtil.GRPC:
+                case GRPC:
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
                     break;
                 default:
-                    //nothing to do
+                    // nothing to do
             }
         }
 
-        //If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
+        // If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
@@ -138,16 +142,12 @@ public class EventMeshServer {
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        if (log.isInfoEnabled()) {
-            log.info("eventStore : {}", eventStore);
-        }
+        LogUtils.info(log, "eventStore : {}", eventStore);
         producerTopicManager = new ProducerTopicManager(this);
         producerTopicManager.init();
         serviceState = ServiceState.INITED;
 
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public void start() throws Exception {
@@ -170,17 +170,13 @@ public class EventMeshServer {
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
 
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPPING;
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
@@ -203,9 +199,7 @@ public class EventMeshServer {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
 
-        if (log.isInfoEnabled()) {
-            log.info(SERVER_STATE_MSG, serviceState);
-        }
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public static Trace getTrace() {

@@ -52,6 +52,3 @@ public @interface Config {
         Config[] value();
     }
 }
-
-
-

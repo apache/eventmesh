@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 class OpenMessageProducer extends AbstractProducerHttpClient<Message> {
 
     public OpenMessageProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+                                                                                          throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 

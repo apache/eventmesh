@@ -21,9 +21,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -32,7 +32,7 @@ public class RabbitmqCloudEventTest {
 
     private CloudEvent cloudEvent;
 
-    @Before
+    @BeforeEach
     public void before() {
         cloudEvent = CloudEventBuilder.v1()
             .withId("1")
@@ -49,22 +49,22 @@ public class RabbitmqCloudEventTest {
     public void toByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals("topic", cloudEvent.getSubject());
+        Assertions.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
-        Assert.assertNotNull(data);
+        Assertions.assertNotNull(data);
     }
 
     @Test
     public void getFromByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals("topic", cloudEvent.getSubject());
+        Assertions.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
-        Assert.assertNotNull(data);
+        Assertions.assertNotNull(data);
 
         RabbitmqCloudEvent event = RabbitmqCloudEvent.getFromByteArray(data);
-        Assert.assertEquals("topic", event.getExtensions().get("subject"));
+        Assertions.assertEquals("topic", event.getExtensions().get("subject"));
     }
 }

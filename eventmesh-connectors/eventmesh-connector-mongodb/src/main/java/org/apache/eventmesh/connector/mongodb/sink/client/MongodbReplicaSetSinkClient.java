@@ -58,7 +58,7 @@ public class MongodbReplicaSetSinkClient implements MongodbSinkClient {
     public void publish(CloudEvent cloudEvent) {
         Document document = MongodbCloudEventUtil.convertToDocument(cloudEvent);
         MongoCollection<Document> collection = client
-                .getDatabase(connectorConfig.getDatabase()).getCollection(connectorConfig.getCollection());
+            .getDatabase(connectorConfig.getDatabase()).getCollection(connectorConfig.getCollection());
         collection.insertOne(document);
     }
 

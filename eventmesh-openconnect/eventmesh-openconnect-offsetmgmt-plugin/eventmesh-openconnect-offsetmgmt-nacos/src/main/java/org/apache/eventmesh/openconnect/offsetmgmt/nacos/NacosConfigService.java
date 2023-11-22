@@ -192,6 +192,7 @@ public class NacosConfigService implements OffsetManagementService {
             log.error("nacos init error", e);
         }
         this.listener = new Listener() {
+
             @Override
             public Executor getExecutor() {
                 return null;

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 
 public class RecommendProcessor implements TcpProcessor {
+
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private EventMeshTCPServer eventMeshTCPServer;
@@ -73,7 +74,7 @@ public class RecommendProcessor implements TcpProcessor {
 
         } finally {
             writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
-            //session.write2Client(res);
+            // session.write2Client(res);
         }
     }
 

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.utils;
 
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshDateFormat;
 import org.apache.eventmesh.common.exception.JsonException;
@@ -25,6 +24,7 @@ import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -94,6 +94,24 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(text, clazz);
+        } catch (JsonProcessingException e) {
+            throw new JsonException("deserialize json string to object error", e);
+        }
+    }
+
+    public static <T> T parseObject(String text, Type type) {
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+        try {
+            TypeReference<T> typeReference = new TypeReference<T>() {
+
+                @Override
+                public Type getType() {
+                    return type;
+                }
+            };
+            return OBJECT_MAPPER.readValue(text, typeReference);
         } catch (JsonProcessingException e) {
             throw new JsonException("deserialize json string to object error", e);
         }

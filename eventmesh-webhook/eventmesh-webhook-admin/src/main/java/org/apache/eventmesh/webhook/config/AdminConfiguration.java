@@ -46,4 +46,3 @@ public class AdminConfiguration {
         this.operationProperties = (Properties) operationProperties.get(prefix);
     }
 }
-

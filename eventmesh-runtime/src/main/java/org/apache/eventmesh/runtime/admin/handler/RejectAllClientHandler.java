@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -83,9 +83,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
-                if (log.isInfoEnabled()) {
-                    log.info("rejectAllClient in admin====================");
-                }
+                LogUtils.info(log, "rejectAllClient in admin====================");
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
@@ -101,7 +99,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 log.error("clientManage rejectAllClient fail", e);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
+                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
                     .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }

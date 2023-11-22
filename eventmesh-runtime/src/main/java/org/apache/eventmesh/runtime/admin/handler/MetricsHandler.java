@@ -36,7 +36,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
@@ -149,8 +148,7 @@ public class MetricsHandler extends AbstractHttpHandler {
                 tcpSummaryMetrics.getEventMesh2clientTPS(),
                 tcpSummaryMetrics.getAllTPS(),
                 tcpSummaryMetrics.getAllConnections(),
-                tcpSummaryMetrics.getSubTopicNum()
-            );
+                tcpSummaryMetrics.getSubTopicNum());
             String result = JsonUtils.toJSONString(getMetricsResponse);
             byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(200, bytes.length);

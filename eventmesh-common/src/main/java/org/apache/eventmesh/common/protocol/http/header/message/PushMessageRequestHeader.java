@@ -33,13 +33,13 @@ import lombok.ToString;
 @ToString
 public class PushMessageRequestHeader extends Header {
 
-    //request code
+    // request code
     private int code;
 
-    //requester language description
+    // requester language description
     private String language;
 
-    //protocol version adopted by requester, default:1.0
+    // protocol version adopted by requester, default:1.0
     private ProtocolVersion version;
 
     private String eventMeshCluster;

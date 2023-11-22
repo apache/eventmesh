@@ -32,6 +32,8 @@ public class Constants {
 
     public static final String LANGUAGE_JAVA = "JAVA";
 
+    public static final String CONNECT_SERVER_CONFIG_FILE_NAME = "server-config.yml";
+
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
 
     public static final String HTTPS_PROTOCOL_PREFIX = "https://";
@@ -149,6 +151,8 @@ public class Constants {
 
     public static final String UNDER_LINE = "_";
 
+    public static final String UNKNOWN = "unknown";
+
     public static final String LEFT_PARENTHESIS = "(";
 
     public static final String RIGHT_PARENTHESIS = ")";
@@ -169,6 +173,17 @@ public class Constants {
 
     public static final int SUCCESS_CODE = 200;
 
+    public static final String SINK = "Sink";
+
+    public static final String SOURCE = "Source";
+
+    // protocol desc
+    public static final String PROTOCOL_DESC_GRPC_CLOUD_EVENT = "grpc-cloud-event";
+
+    public static final String PROTOCOL_DESC_HTTP = "http";
+
+    public static final String PROTOCOL_DESC_TCP = "tcp";
+
     /**
      * GRPC PROTOCOL
      */
@@ -178,4 +193,27 @@ public class Constants {
      * application/cloudevents+json Content-type
      */
     public static final String CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json";
+
+    public static final String HTTP = "HTTP";
+
+    public static final String TCP = "TCP";
+
+    public static final String GRPC = "GRPC";
+
+    public static final String OS_NAME_KEY = "os.name";
+
+    public static final String OS_WIN_PREFIX = "win";
+
+    public static final String DEFAULT = "default";
+
+    public static final String FEISHU_SEND_MESSAGE_API = "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=";
+
+    public static final String FEISHU_RECEIVE_ID = "receive_id";
+
+    public static final String FEISHU_MSG_TYPE = "msg_type";
+
+    public static final String FEISHU_CONTENT = "content";
+
+    public static final String FEISHU_UUID = "uuid";
+
 }

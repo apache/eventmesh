@@ -20,14 +20,10 @@ package org.apache.eventmesh.runtime.demo;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
-import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
-
-import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,18 +32,13 @@ public class SyncSubClient {
 
     public static void main(String[] args) throws Exception {
         try (SubClientImpl client =
-                     new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
+            new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
             client.init();
             client.heartbeat();
             client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
-            client.registerBusiHandler(new ReceiveMsgHook() {
-                @Override
-                public void handle(Package msg, ChannelHandlerContext ctx) {
-                    if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                        if ((log.isInfoEnabled())) {
-                            log.info("receive message -------------------------------" + msg);
-                        }
-                    }
+            client.registerBusiHandler((msg, ctx) -> {
+                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                    LogUtils.info(log, "receive message:{}", msg);
                 }
             });
         }

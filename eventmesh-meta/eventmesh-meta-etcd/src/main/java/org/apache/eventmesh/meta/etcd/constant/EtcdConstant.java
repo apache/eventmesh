@@ -32,5 +32,4 @@ public class EtcdConstant {
 
     public static final long TTL = 15L;
 
-
 }
