@@ -347,6 +347,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
+    public FilterEngine getFilterEngine() {
+        return filterEngine;
+    }
+
     public MetaStorage getMetaStorage() {
         return metaStorage;
     }

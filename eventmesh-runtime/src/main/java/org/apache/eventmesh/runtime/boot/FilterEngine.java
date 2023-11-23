@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.filter.pattern.Pattern;
 import org.apache.eventmesh.filter.patternbuild.PatternBuilder;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
@@ -39,12 +40,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class FilterEngine {
 
     /**
      * key:group-topic
      **/
-    public Map<String, Pattern> filterPatternMap = new HashMap<>();
+    private final Map<String, Pattern> filterPatternMap = new HashMap<>();
 
     private final String FILTER_PREIX = "filter-" ;
 
@@ -82,6 +86,7 @@ public class FilterEngine {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, producerGroup)) {
                         addFilterListener(producerGroup);
+                        LogUtils.info(log, "addFilterListener for producer group: " + producerGroup);
                     }
                 }
             }
@@ -90,6 +95,7 @@ public class FilterEngine {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, consumerGroup)) {
                         addFilterListener(consumerGroup);
+                        LogUtils.info(log, "addFilterListener for consumer group: " + consumerGroup);
                     }
                 }
             }
@@ -123,5 +129,9 @@ public class FilterEngine {
 
     public void shutdown() {
         scheduledExecutorService.shutdown();
+    }
+
+    public Pattern getFilterPattern(String key) {
+        return filterPatternMap.get(key);
     }
 }

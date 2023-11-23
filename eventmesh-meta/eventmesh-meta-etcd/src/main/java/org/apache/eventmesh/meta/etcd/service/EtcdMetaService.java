@@ -197,7 +197,7 @@ public class EtcdMetaService implements MetaService {
     }
 
     @Override
-    public List<Map<String, String>> getMetaData(String key, boolean fuzzyEnabled) {
+    public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
         return null;
     }
 
