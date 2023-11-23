@@ -27,11 +27,11 @@ Add a new connector by implementing the source/sink interface using :
 |                    ClickHouse                    |   Source    |    ⬜    |
 |                    ClickHouse                    |    Sink     |    ⬜    |
 |                     DingDing                     |   Source    |    ⬜    |
-|     [DingDing](eventmesh-connector-dingding)     |    Sink     |    ✅    |
+|     [Dingtalk](eventmesh-connector-dingtalk)     |    Sink     |    ✅    |
 |                      Email                       |   Source    |    ⬜    |
 |                      Email                       |    Sink     |    ⬜    |
 |                      FeiShu                      |   Source    |    ⬜    |
-|                      FeiShu                      |    Sink     |    ⬜    |
+|       [FeiShu](eventmesh-connector-feishu)       |    Sink     |    ✅    |
 |         [File](eventmesh-connector-file)         |   Source    |    ✅    |
 |         [File](eventmesh-connector-file)         |    Sink     |    ✅    |
 |                      Github                      |   Source    |    ⬜    |
