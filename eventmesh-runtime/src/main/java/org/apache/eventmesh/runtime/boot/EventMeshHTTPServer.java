@@ -136,7 +136,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.init();
 
         filterEngine = new FilterEngine(metaStorage, producerManager, consumerManager);
-        filterEngine.init();
 
         super.setHandlerService(new HandlerService());
         super.getHandlerService().setMetrics(this.getMetrics());
@@ -161,6 +160,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         consumerManager.start();
         producerManager.start();
         httpRetryer.start();
+        // filterEngine depend on metaStorage
+        if (metaStorage.getStarted().get()) {
+            filterEngine.start();
+        }
 
         if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();

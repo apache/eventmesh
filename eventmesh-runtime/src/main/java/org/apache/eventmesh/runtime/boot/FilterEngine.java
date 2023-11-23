@@ -68,7 +68,7 @@ public class FilterEngine {
         this.consumerManager = consumerManager;
     }
 
-    public void init() {
+    public void start() {
         Map<String, String> filterMetaData = metaStorage.getMetaData(FILTER_PREIX, true);
         for (Entry<String, String> filterDataEntry : filterMetaData.entrySet()) {
             // filter-group

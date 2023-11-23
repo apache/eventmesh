@@ -297,7 +297,7 @@ public class NacosMetaService implements MetaService {
     private Map<String, String> getResultFromNacos(int pageNo, int pageSize, String key, String group) {
         Map<String, String> result = new HashMap<>();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            URI uri = new URIBuilder(serverAddr + "/nacos/v1/cs/configs")
+            URI uri = new URIBuilder("http://" + serverAddr + "/nacos/v1/cs/configs")
                 .setParameter("dataId", key)
                 .setParameter("group", group)
                 .setParameter("pageNo", String.valueOf(pageNo))

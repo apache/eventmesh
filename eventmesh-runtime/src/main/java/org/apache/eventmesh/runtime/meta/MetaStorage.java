@@ -138,4 +138,11 @@ public class MetaStorage {
         metaService.getMetaDataWithListener(metaServiceListener, key);
     }
 
+    public AtomicBoolean getInited() {
+        return inited;
+    }
+
+    public AtomicBoolean getStarted() {
+        return started;
+    }
 }
