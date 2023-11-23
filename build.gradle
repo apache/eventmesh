@@ -482,6 +482,8 @@ subprojects {
 
             dependency "commons-io:commons-io:2.11.0"
 
+            dependency "commons-validator:commons-validator:1.7"
+
             dependency "com.google.guava:guava:31.0.1-jre"
 
             dependency "org.slf4j:slf4j-api:1.7.30"

@@ -54,8 +54,20 @@ public class WebhookUtilTest {
 
             // abnormal case
             Mockito.when(httpClient2.execute(any())).thenThrow(new RuntimeException());
-            Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "xxx", "*"),
+            Assertions.assertTrue(WebhookUtil.obtainDeliveryAgreement(httpClient2, "https://eventmesh.apache.org", "*"),
                 "when throw exception ,default return true");
+        }
+    }
+
+    @Test
+    public void testObtainDeliveryAgreementWithInvalidTargetUrl() throws Exception {
+        try (CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+            CloseableHttpResponse response = mock(CloseableHttpResponse.class)) {
+            Mockito.when(response.getLastHeader("WebHook-Allowed-Origin"))
+                .thenReturn(new BasicHeader("WebHook-Allowed-Origin", "*"));
+            Mockito.when(httpClient.execute(any())).thenReturn(response);
+            Assertions.assertFalse(WebhookUtil.obtainDeliveryAgreement(httpClient, "ftp://eventmesh.apache.org", "*"),
+                "when target url is invalid, return false");
         }
     }
 
