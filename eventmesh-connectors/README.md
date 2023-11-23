@@ -36,7 +36,7 @@ Add a new connector by implementing the source/sink interface using :
 |         [File](eventmesh-connector-file)         |    Sink     |    ✅    |
 |                      Github                      |   Source    |    ⬜    |
 |                      Github                      |    Sink     |    ⬜    |
-|                       Http                       |   Source    |    ⬜    |
+|         [Http](eventmesh-connector-http)         |   Source    |    ✅    |
 |                       Http                       |    Sink     |    ⬜    |
 |                       Jdbc                       |   Source    |    ⬜    |
 |         [Jdbc](eventmesh-connector-jdbc)         |    Sink     |    ✅    |
