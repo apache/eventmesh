@@ -61,7 +61,7 @@ public class WebhookUtil {
         LogUtils.info(log, "obtain webhook delivery agreement for url: {}", targetUrl);
 
         if (isInvalidUrl(targetUrl)) {
-            LogUtils.info(log, "Target url is invalid url: {}", targetUrl);
+            LogUtils.error(log, "Target url is invalid url: {}", targetUrl);
             return false;
         }
 
