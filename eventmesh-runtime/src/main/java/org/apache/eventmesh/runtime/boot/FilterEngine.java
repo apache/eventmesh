@@ -109,7 +109,7 @@ public class FilterEngine {
         if (filterJsonNodeArray != null) {
             for (JsonNode filterJsonNode : filterJsonNodeArray) {
                 String topic = filterJsonNode.get("topic").asText();
-                String filterCondition = filterJsonNode.get("condition").asText();
+                String filterCondition = filterJsonNode.get("condition").toString();
                 Pattern filterPattern = PatternBuilder.build(filterCondition);
                 filterPatternMap.put(group + "-" + topic, filterPattern);
             }

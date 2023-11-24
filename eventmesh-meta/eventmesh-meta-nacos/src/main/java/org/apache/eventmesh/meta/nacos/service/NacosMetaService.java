@@ -288,21 +288,24 @@ public class NacosMetaService implements MetaService {
         Map<String, String> result = new HashMap<>();
         Map<String, String> tmpMap;
         do {
-            tmpMap = getResultFromNacos(pageNo, pageSize, key, group);
+            tmpMap = getResultFromNacos(pageNo, pageSize, key, group, fuzzyEnabled);
             result.putAll(tmpMap);
         } while (!(tmpMap.size() < pageSize));
         return result;
     }
 
-    private Map<String, String> getResultFromNacos(int pageNo, int pageSize, String key, String group) {
+    private Map<String, String> getResultFromNacos(int pageNo, int pageSize, String key, String group, boolean fuzzyEnabled) {
         Map<String, String> result = new HashMap<>();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            URI uri = new URIBuilder("http://" + serverAddr + "/nacos/v1/cs/configs")
+            URIBuilder uriBuilder = new URIBuilder("http://" + serverAddr + "/nacos/v1/cs/configs")
                 .setParameter("dataId", key)
                 .setParameter("group", group)
                 .setParameter("pageNo", String.valueOf(pageNo))
-                .setParameter("pageSize", String.valueOf(pageSize))
-                .build();
+                .setParameter("pageSize", String.valueOf(pageSize));
+            if (fuzzyEnabled) {
+                uriBuilder.setParameter("search", "blur");
+            }
+            URI uri = uriBuilder.build();
             HttpGet httpGet = new HttpGet(uri);
             try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)){
                 if (closeableHttpResponse.getStatusLine().getStatusCode() == 200) {
