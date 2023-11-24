@@ -80,7 +80,7 @@ public class CloudEventUtil {
 
     public static boolean validateExtensionType(Object obj) {
         return obj instanceof String || obj instanceof Number || obj instanceof Boolean
-                || obj instanceof URI || obj instanceof OffsetDateTime || obj instanceof byte[];
+            || obj instanceof URI || obj instanceof OffsetDateTime || obj instanceof byte[];
     }
 
 }

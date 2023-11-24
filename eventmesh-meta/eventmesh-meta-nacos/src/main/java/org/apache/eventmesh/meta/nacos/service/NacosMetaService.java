@@ -192,6 +192,7 @@ public class NacosMetaService implements MetaService {
     public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
         try {
             nacosConfigService.addListener(key, group, new Listener() {
+
                 @Override
                 public Executor getExecutor() {
                     return null;
@@ -307,7 +308,7 @@ public class NacosMetaService implements MetaService {
             }
             URI uri = uriBuilder.build();
             HttpGet httpGet = new HttpGet(uri);
-            try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)){
+            try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)) {
                 if (closeableHttpResponse.getStatusLine().getStatusCode() == 200) {
                     String response = EntityUtils.toString(closeableHttpResponse.getEntity(), StandardCharsets.UTF_8);
                     result = processResponse(response);

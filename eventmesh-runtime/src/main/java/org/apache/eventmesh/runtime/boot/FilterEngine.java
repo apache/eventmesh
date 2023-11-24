@@ -126,7 +126,6 @@ public class FilterEngine {
         }
     }
 
-
     public void shutdown() {
         scheduledExecutorService.shutdown();
     }

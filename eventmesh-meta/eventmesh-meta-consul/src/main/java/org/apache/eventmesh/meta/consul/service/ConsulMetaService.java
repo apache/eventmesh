@@ -163,7 +163,7 @@ public class ConsulMetaService implements MetaService {
         return true;
     }
 
-    //todo: to be implemented
+    // todo: to be implemented
     @Override
     public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
 

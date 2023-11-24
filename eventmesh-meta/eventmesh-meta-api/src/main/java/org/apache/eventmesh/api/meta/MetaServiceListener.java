@@ -22,5 +22,5 @@ package org.apache.eventmesh.api.meta;
  */
 public interface MetaServiceListener {
 
-    void onChange(String key,String value);
+    void onChange(String key, String value);
 }
