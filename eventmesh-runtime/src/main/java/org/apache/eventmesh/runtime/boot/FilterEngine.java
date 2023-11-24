@@ -24,8 +24,8 @@ import org.apache.eventmesh.filter.pattern.Pattern;
 import org.apache.eventmesh.filter.patternbuild.PatternBuilder;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
+import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.lang3.StringUtils;
